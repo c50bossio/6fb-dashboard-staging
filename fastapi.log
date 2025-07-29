@@ -1,0 +1,7 @@
+INFO:     Will watch for changes in these directories: ['/Users/bossio/6FB AI Agent System']
+ERROR:    [Errno 48] Address already in use
+🚀 Starting 6FB AI Agent System FastAPI Server...
+📚 Enterprise RAG Engine: Active
+🎯 Available Agents: 7 specialized agents loaded
+🔗 API Endpoints: /api/v1/ai-agents/chat, /api/v1/health
+🌐 CORS: Configured for Next.js integration

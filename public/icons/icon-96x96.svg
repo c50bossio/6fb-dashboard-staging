@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  
+  
+  <g transform="translate(0, 0)">
+    <rect width="96" height="96" fill="url(#gradient)" rx="9.600000000000001"/>
+    
+    <!-- 6FB Text -->
+    <text x="48" y="38.400000000000006" 
+          font-family="Arial, sans-serif" 
+          font-size="19.200000000000003" 
+          font-weight="bold" 
+          text-anchor="middle" 
+          fill="#ffffff">6FB</text>
+    
+    <!-- AI Symbol -->
+    <circle cx="28.799999999999997" cy="62.400000000000006" r="7.68" fill="#ffffff"/>
+    <circle cx="67.19999999999999" cy="62.400000000000006" r="7.68" fill="#ffffff"/>
+    <path d="M 28.799999999999997 76.80000000000001 Q 48 72 67.19999999999999 76.80000000000001" 
+          stroke="#ffffff" 
+          stroke-width="1.92" 
+          fill="none"/>
+  </g>
+</svg>

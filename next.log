@@ -1,0 +1,224 @@
+   ▲ Next.js 14.0.4
+   - Local:        http://localhost:9999
+   - Environments: .env.local
+
+ ✓ Ready in 540ms
+ ○ Compiling / ...
+ ✓ Compiled / in 548ms (431 modules)
+ ✓ Compiled /api/auth/me in 137ms (230 modules)
+User profile API error: TypeError: fetch failed
+    at Object.fetch (node:internal/deps/undici/undici:11576:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  cause: Error: connect ECONNREFUSED ::1:8000
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+      at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '::1',
+    port: 8000
+  }
+}
+User profile API error: TypeError: fetch failed
+    at Object.fetch (node:internal/deps/undici/undici:11576:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  cause: Error: connect ECONNREFUSED ::1:8000
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1555:16)
+      at TCPConnectWrap.callbackTrampoline (node:internal/async_hooks:130:17) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '::1',
+    port: 8000
+  }
+}
+ ✓ Compiled in 187ms (417 modules)
+ ✓ Compiled in 61ms (417 modules)
+ ✓ Compiled in 62ms (417 modules)
+ ✓ Compiled in 119ms (417 modules)
+ ✓ Compiled in 64ms (417 modules)
+ ✓ Compiled in 208ms (431 modules)
+ ⨯ ./components/layout/Header.js
+Error: 
+  [31mx[0m cannot reassign to a variable declared with `const`
+    ,-[[36;1;4m/Users/bossio/6FB AI Agent System/components/layout/Header.js[0m:24:1]
+ [2m24[0m |   onMenuClick, 
+ [2m25[0m |   className,
+ [2m26[0m |   showSearch = true,
+ [2m27[0m |   showNotifications = true,
+    : [31;1m  ^^^^^^^^|^^^^^^^^[0m
+    :           [31;1m`-- [31;1mcannot reassign[0m[0m
+ [2m28[0m |   showThemeToggle = true 
+ [2m29[0m | }) => {
+ [2m30[0m |   const { user, logout } = useAuth()
+ [2m31[0m |   const { theme, toggleTheme } = useTheme()
+ [2m32[0m |   const [searchQuery, setSearchQuery] = useState('')
+ [2m33[0m |   const [showProfileMenu, setShowProfileMenu] = useState(false)
+ [2m34[0m |   const [showNotifications, setShowNotificationsModal] = useState(false)
+    : [33;1m         ^^^^^^^^|^^^^^^^^[0m
+    :                  [33;1m`-- [33;1mconst variable was declared here[0m[0m
+ [2m35[0m |   const [notifications] = useState([
+ [2m36[0m |     {
+ [2m37[0m |       id: 1,
+    `----
+
+Import trace for requested module:
+./components/layout/Header.js
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./components/layout/Header.js:4:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m'react'[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [0m
+[0m [90m 5 |[39m   [33mBars3Icon[39m[33m,[39m [0m
+[0m [90m 6 |[39m   [33mBellIcon[39m[33m,[39m [0m
+[0m [90m 7 |[39m   [33mMagnifyingGlassIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./components/layout/Header.js:4:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m'react'[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [0m
+[0m [90m 5 |[39m   [33mBars3Icon[39m[33m,[39m [0m
+[0m [90m 6 |[39m   [33mBellIcon[39m[33m,[39m [0m
+[0m [90m 7 |[39m   [33mMagnifyingGlassIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./components/layout/Header.js:4:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m'react'[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [0m
+[0m [90m 5 |[39m   [33mBars3Icon[39m[33m,[39m [0m
+[0m [90m 6 |[39m   [33mBellIcon[39m[33m,[39m [0m
+[0m [90m 7 |[39m   [33mMagnifyingGlassIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./components/layout/Header.js:4:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m'react'[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [0m
+[0m [90m 5 |[39m   [33mBars3Icon[39m[33m,[39m [0m
+[0m [90m 6 |[39m   [33mBellIcon[39m[33m,[39m [0m
+[0m [90m 7 |[39m   [33mMagnifyingGlassIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./components/layout/Header.js:4:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m'react'[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [0m
+[0m [90m 5 |[39m   [33mBars3Icon[39m[33m,[39m [0m
+[0m [90m 6 |[39m   [33mBellIcon[39m[33m,[39m [0m
+[0m [90m 7 |[39m   [33mMagnifyingGlassIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./middleware.js:6:0
+Module not found: Can't resolve 'next-auth/middleware'
+[0m [90m 4 |[39m [90m */[39m[0m
+[0m [90m 5 |[39m[0m
+[0m[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m { withAuth } [36mfrom[39m [32m"next-auth/middleware"[39m[0m
+[0m [90m 7 |[39m [36mimport[39m { [33mNextResponse[39m } [36mfrom[39m [32m"next/server"[39m[0m
+[0m [90m 8 |[39m [36mimport[39m { [33mUserRoles[39m[33m,[39m hasRoleAccess } [36mfrom[39m [32m"@/lib/auth-config"[39m[0m
+[0m [90m 9 |[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+ ○ Compiling /_error ...
+ ⨯ ./components/layout/Header.js:4:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m'react'[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [0m
+[0m [90m 5 |[39m   [33mBars3Icon[39m[33m,[39m [0m
+[0m [90m 6 |[39m   [33mBellIcon[39m[33m,[39m [0m
+[0m [90m 7 |[39m   [33mMagnifyingGlassIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./components/layout/Header.js:4:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { useState } [36mfrom[39m [32m'react'[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { [0m
+[0m [90m 5 |[39m   [33mBars3Icon[39m[33m,[39m [0m
+[0m [90m 6 |[39m   [33mBellIcon[39m[33m,[39m [0m
+[0m [90m 7 |[39m   [33mMagnifyingGlassIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./components/layout/Sidebar.js:6:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 4 |[39m [36mimport[39m { usePathname } [36mfrom[39m [32m'next/navigation'[39m[0m
+[0m [90m 5 |[39m [36mimport[39m [33mLink[39m [36mfrom[39m [32m'next/link'[39m[0m
+[0m[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m {[0m
+[0m [90m 7 |[39m   [33mHomeIcon[39m[33m,[39m[0m
+[0m [90m 8 |[39m   [33mSparklesIcon[39m[33m,[39m[0m
+[0m [90m 9 |[39m   [33mCubeTransparentIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./components/layout/Sidebar.js:6:0
+Module not found: Can't resolve '@heroicons/react/24/outline'
+[0m [90m 4 |[39m [36mimport[39m { usePathname } [36mfrom[39m [32m'next/navigation'[39m[0m
+[0m [90m 5 |[39m [36mimport[39m [33mLink[39m [36mfrom[39m [32m'next/link'[39m[0m
+[0m[31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m {[0m
+[0m [90m 7 |[39m   [33mHomeIcon[39m[33m,[39m[0m
+[0m [90m 8 |[39m   [33mSparklesIcon[39m[33m,[39m[0m
+[0m [90m 9 |[39m   [33mCubeTransparentIcon[39m[33m,[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./components/layout/Layout.js
+./app/layout.js
+ ⨯ ./lib/toast-provider.js:3:0
+Module not found: Can't resolve 'react-hot-toast'
+[0m [90m 1 |[39m [32m'use client'[39m[0m
+[0m [90m 2 |[39m[0m
+[0m[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m toast[33m,[39m { [33mToaster[39m } [36mfrom[39m [32m'react-hot-toast'[39m[0m
+[0m [90m 4 |[39m [36mimport[39m { [33mCheckCircleIcon[39m[33m,[39m [33mXCircleIcon[39m[33m,[39m [33mExclamationTriangleIcon[39m[33m,[39m [33mInformationCircleIcon[39m } [36mfrom[39m [32m'@heroicons/react/24/outline'[39m[0m
+[0m [90m 5 |[39m[0m
+[0m [90m 6 |[39m [90m// Custom toast configurations[39m[0m
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./app/layout.js
+ ✓ Compiled /not-found in 6ms
+ ✓ Compiled in 110ms (568 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /not-found in 159ms (573 modules)
+ ✓ Compiled in 85ms (571 modules)
+[?25h

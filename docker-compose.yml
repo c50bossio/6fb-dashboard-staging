@@ -1,0 +1,46 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "9999:9999"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_ENABLE_RAG=true
+      - NEXT_PUBLIC_ENABLE_MOCK_FALLBACK=true
+      - NEXT_PUBLIC_DEV_MODE=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - agent-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=sqlite:///data/agent_system.db
+      - CORS_ORIGINS=http://localhost:9999,http://localhost:3000
+    volumes:
+      - ./data:/app/data
+      - ./fastapi-server.py:/app/fastapi-server.py
+      - ./database:/app/database
+      - ./services:/app/services
+    networks:
+      - agent-network
+
+networks:
+  agent-network:
+    driver: bridge
+
+volumes:
+  node_modules:
+  next_build:

@@ -1,0 +1,31 @@
+# Backend Dockerfile for 6FB AI Agent System FastAPI
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements (create if doesn't exist)
+COPY requirements.txt* ./
+
+# Install Python dependencies
+RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
+RUN pip install fastapi uvicorn[standard] python-multipart python-jose[cryptography] passlib[bcrypt] sqlite3
+
+# Copy application code
+COPY fastapi-server.py ./
+COPY database/ ./database/
+COPY services/ ./services/
+
+# Create database directory
+RUN mkdir -p /app/data
+
+# Expose port 8000
+EXPOSE 8000
+
+# Start FastAPI server
+CMD ["uvicorn", "fastapi-server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
