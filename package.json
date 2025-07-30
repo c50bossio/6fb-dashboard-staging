@@ -49,7 +49,7 @@
     "docker:prod": "docker-compose -f docker-compose.prod.yml up",
     "clean": "rm -rf .next node_modules coverage playwright-report test-results",
     "reset": "npm run clean && npm install",
-    "prepare": "husky install"
+    "prepare": "if [ \"$NODE_ENV\" != \"production\" ]; then husky install; fi"
   },
   "dependencies": {
     "next": "^14.0.0",
@@ -75,7 +75,11 @@
     "socket.io-client": "^4.7.4",
     "react-hot-toast": "^2.4.1",
     "react-query": "^3.39.3",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "lucide-react": "^0.294.0",
+    "class-variance-authority": "^0.7.0",
+    "recharts": "^2.8.0",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",

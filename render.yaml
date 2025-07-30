@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: 6fb-ai-backend-staging
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn fastapi-server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: staging
+      - key: FRONTEND_URL
+        value: https://6fb-ai-staging-h5v5htl9v-6fb.vercel.app
+      - key: NODE_ENV
+        value: production
+    autoDeploy: false
+
+databases:
+  - name: 6fb-ai-postgres-staging
+    databaseName: 6fb_ai_staging
+    user: admin
+    plan: free
+
+  - name: 6fb-ai-redis-staging
+    plan: free
