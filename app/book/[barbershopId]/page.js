@@ -15,6 +15,8 @@ export default function PublicBookingPage() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingStep, setBookingStep] = useState(1); // 1: Barber, 2: Service, 3: Time, 4: Details, 5: Confirmation
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isGuestBooking, setIsGuestBooking] = useState(false);
   
   // Customer details form
   const [customerDetails, setCustomerDetails] = useState({
@@ -25,8 +27,76 @@ export default function PublicBookingPage() {
   });
 
   useEffect(() => {
+    // Check authentication status
+    checkAuthStatus();
     loadBarbershopData();
   }, [barbershopId]);
+
+  const checkAuthStatus = () => {
+    // Check for customer token
+    const customerToken = localStorage.getItem('customer_token');
+    const customerUser = localStorage.getItem('customer_user');
+    const guestBooking = localStorage.getItem('guest_booking');
+    
+    if (customerToken && customerUser) {
+      try {
+        const user = JSON.parse(customerUser);
+        setCurrentUser(user);
+        setCustomerDetails({
+          name: user.name || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          notes: ''
+        });
+      } catch (e) {
+        // Invalid user data, clear it
+        localStorage.removeItem('customer_token');
+        localStorage.removeItem('customer_user');
+      }
+    } else if (guestBooking === 'true') {
+      setIsGuestBooking(true);
+      localStorage.removeItem('guest_booking'); // Clear the flag
+    }
+    
+    // Check for Google OAuth return
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const authStatus = urlParams.get('auth');
+    
+    if (token && authStatus === 'success') {
+      // Store the token and fetch user info
+      localStorage.setItem('customer_token', token);
+      fetchUserProfile(token);
+      
+      // Clean up URL
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  };
+
+  const fetchUserProfile = async (token) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const user = await response.json();
+        localStorage.setItem('customer_user', JSON.stringify(user));
+        setCurrentUser(user);
+        setCustomerDetails({
+          name: user.full_name || user.name || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          notes: ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const loadBarbershopData = async () => {
     try {
@@ -141,6 +211,14 @@ export default function PublicBookingPage() {
 
   const handleSlotSelect = (slot) => {
     setSelectedSlot(slot);
+    
+    // If user is not authenticated and not doing guest booking, redirect to auth
+    if (!currentUser && !isGuestBooking) {
+      const authUrl = `/customer-auth?barbershop_id=${barbershopId}&return_url=${encodeURIComponent(window.location.pathname)}`;
+      window.location.href = authUrl;
+      return;
+    }
+    
     setBookingStep(4);
   };
 
@@ -229,20 +307,41 @@ export default function PublicBookingPage() {
               </p>
             </div>
             
-            {/* Progress indicator */}
-            <div className="flex items-center space-x-2">
-              {[1, 2, 3, 4, 5].map((step) => (
-                <div
-                  key={step}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    step <= bookingStep
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-500'
-                  }`}
-                >
-                  {step}
-                </div>
-              ))}
+            <div className="flex items-center space-x-4">
+              {/* User Status */}
+              <div className="text-right">
+                {currentUser ? (
+                  <div className="text-sm">
+                    <p className="font-medium text-gray-900">Welcome, {currentUser.name}</p>
+                    <p className="text-gray-500">{currentUser.email}</p>
+                  </div>
+                ) : isGuestBooking ? (
+                  <div className="text-sm">
+                    <p className="font-medium text-gray-700">Guest Booking</p>
+                    <p className="text-gray-500">No account required</p>
+                  </div>
+                ) : (
+                  <div className="text-sm">
+                    <p className="text-gray-500">Sign in for faster booking</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Progress indicator */}
+              <div className="flex items-center space-x-2">
+                {[1, 2, 3, 4, 5].map((step) => (
+                  <div
+                    key={step}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                      step <= bookingStep
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-500'
+                    }`}
+                  >
+                    {step}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -433,6 +532,31 @@ export default function PublicBookingPage() {
               <p className="text-sm font-medium mt-2">Total: ${selectedService?.price}</p>
             </div>
 
+            {/* Account Status Banner */}
+            {currentUser && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center">
+                  <span className="text-green-600 mr-2">✅</span>
+                  <div>
+                    <p className="font-medium text-green-800">Signed in as {currentUser.name}</p>
+                    <p className="text-sm text-green-600">Your information has been pre-filled</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isGuestBooking && (
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center">
+                  <span className="text-yellow-600 mr-2">👤</span>
+                  <div>
+                    <p className="font-medium text-yellow-800">Guest Booking</p>
+                    <p className="text-sm text-yellow-600">Create an account after booking to track your appointments</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -443,8 +567,14 @@ export default function PublicBookingPage() {
                   required
                   value={customerDetails.name}
                   onChange={(e) => setCustomerDetails({...customerDetails, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={currentUser && currentUser.name}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    currentUser && currentUser.name ? 'bg-gray-50 text-gray-600' : ''
+                  }`}
                 />
+                {currentUser && currentUser.name && (
+                  <p className="text-xs text-gray-500 mt-1">Pre-filled from your account</p>
+                )}
               </div>
 
               <div>
@@ -456,8 +586,14 @@ export default function PublicBookingPage() {
                   required
                   value={customerDetails.email}
                   onChange={(e) => setCustomerDetails({...customerDetails, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={currentUser && currentUser.email}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    currentUser && currentUser.email ? 'bg-gray-50 text-gray-600' : ''
+                  }`}
                 />
+                {currentUser && currentUser.email && (
+                  <p className="text-xs text-gray-500 mt-1">Pre-filled from your account</p>
+                )}
               </div>
 
               <div>
@@ -530,19 +666,62 @@ export default function PublicBookingPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                // Reset for new booking
-                setBookingStep(1);
-                setSelectedService(null);
-                setSelectedBarber(null);
-                setSelectedSlot(null);
-                setCustomerDetails({ name: '', email: '', phone: '', notes: '' });
-              }}
-              className="bg-blue-600 text-white py-2 px-6 rounded-md font-medium hover:bg-blue-700"
-            >
-              Book Another Appointment
-            </button>
+            {/* Account Creation for Guests */}
+            {isGuestBooking && !currentUser && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="font-medium text-blue-900 mb-2">Create Your Account</h3>
+                <p className="text-sm text-blue-700 mb-3">
+                  Save your information for faster future bookings and track your appointment history
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      const authUrl = `/customer-auth?barbershop_id=${barbershopId}&email=${encodeURIComponent(customerDetails.email)}&name=${encodeURIComponent(customerDetails.name)}`;
+                      window.location.href = authUrl;
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  >
+                    Create Account
+                  </button>
+                  <button
+                    onClick={() => setIsGuestBooking(false)}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
+                  >
+                    Maybe Later
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => {
+                  // Reset for new booking
+                  setBookingStep(1);
+                  setSelectedService(null);
+                  setSelectedBarber(null);
+                  setSelectedSlot(null);
+                  if (!currentUser) {
+                    setCustomerDetails({ name: '', email: '', phone: '', notes: '' });
+                  }
+                }}
+                className="bg-blue-600 text-white py-2 px-6 rounded-md font-medium hover:bg-blue-700"
+              >
+                Book Another Appointment
+              </button>
+              
+              {currentUser && (
+                <button
+                  onClick={() => {
+                    // Navigate to customer dashboard (to be implemented)
+                    alert('Customer dashboard coming soon! You can track your appointments there.');
+                  }}
+                  className="bg-gray-600 text-white py-2 px-6 rounded-md font-medium hover:bg-gray-700"
+                >
+                  View My Appointments
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
