@@ -1,16 +1,17 @@
 # Railway Ignore - Python Backend Only
 # Exclude frontend/Node.js files from Python deployment
 
-# Frontend files
+# Frontend files - CRITICAL: Exclude package.json to prevent Node.js detection
 package.json
 package-lock.json
 node_modules/
 .next/
 .vercel/
-app/
 components/
 public/
 styles/
+next.config.mjs
+jsconfig.json
 
 # Development files
 .env.local
