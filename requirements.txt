@@ -26,4 +26,3 @@ google-cloud-aiplatform==1.56.0
 # Executable Agent Dependencies
 twilio==8.10.0
 sendgrid==6.10.0
-smtplib-ssl==1.0.4

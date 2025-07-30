@@ -38,18 +38,19 @@ load_dotenv()
 # Import agent coordination system
 from services.orchestration.agent_coordination_api import router as agent_coordination_router
 
-# Import executable agents
-try:
-    from services.executable_agents.marketing_execution_agent import ExecutableMarketingAgent
-    EXECUTABLE_AGENTS_AVAILABLE = True
-except ImportError as e:
-    logger.warning(f"Executable agents not available: {e}")
-    EXECUTABLE_AGENTS_AVAILABLE = False
-
 app = FastAPI(title="6FB AI Agent System", description="Enhanced AI Agent System with 39-Agent Coordination")
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+# Import executable agents
+try:
+    from services.executable_agents.marketing_execution_agent import ExecutableMarketingAgent
+    EXECUTABLE_AGENTS_AVAILABLE = True
+    logger.info("✅ Executable Marketing Agent loaded successfully")
+except ImportError as e:
+    logger.warning(f"Executable agents not available: {e}")
+    EXECUTABLE_AGENTS_AVAILABLE = False
 
 # Include agent coordination router
 app.include_router(agent_coordination_router)
@@ -2608,29 +2609,30 @@ Be selective - only include specialists that are truly relevant to the question.
                     max_tokens=500,
                     messages=[{"role": "user", "content": analysis_prompt}]
                 )
-                analysis_text = analysis_response.content[0].text
+                analysis = analysis_response.content[0].text
             except Exception as e:
                 logger.warning(f"Anthropic analysis failed: {e}")
-                analysis_text = get_fallback_analysis(message)
+                analysis = get_fallback_analysis(message)
         else:
-            analysis_text = get_fallback_analysis(message)
-
-        # Parse analysis (with fallback if JSON parsing fails)
-        try:
-            import json
-            # Extract JSON from response if it's wrapped in text
-            if "```json" in analysis_text:
-                json_start = analysis_text.find("```json") + 7
-                json_end = analysis_text.find("```", json_start)
-                analysis_text = analysis_text[json_start:json_end].strip()
-            elif "{" in analysis_text:
-                json_start = analysis_text.find("{")
-                json_end = analysis_text.rfind("}") + 1
-                analysis_text = analysis_text[json_start:json_end]
-            
-            analysis = json.loads(analysis_text)
-        except:
             analysis = get_fallback_analysis(message)
+
+        # Parse analysis only if we got text from AI (not if we got dict from fallback)
+        if isinstance(analysis, str):
+            try:
+                import json
+                # Extract JSON from response if it's wrapped in text
+                if "```json" in analysis:
+                    json_start = analysis.find("```json") + 7
+                    json_end = analysis.find("```", json_start)
+                    analysis = analysis[json_start:json_end].strip()
+                elif "{" in analysis:
+                    json_start = analysis.find("{")
+                    json_end = analysis.rfind("}") + 1
+                    analysis = analysis[json_start:json_end]
+                
+                analysis = json.loads(analysis)
+            except:
+                analysis = get_fallback_analysis(message)
 
         specialists_needed = analysis.get("specialists_needed", ["master_coach"])
         reasoning = analysis.get("reasoning", "General business advice needed")
@@ -2640,10 +2642,17 @@ Be selective - only include specialists that are truly relevant to the question.
         execution_type = analysis.get("execution_type", "none")
         execution_details = analysis.get("execution_details", "")
 
+        # Debug logging
+        logger.info(f"🔍 Master Orchestrator Analysis: execution_requested={execution_requested}, execution_type={execution_type}, EXECUTABLE_AGENTS_AVAILABLE={EXECUTABLE_AGENTS_AVAILABLE}")
+
         # Step 2: Handle executable actions if requested
         execution_result = None
         if execution_requested and EXECUTABLE_AGENTS_AVAILABLE:
+            logger.info(f"🚀 Executing action: {execution_type} - {execution_details}")
             execution_result = await handle_executable_action(message, execution_type, execution_details)
+            logger.info(f"📋 Execution result: {execution_result}")
+        else:
+            logger.info(f"❌ No execution: execution_requested={execution_requested}, EXECUTABLE_AGENTS_AVAILABLE={EXECUTABLE_AGENTS_AVAILABLE}")
 
         # Step 3: Get responses from each needed specialist
         specialist_responses = {}
@@ -2663,14 +2672,23 @@ Specialist Responses:
         for specialist, response in specialist_responses.items():
             synthesis_prompt += f"\n**{specialist.title()} Specialist:**\n{response}\n"
 
-        # Add execution results if available
-        if execution_result and execution_result.get("success"):
-            synthesis_prompt += f"""
+        # Add execution results if available (including failures)
+        if execution_result:
+            if execution_result.get("success"):
+                synthesis_prompt += f"""
 
 **ACTIONS EXECUTED:**
 The system has already taken the following actions:
 {execution_result.get('action_taken', 'Action completed')}
 Results: {execution_result.get('message', '')}
+"""
+            else:
+                synthesis_prompt += f"""
+
+**EXECUTION ATTEMPTED:**
+The system attempted to execute the requested action but encountered an issue:
+{execution_result.get('message', 'Action failed')}
+Note: This is normal for demo/testing without proper API credentials configured.
 """
 
         synthesis_prompt += f"""
@@ -2680,9 +2698,9 @@ Now synthesize this advice into ONE cohesive, comprehensive response that:
 3. Provides actionable, prioritized recommendations
 4. Maintains a single, professional voice
 5. Includes specific numbers, examples, or benchmarks when relevant
-6. {"Acknowledges actions already taken and" if execution_result and execution_result.get("success") else ""} Ends with a strategic next step or follow-up question
+6. {"Acknowledges actions executed and" if execution_result and execution_result.get("success") else "Acknowledges execution attempts and" if execution_result else ""} Ends with a strategic next step or follow-up question
 
-The response should read as if ONE expert advisor who understands all aspects of barbershop business is providing comprehensive guidance{"and has already executed requested actions" if execution_result and execution_result.get("success") else ""}."""
+The response should read as if ONE expert advisor who understands all aspects of barbershop business is providing comprehensive guidance{"and has successfully executed requested actions" if execution_result and execution_result.get("success") else "and has attempted to execute the requested actions" if execution_result else ""}."""
 
         # Get synthesized response
         if anthropic_client:
@@ -2695,9 +2713,9 @@ The response should read as if ONE expert advisor who understands all aspects of
                 final_response = synthesis_response.content[0].text
             except Exception as e:
                 logger.warning(f"Anthropic synthesis failed: {e}")
-                final_response = synthesize_responses_fallback(specialist_responses, message)
+                final_response = synthesize_responses_fallback(specialist_responses, message, execution_result)
         else:
-            final_response = synthesize_responses_fallback(specialist_responses, message)
+            final_response = synthesize_responses_fallback(specialist_responses, message, execution_result)
 
         return {
             "response": final_response,
@@ -2803,7 +2821,7 @@ async def handle_executable_action(message: str, execution_type: str, execution_
             "action_taken": "none"
         }
 
-def synthesize_responses_fallback(specialist_responses: dict, message: str) -> str:
+def synthesize_responses_fallback(specialist_responses: dict, message: str, execution_result: dict = None) -> str:
     """Fallback synthesis when AI services are unavailable"""
     if not specialist_responses:
         return f"I understand you're asking about: {message}. Let me provide comprehensive business guidance covering the key areas that matter most for barbershop success."
@@ -2813,6 +2831,13 @@ def synthesize_responses_fallback(specialist_responses: dict, message: str) -> s
     for specialist, response in specialist_responses.items():
         specialist_name = specialist.replace('_', ' ').title()
         combined += f"**{specialist_name} Perspective:**\n{response}\n\n"
+    
+    # Add execution results if available
+    if execution_result:
+        if execution_result.get("success"):
+            combined += f"**✅ ACTION EXECUTED:**\n{execution_result.get('action_taken', 'Action completed successfully')}\nResults: {execution_result.get('message', '')}\n\n"
+        else:
+            combined += f"**🔧 EXECUTION ATTEMPTED:**\nI attempted to execute your requested action but encountered this issue:\n{execution_result.get('message', 'Action failed')}\n\n"
     
     combined += "**Strategic Recommendation:** Focus on implementing 1-2 of these strategies immediately while planning the others for gradual rollout over the next 3-6 months."
     

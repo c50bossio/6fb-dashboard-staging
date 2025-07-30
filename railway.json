@@ -14,9 +14,12 @@
   "environments": {
     "production": {
       "variables": {
-        "ENVIRONMENT": "staging"
+        "ENVIRONMENT": "staging",
+        "NODE_ENV": "production",
+        "FRONTEND_URL": "https://6fb-ai-staging-h5v5htl9v-6fb.vercel.app",
+        "PYTHONPATH": "/app",
+        "PYTHONUNBUFFERED": "1"
       }
     }
   }
 }
-EOF < /dev/null
