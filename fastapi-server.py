@@ -12,20 +12,38 @@ from typing import List, Dict, Any, Optional
 import uvicorn
 import asyncio
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 import jwt
 import bcrypt
 import os
 import asyncpg
-import os
+import sqlite3
+import logging
+from database.postgresql_config import db
+import httpx
+import base64
+from urllib.parse import urlencode, parse_qs
+from services.google_calendar_service import get_google_calendar_service
 
 app = FastAPI(title="6FB AI Agent System", description="Enterprise RAG-powered AI agents")
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Authentication Configuration
 SECRET_KEY = "your-secret-key-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
+
+# Google Calendar Configuration
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', 'http://localhost:8001/api/v1/calendar/oauth/callback')
+GOOGLE_SCOPES = [
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/calendar.events'
+]
 
 # Security
 security = HTTPBearer()
@@ -39,34 +57,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Simple PostgreSQL connection
-pg_pool = None
-
-async def init_database():
-    """Initialize PostgreSQL database connection"""
-    global pg_pool
-    database_url = os.getenv('DATABASE_URL', 'postgresql://agent_user:secure_agent_password_2024@postgres:5432/agent_system')
-    try:
-        pg_pool = await asyncpg.create_pool(database_url, min_size=2, max_size=10)
-        print("🐘 PostgreSQL database initialized")
-    except Exception as e:
-        print(f"❌ Database connection failed: {e}")
-        # Fallback to existing SQLite system
-        print("🔄 Falling back to existing database system")
-
 # Startup and shutdown events
 @app.on_event("startup")
 async def startup_event():
     """Initialize database on startup"""
-    await init_database()
+    await db.init_connection_pool()
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Close database connections on shutdown"""
-    global pg_pool
-    if pg_pool:
-        await pg_pool.close()
-        print("🔌 PostgreSQL connection pool closed")
+    await db.close_pool()
 
 # Authentication Models (defined before they're used)
 class UserRegister(BaseModel):
@@ -84,9 +84,10 @@ class Token(BaseModel):
     token_type: str
 
 class User(BaseModel):
-    id: int
+    id: str
     email: str
     full_name: str
+    role: str
     barbershop_name: Optional[str] = None
     barbershop_id: Optional[str] = None
     is_active: bool
@@ -115,31 +116,38 @@ async def get_user_by_email(email: str) -> Optional[Dict]:
     """Get user by email from database"""
     return await db.get_user_by_email(email)
 
-def create_user(user: UserRegister) -> Dict:
+async def create_user(user: UserRegister) -> Dict:
     """Create new user in database"""
-    conn = sqlite3.connect('agent_system.db')
-    cursor = conn.cursor()
-    
     hashed_password = get_password_hash(user.password)
-    barbershop_id = f"barber_{int(datetime.now().timestamp())}" if user.barbershop_name else None
     
-    cursor.execute("""
-        INSERT INTO users (email, hashed_password, full_name, barbershop_name, barbershop_id)
-        VALUES (?, ?, ?, ?, ?)
-    """, (user.email, hashed_password, user.full_name, user.barbershop_name, barbershop_id))
-    
-    user_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-    
-    return {
-        "id": user_id,
-        "email": user.email,
-        "full_name": user.full_name,
-        "barbershop_name": user.barbershop_name,
-        "barbershop_id": barbershop_id,
-        "is_active": True
-    }
+    async with db.pool.acquire() as conn:
+        # Create user with proper role
+        role = 'SHOP_OWNER' if user.barbershop_name else 'CLIENT'
+        
+        user_row = await conn.fetchrow("""
+            INSERT INTO users (email, hashed_password, name, role, is_active)
+            VALUES ($1, $2, $3, $4, TRUE)
+            RETURNING id, email, name, role, is_active, created_at
+        """, user.email, hashed_password, user.full_name, role)
+        
+        user_dict = dict(user_row)
+        
+        # If user is a shop owner, create barbershop
+        if user.barbershop_name and role == 'SHOP_OWNER':
+            barbershop_row = await conn.fetchrow("""
+                INSERT INTO barbershops (name, owner_id, booking_enabled, online_booking_enabled, ai_agent_enabled)
+                VALUES ($1, $2, TRUE, TRUE, TRUE)
+                RETURNING id, name
+            """, user.barbershop_name, user_dict['id'])
+            
+            user_dict['barbershop_name'] = user.barbershop_name
+            user_dict['barbershop_id'] = str(barbershop_row['id'])
+        
+        # Convert UUID to string for JSON serialization
+        user_dict['id'] = str(user_dict['id'])
+        user_dict['full_name'] = user_dict['name']  # For compatibility
+        
+        return user_dict
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
     """Get current user from JWT token"""
@@ -157,9 +165,13 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except jwt.PyJWTError:
         raise credentials_exception
     
-    user = get_user_by_email(email)
+    user = await get_user_by_email(email)
     if user is None:
         raise credentials_exception
+    
+    # Convert UUID to string for JSON serialization and map fields
+    user['id'] = str(user['id'])
+    user['full_name'] = user.get('name', '')  # Map name to full_name for compatibility
     
     return User(**user)
 
@@ -169,7 +181,7 @@ async def register_user(user: UserRegister):
     """Register a new user"""
     try:
         # Check if user already exists
-        existing_user = get_user_by_email(user.email)
+        existing_user = await get_user_by_email(user.email)
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -177,7 +189,7 @@ async def register_user(user: UserRegister):
             )
         
         # Create new user
-        new_user = create_user(user)
+        new_user = await create_user(user)
         
         # Create access token
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -198,7 +210,7 @@ async def login_user(user: UserLogin):
     """Login user and return JWT token"""
     try:
         # Get user from database
-        db_user = get_user_by_email(user.email)
+        db_user = await get_user_by_email(user.email)
         if not db_user or not verify_password(user.password, db_user["hashed_password"]):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -233,6 +245,82 @@ async def logout_user(current_user: User = Depends(get_current_user)):
     return {"message": "Successfully logged out"}
 
 
+# Barbershop Management Models
+class BarbershopCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    business_hours: Optional[Dict[str, Any]] = None
+
+class BarbershopResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    zip_code: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    business_hours: Optional[Dict[str, Any]] = None
+    booking_enabled: bool
+    online_booking_enabled: bool
+    ai_agent_enabled: bool
+    monthly_revenue: float
+    total_clients: int
+    avg_rating: float
+    created_at: datetime
+    updated_at: datetime
+
+class ServiceCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    duration_minutes: int
+    price: float
+    category: Optional[str] = None
+
+class ServiceResponse(BaseModel):
+    id: str
+    barbershop_id: str
+    name: str
+    description: Optional[str] = None
+    duration_minutes: int
+    price: float
+    category: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+# Google Calendar Integration Models
+class CalendarIntegrationResponse(BaseModel):
+    auth_url: str
+    state: str
+
+class CalendarTokenResponse(BaseModel):
+    success: bool
+    calendar_connected: bool
+    calendar_id: Optional[str] = None
+    message: str
+
+class AvailabilitySlot(BaseModel):
+    start_time: datetime
+    end_time: datetime
+    is_available: bool
+    duration_minutes: int
+
+class AvailabilityResponse(BaseModel):
+    barber_id: str
+    date: str
+    slots: List[AvailabilitySlot]
+    timezone: str
+
 class AgentChatRequest(BaseModel):
     agent_id: str
     message: str
@@ -255,6 +343,25 @@ class AgentChatResponse(BaseModel):
     response: str
     recommendations: List[Recommendation] = []
     confidence: float = 0.95
+
+class AppointmentBookingRequest(BaseModel):
+    """Request model for booking appointments"""
+    barbershop_id: str
+    barber_id: str
+    service_id: str
+    client_name: str
+    client_email: str
+    client_phone: Optional[str] = None
+    scheduled_at: str  # ISO format datetime
+    client_notes: Optional[str] = None
+
+class AppointmentBookingResponse(BaseModel):
+    """Response model for appointment booking"""
+    success: bool
+    appointment_id: Optional[str] = None
+    calendar_event_id: Optional[str] = None
+    calendar_event_link: Optional[str] = None
+    message: str
 
 # Enterprise RAG Knowledge Base (Simulated)
 AGENT_KNOWLEDGE = {
@@ -476,30 +583,26 @@ async def chat_with_agent(request: AgentChatRequest, current_user: User = Depend
         session_id = f"rag_{current_user.id}_{agent_id}_{int(datetime.now().timestamp())}"
         
         # Store chat session in database
-        conn = sqlite3.connect('agent_system.db')
-        cursor = conn.cursor()
-        
-        # Create chat session
-        cursor.execute("""
-            INSERT INTO chat_sessions (session_id, user_id, agent_id)
-            VALUES (?, ?, ?)
-        """, (session_id, current_user.id, agent_id))
-        
-        # Store user message
-        cursor.execute("""
-            INSERT INTO chat_messages (session_id, role, content, agent_name, timestamp)
-            VALUES (?, ?, ?, ?, ?)
-        """, (session_id, "user", message, agent_data["name"], datetime.now()))
-        
-        # Store agent response
-        cursor.execute("""
-            INSERT INTO chat_messages (session_id, role, content, agent_name, recommendations, confidence, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (session_id, "assistant", strategy["response"], agent_data["name"], 
-              json.dumps(strategy["recommendations"]), 0.95, datetime.now()))
-        
-        conn.commit()
-        conn.close()
+        async with db.pool.acquire() as conn:
+            # Create chat session
+            await conn.execute("""
+                INSERT INTO ai_chat_sessions (id, user_id, barbershop_id, agent_type, session_title, is_active)
+                VALUES ($1, $2, $3, $4, $5, TRUE)
+                ON CONFLICT (id) DO NOTHING
+            """, session_id, current_user.id, current_user.barbershop_id, agent_id, f"Chat with {agent_data['name']}")
+            
+            # Store user message
+            await conn.execute("""
+                INSERT INTO ai_chat_messages (session_id, role, content, agent_name)
+                VALUES ($1, $2, $3, $4)
+            """, session_id, "user", message, agent_data["name"])
+            
+            # Store agent response
+            await conn.execute("""
+                INSERT INTO ai_chat_messages (session_id, role, content, agent_name, recommendations, confidence_score)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            """, session_id, "assistant", strategy["response"], agent_data["name"], 
+                 json.dumps(strategy["recommendations"]), 0.95)
         
         response = AgentChatResponse(
             session_id=session_id,
@@ -518,16 +621,7 @@ async def chat_with_agent(request: AgentChatRequest, current_user: User = Depend
 @app.get("/api/v1/health")
 async def health_check():
     """Health check endpoint with database connectivity"""
-    global pg_pool
-    db_healthy = False
-    
-    if pg_pool:
-        try:
-            async with pg_pool.acquire() as conn:
-                await conn.fetchval("SELECT 1")
-            db_healthy = True
-        except Exception:
-            db_healthy = False
+    db_healthy = await db.health_check()
     
     return {
         "status": "healthy" if db_healthy else "degraded",
@@ -537,6 +631,999 @@ async def health_check():
         "rag_engine": "active",
         "timestamp": datetime.now().isoformat()
     }
+
+# ==========================================
+# BARBERSHOP MANAGEMENT ENDPOINTS
+# ==========================================
+
+@app.post("/api/v1/barbershops", response_model=BarbershopResponse)
+async def create_barbershop(
+    barbershop: BarbershopCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new barbershop (Shop owners only)"""
+    if current_user.role not in ['SHOP_OWNER', 'ENTERPRISE_OWNER']:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only shop owners can create barbershops"
+        )
+    
+    try:
+        async with db.pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                INSERT INTO barbershops (
+                    name, description, address, city, state, zip_code, 
+                    phone, email, website, business_hours, owner_id
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                RETURNING *
+            """, barbershop.name, barbershop.description, barbershop.address,
+                barbershop.city, barbershop.state, barbershop.zip_code,
+                barbershop.phone, barbershop.email, barbershop.website,
+                json.dumps(barbershop.business_hours) if barbershop.business_hours else '{}',
+                current_user.id)
+            
+            barbershop_dict = dict(row)
+            barbershop_dict['id'] = str(barbershop_dict['id'])
+            barbershop_dict['business_hours'] = json.loads(barbershop_dict['business_hours'] or '{}')
+            
+            return BarbershopResponse(**barbershop_dict)
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating barbershop: {str(e)}")
+
+@app.get("/api/v1/barbershops", response_model=List[BarbershopResponse])
+async def list_barbershops(current_user: User = Depends(get_current_user)):
+    """List barbershops for current user"""
+    try:
+        async with db.pool.acquire() as conn:
+            # Different queries based on user role
+            if current_user.role == 'ENTERPRISE_OWNER':
+                rows = await conn.fetch("""
+                    SELECT * FROM barbershops 
+                    WHERE owner_id = $1 OR organization_id IN (
+                        SELECT id FROM organizations WHERE owner_id = $1
+                    )
+                    ORDER BY created_at DESC
+                """, current_user.id)
+            elif current_user.role == 'SHOP_OWNER':
+                rows = await conn.fetch("""
+                    SELECT * FROM barbershops WHERE owner_id = $1 ORDER BY created_at DESC
+                """, current_user.id)
+            else:
+                # Barbers and clients see barbershops they're associated with
+                rows = await conn.fetch("""
+                    SELECT b.* FROM barbershops b
+                    JOIN barbershop_staff bs ON b.id = bs.barbershop_id
+                    WHERE bs.user_id = $1 AND bs.is_active = TRUE
+                    ORDER BY b.created_at DESC
+                """, current_user.id)
+            
+            barbershops = []
+            for row in rows:
+                barbershop_dict = dict(row)
+                barbershop_dict['id'] = str(barbershop_dict['id'])
+                barbershop_dict['business_hours'] = json.loads(barbershop_dict['business_hours'] or '{}')
+                barbershops.append(BarbershopResponse(**barbershop_dict))
+            
+            return barbershops
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error listing barbershops: {str(e)}")
+
+@app.get("/api/v1/barbershops/{barbershop_id}", response_model=BarbershopResponse)
+async def get_barbershop(
+    barbershop_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get a specific barbershop"""
+    try:
+        async with db.pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                SELECT * FROM barbershops WHERE id = $1
+            """, barbershop_id)
+            
+            if not row:
+                raise HTTPException(status_code=404, detail="Barbershop not found")
+            
+            # Check access permissions
+            barbershop_dict = dict(row)
+            if (current_user.role not in ['SUPER_ADMIN'] and 
+                str(barbershop_dict['owner_id']) != current_user.id):
+                # Check if user is staff at this barbershop
+                staff_row = await conn.fetchrow("""
+                    SELECT 1 FROM barbershop_staff 
+                    WHERE barbershop_id = $1 AND user_id = $2 AND is_active = TRUE
+                """, barbershop_id, current_user.id)
+                
+                if not staff_row:
+                    raise HTTPException(status_code=403, detail="Access denied")
+            
+            barbershop_dict['id'] = str(barbershop_dict['id'])
+            barbershop_dict['business_hours'] = json.loads(barbershop_dict['business_hours'] or '{}')
+            
+            return BarbershopResponse(**barbershop_dict)
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting barbershop: {str(e)}")
+
+@app.post("/api/v1/barbershops/{barbershop_id}/services", response_model=ServiceResponse)
+async def create_service(
+    barbershop_id: str,
+    service: ServiceCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new service for a barbershop"""
+    try:
+        async with db.pool.acquire() as conn:
+            # Check if user can manage this barbershop
+            barbershop_row = await conn.fetchrow("""
+                SELECT owner_id FROM barbershops WHERE id = $1
+            """, barbershop_id)
+            
+            if not barbershop_row:
+                raise HTTPException(status_code=404, detail="Barbershop not found")
+            
+            if str(barbershop_row['owner_id']) != current_user.id:
+                raise HTTPException(status_code=403, detail="Access denied")
+            
+            # Create service
+            row = await conn.fetchrow("""
+                INSERT INTO services (barbershop_id, name, description, duration_minutes, price, category)
+                VALUES ($1, $2, $3, $4, $5, $6)
+                RETURNING *
+            """, barbershop_id, service.name, service.description, service.duration_minutes, 
+                service.price, service.category)
+            
+            service_dict = dict(row)
+            service_dict['id'] = str(service_dict['id'])
+            service_dict['barbershop_id'] = str(service_dict['barbershop_id'])
+            
+            return ServiceResponse(**service_dict)
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating service: {str(e)}")
+
+@app.get("/api/v1/barbershops/{barbershop_id}/services", response_model=List[ServiceResponse])
+async def list_services(
+    barbershop_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """List services for a barbershop"""
+    try:
+        async with db.pool.acquire() as conn:
+            # Verify barbershop exists and user has access
+            barbershop_row = await conn.fetchrow("""
+                SELECT owner_id FROM barbershops WHERE id = $1
+            """, barbershop_id)
+            
+            if not barbershop_row:
+                raise HTTPException(status_code=404, detail="Barbershop not found")
+            
+            # Get services
+            rows = await conn.fetch("""
+                SELECT * FROM services 
+                WHERE barbershop_id = $1 AND is_active = TRUE
+                ORDER BY category, name
+            """, barbershop_id)
+            
+            services = []
+            for row in rows:
+                service_dict = dict(row)
+                service_dict['id'] = str(service_dict['id'])
+                service_dict['barbershop_id'] = str(service_dict['barbershop_id'])
+                services.append(ServiceResponse(**service_dict))
+            
+            return services
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error listing services: {str(e)}")
+
+# ==========================================
+# PUBLIC BOOKING ENDPOINTS (No Authentication Required)
+# ==========================================
+
+@app.get("/api/v1/public/barbershops", response_model=List[BarbershopResponse])
+async def list_public_barbershops():
+    """List all barbershops with online booking enabled (public access)"""
+    try:
+        async with db.pool.acquire() as conn:
+            barbershops = await conn.fetch("""
+                SELECT id::text, name, description, address, city, state, zip_code, country,
+                       phone, email, website, business_hours, booking_enabled,
+                       online_booking_enabled, ai_agent_enabled, monthly_revenue, total_clients, avg_rating,
+                       created_at, updated_at
+                FROM barbershops 
+                WHERE online_booking_enabled = TRUE AND booking_enabled = TRUE
+                ORDER BY name
+            """)
+            
+            result = []
+            for barbershop in barbershops:
+                barbershop_dict = dict(barbershop)
+                # Parse JSON fields
+                business_hours = barbershop_dict.get('business_hours')
+                if isinstance(business_hours, str):
+                    try:
+                        barbershop_dict['business_hours'] = json.loads(business_hours)
+                    except json.JSONDecodeError:
+                        barbershop_dict['business_hours'] = {}
+                        
+                result.append(BarbershopResponse(**barbershop_dict))
+            
+            return result
+            
+    except Exception as e:
+        logger.error(f"Error listing public barbershops: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list barbershops")
+
+@app.get("/api/v1/public/barbershops/{barbershop_id}", response_model=BarbershopResponse)
+async def get_public_barbershop(barbershop_id: str):
+    """Get barbershop by ID (public access for booking)"""
+    try:
+        async with db.pool.acquire() as conn:
+            barbershop = await conn.fetchrow("""
+                SELECT id, name, description, address, city, state, zip_code, country,
+                       phone, email, website, business_hours, booking_enabled, 
+                       online_booking_enabled, ai_agent_enabled, 0 as monthly_revenue,
+                       total_clients, avg_rating, created_at, updated_at
+                FROM barbershops 
+                WHERE id = $1 AND online_booking_enabled = TRUE
+            """, barbershop_id)
+            
+            if not barbershop:
+                raise HTTPException(status_code=404, detail="Barbershop not found or online booking disabled")
+            
+            # Convert to dict and handle UUID serialization
+            barbershop_dict = dict(barbershop)
+            barbershop_dict['id'] = str(barbershop_dict['id'])
+            barbershop_dict['monthly_revenue'] = 0.0  # Hide revenue in public API
+            
+            # Handle JSON fields that may be stored as strings
+            if isinstance(barbershop_dict.get('business_hours'), str):
+                import json
+                try:
+                    barbershop_dict['business_hours'] = json.loads(barbershop_dict['business_hours'])
+                except:
+                    barbershop_dict['business_hours'] = {}
+            
+            return BarbershopResponse(**barbershop_dict)
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting public barbershop: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get barbershop")
+
+@app.get("/api/v1/public/barbershops/{barbershop_id}/services", response_model=List[ServiceResponse])
+async def get_public_services(barbershop_id: str):
+    """Get services for a barbershop (public access for booking)"""
+    try:
+        async with db.pool.acquire() as conn:
+            # Verify barbershop exists and has online booking enabled
+            barbershop_row = await conn.fetchrow("""
+                SELECT id FROM barbershops 
+                WHERE id = $1 AND online_booking_enabled = TRUE
+            """, barbershop_id)
+            
+            if not barbershop_row:
+                raise HTTPException(status_code=404, detail="Barbershop not found or online booking disabled")
+            
+            # Get active services
+            rows = await conn.fetch("""
+                SELECT id, barbershop_id, name, description, duration_minutes, 
+                       price, is_active, category, created_at, updated_at
+                FROM services 
+                WHERE barbershop_id = $1 AND is_active = TRUE
+                ORDER BY category, name
+            """, barbershop_id)
+            
+            services = []
+            for row in rows:
+                service_dict = dict(row)
+                service_dict['id'] = str(service_dict['id'])
+                service_dict['barbershop_id'] = str(service_dict['barbershop_id'])
+                services.append(ServiceResponse(**service_dict))
+            
+            return services
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting public services: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get services")
+
+class BarberServiceResponse(BaseModel):
+    """Response model for barber-specific services"""
+    id: str
+    service_id: str
+    name: str
+    description: Optional[str] = None
+    duration_minutes: int
+    price: float
+    category: Optional[str] = None
+    skill_level: Optional[str] = None
+    specialty_notes: Optional[str] = None
+
+class PublicBarberResponse(BaseModel):
+    """Response model for public barber info"""
+    id: str
+    name: str
+    specialty: Optional[str] = None
+    experience: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    services: List[BarberServiceResponse] = []
+
+@app.get("/api/v1/public/barbershops/{barbershop_id}/barbers", response_model=List[PublicBarberResponse])
+async def get_public_barbers(barbershop_id: str):
+    """Get barbers for a barbershop (public access for booking)"""
+    try:
+        async with db.pool.acquire() as conn:
+            # Verify barbershop exists and has online booking enabled
+            barbershop_row = await conn.fetchrow("""
+                SELECT id FROM barbershops 
+                WHERE id = $1 AND online_booking_enabled = TRUE
+            """, barbershop_id)
+            
+            if not barbershop_row:
+                raise HTTPException(status_code=404, detail="Barbershop not found or online booking disabled")
+            
+            # Get active barbers with their services (exclude the "No Preference" user)
+            barber_rows = await conn.fetch("""
+                SELECT DISTINCT u.id, u.name, u.avatar_url, bs.role
+                FROM barbershop_staff bs
+                JOIN users u ON bs.user_id = u.id
+                WHERE bs.barbershop_id = $1 AND bs.is_active = TRUE AND bs.role = 'BARBER'
+                  AND u.email != 'no.preference@6fb.local'
+                ORDER BY u.name
+            """, barbershop_id)
+            
+            barbers = []
+            
+            # Add "No Preference" option first - shows barbershop base services
+            base_services = await conn.fetch("""
+                SELECT s.id as service_id, s.name, s.description, s.duration_minutes, 
+                       s.price, s.category
+                FROM services s
+                WHERE s.barbershop_id = $1 AND s.is_active = TRUE
+                ORDER BY s.category, s.name
+            """, barbershop_id)
+            
+            no_preference_services = []
+            for service_row in base_services:
+                service_dict = {
+                    'id': f"base-{str(service_row['service_id'])}", # Unique ID for base services
+                    'service_id': str(service_row['service_id']),
+                    'name': service_row['name'],
+                    'description': service_row['description'],
+                    'duration_minutes': service_row['duration_minutes'],
+                    'price': float(service_row['price']),
+                    'category': service_row['category'],
+                    'skill_level': 'standard',
+                    'specialty_notes': 'Available with any barber'
+                }
+                no_preference_services.append(BarberServiceResponse(**service_dict))
+            
+            # Add "No Preference" option
+            if no_preference_services:
+                barbers.append(PublicBarberResponse(
+                    id="no-preference",
+                    name="No Preference",
+                    specialty="Any Available Barber",
+                    experience="Professional Service",
+                    bio="Let us assign the best available barber for your service",
+                    services=no_preference_services
+                ))
+            
+            # Get barber-specific services for each barber
+            for barber_row in barber_rows:
+                barber_id = str(barber_row['id'])
+                
+                # Get this barber's specific services
+                service_rows = await conn.fetch("""
+                    SELECT bs.id, bs.service_id, s.name, s.description, bs.duration_minutes, 
+                           bs.price, s.category, bs.skill_level, bs.specialty_notes
+                    FROM barber_services bs
+                    JOIN services s ON bs.service_id = s.id
+                    WHERE bs.barber_id = $1 AND bs.barbershop_id = $2 AND bs.is_available = TRUE
+                    ORDER BY s.category, s.name
+                """, barber_row['id'], barbershop_id)
+                
+                barber_services = []
+                for service_row in service_rows:
+                    service_dict = {
+                        'id': str(service_row['id']),
+                        'service_id': str(service_row['service_id']),
+                        'name': service_row['name'],
+                        'description': service_row['description'],
+                        'duration_minutes': service_row['duration_minutes'],
+                        'price': float(service_row['price']),
+                        'category': service_row['category'],
+                        'skill_level': service_row['skill_level'],
+                        'specialty_notes': service_row['specialty_notes']
+                    }
+                    barber_services.append(BarberServiceResponse(**service_dict))
+                
+                # Only add barber if they have services
+                if barber_services:
+                    barber_dict = {
+                        'id': barber_id,
+                        'name': barber_row['name'],
+                        'specialty': f"{barber_services[0].skill_level.title()} Level" if barber_services and barber_services[0].skill_level else "Professional Barber",
+                        'experience': f"{len(barber_services)} services available",
+                        'bio': f"Specialized in {', '.join(set(s.category for s in barber_services if s.category))}",
+                        'avatar_url': barber_row['avatar_url'],
+                        'services': barber_services
+                    }
+                    barbers.append(PublicBarberResponse(**barber_dict))
+            
+            # If no barbers found at all, create a demo barber with services
+            if not barbers:
+                demo_services = []
+                if no_preference_services:
+                    # Use base services as demo barber services
+                    for base_service in no_preference_services:
+                        demo_service = BarberServiceResponse(
+                            id=f"demo-{base_service.service_id}",
+                            service_id=base_service.service_id,
+                            name=base_service.name,
+                            description=base_service.description,
+                            duration_minutes=base_service.duration_minutes,
+                            price=base_service.price,
+                            category=base_service.category,
+                            skill_level="experienced",
+                            specialty_notes="Professional service"
+                        )
+                        demo_services.append(demo_service)
+                
+                barbers.append(PublicBarberResponse(
+                    id="demo-barber",
+                    name="Professional Barber",
+                    specialty="All Services",
+                    experience="Experienced Professional",
+                    services=demo_services
+                ))
+            
+            return barbers
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting public barbers: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get barbers")
+
+class GuestBookingRequest(BaseModel):
+    """Request model for guest booking"""
+    barbershop_id: str
+    barber_id: str
+    service_id: str
+    barber_service_id: Optional[str] = None  # Specific barber service ID for pricing/duration
+    client_name: str
+    client_email: str
+    client_phone: Optional[str] = None
+    scheduled_at: str  # ISO format datetime
+    client_notes: Optional[str] = None
+
+@app.post("/api/v1/public/appointments/book", response_model=AppointmentBookingResponse)
+async def book_guest_appointment(booking: GuestBookingRequest):
+    """Book an appointment as a guest (no authentication required)"""
+    try:
+        calendar_service = get_google_calendar_service()
+        
+        async with db.pool.acquire() as conn:
+            # Verify barbershop has online booking enabled
+            barbershop = await conn.fetchrow("""
+                SELECT id, name, address, city, state, online_booking_enabled
+                FROM barbershops 
+                WHERE id = $1 AND online_booking_enabled = TRUE
+            """, booking.barbershop_id)
+            
+            if not barbershop:
+                return AppointmentBookingResponse(
+                    success=False,
+                    message="Barbershop not found or online booking disabled"
+                )
+            
+            # Get service details - prioritize barber-specific service if available
+            if booking.barber_service_id and booking.barber_id not in ["no-preference", "demo-barber"]:
+                # Get barber-specific service details
+                service = await conn.fetchrow("""
+                    SELECT s.name, bs.price, bs.duration_minutes, s.barbershop_id, bs.skill_level
+                    FROM barber_services bs
+                    JOIN services s ON bs.service_id = s.id
+                    WHERE bs.id = $1 AND bs.barbershop_id = $2 AND bs.is_available = TRUE
+                """, booking.barber_service_id, booking.barbershop_id)
+            else:
+                # Get base service details
+                service = await conn.fetchrow("""
+                    SELECT name, base_price as price, base_duration_minutes as duration_minutes, barbershop_id
+                    FROM services 
+                    WHERE id = $1 AND barbershop_id = $2 AND is_active = TRUE
+                """, booking.service_id, booking.barbershop_id)
+            
+            if not service:
+                return AppointmentBookingResponse(
+                    success=False,
+                    message="Service not found or inactive"
+                )
+            
+            # Parse scheduled time
+            scheduled_at = datetime.fromisoformat(booking.scheduled_at.replace('Z', '+00:00'))
+            end_time = scheduled_at + timedelta(minutes=service['duration_minutes'])
+            
+            # Create or find guest user
+            guest_user = await conn.fetchrow("""
+                SELECT id FROM users WHERE email = $1
+            """, booking.client_email)
+            
+            guest_user_id = None
+            if guest_user:
+                guest_user_id = guest_user['id']
+            else:
+                # Create guest user
+                guest_user_row = await conn.fetchrow("""
+                    INSERT INTO users (email, name, role, is_active, hashed_password)
+                    VALUES ($1, $2, 'CLIENT', TRUE, '')
+                    RETURNING id
+                """, booking.client_email, booking.client_name)
+                guest_user_id = guest_user_row['id']
+            
+            # Create appointment in database
+            appointment = await conn.fetchrow("""
+                INSERT INTO appointments (
+                    barbershop_id, client_id, barber_id, service_id,
+                    scheduled_at, duration_minutes, status,
+                    service_price, total_amount,
+                    client_name, client_phone, client_email, client_notes
+                ) VALUES ($1, $2, $3, $4, $5, $6, 'PENDING', $7, $7, $8, $9, $10, $11)
+                RETURNING id
+            """, 
+                booking.barbershop_id, guest_user_id, booking.barber_id, booking.service_id,
+                scheduled_at, service['duration_minutes'], 
+                service['price'], booking.client_name, booking.client_phone, 
+                booking.client_email, booking.client_notes
+            )
+            
+            appointment_id = str(appointment['id'])
+            
+            # Try to sync with barber's calendar (if connected)
+            calendar_event_id = None
+            calendar_event_link = None
+            
+            if booking.barber_id != "demo-barber":  # Skip for demo barber
+                calendar_integration = await conn.fetchrow("""
+                    SELECT access_token, refresh_token, calendar_id, expires_at 
+                    FROM user_calendar_integrations 
+                    WHERE user_id = $1 AND provider = 'google' AND is_active = TRUE
+                """, booking.barber_id)
+                
+                if calendar_integration:
+                    event_data = {
+                        "title": f"{service['name']} - {booking.client_name}",
+                        "description": f"Client: {booking.client_name}\nPhone: {booking.client_phone or 'Not provided'}\nEmail: {booking.client_email}\nService: {service['name']}\nNotes: {booking.client_notes or 'None'}",
+                        "start_time": scheduled_at.isoformat(),
+                        "end_time": end_time.isoformat(),
+                        "location": f"{barbershop['name']}, {barbershop['address']}, {barbershop['city']}, {barbershop['state']}" if barbershop else None,
+                        "attendees": [{"email": booking.client_email}] if booking.client_email else []
+                    }
+                    
+                    calendar_result = await calendar_service.create_calendar_event(
+                        access_token=calendar_integration['access_token'],
+                        calendar_id=calendar_integration['calendar_id'],
+                        event_data=event_data
+                    )
+                    
+                    if calendar_result['success']:
+                        calendar_event_id = calendar_result['event_id']
+                        calendar_event_link = calendar_result.get('event_link')
+                        
+                        # Update appointment with calendar event ID
+                        await conn.execute("""
+                            UPDATE appointments 
+                            SET google_calendar_event_id = $1
+                            WHERE id = $2
+                        """, calendar_event_id, appointment_id)
+            
+            return AppointmentBookingResponse(
+                success=True,
+                appointment_id=appointment_id,
+                calendar_event_id=calendar_event_id,
+                calendar_event_link=calendar_event_link,
+                message="Appointment booked successfully! You'll receive a confirmation email shortly."
+            )
+            
+    except Exception as e:
+        logger.error(f"Error booking guest appointment: {e}")
+        return AppointmentBookingResponse(
+            success=False,
+            message="Failed to book appointment. Please try again."
+        )
+
+# ==========================================
+# GOOGLE CALENDAR INTEGRATION ENDPOINTS
+# ==========================================
+
+@app.get("/api/v1/calendar/oauth/authorize", response_model=CalendarIntegrationResponse)
+async def authorize_google_calendar(current_user: User = Depends(get_current_user)):
+    """Start Google Calendar OAuth flow"""
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=500, 
+            detail="Google Calendar integration not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET."
+        )
+    
+    # Create state parameter with user ID for security
+    state = base64.urlsafe_b64encode(f"{current_user.id}:{int(datetime.now().timestamp())}".encode()).decode()
+    
+    # Build Google OAuth URL
+    auth_params = {
+        'client_id': GOOGLE_CLIENT_ID,
+        'redirect_uri': GOOGLE_REDIRECT_URI,
+        'scope': ' '.join(GOOGLE_SCOPES),
+        'response_type': 'code',
+        'access_type': 'offline',
+        'prompt': 'consent',
+        'state': state
+    }
+    
+    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(auth_params)}"
+    
+    return CalendarIntegrationResponse(auth_url=auth_url, state=state)
+
+@app.get("/api/v1/calendar/oauth/callback")
+async def google_calendar_callback(code: str = None, state: str = None, error: str = None):
+    """Handle Google Calendar OAuth callback"""
+    if error:
+        raise HTTPException(status_code=400, detail=f"OAuth error: {error}")
+    
+    if not code or not state:
+        raise HTTPException(status_code=400, detail="Missing authorization code or state")
+    
+    try:
+        # Decode and validate state
+        decoded_state = base64.urlsafe_b64decode(state.encode()).decode()
+        user_id, timestamp = decoded_state.split(':')
+        
+        # Check if state is not too old (10 minutes max)
+        if int(datetime.now().timestamp()) - int(timestamp) > 600:
+            raise HTTPException(status_code=400, detail="Authorization expired. Please try again.")
+        
+        # Exchange code for tokens
+        token_data = {
+            'client_id': GOOGLE_CLIENT_ID,
+            'client_secret': GOOGLE_CLIENT_SECRET,
+            'code': code,
+            'grant_type': 'authorization_code',
+            'redirect_uri': GOOGLE_REDIRECT_URI
+        }
+        
+        async with httpx.AsyncClient() as client:
+            token_response = await client.post(
+                'https://oauth2.googleapis.com/token',
+                data=token_data
+            )
+        
+        if token_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to exchange authorization code")
+        
+        tokens = token_response.json()
+        
+        # Get user's primary calendar info
+        async with httpx.AsyncClient() as client:
+            calendar_response = await client.get(
+                'https://www.googleapis.com/calendar/v3/users/me/calendarList/primary',
+                headers={'Authorization': f"Bearer {tokens['access_token']}"}
+            )
+        
+        calendar_info = calendar_response.json() if calendar_response.status_code == 200 else {}
+        
+        # Store tokens in database
+        async with db.pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO user_calendar_integrations (
+                    user_id, provider, access_token, refresh_token, 
+                    expires_at, calendar_id, calendar_name, is_active
+                )
+                VALUES ($1, 'google', $2, $3, $4, $5, $6, TRUE)
+                ON CONFLICT (user_id, provider) DO UPDATE SET
+                    access_token = EXCLUDED.access_token,
+                    refresh_token = EXCLUDED.refresh_token,
+                    expires_at = EXCLUDED.expires_at,
+                    calendar_id = EXCLUDED.calendar_id,
+                    calendar_name = EXCLUDED.calendar_name,
+                    is_active = TRUE,
+                    updated_at = NOW()
+            """, user_id, tokens['access_token'], tokens.get('refresh_token'),
+                datetime.now() + timedelta(seconds=tokens.get('expires_in', 3600)),
+                calendar_info.get('id'), calendar_info.get('summary'))
+        
+        # Redirect to frontend success page
+        return {
+            "message": "Google Calendar connected successfully! You can close this window.",
+            "success": True
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing OAuth callback: {str(e)}")
+
+@app.get("/api/v1/calendar/status", response_model=CalendarTokenResponse)
+async def get_calendar_status(current_user: User = Depends(get_current_user)):
+    """Check if user has connected Google Calendar"""
+    try:
+        async with db.pool.acquire() as conn:
+            row = await conn.fetchrow("""
+                SELECT calendar_id, calendar_name, expires_at, is_active
+                FROM user_calendar_integrations 
+                WHERE user_id = $1 AND provider = 'google' AND is_active = TRUE
+            """, current_user.id)
+            
+            if row and row['expires_at'] > datetime.now():
+                return CalendarTokenResponse(
+                    success=True,
+                    calendar_connected=True,
+                    calendar_id=row['calendar_id'],
+                    message=f"Connected to calendar: {row['calendar_name']}"
+                )
+            else:
+                return CalendarTokenResponse(
+                    success=True,
+                    calendar_connected=False,
+                    message="Google Calendar not connected or token expired"
+                )
+                
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error checking calendar status: {str(e)}")
+
+@app.delete("/api/v1/calendar/disconnect")
+async def disconnect_google_calendar(current_user: User = Depends(get_current_user)):
+    """Disconnect Google Calendar integration"""
+    try:
+        async with db.pool.acquire() as conn:
+            await conn.execute("""
+                UPDATE user_calendar_integrations 
+                SET is_active = FALSE, updated_at = NOW()
+                WHERE user_id = $1 AND provider = 'google'
+            """, current_user.id)
+            
+        return {"message": "Google Calendar disconnected successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error disconnecting calendar: {str(e)}")
+
+# Real-time Availability Endpoints
+
+class AvailabilityRequest(BaseModel):
+    """Request model for availability checking"""
+    start_date: str  # ISO format date
+    end_date: str    # ISO format date
+    service_duration_minutes: int = 30
+    business_hours_start: int = 9   # 9 AM
+    business_hours_end: int = 18    # 6 PM
+
+class AvailabilitySlotResponse(BaseModel):
+    """Response model for availability slots"""
+    start_time: str
+    end_time: str
+    duration_minutes: int
+    available: bool = True
+
+class AvailabilityResponse(BaseModel):
+    """Response model for availability check"""
+    success: bool
+    barber_id: str
+    barbershop_id: Optional[str] = None
+    availability_slots: List[AvailabilitySlotResponse]
+    calendar_connected: bool
+    message: Optional[str] = None
+
+@app.get("/api/v1/barbers/{barber_id}/availability", response_model=AvailabilityResponse)
+async def get_barber_availability(
+    barber_id: str,
+    start_date: str,
+    end_date: str,
+    service_duration_minutes: int = 30,
+    business_hours_start: int = 9,
+    business_hours_end: int = 18,
+    current_user: User = Depends(get_current_user)
+):
+    """Get real-time availability for a specific barber using Google Calendar integration"""
+    try:
+        calendar_service = get_google_calendar_service()
+        
+        # Get barber's calendar integration
+        async with db.pool.acquire() as conn:
+            calendar_integration = await conn.fetchrow("""
+                SELECT access_token, refresh_token, calendar_id, expires_at 
+                FROM user_calendar_integrations 
+                WHERE user_id = $1 AND provider = 'google' AND is_active = TRUE
+            """, barber_id)
+            
+            if not calendar_integration:
+                return AvailabilityResponse(
+                    success=False,
+                    barber_id=barber_id,
+                    availability_slots=[],
+                    calendar_connected=False,
+                    message="Barber hasn't connected their Google Calendar"
+                )
+            
+            # Check if token needs refresh
+            access_token = calendar_integration['access_token']
+            refresh_token = calendar_integration['refresh_token']
+            expires_at = calendar_integration['expires_at']
+            
+            if expires_at and datetime.now(timezone.utc) >= expires_at:
+                # Refresh token
+                refresh_result = await calendar_service.refresh_access_token(
+                    refresh_token, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+                )
+                
+                if refresh_result['success']:
+                    access_token = refresh_result['access_token']
+                    new_expires_at = datetime.now(timezone.utc) + timedelta(seconds=refresh_result['expires_in'])
+                    
+                    # Update token in database
+                    await conn.execute("""
+                        UPDATE user_calendar_integrations 
+                        SET access_token = $1, expires_at = $2
+                        WHERE user_id = $3 AND provider = 'google'
+                    """, access_token, new_expires_at, barber_id)
+                else:
+                    return AvailabilityResponse(
+                        success=False,
+                        barber_id=barber_id,
+                        availability_slots=[],
+                        calendar_connected=False,
+                        message="Calendar token expired. Please reconnect Google Calendar."
+                    )
+            
+            # Parse request dates
+            start_date_parsed = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            end_date_parsed = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            
+            # Get available slots from Google Calendar
+            available_slots = await calendar_service.get_available_slots(
+                access_token=access_token,
+                calendar_id=calendar_integration['calendar_id'],
+                start_date=start_date_parsed,
+                end_date=end_date_parsed,
+                slot_duration_minutes=service_duration_minutes,
+                business_hours_start=business_hours_start,
+                business_hours_end=business_hours_end
+            )
+            
+            # Convert to response format
+            slot_responses = [
+                AvailabilitySlotResponse(
+                    start_time=slot.start.isoformat(),
+                    end_time=slot.end.isoformat(),
+                    duration_minutes=slot.duration_minutes
+                )
+                for slot in available_slots
+            ]
+            
+            return AvailabilityResponse(
+                success=True,
+                barber_id=barber_id,
+                availability_slots=slot_responses,
+                calendar_connected=True,
+                message=f"Found {len(slot_responses)} available slots"
+            )
+            
+    except Exception as e:
+        logger.error(f"Error getting barber availability: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get availability")
+
+# Appointment Booking with Calendar Sync
+
+@app.post("/api/v1/appointments/book", response_model=AppointmentBookingResponse)
+async def book_appointment(
+    booking: AppointmentBookingRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Book an appointment and sync with barber's Google Calendar"""
+    try:
+        calendar_service = get_google_calendar_service()
+        
+        async with db.pool.acquire() as conn:
+            # Get service details
+            service = await conn.fetchrow("""
+                SELECT name, price, duration_minutes, barbershop_id
+                FROM services 
+                WHERE id = $1 AND is_active = TRUE
+            """, booking.service_id)
+            
+            if not service:
+                return AppointmentBookingResponse(
+                    success=False,
+                    message="Service not found or inactive"
+                )
+            
+            # Get barbershop details
+            barbershop = await conn.fetchrow("""
+                SELECT name, address, city, state, phone
+                FROM barbershops 
+                WHERE id = $1
+            """, booking.barbershop_id)
+            
+            # Parse scheduled time
+            scheduled_at = datetime.fromisoformat(booking.scheduled_at.replace('Z', '+00:00'))
+            end_time = scheduled_at + timedelta(minutes=service['duration_minutes'])
+            
+            # Create appointment in database
+            appointment = await conn.fetchrow("""
+                INSERT INTO appointments (
+                    barbershop_id, client_id, barber_id, service_id,
+                    scheduled_at, duration_minutes, status,
+                    service_price, total_amount,
+                    client_name, client_phone, client_email, client_notes
+                ) VALUES ($1, $2, $3, $4, $5, $6, 'PENDING', $7, $7, $8, $9, $10, $11)
+                RETURNING id
+            """, 
+                booking.barbershop_id, current_user.id, booking.barber_id, booking.service_id,
+                scheduled_at, service['duration_minutes'], 
+                service['price'], booking.client_name, booking.client_phone, 
+                booking.client_email, booking.client_notes
+            )
+            
+            appointment_id = str(appointment['id'])
+            
+            # Get barber's calendar integration
+            calendar_integration = await conn.fetchrow("""
+                SELECT access_token, refresh_token, calendar_id, expires_at 
+                FROM user_calendar_integrations 
+                WHERE user_id = $1 AND provider = 'google' AND is_active = TRUE
+            """, booking.barber_id)
+            
+            calendar_event_id = None
+            calendar_event_link = None
+            
+            if calendar_integration:
+                # Create calendar event
+                event_data = {
+                    "title": f"{service['name']} - {booking.client_name}",
+                    "description": f"Client: {booking.client_name}\nPhone: {booking.client_phone or 'Not provided'}\nEmail: {booking.client_email}\nService: {service['name']}\nNotes: {booking.client_notes or 'None'}",
+                    "start_time": scheduled_at.isoformat(),
+                    "end_time": end_time.isoformat(),
+                    "location": f"{barbershop['name']}, {barbershop['address']}, {barbershop['city']}, {barbershop['state']}" if barbershop else None,
+                    "attendees": [{"email": booking.client_email}] if booking.client_email else []
+                }
+                
+                calendar_result = await calendar_service.create_calendar_event(
+                    access_token=calendar_integration['access_token'],
+                    calendar_id=calendar_integration['calendar_id'],
+                    event_data=event_data
+                )
+                
+                if calendar_result['success']:
+                    calendar_event_id = calendar_result['event_id']
+                    calendar_event_link = calendar_result.get('event_link')
+                    
+                    # Update appointment with calendar event ID
+                    await conn.execute("""
+                        UPDATE appointments 
+                        SET google_calendar_event_id = $1
+                        WHERE id = $2
+                    """, calendar_event_id, appointment_id)
+            
+            return AppointmentBookingResponse(
+                success=True,
+                appointment_id=appointment_id,
+                calendar_event_id=calendar_event_id,
+                calendar_event_link=calendar_event_link,
+                message="Appointment booked successfully" + (" and added to barber's calendar" if calendar_event_id else "")
+            )
+            
+    except Exception as e:
+        logger.error(f"Error booking appointment: {e}")
+        raise HTTPException(status_code=500, detail="Failed to book appointment")
 
 @app.get("/api/v1/agents")
 async def list_agents():

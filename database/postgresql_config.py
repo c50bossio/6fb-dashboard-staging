@@ -39,7 +39,8 @@ class PostgreSQLDatabase:
         """Get user by email"""
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
-                "SELECT * FROM users WHERE email = $1", email
+                "SELECT id, email, name, hashed_password, role, is_active, created_at, updated_at FROM users WHERE email = $1", 
+                email
             )
             return dict(row) if row else None
     

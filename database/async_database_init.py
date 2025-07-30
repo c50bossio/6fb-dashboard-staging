@@ -6,7 +6,7 @@ Provides database setup, migration support, and health checks.
 
 import asyncio
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 import aiosqlite
 from datetime import datetime
