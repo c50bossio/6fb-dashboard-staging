@@ -94,6 +94,7 @@ class WebsiteGenerationAgent:
                     "Marketing automation integration",
                     "Multi-location support",
                     "E-commerce for products",
+                    "Embeddable booking widget",
                     "Priority support"
                 ],
                 competitor_equivalent=3000.00,
@@ -193,6 +194,11 @@ class WebsiteGenerationAgent:
             'reviews_section': {
                 'title': 'What Our Customers Say',
                 'reviews': await self._generate_sample_reviews(shop_name)
+            },
+            'booking_integration': {
+                'widget_embed': f'<iframe src="{self._get_booking_widget_url(shop_data.get("shop_id"))}" width="100%" height="600" frameborder="0"></iframe>',
+                'direct_link': f'{self._get_booking_page_url(shop_data.get("shop_id"))}',
+                'button_text': 'Book Online Now'
             }
         }
         
@@ -1108,6 +1114,32 @@ async def example_website_generation():
     )
     
     print(json.dumps(result, indent=2))
+    
+    def _get_booking_widget_url(self, shop_id: str) -> str:
+        """Generate booking widget URL for embedding"""
+        base_url = "http://localhost:9999"  # In production, this would be your domain
+        return f"{base_url}/widget/{shop_id}"
+    
+    def _get_booking_page_url(self, shop_id: str) -> str:
+        """Generate direct booking page URL"""
+        base_url = "http://localhost:9999"  # In production, this would be your domain
+        return f"{base_url}/booking/{shop_id}"
+        
+    def generate_booking_embed_code(self, shop_id: str, width: str = "100%", height: str = "600") -> str:
+        """Generate embeddable booking widget code for external websites"""
+        widget_url = self._get_booking_widget_url(shop_id)
+        return f'''<!-- 6FB AI Agent System Booking Widget -->
+<iframe 
+    src="{widget_url}" 
+    width="{width}" 
+    height="{height}" 
+    frameborder="0"
+    style="border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);"
+    title="Book Appointment">
+</iframe>
+<p style="text-align: center; font-size: 12px; color: #666; margin-top: 8px;">
+    Powered by <a href="http://localhost:9999" target="_blank" style="color: #2563eb;">6FB AI Agent System</a>
+</p>'''
 
 if __name__ == "__main__":
     # Get pricing info

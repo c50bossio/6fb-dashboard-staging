@@ -2,8 +2,17 @@
 
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { useAuth } from '@/components/AuthProvider'
+import { useSearchParams } from 'next/navigation'
 
 export default function DashboardPage() {
+  const searchParams = useSearchParams()
+  const isDevBypass = searchParams.get('dev') === 'true' && process.env.NODE_ENV === 'development'
+
+  // If dev bypass is enabled, skip authentication
+  if (isDevBypass) {
+    return <DashboardContent devMode={true} />
+  }
+
   return (
     <ProtectedRoute>
       <DashboardContent />
@@ -11,12 +20,25 @@ export default function DashboardPage() {
   )
 }
 
-function DashboardContent() {
+function DashboardContent({ devMode = false }) {
   const { user, logout } = useAuth()
 
   const handleLogout = async () => {
-    await logout()
+    if (devMode) {
+      // In dev mode, just redirect to home
+      window.location.href = '/'
+    } else {
+      await logout()
+    }
   }
+
+  // Mock user data for dev mode
+  const displayUser = devMode ? {
+    full_name: 'Dev User',
+    email: 'dev@6fb.local',
+    barbershop_name: 'Development Shop',
+    barbershop_id: 'dev-shop-001'
+  } : user
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -25,17 +47,18 @@ function DashboardContent() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {user?.full_name || 'User'}!
+              Welcome back, {displayUser?.full_name || 'User'}!
+              {devMode && <span className="ml-2 text-sm bg-yellow-200 text-yellow-800 px-2 py-1 rounded">DEV MODE</span>}
             </h1>
             <p className="mt-2 text-gray-600">
-              {user?.barbershop_name ? `Managing ${user.barbershop_name}` : 'Your AI Agent Dashboard'}
+              {displayUser?.barbershop_name ? `Managing ${displayUser.barbershop_name}` : 'Your AI Agent Dashboard'}
             </p>
           </div>
           <button
             onClick={handleLogout}
             className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
-            Sign Out
+            {devMode ? 'Exit Dev Mode' : 'Sign Out'}
           </button>
         </div>
       </div>
@@ -46,21 +69,21 @@ function DashboardContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Email</label>
-            <p className="mt-1 text-sm text-gray-900">{user?.email}</p>
+            <p className="mt-1 text-sm text-gray-900">{displayUser?.email}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Full Name</label>
-            <p className="mt-1 text-sm text-gray-900">{user?.full_name}</p>
+            <p className="mt-1 text-sm text-gray-900">{displayUser?.full_name}</p>
           </div>
-          {user?.barbershop_name && (
+          {displayUser?.barbershop_name && (
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Barbershop</label>
-                <p className="mt-1 text-sm text-gray-900">{user.barbershop_name}</p>
+                <p className="mt-1 text-sm text-gray-900">{displayUser.barbershop_name}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Barbershop ID</label>
-                <p className="mt-1 text-sm text-gray-900 font-mono">{user.barbershop_id}</p>
+                <p className="mt-1 text-sm text-gray-900 font-mono">{displayUser.barbershop_id}</p>
               </div>
             </>
           )}

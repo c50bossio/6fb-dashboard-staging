@@ -6,17 +6,15 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --production
+# Install dependencies (skip husky in production)
+ENV HUSKY=0
+RUN npm install --ignore-scripts
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
-
 # Expose port 9999
 EXPOSE 9999
 
-# Start the application
-CMD ["npm", "start", "--", "-p", "9999"]
+# Start in development mode (skip build)
+CMD ["npm", "run", "dev", "--", "-p", "9999"]

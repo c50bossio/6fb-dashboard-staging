@@ -33,6 +33,11 @@ export default function AuthPage() {
     router.push(redirectUrl)
   }
 
+  const handleDevBypass = () => {
+    // Development bypass - skip authentication and go directly to dashboard
+    router.push('/dashboard?dev=true')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -83,6 +88,21 @@ export default function AuthPage() {
               onSuccess={handleRegisterSuccess}
               onSwitchToLogin={() => setMode('login')}
             />
+          )}
+
+          {/* Development Bypass Button */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-6 text-center">
+              <button
+                onClick={handleDevBypass}
+                className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+              >
+                🚀 DEV BYPASS - Access Dashboard
+              </button>
+              <p className="text-xs text-yellow-600 mt-1">
+                Development only - bypasses authentication
+              </p>
+            </div>
           )}
 
           {/* Footer */}
