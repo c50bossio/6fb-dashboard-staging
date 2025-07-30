@@ -26,10 +26,16 @@ import base64
 from urllib.parse import urlencode, parse_qs
 from services.google_calendar_service import get_google_calendar_service
 
-app = FastAPI(title="6FB AI Agent System", description="Enterprise RAG-powered AI agents")
+# Import agent coordination system
+from services.orchestration.agent_coordination_api import router as agent_coordination_router
+
+app = FastAPI(title="6FB AI Agent System", description="Enhanced AI Agent System with 39-Agent Coordination")
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+# Include agent coordination router
+app.include_router(agent_coordination_router)
 
 # Authentication Configuration
 SECRET_KEY = "your-secret-key-change-in-production"
@@ -243,6 +249,211 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
 async def logout_user(current_user: User = Depends(get_current_user)):
     """Logout user (client should delete token)"""
     return {"message": "Successfully logged out"}
+
+# ==========================================
+# CUSTOMER AUTHENTICATION ENDPOINTS
+# ==========================================
+
+@app.post("/api/v1/auth/customer/register")
+async def register_customer(user: UserRegister):
+    """Register a new customer account"""
+    try:
+        # Check if user already exists
+        existing_user = await get_user_by_email(user.email)
+        if existing_user:
+            return {"success": False, "error": "Email already registered"}
+        
+        # Force role to CLIENT for customer registration
+        user.role = 'CLIENT'
+        
+        # Create new customer user
+        new_user = await create_user(user)
+        
+        # Create access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": new_user["email"]}, expires_delta=access_token_expires
+        )
+        
+        return {
+            "success": True,
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": str(new_user["id"]),
+                "name": new_user["name"],
+                "email": new_user["email"],
+                "phone": new_user.get("phone"),
+                "role": new_user["role"]
+            },
+            "message": "Account created successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating customer account: {str(e)}")
+        return {"success": False, "error": "Failed to create account. Please try again."}
+
+@app.post("/api/v1/auth/customer/login")
+async def login_customer(user: UserLogin):
+    """Login customer and return JWT token"""
+    try:
+        # Get user from database
+        db_user = await get_user_by_email(user.email)
+        if not db_user or not verify_password(user.password, db_user["hashed_password"]):
+            return {"success": False, "error": "Incorrect email or password"}
+        
+        # Verify user is a customer (CLIENT role)
+        if db_user.get("role") != "CLIENT":
+            return {"success": False, "error": "This account is not a customer account"}
+        
+        # Create access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": db_user["email"]}, expires_delta=access_token_expires
+        )
+        
+        return {
+            "success": True,
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": str(db_user["id"]),
+                "name": db_user["name"],
+                "email": db_user["email"],
+                "phone": db_user.get("phone"),
+                "role": db_user["role"]
+            },
+            "message": "Login successful"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error during customer login: {str(e)}")
+        return {"success": False, "error": "Login failed. Please try again."}
+
+@app.get("/api/v1/auth/google/customer")
+async def google_auth_customer(barbershop_id: str = None, return_url: str = None):
+    """Start Google OAuth flow for customer authentication"""
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=500, 
+            detail="Google authentication not configured"
+        )
+    
+    # Create state parameter with customer context
+    state_data = {
+        "type": "customer",
+        "barbershop_id": barbershop_id,
+        "return_url": return_url,
+        "timestamp": int(datetime.now().timestamp())
+    }
+    state = base64.urlsafe_b64encode(json.dumps(state_data).encode()).decode()
+    
+    # Build Google OAuth URL
+    auth_params = {
+        'client_id': GOOGLE_CLIENT_ID,
+        'redirect_uri': GOOGLE_REDIRECT_URI.replace('/callback', '/customer/callback'),
+        'scope': 'openid email profile',
+        'response_type': 'code',
+        'access_type': 'offline',
+        'prompt': 'consent',
+        'state': state
+    }
+    
+    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(auth_params)}"
+    
+    # Redirect to Google OAuth
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(auth_url)
+
+@app.get("/api/v1/auth/google/customer/callback")
+async def google_auth_customer_callback(code: str = None, state: str = None, error: str = None):
+    """Handle Google OAuth callback for customer authentication"""
+    if error:
+        raise HTTPException(status_code=400, detail=f"OAuth error: {error}")
+    
+    if not code or not state:
+        raise HTTPException(status_code=400, detail="Missing authorization code or state")
+    
+    try:
+        # Decode and validate state
+        state_data = json.loads(base64.urlsafe_b64decode(state.encode()).decode())
+        
+        # Check if state is not too old (10 minutes max)
+        if int(datetime.now().timestamp()) - state_data["timestamp"] > 600:
+            raise HTTPException(status_code=400, detail="Authorization expired. Please try again.")
+        
+        # Exchange code for tokens
+        token_data = {
+            'client_id': GOOGLE_CLIENT_ID,
+            'client_secret': GOOGLE_CLIENT_SECRET,
+            'code': code,
+            'grant_type': 'authorization_code',
+            'redirect_uri': GOOGLE_REDIRECT_URI.replace('/callback', '/customer/callback')
+        }
+        
+        async with httpx.AsyncClient() as client:
+            token_response = await client.post(
+                'https://oauth2.googleapis.com/token',
+                data=token_data
+            )
+        
+        if token_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to exchange authorization code")
+        
+        tokens = token_response.json()
+        
+        # Get user info from Google
+        async with httpx.AsyncClient() as client:
+            user_response = await client.get(
+                'https://www.googleapis.com/oauth2/v2/userinfo',
+                headers={'Authorization': f"Bearer {tokens['access_token']}"}
+            )
+        
+        if user_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to get user information")
+        
+        google_user = user_response.json()
+        
+        # Check if user exists
+        existing_user = await get_user_by_email(google_user['email'])
+        
+        if not existing_user:
+            # Create new customer account
+            user_data = UserRegister(
+                name=google_user['name'],
+                email=google_user['email'],
+                password="google_oauth",  # Placeholder password
+                role='CLIENT'
+            )
+            user_data.google_id = google_user['id']
+            new_user = await create_user(user_data)
+            user_id = new_user["id"]
+        else:
+            # Update existing user with Google ID if not set
+            user_id = existing_user["id"]
+            if not existing_user.get("google_id"):
+                async with db.pool.acquire() as conn:
+                    await conn.execute(
+                        "UPDATE users SET google_id = $1 WHERE id = $2",
+                        google_user['id'], user_id
+                    )
+        
+        # Create access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": google_user['email']}, expires_delta=access_token_expires
+        )
+        
+        # Redirect to the return URL with token
+        return_url = state_data.get("return_url", "/book/" + state_data.get("barbershop_id", ""))
+        redirect_url = f"{return_url}?token={access_token}&auth=success"
+        
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(redirect_url)
+        
+    except Exception as e:
+        logger.error(f"Google OAuth callback error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Authentication failed")
 
 
 # Barbershop Management Models
@@ -1314,6 +1525,38 @@ async def book_guest_appointment(booking: GuestBookingRequest):
                             WHERE id = $2
                         """, calendar_event_id, appointment_id)
             
+            # Track booking for intelligence analysis
+            try:
+                # Get barber and barbershop details for intelligence tracking
+                barber_details = await conn.fetchrow("""
+                    SELECT name FROM users WHERE id = $1
+                """, booking.barber_id)
+                
+                intelligence_data = {
+                    'customer_id': str(guest_user_id),
+                    'customer_name': booking.client_name,
+                    'customer_email': booking.client_email,
+                    'barbershop_id': booking.barbershop_id,
+                    'barbershop_name': barbershop['name'],
+                    'barber_id': booking.barber_id,
+                    'barber_name': barber_details['name'] if barber_details else 'Unknown',
+                    'service_id': booking.service_id,
+                    'service_name': service['name'],
+                    'service_category': 'haircut',  # Default category
+                    'scheduled_at': scheduled_at.isoformat(),
+                    'duration_minutes': service['duration_minutes'],
+                    'price': float(service['price']),
+                    'status': 'confirmed',
+                    'customer_notes': booking.client_notes
+                }
+                
+                # Track in background (don't fail booking if this fails)
+                booking_intelligence.track_booking(intelligence_data)
+                
+            except Exception as intelligence_error:
+                # Log but don't fail the booking
+                logger.warning(f"Failed to track booking intelligence: {intelligence_error}")
+            
             return AppointmentBookingResponse(
                 success=True,
                 appointment_id=appointment_id,
@@ -1707,6 +1950,566 @@ async def book_appointment(
     except Exception as e:
         logger.error(f"Error booking appointment: {e}")
         raise HTTPException(status_code=500, detail="Failed to book appointment")
+
+# ==========================================
+# BOOKING INTELLIGENCE ENDPOINTS
+# ==========================================
+
+from services.booking_intelligence_service import BookingIntelligenceService
+
+# Initialize booking intelligence service
+booking_intelligence = BookingIntelligenceService()
+
+@app.get("/api/v1/customer/{customer_id}/preferences")
+async def get_customer_preferences(customer_id: str):
+    """Get customer booking preferences"""
+    try:
+        preferences = booking_intelligence.get_customer_preferences(customer_id)
+        if not preferences:
+            return {"message": "No preferences found", "preferences": None}
+        
+        return {
+            "success": True,
+            "preferences": {
+                "customer_id": preferences.customer_id,
+                "preferred_barbers": preferences.preferred_barbers,
+                "preferred_services": preferences.preferred_services,
+                "preferred_times": preferences.preferred_times,
+                "preferred_days": preferences.preferred_days,
+                "average_booking_frequency": preferences.average_booking_frequency,
+                "last_booking_date": preferences.last_booking_date,
+                "total_bookings": preferences.total_bookings,
+                "favorite_barbershop": preferences.favorite_barbershop
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting preferences: {str(e)}")
+
+@app.get("/api/v1/customer/{customer_id}/recommendations")
+async def get_customer_recommendations(customer_id: str, limit: int = 5):
+    """Get smart booking recommendations for customer"""
+    try:
+        recommendations = booking_intelligence.get_smart_recommendations(customer_id, limit)
+        
+        return {
+            "success": True,
+            "recommendations": [
+                {
+                    "id": rec.recommendation_id,
+                    "type": rec.recommendation_type,
+                    "title": rec.title,
+                    "description": rec.description,
+                    "suggested_barber_id": rec.suggested_barber_id,
+                    "suggested_service_id": rec.suggested_service_id,
+                    "suggested_datetime": rec.suggested_datetime,
+                    "confidence_score": rec.confidence_score,
+                    "reasoning": rec.reasoning
+                }
+                for rec in recommendations
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting recommendations: {str(e)}")
+
+@app.get("/api/v1/customer/{customer_id}/history")
+async def get_customer_booking_history(customer_id: str, limit: int = 20):
+    """Get customer booking history"""
+    try:
+        history = booking_intelligence.get_booking_history(customer_id, limit)
+        
+        return {
+            "success": True,
+            "bookings": history,
+            "total_count": len(history)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting booking history: {str(e)}")
+
+@app.get("/api/v1/customer/{customer_id}/analytics")
+async def get_customer_analytics(customer_id: str):
+    """Get customer booking analytics and insights"""
+    try:
+        analytics = booking_intelligence.get_analytics_summary(customer_id)
+        
+        return {
+            "success": True,
+            "analytics": analytics
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting analytics: {str(e)}")
+
+@app.get("/api/v1/customer/{customer_id}/rebooking-suggestion")
+async def get_rebooking_suggestion(customer_id: str):
+    """Get smart rebooking suggestion based on customer history"""
+    try:
+        suggestion = booking_intelligence.suggest_rebooking(customer_id)
+        
+        if not suggestion:
+            return {
+                "success": False,
+                "message": "No rebooking suggestion available - insufficient booking history"
+            }
+        
+        return {
+            "success": True,
+            "suggestion": suggestion
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting rebooking suggestion: {str(e)}")
+
+@app.post("/api/v1/booking-intelligence/track")
+async def track_booking_for_intelligence(booking_data: dict):
+    """Track a booking for intelligence analysis (called after successful booking)"""
+    try:
+        success = booking_intelligence.track_booking(booking_data)
+        
+        return {
+            "success": success,
+            "message": "Booking tracked successfully" if success else "Failed to track booking"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error tracking booking: {str(e)}")
+
+@app.get("/api/v1/customer/{customer_id}/ai-insights")
+async def get_customer_ai_insights(customer_id: str, limit: int = 5):
+    """Get AI-powered customer insights and behavior analysis"""
+    try:
+        insights = booking_intelligence.get_ai_customer_insights(customer_id, limit)
+        
+        return {
+            "success": True,
+            "insights": insights,
+            "ai_powered": len(insights) > 0,
+            "total_count": len(insights)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting AI insights: {str(e)}")
+
+@app.get("/api/v1/customer/{customer_id}/recommendations/ai")
+async def get_ai_recommendations(customer_id: str, limit: int = 5):
+    """Get AI-powered smart recommendations (enhanced with real LLM analysis)"""
+    try:
+        recommendations = booking_intelligence.get_smart_recommendations(customer_id, limit, use_ai=True)
+        
+        # Convert to API format
+        api_recommendations = []
+        for rec in recommendations:
+            api_recommendations.append({
+                "id": rec.recommendation_id,
+                "type": rec.recommendation_type,
+                "title": rec.title,
+                "description": rec.description,
+                "reasoning": rec.reasoning,
+                "confidence_score": rec.confidence_score,
+                "suggested_barber_id": rec.suggested_barber_id,
+                "suggested_service_id": rec.suggested_service_id,
+                "suggested_datetime": rec.suggested_datetime,
+                "created_at": rec.created_at,
+                "ai_powered": "claude" in rec.recommendation_id or "gpt" in rec.recommendation_id
+            })
+        
+        return {
+            "success": True,
+            "recommendations": api_recommendations,
+            "ai_powered": any(rec.get("ai_powered", False) for rec in api_recommendations),
+            "total_count": len(api_recommendations)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting AI recommendations: {str(e)}")
+
+@app.get("/api/v1/intelligence/status")
+async def get_intelligence_status():
+    """Get the status of AI intelligence systems"""
+    try:
+        ai_status = {
+            "openai_available": bool(os.getenv('OPENAI_API_KEY')),
+            "anthropic_available": bool(os.getenv('ANTHROPIC_API_KEY')),
+            "fallback_mode": not (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY'))),
+            "services": {
+                "booking_intelligence": "active",
+                "ai_recommendations": "active" if (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY'))) else "fallback",
+                "behavior_analysis": "active" if (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY'))) else "fallback",
+                "predictive_analytics": "active",
+                "monetization_tracking": "active"
+            }
+        }
+        
+        return {
+            "success": True,
+            "ai_intelligence_status": ai_status,
+            "capabilities": [
+                "Smart booking recommendations",
+                "Customer behavior analysis",
+                "Personalized rebooking suggestions",
+                "Predictive analytics and demand forecasting",
+                "Dynamic pricing recommendations",
+                "Business insights generation",
+                "AI monetization and ROI tracking",
+                "Customer insights generation"
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting intelligence status: {str(e)}")
+
+# ==========================================
+# PREDICTIVE ANALYTICS ENDPOINTS
+# ==========================================
+
+from services.predictive_analytics_service import PredictiveAnalyticsService
+from services.ai_monetization_service import AIMonetizationService
+
+# Initialize predictive analytics services
+predictive_analytics = PredictiveAnalyticsService()
+ai_monetization = AIMonetizationService()
+
+@app.get("/api/v1/barbershop/{barbershop_id}/predictive-analytics")
+async def get_predictive_analytics_dashboard(barbershop_id: str):
+    """Get comprehensive predictive analytics dashboard for a barbershop"""
+    try:
+        # Get booking history from intelligence service
+        booking_history = []
+        
+        # Get recent bookings for this barbershop from the intelligence database
+        import sqlite3
+        conn = sqlite3.connect("booking_intelligence.db")
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT * FROM booking_history 
+            WHERE barbershop_id = ?
+            ORDER BY scheduled_at DESC
+            LIMIT 100
+        """, (barbershop_id,))
+        
+        columns = [description[0] for description in cursor.description]
+        for row in cursor.fetchall():
+            booking_history.append(dict(zip(columns, row)))
+        
+        conn.close()
+        
+        if not booking_history:
+            return {
+                "success": True,
+                "message": "No booking history available for analytics",
+                "demand_forecasts": [],
+                "pricing_recommendations": [],
+                "business_insights": [],
+                "seasonal_patterns": []
+            }
+        
+        # Generate demand forecasts
+        demand_forecasts = predictive_analytics.analyze_demand_patterns(barbershop_id, booking_history)
+        
+        # Generate dynamic pricing recommendations
+        current_pricing = {
+            "Classic Haircut": 25.0,
+            "Beard Trim": 15.0,
+            "Shampoo & Style": 20.0,
+            "Hot Towel Shave": 30.0
+        }
+        pricing_recommendations = predictive_analytics.generate_dynamic_pricing(barbershop_id, current_pricing, demand_forecasts)
+        
+        # Generate business insights
+        business_insights = predictive_analytics.generate_business_insights(barbershop_id, booking_history)
+        
+        # Identify seasonal patterns
+        seasonal_patterns = predictive_analytics.identify_seasonal_patterns(barbershop_id, booking_history)
+        
+        # Get comprehensive dashboard data
+        dashboard_data = predictive_analytics.get_predictive_dashboard_data(barbershop_id)
+        
+        return {
+            "success": True,
+            "barbershop_id": barbershop_id,
+            "analytics_generated_at": dashboard_data.get("generated_at"),
+            "demand_forecasts": [
+                {
+                    "service_type": forecast.service_type,
+                    "time_period": forecast.time_period,
+                    "forecast_date": forecast.forecast_date,
+                    "predicted_demand": forecast.predicted_demand,
+                    "confidence_level": forecast.confidence_level,
+                    "contributing_factors": forecast.contributing_factors,
+                    "recommended_actions": forecast.recommended_actions
+                }
+                for forecast in demand_forecasts
+            ],
+            "pricing_recommendations": [
+                {
+                    "service_id": pricing.service_id,
+                    "base_price": pricing.base_price,
+                    "recommended_price": pricing.recommended_price,
+                    "price_adjustment": pricing.price_adjustment,
+                    "pricing_reason": pricing.pricing_reason,
+                    "demand_level": pricing.demand_level,
+                    "expected_impact": pricing.expected_impact,
+                    "valid_from": pricing.valid_from,
+                    "valid_until": pricing.valid_until
+                }
+                for pricing in pricing_recommendations
+            ],
+            "business_insights": [
+                {
+                    "insight_type": insight.insight_type,
+                    "title": insight.title,
+                    "description": insight.description,
+                    "impact_level": insight.impact_level,
+                    "potential_value": insight.potential_value,
+                    "actionable_recommendations": insight.actionable_recommendations,
+                    "confidence_score": insight.confidence_score,
+                    "urgency_level": insight.urgency_level
+                }
+                for insight in business_insights
+            ],
+            "seasonal_patterns": [
+                {
+                    "pattern_type": pattern.pattern_type,
+                    "pattern_data": pattern.pattern_data,
+                    "strength": pattern.strength,
+                    "next_occurrence": pattern.next_occurrence,
+                    "recommended_preparation": pattern.recommended_preparation
+                }
+                for pattern in seasonal_patterns
+            ],
+            "total_bookings_analyzed": len(booking_history)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting predictive analytics: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating predictive analytics: {str(e)}")
+
+@app.get("/api/v1/barbershop/{barbershop_id}/demand-forecast")
+async def get_demand_forecast(barbershop_id: str, days_ahead: int = 7):
+    """Get demand forecast for specific barbershop"""
+    try:
+        # Get booking history
+        booking_history = []
+        
+        import sqlite3
+        conn = sqlite3.connect("booking_intelligence.db")
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT * FROM booking_history 
+            WHERE barbershop_id = ?
+            ORDER BY scheduled_at DESC
+            LIMIT 50
+        """, (barbershop_id,))
+        
+        columns = [description[0] for description in cursor.description]
+        for row in cursor.fetchall():
+            booking_history.append(dict(zip(columns, row)))
+        
+        conn.close()
+        
+        if not booking_history:
+            return {
+                "success": False,
+                "message": "Insufficient booking history for demand forecasting"
+            }
+        
+        forecasts = predictive_analytics.analyze_demand_patterns(barbershop_id, booking_history)
+        
+        return {
+            "success": True,
+            "barbershop_id": barbershop_id,
+            "forecast_period": f"Next {days_ahead} days",
+            "forecasts": [
+                {
+                    "service_type": forecast.service_type,
+                    "predicted_demand": forecast.predicted_demand,
+                    "confidence_level": forecast.confidence_level,
+                    "time_period": forecast.time_period,
+                    "forecast_date": forecast.forecast_date,
+                    "contributing_factors": forecast.contributing_factors,
+                    "recommended_actions": forecast.recommended_actions
+                }
+                for forecast in forecasts
+            ]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating demand forecast: {str(e)}")
+
+@app.get("/api/v1/barbershop/{barbershop_id}/pricing-optimization")
+async def get_pricing_optimization(barbershop_id: str):
+    """Get dynamic pricing recommendations for barbershop"""
+    try:
+        # Get current demand forecasts
+        booking_history = []
+        
+        import sqlite3
+        conn = sqlite3.connect("booking_intelligence.db")
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT * FROM booking_history 
+            WHERE barbershop_id = ?
+            ORDER BY scheduled_at DESC
+            LIMIT 30
+        """, (barbershop_id,))
+        
+        columns = [description[0] for description in cursor.description]
+        for row in cursor.fetchall():
+            booking_history.append(dict(zip(columns, row)))
+        
+        conn.close()
+        
+        if not booking_history:
+            return {
+                "success": False,
+                "message": "Insufficient data for pricing optimization"
+            }
+        
+        # Generate demand forecasts first
+        demand_forecasts = predictive_analytics.analyze_demand_patterns(barbershop_id, booking_history)
+        
+        # Get current pricing (in real app, this would come from database)
+        current_pricing = {
+            "Classic Haircut": 25.0,
+            "Beard Trim": 15.0,
+            "Shampoo & Style": 20.0,
+            "Hot Towel Shave": 30.0
+        }
+        
+        # Generate pricing recommendations
+        pricing_recommendations = predictive_analytics.generate_dynamic_pricing(barbershop_id, current_pricing, demand_forecasts)
+        
+        return {
+            "success": True,
+            "barbershop_id": barbershop_id,
+            "pricing_recommendations": [
+                {
+                    "service_id": pricing.service_id,
+                    "current_price": pricing.base_price,
+                    "recommended_price": pricing.recommended_price,
+                    "price_change": pricing.price_adjustment,
+                    "reasoning": pricing.pricing_reason,
+                    "demand_level": pricing.demand_level,
+                    "expected_revenue_impact": pricing.expected_impact.get('revenue_change', 0),
+                    "expected_demand_impact": pricing.expected_impact.get('demand_change', 0),
+                    "valid_period": f"{pricing.valid_from} to {pricing.valid_until}"
+                }
+                for pricing in pricing_recommendations
+            ],
+            "optimization_summary": {
+                "total_recommendations": len(pricing_recommendations),
+                "avg_price_adjustment": sum(p.price_adjustment for p in pricing_recommendations) / len(pricing_recommendations) if pricing_recommendations else 0,
+                "potential_revenue_uplift": sum(p.expected_impact.get('revenue_change', 0) for p in pricing_recommendations)
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating pricing optimization: {str(e)}")
+
+# ==========================================
+# AI MONETIZATION ENDPOINTS
+# ==========================================
+
+@app.get("/api/v1/customer/{customer_id}/ai-usage-summary")
+async def get_customer_ai_usage_summary(customer_id: str):
+    """Get customer AI usage and billing summary"""
+    try:
+        # Check AI quota
+        quota_check = ai_monetization.check_ai_quota(customer_id)
+        
+        # Generate billing summary
+        billing_summary = ai_monetization.generate_billing_summary(customer_id)
+        
+        # Calculate ROI metrics
+        roi_metrics = ai_monetization.calculate_customer_roi(customer_id)
+        
+        return {
+            "success": True,
+            "customer_id": customer_id,
+            "quota_status": quota_check,
+            "billing_summary": billing_summary,
+            "roi_metrics": {
+                "ai_spend": roi_metrics.ai_spend if roi_metrics else 0,
+                "revenue_attributed": roi_metrics.revenue_attributed if roi_metrics else 0,
+                "roi_percentage": roi_metrics.roi_percentage if roi_metrics else 0,
+                "bookings_influenced": roi_metrics.bookings_influenced if roi_metrics else 0
+            } if roi_metrics else None,
+            "recommendations": [
+                "Upgrade to Smart plan for more AI credits",
+                "Enable auto-upgrade to avoid service interruptions",
+                "AI features show positive ROI - consider increasing usage"
+            ] if quota_check.get('upgrade_required') else [
+                "AI usage is within optimal range",
+                "Continue leveraging AI for business growth"
+            ]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting AI usage summary: {str(e)}")
+
+@app.post("/api/v1/ai-usage/track")
+async def track_ai_usage(
+    usage_data: dict
+):
+    """Track AI usage for billing and optimization"""
+    try:
+        # Extract usage data
+        customer_id = usage_data.get('customer_id')
+        barbershop_id = usage_data.get('barbershop_id')
+        ai_service_type = usage_data.get('ai_service_type', 'recommendation')
+        model_used = usage_data.get('model_used', 'claude-3-sonnet')
+        tokens_used = usage_data.get('tokens_used', 0)
+        business_value = usage_data.get('business_value')
+        
+        # Track the usage
+        usage_record = ai_monetization.track_ai_usage(
+            customer_id=customer_id,
+            barbershop_id=barbershop_id,
+            ai_service_type=ai_service_type,
+            model_used=model_used,
+            tokens_used=tokens_used,
+            business_value=business_value
+        )
+        
+        return {
+            "success": True,
+            "usage_tracked": {
+                "usage_id": usage_record.usage_id,
+                "customer_charge": usage_record.customer_charge,
+                "profit_margin": usage_record.profit_margin,
+                "model_used": usage_record.model_used,
+                "ai_service_type": usage_record.ai_service_type
+            },
+            "message": "AI usage tracked successfully"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error tracking AI usage: {str(e)}")
+
+@app.get("/api/v1/customer/{customer_id}/ai-optimization")
+async def get_ai_usage_optimization(customer_id: str):
+    """Get AI usage optimization recommendations"""
+    try:
+        # Sample request context (in real app, this would be more comprehensive)
+        request_context = {
+            'service_type': 'recommendation',
+            'booking_history': [],  # Would be populated from database
+            'days_since_last_ai_analysis': 3,
+            'customer_value_tier': 'standard'
+        }
+        
+        optimization = ai_monetization.optimize_ai_usage(customer_id, request_context)
+        
+        return {
+            "success": True,
+            "customer_id": customer_id,
+            "optimization_recommendation": optimization,
+            "cost_efficiency_tips": [
+                "AI insights are most valuable for new customers and high-value clients",
+                "Refresh AI analysis every 7-14 days for optimal cost/benefit ratio",
+                "Use cached insights for recent analysis to reduce costs",
+                "Premium AI models provide better accuracy for complex analysis"
+            ]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting AI optimization: {str(e)}")
 
 @app.get("/api/v1/agents")
 async def list_agents():
