@@ -25,7 +25,7 @@ def main():
     # Start the server directly without importing
     # Use the hyphenated filename as Railway expects
     cmd = [
-        sys.executable, "-m", "uvicorn",
+        "python3", "-m", "uvicorn",
         "fastapi-server:app",
         "--host", "0.0.0.0",
         "--port", port,
