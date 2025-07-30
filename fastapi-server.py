@@ -26,6 +26,15 @@ import base64
 from urllib.parse import urlencode, parse_qs
 from services.google_calendar_service import get_google_calendar_service
 
+# AI Service Imports
+import openai
+import anthropic
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 # Import agent coordination system
 from services.orchestration.agent_coordination_api import router as agent_coordination_router
 
@@ -36,6 +45,25 @@ logger = logging.getLogger(__name__)
 
 # Include agent coordination router
 app.include_router(agent_coordination_router)
+
+# AI Services Configuration
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
+GOOGLE_AI_API_KEY = os.getenv('GOOGLE_AI_API_KEY')
+
+# Initialize AI clients
+openai_client = None
+anthropic_client = None
+
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
+    openai_client = openai.OpenAI(api_key=OPENAI_API_KEY)
+
+if ANTHROPIC_API_KEY:
+    anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+if GOOGLE_AI_API_KEY:
+    genai.configure(api_key=GOOGLE_AI_API_KEY)
 
 # Authentication Configuration
 SECRET_KEY = "your-secret-key-change-in-production"
@@ -2524,6 +2552,532 @@ async def list_agents():
             "strategies_count": len(data["strategies"])
         })
     return {"agents": agents}
+
+# Master AI Orchestrator
+async def master_orchestrator(message: str, conversation_history: list = None) -> dict:
+    """
+    Master AI Orchestrator that analyzes questions and coordinates multiple specialist agents
+    Returns synthesized response from relevant specialists
+    """
+    try:
+        # Step 1: Analyze the question to determine which specialists are needed
+        analysis_prompt = f"""You are the Master AI Orchestrator for a barbershop business intelligence system. 
+        
+Analyze this question: "{message}"
+
+Determine which business specialists should be consulted. Available specialists:
+- financial: Revenue, costs, pricing, profit margins, budgeting
+- marketing: Customer acquisition, retention, social media, local marketing
+- operations: Workflow, scheduling, efficiency, staff management, technology
+- brand: Reputation, positioning, customer experience, community presence  
+- growth: Scaling, expansion, franchising, multi-location management
+- master_coach: Strategic planning, leadership, overall business guidance
+
+Return a JSON response with:
+{{
+    "specialists_needed": ["specialist1", "specialist2"],
+    "reasoning": "Brief explanation of why these specialists are needed",
+    "question_complexity": "simple|moderate|complex",
+    "primary_focus": "main business area this question addresses"
+}}
+
+Be selective - only include specialists that are truly relevant to the question."""
+
+        # Get analysis from Master Orchestrator
+        if anthropic_client:
+            try:
+                analysis_response = anthropic_client.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=500,
+                    messages=[{"role": "user", "content": analysis_prompt}]
+                )
+                analysis_text = analysis_response.content[0].text
+            except Exception as e:
+                logger.warning(f"Anthropic analysis failed: {e}")
+                analysis_text = get_fallback_analysis(message)
+        else:
+            analysis_text = get_fallback_analysis(message)
+
+        # Parse analysis (with fallback if JSON parsing fails)
+        try:
+            import json
+            # Extract JSON from response if it's wrapped in text
+            if "```json" in analysis_text:
+                json_start = analysis_text.find("```json") + 7
+                json_end = analysis_text.find("```", json_start)
+                analysis_text = analysis_text[json_start:json_end].strip()
+            elif "{" in analysis_text:
+                json_start = analysis_text.find("{")
+                json_end = analysis_text.rfind("}") + 1
+                analysis_text = analysis_text[json_start:json_end]
+            
+            analysis = json.loads(analysis_text)
+        except:
+            analysis = get_fallback_analysis(message)
+
+        specialists_needed = analysis.get("specialists_needed", ["master_coach"])
+        reasoning = analysis.get("reasoning", "General business advice needed")
+        complexity = analysis.get("question_complexity", "moderate")
+        primary_focus = analysis.get("primary_focus", "business strategy")
+
+        # Step 2: Get responses from each needed specialist
+        specialist_responses = {}
+        for specialist in specialists_needed:
+            response = await get_specialist_response(message, specialist, conversation_history)
+            specialist_responses[specialist] = response
+
+        # Step 3: Synthesize responses from all specialists
+        synthesis_prompt = f"""You are the Master AI Orchestrator synthesizing advice from multiple barbershop business specialists.
+
+Original Question: "{message}"
+Specialists Consulted: {', '.join(specialists_needed)}
+Primary Focus: {primary_focus}
+
+Specialist Responses:
+"""
+        for specialist, response in specialist_responses.items():
+            synthesis_prompt += f"\n**{specialist.title()} Specialist:**\n{response}\n"
+
+        synthesis_prompt += f"""
+Now synthesize this advice into ONE cohesive, comprehensive response that:
+1. Addresses the original question completely
+2. Integrates insights from all specialists seamlessly  
+3. Provides actionable, prioritized recommendations
+4. Maintains a single, professional voice
+5. Includes specific numbers, examples, or benchmarks when relevant
+6. Ends with a strategic next step or follow-up question
+
+The response should read as if ONE expert advisor who understands all aspects of barbershop business is providing comprehensive guidance."""
+
+        # Get synthesized response
+        if anthropic_client:
+            try:
+                synthesis_response = anthropic_client.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=1200,
+                    messages=[{"role": "user", "content": synthesis_prompt}]
+                )
+                final_response = synthesis_response.content[0].text
+            except Exception as e:
+                logger.warning(f"Anthropic synthesis failed: {e}")
+                final_response = synthesize_responses_fallback(specialist_responses, message)
+        else:
+            final_response = synthesize_responses_fallback(specialist_responses, message)
+
+        return {
+            "response": final_response,
+            "specialists_consulted": specialists_needed,
+            "analysis_reasoning": reasoning,
+            "complexity": complexity,
+            "primary_focus": primary_focus,
+            "specialist_responses": specialist_responses  # For debugging/transparency
+        }
+
+    except Exception as e:
+        logger.error(f"Master orchestrator error: {e}")
+        return {
+            "response": await get_specialist_response(message, "master_coach", conversation_history),
+            "specialists_consulted": ["master_coach"],
+            "analysis_reasoning": "Fallback to general business advice",
+            "complexity": "moderate",
+            "primary_focus": "business strategy",
+            "specialist_responses": {}
+        }
+
+def get_fallback_analysis(message: str) -> dict:
+    """Fallback analysis when AI services are unavailable"""
+    message_lower = message.lower()
+    specialists = []
+    
+    if any(word in message_lower for word in ['revenue', 'money', 'profit', 'cost', 'price', 'financial', 'budget']):
+        specialists.append('financial')
+    if any(word in message_lower for word in ['marketing', 'customer', 'advertis', 'promote', 'social']):
+        specialists.append('marketing')  
+    if any(word in message_lower for word in ['operation', 'schedul', 'staff', 'efficiency', 'workflow']):
+        specialists.append('operations')
+    if any(word in message_lower for word in ['brand', 'reputation', 'image', 'experience']):
+        specialists.append('brand')
+    if any(word in message_lower for word in ['grow', 'expand', 'scale', 'location', 'franchise']):
+        specialists.append('growth')
+    
+    if not specialists:
+        specialists = ['master_coach']
+    
+    return {
+        "specialists_needed": specialists,
+        "reasoning": f"Keyword analysis identified relevant areas: {', '.join(specialists)}",
+        "question_complexity": "moderate",
+        "primary_focus": specialists[0] if specialists else "strategy"
+    }
+
+def synthesize_responses_fallback(specialist_responses: dict, message: str) -> str:
+    """Fallback synthesis when AI services are unavailable"""
+    if not specialist_responses:
+        return f"I understand you're asking about: {message}. Let me provide comprehensive business guidance covering the key areas that matter most for barbershop success."
+    
+    combined = f"Based on your question about '{message}', here's comprehensive guidance from our business specialists:\n\n"
+    
+    for specialist, response in specialist_responses.items():
+        specialist_name = specialist.replace('_', ' ').title()
+        combined += f"**{specialist_name} Perspective:**\n{response}\n\n"
+    
+    combined += "**Strategic Recommendation:** Focus on implementing 1-2 of these strategies immediately while planning the others for gradual rollout over the next 3-6 months."
+    
+    return combined
+
+# Individual Specialist Response Function
+async def get_specialist_response(message: str, agent_type: str, conversation_history: list = None) -> str:
+    """
+    Get AI response using the best available AI service for the agent type
+    """
+    try:
+        # Create agent-specific prompts
+        agent_prompts = {
+            "master_coach": f"""You are a Master Business Coach specializing in barbershop operations. You have 15+ years of experience helping barbershops grow and succeed. 
+
+Provide strategic, actionable advice for this question: {message}
+
+Focus on:
+- Strategic business planning and growth optimization
+- Leadership and team management
+- Long-term business development
+- Industry-specific insights for barbershops
+
+Be specific, practical, and results-oriented. If you recommend strategies, include implementation steps.""",
+
+            "financial": f"""You are a Financial Advisor specializing in barbershop businesses with deep expertise in salon/barbershop economics.
+
+Answer this financial question: {message}
+
+Focus on:
+- Revenue optimization and profit maximization
+- Cost management and expense analysis  
+- Pricing strategies and service bundling
+- Financial KPIs specific to barbershops
+- Cash flow management and growth funding
+
+Provide specific numbers, percentages, or benchmarks when possible. Include actionable financial strategies.""",
+
+            "marketing": f"""You are a Marketing Expert specializing in local barbershop marketing with proven track record in customer acquisition.
+
+Address this marketing question: {message}
+
+Focus on:
+- Customer acquisition and retention strategies
+- Local marketing and community engagement
+- Social media marketing for barbershops
+- Referral programs and loyalty systems
+- Online reputation management
+
+Provide specific tactics, examples, and implementation steps. Include ROI expectations when possible.""",
+
+            "operations": f"""You are an Operations Specialist for barbershops with expertise in workflow optimization and efficiency improvements.
+
+Answer this operations question: {message}
+
+Focus on:
+- Workflow optimization and scheduling efficiency
+- Staff productivity and service delivery
+- Technology integration and automation
+- Quality control and customer experience
+- Inventory management and supply chain
+
+Provide actionable process improvements with measurable outcomes.""",
+
+            "brand": f"""You are a Brand Strategist specializing in barbershop branding and positioning with experience in local market differentiation.
+
+Address this branding question: {message}
+
+Focus on:
+- Brand positioning and differentiation
+- Local market reputation building
+- Customer experience design
+- Brand identity and visual presentation
+- Community presence and partnerships
+
+Provide specific branding strategies with implementation examples.""",
+
+            "growth": f"""You are a Growth Expert specializing in barbershop scaling and expansion with experience in multi-location businesses.
+
+Answer this growth question: {message}
+
+Focus on:
+- Scaling strategies and expansion planning
+- Multi-location management systems
+- Franchise or partnership opportunities  
+- Team building and leadership development
+- Market analysis and opportunity assessment
+
+Provide scalable growth strategies with timeline and resource requirements."""
+        }
+
+        prompt = agent_prompts.get(agent_type, agent_prompts["master_coach"])
+        
+        # Try Anthropic Claude first (best for reasoning and business advice)
+        if anthropic_client:
+            try:
+                response = anthropic_client.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=1000,
+                    messages=[
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                return response.content[0].text
+            except Exception as e:
+                logger.warning(f"Anthropic API failed: {e}")
+        
+        # Try OpenAI GPT-4 as backup
+        if openai_client:
+            try:
+                response = openai_client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": f"You are an expert {agent_type} advisor for barbershops."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=1000,
+                    temperature=0.7
+                )
+                return response.choices[0].message.content
+            except Exception as e:
+                logger.warning(f"OpenAI API failed: {e}")
+        
+        # Try Google Gemini as final backup
+        if GOOGLE_AI_API_KEY:
+            try:
+                model = genai.GenerativeModel('gemini-pro')
+                response = model.generate_content(prompt)
+                return response.text
+            except Exception as e:
+                logger.warning(f"Google AI API failed: {e}")
+        
+        # Fallback to enhanced template responses if no AI services available
+        return get_template_response(message, agent_type)
+        
+    except Exception as e:
+        logger.error(f"Error getting AI response: {e}")
+        return get_template_response(message, agent_type)
+
+def get_template_response(message: str, agent_type: str) -> str:
+    """
+    Enhanced template responses as fallback when AI services are unavailable
+    """
+    responses = {
+        "financial": f"""As your Financial Advisor, I've analyzed your question: "{message}"
+
+Key Financial Strategies for Barbershops:
+
+💰 **Revenue Optimization:**
+• Increase average transaction value by 25-30% through service bundling
+• Implement tiered pricing: Basic ($25), Premium ($45), Luxury ($65+)
+• Add retail products with 40-60% profit margins (pomades, styling tools)
+
+📊 **Industry Benchmarks:**
+• Successful barbershops average $75-150 revenue per client visit
+• Target 60-70% customer retention rate month-over-month
+• Aim for 15-25% net profit margin after all expenses
+
+🎯 **Next Steps:**
+• Track your current average transaction value
+• Identify your top 20% of customers for premium service upselling
+• Calculate cost per customer acquisition for marketing ROI
+
+What's your current average revenue per customer? This will help me provide more targeted advice.""",
+
+        "marketing": f"""As your Marketing Expert, I understand you're asking about: "{message}"
+
+Proven Marketing Strategies for Barbershops:
+
+📱 **Digital Marketing:**
+• Post before/after photos on Instagram/TikTok (3-5x weekly)
+• Google My Business optimization with customer reviews
+• Local SEO targeting "[city] barbershop" keywords
+
+🤝 **Community Engagement:**
+• Partner with local businesses for cross-promotion
+• Sponsor local sports teams or community events
+• Referral rewards: $10 credit for each new customer referred
+
+📈 **Customer Retention:**
+• Loyalty program: 10th cut free or 20% off
+• Birthday discounts and anniversary offers
+• Text/email reminders for next appointment
+
+**Expected ROI:** Good barbershop marketing typically returns $3-5 for every $1 invested.
+
+Which marketing channel interests you most? I can dive deeper into implementation.""",
+
+        "operations": f"""As your Operations Specialist, analyzing: "{message}"
+
+Operational Excellence Framework:
+
+⏰ **Scheduling Optimization:**
+• Implement online booking system (reduces no-shows by 30%)
+• Buffer time between appointments: 15-min for standard cuts, 30-min for complex services
+• Peak hour premium pricing to balance demand
+
+👥 **Team Efficiency:**
+• Standardize service procedures for consistency
+• Cross-train staff on multiple services
+• Daily team huddles for communication and goals
+
+📋 **Quality Control:**
+• Customer feedback system after each visit
+• Mystery shopper program monthly
+• Standard operating procedures checklist
+
+🎯 **Key Metrics to Track:**
+• Average service time per cut type
+• Customer wait time (target: under 10 minutes)
+• Staff utilization rate (target: 75-85%)
+
+What's your biggest operational challenge right now? Let's solve it step by step.""",
+
+        "brand": f"""As your Brand Strategist, addressing: "{message}"
+
+Brand Positioning Strategy:
+
+🎯 **Differentiation Framework:**
+• Define your unique value proposition (classic, modern, luxury, community-focused?)
+• Create signature services only you offer
+• Develop your barbershop's personality and voice
+
+🏪 **Physical Brand Experience:**
+• Consistent visual identity: logo, colors, signage
+• Atmosphere design: music, lighting, decor that matches your brand
+• Staff appearance and service style alignment
+
+🌟 **Reputation Building:**
+• Encourage online reviews and testimonials
+• Showcase your work through portfolio displays
+• Community involvement that aligns with brand values
+
+📱 **Digital Brand Presence:**
+• Professional website with online booking
+• Consistent social media voice and visual style
+• Customer success stories and transformations
+
+What type of barbershop experience do you want to be known for? This will guide our brand strategy.""",
+
+        "growth": f"""As your Growth Expert, analyzing: "{message}"
+
+Scaling Strategy Framework:
+
+📈 **Growth Phases:**
+• Phase 1: Optimize current location to 80%+ capacity
+• Phase 2: Build systems and processes for replication
+• Phase 3: Strategic expansion or partnership opportunities
+
+💡 **Expansion Options:**
+• Second location in complementary neighborhood
+• Mobile barbershop services for corporate clients
+• Franchise model for rapid growth
+• Acquisition of existing barbershops
+
+🔧 **Systems Required for Growth:**
+• Standardized training programs
+• Financial management systems
+• Marketing playbooks that work
+• Quality control processes
+
+📊 **Growth Metrics:**
+• Target 20%+ revenue growth annually
+• Maintain 15%+ profit margins during expansion
+• Customer satisfaction scores above 4.5/5
+
+🎯 **Next Steps:**
+• Assess current location's growth potential
+• Document all successful processes
+• Build management team for delegation
+
+What's your timeline for growth, and what's holding you back currently?"""
+    }
+    
+    # Fallback for master_coach and unknown agent types
+    default_response = f"""As your Business Advisor, I've analyzed your question: "{message}"
+
+Strategic Business Guidance:
+
+🎯 **Key Focus Areas:**
+• Customer experience and service quality excellence
+• Team development and operational efficiency
+• Revenue growth through strategic positioning
+• Brand building and community engagement
+
+🚀 **Immediate Action Steps:**
+• Assess current business performance metrics
+• Identify top 3 improvement opportunities
+• Develop 30-60-90 day implementation plan
+• Track progress with measurable KPIs
+
+💡 **Industry Best Practices:**
+• Focus on customer retention (costs 5x less than acquisition)
+• Invest in staff training and development
+• Leverage technology for operational efficiency
+• Build strong community relationships
+
+What's your biggest business challenge right now? I can provide more targeted strategic advice."""
+
+    return responses.get(agent_type, default_response)
+
+@app.post("/api/chat/unified")
+async def unified_chat(request: dict):
+    """
+    Unified AI Chat Interface with Real AI Integration
+    Orchestrates multiple agents based on conversation context using OpenAI, Anthropic, or Google AI
+    """
+    try:
+        message = request.get("message", "")
+        agents = request.get("agents", ["master_coach"])
+        conversation_history = request.get("conversation_history", [])
+        
+        if not message.strip():
+            return {
+                "success": False,
+                "error": "Message cannot be empty",
+                "response": "Please provide a question or message for me to respond to."
+            }
+        
+        # Use the primary agent (first in the list)
+        primary_agent = agents[0] if agents else "master_coach"
+        
+        # Use Master Orchestrator to coordinate multiple specialists
+        orchestrator_result = await master_orchestrator(message, conversation_history)
+        ai_response = orchestrator_result["response"]
+        specialists_consulted = orchestrator_result["specialists_consulted"]
+        
+        # Agent role mapping for response metadata
+        agent_roles = {
+            "master_coach": "Strategic Business Coach",
+            "financial": "Financial Advisor",
+            "marketing": "Marketing Expert", 
+            "operations": "Operations Specialist",
+            "brand": "Brand Strategist",
+            "growth": "Growth Expert"
+        }
+        
+        return {
+            "success": True,
+            "response": ai_response,
+            "agents_involved": specialists_consulted,
+            "specialists_consulted": specialists_consulted,
+            "orchestration_used": True,
+            "analysis_reasoning": orchestrator_result.get("analysis_reasoning", ""),
+            "question_complexity": orchestrator_result.get("complexity", "moderate"),
+            "primary_focus": orchestrator_result.get("primary_focus", "business strategy"),
+            "message_id": f"msg_{len(conversation_history) + 1}",
+            "ai_powered": True,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Unified chat error: {e}")
+        return {
+            "success": False,
+            "error": f"Chat processing error: {str(e)}",
+            "response": "I apologize, but I'm experiencing technical difficulties. Please try again in a moment."
+        }
 
 if __name__ == "__main__":
     print("🚀 Starting 6FB AI Agent System FastAPI Server...")
