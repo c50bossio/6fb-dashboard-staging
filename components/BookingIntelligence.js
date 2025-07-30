@@ -227,6 +227,7 @@ export default function BookingIntelligence({ customerId }) {
                 <p className="text-sm text-purple-700">
                   {intelligenceStatus.fallback_mode ? 
                     "Using rule-based recommendations (AI models not available)" :
+                    intelligenceStatus.gemini_available ? "Powered by Google Gemini 2.0 Flash" :
                     intelligenceStatus.anthropic_available ? "Powered by Claude AI" :
                     intelligenceStatus.openai_available ? "Powered by GPT-4" :
                     "Enhanced intelligence active"

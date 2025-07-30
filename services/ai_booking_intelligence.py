@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 AI-Powered Booking Intelligence Service
-Uses real LLM models (OpenAI GPT-4, Anthropic Claude) for intelligent booking recommendations
+Uses real LLM models (OpenAI GPT-4, Anthropic Claude, Google Gemini 2.0 Flash) for intelligent booking recommendations
 """
 
 import os
@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union
 import openai
 import anthropic
+import google.generativeai as genai
 from dataclasses import dataclass, asdict
 import sqlite3
 import logging
@@ -51,6 +52,7 @@ class AIBookingIntelligence:
         self.db_path = db_path
         self.openai_client = None
         self.anthropic_client = None
+        self.gemini_client = None
         
         # Initialize AI clients
         self._init_ai_clients()
@@ -75,6 +77,15 @@ class AIBookingIntelligence:
                 logger.info("✅ Anthropic client initialized")
             else:
                 logger.warning("⚠️ ANTHROPIC_API_KEY not found")
+            
+            # Google Gemini client
+            gemini_key = os.getenv('GOOGLE_AI_API_KEY')
+            if gemini_key:
+                genai.configure(api_key=gemini_key)
+                self.gemini_client = genai.GenerativeModel('gemini-2.0-flash-exp')
+                logger.info("✅ Google Gemini 2.0 Flash client initialized")
+            else:
+                logger.warning("⚠️ GOOGLE_AI_API_KEY not found")
                 
         except Exception as e:
             logger.error(f"Error initializing AI clients: {e}")
@@ -142,8 +153,10 @@ class AIBookingIntelligence:
             # Prepare context for AI
             context = self._prepare_customer_context(customer_id, booking_history, current_context)
             
-            # Try Claude first (better for reasoning), fallback to GPT-4
-            if self.anthropic_client:
+            # Try Gemini first (fastest and cost-effective), fallback to Claude, then GPT-4
+            if self.gemini_client:
+                recommendations = await self._generate_recommendations_gemini(context)
+            elif self.anthropic_client:
                 recommendations = await self._generate_recommendations_claude(context)
             elif self.openai_client:
                 recommendations = await self._generate_recommendations_openai(context)
@@ -167,8 +180,10 @@ class AIBookingIntelligence:
         try:
             context = self._prepare_behavior_analysis_context(customer_id, booking_history)
             
-            # Use Claude for behavior analysis (better at pattern recognition)
-            if self.anthropic_client:
+            # Use Gemini first (excellent multimodal reasoning), fallback to Claude, then GPT-4
+            if self.gemini_client:
+                insights = await self._analyze_behavior_gemini(context)
+            elif self.anthropic_client:
                 insights = await self._analyze_behavior_claude(context)
             elif self.openai_client:
                 insights = await self._analyze_behavior_openai(context)
@@ -377,6 +392,140 @@ class AIBookingIntelligence:
             
         except Exception as e:
             logger.error(f"Claude behavior analysis error: {e}")
+            raise
+    
+    async def _generate_recommendations_gemini(self, context: Dict) -> List[AIRecommendation]:
+        """Generate recommendations using Google Gemini 2.0 Flash"""
+        prompt = f"""
+        You are an AI booking intelligence system for a barbershop platform. Analyze the customer data and generate smart booking recommendations.
+
+        Customer Context:
+        {json.dumps(context, indent=2)}
+
+        Generate 2-4 personalized booking recommendations. For each recommendation, provide:
+        1. recommendation_type: "next_appointment", "service_upgrade", "loyalty_reward", "time_optimization"
+        2. title: Clear, engaging title
+        3. description: Brief explanation (1-2 sentences)
+        4. reasoning: Why this recommendation makes sense
+        5. confidence_score: 0.0-1.0 based on data strength
+        6. suggested_actions: Specific actionable steps
+
+        Respond in JSON format:
+        {{
+            "recommendations": [
+                {{
+                    "recommendation_type": "next_appointment",
+                    "title": "Perfect timing for your next cut",
+                    "description": "Based on your booking pattern, you're due for another appointment.",
+                    "reasoning": "Customer books every 3-4 weeks on average, last visit was 3 weeks ago",
+                    "confidence_score": 0.85,
+                    "suggested_actions": [
+                        {{"action": "book_appointment", "barber_id": "preferred_barber", "service_type": "usual_service"}}
+                    ]
+                }}
+            ]
+        }}
+        """
+        
+        try:
+            response = await asyncio.to_thread(
+                self.gemini_client.generate_content,
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=1000,
+                    temperature=0.7,
+                    response_mime_type="application/json"
+                )
+            )
+            
+            # Parse Gemini's response
+            response_text = response.text
+            ai_response = json.loads(response_text)
+            
+            recommendations = []
+            for i, rec_data in enumerate(ai_response.get('recommendations', [])):
+                rec = AIRecommendation(
+                    recommendation_id=f"gemini_rec_{context['customer_id']}_{i}_{int(datetime.now().timestamp())}",
+                    customer_id=context['customer_id'],
+                    recommendation_type=rec_data.get('recommendation_type', 'general'),
+                    title=rec_data.get('title', 'Smart Recommendation'),
+                    description=rec_data.get('description', ''),
+                    reasoning=rec_data.get('reasoning', ''),
+                    confidence_score=rec_data.get('confidence_score', 0.7),
+                    suggested_actions=rec_data.get('suggested_actions', []),
+                    ai_model_used="gemini-2.0-flash",
+                    generated_at=datetime.now().isoformat()
+                )
+                recommendations.append(rec)
+            
+            return recommendations
+            
+        except Exception as e:
+            logger.error(f"Gemini API error: {e}")
+            raise
+    
+    async def _analyze_behavior_gemini(self, context: Dict) -> List[CustomerInsight]:
+        """Analyze customer behavior using Google Gemini 2.0 Flash"""
+        prompt = f"""
+        You are an AI system analyzing customer booking behavior for a barbershop platform. Generate insights about the customer's patterns, preferences, and potential opportunities.
+
+        Customer Data:
+        {json.dumps(context, indent=2)}
+
+        Analyze the data and provide insights focusing on:
+        1. Booking patterns and frequency
+        2. Service preferences and evolution
+        3. Time/day preferences
+        4. Loyalty indicators and risk factors
+        5. Upselling/cross-selling opportunities
+
+        Generate 2-4 insights in this JSON format:
+        {{
+            "insights": [
+                {{
+                    "insight_type": "behavior_pattern" | "preference_change" | "loyalty_risk" | "upsell_opportunity",
+                    "insight_text": "Clear description of the insight",
+                    "actionable_recommendations": ["Specific action 1", "Specific action 2"],
+                    "confidence_score": 0.0-1.0,
+                    "supporting_data": {{"key_metrics": "values"}}
+                }}
+            ]
+        }}
+        """
+        
+        try:
+            response = await asyncio.to_thread(
+                self.gemini_client.generate_content,
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=800,
+                    temperature=0.6,
+                    response_mime_type="application/json"
+                )
+            )
+            
+            response_text = response.text
+            ai_response = json.loads(response_text)
+            
+            insights = []
+            for i, insight_data in enumerate(ai_response.get('insights', [])):
+                insight = CustomerInsight(
+                    insight_id=f"gemini_insight_{context['customer_id']}_{i}_{int(datetime.now().timestamp())}",
+                    customer_id=context['customer_id'],
+                    insight_type=insight_data.get('insight_type', 'general'),
+                    insight_text=insight_data.get('insight_text', ''),
+                    actionable_recommendations=insight_data.get('actionable_recommendations', []),
+                    confidence_score=insight_data.get('confidence_score', 0.7),
+                    supporting_data=insight_data.get('supporting_data', {}),
+                    ai_model_used="gemini-2.0-flash",
+                    generated_at=datetime.now().isoformat()
+                )
+                insights.append(insight)
+            
+            return insights
+            
+        except Exception as e:
+            logger.error(f"Gemini behavior analysis error: {e}")
             raise
     
     def _prepare_customer_context(self, customer_id: str, booking_history: List[Dict], current_context: Dict = None) -> Dict:

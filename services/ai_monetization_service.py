@@ -79,6 +79,7 @@ class AIMonetizationService:
             'token_costs': {
                 'gpt-4': 0.00003,  # $0.03 per 1K tokens
                 'claude-3-sonnet': 0.000015,  # $0.015 per 1K tokens
+                'gemini-2.0-flash': 0.0000075,  # $0.0075 per 1K tokens (most cost-effective)
                 'rule_based_fallback': 0.0  # Free
             }
         }

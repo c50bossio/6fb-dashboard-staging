@@ -2124,11 +2124,12 @@ async def get_intelligence_status():
         ai_status = {
             "openai_available": bool(os.getenv('OPENAI_API_KEY')),
             "anthropic_available": bool(os.getenv('ANTHROPIC_API_KEY')),
-            "fallback_mode": not (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY'))),
+            "gemini_available": bool(os.getenv('GOOGLE_AI_API_KEY')),
+            "fallback_mode": not (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY')) or bool(os.getenv('GOOGLE_AI_API_KEY'))),
             "services": {
                 "booking_intelligence": "active",
-                "ai_recommendations": "active" if (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY'))) else "fallback",
-                "behavior_analysis": "active" if (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY'))) else "fallback",
+                "ai_recommendations": "active" if (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY')) or bool(os.getenv('GOOGLE_AI_API_KEY'))) else "fallback",
+                "behavior_analysis": "active" if (bool(os.getenv('OPENAI_API_KEY')) or bool(os.getenv('ANTHROPIC_API_KEY')) or bool(os.getenv('GOOGLE_AI_API_KEY'))) else "fallback",
                 "predictive_analytics": "active",
                 "monetization_tracking": "active"
             }
