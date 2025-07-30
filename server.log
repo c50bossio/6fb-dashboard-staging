@@ -1,29 +1,18 @@
-::1 - - [29/Jul/2025 08:06:00] "GET / HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:06:00] "GET /app/globals.css HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:06:04] "GET /?t=123 HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:06:12] "GET /ai-dashboard.html HTTP/1.1" 304 -
-::ffff:127.0.0.1 - - [29/Jul/2025 08:06:52] code 400, message Bad request version ('Ê!$)ÚÃEJY\\x1aÜs$¥ö\\x12$Ad¤U')
-::ffff:127.0.0.1 - - [29/Jul/2025 08:06:52] "\x16\x03\x01\x00ñ\x01\x00\x00í\x03\x03>ì\x18\x0fQlI«ð\x07\x7f<ñ\x85«A>y¢°\\ËJû\x00\x0c\x03ñä9\\\x90 Ê!$)ÚÃEJY\x1aÜs$¥ö\x12$Ad¤U" 400 -
-::1 - - [29/Jul/2025 08:12:19] "GET / HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:12:19] "GET /app/globals.css HTTP/1.1" 304 -
-::1 - - [29/Jul/2025 08:12:25] "GET /dashboard.html HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:13:47] "GET / HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:13:47] "GET /app/globals.css HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:13:54] "GET / HTTP/1.1" 304 -
-::1 - - [29/Jul/2025 08:13:55] "GET / HTTP/1.1" 304 -
-::1 - - [29/Jul/2025 08:13:56] "GET / HTTP/1.1" 304 -
-::1 - - [29/Jul/2025 08:13:56] "GET / HTTP/1.1" 304 -
-::1 - - [29/Jul/2025 08:14:07] "GET /dashboard.html HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:14:07] "GET /app/globals.css HTTP/1.1" 304 -
-::1 - - [29/Jul/2025 08:14:08] "GET / HTTP/1.1" 200 -
-::1 - - [29/Jul/2025 08:14:12] "GET /dashboard.html HTTP/1.1" 200 -
-::ffff:127.0.0.1 - - [29/Jul/2025 08:14:16] code 400, message Bad request version ('À\\x13À')
-::ffff:127.0.0.1 - - [29/Jul/2025 08:14:16] "\x16\x03\x01\x00ñ\x01\x00\x00í\x03\x034PÉ\x9fõwS\x1c\x1d¥8ÀÂ\x85õw« YÎ\x8d¤\x89!\x1buRÁ\x9f\x02\x14à [\x0c­\x82_ã\x90¿ÀlfþÒXê\x1f&w\x0d\x94¢\x03Gë\x09Flï­L\x18c\x00"\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
-::ffff:127.0.0.1 - - [29/Jul/2025 08:14:18] code 400, message Bad request version ('À\\x13À')
-::ffff:127.0.0.1 - - [29/Jul/2025 08:14:18] "\x16\x03\x01\x00ñ\x01\x00\x00í\x03\x032+Û\x11³¬2¤êî&Çôþs\x04éë\x8f\x94Ä0©°W\x825=¤o7À ô>\x84ÉhhüíúÎûö½Ü5\x8e\x8e\x9aª\x83\x8aº\x92)áñ9­­ê]\x86\x00"\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
-::ffff:127.0.0.1 - - [29/Jul/2025 08:14:20] code 400, message Bad request version ('À\\x13À')
-::ffff:127.0.0.1 - - [29/Jul/2025 08:14:20] "\x16\x03\x01\x00ñ\x01\x00\x00í\x03\x03\x85:\x09\x05àÝ\x99\x04ÌÍ¼/\x17+Á\x8b\x14ZÔ\x9a?Ex_\x90¾Zó&Ü\x97- \x1bâÏ Þ95\x8e\x8cêD\x1cIrÐx_\x94ÚÓ\x07£ ñý#M8Þb\x90v\x00"\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
-::ffff:127.0.0.1 - - [29/Jul/2025 08:14:22] code 400, message Bad request version ('À\\x13À')
-::ffff:127.0.0.1 - - [29/Jul/2025 08:14:22] "\x16\x03\x01\x00ñ\x01\x00\x00í\x03\x03\x03IEd£·\x05\x92ó©Ée\x19\x9fÓ8\x86éÙA¬èÞþ\x1a:ò÷õ\x8e\x93[ Ó{Úf\x002\x06E"Më\x16Z\x0d(\x94\x1aäX\x1eäu\x81T[Y\x91\x85þ2Éé\x00"\x13\x01\x13\x02\x13\x03À+À/À,À0Ì©Ì¨À\x09À\x13À" 400 -
-::1 - - [29/Jul/2025 08:15:56] "GET / HTTP/1.1" 304 -
-::1 - - [29/Jul/2025 08:15:56] "GET /app/globals.css HTTP/1.1" 304 -
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/http/server.py", line 1314, in <module>
+    test(
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/http/server.py", line 1261, in test
+    with ServerClass(addr, HandlerClass) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/http/server.py", line 1308, in server_bind
+    return super().server_bind()
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/http/server.py", line 136, in server_bind
+    socketserver.TCPServer.server_bind(self)
+  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/socketserver.py", line 473, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 48] Address already in use

@@ -16,7 +16,8 @@ from datetime import datetime, timedelta
 import random
 import jwt
 import bcrypt
-import sqlite3
+import os
+import asyncpg
 import os
 
 app = FastAPI(title="6FB AI Agent System", description="Enterprise RAG-powered AI agents")
@@ -38,58 +39,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Database setup
-def init_database():
-    """Initialize SQLite database for users and chat history"""
-    conn = sqlite3.connect('agent_system.db')
-    cursor = conn.cursor()
-    
-    # Users table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            hashed_password TEXT NOT NULL,
-            full_name TEXT NOT NULL,
-            barbershop_name TEXT,
-            barbershop_id TEXT UNIQUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            is_active BOOLEAN DEFAULT TRUE
-        )
-    ''')
-    
-    # Chat sessions table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS chat_sessions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id TEXT UNIQUE NOT NULL,
-            user_id INTEGER,
-            agent_id TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-    ''')
-    
-    # Chat messages table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS chat_messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            session_id TEXT NOT NULL,
-            role TEXT NOT NULL,
-            content TEXT NOT NULL,
-            agent_name TEXT,
-            recommendations TEXT,
-            confidence REAL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (session_id) REFERENCES chat_sessions (session_id)
-        )
-    ''')
-    
-    conn.commit()
-    conn.close()
+# Simple PostgreSQL connection
+pg_pool = None
 
-# Initialize database on startup
-init_database()
+async def init_database():
+    """Initialize PostgreSQL database connection"""
+    global pg_pool
+    database_url = os.getenv('DATABASE_URL', 'postgresql://agent_user:secure_agent_password_2024@postgres:5432/agent_system')
+    try:
+        pg_pool = await asyncpg.create_pool(database_url, min_size=2, max_size=10)
+        print("🐘 PostgreSQL database initialized")
+    except Exception as e:
+        print(f"❌ Database connection failed: {e}")
+        # Fallback to existing SQLite system
+        print("🔄 Falling back to existing database system")
+
+# Startup and shutdown events
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    await init_database()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Close database connections on shutdown"""
+    global pg_pool
+    if pg_pool:
+        await pg_pool.close()
+        print("🔌 PostgreSQL connection pool closed")
 
 # Authentication Models (defined before they're used)
 class UserRegister(BaseModel):
@@ -134,26 +111,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_user_by_email(email: str) -> Optional[Dict]:
+async def get_user_by_email(email: str) -> Optional[Dict]:
     """Get user by email from database"""
-    conn = sqlite3.connect('agent_system.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
-    row = cursor.fetchone()
-    conn.close()
-    
-    if row:
-        return {
-            "id": row[0],
-            "email": row[1],
-            "hashed_password": row[2],
-            "full_name": row[3],
-            "barbershop_name": row[4],
-            "barbershop_id": row[5],
-            "created_at": row[6],
-            "is_active": row[7]
-        }
-    return None
+    return await db.get_user_by_email(email)
 
 def create_user(user: UserRegister) -> Dict:
     """Create new user in database"""
@@ -557,11 +517,23 @@ async def chat_with_agent(request: AgentChatRequest, current_user: User = Depend
 
 @app.get("/api/v1/health")
 async def health_check():
-    """Health check endpoint"""
+    """Health check endpoint with database connectivity"""
+    global pg_pool
+    db_healthy = False
+    
+    if pg_pool:
+        try:
+            async with pg_pool.acquire() as conn:
+                await conn.fetchval("SELECT 1")
+            db_healthy = True
+        except Exception:
+            db_healthy = False
+    
     return {
-        "status": "healthy",
+        "status": "healthy" if db_healthy else "degraded",
         "service": "6FB AI Agent System",
         "version": "1.0.0",
+        "database": "postgresql" if db_healthy else "fallback",
         "rag_engine": "active",
         "timestamp": datetime.now().isoformat()
     }

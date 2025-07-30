@@ -1,6 +1,9 @@
 # Frontend Dockerfile for 6FB AI Agent System
 FROM node:18-alpine
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 # Copy package files

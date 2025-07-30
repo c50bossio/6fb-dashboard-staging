@@ -7,6 +7,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements (create if doesn't exist)
@@ -14,7 +15,7 @@ COPY requirements.txt* ./
 
 # Install Python dependencies
 RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
-RUN pip install fastapi uvicorn[standard] python-multipart python-jose[cryptography] passlib[bcrypt]
+RUN pip install fastapi uvicorn[standard] python-multipart python-jose[cryptography] passlib[bcrypt] psycopg2-binary asyncpg sqlalchemy
 
 # Copy application code
 COPY fastapi-server.py ./
