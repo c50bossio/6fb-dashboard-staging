@@ -1,1 +1,1 @@
-web: uvicorn fastapi-server:app --host 0.0.0.0 --port $PORT
+web: python railway-start.py
