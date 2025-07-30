@@ -2,6 +2,6 @@
 
 echo "🛑 Stopping 6FB AI Agent System containers..."
 
-docker-compose down
+docker compose down
 
 echo "✅ All containers stopped successfully!"

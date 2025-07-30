@@ -1,0 +1,117 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+server.log
+next-server.log
+fastapi.log
+enhanced-booking.log
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+agent_system.db
+booking_system.db
+
+# Test files and coverage
+coverage/
+.nyc_output
+.coverage
+htmlcov/
+.pytest_cache/
+__tests__/
+tests/
+test-utils/
+*.test.js
+*.spec.js
+
+# Documentation
+*.md
+README.md
+VISION.md
+TESTING.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Deployment and Infrastructure
+infrastructure/
+staging-deploy/
+deployment/
+k8s/
+terraform/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Scripts and tools (unless needed)
+scripts/
+tools/
+monitoring/
+optimization-examples/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Lock files (keep package-lock.json for reproducible builds)
+yarn.lock
+pnpm-lock.yaml
+
+# Build artifacts
+*.tgz
+*.tar.gz
