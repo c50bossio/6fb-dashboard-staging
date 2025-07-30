@@ -25,7 +25,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://6fb-ai-backend-staging.railway.app/api/:path*"
+      "destination": "https://6fb-ai-backend-staging.railway.app/:path*"
     }
   ],
   "headers": [
