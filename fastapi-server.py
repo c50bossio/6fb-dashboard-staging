@@ -1099,6 +1099,89 @@ async def get_public_barbers(barbershop_id: str):
         logger.error(f"Error getting public barbers: {e}")
         raise HTTPException(status_code=500, detail="Failed to get barbers")
 
+@app.get("/api/v1/public/barbers/{barber_id}/availability")
+async def get_public_barber_availability(
+    barber_id: str,
+    barbershop_id: str,
+    start_date: str,
+    end_date: str,
+    service_duration_minutes: int = 30
+):
+    """Get barber availability for public booking (no authentication required)"""
+    try:
+        # Verify barbershop exists and has online booking enabled
+        async with db.pool.acquire() as conn:
+            barbershop_row = await conn.fetchrow("""
+                SELECT id FROM barbershops 
+                WHERE id = $1 AND online_booking_enabled = TRUE
+            """, barbershop_id)
+            
+            if not barbershop_row:
+                raise HTTPException(status_code=404, detail="Barbershop not found or online booking disabled")
+            
+            # Verify barber exists and is active at this barbershop
+            if barber_id == 'no-preference':
+                # No preference option is always valid if barbershop exists
+                barber_row = {'id': 'no-preference', 'name': 'No Preference'}
+            else:
+                barber_row = await conn.fetchrow("""
+                    SELECT u.id, u.name FROM barbershop_staff bs
+                    JOIN users u ON bs.user_id = u.id
+                    WHERE u.id = $1 AND bs.barbershop_id = $2 AND bs.is_active = TRUE
+                """, barber_id, barbershop_id)
+            
+            # For now, return mock availability since Google Calendar integration requires OAuth
+            # In a real implementation, this would check calendar availability
+            from datetime import datetime, timedelta
+            import random
+            
+            slots = []
+            start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+            end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            
+            current_date = start
+            while current_date < end:
+                # Skip Sundays
+                if current_date.weekday() == 6:
+                    current_date += timedelta(days=1)
+                    continue
+                
+                # Generate slots for business hours (9 AM - 6 PM)
+                for hour in range(9, 18):
+                    for minute in [0, 30]:
+                        slot_time = current_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                        
+                        # Skip past times
+                        if slot_time <= datetime.now(slot_time.tzinfo):
+                            continue
+                            
+                        # Randomly skip some slots to simulate existing bookings
+                        if random.random() > 0.3:
+                            end_time = slot_time + timedelta(minutes=service_duration_minutes)
+                            slots.append({
+                                "start_time": slot_time.isoformat(),
+                                "end_time": end_time.isoformat(),
+                                "duration_minutes": service_duration_minutes,
+                                "available": True
+                            })
+                
+                current_date += timedelta(days=1)
+            
+            return {
+                "success": True,
+                "barber_id": barber_id,
+                "barbershop_id": barbershop_id,
+                "availability_slots": slots[:20],  # Limit to first 20 slots
+                "calendar_connected": False,
+                "message": "Mock availability data - Google Calendar integration requires authentication"
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting public barber availability: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get availability")
+
 class GuestBookingRequest(BaseModel):
     """Request model for guest booking"""
     barbershop_id: str

@@ -65,14 +65,12 @@ export default function PublicBookingPage() {
       endDate.setDate(startDate.getDate() + 7);
       
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/barbers/${selectedBarber.id}/availability?` +
-        `start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}&` +
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/public/barbers/${selectedBarber.id}/availability?` +
+        `barbershop_id=${barbershopId}&start_date=${startDate.toISOString()}&end_date=${endDate.toISOString()}&` +
         `service_duration_minutes=${selectedService.duration_minutes}`,
         {
           headers: {
-            'Content-Type': 'application/json',
-            // For now, we'll need a temp auth token for testing
-            // TODO: Create public availability endpoint or guest token system
+            'Content-Type': 'application/json'
           }
         }
       );

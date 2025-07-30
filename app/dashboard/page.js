@@ -177,6 +177,82 @@ function DashboardContent({ devMode = false }) {
         </div>
       </div>
 
+      {/* Booking Management */}
+      <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Booking Management</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <span className="text-2xl">📅</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Customer Booking Page</h3>
+                <p className="text-sm text-gray-600">Public booking interface for your customers</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => window.open('/book/a0952714-3185-4776-aa8d-0cd8857ef607', '_blank')}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                🔗 Open Booking Page
+              </button>
+              <div className="bg-white p-3 rounded border border-blue-200">
+                <p className="text-xs text-gray-500 mb-1">Share this link with customers:</p>
+                <code className="text-xs bg-gray-100 p-1 rounded block break-all">
+                  {typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9999'}/book/a0952714-3185-4776-aa8d-0cd8857ef607
+                </code>
+                <button
+                  onClick={() => {
+                    const url = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9999'}/book/a0952714-3185-4776-aa8d-0cd8857ef607`;
+                    navigator.clipboard.writeText(url);
+                    alert('Booking link copied to clipboard!');
+                  }}
+                  className="mt-2 text-blue-600 hover:text-blue-700 text-xs font-medium"
+                >
+                  📋 Copy Link
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                <span className="text-2xl">⚙️</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Booking Features</h3>
+                <p className="text-sm text-gray-600">Advanced booking system capabilities</p>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center">
+                <span className="text-green-600 mr-2">✅</span>
+                <span>Barber-specific service pricing</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-green-600 mr-2">✅</span>
+                <span>Different durations per barber</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-green-600 mr-2">✅</span>
+                <span>"No preference" option available</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-green-600 mr-2">✅</span>
+                <span>Guest booking (no account needed)</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-yellow-600 mr-2">⏳</span>
+                <span>Google Calendar integration</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Quick Stats */}
       <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Stats</h2>
