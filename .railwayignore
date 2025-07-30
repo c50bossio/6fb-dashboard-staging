@@ -1,0 +1,40 @@
+# Railway Ignore - Python Backend Only
+# Exclude frontend/Node.js files from Python deployment
+
+# Frontend files
+package.json
+package-lock.json
+node_modules/
+.next/
+.vercel/
+app/
+components/
+public/
+styles/
+
+# Development files
+.env.local
+.env.example
+.env.staging
+jest.config.js
+next.config.mjs
+postcss.config.js
+tailwind.config.js
+
+# Testing
+playwright.config.js
+test/
+tests/
+__tests__/
+
+# Documentation
+*.md
+docs/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
