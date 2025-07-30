@@ -1,0 +1,346 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sixfb-ai-backend-hpa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-backend-hpa
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sixfb-ai-backend
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  # Custom metrics for request rate
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  # Custom metrics for AI processing queue
+  - type: Pods
+    pods:
+      metric:
+        name: ai_processing_queue_length
+      target:
+        type: AverageValue
+        averageValue: "10"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 60
+      - type: Pods
+        value: 4
+        periodSeconds: 60
+      selectPolicy: Max
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sixfb-ai-frontend-hpa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-frontend-hpa
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sixfb-ai-frontend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # Custom metrics for concurrent connections
+  - type: Pods
+    pods:
+      metric:
+        name: nginx_active_connections
+      target:
+        type: AverageValue
+        averageValue: "50"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-proxy-hpa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: nginx-proxy-hpa
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-proxy
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+  # CPU-based scaling
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  # Memory-based scaling
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 60
+  # Custom metrics for connection rate
+  - type: Pods
+    pods:
+      metric:
+        name: nginx_connections_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 25
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+# Vertical Pod Autoscaler for backend
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: sixfb-ai-backend-vpa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-backend-vpa
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sixfb-ai-backend
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: backend
+      maxAllowed:
+        cpu: "2"
+        memory: "4Gi"
+      minAllowed:
+        cpu: "100m"
+        memory: "256Mi"
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+
+---
+# Vertical Pod Autoscaler for frontend
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: sixfb-ai-frontend-vpa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-frontend-vpa
+    app.kubernetes.io/component: autoscaling
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sixfb-ai-frontend
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+    - containerName: frontend
+      maxAllowed:
+        cpu: "1"
+        memory: "2Gi"
+      minAllowed:
+        cpu: "50m"
+        memory: "128Mi"
+      controlledResources: ["cpu", "memory"]
+      controlledValues: RequestsAndLimits
+
+---
+# Pod Disruption Budget for backend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: sixfb-ai-backend-pdb
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-backend-pdb
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sixfb-ai-backend
+      app.kubernetes.io/component: backend
+
+---
+# Pod Disruption Budget for frontend
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: sixfb-ai-frontend-pdb
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-frontend-pdb
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sixfb-ai-frontend
+      app.kubernetes.io/component: frontend
+
+---
+# Pod Disruption Budget for nginx proxy
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nginx-proxy-pdb
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: nginx-proxy-pdb
+    app.kubernetes.io/component: availability
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx-proxy
+      app.kubernetes.io/component: proxy
+
+---
+# Custom Resource Definition for AI Processing Metrics
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: aiprocessingmetrics.metrics.sixfb.ai
+  labels:
+    app.kubernetes.io/name: ai-processing-metrics
+    app.kubernetes.io/component: metrics
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  group: metrics.sixfb.ai
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              queueLength:
+                type: integer
+                minimum: 0
+              processingRate:
+                type: integer
+                minimum: 0
+              averageProcessingTime:
+                type: number
+                minimum: 0
+          status:
+            type: object
+            properties:
+              lastUpdated:
+                type: string
+                format: date-time
+  scope: Namespaced
+  names:
+    plural: aiprocessingmetrics
+    singular: aiprocessingmetric
+    kind: AIProcessingMetric
+    shortNames:
+    - aipm

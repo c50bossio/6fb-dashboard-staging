@@ -1,0 +1,339 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sixfb-ai-backend-sa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-backend
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: sixfb-ai-system
+automountServiceAccountToken: true
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sixfb-ai-frontend-sa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-frontend
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: sixfb-ai-system
+automountServiceAccountToken: true
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nginx-proxy-sa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: nginx-proxy
+    app.kubernetes.io/component: proxy
+    app.kubernetes.io/part-of: sixfb-ai-system
+automountServiceAccountToken: false
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: redis-sa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/component: cache
+    app.kubernetes.io/part-of: sixfb-ai-system
+automountServiceAccountToken: false
+
+---
+# ClusterRole for backend application
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sixfb-ai-backend-role
+  labels:
+    app.kubernetes.io/name: sixfb-ai-backend
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: sixfb-ai-system
+rules:
+# Read-only access to nodes for health checking
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+# Read access to own pod information
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+  resourceNames: []
+# Read access to services for service discovery
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list"]
+# Read access to configmaps and secrets
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+# Metrics collection
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes", "pods"]
+  verbs: ["get", "list"]
+
+---
+# Role for frontend application (namespace-scoped)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: sixfb-ai-system
+  name: sixfb-ai-frontend-role
+  labels:
+    app.kubernetes.io/name: sixfb-ai-frontend
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: sixfb-ai-system
+rules:
+# Read access to own pod information
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+# Read access to services for service discovery
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list"]
+# Read access to configmaps
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list"]
+
+---
+# ClusterRoleBinding for backend
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sixfb-ai-backend-binding
+  labels:
+    app.kubernetes.io/name: sixfb-ai-backend
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: sixfb-ai-system
+subjects:
+- kind: ServiceAccount
+  name: sixfb-ai-backend-sa
+  namespace: sixfb-ai-system
+roleRef:
+  kind: ClusterRole
+  name: sixfb-ai-backend-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# RoleBinding for frontend
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: sixfb-ai-frontend-binding
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-frontend
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: sixfb-ai-system
+subjects:
+- kind: ServiceAccount
+  name: sixfb-ai-frontend-sa
+  namespace: sixfb-ai-system
+roleRef:
+  kind: Role
+  name: sixfb-ai-frontend-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Pod Security Policy (if PSP is enabled)
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: sixfb-ai-psp
+  labels:
+    app.kubernetes.io/name: sixfb-ai-psp
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: sixfb-ai-system
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+    - 'persistentVolumeClaim'
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: true
+
+---
+# ClusterRole for PSP
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sixfb-ai-psp-role
+  labels:
+    app.kubernetes.io/name: sixfb-ai-psp
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: sixfb-ai-system
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs: ['use']
+  resourceNames:
+  - sixfb-ai-psp
+
+---
+# ClusterRoleBinding for PSP
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sixfb-ai-psp-binding
+  labels:
+    app.kubernetes.io/name: sixfb-ai-psp
+    app.kubernetes.io/component: security
+    app.kubernetes.io/part-of: sixfb-ai-system
+roleRef:
+  kind: ClusterRole
+  name: sixfb-ai-psp-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: sixfb-ai-backend-sa
+  namespace: sixfb-ai-system
+- kind: ServiceAccount
+  name: sixfb-ai-frontend-sa
+  namespace: sixfb-ai-system
+- kind: ServiceAccount
+  name: nginx-proxy-sa
+  namespace: sixfb-ai-system
+- kind: ServiceAccount
+  name: redis-sa
+  namespace: sixfb-ai-system
+
+---
+# Service Account for Vault integration
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-auth-sa
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: vault-auth
+    app.kubernetes.io/component: secrets-management
+    app.kubernetes.io/part-of: sixfb-ai-system
+automountServiceAccountToken: true
+
+---
+# ClusterRole for Vault authentication
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault-auth-role
+  labels:
+    app.kubernetes.io/name: vault-auth
+    app.kubernetes.io/component: secrets-management
+    app.kubernetes.io/part-of: sixfb-ai-system
+rules:
+- apiGroups: [""]
+  resources: ["serviceaccounts/token"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["get"]
+
+---
+# ClusterRoleBinding for Vault authentication
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-auth-binding
+  labels:
+    app.kubernetes.io/name: vault-auth
+    app.kubernetes.io/component: secrets-management
+    app.kubernetes.io/part-of: sixfb-ai-system
+subjects:
+- kind: ServiceAccount
+  name: vault-auth-sa
+  namespace: sixfb-ai-system
+roleRef:
+  kind: ClusterRole
+  name: vault-auth-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Service Account for monitoring
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus-sa
+  namespace: sixfb-monitoring
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: monitoring-stack
+automountServiceAccountToken: true
+
+---
+# ClusterRole for Prometheus monitoring
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus-role
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: monitoring-stack
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - nodes/metrics
+  - services
+  - endpoints
+  - pods
+  - ingresses
+  - configmaps
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["extensions", "networking.k8s.io"]
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
+  verbs: ["get"]
+
+---
+# ClusterRoleBinding for Prometheus
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-binding
+  labels:
+    app.kubernetes.io/name: prometheus
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: monitoring-stack
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-role
+subjects:
+- kind: ServiceAccount
+  name: prometheus-sa
+  namespace: sixfb-monitoring

@@ -1,0 +1,239 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sixfb-ai-backend-config
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-backend
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/part-of: sixfb-ai-system
+data:
+  # Application Configuration
+  APP_NAME: "6FB AI Agent System"
+  APP_VERSION: "1.0.0"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  
+  # Server Configuration
+  HOST: "0.0.0.0"
+  PORT: "8000"
+  WORKERS: "4"
+  
+  # Database Configuration
+  DB_HOST: "sixfb-postgres-service"
+  DB_PORT: "5432"
+  DB_NAME: "sixfb_ai_system"
+  DB_SSL_MODE: "require"
+  DB_POOL_SIZE: "20"
+  DB_MAX_OVERFLOW: "10"
+  DB_POOL_TIMEOUT: "30"
+  DB_POOL_RECYCLE: "3600"
+  
+  # Redis Configuration
+  REDIS_HOST: "sixfb-redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_MAX_CONNECTIONS: "50"
+  
+  # AI/ML Configuration
+  AI_MODEL_PATH: "/app/models"
+  AI_BATCH_SIZE: "32"
+  AI_MAX_TOKENS: "4096"
+  
+  # Monitoring Configuration
+  PROMETHEUS_ENABLED: "true"
+  PROMETHEUS_PORT: "9090"
+  HEALTH_CHECK_PATH: "/health"
+  METRICS_PATH: "/metrics"
+  
+  # Security Configuration
+  CORS_ORIGINS: "https://sixfb-ai.com,https://staging.sixfb-ai.com"
+  RATE_LIMIT: "100"
+  RATE_LIMIT_WINDOW: "60"
+  
+  # Feature Flags
+  ENABLE_CACHING: "true"
+  ENABLE_ANALYTICS: "true"
+  ENABLE_DEBUG_MODE: "false"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sixfb-ai-frontend-config
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: sixfb-ai-frontend
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/part-of: sixfb-ai-system
+data:
+  # Next.js Configuration
+  NODE_ENV: "production"
+  PORT: "3000"
+  
+  # API Configuration
+  NEXT_PUBLIC_API_URL: "https://api.sixfb-ai.com"
+  NEXT_PUBLIC_WS_URL: "wss://api.sixfb-ai.com/ws"
+  
+  # Authentication Configuration
+  NEXTAUTH_URL: "https://sixfb-ai.com"
+  
+  # Application Configuration
+  NEXT_PUBLIC_APP_NAME: "6FB AI Agent System"
+  NEXT_PUBLIC_APP_VERSION: "1.0.0"
+  
+  # Analytics Configuration
+  NEXT_PUBLIC_GA_ID: ""
+  NEXT_PUBLIC_HOTJAR_ID: ""
+  
+  # Feature Flags
+  NEXT_PUBLIC_ENABLE_ANALYTICS: "true"
+  NEXT_PUBLIC_ENABLE_DEBUG: "false"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: sixfb-ai-system
+  labels:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/component: proxy
+    app.kubernetes.io/part-of: sixfb-ai-system
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log notice;
+    pid /var/run/nginx.pid;
+
+    events {
+        worker_connections 1024;
+        use epoll;
+        multi_accept on;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        # Logging
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for" '
+                        'rt=$request_time uct="$upstream_connect_time" '
+                        'uht="$upstream_header_time" urt="$upstream_response_time"';
+
+        access_log /var/log/nginx/access.log main;
+
+        # Performance
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        client_max_body_size 50M;
+
+        # Gzip
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 10240;
+        gzip_proxied expired no-cache no-store private must-revalidate;
+        gzip_types
+            text/plain
+            text/css
+            text/xml
+            text/javascript
+            application/javascript
+            application/xml+rss
+            application/json;
+
+        # Security Headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "no-referrer-when-downgrade" always;
+        add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+
+        # Rate Limiting
+        limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+        limit_req_zone $binary_remote_addr zone=login:10m rate=1r/s;
+
+        # Upstream Backend
+        upstream backend {
+            server sixfb-ai-backend-service:8000;
+            keepalive 32;
+        }
+
+        # Upstream Frontend
+        upstream frontend {
+            server sixfb-ai-frontend-service:3000;
+            keepalive 32;
+        }
+
+        # Main Server Block
+        server {
+            listen 80;
+            server_name _;
+            
+            # Health Check
+            location /nginx-health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+
+            # API Routes
+            location /api/ {
+                limit_req zone=api burst=20 nodelay;
+                proxy_pass http://backend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_cache_bypass $http_upgrade;
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+
+            # WebSocket Routes
+            location /ws/ {
+                proxy_pass http://backend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_read_timeout 86400;
+            }
+
+            # Frontend Routes
+            location / {
+                proxy_pass http://frontend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_cache_bypass $http_upgrade;
+                proxy_connect_timeout 30s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+            }
+
+            # Static Assets Caching
+            location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+                proxy_pass http://frontend;
+            }
+        }
+    }

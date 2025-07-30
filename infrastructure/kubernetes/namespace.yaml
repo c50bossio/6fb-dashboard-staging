@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sixfb-ai-system
+  labels:
+    name: sixfb-ai-system
+    environment: production
+    app.kubernetes.io/name: sixfb-ai-system
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: helm
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sixfb-ai-system-staging
+  labels:
+    name: sixfb-ai-system-staging
+    environment: staging
+    app.kubernetes.io/name: sixfb-ai-system
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: helm
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sixfb-monitoring
+  labels:
+    name: sixfb-monitoring
+    purpose: monitoring
+    app.kubernetes.io/name: monitoring-stack
+    app.kubernetes.io/managed-by: helm
