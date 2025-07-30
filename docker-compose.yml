@@ -11,10 +11,9 @@ services:
       - NEXT_PUBLIC_ENABLE_RAG=true
       - NEXT_PUBLIC_ENABLE_MOCK_FALLBACK=true
       - NEXT_PUBLIC_DEV_MODE=true
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
+    # volumes:
+      # - .:/app
+      # - /app/node_modules
     depends_on:
       - backend
     networks:
