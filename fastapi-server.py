@@ -38,6 +38,14 @@ load_dotenv()
 # Import agent coordination system
 from services.orchestration.agent_coordination_api import router as agent_coordination_router
 
+# Import executable agents
+try:
+    from services.executable_agents.marketing_execution_agent import ExecutableMarketingAgent
+    EXECUTABLE_AGENTS_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Executable agents not available: {e}")
+    EXECUTABLE_AGENTS_AVAILABLE = False
+
 app = FastAPI(title="6FB AI Agent System", description="Enhanced AI Agent System with 39-Agent Coordination")
 
 # Configure logging
@@ -2560,25 +2568,34 @@ async def master_orchestrator(message: str, conversation_history: list = None) -
     Returns synthesized response from relevant specialists
     """
     try:
-        # Step 1: Analyze the question to determine which specialists are needed
+        # Step 1: Analyze the question to determine which specialists are needed and if execution is required
         analysis_prompt = f"""You are the Master AI Orchestrator for a barbershop business intelligence system. 
         
 Analyze this question: "{message}"
 
-Determine which business specialists should be consulted. Available specialists:
+Determine which business specialists should be consulted and if executable actions are requested. Available specialists:
 - financial: Revenue, costs, pricing, profit margins, budgeting
-- marketing: Customer acquisition, retention, social media, local marketing
+- marketing: Customer acquisition, retention, social media, local marketing  
 - operations: Workflow, scheduling, efficiency, staff management, technology
 - brand: Reputation, positioning, customer experience, community presence  
 - growth: Scaling, expansion, franchising, multi-location management
 - master_coach: Strategic planning, leadership, overall business guidance
+
+EXECUTABLE ACTIONS: Check if the user wants actual execution (not just advice):
+- SMS/Text blast, Email blast, Marketing campaigns
+- Social media posting, Content creation
+- Booking appointments, Calendar management
+- Follow-up sequences, Customer outreach
 
 Return a JSON response with:
 {{
     "specialists_needed": ["specialist1", "specialist2"],
     "reasoning": "Brief explanation of why these specialists are needed",
     "question_complexity": "simple|moderate|complex",
-    "primary_focus": "main business area this question addresses"
+    "primary_focus": "main business area this question addresses",
+    "execution_requested": true/false,
+    "execution_type": "sms_blast|email_blast|social_post|booking|follow_up|none",
+    "execution_details": "specific action user wants performed"
 }}
 
 Be selective - only include specialists that are truly relevant to the question."""
@@ -2619,14 +2636,22 @@ Be selective - only include specialists that are truly relevant to the question.
         reasoning = analysis.get("reasoning", "General business advice needed")
         complexity = analysis.get("question_complexity", "moderate")
         primary_focus = analysis.get("primary_focus", "business strategy")
+        execution_requested = analysis.get("execution_requested", False)
+        execution_type = analysis.get("execution_type", "none")
+        execution_details = analysis.get("execution_details", "")
 
-        # Step 2: Get responses from each needed specialist
+        # Step 2: Handle executable actions if requested
+        execution_result = None
+        if execution_requested and EXECUTABLE_AGENTS_AVAILABLE:
+            execution_result = await handle_executable_action(message, execution_type, execution_details)
+
+        # Step 3: Get responses from each needed specialist
         specialist_responses = {}
         for specialist in specialists_needed:
             response = await get_specialist_response(message, specialist, conversation_history)
             specialist_responses[specialist] = response
 
-        # Step 3: Synthesize responses from all specialists
+        # Step 4: Synthesize responses from all specialists
         synthesis_prompt = f"""You are the Master AI Orchestrator synthesizing advice from multiple barbershop business specialists.
 
 Original Question: "{message}"
@@ -2638,6 +2663,16 @@ Specialist Responses:
         for specialist, response in specialist_responses.items():
             synthesis_prompt += f"\n**{specialist.title()} Specialist:**\n{response}\n"
 
+        # Add execution results if available
+        if execution_result and execution_result.get("success"):
+            synthesis_prompt += f"""
+
+**ACTIONS EXECUTED:**
+The system has already taken the following actions:
+{execution_result.get('action_taken', 'Action completed')}
+Results: {execution_result.get('message', '')}
+"""
+
         synthesis_prompt += f"""
 Now synthesize this advice into ONE cohesive, comprehensive response that:
 1. Addresses the original question completely
@@ -2645,9 +2680,9 @@ Now synthesize this advice into ONE cohesive, comprehensive response that:
 3. Provides actionable, prioritized recommendations
 4. Maintains a single, professional voice
 5. Includes specific numbers, examples, or benchmarks when relevant
-6. Ends with a strategic next step or follow-up question
+6. {"Acknowledges actions already taken and" if execution_result and execution_result.get("success") else ""} Ends with a strategic next step or follow-up question
 
-The response should read as if ONE expert advisor who understands all aspects of barbershop business is providing comprehensive guidance."""
+The response should read as if ONE expert advisor who understands all aspects of barbershop business is providing comprehensive guidance{"and has already executed requested actions" if execution_result and execution_result.get("success") else ""}."""
 
         # Get synthesized response
         if anthropic_client:
@@ -2670,6 +2705,8 @@ The response should read as if ONE expert advisor who understands all aspects of
             "analysis_reasoning": reasoning,
             "complexity": complexity,
             "primary_focus": primary_focus,
+            "execution_requested": execution_requested,
+            "execution_result": execution_result,
             "specialist_responses": specialist_responses  # For debugging/transparency
         }
 
@@ -2689,9 +2726,31 @@ def get_fallback_analysis(message: str) -> dict:
     message_lower = message.lower()
     specialists = []
     
+    # Check for executable actions
+    execution_requested = False
+    execution_type = "none"
+    execution_details = ""
+    
+    if any(word in message_lower for word in ['sms blast', 'text blast', 'send sms', 'text customers']):
+        execution_requested = True
+        execution_type = "sms_blast"
+        execution_details = "Send SMS campaign to customers"
+        specialists.append('marketing')
+    elif any(word in message_lower for word in ['email blast', 'email campaign', 'send email', 'email customers']):
+        execution_requested = True
+        execution_type = "email_blast" 
+        execution_details = "Send email campaign to customers"
+        specialists.append('marketing')
+    elif any(word in message_lower for word in ['follow up', 'reach out', 'contact lapsed', 'win back']):
+        execution_requested = True
+        execution_type = "follow_up"
+        execution_details = "Follow up with lapsed customers"
+        specialists.append('marketing')
+    
+    # Regular specialist detection
     if any(word in message_lower for word in ['revenue', 'money', 'profit', 'cost', 'price', 'financial', 'budget']):
         specialists.append('financial')
-    if any(word in message_lower for word in ['marketing', 'customer', 'advertis', 'promote', 'social']):
+    if any(word in message_lower for word in ['marketing', 'customer', 'advertis', 'promote', 'social']) and 'marketing' not in specialists:
         specialists.append('marketing')  
     if any(word in message_lower for word in ['operation', 'schedul', 'staff', 'efficiency', 'workflow']):
         specialists.append('operations')
@@ -2707,8 +2766,42 @@ def get_fallback_analysis(message: str) -> dict:
         "specialists_needed": specialists,
         "reasoning": f"Keyword analysis identified relevant areas: {', '.join(specialists)}",
         "question_complexity": "moderate",
-        "primary_focus": specialists[0] if specialists else "strategy"
+        "primary_focus": specialists[0] if specialists else "strategy",
+        "execution_requested": execution_requested,
+        "execution_type": execution_type,
+        "execution_details": execution_details
     }
+
+async def handle_executable_action(message: str, execution_type: str, execution_details: str) -> Dict[str, Any]:
+    """Handle executable actions through specialized agents"""
+    try:
+        if execution_type in ["sms_blast", "email_blast", "follow_up"]:
+            # Use Marketing Execution Agent
+            marketing_agent = ExecutableMarketingAgent("default_barbershop")
+            result = await marketing_agent.execute_command(message)
+            return result
+        
+        # Add other executable agents here as they're implemented
+        # elif execution_type == "social_post":
+        #     social_agent = ExecutableSocialMediaAgent("default_barbershop")
+        #     result = await social_agent.execute_command(message)
+        #     return result
+        
+        else:
+            return {
+                "success": False,
+                "message": f"Execution type '{execution_type}' not yet implemented",
+                "action_taken": "none"
+            }
+            
+    except Exception as e:
+        logger.error(f"Error executing action: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Failed to execute requested action",
+            "action_taken": "none"
+        }
 
 def synthesize_responses_fallback(specialist_responses: dict, message: str) -> str:
     """Fallback synthesis when AI services are unavailable"""
