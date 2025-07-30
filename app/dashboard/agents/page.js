@@ -1,5 +1,5 @@
-import AIAgentsDashboard from '../../../components/dashboard/AIAgentsDashboard'
+import AgenticCoachDashboard from '../../../components/dashboard/AgenticCoachDashboard'
 
 export default function AIAgentsPage() {
-  return <AIAgentsDashboard />
+  return <AgenticCoachDashboard />
 }

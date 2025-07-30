@@ -14,7 +14,7 @@ COPY requirements.txt* ./
 
 # Install Python dependencies
 RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
-RUN pip install fastapi uvicorn[standard] python-multipart python-jose[cryptography] passlib[bcrypt] sqlite3
+RUN pip install fastapi uvicorn[standard] python-multipart python-jose[cryptography] passlib[bcrypt]
 
 # Copy application code
 COPY fastapi-server.py ./
