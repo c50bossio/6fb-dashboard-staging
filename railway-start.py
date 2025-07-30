@@ -22,21 +22,20 @@ def main():
     import uvicorn
     from fastapi import FastAPI
     
-    # Import our app
-    try:
-        from fastapi_server import app
-        print("✅ FastAPI app imported successfully")
-    except ImportError as e:
-        print(f"❌ Failed to import FastAPI app: {e}")
-        sys.exit(1)
-    
-    # Start the server
-    uvicorn.run(
+    # Start the server directly without importing
+    # Use the hyphenated filename as Railway expects
+    cmd = [
+        sys.executable, "-m", "uvicorn",
         "fastapi-server:app",
-        host="0.0.0.0", 
-        port=int(port),
-        log_level="info"
-    )
+        "--host", "0.0.0.0",
+        "--port", port,
+        "--log-level", "info"
+    ]
+    
+    print(f"🚀 Executing: {' '.join(cmd)}")
+    
+    import subprocess
+    subprocess.run(cmd)
 
 if __name__ == "__main__":
     main()
