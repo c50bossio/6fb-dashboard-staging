@@ -418,7 +418,7 @@ class EmailService:
                 async with aiosmtplib.SMTP(
                     hostname=EMAIL_CONFIG["SMTP_HOST"],
                     port=EMAIL_CONFIG["SMTP_PORT"],
-                    use_tls=True
+                    start_tls=True
                 ) as smtp:
                     await smtp.login(EMAIL_CONFIG["SMTP_USERNAME"], EMAIL_CONFIG["SMTP_PASSWORD"])
                     await smtp.send_message(message)
@@ -487,7 +487,7 @@ class SMSService:
                         f"https://api.twilio.com/2010-04-01/Accounts/{SMS_CONFIG['TWILIO_ACCOUNT_SID']}/Messages.json",
                         auth=(SMS_CONFIG["TWILIO_ACCOUNT_SID"], SMS_CONFIG["TWILIO_AUTH_TOKEN"]),
                         data={
-                            "From": SMS_CONFIG["TWILIO_FROM_NUMBER"],
+                            "From": SMS_CONFIG.get("TWILIO_FROM_NUMBER", SMS_CONFIG.get("TWILIO_PHONE_NUMBER")),
                             "To": to_number,
                             "Body": message
                         }
