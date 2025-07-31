@@ -42,7 +42,7 @@ class ChatResponse(BaseModel):
 
 # Startup event
 @app.on_event("startup")
-async def startup_event():
+def startup_event():
     print("🚀 6FB AI Agent System Backend Starting...")
     print(f"📍 Environment: {os.getenv('ENVIRONMENT', 'production')}")
     print(f"🌐 Port: {os.getenv('PORT', '8000')}")
