@@ -2,8 +2,7 @@
 NIXPACKS_BUILD_CMD = "python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt"
 NIXPACKS_START_CMD = "python3 main.py"
 
-[providers]
-python = "3.11"
+providers = ["python"]
 
 [phases.setup]
 nixPkgs = ["python311", "python311Packages.pip"]
