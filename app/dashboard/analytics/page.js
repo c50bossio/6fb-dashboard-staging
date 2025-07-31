@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../../contexts/AuthContext'
-import ProtectedRoute from '../../../components/ProtectedRoute'
 import Link from 'next/link'
 import { 
   ArrowLeftIcon,
@@ -21,7 +19,6 @@ import {
 } from 'recharts'
 
 export default function AnalyticsDashboard() {
-  const { user } = useAuth()
   const [timeRange, setTimeRange] = useState('7days')
   const [loading, setLoading] = useState(true)
   const [analyticsData, setAnalyticsData] = useState(null)
@@ -115,20 +112,17 @@ export default function AnalyticsDashboard() {
 
   if (loading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading analytics...</p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading analytics...</p>
         </div>
-      </ProtectedRoute>
+      </div>
     )
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -331,7 +325,6 @@ export default function AnalyticsDashboard() {
             </div>
           </div>
         </div>
-      </div>
-    </ProtectedRoute>
+    </div>
   )
 }
