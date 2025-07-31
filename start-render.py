@@ -14,7 +14,7 @@ def main():
     # Run uvicorn
     cmd = [
         sys.executable, '-m', 'uvicorn',
-        'fastapi-server:app',
+        'main:app',
         '--host', '0.0.0.0',
         '--port', port
     ]

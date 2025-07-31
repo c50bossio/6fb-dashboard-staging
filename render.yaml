@@ -9,10 +9,10 @@ services:
       - key: ENVIRONMENT
         value: staging
       - key: FRONTEND_URL
-        value: https://6fb-ai-staging-h5v5htl9v-6fb.vercel.app
+        value: https://6fb-ai-staging.vercel.app
       - key: NODE_ENV
         value: production
-    autoDeploy: false
+    autoDeploy: true
 
 databases:
   - name: 6fb-ai-postgres-staging
