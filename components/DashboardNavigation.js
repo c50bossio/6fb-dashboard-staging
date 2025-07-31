@@ -9,6 +9,7 @@ import {
   UserGroupIcon,
   ChartBarIcon,
   CogIcon,
+  CreditCardIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
 
@@ -17,6 +18,7 @@ const navigation = [
   { name: 'Campaigns', href: '/dashboard/campaigns', icon: MegaphoneIcon },
   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
+  { name: 'Billing', href: '/dashboard/billing', icon: CreditCardIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: CogIcon }
 ]
 

@@ -13,6 +13,7 @@ import os
 import hashlib
 import secrets
 import sqlite3
+import uuid
 from contextlib import contextmanager
 
 # Initialize FastAPI app
@@ -592,8 +593,23 @@ async def get_learning_insights(current_user: dict = Depends(get_current_user)):
 @app.post("/api/v1/settings/barbershop")
 async def save_barbershop_settings(settings: dict, current_user: dict = Depends(get_current_user)):
     """Save barbershop settings"""
-    # In production, save to database
-    # For now, store in session or return success
+    with get_db() as conn:
+        # Update user's shop name if changed
+        if 'barbershop' in settings and 'name' in settings['barbershop']:
+            conn.execute(
+                "UPDATE users SET shop_name = ? WHERE id = ?",
+                (settings['barbershop']['name'], current_user["id"])
+            )
+        
+        # Save all settings to shop_profiles
+        profile_data = json.dumps(settings)
+        conn.execute("""
+            INSERT OR REPLACE INTO shop_profiles (user_id, profile_data)
+            VALUES (?, ?)
+        """, (current_user["id"], profile_data))
+        
+        conn.commit()
+    
     return {
         "message": "Settings saved successfully",
         "settings": settings
@@ -602,7 +618,23 @@ async def save_barbershop_settings(settings: dict, current_user: dict = Depends(
 @app.get("/api/v1/settings/barbershop")
 async def get_barbershop_settings(current_user: dict = Depends(get_current_user)):
     """Get barbershop settings"""
-    # In production, retrieve from database
+    with get_db() as conn:
+        # Try to get saved settings from shop_profiles
+        cursor = conn.execute(
+            "SELECT profile_data FROM shop_profiles WHERE user_id = ?",
+            (current_user["id"],)
+        )
+        profile = cursor.fetchone()
+        
+        if profile and profile["profile_data"]:
+            # Return saved settings
+            saved_settings = json.loads(profile["profile_data"])
+            # Ensure email matches current user
+            if 'barbershop' in saved_settings:
+                saved_settings['barbershop']['email'] = current_user.get("email", "demo@barbershop.com")
+            return saved_settings
+    
+    # Return default settings if none saved
     return {
         "barbershop": {
             "name": current_user.get("shop_name", "Demo Barbershop"),
@@ -619,6 +651,137 @@ async def get_barbershop_settings(current_user: dict = Depends(get_current_user)
             "systemAlerts": True
         }
     }
+
+# Billing endpoints
+@app.get("/api/v1/billing/current")
+async def get_current_billing(current_user: dict = Depends(get_current_user)):
+    """Get current month billing data"""
+    return {
+        "currentMonth": {
+            "total": 124.50,
+            "aiUsage": 67.20,
+            "smsUsage": 42.30,
+            "emailUsage": 15.00,
+            "comparedToLastMonth": 12.5
+        },
+        "usage": {
+            "ai": {"tokens": 1120000, "cost": 67.20},
+            "sms": {"messages": 2115, "cost": 42.30},
+            "email": {"sent": 15000, "cost": 15.00}
+        },
+        "paymentMethod": {
+            "last4": "4242",
+            "brand": "Visa",
+            "expMonth": 12,
+            "expYear": 2025
+        },
+        "subscription": {
+            "plan": "Professional",
+            "status": "active",
+            "nextBilling": "2024-02-01"
+        }
+    }
+
+# Notification endpoints
+@app.get("/api/v1/settings/notifications")
+async def get_notification_settings(current_user: dict = Depends(get_current_user)):
+    """Get notification settings for current user"""
+    with get_db() as conn:
+        cursor = conn.execute(
+            "SELECT profile_data FROM shop_profiles WHERE user_id = ?",
+            (current_user["id"],)
+        )
+        profile = cursor.fetchone()
+        
+        if profile and profile["profile_data"]:
+            saved_settings = json.loads(profile["profile_data"])
+            if 'notifications' in saved_settings:
+                return saved_settings['notifications']
+    
+    # Return defaults
+    return {
+        "emailEnabled": True,
+        "smsEnabled": True,
+        "campaignAlerts": True,
+        "bookingAlerts": True,
+        "systemAlerts": True
+    }
+
+@app.post("/api/v1/notifications/test")
+async def test_notification(
+    notification_type: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Test notification delivery"""
+    # Get user's notification settings
+    settings = await get_notification_settings(current_user)
+    
+    if notification_type == "email" and not settings.get("emailEnabled"):
+        return {"success": False, "message": "Email notifications are disabled"}
+    
+    if notification_type == "sms" and not settings.get("smsEnabled"):
+        return {"success": False, "message": "SMS notifications are disabled"}
+    
+    # In production, this would send actual notifications
+    return {
+        "success": True,
+        "message": f"Test {notification_type} notification sent successfully",
+        "recipient": current_user.get("email") if notification_type == "email" else "phone number on file"
+    }
+
+@app.get("/api/v1/billing/history")
+async def get_billing_history(current_user: dict = Depends(get_current_user), days: int = 30):
+    """Get billing history"""
+    # Mock data for demonstration
+    return {
+        "history": [
+            {"date": "Jan 1", "ai": 15.20, "sms": 8.40, "email": 2.10},
+            {"date": "Jan 5", "ai": 22.50, "sms": 12.20, "email": 3.50},
+            {"date": "Jan 10", "ai": 18.30, "sms": 15.60, "email": 4.20},
+            {"date": "Jan 15", "ai": 28.90, "sms": 9.80, "email": 2.80},
+            {"date": "Jan 20", "ai": 19.40, "sms": 11.50, "email": 3.10},
+            {"date": "Jan 25", "ai": 25.60, "sms": 14.30, "email": 4.60},
+            {"date": "Jan 30", "ai": 32.10, "sms": 16.20, "email": 5.20}
+        ]
+    }
+
+# Unified chat endpoint for campaigns
+@app.post("/api/chat/unified")
+async def unified_chat(request: dict, current_user: dict = Depends(get_current_user)):
+    """Unified chat endpoint for campaign execution"""
+    message = request.get("message", "")
+    context = request.get("context", {})
+    
+    # Parse campaign intent from message
+    if "email blast" in message.lower():
+        # Simulate email campaign execution
+        return {
+            "success": True,
+            "message": "Email campaign scheduled successfully",
+            "campaign_id": f"camp_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "details": {
+                "type": "email",
+                "recipients": "VIP customers",
+                "scheduled": datetime.now().isoformat()
+            }
+        }
+    elif "sms" in message.lower():
+        return {
+            "success": True,
+            "message": "SMS campaign scheduled successfully",
+            "campaign_id": f"sms_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "details": {
+                "type": "sms",
+                "recipients": "All customers",
+                "scheduled": datetime.now().isoformat()
+            }
+        }
+    else:
+        return {
+            "success": False,
+            "message": "Could not understand campaign request",
+            "suggestion": "Try: 'Send email blast to VIP customers' or 'SMS campaign for weekend special'"
+        }
 
 if __name__ == "__main__":
     import uvicorn
