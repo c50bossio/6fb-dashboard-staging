@@ -19,23 +19,23 @@ def main():
         logger.info(f"Python path: {sys.executable}")
         logger.info(f"Working directory: {os.getcwd()}")
         
-        # Verify main.py exists
-        if not os.path.exists('main.py'):
-            logger.error("❌ main.py not found in current directory")
+        # Verify main_simple.py exists
+        if not os.path.exists('main_simple.py'):
+            logger.error("❌ main_simple.py not found in current directory")
             sys.exit(1)
             
         # Check if we can import the app
         try:
-            from main import app
-            logger.info("✅ Successfully imported app from main.py")
+            from main_simple import app
+            logger.info("✅ Successfully imported app from main_simple.py")
         except Exception as e:
-            logger.error(f"❌ Failed to import app from main.py: {e}")
+            logger.error(f"❌ Failed to import app from main_simple.py: {e}")
             sys.exit(1)
         
         # Run uvicorn with error handling
         cmd = [
             sys.executable, '-m', 'uvicorn',
-            'main:app',
+            'main_simple:app',
             '--host', '0.0.0.0',
             '--port', str(port),
             '--log-level', 'info'
