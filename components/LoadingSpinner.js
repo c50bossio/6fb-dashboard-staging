@@ -1,6 +1,8 @@
 'use client'
 
-export default function LoadingSpinner({ size = 'medium', className = '', fullScreen = false }) {
+import { SparklesIcon } from '@heroicons/react/24/outline'
+
+export default function LoadingSpinner({ size = 'medium', className = '', fullScreen = false, text = '' }) {
   const sizeClasses = {
     small: 'h-4 w-4',
     medium: 'h-8 w-8',
@@ -21,10 +23,21 @@ export default function LoadingSpinner({ size = 'medium', className = '', fullSc
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
         <div className="text-center">
+          <div className="mb-8">
+            <div className="h-16 w-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto animate-pulse">
+              <span className="text-white font-bold text-xl">6FB</span>
+            </div>
+          </div>
           {spinner}
-          <p className="mt-4 text-sm text-gray-600">Loading your dashboard...</p>
+          <p className="mt-6 text-lg text-gray-700 font-medium">
+            {text || 'Loading your AI-powered dashboard...'}
+          </p>
+          <div className="mt-4 flex items-center justify-center text-blue-600">
+            <SparklesIcon className="w-5 h-5 mr-2 animate-bounce" />
+            <span className="text-sm">Preparing your AI agents</span>
+          </div>
         </div>
       </div>
     )

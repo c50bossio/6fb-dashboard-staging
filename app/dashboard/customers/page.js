@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react'
 import { 
   PlusIcon,
-  SearchIcon,
-  FilterIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
   UserIcon,
   PhoneIcon,
-  MailIcon,
+  EnvelopeIcon,
   CalendarIcon,
   StarIcon,
-  PencilIcon,
+  PencilSquareIcon,
   TrashIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([])
@@ -108,10 +108,10 @@ export default function CustomersPage() {
 
   const getContactIcon = (type) => {
     switch (type) {
-      case 'email': return <MailIcon className="h-4 w-4" />
+      case 'email': return <EnvelopeIcon className="h-4 w-4" />
       case 'sms': return <PhoneIcon className="h-4 w-4" />
       case 'phone': return <PhoneIcon className="h-4 w-4" />
-      default: return <MailIcon className="h-4 w-4" />
+      default: return <EnvelopeIcon className="h-4 w-4" />
     }
   }
 
@@ -205,7 +205,7 @@ export default function CustomersPage() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <SearchIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search customers..."
@@ -301,7 +301,7 @@ export default function CustomersPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button className="text-blue-600 hover:text-blue-900">
-                          <PencilIcon className="h-4 w-4" />
+                          <PencilSquareIcon className="h-4 w-4" />
                         </button>
                         <button className="text-red-600 hover:text-red-900">
                           <TrashIcon className="h-4 w-4" />

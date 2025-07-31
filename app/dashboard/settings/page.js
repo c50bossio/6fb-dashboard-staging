@@ -6,12 +6,12 @@ import {
   BellIcon,
   KeyIcon,
   UserCircleIcon,
-  OfficeBuildingIcon,
+  BuildingOfficeIcon,
   PhoneIcon,
-  MailIcon,
+  EnvelopeIcon,
   EyeIcon,
-  EyeOffIcon
-} from '@heroicons/react/outline'
+  EyeSlashIcon
+} from '@heroicons/react/24/outline'
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -86,7 +86,7 @@ export default function SettingsPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="card">
               <div className="flex items-center mb-6">
-                <OfficeBuildingIcon className="h-6 w-6 text-blue-600 mr-3" />
+                <BuildingOfficeIcon className="h-6 w-6 text-blue-600 mr-3" />
                 <h3 className="text-lg font-semibold text-gray-900">Barbershop Information</h3>
               </div>
               
@@ -199,7 +199,7 @@ export default function SettingsPage() {
                       onClick={() => toggleApiKeyVisibility('twilio')}
                       className="ml-2 p-2 text-gray-500 hover:text-gray-700"
                     >
-                      {showApiKeys.twilio ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                      {showApiKeys.twilio ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export default function SettingsPage() {
                       onClick={() => toggleApiKeyVisibility('sendgrid')}
                       className="ml-2 p-2 text-gray-500 hover:text-gray-700"
                     >
-                      {showApiKeys.sendgrid ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                      {showApiKeys.sendgrid ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export default function SettingsPage() {
                       onClick={() => toggleApiKeyVisibility('openai')}
                       className="ml-2 p-2 text-gray-500 hover:text-gray-700"
                     >
-                      {showApiKeys.openai ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                      {showApiKeys.openai ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                       onClick={() => toggleApiKeyVisibility('anthropic')}
                       className="ml-2 p-2 text-gray-500 hover:text-gray-700"
                     >
-                      {showApiKeys.anthropic ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                      {showApiKeys.anthropic ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
@@ -290,7 +290,7 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <MailIcon className="h-4 w-4 text-gray-500 mr-2" />
+                    <EnvelopeIcon className="h-4 w-4 text-gray-500 mr-2" />
                     <span className="text-sm font-medium text-gray-700">Email Notifications</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">

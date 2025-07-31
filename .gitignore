@@ -53,3 +53,12 @@ venv/
 *.key
 *.pem
 *.crt
+
+# Logs
+*.log
+logs/
+
+# Test artifacts
+playwright-results.json
+test-results/
+playwright-report/

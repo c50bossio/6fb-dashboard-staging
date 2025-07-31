@@ -5,16 +5,16 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { 
   HomeIcon,
-  SpeakerphoneIcon,
+  MegaphoneIcon,
   UserGroupIcon,
   ChartBarIcon,
   CogIcon,
-  LogoutIcon
-} from '@heroicons/react/outline'
+  ArrowRightOnRectangleIcon
+} from '@heroicons/react/24/outline'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Campaigns', href: '/dashboard/campaigns', icon: SpeakerphoneIcon },
+  { name: 'Campaigns', href: '/dashboard/campaigns', icon: MegaphoneIcon },
   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: CogIcon }
@@ -107,7 +107,7 @@ export default function DashboardNavigation() {
             className="ml-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
             title="Sign out"
           >
-            <LogoutIcon className="h-5 w-5" />
+            <ArrowRightOnRectangleIcon className="h-5 w-5" />
           </button>
         </div>
       </div>

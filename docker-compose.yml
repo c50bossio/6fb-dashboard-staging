@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-      target: development
     container_name: agent-system-frontend-dev
     ports:
       - "9999:9999"
@@ -42,7 +41,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
-      target: development
     container_name: agent-system-backend-dev
     ports:
       - "8001:8000"

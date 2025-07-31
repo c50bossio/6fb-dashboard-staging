@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { 
   EyeIcon,
-  EyeOffIcon,
+  EyeSlashIcon,
   LockClosedIcon,
-  MailIcon,
-  OfficeBuildingIcon,
+  EnvelopeIcon,
+  BuildingOfficeIcon,
   UserIcon,
   PhoneIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -40,6 +40,97 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
+
+  // Validation functions
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const validatePassword = (password) => {
+    return password.length >= 8 && /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)
+  }
+
+  const validatePhone = (phone) => {
+    const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/
+    return phoneRegex.test(phone)
+  }
+
+  const validateStep = (step) => {
+    const newErrors = {}
+    
+    if (step === 1) {
+      if (!formData.firstName.trim()) newErrors.firstName = 'First name is required'
+      if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required'
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required'
+      } else if (!validateEmail(formData.email)) {
+        newErrors.email = 'Please enter a valid email address'
+      }
+      if (!formData.phone.trim()) {
+        newErrors.phone = 'Phone number is required'
+      } else if (!validatePhone(formData.phone)) {
+        newErrors.phone = 'Please enter a valid phone number'
+      }
+      if (!formData.password) {
+        newErrors.password = 'Password is required'
+      } else if (!validatePassword(formData.password)) {
+        newErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number'
+      }
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Please confirm your password'
+      } else if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match'
+      }
+    }
+    
+    if (step === 2) {
+      if (!formData.businessName.trim()) newErrors.businessName = 'Business name is required'
+      if (!formData.businessAddress.trim()) newErrors.businessAddress = 'Business address is required'
+      if (!formData.businessPhone.trim()) {
+        newErrors.businessPhone = 'Business phone is required'
+      } else if (!validatePhone(formData.businessPhone)) {
+        newErrors.businessPhone = 'Please enter a valid business phone number'
+      }
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
+    
+    // Mark field as touched
+    setTouched(prev => ({ ...prev, [field]: true }))
+  }
+
+  const handleBlur = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }))
+    
+    // Validate single field on blur
+    const newErrors = { ...errors }
+    if (field === 'email' && formData.email && !validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address'
+    }
+    if (field === 'password' && formData.password && !validatePassword(formData.password)) {
+      newErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number'
+    }
+    if (field === 'confirmPassword' && formData.confirmPassword && formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+    if ((field === 'phone' || field === 'businessPhone') && formData[field] && !validatePhone(formData[field])) {
+      newErrors[field] = 'Please enter a valid phone number'
+    }
+    
+    setErrors(newErrors)
+  }
 
   const plans = [
     {
@@ -103,29 +194,7 @@ export default function RegisterPage() {
     }
   }
 
-  const validateStep = (step) => {
-    const newErrors = {}
-
-    if (step === 1) {
-      if (!formData.firstName) newErrors.firstName = 'First name is required'
-      if (!formData.lastName) newErrors.lastName = 'Last name is required'
-      if (!formData.email) newErrors.email = 'Email is required'
-      if (!formData.phone) newErrors.phone = 'Phone number is required'
-      if (!formData.password) newErrors.password = 'Password is required'
-      if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters'
-      if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password'
-      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match'
-    }
-
-    if (step === 2) {
-      if (!formData.businessName) newErrors.businessName = 'Business name is required'
-      if (!formData.businessAddress) newErrors.businessAddress = 'Business address is required'
-      if (!formData.businessPhone) newErrors.businessPhone = 'Business phone is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+  // Removed duplicate validateStep function - using the comprehensive one above
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
@@ -223,7 +292,7 @@ export default function RegisterPage() {
         </label>
         <div className="mt-1 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MailIcon className="h-5 w-5 text-gray-400" />
+            <EnvelopeIcon className="h-5 w-5 text-gray-400" />
           </div>
           <input
             id="email"
@@ -293,7 +362,7 @@ export default function RegisterPage() {
               className="text-gray-400 hover:text-gray-500 focus:outline-none"
             >
               {showPassword ? (
-                <EyeOffIcon className="h-5 w-5" />
+                <EyeSlashIcon className="h-5 w-5" />
               ) : (
                 <EyeIcon className="h-5 w-5" />
               )}
@@ -330,7 +399,7 @@ export default function RegisterPage() {
               className="text-gray-400 hover:text-gray-500 focus:outline-none"
             >
               {showConfirmPassword ? (
-                <EyeOffIcon className="h-5 w-5" />
+                <EyeSlashIcon className="h-5 w-5" />
               ) : (
                 <EyeIcon className="h-5 w-5" />
               )}
@@ -350,7 +419,7 @@ export default function RegisterPage() {
         </label>
         <div className="mt-1 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <OfficeBuildingIcon className="h-5 w-5 text-gray-400" />
+            <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
           </div>
           <input
             id="businessName"

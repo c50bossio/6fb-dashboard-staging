@@ -7,17 +7,17 @@ import ProtectedRoute from '../../components/ProtectedRoute'
 import LoadingSpinner, { CardLoadingSkeleton } from '../../components/LoadingSpinner'
 import { 
   ChartBarIcon, 
-  ChatIcon,
-  MailIcon,
+  ChatBubbleLeftRightIcon,
+  EnvelopeIcon,
   PhoneIcon,
   CalendarIcon,
   UserGroupIcon,
   CogIcon,
   SparklesIcon,
-  ExclamationIcon,
+  ExclamationTriangleIcon,
   CheckCircleIcon,
-  RefreshIcon
-} from '@heroicons/react/outline'
+  ArrowPathIcon
+} from '@heroicons/react/24/outline'
 
 function DashboardContent() {
   const { user, logout } = useAuth()
@@ -37,7 +37,7 @@ function DashboardContent() {
   const agents = [
     {
       name: 'Marketing Agent',
-      icon: MailIcon,
+      icon: EnvelopeIcon,
       description: 'Automated SMS & Email campaigns',
       status: 'active',
       lastAction: 'Email sent to 47 VIP customers',
@@ -45,7 +45,7 @@ function DashboardContent() {
     },
     {
       name: 'Content Agent', 
-      icon: ChatIcon,
+      icon: ChatBubbleLeftRightIcon,
       description: 'AI-powered content generation',
       status: 'active',
       lastAction: 'Generated 3 social media posts',
@@ -87,7 +87,7 @@ function DashboardContent() {
 
   const quickActions = [
     { name: 'Send SMS Campaign', icon: PhoneIcon, path: '/dashboard/campaigns/sms' },
-    { name: 'Send Email Blast', icon: MailIcon, path: '/dashboard/campaigns/email' },
+    { name: 'Send Email Blast', icon: EnvelopeIcon, path: '/dashboard/campaigns/email' },
     { name: 'Manage Customers', icon: UserGroupIcon, path: '/dashboard/customers' },
     { name: 'View Analytics', icon: ChartBarIcon, path: '/dashboard/analytics' },
     { name: 'Schedule Posts', icon: SparklesIcon, path: '/dashboard/social' },
@@ -128,7 +128,7 @@ function DashboardContent() {
           <div className="card">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <MailIcon className="h-6 w-6 text-blue-600" />
+                <EnvelopeIcon className="h-6 w-6 text-blue-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Emails Sent</p>

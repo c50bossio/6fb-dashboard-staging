@@ -8,18 +8,18 @@ import ProtectedRoute from '../../components/ProtectedRoute'
 import LoadingSpinner, { CardLoadingSkeleton } from '../../components/LoadingSpinner'
 import { 
   ChartBarIcon, 
-  ChatIcon,
-  MailIcon,
+  ChatBubbleLeftRightIcon,
+  EnvelopeIcon,
   PhoneIcon,
   CalendarIcon,
   UserGroupIcon,
   CogIcon,
   SparklesIcon,
-  ExclamationIcon,
+  ExclamationTriangleIcon,
   CheckCircleIcon,
-  RefreshIcon,
-  LogoutIcon
-} from '@heroicons/react/outline'
+  ArrowPathIcon,
+  ArrowRightOnRectangleIcon
+} from '@heroicons/react/24/outline'
 
 function DashboardContent() {
   const { user, logout } = useAuth()
@@ -95,14 +95,14 @@ function DashboardContent() {
                 onClick={refreshDashboard}
                 className="flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <RefreshIcon className="h-4 w-4 mr-2" />
+                <ArrowPathIcon className="h-4 w-4 mr-2" />
                 Refresh
               </button>
               <button
                 onClick={logout}
                 className="flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <LogoutIcon className="h-4 w-4 mr-2" />
+                <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
                 Logout
               </button>
             </div>
@@ -115,7 +115,7 @@ function DashboardContent() {
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
             <div className="flex">
-              <ExclamationIcon className="h-5 w-5 text-red-600" />
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
               <div className="ml-3">
                 <p className="text-sm text-red-800">{error}</p>
                 <button
@@ -151,7 +151,7 @@ function DashboardContent() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ChatIcon className="h-8 w-8 text-blue-600" />
+                <ChatBubbleLeftRightIcon className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Conversations</p>
@@ -287,7 +287,7 @@ function DashboardContent() {
               className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
             >
               <div className="flex items-center">
-                <MailIcon className="h-8 w-8 text-blue-600" />
+                <EnvelopeIcon className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-gray-900">Campaigns</h3>
                   <p className="text-sm text-gray-600">Manage marketing campaigns</p>

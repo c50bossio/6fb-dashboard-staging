@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react'
 import { 
   PlusIcon,
-  MailIcon,
+  EnvelopeIcon,
   PhoneIcon,
   EyeIcon,
   CalendarIcon,
   UserGroupIcon,
   ChartBarIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/outline'
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState([])
@@ -102,7 +102,7 @@ export default function CampaignsPage() {
                 onClick={() => handleCreateCampaign('email')}
                 className="btn-primary flex items-center space-x-2"
               >
-                <MailIcon className="h-4 w-4" />
+                <EnvelopeIcon className="h-4 w-4" />
                 <span>Email Campaign</span>
               </button>
               <button
@@ -141,7 +141,7 @@ export default function CampaignsPage() {
 
           <div className="card">
             <div className="flex items-center">
-              <MailIcon className="h-8 w-8 text-purple-600" />
+              <EnvelopeIcon className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Email Campaigns</p>
                 <p className="text-2xl font-bold text-gray-900">
@@ -212,7 +212,7 @@ export default function CampaignsPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {campaign.type === 'email' ? (
-                          <MailIcon className="h-4 w-4 text-blue-600 mr-2" />
+                          <EnvelopeIcon className="h-4 w-4 text-blue-600 mr-2" />
                         ) : (
                           <PhoneIcon className="h-4 w-4 text-green-600 mr-2" />
                         )}

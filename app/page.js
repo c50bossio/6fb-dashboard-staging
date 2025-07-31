@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useScrollAnimation, useStaggeredAnimation, scrollAnimations } from '../hooks/useScrollAnimation'
 import { 
   ChartBarIcon,
   ChatBubbleLeftRightIcon as ChatIcon,
@@ -15,6 +16,13 @@ import {
 } from '@heroicons/react/24/outline'
 
 export default function LandingPage() {
+  // Animation hooks
+  const [statsRef, statsVisible] = useScrollAnimation({ threshold: 0.3 })
+  const [featuresRef, featuresVisible] = useScrollAnimation({ threshold: 0.2 })
+  const [pricingRef, pricingVisible] = useScrollAnimation({ threshold: 0.2 })
+  const [setFeatureRef, visibleFeatures] = useStaggeredAnimation(6, { staggerDelay: 150 })
+  const [setPricingRef, visiblePricing] = useStaggeredAnimation(3, { staggerDelay: 200 })
+
   const features = [
     {
       name: 'AI Marketing Automation',
@@ -119,8 +127,12 @@ export default function LandingPage() {
             
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <button className="text-gray-600 hover:text-gray-900 p-2">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button 
+                className="text-gray-600 hover:text-gray-900 p-2 rounded-lg transition-colors duration-200"
+                aria-label="Open navigation menu"
+                aria-expanded="false"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
@@ -192,38 +204,31 @@ export default function LandingPage() {
       </div>
 
       {/* Stats Section */}
-      <div className="bg-gradient-to-r from-gray-50 to-blue-50 py-20">
+      <div ref={statsRef} className="bg-gradient-to-r from-gray-50 to-blue-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className={`text-center mb-12 ${statsVisible ? scrollAnimations.fadeInUpVisible : scrollAnimations.fadeInUp}`}>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Trusted by Barbershops Worldwide</h2>
             <p className="text-gray-600">Real results from real businesses</p>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center group">
-              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">500+</div>
-                <div className="text-gray-600 font-medium">Barbershops Using AI</div>
+            {[
+              { value: '500+', label: 'Barbershops Using AI', gradient: 'from-blue-600 to-purple-600' },
+              { value: '2.5M+', label: 'Messages Sent', gradient: 'from-green-600 to-blue-600' },
+              { value: '85%', label: 'Customer Retention', gradient: 'from-purple-600 to-pink-600' },
+              { value: '3x', label: 'Revenue Growth', gradient: 'from-orange-600 to-red-600' }
+            ].map((stat, index) => (
+              <div key={index} className={`text-center group ${
+                statsVisible ? scrollAnimations.scaleInVisible : scrollAnimations.scaleIn
+              }`} style={{ transitionDelay: `${index * 100}ms` }}>
+                <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                  <div className={`text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent mb-2`}>
+                    {stat.value}
+                  </div>
+                  <div className="text-gray-600 font-medium">{stat.label}</div>
+                </div>
               </div>
-            </div>
-            <div className="text-center group">
-              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">2.5M+</div>
-                <div className="text-gray-600 font-medium">Messages Sent</div>
-              </div>
-            </div>
-            <div className="text-center group">
-              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">85%</div>
-                <div className="text-gray-600 font-medium">Customer Retention</div>
-              </div>
-            </div>
-            <div className="text-center group">
-              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">3x</div>
-                <div className="text-gray-600 font-medium">Revenue Growth</div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -248,7 +253,13 @@ export default function LandingPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div key={feature.name} className="feature-card group" style={{animationDelay: `${index * 100}ms`}}>
+              <div 
+                key={feature.name} 
+                ref={setFeatureRef(index)}
+                className={`feature-card group ${
+                  visibleFeatures.has(index) ? scrollAnimations.slideInUpVisible : scrollAnimations.slideInUp
+                }`}
+              >
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:from-blue-100 group-hover:to-purple-100 transition-all duration-300">
                   <feature.icon className="h-8 w-8 text-blue-600 group-hover:text-purple-600 transition-colors duration-300" />
                 </div>

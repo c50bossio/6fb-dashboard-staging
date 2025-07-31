@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { 
   EyeIcon,
-  EyeOffIcon,
+  EyeSlashIcon,
   LockClosedIcon,
-  MailIcon
-} from '@heroicons/react/outline'
+  EnvelopeIcon
+} from '@heroicons/react/24/outline'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -86,7 +86,7 @@ export default function LoginPage() {
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MailIcon className="h-5 w-5 text-gray-400" />
+                  <EnvelopeIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="email"
@@ -128,7 +128,7 @@ export default function LoginPage() {
                     className="text-gray-400 hover:text-gray-500 focus:outline-none"
                   >
                     {showPassword ? (
-                      <EyeOffIcon className="h-5 w-5" />
+                      <EyeSlashIcon className="h-5 w-5" />
                     ) : (
                       <EyeIcon className="h-5 w-5" />
                     )}
