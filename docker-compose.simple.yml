@@ -1,0 +1,49 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: agent-system-frontend
+    ports:
+      - "9999:9999"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app/app
+      - ./components:/app/components
+      - ./public:/app/public
+    depends_on:
+      - backend
+    networks:
+      - agent-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: agent-system-backend
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/agent_system.db
+      - CORS_ORIGINS=http://localhost:9999
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    volumes:
+      - ./:/app
+    networks:
+      - agent-network
+    restart: unless-stopped
+
+networks:
+  agent-network:
+    driver: bridge
+
+volumes:
+  agent_data:
+    driver: local
