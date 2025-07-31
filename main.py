@@ -26,7 +26,7 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     logger.info("Root endpoint accessed")
-    return {"message": "6FB AI Agent System Backend", "status": "running"}
+    return {"message": "6FB AI Agent System Backend", "status": "running", "version": "1.0.1"}
 
 @app.get("/health")
 def health_check():
