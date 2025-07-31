@@ -46,8 +46,13 @@ logger = logging.getLogger(__name__)
 # Import executable agents
 try:
     from services.executable_agents.marketing_execution_agent import ExecutableMarketingAgent
+    from services.executable_agents.content_execution_agent import ExecutableContentAgent
+    from services.executable_agents.social_media_execution_agent import ExecutableSocialMediaAgent
+    from services.executable_agents.booking_execution_agent import ExecutableBookingAgent
+    from services.executable_agents.followup_execution_agent import ExecutableFollowUpAgent
+    from services.executable_agents.analytics_execution_agent import ExecutableAnalyticsAgent
     EXECUTABLE_AGENTS_AVAILABLE = True
-    logger.info("✅ Executable Marketing Agent loaded successfully")
+    logger.info("✅ All 6 Executable Agents loaded successfully")
 except ImportError as e:
     logger.warning(f"Executable agents not available: {e}")
     EXECUTABLE_AGENTS_AVAILABLE = False
@@ -2583,10 +2588,12 @@ Determine which business specialists should be consulted and if executable actio
 - master_coach: Strategic planning, leadership, overall business guidance
 
 EXECUTABLE ACTIONS: Check if the user wants actual execution (not just advice):
-- SMS/Text blast, Email blast, Marketing campaigns
-- Social media posting, Content creation
-- Booking appointments, Calendar management
-- Follow-up sequences, Customer outreach
+- SMS/Text blast, Email blast, Marketing campaigns (marketing_execution)
+- Blog posts, SEO content, Content creation (content_creation)
+- Social media posting, Instagram/Facebook posts (social_post)
+- Booking appointments, Calendar management (book_appointment)
+- Follow-up sequences, Customer retention, Win-back campaigns (customer_followup)
+- Analytics, Performance tracking, ROI analysis (analytics)
 
 Return a JSON response with:
 {{
@@ -2793,23 +2800,55 @@ def get_fallback_analysis(message: str) -> dict:
 async def handle_executable_action(message: str, execution_type: str, execution_details: str) -> Dict[str, Any]:
     """Handle executable actions through specialized agents"""
     try:
-        if execution_type in ["sms_blast", "email_blast", "follow_up"]:
+        if execution_type in ["sms_blast", "email_blast", "follow_up", "marketing_campaign"]:
             # Use Marketing Execution Agent
             marketing_agent = ExecutableMarketingAgent("default_barbershop")
             result = await marketing_agent.execute_command(message)
             return result
         
-        # Add other executable agents here as they're implemented
-        # elif execution_type == "social_post":
-        #     social_agent = ExecutableSocialMediaAgent("default_barbershop")
-        #     result = await social_agent.execute_command(message)
-        #     return result
+        elif execution_type in ["blog_post", "content_creation", "seo_content"]:
+            # Use Content Execution Agent
+            content_agent = ExecutableContentAgent("default_barbershop")
+            result = await content_agent.execute_command(message)
+            return result
+        
+        elif execution_type in ["social_post", "social_media", "instagram_post", "facebook_post"]:
+            # Use Social Media Execution Agent
+            social_agent = ExecutableSocialMediaAgent("default_barbershop")
+            result = await social_agent.execute_command(message)
+            return result
+        
+        elif execution_type in ["book_appointment", "appointment", "booking", "schedule"]:
+            # Use Booking Execution Agent
+            booking_agent = ExecutableBookingAgent("default_barbershop")
+            result = await booking_agent.execute_command(message)
+            return result
+        
+        elif execution_type in ["customer_followup", "retention", "winback", "followup_campaign"]:
+            # Use Follow-up Execution Agent
+            followup_agent = ExecutableFollowUpAgent("default_barbershop")
+            result = await followup_agent.execute_command(message)
+            return result
+        
+        elif execution_type in ["analytics", "performance", "roi_analysis", "cross_agent"]:
+            # Use Analytics Execution Agent
+            analytics_agent = ExecutableAnalyticsAgent("default_barbershop")
+            result = await analytics_agent.execute_command(message)
+            return result
         
         else:
             return {
                 "success": False,
                 "message": f"Execution type '{execution_type}' not yet implemented",
-                "action_taken": "none"
+                "action_taken": "none",
+                "available_types": [
+                    "sms_blast", "email_blast", "marketing_campaign",
+                    "blog_post", "content_creation", "seo_content", 
+                    "social_post", "instagram_post", "facebook_post",
+                    "book_appointment", "appointment", "booking",
+                    "customer_followup", "retention", "winback",
+                    "analytics", "performance", "roi_analysis"
+                ]
             }
             
     except Exception as e:

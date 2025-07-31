@@ -1,41 +1,77 @@
-# Railway Ignore - Python Backend Only
-# Exclude frontend/Node.js files from Python deployment
+# Railway Python Backend Only - AGGRESSIVE EXCLUSION
+# Critical: Exclude ALL frontend files to prevent Node.js detection
 
-# Frontend files - CRITICAL: Exclude package.json to prevent Node.js detection
+# FRONTEND FILES - EXCLUDE COMPLETELY
 package.json
+package.json.frontend
 package-lock.json
+yarn.lock
 node_modules/
 .next/
 .vercel/
 components/
+app/
 public/
 styles/
 next.config.mjs
+next.config.js
 jsconfig.json
+tsconfig.json
 
-# Development files
-.env.local
-.env.example
-.env.staging
-jest.config.js
-next.config.mjs
+# FRONTEND CONFIG
 postcss.config.js
 tailwind.config.js
-
-# Testing
+jest.config.js
 playwright.config.js
+eslint.config.js
+.eslintrc*
+prettier.config.js
+webpack.config.js
+
+# TESTING FRAMEWORKS
 test/
 tests/
 __tests__/
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
 
-# Documentation
+# DEVELOPMENT/BUILD
+.env.local
+.env.example
+.env.staging
+dist/
+build/
+out/
+
+# DOCUMENTATION
 *.md
+README*
 docs/
+documentation/
 
-# Logs
+# LOGS AND TEMP
 *.log
 npm-debug.log*
-
-# OS
+yarn-debug.log*
+yarn-error.log*
 .DS_Store
 Thumbs.db
+*.tmp
+*.temp
+
+# VERSION CONTROL
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# DOCKER (use Railway native build)
+Dockerfile*
+docker-compose*
+.dockerignore
