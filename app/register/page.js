@@ -3,18 +3,20 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '../../contexts/AuthContext'
 import { 
   EyeIcon,
-  EyeSlashIcon,
+  EyeOffIcon,
   LockClosedIcon,
-  EnvelopeIcon,
-  BuildingStorefrontIcon,
+  MailIcon,
+  OfficeBuildingIcon,
   UserIcon,
   PhoneIcon
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/outline'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { register, loading: authLoading, error: authError } = useAuth()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     // Personal Info
@@ -139,19 +141,28 @@ export default function RegisterPage() {
     e.preventDefault()
     if (!validateStep(currentStep)) return
 
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1)
+      return
+    }
+
+    // Final submission
     setIsLoading(true)
+    setErrors({})
 
     try {
-      // Simulate API call (replace with real registration)
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Use real authentication
+      await register({
+        email: formData.email,
+        password: formData.password,
+        full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+        barbershop_name: formData.businessName || undefined
+      })
       
-      // Store registration data (replace with real API)
-      localStorage.setItem('registration_data', JSON.stringify(formData))
-      
-      // Redirect to login with success message
-      router.push('/login?registered=true')
+      // Redirect to dashboard on successful registration
+      router.push('/dashboard')
     } catch (err) {
-      setErrors({ submit: 'Registration failed. Please try again.' })
+      setErrors({ submit: err.message || 'Registration failed. Please try again.' })
     } finally {
       setIsLoading(false)
     }
@@ -212,7 +223,7 @@ export default function RegisterPage() {
         </label>
         <div className="mt-1 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <EnvelopeIcon className="h-5 w-5 text-gray-400" />
+            <MailIcon className="h-5 w-5 text-gray-400" />
           </div>
           <input
             id="email"
@@ -282,7 +293,7 @@ export default function RegisterPage() {
               className="text-gray-400 hover:text-gray-500 focus:outline-none"
             >
               {showPassword ? (
-                <EyeSlashIcon className="h-5 w-5" />
+                <EyeOffIcon className="h-5 w-5" />
               ) : (
                 <EyeIcon className="h-5 w-5" />
               )}
@@ -319,7 +330,7 @@ export default function RegisterPage() {
               className="text-gray-400 hover:text-gray-500 focus:outline-none"
             >
               {showConfirmPassword ? (
-                <EyeSlashIcon className="h-5 w-5" />
+                <EyeOffIcon className="h-5 w-5" />
               ) : (
                 <EyeIcon className="h-5 w-5" />
               )}
@@ -339,7 +350,7 @@ export default function RegisterPage() {
         </label>
         <div className="mt-1 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <BuildingStorefrontIcon className="h-5 w-5 text-gray-400" />
+            <OfficeBuildingIcon className="h-5 w-5 text-gray-400" />
           </div>
           <input
             id="businessName"
@@ -538,9 +549,9 @@ export default function RegisterPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form onSubmit={handleSubmit}>
-            {errors.submit && (
+            {(errors.submit || authError) && (
               <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                {errors.submit}
+                {errors.submit || authError}
               </div>
             )}
 
@@ -571,8 +582,8 @@ export default function RegisterPage() {
                 ) : (
                   <button
                     type="submit"
-                    disabled={isLoading}
-                    className={`btn-primary ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isLoading || authLoading}
+                    className={`btn-primary ${(isLoading || authLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {isLoading ? (
                       <div className="flex items-center">

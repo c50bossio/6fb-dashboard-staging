@@ -3,15 +3,17 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '../../contexts/AuthContext'
 import { 
   EyeIcon,
-  EyeSlashIcon,
+  EyeOffIcon,
   LockClosedIcon,
-  EnvelopeIcon
-} from '@heroicons/react/24/outline'
+  MailIcon
+} from '@heroicons/react/outline'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login, loading: authLoading, error: authError } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -34,20 +36,14 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // Simulate API call (replace with real authentication)
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Use real authentication
+      await login({
+        email: formData.email,
+        password: formData.password
+      })
       
-      // For demo purposes, accept any email/password combination
-      if (formData.email && formData.password) {
-        // Store auth token (replace with real JWT handling)
-        localStorage.setItem('auth_token', 'demo_token_123')
-        localStorage.setItem('user_email', formData.email)
-        
-        // Redirect to dashboard
-        router.push('/dashboard')
-      } else {
-        throw new Error('Please fill in all fields')
-      }
+      // Redirect to dashboard on successful login
+      router.push('/dashboard')
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.')
     } finally {
@@ -78,9 +74,9 @@ export default function LoginPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
+            {(error || authError) && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                {error}
+                {error || authError}
               </div>
             )}
 
@@ -90,7 +86,7 @@ export default function LoginPage() {
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <EnvelopeIcon className="h-5 w-5 text-gray-400" />
+                  <MailIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="email"
@@ -132,7 +128,7 @@ export default function LoginPage() {
                     className="text-gray-400 hover:text-gray-500 focus:outline-none"
                   >
                     {showPassword ? (
-                      <EyeSlashIcon className="h-5 w-5" />
+                      <EyeOffIcon className="h-5 w-5" />
                     ) : (
                       <EyeIcon className="h-5 w-5" />
                     )}
@@ -164,14 +160,14 @@ export default function LoginPage() {
             <div>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || authLoading}
                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                  isLoading 
+                  (isLoading || authLoading)
                     ? 'bg-blue-400 cursor-not-allowed' 
                     : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
                 }`}
               >
-                {isLoading ? (
+                {(isLoading || authLoading) ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Signing in...

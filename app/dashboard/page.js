@@ -1,226 +1,338 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
+import { useDashboard } from '../../contexts/DashboardContext'
+import { DashboardProvider } from '../../contexts/DashboardContext'
+import ProtectedRoute from '../../components/ProtectedRoute'
+import LoadingSpinner, { CardLoadingSkeleton } from '../../components/LoadingSpinner'
 import { 
   ChartBarIcon, 
   ChatIcon,
   MailIcon,
-  DevicePhoneMobileIcon,
+  PhoneIcon,
   CalendarIcon,
   UserGroupIcon,
   CogIcon,
-  SparklesIcon
+  SparklesIcon,
+  ExclamationIcon,
+  CheckCircleIcon,
+  RefreshIcon,
+  LogoutIcon
 } from '@heroicons/react/outline'
 
-export default function Dashboard() {
-  const [systemStatus, setSystemStatus] = useState('loading')
-  const [agentStats, setAgentStats] = useState({})
+function DashboardContent() {
+  const { user, logout } = useAuth()
+  const { 
+    systemHealth, 
+    agentInsights, 
+    dashboardStats, 
+    loading, 
+    error, 
+    refreshDashboard,
+    clearError,
+    chatWithAgent 
+  } = useDashboard()
+  
+  const [chatMessage, setChatMessage] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
 
-  useEffect(() => {
-    // Check system health
-    fetch('/api/v1/health')
-      .then(res => res.json())
-      .then(data => {
-        setSystemStatus(data.status)
-      })
-      .catch(() => setSystemStatus('offline'))
+  const handleQuickChat = async (e) => {
+    e.preventDefault()
+    if (!chatMessage.trim()) return
 
-    // Mock agent stats (replace with real API calls)
-    setAgentStats({
-      totalCampaigns: 24,
-      emailsSent: 1247,
-      smsSent: 892,
-      customersManaged: 156,
-      appointmentsBooked: 73,
-      activeAgents: 6
-    })
-  }, [])
-
-  const agents = [
-    {
-      name: 'Marketing Agent',
-      icon: MailIcon,
-      description: 'Automated SMS & Email campaigns',
-      status: 'active',
-      lastAction: 'Email sent to 47 VIP customers',
-      color: 'bg-blue-500'
-    },
-    {
-      name: 'Content Agent', 
-      icon: ChatIcon,
-      description: 'AI-powered content generation',
-      status: 'active',
-      lastAction: 'Generated 3 social media posts',
-      color: 'bg-purple-500'
-    },
-    {
-      name: 'Social Media Agent',
-      icon: SparklesIcon,
-      description: 'Platform automation & posting',
-      status: 'active', 
-      lastAction: 'Posted to Instagram & Facebook',
-      color: 'bg-pink-500'
-    },
-    {
-      name: 'Booking Agent',
-      icon: CalendarIcon,
-      description: 'Calendar & appointment management',
-      status: 'active',
-      lastAction: '12 appointments scheduled today',
-      color: 'bg-green-500'
-    },
-    {
-      name: 'Follow-up Agent',
-      icon: DevicePhoneMobileIcon,
-      description: 'Customer retention automation',
-      status: 'active',
-      lastAction: 'Sent 23 follow-up messages',
-      color: 'bg-orange-500'
-    },
-    {
-      name: 'Analytics Agent',
-      icon: ChartBarIcon,
-      description: 'Performance tracking & insights',
-      status: 'active',
-      lastAction: 'Generated weekly report',
-      color: 'bg-indigo-500'
+    setChatLoading(true)
+    try {
+      await chatWithAgent(chatMessage.trim())
+      setChatMessage('')
+    } catch (err) {
+      console.error('Chat error:', err)
+    } finally {
+      setChatLoading(false)
     }
-  ]
+  }
 
-  const quickActions = [
-    { name: 'Send SMS Campaign', icon: DevicePhoneMobileIcon, path: '/dashboard/campaigns/sms' },
-    { name: 'Send Email Blast', icon: MailIcon, path: '/dashboard/campaigns/email' },
-    { name: 'Manage Customers', icon: UserGroupIcon, path: '/dashboard/customers' },
-    { name: 'View Analytics', icon: ChartBarIcon, path: '/dashboard/analytics' },
-    { name: 'Schedule Posts', icon: SparklesIcon, path: '/dashboard/social' },
-    { name: 'Settings', icon: CogIcon, path: '/dashboard/settings' }
-  ]
+  const systemStatusColor = systemHealth?.status === 'healthy' ? 'text-green-600' : 
+                           systemHealth?.status === 'degraded' ? 'text-yellow-600' : 'text-red-600'
+  
+  const systemStatusBg = systemHealth?.status === 'healthy' ? 'bg-green-50' : 
+                        systemHealth?.status === 'degraded' ? 'bg-yellow-50' : 'bg-red-50'
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <CardLoadingSkeleton key={i} />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CardLoadingSkeleton />
+            <CardLoadingSkeleton />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Welcome to Your AI-Powered Barbershop
-              </h2>
-              <p className="text-gray-600">
-                Manage your marketing campaigns, customer relationships, and business operations with AI automation.
+              <h1 className="text-3xl font-bold text-gray-900">
+                Welcome back, {user?.full_name || 'User'}
+              </h1>
+              <p className="mt-1 text-gray-600">
+                {user?.barbershop_name ? `Managing ${user.barbershop_name}` : 'Your AI-powered barbershop dashboard'}
               </p>
             </div>
-            <div className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-medium ${
-              systemStatus === 'healthy' ? 'bg-green-100 text-green-800' :
-              systemStatus === 'offline' ? 'bg-red-100 text-red-800' :
-              'bg-yellow-100 text-yellow-800'
-            }`}>
-              <div className={`w-2 h-2 rounded-full ${
-                systemStatus === 'healthy' ? 'bg-green-500' :
-                systemStatus === 'offline' ? 'bg-red-500' :
-                'bg-yellow-500'
-              }`}></div>
-              <span className="capitalize">{systemStatus}</span>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={refreshDashboard}
+                className="flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <RefreshIcon className="h-4 w-4 mr-2" />
+                Refresh
+              </button>
+              <button
+                onClick={logout}
+                className="flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <LogoutIcon className="h-4 w-4 mr-2" />
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error Banner */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <ExclamationIcon className="h-5 w-5 text-red-600" />
+              <div className="ml-3">
+                <p className="text-sm text-red-800">{error}</p>
+                <button
+                  onClick={clearError}
+                  className="text-sm text-red-600 hover:text-red-500 underline"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* System Status */}
+        <div className={`mb-6 ${systemStatusBg} border rounded-lg p-4`}>
+          <div className="flex items-center">
+            <CheckCircleIcon className={`h-5 w-5 ${systemStatusColor}`} />
+            <div className="ml-3">
+              <p className={`text-sm font-medium ${systemStatusColor}`}>
+                System Status: {systemHealth?.status || 'Unknown'}
+              </p>
+              <p className="text-sm text-gray-600">
+                AI Agent: {systemHealth?.rag_engine === 'active' ? 'Active' : 'Inactive'} • 
+                Database: {systemHealth?.database?.healthy ? 'Healthy' : 'Degraded'} • 
+                Learning: {systemHealth?.learning_enabled ? 'Enabled' : 'Disabled'}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Stats Overview */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="card">
+          <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <MailIcon className="h-6 w-6 text-blue-600" />
+              <div className="flex-shrink-0">
+                <ChatIcon className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Emails Sent</p>
-                <p className="text-2xl font-bold text-gray-900">{agentStats.emailsSent?.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">Total Conversations</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {dashboardStats?.totalConversations || 0}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="card">
+          <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <DevicePhoneMobileIcon className="h-6 w-6 text-green-600" />
+              <div className="flex-shrink-0">
+                <SparklesIcon className="h-8 w-8 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">SMS Sent</p>
-                <p className="text-2xl font-bold text-gray-900">{agentStats.smsSent?.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">Active Agents</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {dashboardStats?.activeAgents || 1}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="card">
+          <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <UserGroupIcon className="h-6 w-6 text-purple-600" />
+              <div className="flex-shrink-0">
+                <ChartBarIcon className="h-8 w-8 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Customers</p>
-                <p className="text-2xl font-bold text-gray-900">{agentStats.customersManaged}</p>
+                <p className="text-sm font-medium text-gray-600">System Uptime</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {dashboardStats?.systemUptime || '99.9%'}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="card">
+          <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <CalendarIcon className="h-6 w-6 text-orange-600" />
+              <div className="flex-shrink-0">
+                <PhoneIcon className="h-8 w-8 text-orange-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Appointments</p>
-                <p className="text-2xl font-bold text-gray-900">{agentStats.appointmentsBooked}</p>
+                <p className="text-sm font-medium text-gray-600">Response Time</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {dashboardStats?.responseTime || '< 200ms'}
+                </p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Quick Chat */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Quick Chat with AI Coach
+              </h2>
+              <form onSubmit={handleQuickChat} className="space-y-4">
+                <div>
+                  <textarea
+                    value={chatMessage}
+                    onChange={(e) => setChatMessage(e.target.value)}
+                    placeholder="Ask your AI business coach anything..."
+                    rows={3}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={chatLoading || !chatMessage.trim()}
+                  className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  {chatLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Message'
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* AI Learning Insights */}
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                AI Learning Insights
+              </h2>
+              {agentInsights ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600">
+                      Shop Profiles: {agentInsights.coach_learning_data?.shop_profiles?.length || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Total Interactions: {agentInsights.coach_learning_data?.total_interactions || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Database Insights: {agentInsights.database_insights?.length || 0}
+                    </p>
+                  </div>
+                  <div className="pt-4 border-t border-gray-200">
+                    <p className="text-xs text-gray-500">
+                      Last updated: {new Date(agentInsights.timestamp).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <SparklesIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <p className="mt-2 text-sm text-gray-600">
+                    AI learning insights will appear here as you interact with the system
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {quickActions.map((action) => (
-              <button
-                key={action.name}
-                className="card hover:shadow-md transition-shadow text-center group cursor-pointer"
-                onClick={() => alert(`Navigating to ${action.name} - Feature coming soon!`)}
-              >
-                <action.icon className="h-8 w-8 text-gray-600 mx-auto mb-2 group-hover:text-blue-600 transition-colors" />
-                <p className="text-sm font-medium text-gray-900">{action.name}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* AI Agents Status */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Agents Status</h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {agents.map((agent) => (
-              <div key={agent.name} className="card">
-                <div className="flex items-start space-x-4">
-                  <div className={`p-3 rounded-lg ${agent.color}`}>
-                    <agent.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-lg font-medium text-gray-900">{agent.name}</h4>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">{agent.description}</p>
-                    <p className="text-sm text-gray-500">
-                      <span className="font-medium">Last action:</span> {agent.lastAction}
-                    </p>
-                  </div>
+        <div className="mt-8">
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a
+              href="/dashboard/campaigns"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center">
+                <MailIcon className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium text-gray-900">Campaigns</h3>
+                  <p className="text-sm text-gray-600">Manage marketing campaigns</p>
                 </div>
               </div>
-            ))}
+            </a>
+
+            <a
+              href="/dashboard/customers"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center">
+                <UserGroupIcon className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium text-gray-900">Customers</h3>
+                  <p className="text-sm text-gray-600">View customer insights</p>
+                </div>
+              </div>
+            </a>
+
+            <a
+              href="/dashboard/settings"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center">
+                <CogIcon className="h-8 w-8 text-gray-600" />
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium text-gray-900">Settings</h3>
+                  <p className="text-sm text-gray-600">Configure your system</p>
+                </div>
+              </div>
+            </a>
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Dashboard() {
+  return (
+    <ProtectedRoute>
+      <DashboardProvider>
+        <DashboardContent />
+      </DashboardProvider>
+    </ProtectedRoute>
   )
 }

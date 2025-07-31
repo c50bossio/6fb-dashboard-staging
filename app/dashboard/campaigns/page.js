@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { 
   PlusIcon,
   MailIcon,
-  DevicePhoneMobileIcon,
+  PhoneIcon,
   EyeIcon,
   CalendarIcon,
   UserGroupIcon,
@@ -109,7 +109,7 @@ export default function CampaignsPage() {
                 onClick={() => handleCreateCampaign('sms')}
                 className="btn-primary flex items-center space-x-2"
               >
-                <DevicePhoneMobileIcon className="h-4 w-4" />
+                <PhoneIcon className="h-4 w-4" />
                 <span>SMS Campaign</span>
               </button>
             </div>
@@ -153,7 +153,7 @@ export default function CampaignsPage() {
 
           <div className="card">
             <div className="flex items-center">
-              <DevicePhoneMobileIcon className="h-8 w-8 text-orange-600" />
+              <PhoneIcon className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">SMS Campaigns</p>
                 <p className="text-2xl font-bold text-gray-900">
@@ -214,7 +214,7 @@ export default function CampaignsPage() {
                         {campaign.type === 'email' ? (
                           <MailIcon className="h-4 w-4 text-blue-600 mr-2" />
                         ) : (
-                          <DevicePhoneMobileIcon className="h-4 w-4 text-green-600 mr-2" />
+                          <PhoneIcon className="h-4 w-4 text-green-600 mr-2" />
                         )}
                         <span className="text-sm text-gray-900 capitalize">{campaign.type}</span>
                       </div>

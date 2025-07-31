@@ -3,28 +3,28 @@
 import Link from 'next/link'
 import { 
   ChartBarIcon,
-  ChatBubbleBottomCenterTextIcon,
-  EnvelopeIcon,
-  DevicePhoneMobileIcon,
-  CalendarDaysIcon,
+  ChatIcon,
+  MailIcon,
+  PhoneIcon,
+  CalendarIcon,
   UserGroupIcon,
   SparklesIcon,
   ArrowRightIcon,
   CheckIcon,
-  RocketLaunchIcon
-} from '@heroicons/react/24/outline'
+  LightningBoltIcon
+} from '@heroicons/react/outline'
 
 export default function LandingPage() {
   const features = [
     {
       name: 'AI Marketing Automation',
       description: 'Automated SMS & email campaigns that learn from customer behavior and optimize engagement.',
-      icon: EnvelopeIcon,
+      icon: MailIcon,
     },
     {
       name: 'Smart Booking Management',
       description: 'AI-powered calendar management with automated reminders and customer follow-ups.',
-      icon: CalendarDaysIcon,
+      icon: CalendarIcon,
     },
     {
       name: 'Customer Intelligence',
@@ -34,7 +34,7 @@ export default function LandingPage() {
     {
       name: 'Content Generation',
       description: 'AI creates compelling social media posts, email content, and marketing materials automatically.',
-      icon: ChatBubbleBottomCenterTextIcon,
+      icon: ChatIcon,
     },
     {
       name: 'Performance Analytics',
@@ -258,7 +258,7 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register" className="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-yellow-300 transition-colors flex items-center justify-center">
-              <RocketLaunchIcon className="mr-2 h-5 w-5" />
+              <LightningBoltIcon className="mr-2 h-5 w-5" />
               Start Your Free Trial
             </Link>
             <Link href="/demo" className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
