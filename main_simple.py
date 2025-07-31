@@ -15,7 +15,9 @@ from datetime import datetime
 # Create FastAPI app
 app = FastAPI(
     title="6FB AI Agent System", 
-    version="1.0.3"
+    version="1.0.4",
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
 # Add CORS
@@ -38,13 +40,23 @@ class ChatResponse(BaseModel):
     suggestions: List[str]
     timestamp: str
 
+# Startup event
+@app.on_event("startup")
+async def startup_event():
+    print("🚀 6FB AI Agent System Backend Starting...")
+    print(f"📍 Environment: {os.getenv('ENVIRONMENT', 'production')}")
+    print(f"🌐 Port: {os.getenv('PORT', '8000')}")
+    print("✅ Backend Ready!")
+
 # Routes
 @app.get("/")
 def root():
     return {
         "message": "6FB AI Agent System Backend",
         "status": "running", 
-        "version": "1.0.3"
+        "version": "1.0.4",
+        "environment": os.getenv("ENVIRONMENT", "production"),
+        "port": os.getenv("PORT", "8000")
     }
 
 @app.get("/health")
