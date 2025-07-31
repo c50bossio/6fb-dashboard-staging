@@ -18,6 +18,8 @@ RUN pip install --no-cache-dir -r requirements-minimal.txt
 
 # Copy application code
 COPY main.py ./
+COPY fastapi_backend.py ./
+COPY websocket_backend.py ./
 COPY database/ ./database/
 COPY services/ ./services/
 
@@ -27,5 +29,5 @@ RUN mkdir -p /app/data
 # Expose port 8000
 EXPOSE 8000
 
-# Start simple HTTP server
-CMD ["python", "main.py"]
+# Start FastAPI server
+CMD ["uvicorn", "fastapi_backend:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   frontend:
     build:
@@ -5,46 +7,34 @@ services:
       dockerfile: Dockerfile.frontend
     container_name: agent-system-frontend
     ports:
-      - "9999:9999"
+      - "9999:3000"
     environment:
-      - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://localhost:8001
-    env_file:
-      - .env
     volumes:
       - ./app:/app/app
       - ./components:/app/components
+      - ./contexts:/app/contexts
+      - ./lib:/app/lib
       - ./public:/app/public
+      - ./styles:/app/styles
     depends_on:
       - backend
-    networks:
-      - agent-network
-    restart: unless-stopped
 
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    container_name: agent-system-backend
+    container_name: agent-system-backend-websocket
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=sqlite:///./data/agent_system.db
-      - CORS_ORIGINS=http://localhost:9999
-      - PYTHONPATH=/app
-    env_file:
-      - .env
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     volumes:
-      - ./:/app
+      - ./data:/app/data
+      - ./websocket_backend.py:/app/websocket_backend.py
       - ./fastapi_backend.py:/app/fastapi_backend.py
-    networks:
-      - agent-network
-    restart: unless-stopped
+    command: ["uvicorn", "websocket_backend:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 networks:
-  agent-network:
-    driver: bridge
-
-volumes:
-  agent_data:
-    driver: local
+  default:
+    name: agent-system-network

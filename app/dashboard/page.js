@@ -6,6 +6,7 @@ import { useDashboard } from '../../contexts/DashboardContext'
 import { DashboardProvider } from '../../contexts/DashboardContext'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import LoadingSpinner, { CardLoadingSkeleton } from '../../components/LoadingSpinner'
+import Link from 'next/link'
 import { 
   ChartBarIcon, 
   ChatBubbleLeftRightIcon,
@@ -282,44 +283,44 @@ function DashboardContent() {
         <div className="mt-8">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a
-              href="/dashboard/campaigns"
+            <Link
+              href="/dashboard/chat"
               className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
             >
               <div className="flex items-center">
-                <EnvelopeIcon className="h-8 w-8 text-blue-600" />
+                <ChatBubbleLeftRightIcon className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Campaigns</h3>
-                  <p className="text-sm text-gray-600">Manage marketing campaigns</p>
+                  <h3 className="text-lg font-medium text-gray-900">AI Chat</h3>
+                  <p className="text-sm text-gray-600">Chat with AI advisors</p>
                 </div>
               </div>
-            </a>
+            </Link>
 
-            <a
-              href="/dashboard/customers"
+            <Link
+              href="/dashboard/analytics"
               className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
             >
               <div className="flex items-center">
-                <UserGroupIcon className="h-8 w-8 text-green-600" />
+                <ChartBarIcon className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Customers</h3>
-                  <p className="text-sm text-gray-600">View customer insights</p>
+                  <h3 className="text-lg font-medium text-gray-900">Analytics</h3>
+                  <p className="text-sm text-gray-600">View performance charts</p>
                 </div>
               </div>
-            </a>
+            </Link>
 
-            <a
-              href="/dashboard/settings"
+            <Link
+              href="/dashboard/marketing"
               className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
             >
               <div className="flex items-center">
-                <CogIcon className="h-8 w-8 text-gray-600" />
+                <SparklesIcon className="h-8 w-8 text-yellow-600" />
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Settings</h3>
-                  <p className="text-sm text-gray-600">Configure your system</p>
+                  <h3 className="text-lg font-medium text-gray-900">Marketing</h3>
+                  <p className="text-sm text-gray-600">Manage campaigns</p>
                 </div>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
