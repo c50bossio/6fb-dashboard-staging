@@ -8,6 +8,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
+import asyncio
 import json
 import os
 import hashlib
@@ -15,6 +16,10 @@ import secrets
 import sqlite3
 import uuid
 from contextlib import contextmanager
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from services.notification_service import notification_service
+from services.notification_queue import notification_queue
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -176,6 +181,10 @@ async def startup_event():
     """Initialize database on startup"""
     init_db()
     print("✅ Database initialized")
+    
+    # Start notification queue processing
+    asyncio.create_task(notification_queue.start_processing())
+    print("✅ Notification queue processor started")
 
 @app.get("/")
 async def root():
@@ -603,8 +612,11 @@ async def save_barbershop_settings(settings: dict, current_user: dict = Depends(
         
         # Save all settings to shop_profiles
         profile_data = json.dumps(settings)
+        # First, delete old profiles for this user
+        conn.execute("DELETE FROM shop_profiles WHERE user_id = ?", (current_user["id"],))
+        # Then insert new profile
         conn.execute("""
-            INSERT OR REPLACE INTO shop_profiles (user_id, profile_data)
+            INSERT INTO shop_profiles (user_id, profile_data)
             VALUES (?, ?)
         """, (current_user["id"], profile_data))
         
@@ -619,9 +631,9 @@ async def save_barbershop_settings(settings: dict, current_user: dict = Depends(
 async def get_barbershop_settings(current_user: dict = Depends(get_current_user)):
     """Get barbershop settings"""
     with get_db() as conn:
-        # Try to get saved settings from shop_profiles
+        # Try to get saved settings from shop_profiles (get the latest one)
         cursor = conn.execute(
-            "SELECT profile_data FROM shop_profiles WHERE user_id = ?",
+            "SELECT profile_data FROM shop_profiles WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
             (current_user["id"],)
         )
         profile = cursor.fetchone()
@@ -709,24 +721,134 @@ async def get_notification_settings(current_user: dict = Depends(get_current_use
 
 @app.post("/api/v1/notifications/test")
 async def test_notification(
-    notification_type: str,
+    request: dict,
     current_user: dict = Depends(get_current_user)
 ):
     """Test notification delivery"""
-    # Get user's notification settings
-    settings = await get_notification_settings(current_user)
+    notification_type = request.get("type", "email")
     
-    if notification_type == "email" and not settings.get("emailEnabled"):
-        return {"success": False, "message": "Email notifications are disabled"}
+    # Get recipient info
+    if notification_type == "email":
+        recipient = current_user.get("email")
+        subject = "Test Notification from 6FB AI"
+        content = "This is a test email notification from your AI Agent System. If you're receiving this, your email notifications are working correctly!"
+    else:
+        recipient = request.get("phone", "+1234567890")  # In production, get from user profile
+        subject = ""
+        content = "6FB AI Test: Your SMS notifications are working!"
     
-    if notification_type == "sms" and not settings.get("smsEnabled"):
-        return {"success": False, "message": "SMS notifications are disabled"}
+    # Send using notification service
+    result = await notification_service.send_notification(
+        user_id=current_user["id"],
+        notification_type=notification_type,
+        recipient=recipient,
+        subject=subject,
+        content=content,
+        check_preferences=True
+    )
     
-    # In production, this would send actual notifications
+    return result
+
+@app.post("/api/v1/notifications/send")
+async def send_notification(
+    request: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send a notification to a user"""
+    result = await notification_service.send_notification(
+        user_id=current_user["id"],
+        notification_type=request["type"],
+        recipient=request["recipient"],
+        subject=request.get("subject", ""),
+        content=request["content"],
+        template_id=request.get("template_id"),
+        template_data=request.get("template_data"),
+        check_preferences=request.get("check_preferences", True)
+    )
+    
+    return result
+
+@app.get("/api/v1/notifications/history")
+async def get_notification_history(
+    current_user: dict = Depends(get_current_user),
+    limit: int = 50
+):
+    """Get notification history for current user"""
+    with get_db() as conn:
+        cursor = conn.execute(
+            """SELECT * FROM notification_history 
+               WHERE user_id = ? 
+               ORDER BY sent_at DESC 
+               LIMIT ?""",
+            (current_user["id"], limit)
+        )
+        
+        history = []
+        for row in cursor:
+            history.append({
+                "id": row["id"],
+                "type": row["type"],
+                "recipient": row["recipient"],
+                "subject": row["subject"],
+                "content": row["content"][:100] + "..." if len(row["content"]) > 100 else row["content"],
+                "status": row["status"],
+                "error_message": row["error_message"],
+                "sent_at": row["sent_at"]
+            })
+        
+        return {"notifications": history, "count": len(history)}
+
+@app.post("/api/v1/notifications/queue")
+async def queue_notification(
+    request: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Queue a notification for async delivery"""
+    queue_id = await notification_queue.enqueue(
+        user_id=current_user["id"],
+        notification_type=request["type"],
+        recipient=request["recipient"],
+        subject=request.get("subject", ""),
+        content=request["content"],
+        template_id=request.get("template_id"),
+        template_data=request.get("template_data"),
+        priority=request.get("priority", 5),
+        scheduled_at=request.get("scheduled_at"),
+        metadata=request.get("metadata")
+    )
+    
     return {
         "success": True,
-        "message": f"Test {notification_type} notification sent successfully",
-        "recipient": current_user.get("email") if notification_type == "email" else "phone number on file"
+        "queue_id": queue_id,
+        "message": "Notification queued successfully"
+    }
+
+@app.get("/api/v1/notifications/queue/status")
+async def get_queue_status(current_user: dict = Depends(get_current_user)):
+    """Get notification queue status"""
+    status = await notification_queue.get_queue_status()
+    return status
+
+@app.post("/api/v1/notifications/queue/{queue_id}/cancel")
+async def cancel_queued_notification(
+    queue_id: int,
+    current_user: dict = Depends(get_current_user)
+):
+    """Cancel a queued notification"""
+    success = await notification_queue.cancel_notification(queue_id)
+    
+    if success:
+        return {"success": True, "message": "Notification cancelled"}
+    else:
+        return {"success": False, "message": "Notification not found or already processed"}
+
+@app.post("/api/v1/notifications/queue/retry-failed")
+async def retry_failed_notifications(current_user: dict = Depends(get_current_user)):
+    """Retry all failed notifications"""
+    count = await notification_queue.retry_failed()
+    return {
+        "success": True,
+        "message": f"Scheduled {count} failed notifications for retry"
     }
 
 @app.get("/api/v1/billing/history")
