@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useScrollAnimation, useStaggeredAnimation, scrollAnimations } from '../hooks/useScrollAnimation'
+import MobileMenu from '../components/MobileMenu'
 import { 
   ChartBarIcon,
   ChatBubbleLeftRightIcon as ChatIcon,
@@ -125,18 +126,8 @@ export default function LandingPage() {
               </Link>
             </div>
             
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <button 
-                className="text-gray-600 hover:text-gray-900 p-2 rounded-lg transition-colors duration-200"
-                aria-label="Open navigation menu"
-                aria-expanded="false"
-              >
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
+            {/* Mobile menu */}
+            <MobileMenu />
           </div>
         </div>
       </nav>
