@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements-minimal.txt
-    startCommand: python test-main.py
+    startCommand: gunicorn -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT test-main:app
     envVars:
       - key: ENVIRONMENT
         value: staging
