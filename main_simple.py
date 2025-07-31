@@ -7,7 +7,7 @@ Zero complex dependencies, guaranteed to work
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 import uvicorn
 import os
 from datetime import datetime
@@ -94,4 +94,5 @@ def debug():
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
-    uvicorn.run("main_simple:app", host="0.0.0.0", port=port)
+    print(f"🚀 6FB AI Agent System Backend Starting on port {port}...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
