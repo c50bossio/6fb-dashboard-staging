@@ -6,7 +6,7 @@ services:
     repo: c50bossio/6fb-dashboard-staging
     branch: staging
     deploy_on_push: true
-  run_command: gunicorn -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT test-main:app
+  run_command: gunicorn -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT main:app
   environment_slug: python
   instance_count: 1
   instance_size_slug: basic-xxs
@@ -19,3 +19,5 @@ services:
     value: https://6fb-ai-staging.vercel.app
   - key: PYTHONUNBUFFERED
     value: "1"
+  - key: CORS_ORIGINS
+    value: "https://6fb-ai-staging.vercel.app,http://localhost:9999,http://localhost:3000"
