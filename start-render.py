@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Render deployment startup script with error handling
+Render deployment startup script - runs the simple HTTP server
 """
 import os
 import sys
@@ -24,22 +24,16 @@ def main():
             logger.error("❌ main_simple.py not found in current directory")
             sys.exit(1)
             
-        logger.info("✅ main_simple.py found, starting uvicorn...")
+        logger.info("✅ main_simple.py found, starting server...")
         
-        # Run uvicorn with error handling
-        cmd = [
-            sys.executable, '-m', 'uvicorn',
-            'main_simple:app',
-            '--host', '0.0.0.0',
-            '--port', str(port),
-            '--log-level', 'info'
-        ]
+        # Run the simple HTTP server directly
+        cmd = [sys.executable, 'main_simple.py']
         
         logger.info(f"Running command: {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=False)
         
         if result.returncode != 0:
-            logger.error(f"❌ uvicorn exited with code {result.returncode}")
+            logger.error(f"❌ Server exited with code {result.returncode}")
             sys.exit(result.returncode)
             
     except Exception as e:
