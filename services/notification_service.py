@@ -11,9 +11,26 @@ from contextlib import contextmanager
 import asyncio
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-# import aiosmtplib  # TODO: Add to requirements and rebuild
-# import httpx  # TODO: Add to requirements and rebuild
-# from jinja2 import Template  # TODO: Add to requirements and rebuild
+try:
+    import aiosmtplib
+    AIOSMTPLIB_AVAILABLE = True
+except ImportError:
+    AIOSMTPLIB_AVAILABLE = False
+    print("Warning: aiosmtplib not available - email sending will use mock mode")
+
+try:
+    import httpx
+    HTTPX_AVAILABLE = True
+except ImportError:
+    HTTPX_AVAILABLE = False
+    print("Warning: httpx not available - SMS sending will use mock mode")
+
+try:
+    from jinja2 import Template
+    JINJA2_AVAILABLE = True
+except ImportError:
+    JINJA2_AVAILABLE = False
+    print("Warning: jinja2 not available - using basic string formatting for templates")
 
 # Configuration
 EMAIL_CONFIG = {
@@ -227,11 +244,22 @@ class NotificationService:
         template = templates.get(template_id, {})
         rendered = {}
         
-        if "subject" in template:
-            rendered["subject"] = template["subject"].format(**data)
-        
-        if "content" in template:
-            rendered["content"] = template["content"].format(**data)
+        if JINJA2_AVAILABLE:
+            # Use Jinja2 for advanced templating
+            if "subject" in template:
+                subject_template = Template(template["subject"].replace("{", "{{").replace("}", "}}"))
+                rendered["subject"] = subject_template.render(**data)
+            
+            if "content" in template:
+                content_template = Template(template["content"].replace("{", "{{").replace("}", "}}"))
+                rendered["content"] = content_template.render(**data)
+        else:
+            # Fallback to basic string formatting
+            if "subject" in template:
+                rendered["subject"] = template["subject"].format(**data)
+            
+            if "content" in template:
+                rendered["content"] = template["content"].format(**data)
         
         return rendered
     
@@ -385,17 +413,32 @@ class EmailService:
             # Add content
             message.attach(MIMEText(content, "plain"))
             
-            # TODO: Implement real SMTP sending with aiosmtplib
-            # For now, simulate sending
-            print(f"[EMAIL-SMTP] Would send to: {to_email}")
-            print(f"[EMAIL-SMTP] Subject: {subject}")
-            print(f"[EMAIL-SMTP] From: {message['From']}")
-            
-            return {
-                "success": True,
-                "message": "Email sent (simulated - aiosmtplib not installed)",
-                "provider": "smtp"
-            }
+            if AIOSMTPLIB_AVAILABLE:
+                # Send via real SMTP
+                async with aiosmtplib.SMTP(
+                    hostname=EMAIL_CONFIG["SMTP_HOST"],
+                    port=EMAIL_CONFIG["SMTP_PORT"],
+                    use_tls=True
+                ) as smtp:
+                    await smtp.login(EMAIL_CONFIG["SMTP_USERNAME"], EMAIL_CONFIG["SMTP_PASSWORD"])
+                    await smtp.send_message(message)
+                
+                return {
+                    "success": True,
+                    "message": "Email sent successfully via SMTP",
+                    "provider": "smtp"
+                }
+            else:
+                # Simulate sending when aiosmtplib not available
+                print(f"[EMAIL-SMTP] Would send to: {to_email}")
+                print(f"[EMAIL-SMTP] Subject: {subject}")
+                print(f"[EMAIL-SMTP] From: {message['From']}")
+                
+                return {
+                    "success": True,
+                    "message": "Email sent (simulated - aiosmtplib not installed)",
+                    "provider": "smtp"
+                }
             
         except Exception as e:
             return {
@@ -437,16 +480,43 @@ class SMSService:
             }
         
         try:
-            # TODO: Implement real Twilio API call with httpx
-            print(f"[SMS-TWILIO] Would send to: {to_number}")
-            print(f"[SMS-TWILIO] Message: {message}")
-            print(f"[SMS-TWILIO] From: {SMS_CONFIG['TWILIO_FROM_NUMBER']}")
-            
-            return {
-                "success": True,
-                "message": "SMS sent via Twilio (simulated - httpx not installed)",
-                "provider": "twilio"
-            }
+            if HTTPX_AVAILABLE:
+                # Send via real Twilio API
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        f"https://api.twilio.com/2010-04-01/Accounts/{SMS_CONFIG['TWILIO_ACCOUNT_SID']}/Messages.json",
+                        auth=(SMS_CONFIG["TWILIO_ACCOUNT_SID"], SMS_CONFIG["TWILIO_AUTH_TOKEN"]),
+                        data={
+                            "From": SMS_CONFIG["TWILIO_FROM_NUMBER"],
+                            "To": to_number,
+                            "Body": message
+                        }
+                    )
+                    
+                    if response.status_code == 201:
+                        return {
+                            "success": True,
+                            "message": "SMS sent via Twilio",
+                            "provider": "twilio"
+                        }
+                    else:
+                        return {
+                            "success": False,
+                            "message": "Twilio API error",
+                            "error": response.text,
+                            "provider": "twilio"
+                        }
+            else:
+                # Simulate sending when httpx not available
+                print(f"[SMS-TWILIO] Would send to: {to_number}")
+                print(f"[SMS-TWILIO] Message: {message}")
+                print(f"[SMS-TWILIO] From: {SMS_CONFIG['TWILIO_FROM_NUMBER']}")
+                
+                return {
+                    "success": True,
+                    "message": "SMS sent via Twilio (simulated - httpx not installed)",
+                    "provider": "twilio"
+                }
                     
         except Exception as e:
             return {
@@ -466,15 +536,42 @@ class SMSService:
             }
         
         try:
-            # TODO: Implement real Textbelt API call with httpx
-            print(f"[SMS-TEXTBELT] Would send to: {to_number}")
-            print(f"[SMS-TEXTBELT] Message: {message}")
-            
-            return {
-                "success": True,
-                "message": "SMS sent via Textbelt (simulated - httpx not installed)",
-                "provider": "textbelt"
-            }
+            if HTTPX_AVAILABLE:
+                # Send via real Textbelt API
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        "https://textbelt.com/text",
+                        json={
+                            "phone": to_number,
+                            "message": message,
+                            "key": SMS_CONFIG["TEXTBELT_KEY"]
+                        }
+                    )
+                    
+                    data = response.json()
+                    if data.get("success"):
+                        return {
+                            "success": True,
+                            "message": "SMS sent via Textbelt",
+                            "provider": "textbelt"
+                        }
+                    else:
+                        return {
+                            "success": False,
+                            "message": "Textbelt API error",
+                            "error": data.get("error", "Unknown error"),
+                            "provider": "textbelt"
+                        }
+            else:
+                # Simulate sending when httpx not available
+                print(f"[SMS-TEXTBELT] Would send to: {to_number}")
+                print(f"[SMS-TEXTBELT] Message: {message}")
+                
+                return {
+                    "success": True,
+                    "message": "SMS sent via Textbelt (simulated - httpx not installed)",
+                    "provider": "textbelt"
+                }
                     
         except Exception as e:
             return {
