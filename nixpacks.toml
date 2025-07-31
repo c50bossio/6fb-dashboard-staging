@@ -1,17 +1,2 @@
-[variables]
-NIXPACKS_BUILD_CMD = "python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt"
-NIXPACKS_START_CMD = "python3 main.py"
-
-providers = ["python"]
-
-[phases.setup]
-nixPkgs = ["python311", "python311Packages.pip"]
-
-[phases.install]
-cmds = ["python3 -m pip install --upgrade pip", "python3 -m pip install -r requirements.txt"]
-
-[phases.build]
-cmds = []
-
 [start]
 cmd = "python3 main.py"
