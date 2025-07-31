@@ -3,9 +3,11 @@ services:
     name: 6fb-ai-backend-staging
     env: python
     plan: free
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    buildCommand: echo "No dependencies needed"
     startCommand: python main_simple.py
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
       - key: ENVIRONMENT
         value: staging
       - key: FRONTEND_URL

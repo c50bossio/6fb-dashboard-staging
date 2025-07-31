@@ -1,88 +1,107 @@
 #!/usr/bin/env python3
 """
-Ultra-minimal FastAPI Server for Render Deployment
-Zero complex dependencies, guaranteed to work
+Ultra-simple HTTP server for Render - no dependencies issues
 """
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
+import json
 import os
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 
-# Create FastAPI app
-app = FastAPI(
-    title="6FB AI Agent System", 
-    version="1.0.4",
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
+class APIHandler(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        """Handle CORS preflight"""
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
 
-# Add CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    def do_GET(self):
+        """Handle GET requests"""
+        parsed_path = urlparse(self.path)
+        
+        # Route handlers
+        if parsed_path.path == "/":
+            self.send_json_response({
+                "message": "6FB AI Agent System Backend",
+                "status": "running", 
+                "version": "1.0.4",
+                "environment": os.getenv("ENVIRONMENT", "production"),
+                "port": os.getenv("PORT", "8000")
+            })
+        elif parsed_path.path == "/health":
+            self.send_json_response({"status": "healthy", "service": "6fb-ai-backend"})
+        elif parsed_path.path == "/api/v1/agents":
+            self.send_json_response([
+                {"id": "business_coach", "name": "Business Coach", "status": "active"},
+                {"id": "marketing_expert", "name": "Marketing Expert", "status": "active"},
+                {"id": "financial_advisor", "name": "Financial Advisor", "status": "active"}
+            ])
+        elif parsed_path.path == "/debug":
+            self.send_json_response({
+                "environment": os.getenv("ENVIRONMENT", "production"),
+                "port": os.getenv("PORT", "8000"),
+                "timestamp": datetime.now().isoformat()
+            })
+        else:
+            self.send_error(404, "Not Found")
 
-# Startup event
-@app.on_event("startup")
-def startup_event():
-    print("🚀 6FB AI Agent System Backend Starting...")
-    print(f"📍 Environment: {os.getenv('ENVIRONMENT', 'production')}")
-    print(f"🌐 Port: {os.getenv('PORT', '8000')}")
-    print("✅ Backend Ready!")
+    def do_POST(self):
+        """Handle POST requests"""
+        parsed_path = urlparse(self.path)
+        
+        # Read request body
+        content_length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(content_length)
+        
+        try:
+            data = json.loads(body) if body else {}
+        except json.JSONDecodeError:
+            data = {}
+        
+        # Route handlers
+        if parsed_path.path in ["/api/v1/ai-agents/chat", "/api/v1/agentic-coach/chat"]:
+            message = data.get("message", "")
+            agent_id = data.get("agent_id", "business_coach")
+            
+            self.send_json_response({
+                "agent_id": agent_id,
+                "response": f"AI response to: {message}",
+                "suggestions": ["Try this", "Consider that"],
+                "timestamp": datetime.now().isoformat()
+            })
+        else:
+            self.send_error(404, "Not Found")
 
-# Routes
-@app.get("/")
-def root():
-    return {
-        "message": "6FB AI Agent System Backend",
-        "status": "running", 
-        "version": "1.0.4",
-        "environment": os.getenv("ENVIRONMENT", "production"),
-        "port": os.getenv("PORT", "8000")
-    }
+    def send_json_response(self, data):
+        """Send JSON response with CORS headers"""
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode())
 
-@app.get("/health")
-def health():
-    return {"status": "healthy", "service": "6fb-ai-backend"}
+    def log_message(self, format, *args):
+        """Override to use print for Render logs"""
+        print(f"{self.address_string()} - {format % args}")
 
-@app.get("/api/v1/agents")
-def list_agents():
-    return [
-        {"id": "business_coach", "name": "Business Coach", "status": "active"},
-        {"id": "marketing_expert", "name": "Marketing Expert", "status": "active"},
-        {"id": "financial_advisor", "name": "Financial Advisor", "status": "active"}
-    ]
-
-@app.post("/api/v1/ai-agents/chat")
-def chat(request_body: dict):
-    message = request_body.get("message", "")
-    agent_id = request_body.get("agent_id", "business_coach")
+def run_server():
+    port = int(os.getenv("PORT", 8000))
+    server_address = ('', port)
     
-    return {
-        "agent_id": agent_id,
-        "response": f"AI response to: {message}",
-        "suggestions": ["Try this", "Consider that"],
-        "timestamp": datetime.now().isoformat()
-    }
-
-@app.post("/api/v1/agentic-coach/chat") 
-def agentic_chat(request_body: dict):
-    return chat(request_body)
-
-@app.get("/debug")
-def debug():
-    return {
-        "environment": os.getenv("ENVIRONMENT", "production"),
-        "port": os.getenv("PORT", "8000"),
-        "timestamp": datetime.now().isoformat()
-    }
+    print(f"🚀 6FB AI Agent System Backend Starting...")
+    print(f"📍 Environment: {os.getenv('ENVIRONMENT', 'production')}")
+    print(f"🌐 Port: {port}")
+    
+    httpd = HTTPServer(server_address, APIHandler)
+    print(f"✅ Backend Ready! Server running on port {port}")
+    
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\n⏹️  Shutting down server...")
+        httpd.shutdown()
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
-    print(f"🚀 6FB AI Agent System Backend Starting on port {port}...")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    run_server()
