@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon, 
-  ChatBubbleBottomCenterTextIcon,
-  EnvelopeIcon,
+  ChatIcon,
+  MailIcon,
   DevicePhoneMobileIcon,
-  CalendarDaysIcon,
+  CalendarIcon,
   UserGroupIcon,
   CogIcon,
   SparklesIcon
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/outline'
 
 export default function Dashboard() {
   const [systemStatus, setSystemStatus] = useState('loading')
@@ -39,7 +39,7 @@ export default function Dashboard() {
   const agents = [
     {
       name: 'Marketing Agent',
-      icon: EnvelopeIcon,
+      icon: MailIcon,
       description: 'Automated SMS & Email campaigns',
       status: 'active',
       lastAction: 'Email sent to 47 VIP customers',
@@ -47,7 +47,7 @@ export default function Dashboard() {
     },
     {
       name: 'Content Agent', 
-      icon: ChatBubbleBottomCenterTextIcon,
+      icon: ChatIcon,
       description: 'AI-powered content generation',
       status: 'active',
       lastAction: 'Generated 3 social media posts',
@@ -63,7 +63,7 @@ export default function Dashboard() {
     },
     {
       name: 'Booking Agent',
-      icon: CalendarDaysIcon,
+      icon: CalendarIcon,
       description: 'Calendar & appointment management',
       status: 'active',
       lastAction: '12 appointments scheduled today',
@@ -89,7 +89,7 @@ export default function Dashboard() {
 
   const quickActions = [
     { name: 'Send SMS Campaign', icon: DevicePhoneMobileIcon, path: '/dashboard/campaigns/sms' },
-    { name: 'Send Email Blast', icon: EnvelopeIcon, path: '/dashboard/campaigns/email' },
+    { name: 'Send Email Blast', icon: MailIcon, path: '/dashboard/campaigns/email' },
     { name: 'Manage Customers', icon: UserGroupIcon, path: '/dashboard/customers' },
     { name: 'View Analytics', icon: ChartBarIcon, path: '/dashboard/analytics' },
     { name: 'Schedule Posts', icon: SparklesIcon, path: '/dashboard/social' },
@@ -130,7 +130,7 @@ export default function Dashboard() {
           <div className="card">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <EnvelopeIcon className="h-6 w-6 text-blue-600" />
+                <MailIcon className="h-6 w-6 text-blue-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Emails Sent</p>
@@ -166,7 +166,7 @@ export default function Dashboard() {
           <div className="card">
             <div className="flex items-center">
               <div className="p-2 bg-orange-100 rounded-lg">
-                <CalendarDaysIcon className="h-6 w-6 text-orange-600" />
+                <CalendarIcon className="h-6 w-6 text-orange-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Appointments</p>

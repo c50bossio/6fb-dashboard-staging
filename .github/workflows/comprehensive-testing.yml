@@ -278,7 +278,7 @@ jobs:
         run: |
           npm run build
           npm run start:test &
-          python enhanced-fastapi-server-async.py &
+          python main.py &
           sleep 30  # Wait for servers to start
 
       - name: Run E2E tests
@@ -355,7 +355,7 @@ jobs:
         run: |
           npm run build
           npm run start:production &
-          python enhanced-fastapi-server-async.py &
+          python main.py &
           sleep 30
 
       - name: Run performance tests
@@ -446,7 +446,7 @@ jobs:
         run: |
           npm run build
           npm run start:test &
-          python enhanced-fastapi-server-async.py &
+          python main.py &
           sleep 30
 
       - name: Run security E2E tests
@@ -629,7 +629,7 @@ jobs:
         run: |
           npm run build
           npm run start:production &
-          python enhanced-fastapi-server-async.py &
+          python main.py &
           sleep 30
 
       - name: Run load tests with Artillery

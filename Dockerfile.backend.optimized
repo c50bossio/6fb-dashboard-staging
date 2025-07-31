@@ -1,0 +1,116 @@
+# Multi-stage Dockerfile for 6FB AI Agent System Backend
+# Optimized for security, performance, and production deployment
+
+# =============================================================================
+# Stage 1: Base Dependencies
+# =============================================================================
+FROM python:3.11-slim as base
+
+# Install system dependencies and security updates
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    curl \
+    ca-certificates \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash --uid 1001 appuser
+
+# Set up Python environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+# =============================================================================
+# Stage 2: Dependencies Installation
+# =============================================================================
+FROM base as dependencies
+
+# Copy and install Python dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Install additional FastAPI dependencies
+RUN pip install --no-cache-dir \
+    fastapi==0.104.1 \
+    uvicorn[standard]==0.24.0 \
+    python-multipart==0.0.6 \
+    python-jose[cryptography]==3.3.0 \
+    passlib[bcrypt]==1.7.4 \
+    psycopg2-binary==2.9.9 \
+    asyncpg==0.29.0 \
+    sqlalchemy==2.0.23 \
+    redis==5.0.1 \
+    prometheus-client==0.19.0
+
+# =============================================================================
+# Stage 3: Development Image
+# =============================================================================
+FROM dependencies as development
+
+# Install development tools
+RUN pip install --no-cache-dir \
+    pytest==7.4.3 \
+    pytest-asyncio==0.21.1 \
+    black==23.11.0 \
+    flake8==6.1.0 \
+    mypy==1.7.1
+
+# Copy source code with proper ownership
+COPY --chown=appuser:appuser . .
+
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs && \
+    chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Health check for development
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Development server with auto-reload
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+
+# =============================================================================
+# Stage 4: Production Image
+# =============================================================================
+FROM dependencies as production
+
+# Copy only necessary application files
+COPY --chown=appuser:appuser main.py ./
+COPY --chown=appuser:appuser database/ ./database/
+COPY --chown=appuser:appuser services/ ./services/
+
+# Create directories with correct permissions
+RUN mkdir -p /app/data /app/logs && \
+    chown -R appuser:appuser /app && \
+    chmod 755 /app
+
+# Remove development packages to minimize attack surface
+RUN apt-get remove -y gcc g++ && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Health check for production
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Production server with optimized settings
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4", "--log-level", "info", "--no-access-log"]

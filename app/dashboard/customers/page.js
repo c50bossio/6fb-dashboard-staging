@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react'
 import { 
   PlusIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
+  SearchIcon,
+  FilterIcon,
   UserIcon,
   PhoneIcon,
-  EnvelopeIcon,
+  MailIcon,
   CalendarIcon,
   StarIcon,
   PencilIcon,
   TrashIcon
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/outline'
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([])
@@ -108,10 +108,10 @@ export default function CustomersPage() {
 
   const getContactIcon = (type) => {
     switch (type) {
-      case 'email': return <EnvelopeIcon className="h-4 w-4" />
+      case 'email': return <MailIcon className="h-4 w-4" />
       case 'sms': return <PhoneIcon className="h-4 w-4" />
       case 'phone': return <PhoneIcon className="h-4 w-4" />
-      default: return <EnvelopeIcon className="h-4 w-4" />
+      default: return <MailIcon className="h-4 w-4" />
     }
   }
 
@@ -205,7 +205,7 @@ export default function CustomersPage() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <SearchIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search customers..."

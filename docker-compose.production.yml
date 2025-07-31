@@ -1,0 +1,301 @@
+# 6FB AI Agent System - Production Docker Configuration
+# Single, consolidated, production-ready setup
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Production Grade
+  postgres:
+    image: postgres:15-alpine
+    container_name: agent-system-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-agent_system}
+      POSTGRES_USER: ${POSTGRES_USER:-agent_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agent_user} -d ${POSTGRES_DB:-agent_system}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+    security_opt:
+      - no-new-privileges:true
+    user: postgres
+
+  # Redis Cache - Session Management and Caching
+  redis:
+    image: redis:7-alpine
+    container_name: agent-system-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-secure_redis_password}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    security_opt:
+      - no-new-privileges:true
+
+  # Backend Service - FastAPI Application
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: production
+    container_name: agent-system-backend
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-agent_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-agent_system}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-secure_redis_password}@redis:6379/0
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:9999}
+      - PYTHONPATH=/app
+    env_file:
+      - .env
+    volumes:
+      - app_data:/app/data
+      - app_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+      replicas: 1
+    security_opt:
+      - no-new-privileges:true
+    user: "1001:1001"
+
+  # Frontend Service - Next.js Application  
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: production
+    container_name: agent-system-frontend
+    ports:
+      - "9999:9999"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_ENABLE_RAG=${NEXT_PUBLIC_ENABLE_RAG:-true}
+      - NEXT_PUBLIC_ENABLE_MOCK_FALLBACK=${NEXT_PUBLIC_ENABLE_MOCK_FALLBACK:-false}
+    env_file:
+      - .env
+    volumes:
+      - frontend_cache:/app/.next/cache
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9999/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+      replicas: 1
+    security_opt:
+      - no-new-privileges:true
+    user: "1001:1001"
+
+  # Nginx Reverse Proxy - Load Balancing and SSL Termination
+  nginx:
+    image: nginx:alpine
+    container_name: agent-system-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    security_opt:
+      - no-new-privileges:true
+
+  # Monitoring - Prometheus Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: agent-system-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - agent-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    security_opt:
+      - no-new-privileges:true
+
+  # Monitoring - Grafana Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: agent-system-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infrastructure/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+    networks:
+      - agent-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  agent-network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/postgres
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/redis
+  app_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/backend
+  app_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/logs
+  frontend_cache:
+    driver: local
+  nginx_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/nginx
+  prometheus_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/prometheus
+  grafana_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/grafana

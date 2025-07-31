@@ -1,0 +1,8199 @@
+[
+  {
+    "path": "/Users/bossio/6FB AI Agent System/booking_demo.db",
+    "size_bytes": 49152,
+    "tables": {
+      "barbershops": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "address",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "state",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "550e8400-e29b-41d4-a716-446655440000",
+            "Development Shop",
+            "123 Main St",
+            "San Francisco",
+            "CA",
+            "(555) 123-4567",
+            "dev@6fb.local"
+          ]
+        ]
+      },
+      "users": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "role",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 14,
+        "sample_data": [
+          [
+            "06d46453-f13c-4c65-aad0-a44d636d69ad",
+            "Mike Barber",
+            "mike@example.com",
+            "BARBER"
+          ],
+          [
+            "1cd6eefa-4b37-4bd2-888f-e9c8c59c589b",
+            "Mike Barber",
+            "mike@example.com",
+            "BARBER"
+          ],
+          [
+            "5370466a-fb8d-4a2d-9f4c-950ecbca80e0",
+            "Mike Barber",
+            "mike@example.com",
+            "BARBER"
+          ]
+        ]
+      },
+      "services": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "base_duration_minutes",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "base_price",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "category",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 26,
+        "sample_data": [
+          [
+            "3206f295-8b93-4b30-8af1-8a7992315126",
+            "550e8400-e29b-41d4-a716-446655440000",
+            "Classic Haircut",
+            "Traditional men's haircut",
+            30,
+            35.0,
+            "haircut"
+          ],
+          [
+            "f763e6e9-4c7d-4a3d-af04-b4e6a25cd76d",
+            "550e8400-e29b-41d4-a716-446655440000",
+            "Beard Trim",
+            "Professional beard shaping",
+            15,
+            20.0,
+            "beard"
+          ],
+          [
+            "47f8291f-8048-4f2e-8b33-87c00601a0d5",
+            "550e8400-e29b-41d4-a716-446655440000",
+            "Classic Haircut",
+            "Traditional men's haircut",
+            30,
+            35.0,
+            "haircut"
+          ]
+        ]
+      },
+      "barber_services": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barber_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "duration_minutes",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "price",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "skill_level",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "specialty_notes",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 52,
+        "sample_data": [
+          [
+            "c81ef53a-4274-485d-9056-7ad1d582ff81",
+            "06d46453-f13c-4c65-aad0-a44d636d69ad",
+            "3206f295-8b93-4b30-8af1-8a7992315126",
+            "550e8400-e29b-41d4-a716-446655440000",
+            25,
+            35.0,
+            "expert",
+            "Specializes in modern and classic styles"
+          ],
+          [
+            "ad26eabc-9798-4274-9bc9-1f6b75d3b7d3",
+            "06d46453-f13c-4c65-aad0-a44d636d69ad",
+            "f763e6e9-4c7d-4a3d-af04-b4e6a25cd76d",
+            "550e8400-e29b-41d4-a716-446655440000",
+            12,
+            20.0,
+            "expert",
+            "Master of beard sculpting"
+          ],
+          [
+            "3de40afb-ce31-4d71-8668-34bb26e54d24",
+            "no-preference",
+            "3206f295-8b93-4b30-8af1-8a7992315126",
+            "550e8400-e29b-41d4-a716-446655440000",
+            30,
+            35.0,
+            "standard",
+            "Any available barber"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/booking_system.db",
+    "size_bytes": 81920,
+    "tables": {
+      "users": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "hashed_password",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "full_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "role",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "auth_provider",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "social_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "profile_image_url",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 12,
+        "sample_data": [
+          [
+            1,
+            "mike@barbershop.com",
+            "$2b$12$dummy.hash.for.testing",
+            "Mike Johnson",
+            "555-0101",
+            "barber",
+            "email",
+            null,
+            null,
+            "2025-07-30 00:19:10",
+            "2025-07-30 00:19:10",
+            1
+          ],
+          [
+            2,
+            "sarah@barbershop.com",
+            "$2b$12$dummy.hash.for.testing",
+            "Sarah Wilson",
+            "555-0102",
+            "barber",
+            "email",
+            null,
+            null,
+            "2025-07-30 00:19:10",
+            "2025-07-30 00:19:10",
+            1
+          ],
+          [
+            3,
+            "james@barbershop.com",
+            "$2b$12$dummy.hash.for.testing",
+            "James Brown",
+            "555-0103",
+            "barber",
+            "email",
+            null,
+            null,
+            "2025-07-30 00:19:10",
+            "2025-07-30 00:19:10",
+            1
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 8,
+        "sample_data": [
+          [
+            "locations",
+            1
+          ],
+          [
+            "users",
+            12
+          ],
+          [
+            "barbers",
+            3
+          ]
+        ]
+      },
+      "locations": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "address",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "google_calendar_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timezone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "business_hours",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "Downtown Barbershop",
+            "123 Main St, Downtown",
+            "555-0123",
+            "info@downtown-barbershop.com",
+            null,
+            "America/New_York",
+            "{\"monday\": {\"open\": \"09:00\", \"close\": \"18:00\"}, \"tuesday\": {\"open\": \"09:00\", \"close\": \"18:00\"}, \"wednesday\": {\"open\": \"09:00\", \"close\": \"18:00\"}, \"thursday\": {\"open\": \"09:00\", \"close\": \"18:00\"}, \"friday\": {\"open\": \"09:00\", \"close\": \"19:00\"}, \"saturday\": {\"open\": \"08:00\", \"close\": \"17:00\"}, \"sunday\": {\"closed\": true}}",
+            "2025-07-30 00:19:10",
+            1
+          ]
+        ]
+      },
+      "barbers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "location_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "display_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "bio",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "profile_image_url",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "google_calendar_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_available",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "hourly_rate",
+            "type": "DECIMAL(5,2)",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "commission_rate",
+            "type": "DECIMAL(3,2)",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "specialties",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "years_experience",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 3,
+        "sample_data": [
+          [
+            1,
+            1,
+            1,
+            "Mike \"The Fade Master\" Johnson",
+            "Specializes in modern fades, classic cuts, and beard grooming. 8 years experience.",
+            null,
+            null,
+            1,
+            45,
+            null,
+            "[\"fades\", \"classic_cuts\", \"beard_grooming\"]",
+            8,
+            "2025-07-30 00:19:10"
+          ],
+          [
+            2,
+            2,
+            1,
+            "Sarah \"Style Guru\" Wilson",
+            "Expert in trendy styles, scissor cuts, and hair design. 6 years experience.",
+            null,
+            null,
+            1,
+            45,
+            null,
+            "[\"trendy_styles\", \"scissor_cuts\", \"hair_design\"]",
+            6,
+            "2025-07-30 00:19:10"
+          ],
+          [
+            3,
+            3,
+            1,
+            "James \"The Traditionalist\" Brown",
+            "Master of traditional barbering, straight razor shaves, and vintage styles. 12 years experience.",
+            null,
+            null,
+            1,
+            45,
+            null,
+            "[\"traditional_cuts\", \"straight_razor\", \"vintage_styles\"]",
+            12,
+            "2025-07-30 00:19:10"
+          ]
+        ]
+      },
+      "services": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "base_price",
+            "type": "DECIMAL(5,2)",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "base_duration",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "category",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 6,
+        "sample_data": [
+          [
+            1,
+            "Classic Haircut",
+            "Traditional haircut with scissor and clipper work",
+            35,
+            30,
+            "haircut",
+            1,
+            "2025-07-30 00:19:10"
+          ],
+          [
+            2,
+            "Modern Fade",
+            "Contemporary fade with blending and styling",
+            40,
+            35,
+            "haircut",
+            1,
+            "2025-07-30 00:19:10"
+          ],
+          [
+            3,
+            "Beard Trim",
+            "Professional beard trimming and shaping",
+            20,
+            15,
+            "beard",
+            1,
+            "2025-07-30 00:19:10"
+          ]
+        ]
+      },
+      "barber_services": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barber_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "custom_price",
+            "type": "DECIMAL(5,2)",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "custom_duration",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "buffer_time",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_available",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 10,
+        "sample_data": [
+          [
+            1,
+            1,
+            1,
+            null,
+            25,
+            5,
+            1
+          ],
+          [
+            2,
+            1,
+            2,
+            null,
+            30,
+            5,
+            1
+          ],
+          [
+            3,
+            1,
+            3,
+            null,
+            12,
+            3,
+            1
+          ]
+        ]
+      },
+      "appointments": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barber_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "location_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "appointment_datetime",
+            "type": "TIMESTAMP",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "duration",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "price",
+            "type": "DECIMAL(5,2)",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "notes",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "google_calendar_event_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 6,
+        "sample_data": [
+          [
+            1,
+            4,
+            1,
+            2,
+            1,
+            "2025-04-30T20:19:10.099552",
+            30,
+            40,
+            "completed",
+            null,
+            null,
+            "2025-04-30T20:19:10.099552",
+            "2025-04-30T20:19:10.099552"
+          ],
+          [
+            2,
+            4,
+            1,
+            2,
+            1,
+            "2025-05-21T20:19:10.099552",
+            30,
+            40,
+            "completed",
+            null,
+            null,
+            "2025-05-21T20:19:10.099552",
+            "2025-05-21T20:19:10.099552"
+          ],
+          [
+            3,
+            4,
+            1,
+            2,
+            1,
+            "2025-06-11T20:19:10.099552",
+            30,
+            40,
+            "completed",
+            null,
+            null,
+            "2025-06-11T20:19:10.099552",
+            "2025-06-11T20:19:10.099552"
+          ]
+        ]
+      },
+      "customer_behavior": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barber_preferences",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_patterns",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timing_preferences",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "communication_preferences",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "booking_behavior",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seasonal_patterns",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_updated",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            3,
+            4,
+            "{\"1\": 0.9519178082191779}",
+            "{\"most_frequent_services\": [{\"service_name\": \"Modern Fade\", \"frequency\": 4, \"avg_price\": 40, \"last_booked\": \"2025-07-02T20:19:10.099552\"}], \"service_combinations\": [], \"price_sensitivity\": 0.5, \"upgrade_propensity\": 0.5}",
+            "{\"avg_days_between_visits\": 21, \"preferred_days_of_week\": [\"Wednesday\"], \"preferred_times\": [\"evening\"], \"seasonal_variations\": {\"spring\": {\"avg_price\": 40, \"visit_count\": 2, \"top_services\": {\"Modern Fade\": 2}}, \"summer\": {\"avg_price\": 40, \"visit_count\": 2, \"top_services\": {\"Modern Fade\": 2}}}, \"frequency_trend\": \"stable\"}",
+            "{\"preferred_channel\": \"sms\", \"optimal_timing\": {\"Wednesday\": 20}, \"response_patterns\": {\"booking_lead_time\": 7, \"cancellation_rate\": 0.05, \"reschedule_rate\": 0.1}, \"reminder_preferences\": {\"advance_notice\": 24, \"frequency\": \"single\", \"method\": \"sms\"}}",
+            "{\"next_booking_prediction\": {\"predicted_date\": \"2025-07-23T20:19:10.099552\", \"likely_service\": \"Modern Fade\", \"likely_barber\": \"Mike \\\"The Fade Master\\\" Johnson\", \"confidence_score\": 1.0}, \"churn_risk\": {\"risk_level\": \"medium\", \"score\": 0.3, \"days_overdue\": 6, \"expected_next_visit\": \"2025-07-23T20:19:10.099552\"}, \"upsell_opportunities\": [{\"type\": \"service_addition\", \"suggestion\": \"beard_trim\", \"reason\": \"Customers who get haircuts often enjoy beard services\", \"confidence\": 0.7}, {\"type\": \"premium_service\", \"suggestion\": \"premium_cut\", \"reason\": \"Spending pattern suggests openness to premium services\", \"confidence\": 0.6}], \"optimal_contact_time\": \"2025-07-20T20:19:10.099552\"}",
+            "{\"spring\": {\"avg_price\": 40, \"visit_count\": 2, \"top_services\": {\"Modern Fade\": 2}}, \"summer\": {\"avg_price\": 40, \"visit_count\": 2, \"top_services\": {\"Modern Fade\": 2}}}",
+            "2025-07-30 00:58:16"
+          ]
+        ]
+      },
+      "waitlist": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barber_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "location_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_datetime",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "alternative_datetimes",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "queue_position",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "notification_sent_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "expires_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 3,
+        "sample_data": [
+          [
+            1,
+            7,
+            1,
+            2,
+            1,
+            "2025-08-01T10:00:00",
+            "[\"2025-08-01T11:00:00\", \"2025-08-01T14:00:00\"]",
+            "active",
+            1,
+            null,
+            null,
+            "2025-07-30 01:00:15"
+          ],
+          [
+            2,
+            8,
+            1,
+            2,
+            1,
+            "2025-08-01T10:00:00",
+            "[\"2025-08-01T11:00:00\"]",
+            "active",
+            2,
+            null,
+            null,
+            "2025-07-30 01:10:22"
+          ],
+          [
+            3,
+            12,
+            1,
+            1,
+            1,
+            "2025-08-01T14:00:00",
+            "[]",
+            "active",
+            1,
+            null,
+            null,
+            "2025-07-30 01:48:27"
+          ]
+        ]
+      },
+      "calendar_sync": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barber_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "google_calendar_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "access_token",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "refresh_token",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "token_expires_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_sync_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "sync_status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "social_auth": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "provider",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "social_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "access_token",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "refresh_token",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "token_expires_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "profile_data",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/ai_booking_intelligence.db",
+    "size_bytes": 28672,
+    "tables": {
+      "ai_recommendations": {
+        "columns": [
+          {
+            "name": "recommendation_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendation_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "title",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "reasoning",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "suggested_actions",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "ai_model_used",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "generated_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_presented",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_accepted",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_feedback",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "ai_customer_insights": {
+        "columns": [
+          {
+            "name": "insight_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "insight_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "insight_text",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "actionable_recommendations",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "supporting_data",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "ai_model_used",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "generated_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_acted_upon",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "ai_learning_feedback": {
+        "columns": [
+          {
+            "name": "feedback_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "recommendation_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "feedback_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "feedback_details",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "actual_outcome",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "learning_notes",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/predictive_analytics.db",
+    "size_bytes": 45056,
+    "tables": {
+      "demand_forecasts": {
+        "columns": [
+          {
+            "name": "forecast_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "time_period",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "forecast_date",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "predicted_demand",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence_level",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "contributing_factors",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommended_actions",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 3,
+        "sample_data": [
+          [
+            "hourly_peak_test_shop_123_1753981866",
+            "test_shop_123",
+            "all",
+            "hourly",
+            "2025-07-31",
+            1.0,
+            0.8,
+            "[\"Peak hours identified: 3:00\", \"Historical booking pattern analysis\"]",
+            "[\"Consider increasing staff during peak hours\", \"Implement premium pricing for high-demand slots\", \"Send proactive booking reminders to customers\"]",
+            "2025-07-30T13:11:06.833297"
+          ],
+          [
+            "weekly_test_shop_123_1753895466",
+            "test_shop_123",
+            "all",
+            "weekly",
+            "2025-08-06",
+            1.0,
+            0.8,
+            "[\"Peak day identified: Monday (100% demand)\"]",
+            "[\"Staff optimally for Monday\", \"Consider promotional pricing for low-demand days\"]",
+            "2025-07-30T13:11:06.833318"
+          ],
+          [
+            "service_test_shop_123_Classic Haircut_1753895466",
+            "test_shop_123",
+            "Classic Haircut",
+            "daily",
+            "2025-07-31",
+            1.0,
+            0.7,
+            "[\"Historical demand analysis for Classic Haircut\"]",
+            "[\"Ensure adequate capacity for Classic Haircut bookings\"]",
+            "2025-07-30T13:11:06.833327"
+          ]
+        ]
+      },
+      "dynamic_pricing": {
+        "columns": [
+          {
+            "name": "pricing_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barber_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "base_price",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommended_price",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "price_adjustment",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "pricing_reason",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "demand_level",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "valid_from",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "valid_until",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "expected_impact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "pricing_test_shop_123_Beard Trim_1753895466",
+            "test_shop_123",
+            "Beard Trim",
+            null,
+            15.0,
+            18.0,
+            20.0,
+            "Peak demand predicted (100% capacity). Premium pricing recommended to maximize revenue.",
+            "peak",
+            "2025-07-30T13:11:06.835670",
+            "2025-07-31T13:11:06.835671",
+            "{\"revenue_change\": 0.07999999999999985, \"demand_change\": -0.1, \"utilization_change\": -0.09999999999999998}",
+            "2025-07-30T13:11:06.835673",
+            1
+          ],
+          [
+            "pricing_test_shop_123_Classic Haircut_1753895466",
+            "test_shop_123",
+            "Classic Haircut",
+            null,
+            25.0,
+            30.0,
+            20.0,
+            "Peak demand predicted (100% capacity). Premium pricing recommended to maximize revenue.",
+            "peak",
+            "2025-07-30T13:11:06.836021",
+            "2025-07-31T13:11:06.836022",
+            "{\"revenue_change\": 0.08000000000000007, \"demand_change\": -0.1, \"utilization_change\": -0.09999999999999998}",
+            "2025-07-30T13:11:06.836025",
+            1
+          ]
+        ]
+      },
+      "business_insights": {
+        "columns": [
+          {
+            "name": "insight_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "insight_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "title",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "impact_level",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "potential_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "actionable_recommendations",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "supporting_data",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "urgency_level",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_acted_upon",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "revenue_test_shop_123_1753895466",
+            "test_shop_123",
+            "revenue_opportunity",
+            "Service Pricing Optimization",
+            "Average service price is $30.00. Analysis shows potential for 15% revenue increase through strategic pricing adjustments.",
+            "high",
+            135.0,
+            "[{\"action\": \"implement_dynamic_pricing\", \"priority\": \"high\", \"timeline\": \"2_weeks\"}, {\"action\": \"analyze_competitor_pricing\", \"priority\": \"medium\", \"timeline\": \"1_week\"}]",
+            "{\"average_price\": 30.0, \"total_bookings\": 30}",
+            0.75,
+            7,
+            "2025-07-30T13:11:06.836377",
+            0
+          ]
+        ]
+      },
+      "seasonal_patterns": {
+        "columns": [
+          {
+            "name": "pattern_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "pattern_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "pattern_data",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "next_occurrence",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommended_preparation",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "identified_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "analytics_snapshots": {
+        "columns": [
+          {
+            "name": "snapshot_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "snapshot_date",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics_data",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/test_customers.db",
+    "size_bytes": 16384,
+    "tables": {
+      "users": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "password_hash",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "role",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "Test User",
+            "test@example.com",
+            "555-0123",
+            "$2b$12$i7.eG4hzukF2ahqWUQzrY.J9QqgTf4hzQU3iGbdpQ4ak/Ewaq7BIi",
+            "CLIENT",
+            "2025-07-30 15:44:05"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "users",
+            1
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/ai_monetization.db",
+    "size_bytes": 36864,
+    "tables": {
+      "ai_usage_records": {
+        "columns": [
+          {
+            "name": "usage_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "ai_service_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "model_used",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "tokens_used",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "token_cost",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_charge",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "profit_margin",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "business_value_generated",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timestamp",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "billing_status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "ai_usage_test_customer_1753895470",
+            "test_customer",
+            "test_shop",
+            "recommendation",
+            "claude-3-sonnet",
+            800,
+            0.012,
+            0.135,
+            0.12300000000000001,
+            50.0,
+            "2025-07-30T13:11:10.502945",
+            "pending"
+          ]
+        ]
+      },
+      "customer_ai_quotas": {
+        "columns": [
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "plan_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "monthly_ai_credits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "used_credits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "overage_rate",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "auto_upgrade_enabled",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "current_period_start",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "current_period_end",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "test_customer",
+            "starter",
+            0,
+            0,
+            0.2,
+            0,
+            "2025-07-30T13:11:10.504076",
+            "2025-08-29T13:11:10.504079"
+          ]
+        ]
+      },
+      "ai_roi_metrics": {
+        "columns": [
+          {
+            "name": "metric_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_start",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_end",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "ai_spend",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "bookings_influenced",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "revenue_attributed",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "roi_percentage",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_satisfaction_delta",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "retention_improvement",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "ai_billing_cycles": {
+        "columns": [
+          {
+            "name": "billing_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_start",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_end",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "base_plan_fee",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "ai_usage_charges",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_amount",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "invoice_sent_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "paid_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "payment_status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/agent_system.db",
+    "size_bytes": 53248,
+    "tables": {
+      "users": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "hashed_password",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "full_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "barbershop_name",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "test@example.com",
+            "$2b$12$PvpPqoEjXBfpn8lJHKb4Qeq1QmVahfXApDuuXvNVDzWpWJy9kRVX.",
+            "Test User",
+            "Test Barbershop",
+            "barber_1753811033",
+            "2025-07-29 17:43:53",
+            1
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "users",
+            1
+          ],
+          [
+            "agentic_messages",
+            2
+          ]
+        ]
+      },
+      "chat_sessions": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "session_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "agent_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "chat_messages": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "session_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "role",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "content",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_name",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendations",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timestamp",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "agentic_sessions": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "session_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "shop_context",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "conversation_history",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "ongoing_projects",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "goals",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "pain_points",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "agentic_messages": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "session_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "role",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "content",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "domains_addressed",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendations",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "urgency",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "requires_data",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timestamp",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            1,
+            "agentic_1_1753830235",
+            "user",
+            "I want to increase my revenue but I am not sure if I should raise prices or focus on getting more customers. What do you think?",
+            "[]",
+            "[]",
+            null,
+            null,
+            0,
+            "2025-07-29 23:03:55"
+          ],
+          [
+            2,
+            "agentic_1_1753830235",
+            "assistant",
+            "Hello Test User! I'm your AI business coach for Test Barbershop. Based on my analysis of barbershop revenue optimization strategies and Test Barbershop's established stage, I see several opportunities to increase your profitability. Your revenue per staff member ($8,333) indicates strong performance.",
+            "[\"financial\", \"marketing\", \"customer_experience\"]",
+            "[]",
+            0.9000000000000001,
+            "low",
+            1,
+            "2025-07-29 23:03:55"
+          ]
+        ]
+      },
+      "learning_insights": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "shop_profile",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "question_domain",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "question_pattern",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendation_success",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "conversation_context",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timestamp",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "sqlite_stat1": {
+        "columns": [
+          {
+            "name": "tbl",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "idx",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "stat",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 3,
+        "sample_data": [
+          [
+            "agentic_messages",
+            null,
+            "2"
+          ],
+          [
+            "users",
+            "sqlite_autoindex_users_2",
+            "1 1"
+          ],
+          [
+            "users",
+            "sqlite_autoindex_users_1",
+            "1 1"
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/booking_intelligence.db",
+    "size_bytes": 36864,
+    "tables": {
+      "booking_preferences": {
+        "columns": [
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "preferred_barbers",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_services",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_times",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_days",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "average_booking_frequency",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_booking_date",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_bookings",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "favorite_barbershop",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "notes_patterns",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "customer_123",
+            "[\"barber_789\"]",
+            "[\"service_101\", \"service_102\"]",
+            "[\"11:50\"]",
+            "[2, 1, 0]",
+            11,
+            "2025-07-23T11:50:55.356141",
+            3,
+            "shop_456",
+            "[]",
+            "2025-07-30T11:50:55.360203",
+            "2025-07-30T11:50:55.360203"
+          ]
+        ]
+      },
+      "smart_recommendations": {
+        "columns": [
+          {
+            "name": "recommendation_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendation_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "title",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "suggested_barber_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "suggested_service_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "suggested_datetime",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "reasoning",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_viewed",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_accepted",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "expires_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "d841c63b-ba87-4d48-8fb9-995e7b59fee1",
+            "customer_123",
+            "next_appointment",
+            "Time for your next appointment!",
+            "It's been 30 days since your last visit. Book your next appointment now.",
+            "barber_789",
+            "service_101",
+            "2025-08-02T11:50:55.357338",
+            0.9,
+            "Based on your typical booking frequency",
+            0,
+            0,
+            "2025-07-30T11:50:55.357342",
+            "2025-08-06T11:50:55.357393"
+          ],
+          [
+            "8254da13-37b2-438c-8f12-fdea5a5a3951",
+            "customer_123",
+            "next_appointment",
+            "Time for your next appointment!",
+            "It's been 15 days since your last visit. Book your next appointment now.",
+            "barber_789",
+            "service_102",
+            "2025-08-02T11:50:55.359229",
+            0.9,
+            "Based on your typical booking frequency",
+            0,
+            0,
+            "2025-07-30T11:50:55.359233",
+            "2025-08-06T11:50:55.359282"
+          ]
+        ]
+      },
+      "booking_patterns": {
+        "columns": [
+          {
+            "name": "pattern_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "pattern_type",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "pattern_data",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "detected_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "booking_history": {
+        "columns": [
+          {
+            "name": "booking_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "customer_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_name",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barbershop_name",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barber_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "barber_name",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_name",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "service_category",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "duration_minutes",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "price",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_notes",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 3,
+        "sample_data": [
+          [
+            "e827011b-2a30-4d11-9238-75dae9f16f87",
+            "customer_123",
+            "John Doe",
+            "john@example.com",
+            "shop_456",
+            "Downtown Barbershop",
+            "barber_789",
+            "Mike the Barber",
+            "service_101",
+            "Classic Haircut",
+            "haircut",
+            "2025-06-30T11:50:55.356126",
+            30,
+            25.0,
+            "completed",
+            "Regular trim, not too short",
+            "2025-07-30T11:50:55.356218",
+            null
+          ],
+          [
+            "8fb6515c-9126-469d-8397-f7c15f461716",
+            "customer_123",
+            "John Doe",
+            "john@example.com",
+            "shop_456",
+            "Downtown Barbershop",
+            "barber_789",
+            "Mike the Barber",
+            "service_102",
+            "Beard Trim",
+            "beard",
+            "2025-07-15T11:50:55.356139",
+            15,
+            15.0,
+            "completed",
+            "Clean up the edges",
+            "2025-07-30T11:50:55.357818",
+            null
+          ],
+          [
+            "25c1be8f-f1c7-46fe-9f7f-94f11c068c3c",
+            "customer_123",
+            "John Doe",
+            "john@example.com",
+            "shop_456",
+            "Downtown Barbershop",
+            "barber_789",
+            "Mike the Barber",
+            "service_101",
+            "Classic Haircut",
+            "haircut",
+            "2025-07-23T11:50:55.356141",
+            30,
+            25.0,
+            "completed",
+            "Same as usual",
+            "2025-07-30T11:50:55.359722",
+            null
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/database/auth.db",
+    "size_bytes": 24576,
+    "tables": {
+      "users": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "hashed_password",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "full_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "organization",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "role",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_login",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "6fcb6c6f-56f2-4bb6-a32e-ac7f78fe472f",
+            "admin@6fb-ai.com",
+            "$2b$12$ccDSrsevfbfuckGaN3288OiGc6zVBUWo2c4VIB2vimeZxCJjhnBya",
+            "System Administrator",
+            "6FB AI",
+            "admin",
+            1,
+            "2025-07-30 15:40:42",
+            "2025-07-30 17:00:32"
+          ]
+        ]
+      },
+      "user_sessions": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "user_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "session_data",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "expires_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/database/agent_system.db",
+    "size_bytes": 61440,
+    "tables": {
+      "agent_sessions": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "user_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "session_title",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "business_objective",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "business_domain",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "priority",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "expires_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 3,
+        "sample_data": [
+          [
+            "c9636951-fafd-4605-88de-597863bae656",
+            "6fcb6c6f-56f2-4bb6-a32e-ac7f78fe472f",
+            "Agent Coordination - Analyze",
+            "Scale to serve 1000+ users with 99.9% uptime",
+            "ai_agent_coordination",
+            "medium",
+            "active",
+            "2025-07-30 15:46:51",
+            "2025-07-30 15:46:51",
+            "2025-07-31 11:46:51.670392"
+          ],
+          [
+            "f1e7ec94-58b2-407f-b3a0-59ea9ec8a0fc",
+            "6fcb6c6f-56f2-4bb6-a32e-ac7f78fe472f",
+            "Agent Coordination - Analyze",
+            "Scale to serve 1000+ users with 99.9% uptime",
+            "ai_agent_coordination",
+            "medium",
+            "active",
+            "2025-07-30 16:46:29",
+            "2025-07-30 16:46:29",
+            "2025-07-31 12:46:29.382317"
+          ],
+          [
+            "2ac25f45-00ce-4149-a2d4-18c5d52cdca6",
+            "6fcb6c6f-56f2-4bb6-a32e-ac7f78fe472f",
+            "Agent Coordination - Analyze",
+            "Scale to serve 10,000 concurrent users with 99.9% uptime",
+            "ai_agent_coordination",
+            "medium",
+            "active",
+            "2025-07-30 17:01:39",
+            "2025-07-30 17:01:39",
+            "2025-07-31 13:01:39.695457"
+          ]
+        ]
+      },
+      "agent_conversations": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "session_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_name",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "message_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "content",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metadata",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "confidence_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 4,
+        "sample_data": [
+          [
+            "669a0a45-2d85-490f-a10c-0308b2028ba7",
+            "f1e7ec94-58b2-407f-b3a0-59ea9ec8a0fc",
+            "user",
+            "User",
+            "user_request",
+            "Create a comprehensive business strategy for scaling our AI agent coordination system",
+            "{\"request_type\": \"analyze\", \"priority\": \"high\", \"business_objective\": \"Scale to serve 1000+ users with 99.9% uptime\"}",
+            null,
+            "2025-07-30 16:46:29"
+          ],
+          [
+            "8918c9f5-09af-45f5-8a4f-e36de4ebb1e6",
+            "f1e7ec94-58b2-407f-b3a0-59ea9ec8a0fc",
+            "bmad-orchestrator",
+            "\ud83c\udfad BMAD Orchestrator",
+            "agent_response",
+            "Coordinating multi-agent workflow for: Create a comprehensive business strategy for scaling our AI agent coordination system. Routing to optimal specialists and maintaining context across all interactions.",
+            "{\"recommendations\": [{\"id\": \"bmad-orchestrator_orch_001\", \"type\": \"coordination\", \"priority\": \"medium\", \"title\": \"Coordination Strategy from \\ud83c\\udfad BMAD Orchestrator\", \"description\": \"Multi-agent workflow coordination\", \"estimated_impact\": \"Improved coordination efficiency\", \"confidence\": 0.88, \"time_to_implement\": \"1-2 weeks\"}], \"supporting_agents\": [\"dev\", \"analyst\", \"pm\", \"architect\"], \"coordination_workflow\": \"orchestrated_workflow\"}",
+            0.88,
+            "2025-07-30 16:46:29"
+          ],
+          [
+            "a562190d-42d4-4280-8319-27fb53fdbb68",
+            "2ac25f45-00ce-4149-a2d4-18c5d52cdca6",
+            "user",
+            "User",
+            "user_request",
+            "Create a comprehensive business strategy for our AI agent system",
+            "{\"request_type\": \"analyze\", \"priority\": \"high\", \"business_objective\": \"Scale to serve 10,000 concurrent users with 99.9% uptime\"}",
+            null,
+            "2025-07-30 17:01:40"
+          ]
+        ]
+      },
+      "agent_coordination_history": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "session_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "request_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "primary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "supporting_agents",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "coordination_workflow",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "complexity",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "business_objective",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "priority",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "success",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "execution_time_ms",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "456c4b6c-4c14-4285-9caf-e4f7c3ac978a",
+            "f1e7ec94-58b2-407f-b3a0-59ea9ec8a0fc",
+            "analyze",
+            "bmad-orchestrator",
+            "[\"dev\", \"analyst\", \"pm\", \"architect\"]",
+            "orchestrated_workflow",
+            "complex",
+            "Scale to serve 1000+ users with 99.9% uptime",
+            "high",
+            1,
+            null,
+            "2025-07-30 16:46:29"
+          ],
+          [
+            "2a2c4b82-8821-4626-ab19-da40623630d0",
+            "2ac25f45-00ce-4149-a2d4-18c5d52cdca6",
+            "analyze",
+            "bmad-orchestrator",
+            "[\"analyst\", \"pm\", \"dev\", \"architect\"]",
+            "orchestrated_workflow",
+            "complex",
+            "Scale to serve 10,000 concurrent users with 99.9% uptime",
+            "high",
+            1,
+            null,
+            "2025-07-30 17:01:40"
+          ]
+        ]
+      },
+      "agent_performance_metrics": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "agent_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_value",
+            "type": "REAL",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "time_period",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recorded_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "business_objectives": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "session_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "priority",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "target_metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "current_progress",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "related_agents",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "agent_handoffs": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "session_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "from_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "to_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "handoff_reason",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "context_data",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "business_context",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMP",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_demo_barbershop.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/analytics_dashboard_demo_shop_001.db",
+    "size_bytes": 65536,
+    "tables": {
+      "agent_metrics": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_value",
+            "type": "REAL",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "performance_level",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timestamp",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "context",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_start",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_end",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "roi_analysis": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "analysis_period",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "total_investment",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_revenue",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "roi_percentage",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "efficiency_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "break_even_days",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "analysis_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendations",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "cross_agent_insights": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "insight_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "affected_agents",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "impact_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommended_actions",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "resolved_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "performance_trends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "trend_direction",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "trend_strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_days",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "trend_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "statistical_confidence",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "agent_interactions": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "primary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "secondary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "interaction_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "interaction_strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "success_rate",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recorded_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "executive_dashboard": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "dashboard_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_roi",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_revenue",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_costs",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_acquisition_cost",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_lifetime_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "overall_efficiency",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "top_performing_agent",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "improvement_areas",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "key_insights",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_new_number_test.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "new_number_test",
+            "Test Customer - New Number",
+            "+13525568837",
+            "test2@example.com",
+            "2025-07-30T21:48:37.565698",
+            2,
+            "both",
+            "regular",
+            "2025-07-31 01:48:37",
+            "2025-07-31 01:48:37"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "customers",
+            1
+          ],
+          [
+            "campaign_sends",
+            1
+          ]
+        ]
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "sms_20250730_214837",
+            "new_number_test",
+            "Marketing Campaign 2025-07-30 21:48",
+            "sms_blast",
+            "\ud83d\udd25 Special offer just for you! Visit us this week for premium barbershop services.",
+            "[\"regular\"]",
+            "2025-07-30T21:48:37.566454",
+            "completed",
+            "marketing_agent",
+            "2025-07-31 01:48:37",
+            "2025-07-30T21:48:37.948800",
+            "{\"sent_count\": 1, \"failed_count\": 0, \"delivery_rate\": 100.0}"
+          ]
+        ]
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "sms_20250730_214837",
+            1,
+            "sms",
+            "2025-07-31 01:48:37",
+            1,
+            0,
+            0,
+            null
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_real_test_shop.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "real_test_shop",
+            "Real Test Customer",
+            "+13525568981",
+            "test@example.com",
+            "2025-07-30T21:39:39.778527",
+            3,
+            "both",
+            "regular",
+            "2025-07-31 01:39:39",
+            "2025-07-31 01:39:39"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "customers",
+            1
+          ],
+          [
+            "campaign_sends",
+            1
+          ]
+        ]
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "sms_20250730_213939",
+            "real_test_shop",
+            "Marketing Campaign 2025-07-30 21:39",
+            "sms_blast",
+            "\ud83d\udd25 Special offer just for you! Visit us this week for premium barbershop services.",
+            "[\"regular\"]",
+            "2025-07-30T21:39:39.779166",
+            "completed",
+            "marketing_agent",
+            "2025-07-31 01:39:39",
+            "2025-07-30T21:39:41.248984",
+            "{\"sent_count\": 1, \"failed_count\": 0, \"delivery_rate\": 100.0}"
+          ]
+        ]
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "sms_20250730_213939",
+            1,
+            "sms",
+            "2025-07-31 01:39:41",
+            1,
+            0,
+            0,
+            null
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_bossio_vip_shop.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "bossio_vip_shop",
+            "Bossio - System Owner",
+            "+13525568981",
+            "c50bossio@gmail.com",
+            "2025-07-30T21:46:03.302274",
+            15,
+            "both",
+            "vip",
+            "2025-07-31 01:46:03",
+            "2025-07-31 01:46:03"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "customers",
+            1
+          ],
+          [
+            "campaign_sends",
+            1
+          ]
+        ]
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "email_20250730_214603",
+            "bossio_vip_shop",
+            "Marketing Campaign 2025-07-30 21:46",
+            "email_blast",
+            "\ud83d\udd25 Special offer just for you! Visit us this week for premium barbershop services.",
+            "[\"vip\"]",
+            "2025-07-30T21:46:03.302943",
+            "completed",
+            "marketing_agent",
+            "2025-07-31 01:46:03",
+            "2025-07-30T21:46:04.327921",
+            "{\"sent_count\": 1, \"failed_count\": 0, \"delivery_rate\": 100.0}"
+          ]
+        ]
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "email_20250730_214603",
+            1,
+            "email",
+            "2025-07-31 01:46:04",
+            1,
+            0,
+            0,
+            null
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_demo_barbershop_001.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_production_test_shop.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/analytics_dashboard_demo_barbershop.db",
+    "size_bytes": 65536,
+    "tables": {
+      "agent_metrics": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_value",
+            "type": "REAL",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "performance_level",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timestamp",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "context",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_start",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_end",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "roi_analysis": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "analysis_period",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "total_investment",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_revenue",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "roi_percentage",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "efficiency_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "break_even_days",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "analysis_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendations",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "cross_agent_insights": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "insight_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "affected_agents",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "impact_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommended_actions",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "resolved_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "performance_trends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "trend_direction",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "trend_strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_days",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "trend_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "statistical_confidence",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "agent_interactions": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "primary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "secondary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "interaction_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "interaction_strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "success_rate",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recorded_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "executive_dashboard": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "dashboard_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_roi",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_revenue",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_costs",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_acquisition_cost",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_lifetime_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "overall_efficiency",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "top_performing_agent",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "improvement_areas",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "key_insights",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_test_shop_001.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "test_shop_001",
+            "Test Customer",
+            "+13525568981",
+            "test@example.com",
+            "2025-07-30T21:35:51.656995",
+            3,
+            "both",
+            "regular",
+            "2025-07-31 01:35:51",
+            "2025-07-31 01:35:51"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "customers",
+            1
+          ],
+          [
+            "campaign_sends",
+            1
+          ]
+        ]
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "sms_20250730_213551",
+            "test_shop_001",
+            "Marketing Campaign 2025-07-30 21:35",
+            "sms_blast",
+            "\ud83d\udd25 Special offer just for you! Visit us this week for premium barbershop services.",
+            "[\"regular\"]",
+            "2025-07-30T21:35:51.657518",
+            "completed",
+            "marketing_agent",
+            "2025-07-31 01:35:51",
+            "2025-07-30T21:35:52.169404",
+            "{\"sent_count\": 0, \"failed_count\": 1, \"delivery_rate\": 0.0}"
+          ]
+        ]
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "sms_20250730_213551",
+            1,
+            "sms",
+            "2025-07-31 01:35:52",
+            0,
+            0,
+            0,
+            null
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/analytics_dashboard_demo_barbershop_001.db",
+    "size_bytes": 65536,
+    "tables": {
+      "agent_metrics": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_value",
+            "type": "REAL",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "performance_level",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timestamp",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "context",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_start",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_end",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "roi_analysis": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "analysis_period",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "total_investment",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_revenue",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "roi_percentage",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "efficiency_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "break_even_days",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "analysis_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendations",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "cross_agent_insights": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "insight_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "affected_agents",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "impact_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommended_actions",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "resolved_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "performance_trends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "trend_direction",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "trend_strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_days",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "trend_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "statistical_confidence",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "agent_interactions": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "primary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "secondary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "interaction_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "interaction_strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "success_rate",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recorded_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "executive_dashboard": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "dashboard_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_roi",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_revenue",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_costs",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_acquisition_cost",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_lifetime_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "overall_efficiency",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "top_performing_agent",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "improvement_areas",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "key_insights",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/analytics_dashboard_test_shop.db",
+    "size_bytes": 65536,
+    "tables": {
+      "agent_metrics": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_value",
+            "type": "REAL",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "performance_level",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "timestamp",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "context",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_start",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_end",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "roi_analysis": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "agent_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "analysis_period",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "total_investment",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_revenue",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "roi_percentage",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "efficiency_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "break_even_days",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "analysis_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommendations",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "cross_agent_insights": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "insight_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "description",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "affected_agents",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "impact_score",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recommended_actions",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "resolved_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "performance_trends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "metric_name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "trend_direction",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "trend_strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "period_days",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "trend_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "statistical_confidence",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "agent_interactions": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "primary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "secondary_agent",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "interaction_type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "interaction_strength",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "success_rate",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "recorded_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "executive_dashboard": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "dashboard_date",
+            "type": "DATE",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_roi",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_revenue",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_costs",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_acquisition_cost",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "customer_lifetime_value",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "overall_efficiency",
+            "type": "REAL",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "top_performing_agent",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "improvement_areas",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "key_insights",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_simple_test_shop.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "simple_test_shop",
+            "Test Customer",
+            "+13525568981",
+            "test@example.com",
+            "2025-07-30T21:43:50.713715",
+            1,
+            "both",
+            "regular",
+            "2025-07-31 01:43:50",
+            "2025-07-31 01:43:50"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 2,
+        "sample_data": [
+          [
+            "customers",
+            1
+          ],
+          [
+            "campaign_sends",
+            1
+          ]
+        ]
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "sms_20250730_214350",
+            "simple_test_shop",
+            "Marketing Campaign 2025-07-30 21:43",
+            "sms_blast",
+            "\ud83d\udd25 Special offer just for you! Visit us this week for premium barbershop services.",
+            "[\"regular\"]",
+            "2025-07-30T21:43:50.714360",
+            "completed",
+            "marketing_agent",
+            "2025-07-31 01:43:50",
+            "2025-07-30T21:43:51.134774",
+            "{\"sent_count\": 1, \"failed_count\": 0, \"delivery_rate\": 100.0}"
+          ]
+        ]
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "sms_20250730_214350",
+            1,
+            "sms",
+            "2025-07-31 01:43:51",
+            1,
+            0,
+            0,
+            null
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_default_barbershop.db",
+    "size_bytes": 12288,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 4,
+        "sample_data": [
+          [
+            1,
+            "default_barbershop",
+            "John Smith",
+            "+1234567890",
+            "john.smith@example.com",
+            "2025-07-15T18:34:13.680856",
+            8,
+            "both",
+            "regular",
+            "2025-07-30 22:34:13",
+            "2025-07-30 22:34:13"
+          ],
+          [
+            2,
+            "default_barbershop",
+            "Sarah Johnson",
+            "+1234567891",
+            "sarah.johnson@example.com",
+            "2025-07-25T18:34:13.680877",
+            15,
+            "both",
+            "vip",
+            "2025-07-30 22:34:13",
+            "2025-07-30 22:34:13"
+          ],
+          [
+            3,
+            "default_barbershop",
+            "Mike Wilson",
+            "+1234567892",
+            "mike.wilson@example.com",
+            "2025-05-16T18:34:13.680880",
+            3,
+            "both",
+            "lapsed",
+            "2025-07-30 22:34:13",
+            "2025-07-30 22:34:13"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "customers",
+            4
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_bossio_test_shop.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "bossio_test_shop",
+            "Bossio - System Owner",
+            "+13525568981",
+            "c50bossio@gmail.com",
+            "2025-07-30T21:45:47.217249",
+            10,
+            "both",
+            "vip",
+            "2025-07-31 01:45:47",
+            "2025-07-31 01:45:47"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "customers",
+            1
+          ]
+        ]
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  },
+  {
+    "path": "/Users/bossio/6FB AI Agent System/databases/marketing_campaigns_email_test_shop.db",
+    "size_bytes": 36864,
+    "tables": {
+      "customers": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "last_visit",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "total_visits",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "preferred_contact",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "segment",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            1,
+            "email_test_shop",
+            "Email Test Customer",
+            "+13525568981",
+            "test@example.com",
+            "2025-07-30T21:44:48.379869",
+            1,
+            "both",
+            "regular",
+            "2025-07-31 01:44:48",
+            "2025-07-31 01:44:48"
+          ]
+        ]
+      },
+      "sqlite_sequence": {
+        "columns": [
+          {
+            "name": "name",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "seq",
+            "type": "",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 1,
+        "sample_data": [
+          [
+            "customers",
+            1
+          ]
+        ]
+      },
+      "campaigns": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "barbershop_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "name",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "type",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "target_segment",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "scheduled_time",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_by",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "completed_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "metrics",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      },
+      "campaign_sends": {
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER",
+            "not_null": 0,
+            "pk": 1
+          },
+          {
+            "name": "campaign_id",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "method",
+            "type": "TEXT",
+            "not_null": 1,
+            "pk": 0
+          },
+          {
+            "name": "sent_at",
+            "type": "DATETIME",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "delivered",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "opened",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "clicked",
+            "type": "BOOLEAN",
+            "not_null": 0,
+            "pk": 0
+          },
+          {
+            "name": "response",
+            "type": "TEXT",
+            "not_null": 0,
+            "pk": 0
+          }
+        ],
+        "row_count": 0,
+        "sample_data": []
+      }
+    }
+  }
+]

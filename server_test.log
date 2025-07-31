@@ -1,0 +1,13 @@
+INFO:     Will watch for changes in these directories: ['/Users/bossio/6FB AI Agent System']
+ERROR:    [Errno 48] Address already in use
+🚀 Starting 6FB Agentic AI Coach with Async Database Pool...
+🧠 Single Intelligent Agent: Active
+📚 RAG Learning Engine: Enabled
+🎯 Context-Aware Responses: Active
+💾 Async Database Pool: Configured
+🔗 WAL Mode: Enabled
+⚡ Connection Pool: 20 max, 5 min connections
+🔗 API Endpoints: /api/v1/agentic-coach/chat
+🩺 Health Checks: /api/v1/health, /api/v1/database/health
+🌐 CORS: Configured for Next.js integration
+🔄 Backward Compatibility: Maintained

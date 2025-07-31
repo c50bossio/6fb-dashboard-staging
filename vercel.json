@@ -1,16 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "main.py",
-      "use": "@vercel/python"
+  "functions": {
+    "main.py": {
+      "runtime": "@vercel/python"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "main.py"
+      "dest": "/main.py"
     }
   ]
 }
-EOF < /dev/null

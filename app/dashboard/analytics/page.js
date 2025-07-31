@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChartBarIcon } from '@heroicons/react/24/outline'
+import { ChartBarIcon } from '@heroicons/react/outline'
 
 export default function AnalyticsPage() {
   return (
