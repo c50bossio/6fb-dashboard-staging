@@ -108,13 +108,21 @@ app.add_middleware(
 # Startup and shutdown events
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on startup"""
-    await db.init_connection_pool()
+    """Initialize database on startup (optional for executable agents)"""
+    try:
+        await db.init_connection_pool()
+        logger.info("✅ PostgreSQL pool initialized successfully")
+    except Exception as e:
+        logger.warning(f"⚠️ PostgreSQL initialization failed: {e}")
+        logger.info("📝 System will run with executable agents only (using SQLite)")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Close database connections on shutdown"""
-    await db.close_pool()
+    try:
+        await db.close_pool()
+    except Exception as e:
+        logger.warning(f"Database pool closure failed: {e}")
 
 # Authentication Models (defined before they're used)
 class UserRegister(BaseModel):
@@ -874,13 +882,21 @@ async def chat_with_agent(request: AgentChatRequest, current_user: User = Depend
 @app.get("/api/v1/health")
 async def health_check():
     """Health check endpoint with database connectivity"""
-    db_healthy = await db.health_check()
+    try:
+        db_healthy = await db.health_check()
+    except Exception as e:
+        logger.warning(f"Database health check failed: {e}")
+        db_healthy = False
+    
+    # System is healthy if executable agents are available, even without PostgreSQL
+    status = "healthy" if (EXECUTABLE_AGENTS_AVAILABLE or db_healthy) else "degraded"
     
     return {
-        "status": "healthy" if db_healthy else "degraded",
+        "status": status,
         "service": "6FB AI Agent System",
         "version": "1.0.0",
-        "database": "postgresql" if db_healthy else "fallback",
+        "database": "postgresql" if db_healthy else "sqlite_agents",
+        "executable_agents": "available" if EXECUTABLE_AGENTS_AVAILABLE else "unavailable",
         "rag_engine": "active",
         "timestamp": datetime.now().isoformat()
     }
