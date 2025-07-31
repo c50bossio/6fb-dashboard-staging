@@ -89,7 +89,7 @@ services:
       - CORS_ORIGINS=${CORS_ORIGINS}
     volumes:
       - app_data:/app/data
-      - ./fastapi-server.py:/app/fastapi-server.py
+      - ./main.py:/app/main.py
       - ./database:/app/database
       - ./services:/app/services
     depends_on:

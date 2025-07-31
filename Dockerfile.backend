@@ -18,7 +18,7 @@ RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.
 RUN pip install fastapi uvicorn[standard] python-multipart python-jose[cryptography] passlib[bcrypt] psycopg2-binary asyncpg sqlalchemy
 
 # Copy application code
-COPY fastapi-server.py ./
+COPY main.py ./
 COPY database/ ./database/
 COPY services/ ./services/
 
@@ -29,4 +29,4 @@ RUN mkdir -p /app/data
 EXPOSE 8000
 
 # Start FastAPI server
-CMD ["uvicorn", "fastapi-server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
