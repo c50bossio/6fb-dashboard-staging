@@ -3,16 +3,16 @@
 import Link from 'next/link'
 import { 
   ChartBarIcon,
-  ChatIcon,
-  MailIcon,
+  ChatBubbleLeftRightIcon as ChatIcon,
+  EnvelopeIcon as MailIcon,
   PhoneIcon,
-  CalendarIcon,
+  CalendarDaysIcon as CalendarIcon,
   UserGroupIcon,
   SparklesIcon,
   ArrowRightIcon,
   CheckIcon,
-  LightningBoltIcon
-} from '@heroicons/react/outline'
+  BoltIcon as LightningBoltIcon
+} from '@heroicons/react/24/outline'
 
 export default function LandingPage() {
   const features = [
@@ -96,95 +96,172 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200">
+      <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-sm">6FB</span>
               </div>
               <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/features" className="text-gray-600 hover:text-gray-900">Features</Link>
-              <Link href="/pricing" className="text-gray-600 hover:text-gray-900">Pricing</Link>
-              <Link href="/demo" className="text-gray-600 hover:text-gray-900">Demo</Link>
-              <Link href="/login" className="text-gray-600 hover:text-gray-900">Login</Link>
-              <Link href="/register" className="btn-primary">Get Started</Link>
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/features" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Features</Link>
+              <Link href="/pricing" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Pricing</Link>
+              <Link href="/demo" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Demo</Link>
+              <Link href="/login" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Login</Link>
+              <Link href="/register" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+                Get Started
+              </Link>
+            </div>
+            
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button className="text-gray-600 hover:text-gray-900 p-2">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-purple-700 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <div className="relative hero-gradient text-white overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <div className="mb-8">
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/10 text-white border border-white/20 backdrop-blur-sm">
+                <SparklesIcon className="w-4 h-4 mr-2" />
+                Powered by Advanced AI Technology
+              </span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
               AI-Powered Marketing for
-              <span className="block text-yellow-300">Modern Barbershops</span>
+              <span className="block gradient-text bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+                Modern Barbershops
+              </span>
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-              Transform your barbershop with 6 AI agents that automate marketing, manage customers, and grow your business 24/7.
+            
+            <p className="text-xl md:text-2xl mb-12 text-blue-100 max-w-4xl mx-auto leading-relaxed">
+              Transform your barbershop with 6 intelligent AI agents that automate marketing, manage customers, and grow your business 24/7 while you focus on cutting hair.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register" className="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-yellow-300 transition-colors flex items-center justify-center">
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
+              <Link href="/register" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-10 py-5 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-yellow-400/25 flex items-center justify-center min-w-[200px]">
                 Start Free Trial
-                <ArrowRightIcon className="ml-2 h-5 w-5" />
+                <ArrowRightIcon className="ml-3 h-5 w-5" />
               </Link>
-              <Link href="/demo" className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors">
+              <Link href="/demo" className="border-2 border-white/30 text-white px-10 py-5 rounded-xl text-lg font-semibold hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm min-w-[180px]">
                 Watch Demo
               </Link>
             </div>
-            <p className="mt-4 text-blue-200">No credit card required • 14-day free trial</p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-blue-200">
+              <span className="flex items-center">
+                <CheckIcon className="w-5 h-5 mr-2 text-green-400" />
+                No credit card required
+              </span>
+              <span className="flex items-center">
+                <CheckIcon className="w-5 h-5 mr-2 text-green-400" />
+                14-day free trial
+              </span>
+              <span className="flex items-center">
+                <CheckIcon className="w-5 h-5 mr-2 text-green-400" />
+                Setup in 5 minutes
+              </span>
+            </div>
           </div>
         </div>
+        
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-white/5 rounded-full blur-xl"></div>
+        <div className="absolute top-40 right-20 w-32 h-32 bg-purple-400/10 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-20 left-1/4 w-16 h-16 bg-yellow-400/10 rounded-full blur-xl"></div>
       </div>
 
       {/* Stats Section */}
-      <div className="bg-gray-50 py-16">
+      <div className="bg-gradient-to-r from-gray-50 to-blue-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold text-blue-600">500+</div>
-              <div className="text-gray-600">Barbershops Using AI</div>
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Trusted by Barbershops Worldwide</h2>
+            <p className="text-gray-600">Real results from real businesses</p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center group">
+              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">500+</div>
+                <div className="text-gray-600 font-medium">Barbershops Using AI</div>
+              </div>
             </div>
-            <div>
-              <div className="text-4xl font-bold text-blue-600">2.5M+</div>
-              <div className="text-gray-600">Messages Sent</div>
+            <div className="text-center group">
+              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">2.5M+</div>
+                <div className="text-gray-600 font-medium">Messages Sent</div>
+              </div>
             </div>
-            <div>
-              <div className="text-4xl font-bold text-blue-600">85%</div>
-              <div className="text-gray-600">Customer Retention</div>
+            <div className="text-center group">
+              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">85%</div>
+                <div className="text-gray-600 font-medium">Customer Retention</div>
+              </div>
             </div>
-            <div>
-              <div className="text-4xl font-bold text-blue-600">3x</div>
-              <div className="text-gray-600">Revenue Growth</div>
+            <div className="text-center group">
+              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                <div className="text-4xl lg:text-5xl font-bold gradient-text bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">3x</div>
+                <div className="text-gray-600 font-medium">Revenue Growth</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Features Section */}
-      <div className="py-24 bg-white">
+      <div className="section-padding bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              6 AI Agents Working for Your Business
+          <div className="text-center mb-20">
+            <div className="mb-4">
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-600 border border-blue-200">
+                <SparklesIcon className="w-4 h-4 mr-2" />
+                AI-Powered Automation
+              </span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
+              <span className="gradient-text">6 AI Agents</span> Working for Your Business
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Each AI agent specializes in a different aspect of your barbershop, working together to maximize growth and customer satisfaction.
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              Each AI agent specializes in a different aspect of your barbershop, working together 24/7 to maximize growth, customer satisfaction, and revenue while you focus on what you do best.
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature) => (
-              <div key={feature.name} className="bg-white p-8 rounded-xl border border-gray-200 hover:shadow-lg transition-shadow">
-                <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-blue-600" />
+            {features.map((feature, index) => (
+              <div key={feature.name} className="feature-card group" style={{animationDelay: `${index * 100}ms`}}>
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:from-blue-100 group-hover:to-purple-100 transition-all duration-300">
+                  <feature.icon className="h-8 w-8 text-blue-600 group-hover:text-purple-600 transition-colors duration-300" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.name}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">{feature.name}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                
+                {/* Hover effect indicator */}
+                <div className="mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="text-blue-600 font-medium text-sm flex items-center">
+                    Learn more 
+                    <ArrowRightIcon className="ml-1 h-4 w-4" />
+                  </span>
+                </div>
               </div>
             ))}
           </div>
