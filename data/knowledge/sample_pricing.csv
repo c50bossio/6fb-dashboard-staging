@@ -1,0 +1,11 @@
+title,service,price,duration,description
+Basic Haircut,Haircut,25,30 min,Standard men's haircut with consultation
+Premium Cut,Haircut,40,45 min,Includes hot towel service and styling
+Beard Trim,Beard,15,20 min,Professional beard shaping and trim
+Hair & Beard Combo,Combo,35,50 min,Save $5 on combination service
+Kids Cut,Haircut,18,25 min,Children under 12 years
+Senior Special,Haircut,22,30 min,10% discount for seniors 65+
+Buzz Cut,Haircut,15,15 min,Simple buzz cut all one length
+Design/Pattern,Add-on,10,15 min,Add creative design to any haircut
+Hot Towel Shave,Shave,30,40 min,Traditional straight razor shave
+Edge Up,Touch-up,12,15 min,Quick lineup and edge cleaning

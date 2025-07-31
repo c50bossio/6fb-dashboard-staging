@@ -14,11 +14,14 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from contextlib import contextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 import openai
+import sys
+sys.path.append('services')
+from ai_training_service import AITrainingService
 
 # Configure OpenAI API (optional - will use mock responses if not set)
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
@@ -595,6 +598,179 @@ async def send_notification(
     )
     
     return {"status": "sent", "user_id": current_user["id"]}
+
+# AI Training endpoints
+training_service = AITrainingService()
+
+@app.post("/api/v1/ai/knowledge")
+async def add_knowledge(
+    knowledge: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Add knowledge to AI training database"""
+    try:
+        knowledge_id = training_service.add_knowledge(
+            category=knowledge.get("category"),
+            title=knowledge.get("title"),
+            content=knowledge.get("content"),
+            metadata={
+                "user_id": current_user["id"],
+                "shop_name": current_user.get("shop_name")
+            }
+        )
+        
+        return {
+            "status": "success",
+            "knowledge_id": knowledge_id,
+            "message": "Knowledge added successfully"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/v1/ai/knowledge")
+async def get_knowledge(
+    category: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get knowledge from database"""
+    knowledge = training_service.get_relevant_knowledge(
+        query="",
+        category=category,
+        limit=20
+    )
+    return {"knowledge": knowledge}
+
+@app.post("/api/v1/ai/training-example")
+async def add_training_example(
+    example: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Add successful conversation as training example"""
+    example_id = training_service.add_training_example(
+        question=example.get("question"),
+        answer=example.get("answer"),
+        category=example.get("category"),
+        user_id=current_user["id"],
+        effectiveness=example.get("effectiveness", 1.0)
+    )
+    
+    return {
+        "status": "success",
+        "example_id": example_id,
+        "message": "Training example added"
+    }
+
+@app.post("/api/v1/ai/custom-prompt")
+async def update_custom_prompt(
+    prompt_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update custom prompts for AI agents"""
+    training_service.update_custom_prompt(
+        agent_id=prompt_data.get("agent_id"),
+        prompt_type=prompt_data.get("prompt_type", "system"),
+        prompt_text=prompt_data.get("prompt_text")
+    )
+    
+    return {
+        "status": "success",
+        "message": "Custom prompt updated"
+    }
+
+@app.get("/api/v1/ai/stats")
+async def get_training_stats(current_user: dict = Depends(get_current_user)):
+    """Get AI training statistics"""
+    stats = training_service.calculate_knowledge_stats()
+    return stats
+
+@app.post("/api/v1/ai/import-csv")
+async def import_csv_knowledge(
+    file: UploadFile = File(...),
+    category: str = "general",
+    current_user: dict = Depends(get_current_user)
+):
+    """Import knowledge from CSV file"""
+    # Save uploaded file temporarily
+    temp_path = f"/tmp/{file.filename}"
+    with open(temp_path, "wb") as f:
+        content = await file.read()
+        f.write(content)
+    
+    try:
+        training_service.import_csv_knowledge(temp_path, category)
+        os.remove(temp_path)  # Clean up
+        
+        return {
+            "status": "success",
+            "message": f"CSV knowledge imported to {category} category"
+        }
+    except Exception as e:
+        os.remove(temp_path)  # Clean up
+        raise HTTPException(status_code=400, detail=str(e))
+
+# Enhanced AI Agent with custom knowledge
+class EnhancedAIAgent(AIAgent):
+    """AI Agent that uses custom training data"""
+    
+    def __init__(self, agent_id: str, name: str, system_prompt: str):
+        super().__init__(agent_id, name, system_prompt)
+        self.training_service = AITrainingService()
+    
+    async def generate_response(self, message: str, conversation_history: List[dict] = None) -> dict:
+        """Generate response using custom knowledge"""
+        
+        # Get custom prompt if available
+        custom_prompt = self.training_service.get_custom_prompt(self.agent_id)
+        if custom_prompt:
+            self.system_prompt = custom_prompt
+        
+        # Get relevant knowledge
+        relevant_knowledge = self.training_service.get_relevant_knowledge(message, limit=3)
+        
+        # Add knowledge to context
+        knowledge_context = ""
+        if relevant_knowledge:
+            knowledge_context = "\n\nRelevant business knowledge:\n"
+            for k in relevant_knowledge:
+                knowledge_context += f"- {k['title']}: {k['content']}\n"
+        
+        # Enhanced prompt with knowledge
+        enhanced_message = message
+        if knowledge_context:
+            enhanced_message = f"{message}\n{knowledge_context}"
+        
+        # Get base response
+        response = await super().generate_response(enhanced_message, conversation_history)
+        
+        # Store successful interaction for future training
+        if response.get("response"):
+            self.training_service.add_training_example(
+                question=message,
+                answer=response["response"],
+                category=self.agent_id,
+                effectiveness=0.8  # Default score
+            )
+        
+        return response
+
+# Replace standard agents with enhanced versions
+ai_agents = {
+    "business_coach": EnhancedAIAgent(
+        "business_coach",
+        "Business Coach",
+        "You are an expert business coach for barbershops. Provide strategic advice on growing the business, improving operations, and increasing customer satisfaction."
+    ),
+    "marketing_expert": EnhancedAIAgent(
+        "marketing_expert",
+        "Marketing Expert",
+        "You are a marketing expert specializing in barbershops and salons. Help with social media strategies, promotional campaigns, and customer acquisition."
+    ),
+    "financial_advisor": EnhancedAIAgent(
+        "financial_advisor",
+        "Financial Advisor",
+        "You are a financial advisor for barbershop businesses. Provide guidance on pricing, expense management, revenue optimization, and financial planning."
+    )
+}
 
 if __name__ == "__main__":
     import uvicorn

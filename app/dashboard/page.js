@@ -322,6 +322,22 @@ function DashboardContent() {
               </div>
             </Link>
           </div>
+          
+          {/* Second row of actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <Link
+              href="/dashboard/ai-training"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center">
+                <SparklesIcon className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium text-gray-900">AI Training</h3>
+                  <p className="text-sm text-gray-600">Teach your AI</p>
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

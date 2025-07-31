@@ -588,6 +588,38 @@ async def get_learning_insights(current_user: dict = Depends(get_current_user)):
         "timestamp": datetime.now().isoformat()
     }
 
+# Settings endpoints
+@app.post("/api/v1/settings/barbershop")
+async def save_barbershop_settings(settings: dict, current_user: dict = Depends(get_current_user)):
+    """Save barbershop settings"""
+    # In production, save to database
+    # For now, store in session or return success
+    return {
+        "message": "Settings saved successfully",
+        "settings": settings
+    }
+
+@app.get("/api/v1/settings/barbershop")
+async def get_barbershop_settings(current_user: dict = Depends(get_current_user)):
+    """Get barbershop settings"""
+    # In production, retrieve from database
+    return {
+        "barbershop": {
+            "name": current_user.get("shop_name", "Demo Barbershop"),
+            "address": "123 Main Street, City, State 12345",
+            "phone": "+1 (555) 123-4567",
+            "email": current_user.get("email", "demo@barbershop.com"),
+            "timezone": "America/New_York"
+        },
+        "notifications": {
+            "emailEnabled": True,
+            "smsEnabled": True,
+            "campaignAlerts": True,
+            "bookingAlerts": True,
+            "systemAlerts": True
+        }
+    }
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))

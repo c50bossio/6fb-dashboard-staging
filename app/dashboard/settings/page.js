@@ -29,45 +29,94 @@ export default function SettingsPage() {
       bookingAlerts: true,
       systemAlerts: true
     },
-    api: {
-      twilioSid: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-      sendgridKey: 'SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-      openaiKey: 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-      anthropicKey: 'sk-ant-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-    }
+    apiMode: 'managed' // Always use our managed APIs
   })
   
-  const [showApiKeys, setShowApiKeys] = useState({
-    twilio: false,
-    sendgrid: false,
-    openai: false,
-    anthropic: false
-  })
+
+  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [successMessage, setSuccessMessage] = useState('')
+  
+  // Load settings on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/v1/settings/barbershop', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setSettings(prev => ({
+            ...prev,
+            barbershop: data.barbershop || prev.barbershop,
+            notifications: data.notifications || prev.notifications
+          }))
+        }
+      } catch (error) {
+        console.error('Failed to load settings:', error)
+      }
+    }
+    
+    loadSettings()
+  }, [])
 
   const handleSave = async () => {
     try {
-      // Here you would save settings via API
-      alert('Settings saved successfully!')
+      setLoading(true)
+      setErrors({})
+      setSuccessMessage('')
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(settings.barbershop.email)) {
+        setErrors({ email: 'Invalid email format' })
+        setLoading(false)
+        return
+      }
+      
+      // Save settings via API
+      const response = await fetch('/api/v1/settings/barbershop', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify(settings)
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to save settings')
+      }
+      
+      setSuccessMessage('Settings saved successfully!')
+      setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
-      alert('Error saving settings: ' + error.message)
+      setErrors({ general: error.message || 'Error saving settings' })
+    } finally {
+      setLoading(false)
     }
   }
 
-  const toggleApiKeyVisibility = (service) => {
-    setShowApiKeys(prev => ({
-      ...prev,
-      [service]: !prev[service]
-    }))
-  }
-
-  const maskApiKey = (key) => {
-    if (!key) return ''
-    return key.substring(0, 8) + '...' + key.substring(key.length - 4)
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-8">
+        {/* Notifications */}
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-100 border border-green-200 text-green-800 rounded-lg">
+            {successMessage}
+          </div>
+        )}
+        
+        {errors.general && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-200 text-red-800 rounded-lg">
+            {errors.general}
+          </div>
+        )}
+
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -75,8 +124,12 @@ export default function SettingsPage() {
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Settings</h1>
               <p className="text-gray-600">Configure your barbershop and system preferences</p>
             </div>
-            <button onClick={handleSave} className="btn-primary">
-              Save Changes
+            <button 
+              onClick={handleSave} 
+              disabled={loading}
+              className={`btn-primary ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>
@@ -147,8 +200,11 @@ export default function SettingsPage() {
                       ...prev,
                       barbershop: { ...prev.barbershop, email: e.target.value }
                     }))}
-                    className="input-field"
+                    className={`input-field ${errors.email ? 'border-red-500' : ''}`}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
                 </div>
                 
                 <div>
@@ -172,109 +228,69 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* API Configuration */}
+            {/* API Services & Pricing */}
             <div className="card">
               <div className="flex items-center mb-6">
                 <KeyIcon className="h-6 w-6 text-blue-600 mr-3" />
-                <h3 className="text-lg font-semibold text-gray-900">API Configuration</h3>
+                <h3 className="text-lg font-semibold text-gray-900">AI & Communication Services</h3>
               </div>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Twilio Account SID
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type={showApiKeys.twilio ? "text" : "password"}
-                      value={showApiKeys.twilio ? settings.api.twilioSid : maskApiKey(settings.api.twilioSid)}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        api: { ...prev.api, twilioSid: e.target.value }
-                      }))}
-                      className="input-field flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleApiKeyVisibility('twilio')}
-                      className="ml-2 p-2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showApiKeys.twilio ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                    </button>
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="font-medium text-blue-900 mb-2">✨ All-Inclusive API Services</h4>
+                <p className="text-sm text-blue-800 mb-3">
+                  We handle all AI and communication services for you. No complex setup or API management needed!
+                </p>
+                <div className="space-y-3">
+                  <div className="bg-white rounded-md p-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-medium text-gray-900">AI Business Coach</span>
+                        <p className="text-xs text-gray-600">Powered by GPT-4 & Claude</p>
+                      </div>
+                      <span className="font-semibold text-blue-600">$0.06/1K tokens</span>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-md p-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-medium text-gray-900">SMS Marketing</span>
+                        <p className="text-xs text-gray-600">Automated appointment reminders & campaigns</p>
+                      </div>
+                      <span className="font-semibold text-blue-600">$0.02/message</span>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-md p-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-medium text-gray-900">Email Campaigns</span>
+                        <p className="text-xs text-gray-600">Professional templates & automation</p>
+                      </div>
+                      <span className="font-semibold text-blue-600">$0.001/email</span>
+                    </div>
                   </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    SendGrid API Key
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type={showApiKeys.sendgrid ? "text" : "password"}
-                      value={showApiKeys.sendgrid ? settings.api.sendgridKey : maskApiKey(settings.api.sendgridKey)}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        api: { ...prev.api, sendgridKey: e.target.value }
-                      }))}
-                      className="input-field flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleApiKeyVisibility('sendgrid')}
-                      className="ml-2 p-2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showApiKeys.sendgrid ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                    </button>
+                <div className="mt-4 pt-3 border-t border-blue-200">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Current Month Usage</p>
+                      <p className="text-xs text-gray-600">Resets on the 1st</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-blue-600">$124.50</p>
+                      <a href="/dashboard/billing" className="text-xs text-blue-700 hover:underline">View detailed breakdown →</a>
+                    </div>
                   </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    OpenAI API Key
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type={showApiKeys.openai ? "text" : "password"}
-                      value={showApiKeys.openai ? settings.api.openaiKey : maskApiKey(settings.api.openaiKey)}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        api: { ...prev.api, openaiKey: e.target.value }
-                      }))}
-                      className="input-field flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleApiKeyVisibility('openai')}
-                      className="ml-2 p-2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showApiKeys.openai ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Anthropic API Key
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type={showApiKeys.anthropic ? "text" : "password"}
-                      value={showApiKeys.anthropic ? settings.api.anthropicKey : maskApiKey(settings.api.anthropicKey)}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        api: { ...prev.api, anthropicKey: e.target.value }
-                      }))}
-                      className="input-field flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleApiKeyVisibility('anthropic')}
-                      className="ml-2 p-2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showApiKeys.anthropic ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h5 className="font-medium text-gray-900 mb-2">💡 How It Works</h5>
+                <ul className="space-y-1 text-sm text-gray-600">
+                  <li>• All AI and communication services are included</li>
+                  <li>• Pay only for what you use - no setup fees</li>
+                  <li>• Usage automatically billed to your account</li>
+                  <li>• Detailed analytics in your billing dashboard</li>
+                </ul>
               </div>
             </div>
           </div>
