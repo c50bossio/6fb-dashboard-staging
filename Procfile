@@ -1,2 +1,1 @@
-web: python3 main.py
-release: echo "Using simple main.py server"
+web: python test-main.py
