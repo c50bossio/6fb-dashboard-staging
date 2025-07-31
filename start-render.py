@@ -24,13 +24,7 @@ def main():
             logger.error("❌ main_simple.py not found in current directory")
             sys.exit(1)
             
-        # Check if we can import the app
-        try:
-            from main_simple import app
-            logger.info("✅ Successfully imported app from main_simple.py")
-        except Exception as e:
-            logger.error(f"❌ Failed to import app from main_simple.py: {e}")
-            sys.exit(1)
+        logger.info("✅ main_simple.py found, starting uvicorn...")
         
         # Run uvicorn with error handling
         cmd = [

@@ -6,8 +6,6 @@ Zero complex dependencies, guaranteed to work
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
 import uvicorn
 import os
 from datetime import datetime
@@ -28,17 +26,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Models
-class ChatRequest(BaseModel):
-    message: str
-    agent_id: Optional[str] = "business_coach"
-
-class ChatResponse(BaseModel):
-    agent_id: str
-    response: str
-    suggestions: List[str]
-    timestamp: str
 
 # Startup event
 @app.on_event("startup")
@@ -72,17 +59,20 @@ def list_agents():
     ]
 
 @app.post("/api/v1/ai-agents/chat")
-def chat(request: ChatRequest):
-    return ChatResponse(
-        agent_id=request.agent_id,
-        response=f"AI response to: {request.message}",
-        suggestions=["Try this", "Consider that"],
-        timestamp=datetime.now().isoformat()
-    )
+def chat(request_body: dict):
+    message = request_body.get("message", "")
+    agent_id = request_body.get("agent_id", "business_coach")
+    
+    return {
+        "agent_id": agent_id,
+        "response": f"AI response to: {message}",
+        "suggestions": ["Try this", "Consider that"],
+        "timestamp": datetime.now().isoformat()
+    }
 
 @app.post("/api/v1/agentic-coach/chat") 
-def agentic_chat(request: ChatRequest):
-    return chat(request)
+def agentic_chat(request_body: dict):
+    return chat(request_body)
 
 @app.get("/debug")
 def debug():
