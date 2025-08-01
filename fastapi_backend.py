@@ -661,6 +661,15 @@ async def get_barbershop_settings(current_user: dict = Depends(get_current_user)
             "campaignAlerts": True,
             "bookingAlerts": True,
             "systemAlerts": True
+        },
+        "businessHours": {
+            "monday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "tuesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "wednesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "thursday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "friday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "saturday": {"enabled": True, "shifts": [{"open": "10:00", "close": "16:00"}]},
+            "sunday": {"enabled": False, "shifts": []}
         }
     }
 
@@ -717,6 +726,108 @@ async def get_notification_settings(current_user: dict = Depends(get_current_use
         "campaignAlerts": True,
         "bookingAlerts": True,
         "systemAlerts": True
+    }
+
+@app.put("/api/v1/settings/notifications")
+async def save_notification_settings(notifications: dict, current_user: dict = Depends(get_current_user)):
+    """Save notification settings"""
+    with get_db() as conn:
+        # Get existing settings
+        cursor = conn.execute(
+            "SELECT profile_data FROM shop_profiles WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
+            (current_user["id"],)
+        )
+        profile = cursor.fetchone()
+        
+        if profile and profile["profile_data"]:
+            # Update existing settings
+            existing_settings = json.loads(profile["profile_data"])
+            existing_settings["notifications"] = notifications
+            updated_settings = existing_settings
+        else:
+            # Create new settings with notifications
+            updated_settings = {
+                "notifications": notifications
+            }
+        
+        # Save updated settings
+        profile_data = json.dumps(updated_settings)
+        
+        # Delete old profiles and insert new one
+        conn.execute("DELETE FROM shop_profiles WHERE user_id = ?", (current_user["id"],))
+        conn.execute(
+            "INSERT INTO shop_profiles (user_id, profile_data) VALUES (?, ?)",
+            (current_user["id"], profile_data)
+        )
+        conn.commit()
+    
+    return {
+        "message": "Notification settings saved successfully",
+        "notifications": notifications
+    }
+
+@app.put("/api/v1/settings/business-hours")
+async def save_business_hours(business_hours: dict, current_user: dict = Depends(get_current_user)):
+    """Save business hours settings"""
+    with get_db() as conn:
+        # Get existing settings
+        cursor = conn.execute(
+            "SELECT profile_data FROM shop_profiles WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
+            (current_user["id"],)
+        )
+        profile = cursor.fetchone()
+        
+        if profile and profile["profile_data"]:
+            # Update existing settings
+            existing_settings = json.loads(profile["profile_data"])
+            existing_settings["businessHours"] = business_hours
+            updated_settings = existing_settings
+        else:
+            # Create new settings with business hours
+            updated_settings = {
+                "businessHours": business_hours
+            }
+        
+        # Save updated settings
+        profile_data = json.dumps(updated_settings)
+        
+        # Delete old profiles and insert new one
+        conn.execute("DELETE FROM shop_profiles WHERE user_id = ?", (current_user["id"],))
+        conn.execute(
+            "INSERT INTO shop_profiles (user_id, profile_data) VALUES (?, ?)",
+            (current_user["id"], profile_data)
+        )
+        conn.commit()
+    
+    return {
+        "message": "Business hours saved successfully",
+        "businessHours": business_hours
+    }
+
+@app.get("/api/v1/settings/business-hours")
+async def get_business_hours(current_user: dict = Depends(get_current_user)):
+    """Get business hours settings"""
+    with get_db() as conn:
+        cursor = conn.execute(
+            "SELECT profile_data FROM shop_profiles WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
+            (current_user["id"],)
+        )
+        profile = cursor.fetchone()
+        
+        if profile and profile["profile_data"]:
+            saved_settings = json.loads(profile["profile_data"])
+            if 'businessHours' in saved_settings:
+                return saved_settings['businessHours']
+    
+    # Return defaults
+    return {
+        "monday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+        "tuesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+        "wednesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+        "thursday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+        "friday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+        "saturday": {"enabled": True, "shifts": [{"open": "10:00", "close": "16:00"}]},
+        "sunday": {"enabled": False, "shifts": []}
     }
 
 @app.post("/api/v1/notifications/test")

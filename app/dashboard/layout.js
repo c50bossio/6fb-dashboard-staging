@@ -8,8 +8,8 @@ export default function DashboardLayout({ children }) {
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is authenticated (replace with real auth check)
-    const authToken = localStorage.getItem('auth_token')
+    // Check if user is authenticated
+    const authToken = localStorage.getItem('access_token')
     if (!authToken) {
       router.push('/login')
       return

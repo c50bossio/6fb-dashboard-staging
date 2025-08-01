@@ -9,8 +9,6 @@ import {
   UserGroupIcon,
   ChartBarIcon,
   CogIcon,
-  CreditCardIcon,
-  BellIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
 
@@ -19,8 +17,6 @@ const navigation = [
   { name: 'Campaigns', href: '/dashboard/campaigns', icon: MegaphoneIcon },
   { name: 'Customers', href: '/dashboard/customers', icon: UserGroupIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
-  { name: 'Billing', href: '/dashboard/billing', icon: CreditCardIcon },
-  { name: 'Notifications', href: '/dashboard/notifications', icon: BellIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: CogIcon }
 ]
 
@@ -37,7 +33,7 @@ export default function DashboardNavigation() {
 
   const handleLogout = () => {
     // Clear auth data (replace with real auth logout)
-    localStorage.removeItem('auth_token')
+    localStorage.removeItem('access_token')
     localStorage.removeItem('user_email')
     router.push('/login')
   }

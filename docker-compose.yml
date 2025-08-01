@@ -10,7 +10,7 @@ services:
       - "9999:9999"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_API_URL=http://backend:8000
       - NEXT_PUBLIC_ENABLE_RAG=true
       - NEXT_PUBLIC_ENABLE_MOCK_FALLBACK=true
       - NEXT_PUBLIC_DEV_MODE=true
@@ -19,6 +19,7 @@ services:
     volumes:
       - ./app:/app/app
       - ./components:/app/components
+      - ./lib:/app/lib
       - ./public:/app/public
       - ./package.json:/app/package.json
       - ./next.config.js:/app/next.config.js

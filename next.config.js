@@ -37,9 +37,10 @@ const nextConfig = {
   // Environment-specific API rewrites
   async rewrites() {
     const isDev = process.env.NODE_ENV === 'development';
-    const apiUrl = isDev 
+    // Use NEXT_PUBLIC_API_URL if set (for Docker), otherwise default based on environment
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (isDev 
       ? 'http://localhost:8001' 
-      : process.env.NEXT_PUBLIC_API_URL || 'https://6fb-ai-backend-staging.onrender.com';
+      : 'https://6fb-ai-backend-staging.onrender.com');
       
     return [
       {
