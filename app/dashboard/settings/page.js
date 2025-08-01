@@ -1,35 +1,69 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef, memo } from 'react'
+// Import only essential icons for initial load
 import { 
   CogIcon,
   BellIcon,
-  KeyIcon,
   UserCircleIcon,
   BuildingOfficeIcon,
   PhoneIcon,
   EnvelopeIcon,
-  EyeIcon,
-  EyeSlashIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
   ExclamationCircleIcon,
   CalendarDaysIcon,
-  PlusIcon,
-  TrashIcon,
-  CreditCardIcon,
-  ChartBarIcon,
-  ArrowDownTrayIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   PencilIcon
 } from '@heroicons/react/24/outline'
+
+// Lazy load heavy/optional icons
+const KeyIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.KeyIcon })))
+const EyeIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.EyeIcon })))
+const EyeSlashIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.EyeSlashIcon })))
+const PlusIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.PlusIcon })))
+const TrashIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.TrashIcon })))
+const CreditCardIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.CreditCardIcon })))
+const ChartBarIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ChartBarIcon })))
+const ArrowDownTrayIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowDownTrayIcon })))
+const ArrowTrendingUpIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingUpIcon })))
+const ArrowTrendingDownIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingDownIcon })))
 import TimeRangePicker from '../../../components/TimeRangePicker'
-import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts'
+import NuclearInput from '../../../components/NuclearInput'
+import dynamic from 'next/dynamic'
+
+// Lazy load charts to improve initial page load with loading fallback
+const ChartLoadingSpinner = () => (
+  <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      <p className="text-sm text-gray-500 mt-2">Loading chart...</p>
+    </div>
+  </div>
+)
+
+const LineChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.LineChart })), { 
+  ssr: false,
+  loading: () => <ChartLoadingSpinner />
+})
+const Line = dynamic(() => import('recharts').then((mod) => ({ default: mod.Line })), { ssr: false })
+const BarChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.BarChart })), { 
+  ssr: false,
+  loading: () => <ChartLoadingSpinner />
+})
+const Bar = dynamic(() => import('recharts').then((mod) => ({ default: mod.Bar })), { ssr: false })
+const PieChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.PieChart })), { 
+  ssr: false,
+  loading: () => <ChartLoadingSpinner />
+})
+const Pie = dynamic(() => import('recharts').then((mod) => ({ default: mod.Pie })), { ssr: false })
+const Cell = dynamic(() => import('recharts').then((mod) => ({ default: mod.Cell })), { ssr: false })
+const XAxis = dynamic(() => import('recharts').then((mod) => ({ default: mod.XAxis })), { ssr: false })
+const YAxis = dynamic(() => import('recharts').then((mod) => ({ default: mod.YAxis })), { ssr: false })
+const CartesianGrid = dynamic(() => import('recharts').then((mod) => ({ default: mod.CartesianGrid })), { ssr: false })
+const Tooltip = dynamic(() => import('recharts').then((mod) => ({ default: mod.Tooltip })), { ssr: false })
+const Legend = dynamic(() => import('recharts').then((mod) => ({ default: mod.Legend })), { ssr: false })
+const ResponsiveContainer = dynamic(() => import('recharts').then((mod) => ({ default: mod.ResponsiveContainer })), { ssr: false })
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -79,6 +113,36 @@ export default function SettingsPage() {
   const [successMessages, setSuccessMessages] = useState({})
   const [activeSection, setActiveSection] = useState('general')
   const [isInitialized, setIsInitialized] = useState(false)
+  const [pageLoading, setPageLoading] = useState(true)
+
+  // Create stable refs to prevent re-renders
+  const phoneInputRef = useRef(null)
+  const emailInputRef = useRef(null)
+
+  // NUCLEAR SOLUTION: Only update state on blur to prevent re-renders during typing
+  const handlePhoneBlur = useCallback((e) => {
+    const value = e.target.value
+    console.log('NUCLEAR: Phone blur update:', value)
+    setSettings(prev => ({
+      ...prev,
+      barbershop: { 
+        ...prev.barbershop, 
+        phone: value 
+      }
+    }))
+  }, [])
+
+  const handleEmailBlur = useCallback((e) => {
+    const value = e.target.value
+    console.log('NUCLEAR: Email blur update:', value)
+    setSettings(prev => ({
+      ...prev,
+      barbershop: { 
+        ...prev.barbershop, 
+        email: value 
+      }
+    }))
+  }, [])
 
   // Handle section changes and update URL hash
   const handleSectionChange = (sectionId) => {
@@ -96,6 +160,13 @@ export default function SettingsPage() {
       setActiveSection(hash)
     }
     setIsInitialized(true)
+    
+    // Simulate faster initial load by setting page ready
+    const timer = setTimeout(() => {
+      setPageLoading(false)
+    }, 100)
+    
+    return () => clearTimeout(timer)
   }, [])
 
   // Listen for hash changes (back/forward navigation)
@@ -560,8 +631,8 @@ export default function SettingsPage() {
     { name: 'Email Campaigns', value: billingData.usage.email.cost, color: '#10B981' }
   ]
 
-  // Reusable EditableCard component
-  const EditableCard = ({ title, icon: Icon, section, children, className = "" }) => {
+  // Memoized EditableCard component to prevent unnecessary re-renders
+  const EditableCard = memo(({ title, icon: Icon, section, children, className = "" }) => {
     const isEditing = editStates[section]
     const isLoading = loading[section]
     const error = errors[section]
@@ -619,13 +690,17 @@ export default function SettingsPage() {
         {children}
       </div>
     )
-  }
+  })
 
   // Show loading briefly while determining correct section from URL
-  if (!isInitialized) {
+  if (!isInitialized || pageLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4 text-lg">Loading Settings...</p>
+          <p className="text-gray-400 text-sm">Optimizing components for best performance</p>
+        </div>
       </div>
     )
   }
@@ -687,7 +762,7 @@ export default function SettingsPage() {
                   icon={BuildingOfficeIcon}
                   section="barbershop"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Business Name
@@ -712,21 +787,19 @@ export default function SettingsPage() {
                         Phone Number
                       </label>
                       {editStates.barbershop ? (
-                        <input
+                        <NuclearInput
+                          ref={phoneInputRef}
                           type="tel"
-                          value={settings.barbershop.phone}
-                          onChange={(e) => setSettings(prev => ({
-                            ...prev,
-                            barbershop: { ...prev.barbershop, phone: e.target.value }
-                          }))}
-                          className="input-field"
+                          defaultValue={settings.barbershop?.phone || ''}
+                          onBlur={handlePhoneBlur}
+                          placeholder="Enter phone number"
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{settings.barbershop.phone}</p>
+                        <p className="text-gray-900 py-2">{settings.barbershop.phone || 'Not set'}</p>
                       )}
                     </div>
                     
-                    <div className="md:col-span-2">
+                    <div className="lg:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Address
                       </label>
@@ -750,17 +823,15 @@ export default function SettingsPage() {
                         Email
                       </label>
                       {editStates.barbershop ? (
-                        <input
+                        <NuclearInput
+                          ref={emailInputRef}
                           type="email"
-                          value={settings.barbershop.email}
-                          onChange={(e) => setSettings(prev => ({
-                            ...prev,
-                            barbershop: { ...prev.barbershop, email: e.target.value }
-                          }))}
-                          className="input-field"
+                          defaultValue={settings.barbershop?.email || ''}
+                          onBlur={handleEmailBlur}
+                          placeholder="Enter email address"
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{settings.barbershop.email}</p>
+                        <p className="text-gray-900 py-2">{settings.barbershop.email || 'Not set'}</p>
                       )}
                     </div>
                     
