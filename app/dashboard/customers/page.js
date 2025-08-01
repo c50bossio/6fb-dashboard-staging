@@ -20,6 +20,7 @@ export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSegment, setSelectedSegment] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [notification, setNotification] = useState(null)
 
   useEffect(() => {
     // Mock customer data (replace with real API call)
@@ -128,11 +129,48 @@ export default function CustomersPage() {
     
     setCustomers([...customers, newCustomer])
     setShowAddModal(false)
+    setNotification({
+      type: 'success',
+      message: 'Customer added successfully!'
+    })
+    setTimeout(() => setNotification(null), 3000)
+  }
+
+  const handleEditCustomer = (customerId) => {
+    setNotification({
+      type: 'info',
+      message: 'Customer editing feature is being developed. Contact support for changes.'
+    })
+    setTimeout(() => setNotification(null), 3000)
+  }
+
+  const handleDeleteCustomer = (customerId) => {
+    const customerName = customers.find(c => c.id === customerId)?.name
+    // For production, this should be a proper modal confirmation
+    if (window.confirm(`Are you sure you want to delete ${customerName}? This action cannot be undone.`)) {
+      setCustomers(customers.filter(c => c.id !== customerId))
+      setNotification({
+        type: 'success',
+        message: `${customerName} has been removed from your customer database.`
+      })
+      setTimeout(() => setNotification(null), 3000)
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-8">
+        {/* Notification */}
+        {notification && (
+          <div className={`mb-6 p-4 rounded-lg ${
+            notification.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+            notification.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
+            'bg-blue-50 text-blue-800 border border-blue-200'
+          }`}>
+            {notification.message}
+          </div>
+        )}
+
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -300,10 +338,18 @@ export default function CustomersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900">
+                        <button 
+                          onClick={() => handleEditCustomer(customer.id)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Edit Customer"
+                        >
                           <PencilSquareIcon className="h-4 w-4" />
                         </button>
-                        <button className="text-red-600 hover:text-red-900">
+                        <button 
+                          onClick={() => handleDeleteCustomer(customer.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete Customer"
+                        >
                           <TrashIcon className="h-4 w-4" />
                         </button>
                       </div>

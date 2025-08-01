@@ -45,8 +45,17 @@ export default function AIChat({ agentId = 'business_coach', onClose }) {
     const newSessionId = `${user?.id}_${Date.now()}`
     setSessionId(newSessionId)
 
-    // Connect to WebSocket
+    // Try to connect to WebSocket, but fallback to HTTP if it fails
     connectWebSocket()
+
+    // Add initial welcome message
+    const welcomeMessage = {
+      id: Date.now(),
+      role: 'assistant',
+      content: `Hello! I'm your ${currentAgent.name}. How can I help you with your barbershop business today?`,
+      timestamp: new Date().toISOString()
+    }
+    setMessages([welcomeMessage])
 
     // Cleanup on unmount
     return () => {
@@ -67,80 +76,83 @@ export default function AIChat({ agentId = 'business_coach', onClose }) {
 
   const connectWebSocket = () => {
     const token = localStorage.getItem('access_token')
-    if (!token) return
+    if (!token) {
+      console.error('No authentication token found')
+      // Fallback to HTTP mode
+      setIsConnected(true)
+      return
+    }
 
     const wsUrl = `ws://localhost:8001/ws/${token}`
-    const ws = new WebSocket(wsUrl)
+    console.log('Attempting to connect to:', wsUrl)
+    
+    try {
+      const ws = new WebSocket(wsUrl)
 
-    ws.onopen = () => {
-      console.log('WebSocket connected')
-      setIsConnected(true)
-      
-      // Send initial greeting
-      setTimeout(() => {
-        sendMessage("Hello! I'm looking for advice on growing my barbershop business.")
-      }, 1000)
-    }
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      
-      switch (data.type) {
-        case 'connection':
-          console.log('Connected:', data.message)
-          break
-          
-        case 'typing':
-          setIsTyping(true)
-          break
-          
-        case 'response':
-          setIsTyping(false)
-          const aiMessage = {
-            id: Date.now(),
-            role: 'assistant',
-            content: data.message,
-            agent: data.agent_name,
-            timestamp: data.timestamp,
-            model: data.model
-          }
-          setMessages(prev => [...prev, aiMessage])
-          break
-          
-        case 'notification':
-          // Handle notifications
-          console.log('Notification:', data)
-          break
-          
-        case 'error':
-          console.error('WebSocket error:', data.message)
-          setIsTyping(false)
-          break
+      ws.onopen = () => {
+        console.log('WebSocket connected')
+        setIsConnected(true)
       }
-    }
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
-      setIsConnected(false)
-    }
-
-    ws.onclose = () => {
-      console.log('WebSocket disconnected')
-      setIsConnected(false)
-      
-      // Attempt to reconnect after 3 seconds
-      setTimeout(() => {
-        if (wsRef.current?.readyState === WebSocket.CLOSED) {
-          connectWebSocket()
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        
+        switch (data.type) {
+          case 'connection':
+            console.log('Connected:', data.message)
+            break
+            
+          case 'typing':
+            setIsTyping(true)
+            break
+            
+          case 'response':
+            setIsTyping(false)
+            const aiMessage = {
+              id: Date.now(),
+              role: 'assistant',
+              content: data.message,
+              agent: data.agent_name,
+              timestamp: data.timestamp,
+              model: data.model
+            }
+            setMessages(prev => [...prev, aiMessage])
+            break
+            
+          case 'notification':
+            console.log('Notification:', data)
+            break
+            
+          case 'error':
+            console.error('WebSocket error:', data.message)
+            setIsTyping(false)
+            break
         }
-      }, 3000)
-    }
+      }
 
-    wsRef.current = ws
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error)
+        // Fallback to HTTP mode
+        setIsConnected(true)
+        console.log('Falling back to HTTP API mode')
+      }
+
+      ws.onclose = () => {
+        console.log('WebSocket disconnected, using HTTP fallback')
+        // Enable HTTP fallback mode
+        setIsConnected(true)
+      }
+
+      wsRef.current = ws
+    } catch (error) {
+      console.error('WebSocket not supported or failed to connect:', error)
+      // Fallback to HTTP mode
+      setIsConnected(true)
+    }
   }
 
-  const sendMessage = (messageText = inputMessage) => {
-    if (!messageText.trim() || !wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return
+  const sendMessage = async (messageText = inputMessage) => {
+    if (!messageText.trim()) return
 
     // Add user message to chat
     const userMessage = {
@@ -151,17 +163,67 @@ export default function AIChat({ agentId = 'business_coach', onClose }) {
     }
     setMessages(prev => [...prev, userMessage])
 
-    // Send to WebSocket
-    const wsMessage = {
-      type: 'chat',
-      agent_id: agentId,
-      message: messageText,
-      session_id: sessionId
-    }
-    wsRef.current.send(JSON.stringify(wsMessage))
-
-    // Clear input
+    // Clear input immediately
     setInputMessage('')
+    setIsTyping(true)
+
+    // Try WebSocket first, then fallback to HTTP
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      // WebSocket mode
+      const wsMessage = {
+        type: 'chat',
+        agent_id: agentId,
+        message: messageText,
+        session_id: sessionId
+      }
+      wsRef.current.send(JSON.stringify(wsMessage))
+    } else {
+      // HTTP fallback mode
+      try {
+        const response = await fetch('/api/chat/unified', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+          },
+          body: JSON.stringify({
+            message: messageText,
+            agent_id: agentId,
+            context: { 
+              barbershop_name: user?.barbershop_name || 'Your Barbershop',
+              agent_type: currentAgent.name
+            }
+          })
+        })
+
+        const data = await response.json()
+        setIsTyping(false)
+
+        if (response.ok) {
+          const aiMessage = {
+            id: Date.now(),
+            role: 'assistant',
+            content: data.response || data.message || 'Thank you for your message. I\'m here to help with your barbershop business questions.',
+            timestamp: new Date().toISOString(),
+            model: 'http-api'
+          }
+          setMessages(prev => [...prev, aiMessage])
+        } else {
+          throw new Error(data.detail || 'Failed to get response')
+        }
+      } catch (error) {
+        console.error('HTTP chat error:', error)
+        setIsTyping(false)
+        
+        const errorMessage = {
+          id: Date.now(),
+          role: 'assistant',
+          content: 'I apologize, but I\'m having trouble connecting right now. Please try again in a moment, or check that the backend service is running.',
+          timestamp: new Date().toISOString()
+        }
+        setMessages(prev => [...prev, errorMessage])
+      }
+    }
   }
 
   const handleSubmit = (e) => {

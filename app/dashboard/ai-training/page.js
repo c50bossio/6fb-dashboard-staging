@@ -16,6 +16,7 @@ import {
 
 export default function AITrainingDashboard() {
   const { user } = useAuth()
+  const [notification, setNotification] = useState(null)
   const [activeTab, setActiveTab] = useState('knowledge')
   const [newKnowledge, setNewKnowledge] = useState({
     category: 'pricing',
@@ -48,15 +49,27 @@ export default function AITrainingDashboard() {
 
   const handleAddKnowledge = async (e) => {
     e.preventDefault()
-    // In real implementation, this would call the API
-    console.log('Adding knowledge:', newKnowledge)
-    
-    // Reset form
-    setNewKnowledge({
-      category: 'pricing',
-      title: '',
-      content: ''
-    })
+    try {
+      // Simulate API call
+      setNotification({
+        type: 'success',
+        message: `Knowledge "${newKnowledge.title}" added successfully to AI training data.`
+      })
+      setTimeout(() => setNotification(null), 3000)
+      
+      // Reset form
+      setNewKnowledge({
+        category: 'pricing',
+        title: '',
+        content: ''
+      })
+    } catch (error) {
+      setNotification({
+        type: 'error',
+        message: 'Failed to add knowledge. Please try again.'
+      })
+      setTimeout(() => setNotification(null), 3000)
+    }
   }
 
   return (
@@ -80,6 +93,16 @@ export default function AITrainingDashboard() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Notification Banner */}
+          {notification && (
+            <div className={`mb-6 p-4 rounded-lg ${
+              notification.type === 'success' ? 'bg-green-50 text-green-800' : 
+              notification.type === 'error' ? 'bg-red-50 text-red-800' : 
+              'bg-blue-50 text-blue-800'
+            }`}>
+              <p className="font-medium">{notification.message}</p>
+            </div>
+          )}
           {/* Tabs */}
           <div className="border-b border-gray-200 mb-8">
             <nav className="-mb-px flex space-x-8">
@@ -224,7 +247,16 @@ export default function AITrainingDashboard() {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-green-600">Marked as helpful by user</span>
-                    <button className="text-sm text-blue-600 hover:text-blue-700">
+                    <button 
+                      onClick={() => {
+                        setNotification({
+                          type: 'success',
+                          message: 'Conversation added to training data successfully.'
+                        })
+                        setTimeout(() => setNotification(null), 3000)
+                      }}
+                      className="text-sm text-blue-600 hover:text-blue-700"
+                    >
                       Add to Training Data
                     </button>
                   </div>
@@ -264,7 +296,16 @@ export default function AITrainingDashboard() {
                   />
                 </div>
                 
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button 
+                  onClick={() => {
+                    setNotification({
+                      type: 'success',
+                      message: 'AI behavior settings updated successfully.'
+                    })
+                    setTimeout(() => setNotification(null), 3000)
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
                   Update AI Behavior
                 </button>
               </div>

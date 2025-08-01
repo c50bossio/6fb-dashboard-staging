@@ -65,7 +65,8 @@ export default function SettingsPage() {
     businessHours: false,
     notifications: false,
     paymentMethod: false,
-    subscription: false
+    subscription: false,
+    testNotifications: false
   })
   const [editStates, setEditStates] = useState({
     barbershop: false,
@@ -245,7 +246,7 @@ export default function SettingsPage() {
   }
 
   const sendTestNotification = async (type) => {
-    setLoading(true)
+    setLoading(prev => ({ ...prev, testNotifications: true }))
     setTestResult(null)
     
     try {
@@ -269,7 +270,7 @@ export default function SettingsPage() {
         message: 'Failed to send test notification'
       })
     } finally {
-      setLoading(false)
+      setLoading(prev => ({ ...prev, testNotifications: false }))
     }
   }
 
@@ -1150,7 +1151,7 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <button
                       onClick={() => sendTestNotification('email')}
-                      disabled={loading}
+                      disabled={loading.testNotifications}
                       className="flex items-center justify-center space-x-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50"
                     >
                       <EnvelopeIcon className="h-8 w-8 text-blue-600" />
@@ -1162,7 +1163,7 @@ export default function SettingsPage() {
                     
                     <button
                       onClick={() => sendTestNotification('sms')}
-                      disabled={loading}
+                      disabled={loading.testNotifications}
                       className="flex items-center justify-center space-x-3 p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-50"
                     >
                       <PhoneIcon className="h-8 w-8 text-purple-600" />
