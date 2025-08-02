@@ -7,26 +7,130 @@
     "dev": "next dev -p 9999",
     "build": "next build",
     "start": "next start -p 9999",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest --testPathPattern=unit",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:nuclear": "jest --testNamePattern='Nuclear|nuclear'",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:cross-browser": "playwright test tests/e2e/cross-browser-mobile.spec.js",
+    "test:nuclear-e2e": "playwright test tests/e2e/settings-nuclear-input.spec.js",
+    "test:all": "npm run test && npm run test:e2e",
+    "test:ci": "npm run test:coverage && npm run test:e2e",
+    "playwright:install": "playwright install",
+    "playwright:install-deps": "playwright install-deps",
+    "check-env": "node scripts/check-env.js",
+    "setup-db": "node scripts/setup-database.js",
+    "health": "curl -s http://localhost:9999/api/health | jq .",
+    "docker:dev": "./docker-dev-start.sh",
+    "docker:stop": "./docker-stop.sh"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
+    "@fullcalendar/core": "^6.1.18",
+    "@fullcalendar/daygrid": "^6.1.18",
+    "@fullcalendar/interaction": "^6.1.18",
+    "@fullcalendar/list": "^6.1.18",
+    "@fullcalendar/react": "^6.1.18",
+    "@fullcalendar/resource": "^6.1.18",
+    "@fullcalendar/resource-timeline": "^6.1.18",
+    "@fullcalendar/rrule": "^6.1.18",
+    "@fullcalendar/timegrid": "^6.1.18",
+    "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
+    "@novu/headless": "^2.6.6",
+    "@novu/node": "^2.6.6",
+    "@novu/notification-center": "^2.0.0",
+    "@sentry/nextjs": "^10.0.0",
+    "@stripe/stripe-js": "^7.8.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/auth-helpers-react": "^0.5.0",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.53.0",
+    "@vercel/edge-config": "^1.4.0",
+    "ai": "^5.0.0",
     "autoprefixer": "^10.4.16",
+    "dotenv": "^17.2.1",
     "next": "14.0.4",
+    "openai": "^5.11.0",
     "postcss": "^8.4.32",
+    "posthog-js": "^1.258.5",
+    "posthog-node": "^5.6.0",
+    "pusher": "^5.2.0",
+    "pusher-js": "^8.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^3.1.0",
-    "tailwindcss": "^3.3.6"
+    "rrule": "^2.8.1",
+    "stripe": "^18.4.0",
+    "tailwindcss": "^3.3.6",
+    "web-vitals": "^5.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.1",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/user-event": "^14.5.1",
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.0.4",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-transform-css": "^6.0.1",
     "playwright": "^1.54.1",
+    "puppeteer": "^24.15.0",
     "typescript": "^5.3.3"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "moduleNameMapping": {
+      "^@/(.*)$": "<rootDir>/$1",
+      "^@/components/(.*)$": "<rootDir>/components/$1",
+      "^@/app/(.*)$": "<rootDir>/app/$1",
+      "\\.(css|less|scss|sass)$": "jest-transform-css"
+    },
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js",
+      "<rootDir>/tests/**/*.test.jsx"
+    ],
+    "collectCoverageFrom": [
+      "components/**/*.{js,jsx}",
+      "app/**/*.{js,jsx}",
+      "!app/**/layout.{js,jsx}",
+      "!app/**/loading.{js,jsx}",
+      "!app/**/error.{js,jsx}",
+      "!app/**/not-found.{js,jsx}",
+      "!**/*.config.js",
+      "!**/node_modules/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 85,
+        "functions": 85,
+        "lines": 85,
+        "statements": 85
+      },
+      "./components/NuclearInput.js": {
+        "branches": 95,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
+      }
+    },
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "verbose": true
   }
 }

@@ -1,84 +1,190 @@
-# 6FB AI Agent System - Production Ready
+# 6FB AI Agent System
 
-## 🚀 Status: FULLY OPERATIONAL
+An enterprise-grade barbershop management system powered by AI agents and modern web technologies.
 
-Enterprise-grade AI agent system for barbershop automation with live API integrations and real-time execution capabilities.
+\![Next.js](https://img.shields.io/badge/Next.js-14.0-black)
+\![Supabase](https://img.shields.io/badge/Supabase-Database-green)
+\![Stripe](https://img.shields.io/badge/Stripe-Payments-blue)
+\![AI Powered](https://img.shields.io/badge/AI-OpenAI%20%26%20Claude-purple)
 
-### ✅ Production Features Confirmed
-- **6 Executable AI Agents**: Marketing, Content, Social Media, Booking, Follow-up, Analytics
-- **Live SMS Marketing**: Twilio integration with real delivery
-- **Live Email Marketing**: SendGrid integration confirmed working
-- **Docker Deployment**: Containerized production environment
-- **Real API Integrations**: OpenAI, Anthropic, Google AI, Twilio, SendGrid
-- **Campaign Tracking**: Full analytics and performance monitoring
+## 🚀 Features
 
-### 🧪 Tested & Verified
-- ✅ **Email Delivery**: Successfully sent to c50bossio@gmail.com
-- ✅ **SMS API Integration**: Functional (carrier blocking resolved)
-- ✅ **Database Operations**: SQLite + PostgreSQL support
-- ✅ **Error Handling**: Robust delivery status monitoring
-- ✅ **Customer Segmentation**: VIP, regular, new, lapsed customers
-- ✅ **Professional Templates**: HTML email generation
+### Core Functionality
+- **AI-Powered Chat**: Dual AI support with OpenAI GPT-4 and Anthropic Claude
+- **Smart Scheduling**: Advanced calendar with drag-and-drop, resources, and recurring events
+- **Payment Processing**: Complete Stripe integration with subscriptions
+- **Real-time Updates**: Live dashboards and chat with WebSocket connections
+- **Unified Notifications**: Multi-channel notifications (email, SMS, push, in-app)
 
-## Quick Start
+### Enterprise Features
+- **Authentication**: Secure auth with Supabase (supports OAuth providers)
+- **Error Tracking**: Comprehensive error monitoring with Sentry
+- **Analytics**: Product analytics with session recording via PostHog
+- **Feature Flags**: Instant feature toggling with Vercel Edge Config
+- **Database**: PostgreSQL with real-time subscriptions
+- **File Storage**: Integrated file management with Supabase Storage
 
-### Docker Development (Recommended)
-```bash
-# Start all services
-docker-compose -f docker-compose.dev.yml up --build
+## 🛠️ Tech Stack
 
-# Access services
-Frontend: http://localhost:9999
-Backend API: http://localhost:8001
-Health Check: http://localhost:8001/api/v1/health
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **UI**: React 18 + Tailwind CSS
+- **Calendar**: FullCalendar.io (Premium)
+- **Charts**: Recharts
+- **Real-time**: Pusher JS
+
+### Backend
+- **API**: Next.js API Routes + FastAPI
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Payments**: Stripe
+- **AI**: OpenAI + Anthropic SDKs
+- **Notifications**: Novu
+- **Real-time**: Pusher
+
+### Infrastructure
+- **Hosting**: Vercel (recommended)
+- **Database**: Supabase Cloud
+- **File Storage**: Supabase Storage
+- **Error Tracking**: Sentry
+- **Analytics**: PostHog
+- **Feature Flags**: Vercel Edge Config
+
+## 🚦 Getting Started
+
+### Prerequisites
+- Node.js 18.19+
+- npm or yarn
+- Docker (optional)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd "6FB AI Agent System"
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.local.example .env.local
+   # Edit .env.local with your API keys
+   ```
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   # or with Docker
+   ./docker-dev-start.sh
+   ```
+
+5. **Access the application**
+   - Frontend: http://localhost:9999
+   - API: http://localhost:8001
+   - Health Check: http://localhost:9999/api/health
+
+## 📝 Environment Setup
+
+See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed setup instructions.
+
+### Quick Links to Get API Keys:
+- [Supabase](https://supabase.com) - Database & Auth
+- [OpenAI](https://platform.openai.com) - GPT Models
+- [Anthropic](https://console.anthropic.com) - Claude Models
+- [Stripe](https://dashboard.stripe.com) - Payments
+- [Sentry](https://sentry.io) - Error Tracking
+- [Novu](https://web.novu.co) - Notifications
+- [Pusher](https://dashboard.pusher.com) - Real-time
+- [PostHog](https://app.posthog.com) - Analytics
+
+## 🏗️ Project Structure
+
+```
+6FB AI Agent System/
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── dashboard/         # Dashboard pages
+│   └── layout.js          # Root layout
+├── components/            # React components
+├── lib/                   # Utility libraries
+├── hooks/                 # Custom React hooks
+├── services/              # Business logic
+├── database/              # Database schemas
+├── scripts/               # Utility scripts
+├── public/                # Static assets
+└── docker/                # Docker configurations
 ```
 
-### Manual Development
-```bash
-# Backend
-cd "6FB AI Agent System"
-python fastapi-server.py
+## 🧪 Testing
 
-# Frontend  
-npm run dev
+```bash
+# Run all tests
+npm run test:all
+
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:coverage
 ```
 
-## Live API Testing
+## 🚀 Deployment
 
-### Send Marketing Email
+### Vercel (Recommended)
 ```bash
-curl -X POST http://localhost:8001/api/chat/unified \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": "Email blast to VIP customers about exclusive offers",
-    "context": {"barbershop_name": "Test Shop"}
-  }'
+npm i -g vercel
+vercel
 ```
 
-### Send Marketing SMS
+### Docker
 ```bash
-curl -X POST http://localhost:8001/api/chat/unified \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": "SMS blast to regular customers: Special weekend offer!",
-    "context": {"barbershop_name": "Test Shop"}
-  }'
+docker-compose -f docker-compose.prod.yml up -d
 ```
 
-## Architecture
-- **Frontend**: Next.js 14 with Tailwind CSS
-- **Backend**: FastAPI with SQLite/PostgreSQL
-- **AI Services**: OpenAI, Anthropic, Google AI integration
-- **Communications**: Twilio SMS + SendGrid Email
-- **Deployment**: Docker containers with health checks
+See [PRODUCTION_CHECKLIST.md](./PRODUCTION_CHECKLIST.md) for deployment best practices.
 
-## Environment Configuration
-Production-ready API keys configured for:
-- Twilio SMS delivery
-- SendGrid email delivery  
-- OpenAI GPT integration
-- Anthropic Claude integration
-- Google AI integration
+## 📊 Monitoring
 
-## Status
-🎉 **PRODUCTION READY** - All systems tested and operational!
+- **Errors**: Check Sentry dashboard
+- **Analytics**: View PostHog dashboard
+- **Health**: GET `/api/health`
+- **Logs**: Check Vercel/Docker logs
+
+## 🔐 Security
+
+- Row Level Security (RLS) enabled on all database tables
+- API rate limiting implemented
+- Input validation and sanitization
+- Secure session management
+- Regular dependency updates
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is proprietary software. All rights reserved.
+
+## 🆘 Support
+
+- Documentation: See `/docs` folder
+- Issues: GitHub Issues
+- Email: support@your-domain.com
+
+---
+
+Built with ❤️ by the 6FB team
+EOF < /dev/null

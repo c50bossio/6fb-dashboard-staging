@@ -1,6 +1,14 @@
 import './globals.css'
+import dynamic from 'next/dynamic'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { AuthProvider } from '../contexts/AuthContext'
+import { SupabaseAuthProvider } from '../components/SupabaseAuthProvider'
+
+// Dynamically import PostHog provider to avoid SSR issues
+const PostHogProvider = dynamic(
+  () => import('../components/analytics/PostHogProvider'),
+  { ssr: false }
+)
 
 export const metadata = {
   title: '6FB AI Agent System - Barbershop Dashboard',
@@ -21,9 +29,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="bg-gray-50 antialiased">
         <ErrorBoundary>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+          <SupabaseAuthProvider>
+            <PostHogProvider>
+              {children}
+            </PostHogProvider>
+          </SupabaseAuthProvider>
         </ErrorBoundary>
       </body>
     </html>

@@ -2,10 +2,10 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "nixpacks",
-    "buildCommand": "pip install -r requirements.txt"
+    "buildCommand": "pip install -r requirements.txt && pip install -r requirements-langchain.txt"
   },
   "deploy": {
-    "startCommand": "python main.py",
+    "startCommand": "uvicorn main_complex:app --host 0.0.0.0 --port $PORT --workers 4",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
@@ -14,11 +14,17 @@
   "environments": {
     "production": {
       "variables": {
-        "ENVIRONMENT": "staging",
+        "ENVIRONMENT": "production",
         "NODE_ENV": "production",
-        "FRONTEND_URL": "https://6fb-ai-staging-h5v5htl9v-6fb.vercel.app",
+        "FRONTEND_URL": "${{VERCEL_URL}}",
         "PYTHONPATH": "/app",
-        "PYTHONUNBUFFERED": "1"
+        "PYTHONUNBUFFERED": "1",
+        "WEB_CONCURRENCY": "4",
+        "SUPABASE_URL": "${{SUPABASE_URL}}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${{SUPABASE_SERVICE_ROLE_KEY}}",
+        "SENTRY_DSN": "${{SENTRY_DSN}}",
+        "OPENAI_API_KEY": "${{OPENAI_API_KEY}}",
+        "ANTHROPIC_API_KEY": "${{ANTHROPIC_API_KEY}}"
       }
     }
   }

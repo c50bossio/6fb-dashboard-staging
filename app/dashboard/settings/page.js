@@ -30,6 +30,7 @@ const ArrowTrendingUpIcon = dynamic(() => import('@heroicons/react/24/outline').
 const ArrowTrendingDownIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingDownIcon })))
 import TimeRangePicker from '../../../components/TimeRangePicker'
 import NuclearInput from '../../../components/NuclearInput'
+import InternationalPhoneInput from '../../../components/InternationalPhoneInput'
 import dynamic from 'next/dynamic'
 
 // Lazy load charts to improve initial page load with loading fallback
@@ -121,13 +122,19 @@ export default function SettingsPage() {
 
   // NUCLEAR SOLUTION: Only update state on blur to prevent re-renders during typing
   const handlePhoneBlur = useCallback((e) => {
-    const value = e.target.value
-    console.log('NUCLEAR: Phone blur update:', value)
+    const displayValue = e.target.value
+    const e164Value = e.target.e164 || displayValue  // Use E.164 for Twilio if available
+    const country = e.target.country || 'US'
+    
+    console.log('NUCLEAR: Phone blur update:', { displayValue, e164Value, country })
+    
     setSettings(prev => ({
       ...prev,
       barbershop: { 
         ...prev.barbershop, 
-        phone: value 
+        phone: displayValue,           // Store formatted display version
+        phoneE164: e164Value,          // Store E.164 for Twilio SMS
+        phoneCountry: country          // Store country for future reference
       }
     }))
   }, [])
@@ -787,15 +794,19 @@ export default function SettingsPage() {
                         Phone Number
                       </label>
                       {editStates.barbershop ? (
-                        <NuclearInput
+                        <InternationalPhoneInput
                           ref={phoneInputRef}
-                          type="tel"
                           defaultValue={settings.barbershop?.phone || ''}
+                          defaultCountry={settings.barbershop?.phoneCountry || 'US'}
                           onBlur={handlePhoneBlur}
-                          placeholder="Enter phone number"
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{settings.barbershop.phone || 'Not set'}</p>
+                        <div>
+                          <p className="text-gray-900 py-2">{settings.barbershop.phone || 'Not set'}</p>
+                          {settings.barbershop?.phoneE164 && (
+                            <p className="text-xs text-gray-500">Twilio format: {settings.barbershop.phoneE164}</p>
+                          )}
+                        </div>
                       )}
                     </div>
                     
@@ -829,6 +840,8 @@ export default function SettingsPage() {
                           defaultValue={settings.barbershop?.email || ''}
                           onBlur={handleEmailBlur}
                           placeholder="Enter email address"
+                          autoFormatting={true}
+                          validation={true}
                         />
                       ) : (
                         <p className="text-gray-900 py-2">{settings.barbershop.email || 'Not set'}</p>

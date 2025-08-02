@@ -1,16 +1,22 @@
+const path = require('path')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
   
-  // Performance optimizations
-  compress: true,
-  poweredByHeader: false,
-  generateEtags: false,
-  
-  // Bundle optimization
+  // Path aliases for cleaner imports
   webpack: (config, { dev, isServer }) => {
+    // Add path aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, '.'),
+      '@/components': path.resolve(__dirname, 'components'),
+      '@/lib': path.resolve(__dirname, 'lib'),
+      '@/hooks': path.resolve(__dirname, 'hooks'),
+      '@/contexts': path.resolve(__dirname, 'contexts'),
+      '@/services': path.resolve(__dirname, 'services'),
+      '@/utils': path.resolve(__dirname, 'utils'),
+    }
+    
     // Optimize for production
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
@@ -28,11 +34,22 @@ const nextConfig = {
             priority: 20,
             reuseExistingChunk: true,
           },
+          recharts: {
+            test: /[\\/]node_modules[\\/]recharts[\\/]/,
+            name: 'recharts',
+            priority: 25,
+            reuseExistingChunk: true,
+          },
         },
       };
     }
     return config;
   },
+  
+  // Performance optimizations
+  compress: true,
+  poweredByHeader: false,
+  generateEtags: false,
   
   // Environment-specific API rewrites
   async rewrites() {
@@ -77,3 +94,5 @@ const nextConfig = {
     ];
   },
 };
+
+module.exports = nextConfig;
