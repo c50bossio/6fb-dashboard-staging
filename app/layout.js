@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { AuthProvider } from '../contexts/AuthContext'
 import { SupabaseAuthProvider } from '../components/SupabaseAuthProvider'
+import { TenantProvider } from '../contexts/TenantContext'
 import { ToastProvider } from '../components/ToastContainer'
 import { AccessibilityProvider, SkipToContent } from '../components/ui/AccessibilityProvider'
 
@@ -44,12 +45,14 @@ export default function RootLayout({ children }) {
           <AccessibilityProvider>
             <ToastProvider>
               <SupabaseAuthProvider>
-                <PostHogProvider>
-                  <PerformanceMonitor />
-                  <main id="main-content">
-                    {children}
-                  </main>
-                </PostHogProvider>
+                <TenantProvider>
+                  <PostHogProvider>
+                    <PerformanceMonitor />
+                    <main id="main-content">
+                      {children}
+                    </main>
+                  </PostHogProvider>
+                </TenantProvider>
               </SupabaseAuthProvider>
             </ToastProvider>
           </AccessibilityProvider>

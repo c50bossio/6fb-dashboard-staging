@@ -190,8 +190,30 @@ export function DashboardProvider({ children }) {
     console.log('Shop context updated:', contextData);
   };
 
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Simulate loading dashboard data
+      console.log('Loading dashboard data...');
+      
+      // In a real implementation, this would fetch from API
+      // For now, we'll just simulate a successful load
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      console.log('Dashboard data loaded successfully');
+    } catch (err) {
+      console.error('Error loading dashboard data:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const refreshDashboard = () => {
     console.log('Dashboard refreshed');
+    loadDashboardData();
   };
 
   const clearError = () => {
@@ -213,6 +235,7 @@ export function DashboardProvider({ children }) {
     // Actions
     chatWithAgent,
     loadConversationHistory,
+    loadDashboardData,
     updateShopContext,
     refreshDashboard,
     clearError,
