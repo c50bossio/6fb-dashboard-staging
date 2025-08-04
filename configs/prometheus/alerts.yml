@@ -1,0 +1,390 @@
+# Prometheus Alerting Rules for 6FB AI Agent System
+# Comprehensive alerting for security, performance, and system health
+
+groups:
+  # =============================================================================
+  # SYSTEM HEALTH ALERTS
+  # =============================================================================
+  - name: system_health
+    rules:
+      # Service down alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on instance {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://runbooks.6fb.ai/alerts/service-down"
+          
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: (100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}."
+          
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}."
+          
+      # Disk space usage
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: storage
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is above 85% on {{ $labels.instance }} filesystem {{ $labels.mountpoint }}."
+
+  # =============================================================================
+  # APPLICATION PERFORMANCE ALERTS
+  # =============================================================================
+  - name: application_performance
+    rules:
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(sixfb_api_request_duration_seconds_bucket[5m])) > 2
+        for: 3m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High response time for {{ $labels.endpoint }}"
+          description: "95th percentile response time is above 2 seconds for {{ $labels.endpoint }}."
+          
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(sixfb_api_requests_total{status_code=~"5.."}[5m]) / rate(sixfb_api_requests_total[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "High error rate for {{ $labels.endpoint }}"
+          description: "Error rate is above 5% for {{ $labels.endpoint }} over the last 5 minutes."
+          
+      # Too many requests (potential DDoS)
+      - alert: TooManyRequests
+        expr: rate(sixfb_api_requests_total[1m]) > 1000
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Unusually high request rate"
+          description: "Request rate is above 1000 requests per minute, which may indicate a DDoS attack."
+          
+      # AI response time too high
+      - alert: SlowAIResponse
+        expr: histogram_quantile(0.90, rate(sixfb_api_agentic_response_time_seconds_bucket[5m])) > 30
+        for: 2m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Slow AI response times"
+          description: "90th percentile AI response time is above 30 seconds."
+
+  # =============================================================================
+  # DATABASE ALERTS
+  # =============================================================================
+  - name: database_health
+    rules:
+      # Database connection issues
+      - alert: DatabaseConnectionHigh
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "High number of database connections"
+          description: "PostgreSQL has {{ $value }} active connections, which is approaching the limit."
+          
+      # Long running queries
+      - alert: LongRunningQueries
+        expr: pg_stat_activity_max_tx_duration{state="active"} > 300
+        for: 2m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Long running database query detected"
+          description: "A query has been running for more than 5 minutes in database {{ $labels.datname }}."
+          
+      # Database replication lag
+      - alert: DatabaseReplicationLag
+        expr: pg_stat_replication_lag_bytes > 1048576  # 1MB
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Database replication lag detected"
+          description: "Replication lag is {{ $value }} bytes on replica {{ $labels.client_addr }}."
+
+  # =============================================================================
+  # SECURITY ALERTS
+  # =============================================================================
+  - name: security_monitoring
+    rules:
+      # Failed login attempts
+      - alert: HighFailedLogins
+        expr: increase(sixfb_api_failed_login_attempts_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High number of failed login attempts"
+          description: "{{ $value }} failed login attempts in the last 5 minutes from {{ $labels.ip }}."
+          
+      # Blocked IPs
+      - alert: IPBlocked
+        expr: increase(sixfb_api_blocked_requests_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: info
+          category: security
+        annotations:
+          summary: "IP address blocked due to suspicious activity"
+          description: "IP {{ $labels.ip }} has been blocked due to suspicious activity."
+          
+      # Suspicious user agent
+      - alert: SuspiciousUserAgent
+        expr: increase(sixfb_api_suspicious_requests_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Suspicious user agents detected"
+          description: "{{ $value }} requests with suspicious user agents detected in the last 5 minutes."
+          
+      # SQL injection attempts
+      - alert: SQLInjectionAttempt
+        expr: increase(sixfb_api_sql_injection_attempts_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "SQL injection attempt detected"
+          description: "SQL injection attempt detected from IP {{ $labels.ip }}."
+          
+      # Unusual API access patterns
+      - alert: UnusualAPIAccess
+        expr: rate(sixfb_api_requests_total[1m]) > 100 and rate(sixfb_api_requests_total[1m]) offset 1h < 10
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Unusual API access pattern detected"
+          description: "API access rate has increased significantly compared to historical patterns."
+
+  # =============================================================================
+  # SSL/TLS CERTIFICATE ALERTS
+  # =============================================================================
+  - name: ssl_monitoring
+    rules:
+      # SSL certificate expiring soon
+      - alert: SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7  # 7 days
+        for: 1h
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}."
+          
+      # SSL certificate expired
+      - alert: SSLCertificateExpired
+        expr: probe_ssl_earliest_cert_expiry - time() < 0
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "SSL certificate expired"
+          description: "SSL certificate for {{ $labels.instance }} has expired."
+
+  # =============================================================================
+  # BUSINESS LOGIC ALERTS
+  # =============================================================================
+  - name: business_monitoring
+    rules:
+      # High AI token usage
+      - alert: HighAITokenUsage
+        expr: increase(sixfb_api_ai_tokens_used_total[1h]) > 100000
+        for: 5m
+        labels:
+          severity: warning
+          category: cost
+        annotations:
+          summary: "High AI token usage detected"
+          description: "AI token usage is {{ $value }} tokens in the last hour, which may indicate high costs."
+          
+      # User registration spike
+      - alert: UserRegistrationSpike
+        expr: increase(sixfb_api_user_registrations_total[5m]) > 50
+        for: 1m
+        labels:
+          severity: info
+          category: business
+        annotations:
+          summary: "User registration spike detected"
+          description: "{{ $value }} new user registrations in the last 5 minutes."
+          
+      # Low conversation completion rate
+      - alert: LowConversationCompletionRate
+        expr: rate(sixfb_api_conversations_completed_total[30m]) / rate(sixfb_api_conversations_started_total[30m]) < 0.5
+        for: 10m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low conversation completion rate"
+          description: "Conversation completion rate is below 50% over the last 30 minutes."
+
+  # =============================================================================
+  # INFRASTRUCTURE ALERTS
+  # =============================================================================
+  - name: infrastructure_monitoring
+    rules:
+      # Container restart alerts
+      - alert: ContainerRestarted
+        expr: increase(container_start_time_seconds[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Container restarted"
+          description: "Container {{ $labels.name }} has been restarted."
+          
+      # High container memory usage
+      - alert: HighContainerMemoryUsage
+        expr: container_memory_usage_bytes / container_spec_memory_limit_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High container memory usage"
+          description: "Container {{ $labels.name }} memory usage is above 90%."
+          
+      # Redis connection issues
+      - alert: RedisConnectionIssues
+        expr: redis_connected_clients > 90
+        for: 5m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High Redis connection count"
+          description: "Redis has {{ $value }} connected clients, approaching the limit."
+          
+      # Backup failure
+      - alert: BackupFailure
+        expr: increase(sixfb_api_backup_failures_total[24h]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: backup
+        annotations:
+          summary: "Backup failure detected"
+          description: "Backup process has failed. Check backup logs immediately."
+
+  # =============================================================================
+  # GDPR COMPLIANCE ALERTS
+  # =============================================================================
+  - name: gdpr_compliance
+    rules:
+      # Data retention policy violation
+      - alert: DataRetentionViolation
+        expr: sixfb_api_data_retention_violations_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: compliance
+        annotations:
+          summary: "GDPR data retention violation detected"
+          description: "{{ $value }} records are past their retention period and need to be deleted."
+          
+      # Unprocessed data subject requests
+      - alert: UnprocessedDataSubjectRequests
+        expr: sixfb_api_pending_data_subject_requests > 0
+        for: 12h
+        labels:
+          severity: warning
+          category: compliance
+        annotations:
+          summary: "Unprocessed data subject requests"
+          description: "{{ $value }} data subject requests have been pending for more than 12 hours."
+          
+      # Consent tracking issues
+      - alert: ConsentTrackingIssues
+        expr: increase(sixfb_api_consent_tracking_errors_total[1h]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          category: compliance
+        annotations:
+          summary: "Issues with consent tracking"
+          description: "{{ $value }} consent tracking errors in the last hour."
+
+  # =============================================================================
+  # MONITORING SYSTEM HEALTH
+  # =============================================================================
+  - name: monitoring_health
+    rules:
+      # Prometheus target down
+      - alert: PrometheusTargetDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "Prometheus target is down"
+          description: "Prometheus target {{ $labels.instance }} is down."
+          
+      # Grafana down
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          category: monitoring
+        annotations:
+          summary: "Grafana is down"
+          description: "Grafana monitoring dashboard is not accessible."
+          
+      # AlertManager down
+      - alert: AlertManagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "AlertManager is down"
+          description: "AlertManager is not accessible, alerts will not be sent."

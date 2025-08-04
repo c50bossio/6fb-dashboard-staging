@@ -1,0 +1,69 @@
+# Grafana Dashboard Provisioning Configuration
+apiVersion: 1
+
+providers:
+  # System Monitoring Dashboards
+  - name: 'system-monitoring'
+    orgId: 1
+    folder: 'System Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/system
+      
+  # Application Monitoring Dashboards  
+  - name: 'application-monitoring'
+    orgId: 1
+    folder: 'Application Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/application
+      
+  # Security Monitoring Dashboards
+  - name: 'security-monitoring'
+    orgId: 1
+    folder: 'Security Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/security
+      
+  # Business Intelligence Dashboards
+  - name: 'business-intelligence'
+    orgId: 1
+    folder: 'Business Intelligence'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/business
+      
+  # Infrastructure Monitoring Dashboards
+  - name: 'infrastructure-monitoring'
+    orgId: 1
+    folder: 'Infrastructure'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/infrastructure
+      
+  # AI and ML Monitoring Dashboards
+  - name: 'ai-monitoring'
+    orgId: 1
+    folder: 'AI & Machine Learning'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/ai

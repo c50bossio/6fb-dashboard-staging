@@ -1,0 +1,82 @@
+# Grafana Datasource Configuration for Prometheus
+apiVersion: 1
+
+datasources:
+  # Primary Prometheus datasource
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "15s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+      # Custom query parameters
+      customQueryParameters: ""
+      # Prometheus type and version
+      prometheusType: "Prometheus"
+      prometheusVersion: "2.40.0"
+      # Query caching
+      cacheLevel: "Low"
+      # Disable metrics lookup (for performance)
+      disableMetricsLookup: false
+      # Increment query timeout
+      incrementalQuerying: true
+      # Maximum lines for logs
+      maxLines: 1000
+    secureJsonData: {}
+    
+  # Loki datasource for logs
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true
+    jsonData:
+      # Maximum lines for log queries
+      maxLines: 1000
+      # Timeout for queries
+      timeout: "60s"
+      # HTTP method for queries
+      httpMethod: "GET"
+    secureJsonData: {}
+    
+  # PostgreSQL datasource for database monitoring
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: agent_system
+    user: monitoring_user
+    editable: true
+    jsonData:
+      sslmode: "require"
+      maxOpenConns: 10
+      maxIdleConns: 2
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: false
+    secureJsonData:
+      password: "${POSTGRES_MONITORING_PASSWORD}"
+      
+  # Redis datasource for cache monitoring
+  - name: Redis
+    type: redis-datasource
+    access: proxy
+    url: redis://redis:6379
+    editable: true
+    jsonData:
+      client: "standalone"
+      poolSize: 5
+      timeout: 10
+      pingInterval: 0
+      pipelineWindow: 0
+    secureJsonData:
+      password: "${REDIS_PASSWORD}"
+
+deleteDatasources:
+  # Remove any existing datasources with these names to prevent conflicts
+  - name: TestData DB
+    orgId: 1
