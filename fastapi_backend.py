@@ -21,6 +21,14 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from services.notification_service import notification_service
 from services.notification_queue import notification_queue
 
+# Import alert API service
+try:
+    from services.alert_api_service import alert_app
+    ALERT_SERVICE_AVAILABLE = True
+except ImportError:
+    ALERT_SERVICE_AVAILABLE = False
+    print("⚠️ Alert service not available")
+
 # Initialize FastAPI app
 app = FastAPI(
     title="6FB AI Agent System API",
@@ -1029,6 +1037,11 @@ async def unified_chat(request: dict, current_user: dict = Depends(get_current_u
             "message": "Could not understand campaign request",
             "suggestion": "Try: 'Send email blast to VIP customers' or 'SMS campaign for weekend special'"
         }
+
+# Mount alert service if available
+if ALERT_SERVICE_AVAILABLE:
+    app.mount("/", alert_app)
+    print("✅ Intelligent Alert System mounted at /intelligent-alerts/*")
 
 if __name__ == "__main__":
     import uvicorn

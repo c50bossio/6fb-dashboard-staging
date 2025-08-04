@@ -13,6 +13,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 const DashboardHeader = lazy(() => import('../../components/dashboard/DashboardHeader'))
 const MetricsOverview = lazy(() => import('../../components/dashboard/MetricsOverview'))
 const QuickActions = lazy(() => import('../../components/dashboard/QuickActions'))
+const RealtimeDashboard = lazy(() => import('../../components/realtime/RealtimeDashboard'))
+const PredictiveAnalyticsDashboard = lazy(() => import('../../components/analytics/PredictiveAnalyticsDashboard'))
 import Link from 'next/link'
 import { 
   ChartBarIcon, 
@@ -205,6 +207,20 @@ function DashboardContent() {
               loading={loading}
               onMetricClick={handleMetricClick}
             />
+          </Suspense>
+        </div>
+
+        {/* Real-time Dashboard */}
+        <div className="flex-shrink-0">
+          <Suspense fallback={<div className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>}>
+            <RealtimeDashboard />
+          </Suspense>
+        </div>
+
+        {/* Predictive Analytics Dashboard */}
+        <div className="flex-shrink-0">
+          <Suspense fallback={<div className="bg-gray-200 rounded-lg h-96 animate-pulse"></div>}>
+            <PredictiveAnalyticsDashboard />
           </Suspense>
         </div>
 

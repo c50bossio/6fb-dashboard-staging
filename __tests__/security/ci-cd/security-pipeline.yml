@@ -1,0 +1,541 @@
+# Security Testing Pipeline for 6FB AI Agent System
+# Comprehensive security testing workflow for CI/CD integration
+
+name: Security Testing Pipeline
+
+on:
+  push:
+    branches: [ main, staging, develop ]
+  pull_request:
+    branches: [ main, staging ]
+  schedule:
+    # Run daily security scans at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of security tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - sast
+          - dast
+          - api
+          - gdpr
+          - penetration
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  SECURITY_SCAN_TIMEOUT: 3600 # 1 hour
+
+jobs:
+  security-preparation:
+    name: Prepare Security Environment
+    runs-on: ubuntu-latest
+    outputs:
+      test-matrix: ${{ steps.create-matrix.outputs.matrix }}
+      scan-id: ${{ steps.generate-id.outputs.scan-id }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate scan ID
+        id: generate-id
+        run: echo "scan-id=security-scan-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+
+      - name: Create test matrix
+        id: create-matrix
+        run: |
+          if [ "${{ github.event.inputs.test_type }}" = "" ] || [ "${{ github.event.inputs.test_type }}" = "all" ]; then
+            echo 'matrix=["sast", "dast", "api", "gdpr", "penetration"]' >> $GITHUB_OUTPUT
+          else
+            echo 'matrix=["${{ github.event.inputs.test_type }}"]' >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          # Install Node.js dependencies
+          npm ci
+          
+          # Install Python security tools
+          pip install bandit safety semgrep
+          
+          # Install Nuclei
+          GO_VERSION=$(curl -s https://api.github.com/repos/golang/go/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')
+          wget -q https://go.dev/dl/${GO_VERSION}.linux-amd64.tar.gz
+          sudo tar -C /usr/local -xzf ${GO_VERSION}.linux-amd64.tar.gz
+          export PATH=$PATH:/usr/local/go/bin
+          go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+          
+          # Install additional security tools
+          npm install -g retire audit-ci
+          
+          # Verify installations
+          semgrep --version
+          nuclei -version
+          bandit --version
+          safety --version
+
+      - name: Cache security tools
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/semgrep
+            ~/.cache/nuclei
+            ~/.local/share/nuclei-templates
+          key: security-tools-${{ runner.os }}-${{ hashFiles('**/package.json', '**/requirements.txt') }}
+
+  static-analysis:
+    name: Static Application Security Testing (SAST)
+    runs-on: ubuntu-latest
+    needs: security-preparation
+    if: contains(needs.security-preparation.outputs.test-matrix, 'sast')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Semgrep SAST
+        run: |
+          semgrep --config=p/security-audit \
+                   --config=p/owasp-top-ten \
+                   --config=p/javascript \
+                   --config=p/typescript \
+                   --json --output=sast-semgrep.json .
+        continue-on-error: true
+
+      - name: Run Bandit (Python SAST)
+        run: |
+          if find . -name "*.py" | head -1; then
+            bandit -r . -f json -o sast-bandit.json || true
+          else
+            echo "No Python files found, skipping Bandit scan"
+            echo '{"results": []}' > sast-bandit.json
+          fi
+        continue-on-error: true
+
+      - name: Run ESLint Security Plugin
+        run: |
+          npx eslint . --ext .js,.jsx,.ts,.tsx \
+                     --config .eslintrc.security.js \
+                     --format json --output-file sast-eslint.json || true
+        continue-on-error: true
+
+      - name: Run retire.js (Dependency Vulnerability Check)
+        run: |
+          retire --js --outputformat json --outputpath sast-retire.json . || true
+        continue-on-error: true
+
+      - name: Upload SAST results
+        uses: actions/upload-artifact@v3
+        with:
+          name: sast-results-${{ needs.security-preparation.outputs.scan-id }}
+          path: sast-*.json
+
+  dynamic-analysis:
+    name: Dynamic Application Security Testing (DAST)
+    runs-on: ubuntu-latest
+    needs: [security-preparation, static-analysis]
+    if: contains(needs.security-preparation.outputs.test-matrix, 'dast')
+    services:
+      app:
+        image: node:${{ env.NODE_VERSION }}
+        ports:
+          - 3000:3000
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: |
+          npm run build
+          npm start &
+          
+          # Wait for application to be ready
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
+        env:
+          NODE_ENV: test
+          PORT: 3000
+
+      - name: Run Nuclei DAST
+        run: |
+          nuclei -target http://localhost:3000 \
+                 -severity critical,high,medium \
+                 -json-export dast-nuclei.json \
+                 -timeout 30 \
+                 -retries 2 || true
+        continue-on-error: true
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: 'http://localhost:3000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a -j -l WARN -z "-config rules.cookie.ignorelist=session"'
+        continue-on-error: true
+
+      - name: Run Custom DAST Tests
+        run: |
+          npx playwright test __tests__/security/dast/ \
+                             --reporter=json:dast-custom.json || true
+        continue-on-error: true
+
+      - name: Upload DAST results
+        uses: actions/upload-artifact@v3
+        with:
+          name: dast-results-${{ needs.security-preparation.outputs.scan-id }}
+          path: |
+            dast-*.json
+            report_json.json
+
+  api-security-testing:
+    name: API Security Testing
+    runs-on: ubuntu-latest
+    needs: [security-preparation, dynamic-analysis]
+    if: contains(needs.security-preparation.outputs.test-matrix, 'api')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application for API testing
+        run: |
+          npm run build
+          npm start &
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
+        env:
+          NODE_ENV: test
+          PORT: 3000
+
+      - name: Run API Security Tests
+        run: |
+          npx playwright test __tests__/security/api-security/ \
+                             --reporter=json:api-security-results.json
+        continue-on-error: true
+
+      - name: Run API Contract Testing
+        run: |
+          # Install and run dredd for API contract testing
+          npm install -g dredd
+          dredd api-spec.yml http://localhost:3000 \
+                --reporter json --output api-contract-results.json || true
+        continue-on-error: true
+
+      - name: Upload API Security results
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-security-results-${{ needs.security-preparation.outputs.scan-id }}
+          path: api-*.json
+
+  gdpr-compliance-testing:
+    name: GDPR Compliance Testing
+    runs-on: ubuntu-latest
+    needs: [security-preparation]
+    if: contains(needs.security-preparation.outputs.test-matrix, 'gdpr')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application for GDPR testing
+        run: |
+          npm run build
+          npm start &
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
+        env:
+          NODE_ENV: test
+          PORT: 3000
+
+      - name: Run GDPR Compliance Tests
+        run: |
+          npx playwright test __tests__/security/gdpr-compliance/ \
+                             --reporter=json:gdpr-compliance-results.json
+        continue-on-error: true
+
+      - name: Upload GDPR results
+        uses: actions/upload-artifact@v3
+        with:
+          name: gdpr-results-${{ needs.security-preparation.outputs.scan-id }}
+          path: gdpr-*.json
+
+  penetration-testing:
+    name: Automated Penetration Testing
+    runs-on: ubuntu-latest
+    needs: [security-preparation, static-analysis, dynamic-analysis]
+    if: contains(needs.security-preparation.outputs.test-matrix, 'penetration')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application for penetration testing
+        run: |
+          npm run build
+          npm start &
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
+        env:
+          NODE_ENV: test
+          PORT: 3000
+
+      - name: Run Penetration Tests
+        run: |
+          npx playwright test __tests__/security/penetration-testing/ \
+                             --reporter=json:penetration-results.json \
+                             --timeout=60000
+        continue-on-error: true
+
+      - name: Upload Penetration Testing results
+        uses: actions/upload-artifact@v3
+        with:
+          name: penetration-results-${{ needs.security-preparation.outputs.scan-id }}
+          path: penetration-*.json
+
+  security-reporting:
+    name: Generate Security Reports
+    runs-on: ubuntu-latest
+    needs: [security-preparation, static-analysis, dynamic-analysis, api-security-testing, gdpr-compliance-testing, penetration-testing]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: security-results/
+
+      - name: Generate Comprehensive Security Report
+        run: |
+          node __tests__/security/ci-cd/generate-report.js \
+               --scan-id="${{ needs.security-preparation.outputs.scan-id }}" \
+               --input-dir="security-results/" \
+               --output-dir="reports/"
+        continue-on-error: true
+
+      - name: Upload Security Dashboard
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-dashboard-${{ needs.security-preparation.outputs.scan-id }}
+          path: reports/
+
+      - name: Upload to DefectDojo (Optional)
+        if: env.DEFECTDOJO_URL != ''
+        run: |
+          curl -X POST "${{ env.DEFECTDOJO_URL }}/api/v2/import-scan/" \
+               -H "Authorization: Token ${{ secrets.DEFECTDOJO_TOKEN }}" \
+               -F "scan_type=Generic Findings Import" \
+               -F "file=@reports/security-report.json" \
+               -F "engagement=${{ env.DEFECTDOJO_ENGAGEMENT_ID }}"
+        env:
+          DEFECTDOJO_URL: ${{ secrets.DEFECTDOJO_URL }}
+          DEFECTDOJO_ENGAGEMENT_ID: ${{ secrets.DEFECTDOJO_ENGAGEMENT_ID }}
+
+      - name: Comment PR with Security Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'reports/security-summary.json';
+            
+            if (fs.existsSync(path)) {
+              const summary = JSON.parse(fs.readFileSync(path, 'utf8'));
+              
+              const comment = `## 🛡️ Security Test Results
+              
+              **Security Score:** ${summary.securityScore}/100
+              **Risk Level:** ${summary.riskLevel}
+              
+              | Severity | Count |
+              |----------|-------|
+              | Critical | ${summary.critical} |
+              | High     | ${summary.high} |
+              | Medium   | ${summary.medium} |
+              | Low      | ${summary.low} |
+              
+              ${summary.critical > 0 ? '⚠️ **Critical issues found! Please address immediately.**' : ''}
+              ${summary.high > 0 ? '🔸 **High severity issues require attention.**' : ''}
+              
+              [View detailed report](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+  security-monitoring-setup:
+    name: Setup Security Monitoring
+    runs-on: ubuntu-latest
+    needs: [security-reporting]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup monitoring webhook
+        run: |
+          curl -X POST "${{ secrets.MONITORING_WEBHOOK_URL }}" \
+               -H "Content-Type: application/json" \
+               -d '{
+                 "event": "security-scan-completed",
+                 "repository": "${{ github.repository }}",
+                 "scan_id": "${{ needs.security-preparation.outputs.scan-id }}",
+                 "commit": "${{ github.sha }}",
+                 "branch": "${{ github.ref_name }}",
+                 "results_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+               }'
+        if: env.MONITORING_WEBHOOK_URL != ''
+        env:
+          MONITORING_WEBHOOK_URL: ${{ secrets.MONITORING_WEBHOOK_URL }}
+
+  security-notifications:
+    name: Send Security Notifications
+    runs-on: ubuntu-latest
+    needs: [security-preparation, security-reporting]
+    if: always() && (needs.security-reporting.result == 'success' || needs.security-reporting.result == 'failure')
+    steps:
+      - name: Download security summary
+        uses: actions/download-artifact@v3
+        with:
+          name: security-dashboard-${{ needs.security-preparation.outputs.scan-id }}
+          path: reports/
+
+      - name: Send Slack notification
+        if: env.SLACK_WEBHOOK_URL != ''
+        run: |
+          if [ -f "reports/security-summary.json" ]; then
+            SUMMARY=$(cat reports/security-summary.json)
+            SCORE=$(echo $SUMMARY | jq -r '.securityScore')
+            RISK=$(echo $SUMMARY | jq -r '.riskLevel')
+            CRITICAL=$(echo $SUMMARY | jq -r '.critical')
+            HIGH=$(echo $SUMMARY | jq -r '.high')
+            
+            COLOR="good"
+            if [ "$CRITICAL" -gt "0" ]; then
+              COLOR="danger"
+            elif [ "$HIGH" -gt "0" ]; then
+              COLOR="warning"
+            fi
+            
+            curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+                 -H "Content-Type: application/json" \
+                 -d "{
+                   \"attachments\": [{
+                     \"color\": \"$COLOR\",
+                     \"title\": \"Security Scan Results - ${{ github.repository }}\",
+                     \"fields\": [
+                       {\"title\": \"Security Score\", \"value\": \"$SCORE/100\", \"short\": true},
+                       {\"title\": \"Risk Level\", \"value\": \"$RISK\", \"short\": true},
+                       {\"title\": \"Critical Issues\", \"value\": \"$CRITICAL\", \"short\": true},
+                       {\"title\": \"High Issues\", \"value\": \"$HIGH\", \"short\": true}
+                     ],
+                     \"footer\": \"Branch: ${{ github.ref_name }} | Commit: ${{ github.sha }}\",
+                     \"ts\": $(date +%s)
+                   }]
+                 }"
+          fi
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send email notification
+        if: env.EMAIL_NOTIFICATION_ENABLED == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Security Scan Results - ${{ github.repository }}"
+          body: |
+            Security scan completed for ${{ github.repository }}
+            
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            
+            View detailed results: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          to: ${{ secrets.SECURITY_TEAM_EMAIL }}
+          from: ${{ secrets.SMTP_FROM_EMAIL }}
+        env:
+          EMAIL_NOTIFICATION_ENABLED: ${{ secrets.EMAIL_NOTIFICATION_ENABLED }}
+
+# Environment-specific configurations can be added as needed
+# This pipeline provides comprehensive security testing coverage
+# including SAST, DAST, API security, GDPR compliance, and penetration testing

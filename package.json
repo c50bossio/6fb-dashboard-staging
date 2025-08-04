@@ -29,7 +29,18 @@
     "docker:dev": "./docker-dev-start.sh",
     "docker:stop": "./docker-stop.sh",
     "quality-check": "./scripts/quality-check.sh",
-    "lint:fix": "next lint --fix"
+    "lint:fix": "next lint --fix",
+    "test:security": "playwright test __tests__/security/comprehensive-security-test.spec.js",
+    "test:security:sast": "playwright test __tests__/security/comprehensive-security-test.spec.js -g 'SAST Only'",
+    "test:security:dast": "playwright test __tests__/security/comprehensive-security-test.spec.js -g 'DAST Only'",
+    "test:security:api": "playwright test __tests__/security/comprehensive-security-test.spec.js -g 'API Security'",
+    "test:security:gdpr": "playwright test __tests__/security/comprehensive-security-test.spec.js -g 'GDPR Compliance'",
+    "test:security:pentest": "playwright test __tests__/security/comprehensive-security-test.spec.js -g 'Penetration Testing'",
+    "test:security:monitoring": "playwright test __tests__/security/comprehensive-security-test.spec.js -g 'Security Monitoring'",
+    "test:security:quick": "playwright test __tests__/security/comprehensive-security-test.spec.js -g 'Quick Security Health Check'",
+    "security:report": "node __tests__/security/ci-cd/generate-report.js --scan-id=manual-$(date +%Y%m%d-%H%M%S) --input-dir=security-results --output-dir=reports",
+    "security:tools:install": "pip install bandit safety semgrep && npm install -g retire audit-ci",
+    "security:config:validate": "playwright test __tests__/security/comprehensive-security-test.spec.js -g 'Validate Security Configuration'"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.0",

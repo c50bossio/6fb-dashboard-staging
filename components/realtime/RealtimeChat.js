@@ -1,197 +1,281 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { usePusher, usePresenceChannel } from '@/hooks/usePusher'
-import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useRealtime } from '../../hooks/useRealtime'
+import { 
+  ChatBubbleLeftRightIcon,
+  PaperAirplaneIcon,
+  SparklesIcon,
+  SignalIcon,
+  ArrowPathIcon
+} from '@heroicons/react/24/outline'
 
-export default function RealtimeChat({ roomId = 'general' }) {
-  const { user } = useAuth()
-  const { subscribe, unsubscribe, trigger, isConnected, CHANNELS, EVENTS } = usePusher()
-  const { members } = usePresenceChannel(roomId)
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
-  const [typing, setTyping] = useState({})
+export default function RealtimeChat({ className = '' }) {
+  const {
+    isConnected,
+    aiResponses,
+    sendMetricEvent
+  } = useRealtime()
+
+  const [message, setMessage] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const [chatHistory, setChatHistory] = useState([])
+  const [streamingResponse, setStreamingResponse] = useState('')
   const messagesEndRef = useRef(null)
-  const typingTimeoutRef = useRef({})
-  const channelRef = useRef(null)
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (!user || !isConnected) return
-
-    const channelName = CHANNELS.chatRoom(roomId)
-    
-    channelRef.current = subscribe(channelName, {
-      [EVENTS.MESSAGE_SENT]: (message) => {
-        setMessages(prev => [...prev, message])
-        scrollToBottom()
-      },
-      [EVENTS.USER_TYPING]: (data) => {
-        if (data.userId !== user.id) {
-          setTyping(prev => ({ ...prev, [data.userId]: data.userName }))
-          
-          // Clear typing indicator after 3 seconds
-          clearTimeout(typingTimeoutRef.current[data.userId])
-          typingTimeoutRef.current[data.userId] = setTimeout(() => {
-            setTyping(prev => {
-              const newTyping = { ...prev }
-              delete newTyping[data.userId]
-              return newTyping
-            })
-          }, 3000)
-        }
-      },
-      [EVENTS.USER_STOPPED_TYPING]: (data) => {
-        if (data.userId !== user.id) {
-          setTyping(prev => {
-            const newTyping = { ...prev }
-            delete newTyping[data.userId]
-            return newTyping
-          })
-        }
-      },
-    })
-
-    return () => {
-      unsubscribe(channelName)
-    }
-  }, [user, roomId, isConnected, subscribe, unsubscribe, CHANNELS, EVENTS])
-
-  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  }, [chatHistory, streamingResponse])
 
-  const sendMessage = (e) => {
-    e.preventDefault()
-    if (!input.trim() || !channelRef.current) return
-
-    const message = {
-      id: Date.now(),
-      userId: user.id,
-      userName: user.email,
-      content: input,
-      timestamp: new Date().toISOString(),
+  // Handle incoming AI responses from real-time stream
+  useEffect(() => {
+    if (aiResponses.length > 0) {
+      const latestResponse = aiResponses[0]
+      
+      // Add to chat history if it's a new response
+      const isNewResponse = !chatHistory.find(msg => 
+        msg.timestamp === latestResponse.timestamp && msg.role === 'assistant'
+      )
+      
+      if (isNewResponse) {
+        setChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: latestResponse.response,
+          timestamp: latestResponse.timestamp,
+          confidence: latestResponse.confidence,
+          provider: latestResponse.provider,
+          knowledgeEnhanced: latestResponse.knowledgeEnhanced
+        }])
+        setIsTyping(false)
+        setStreamingResponse('')
+      }
     }
+  }, [aiResponses, chatHistory])
 
-    // Trigger message event
-    channelRef.current.trigger('client-message-sent', message)
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     
-    // Add to local state immediately
-    setMessages(prev => [...prev, message])
-    setInput('')
+    if (!message.trim()) return
     
-    // Stop typing indicator
-    channelRef.current.trigger('client-stopped-typing', {
-      userId: user.id,
-      userName: user.email,
-    })
+    // Add user message to history
+    const userMessage = {
+      role: 'user',
+      content: message.trim(),
+      timestamp: new Date().toISOString()
+    }
+    
+    setChatHistory(prev => [...prev, userMessage])
+    setMessage('')
+    setIsTyping(true)
+    
+    try {
+      // Send message to enhanced AI chat API
+      const response = await fetch('/api/ai/enhanced-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: userMessage.content,
+          sessionId: `chat_${Date.now()}`,
+          businessContext: {
+            source: 'realtime_chat',
+            timestamp: new Date().toISOString()
+          }
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Response will be handled by the real-time stream
+        // But add it immediately for better UX
+        setChatHistory(prev => [...prev, {
+          role: 'assistant',
+          content: data.response,
+          timestamp: data.timestamp,
+          confidence: data.confidence,
+          provider: data.provider,
+          messageType: data.messageType,
+          knowledgeEnhanced: data.knowledgeEnhanced,
+          contextualInsights: data.contextualInsights
+        }])
+        setIsTyping(false)
+      } else {
+        throw new Error(data.error || 'Failed to get AI response')
+      }
+
+    } catch (error) {
+      console.error('Chat error:', error)
+      setChatHistory(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error processing your message. Please try again.',
+        timestamp: new Date().toISOString(),
+        error: true
+      }])
+      setIsTyping(false)
+    }
   }
 
-  const handleTyping = (e) => {
-    setInput(e.target.value)
-    
-    if (channelRef.current && e.target.value) {
-      channelRef.current.trigger('client-typing', {
-        userId: user.id,
-        userName: user.email,
+  const clearChat = () => {
+    setChatHistory([])
+    setStreamingResponse('')
+    setIsTyping(false)
+  }
+
+  const formatTimestamp = (timestamp) => {
+    try {
+      return new Date(timestamp).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
       })
-    } else if (channelRef.current && !e.target.value) {
-      channelRef.current.trigger('client-stopped-typing', {
-        userId: user.id,
-        userName: user.email,
-      })
+    } catch (error) {
+      return ''
     }
   }
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg shadow">
+    <div className={`bg-white rounded-lg shadow-sm border flex flex-col h-full ${className}`}>
       {/* Header */}
-      <div className="px-4 py-3 border-b flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-gray-900">Chat Room: {roomId}</h3>
-          <p className="text-xs text-gray-500">
-            {isConnected ? `${members.length} online` : 'Connecting...'}
-          </p>
-        </div>
-        <div className="flex -space-x-2">
-          {members.slice(0, 5).map((member, index) => (
-            <div
-              key={member.id}
-              className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700 border-2 border-white"
-              title={member.info.name}
-            >
-              {member.info.name?.[0]?.toUpperCase() || '?'}
-            </div>
-          ))}
-          {members.length > 5 && (
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 border-2 border-white">
-              +{members.length - 5}
-            </div>
+      <div className="p-4 border-b flex justify-between items-center">
+        <div className="flex items-center space-x-2">
+          <div className="relative">
+            <ChatBubbleLeftRightIcon className="h-5 w-5 text-gray-600" />
+            {isConnected && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+            )}
+          </div>
+          <h3 className="font-semibold text-gray-900">AI Business Coach</h3>
+          {isConnected && (
+            <SignalIcon className="h-4 w-4 text-green-500" />
           )}
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={clearChat}
+            className="text-sm text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100"
+            disabled={chatHistory.length === 0}
+          >
+            Clear
+          </button>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.userId === user.id ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                message.userId === user.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-900'
-              }`}
-            >
-              {message.userId !== user.id && (
-                <p className="text-xs opacity-70 mb-1">{message.userName}</p>
-              )}
-              <p className="text-sm">{message.content}</p>
-              <p className="text-xs opacity-70 mt-1">
-                {new Date(message.timestamp).toLocaleTimeString()}
-              </p>
-            </div>
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+        {chatHistory.length === 0 ? (
+          <div className="text-center py-8">
+            <SparklesIcon className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 text-sm">
+              Start a conversation with your AI business coach
+            </p>
+            <p className="text-gray-400 text-xs mt-2">
+              Get insights on revenue, scheduling, customer service, and more
+            </p>
           </div>
-        ))}
-        
-        {/* Typing indicators */}
-        {Object.entries(typing).map(([userId, userName]) => (
-          <div key={userId} className="flex justify-start">
-            <div className="bg-gray-100 rounded-lg px-4 py-2">
-              <p className="text-xs text-gray-600">{userName} is typing...</p>
-              <div className="flex space-x-1 mt-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+        ) : (
+          chatHistory.map((msg, index) => (
+            <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-xs sm:max-w-md px-4 py-2 rounded-lg ${
+                msg.role === 'user'
+                  ? 'bg-blue-600 text-white'
+                  : msg.error
+                  ? 'bg-red-50 text-red-800 border border-red-200'
+                  : 'bg-gray-100 text-gray-800'
+              }`}>
+                <div className="text-sm">{msg.content}</div>
+                
+                {/* Metadata for AI responses */}
+                {msg.role === 'assistant' && !msg.error && (
+                  <div className="flex items-center justify-between mt-2 text-xs opacity-75">
+                    <div className="flex items-center space-x-2">
+                      {msg.knowledgeEnhanced && (
+                        <span className="bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-xs">
+                          RAG Enhanced
+                        </span>
+                      )}
+                      {msg.confidence && (
+                        <span className="text-gray-600">
+                          {(msg.confidence * 100).toFixed(0)}% confidence
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-gray-500">
+                      {formatTimestamp(msg.timestamp)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Timestamp for user messages */}
+                {msg.role === 'user' && (
+                  <div className="text-xs opacity-75 mt-1 text-right">
+                    {formatTimestamp(msg.timestamp)}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+
+        {/* Streaming response indicator */}
+        {streamingResponse && (
+          <div className="flex justify-start">
+            <div className="max-w-xs sm:max-w-md px-4 py-2 rounded-lg bg-gray-100 text-gray-800">
+              <div className="text-sm">{streamingResponse}</div>
+              <div className="flex items-center mt-2 text-xs text-gray-500">
+                <ArrowPathIcon className="h-3 w-3 animate-spin mr-1" />
+                Streaming...
               </div>
             </div>
           </div>
-        ))}
+        )}
+
+        {/* Typing indicator */}
+        {isTyping && !streamingResponse && (
+          <div className="flex justify-start">
+            <div className="max-w-xs sm:max-w-md px-4 py-2 rounded-lg bg-gray-100 text-gray-800">
+              <div className="flex items-center space-x-1">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+                <span className="text-xs text-gray-500 ml-2">AI is thinking...</span>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <form onSubmit={sendMessage} className="p-4 border-t">
-        <div className="flex space-x-2">
+      {/* Message Input */}
+      <div className="p-4 border-t">
+        <form onSubmit={handleSubmit} className="flex space-x-2">
           <input
             type="text"
-            value={input}
-            onChange={handleTyping}
-            placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={!isConnected}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Ask about your business performance..."
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            disabled={isTyping}
           />
           <button
             type="submit"
-            disabled={!isConnected || !input.trim()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!message.trim() || isTyping}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send
+            <PaperAirplaneIcon className="h-4 w-4" />
           </button>
-        </div>
-      </form>
+        </form>
+        
+        {!isConnected && (
+          <div className="mt-2 text-xs text-amber-600 text-center">
+            Real-time features limited - connection offline
+          </div>
+        )}
+      </div>
     </div>
   )
 }

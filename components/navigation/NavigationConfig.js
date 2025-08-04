@@ -104,6 +104,13 @@ export const NAVIGATION_CATEGORIES = [
         description: 'Business insights and reports'
       },
       {
+        name: 'Forecasting',
+        href: '/dashboard/forecasting',
+        icon: ChartBarIcon,
+        badge: 'AI',
+        description: 'Predictive analytics and forecasting'
+      },
+      {
         name: 'Marketing',
         href: '/dashboard/marketing',
         icon: MegaphoneIcon,
