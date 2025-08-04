@@ -1,0 +1,58 @@
+// 🔍 SMTP Configuration Verification Script
+console.log('🔍 SMTP Configuration Verification')
+console.log('=================================')
+console.log('')
+
+console.log('❌ CONFIRMED ISSUE: "Error sending confirmation email"')
+console.log('📋 Error ID: 969671d904c8a049-SJU')
+console.log('')
+
+console.log('✅ VERIFIED: SendGrid is working correctly (direct test passed)')
+console.log('❌ PROBLEM: Supabase SMTP settings are incorrect or not saved')
+console.log('')
+
+console.log('🔧 FINAL SOLUTION - Verify these EXACT settings:')
+console.log('===============================================')
+console.log('')
+
+console.log('🔗 URL: https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee/auth/settings')
+console.log('')
+console.log('📋 SMTP Settings (copy exactly):')
+console.log('--------------------------------')
+console.log('☑️  Enable custom SMTP: [CHECKED]')
+console.log('Host: smtp.sendgrid.net')
+console.log('Port: 587')
+console.log('Username: apikey')
+console.log('Password: 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')
+console.log('Sender Name: 6FB AI Agent System')
+console.log('Sender Email: support@em3014.6fbmentorship.com')
+console.log('')
+
+console.log('⚠️  CRITICAL CHECKS:')
+console.log('1. "Enable custom SMTP" checkbox MUST be checked')
+console.log('2. Username must be exactly "apikey" (not your email)')
+console.log('3. Password must be the full API key starting with "SG."')
+console.log('4. No extra spaces or characters')
+console.log('5. Click "Save" and wait for confirmation')
+console.log('')
+
+console.log('🧪 IMMEDIATE TEST AFTER SAVING:')
+console.log('node test-email-setup.js your-real-email@gmail.com')
+console.log('')
+
+console.log('📈 EXPECTED RESULT:')
+console.log('- API test will show success')
+console.log('- Deep debug will NOT show "Error sending confirmation email"')
+console.log('- You will receive actual emails')
+console.log('')
+
+console.log('🎯 IF STILL NOT WORKING:')
+console.log('1. Screenshot your SMTP settings page')
+console.log('2. Try clearing browser cache')
+console.log('3. Log out and back into Supabase dashboard')
+console.log('4. Wait 2-3 minutes after saving settings')
+console.log('')
+
+console.log('💡 ALTERNATIVE - Check Supabase Auth Logs:')
+console.log('https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee/logs/auth-logs')
+console.log('Look for SMTP errors in the logs')

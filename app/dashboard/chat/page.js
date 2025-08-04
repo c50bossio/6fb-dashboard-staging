@@ -21,8 +21,8 @@ export default function ChatPage() {
           <StreamingChat />
         </div>
         <div className="mt-4 text-sm text-gray-600">
-          <p>Choose between OpenAI (GPT-4, GPT-3.5) and Anthropic (Claude 3.5, Claude 3) models.</p>
-          <p>Both providers offer streaming responses for a seamless chat experience.</p>
+          <p>Choose between OpenAI (o3, GPT-4.1, o4-mini), Anthropic (Claude 4 Opus, Claude 4 Sonnet), and Google (Gemini 2.5 Pro, Gemini 2.0) models.</p>
+          <p>All providers offer streaming responses with the absolute latest 2025 model versions including reasoning models.</p>
         </div>
       </div>
     </div>

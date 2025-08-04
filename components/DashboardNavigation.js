@@ -16,7 +16,8 @@ import {
   MegaphoneIcon,
   UserGroupIcon,
   CogIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
@@ -27,6 +28,13 @@ const navigation = [
     icon: ChatBubbleLeftRightIcon,
     badge: 'AI',
     description: 'GPT-4 & Claude'
+  },
+  { 
+    name: 'AI Test', 
+    href: '/dashboard/ai-test', 
+    icon: SparklesIcon,
+    badge: '3 Models',
+    description: 'Test all AI providers'
   },
   { 
     name: 'Bookings', 
@@ -155,6 +163,7 @@ export default function DashboardNavigation() {
                           ${item.badge === 'Live' ? 'bg-green-100 text-green-700' : ''}
                           ${item.badge === 'Beta' ? 'bg-yellow-100 text-yellow-700' : ''}
                           ${item.badge === 'Pro' ? 'bg-orange-100 text-orange-700' : ''}
+                          ${item.badge === '3 Models' ? 'bg-indigo-100 text-indigo-700' : ''}
                         `}>
                           {item.badge}
                         </span>

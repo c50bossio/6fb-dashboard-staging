@@ -1,18 +1,917 @@
-Traceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/http/server.py", line 1314, in <module>
-    test(
-  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/http/server.py", line 1261, in test
-    with ServerClass(addr, HandlerClass) as httpd:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/socketserver.py", line 457, in __init__
-    self.server_bind()
-  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/http/server.py", line 1308, in server_bind
-    return super().server_bind()
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/http/server.py", line 136, in server_bind
-    socketserver.TCPServer.server_bind(self)
-  File "/Users/bossio/.pyenv/versions/3.12.7/lib/python3.12/socketserver.py", line 473, in server_bind
-    self.socket.bind(self.server_address)
-OSError: [Errno 48] Address already in use
+
+> 6fb-ai-agent-dashboard@1.0.0 dev
+> next dev -p 9999
+
+   ▲ Next.js 14.0.4
+   - Local:        http://localhost:9999
+   - Environments: .env.local, .env
+
+ ✓ Ready in 662ms
+ ✓ Compiled /middleware in 367ms (365 modules)
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ○ Compiling /api/ai/unified-chat ...
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ ⚠ ./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+ ⚠ ./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingUpIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingUpIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./components/dashboard/MetricsOverview.js
+Attempted import error: 'TrendingDownIcon' is not exported from '__barrel_optimize__?names=CalendarDaysIcon,ChartBarIcon,ChatBubbleLeftRightIcon,CurrencyDollarIcon,MinusIcon,PhoneIcon,SparklesIcon,TrendingDownIcon,TrendingUpIcon,UserGroupIcon!=!@heroicons/react/24/outline' (imported as 'TrendingDownIcon').
+
+Import trace for requested module:
+./components/dashboard/MetricsOverview.js
+./app/dashboard/page.js
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'OpenAIStream' is not exported from 'ai' (imported as 'OpenAIStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'AnthropicStream' is not exported from 'ai' (imported as 'AnthropicStream').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__
+
+./app/api/ai/unified-chat/route.js
+Attempted import error: 'StreamingTextResponse' is not exported from 'ai' (imported as 'StreamingTextResponse').
+
+Import trace for requested module:
+./app/api/ai/unified-chat/route.js
+./node_modules/next/dist/build/webpack/loaders/next-app-loader.js?name=app%2Fapi%2Fai%2Funified-chat%2Froute&page=%2Fapi%2Fai%2Funified-chat%2Froute&appPaths=&pagePath=private-next-app-dir%2Fapi%2Fai%2Funified-chat%2Froute.js&appDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System%2Fapp&pageExtensions=tsx&pageExtensions=ts&pageExtensions=jsx&pageExtensions=js&rootDir=%2FUsers%2Fbossio%2F6FB%20AI%20Agent%20System&isDev=true&tsconfigPath=tsconfig.json&basePath=&assetPrefix=&nextConfigOutput=&preferredRegion=&middlewareConfig=e30%3D!./app/api/ai/unified-chat/route.js?__next_edge_ssr_entry__

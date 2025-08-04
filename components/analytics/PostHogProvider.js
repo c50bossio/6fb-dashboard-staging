@@ -36,13 +36,17 @@ export default function PostHogProvider({ children }) {
       })
     }
 
-    // Import web-vitals dynamically
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(reportWebVitals)
-      getFID(reportWebVitals)
-      getFCP(reportWebVitals)
-      getLCP(reportWebVitals)
-      getTTFB(reportWebVitals)
+    // Import web-vitals dynamically with correct API
+    import('web-vitals').then((vitals) => {
+      // New web-vitals API uses onCLS, onFID, etc.
+      if (vitals.onCLS) vitals.onCLS(reportWebVitals)
+      if (vitals.onFID) vitals.onFID(reportWebVitals)
+      if (vitals.onFCP) vitals.onFCP(reportWebVitals)
+      if (vitals.onLCP) vitals.onLCP(reportWebVitals)
+      if (vitals.onTTFB) vitals.onTTFB(reportWebVitals)
+    }).catch((error) => {
+      // Silently fail if web-vitals is not available
+      console.debug('Web vitals tracking not available:', error.message)
     })
   }, [])
 

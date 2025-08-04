@@ -3,10 +3,18 @@ import dynamic from 'next/dynamic'
 import ErrorBoundary from '../components/ErrorBoundary'
 import { AuthProvider } from '../contexts/AuthContext'
 import { SupabaseAuthProvider } from '../components/SupabaseAuthProvider'
+import { ToastProvider } from '../components/ToastContainer'
+import { AccessibilityProvider, SkipToContent } from '../components/ui/AccessibilityProvider'
 
 // Dynamically import PostHog provider to avoid SSR issues
 const PostHogProvider = dynamic(
   () => import('../components/analytics/PostHogProvider'),
+  { ssr: false }
+)
+
+// Performance monitoring component
+const PerformanceMonitor = dynamic(
+  () => import('../components/PerformanceMonitor'),
   { ssr: false }
 )
 
@@ -27,13 +35,24 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+      </head>
       <body className="bg-gray-50 antialiased">
+        <SkipToContent />
         <ErrorBoundary>
-          <SupabaseAuthProvider>
-            <PostHogProvider>
-              {children}
-            </PostHogProvider>
-          </SupabaseAuthProvider>
+          <AccessibilityProvider>
+            <ToastProvider>
+              <SupabaseAuthProvider>
+                <PostHogProvider>
+                  <PerformanceMonitor />
+                  <main id="main-content">
+                    {children}
+                  </main>
+                </PostHogProvider>
+              </SupabaseAuthProvider>
+            </ToastProvider>
+          </AccessibilityProvider>
         </ErrorBoundary>
       </body>
     </html>

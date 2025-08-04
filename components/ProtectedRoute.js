@@ -2,24 +2,24 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from './SupabaseAuthProvider'
 import LoadingSpinner from './LoadingSpinner'
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading, isAuthenticated } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!loading && !user) {
       router.push('/login')
     }
-  }, [loading, isAuthenticated, router])
+  }, [loading, user, router])
 
   if (loading) {
     return <LoadingSpinner fullScreen />
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <LoadingSpinner fullScreen />
   }
 

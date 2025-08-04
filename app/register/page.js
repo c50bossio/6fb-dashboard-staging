@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 import { 
   EyeIcon,
   EyeSlashIcon,
@@ -16,7 +16,7 @@ import {
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { register, loading: authLoading, error: authError } = useAuth()
+  const { signUp, loading: authLoading } = useAuth()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     // Personal Info
@@ -41,6 +41,19 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const [touched, setTouched] = useState({})
+
+  // Clear any leftover CAPTCHA errors on component mount
+  useEffect(() => {
+    setErrors(prev => {
+      const newErrors = { ...prev }
+      delete newErrors.captcha
+      // Also clear any submit errors that mention captcha
+      if (newErrors.submit && newErrors.submit.includes('captcha')) {
+        delete newErrors.submit
+      }
+      return newErrors
+    })
+  }, [])
 
   // Validation functions
   const validateEmail = (email) => {
@@ -181,6 +194,7 @@ export default function RegisterPage() {
   ]
 
   const handleChange = (e) => {
+    console.log('Form field changed:', e.target.name, '=', e.target.value)
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -194,11 +208,35 @@ export default function RegisterPage() {
     }
   }
 
+  // Separate handler for plan selection to prevent form submission
+  const handlePlanSelection = (planValue, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('Plan selected:', planValue)
+    setFormData({
+      ...formData,
+      selectedPlan: planValue
+    })
+    // Clear plan selection error if any
+    if (errors.selectedPlan) {
+      setErrors({
+        ...errors,
+        selectedPlan: ''
+      })
+    }
+  }
+
   // Removed duplicate validateStep function - using the comprehensive one above
 
-  const handleNext = () => {
+  const handleNext = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('Next button clicked - current step:', currentStep)
     if (validateStep(currentStep)) {
+      console.log('Validation passed, moving to step:', currentStep + 1)
       setCurrentStep(currentStep + 1)
+    } else {
+      console.log('Validation failed for step:', currentStep)
     }
   }
 
@@ -208,30 +246,86 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    console.log('Form submitted - Current step:', currentStep)
+    
     if (!validateStep(currentStep)) return
 
     if (currentStep < 3) {
+      console.log('Moving to next step:', currentStep + 1)
       setCurrentStep(currentStep + 1)
       return
     }
 
-    // Final submission
+    // Final submission - only happens on step 3 when user clicks "Create account"
+    console.log('Final submission - creating account')
     setIsLoading(true)
     setErrors({})
 
     try {
-      // Use real authentication
-      await register({
+      // Use real authentication with Supabase
+      const result = await signUp({
         email: formData.email,
         password: formData.password,
-        full_name: `${formData.firstName} ${formData.lastName}`.trim(),
-        barbershop_name: formData.businessName || undefined
+        metadata: {
+          full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          shop_name: formData.businessName || undefined,
+          phone: formData.phone || undefined,
+          selected_plan: formData.selectedPlan
+        }
       })
       
-      // Redirect to dashboard on successful registration
-      router.push('/dashboard')
+      // Show success message briefly before redirect
+      setErrors({ 
+        submit: '✅ Account created successfully! Redirecting to email confirmation...',
+        isSuccess: true 
+      })
+      
+      // Wait 1.5 seconds to show success message, then redirect
+      setTimeout(() => {
+        // Check if email verification is required
+        if (result?.requiresEmailConfirmation) {
+          // Redirect to confirmation page with email parameter
+          router.push(`/register/confirm?email=${encodeURIComponent(formData.email)}`)
+        } else {
+          // If no email verification required, redirect to dashboard
+          router.push('/dashboard')
+        }
+      }, 1500)
     } catch (err) {
-      setErrors({ submit: err.message || 'Registration failed. Please try again.' })
+      console.error('Registration error:', err)
+      
+      // Handle specific Supabase errors with user-friendly messages
+      if (err.message && (err.message.includes('security purposes') || err.message.includes('temporarily busy'))) {
+        setErrors({ 
+          submit: 'Registration is busy right now. We\'re automatically retrying... If this persists, please wait a moment and try again.',
+          isSuccess: false 
+        })
+      } else if (err.message && err.message.includes('User already registered')) {
+        setErrors({ 
+          submit: 'This email is already registered. Try logging in instead, or use a different email address.',
+          isSuccess: false 
+        })
+      } else if (err.message && err.message.includes('email_address_invalid')) {
+        setErrors({ 
+          submit: 'Please enter a valid email address. Some email domains (like example.com) are not supported for security reasons.',
+          isSuccess: false 
+        })
+      } else if (err.message && err.message.includes('email domains may not be supported')) {
+        setErrors({ 
+          submit: err.message,
+          isSuccess: false 
+        })
+      } else if (err.message && err.message.includes('invalid')) {
+        setErrors({ 
+          submit: 'Please check your information and try again. Make sure to use a real email address.',
+          isSuccess: false 
+        })
+      } else {
+        setErrors({ 
+          submit: err.message || 'Registration failed. Please check your information and try again.',
+          isSuccess: false 
+        })
+      }
     } finally {
       setIsLoading(false)
     }
@@ -513,7 +607,10 @@ export default function RegisterPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {plans.map((plan) => (
-          <div key={plan.value} className={`relative rounded-lg border-2 p-6 cursor-pointer transition-all ${
+          <div 
+            key={plan.value} 
+            onClick={(e) => handlePlanSelection(plan.value, e)}
+            className={`relative rounded-lg border-2 p-6 cursor-pointer transition-all ${
             formData.selectedPlan === plan.value 
               ? 'border-blue-500 bg-blue-50' 
               : 'border-gray-200 hover:border-gray-300'
@@ -523,7 +620,11 @@ export default function RegisterPage() {
               name="selectedPlan"
               value={plan.value}
               checked={formData.selectedPlan === plan.value}
-              onChange={handleChange}
+              onChange={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                console.log('Radio input changed - preventing default')
+              }}
               className="sr-only"
             />
             
@@ -560,6 +661,7 @@ export default function RegisterPage() {
           </div>
         ))}
       </div>
+
 
       <div className="text-center text-sm text-gray-600">
         <p>🎉 <strong>Free 14-day trial</strong> • No credit card required</p>
@@ -618,9 +720,13 @@ export default function RegisterPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form onSubmit={handleSubmit}>
-            {(errors.submit || authError) && (
-              <div className="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                {errors.submit || authError}
+            {errors.submit && (
+              <div className={`mb-6 px-4 py-3 rounded-md text-sm ${
+                errors.isSuccess 
+                  ? 'bg-green-50 border border-green-200 text-green-600' 
+                  : 'bg-red-50 border border-red-200 text-red-600'
+              }`}>
+                {errors.submit}
               </div>
             )}
 
@@ -652,7 +758,7 @@ export default function RegisterPage() {
                   <button
                     type="submit"
                     disabled={isLoading || authLoading}
-                    className={`btn-primary ${(isLoading || authLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`btn-primary ${(isLoading || authLoading) ? 'opacity-75 cursor-not-allowed bg-gray-400' : ''}`}
                   >
                     {isLoading ? (
                       <div className="flex items-center">

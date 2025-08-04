@@ -62,15 +62,15 @@ export default function StreamingChat() {
             <div className="mt-4 grid grid-cols-3 gap-3 max-w-lg mx-auto">
               <div className="bg-green-50 p-3 rounded-lg">
                 <p className="text-xs font-semibold text-green-800">OpenAI</p>
-                <p className="text-xs text-green-600 mt-1">GPT-4o, GPT-4 Turbo</p>
+                <p className="text-xs text-green-600 mt-1">o3, GPT-4.1, o4-mini</p>
               </div>
               <div className="bg-purple-50 p-3 rounded-lg">
                 <p className="text-xs font-semibold text-purple-800">Claude</p>
-                <p className="text-xs text-purple-600 mt-1">Claude 3.5 V2, Opus</p>
+                <p className="text-xs text-purple-600 mt-1">Claude 4 Opus, Sonnet 4</p>
               </div>
               <div className="bg-blue-50 p-3 rounded-lg">
                 <p className="text-xs font-semibold text-blue-800">Gemini</p>
-                <p className="text-xs text-blue-600 mt-1">Gemini 2.0, 1.5 Pro</p>
+                <p className="text-xs text-blue-600 mt-1">Gemini 2.5 Pro, 2.0 Flash</p>
               </div>
             </div>
           </div>

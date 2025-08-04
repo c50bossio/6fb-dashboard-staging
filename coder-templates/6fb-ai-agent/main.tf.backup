@@ -1,0 +1,246 @@
+terraform {
+  required_providers {
+    coder = {
+      source = "coder/coder"
+    }
+    docker = {
+      source = "kreuzwerker/docker"
+    }
+  }
+}
+
+data "coder_provisioner" "me" {
+}
+
+data "coder_workspace" "me" {
+}
+
+data "coder_parameter" "cpu" {
+  name         = "cpu"
+  display_name = "CPU"
+  description  = "The number of CPU cores"
+  default      = "2"
+  icon         = "/emojis/1f4bb.png"
+  mutable      = true
+  option {
+    name  = "2 Cores"
+    value = "2"
+  }
+  option {
+    name  = "4 Cores" 
+    value = "4"
+  }
+  option {
+    name  = "6 Cores"
+    value = "6"
+  }
+  option {
+    name  = "8 Cores"
+    value = "8"
+  }
+}
+
+data "coder_parameter" "memory" {
+  name         = "memory"
+  display_name = "Memory"
+  description  = "The amount of memory in GB"
+  default      = "4"
+  icon         = "/emojis/1f4be.png"
+  mutable      = true
+  option {
+    name  = "4 GB"
+    value = "4"
+  }
+  option {
+    name  = "6 GB"
+    value = "6"
+  }
+  option {
+    name  = "8 GB"
+    value = "8"
+  }
+  option {
+    name  = "12 GB"
+    value = "12"
+  }
+}
+
+provider "docker" {}
+
+provider "coder" {}
+
+resource "coder_agent" "main" {
+  arch = data.coder_provisioner.me.arch
+  os   = "linux"
+  startup_script = <<-EOT
+    set -e
+
+    # Install additional tools
+    sudo apt-get update
+    sudo apt-get install -y curl wget git vim tree htop
+
+    # Install Node.js 18
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+
+    # Install Python dependencies management
+    sudo apt-get install -y python3-pip python3-venv
+
+    # Set up project directory
+    mkdir -p /home/coder/6FB-AI-Agent-System
+    cd /home/coder/6FB-AI-Agent-System
+    
+    # Create sample files to get started
+    echo "# 6FB AI Agent System" > README.md
+    echo "console.log('Hello from Next.js!');" > app.js
+    echo "print('Hello from FastAPI!')" > main.py
+
+    # Set up Python virtual environment
+    python3 -m venv venv
+    source venv/bin/activate
+    
+    # Install common Python packages for AI development
+    pip install fastapi uvicorn sqlalchemy requests python-dotenv pydantic openai anthropic
+
+    # Install Node.js dependencies
+    npm init -y
+    npm install next react react-dom
+
+    echo "6FB AI Agent System development environment ready!"
+  EOT
+
+  # Optional metadata blocks for workspace info
+  metadata {
+    display_name = "CPU Usage"
+    key          = "0_cpu_usage"
+    script       = "coder stat cpu"
+    interval     = 10
+    timeout      = 1
+  }
+
+  metadata {
+    display_name = "RAM Usage" 
+    key          = "1_ram_usage"
+    script       = "coder stat mem"
+    interval     = 10
+    timeout      = 1
+  }
+}
+
+resource "coder_app" "code-server" {
+  agent_id     = coder_agent.main.id
+  slug         = "code-server"
+  display_name = "VS Code"
+  url          = "http://localhost:8080/?folder=/home/coder"
+  icon         = "/icon/code.svg"
+  subdomain    = false
+  share        = "owner"
+
+  healthcheck {
+    url       = "http://localhost:8080/healthz"
+    interval  = 5
+    threshold = 6
+  }
+}
+
+resource "coder_app" "frontend" {
+  agent_id     = coder_agent.main.id
+  slug         = "frontend"
+  display_name = "Frontend (Next.js)"
+  url          = "http://localhost:3000"
+  icon         = "/icon/react.svg"
+  subdomain    = false
+  share        = "owner"
+
+  healthcheck {
+    url       = "http://localhost:3000"
+    interval  = 10
+    threshold = 3
+  }
+}
+
+resource "coder_app" "backend" {
+  agent_id     = coder_agent.main.id
+  slug         = "backend"
+  display_name = "Backend API (FastAPI)"
+  url          = "http://localhost:8001"
+  icon         = "/icon/python.svg"
+  subdomain    = false
+  share        = "owner"
+
+  healthcheck {
+    url       = "http://localhost:8001/docs"
+    interval  = 10
+    threshold = 3
+  }
+}
+
+resource "docker_volume" "home_volume" {
+  name = "coder-${data.coder_workspace.me.id}-home"
+  # Protect the volume from being deleted due to changes in attributes.
+  lifecycle {
+    ignore_changes = all
+  }
+}
+
+resource "docker_image" "main" {
+  name = "coder-${data.coder_workspace.me.id}"
+  build {
+    context = "./build"
+    build_args = {
+      USER = "coder"
+    }
+  }
+  triggers = {
+    dir_sha1 = sha1(join("", [for f in fileset(path.module, "build/*") : filesha1(f)]))
+  }
+}
+
+resource "docker_container" "workspace" {
+  count = data.coder_workspace.me.start_count
+  image = docker_image.main.name
+  
+  # Uses lower() to avoid Docker restriction on container names.
+  name = "coder-${lower(data.coder_workspace.me.name)}"
+  
+  # Hostname makes the shell more user friendly: coder@my-workspace:~$
+  hostname = data.coder_workspace.me.name
+  
+  # Use the docker gateway if the access URL is 127.0.0.1
+  entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
+  
+  env = ["CODER_AGENT_TOKEN=${coder_agent.main.token}"]
+  
+  host {
+    host = "host.docker.internal"
+    ip   = "host-gateway"
+  }
+  
+  volumes {
+    container_path = "/home/coder"
+    volume_name    = docker_volume.home_volume.name
+    read_only      = false
+  }
+  
+  # CPU and memory limits
+  cpu_shares = data.coder_parameter.cpu.value * 1024
+  memory     = data.coder_parameter.memory.value * 1024 * 1024 * 1024
+}
+
+resource "coder_metadata" "workspace_info" {
+  count       = data.coder_workspace.me.start_count
+  resource_id = docker_container.workspace[0].id
+
+  item {
+    key   = "CPU"
+    value = "${data.coder_parameter.cpu.value} cores"
+  }
+  item {
+    key   = "memory"
+    value = "${data.coder_parameter.memory.value}GB"
+  }
+  item {
+    key   = "image"
+    value = "Custom 6FB AI Agent System"
+  }
+}

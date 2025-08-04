@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 import { useDashboard } from '../../contexts/DashboardContext'
 import { DashboardProvider } from '../../contexts/DashboardContext'
 import ProtectedRoute from '../../components/ProtectedRoute'
-import LoadingSpinner, { CardLoadingSkeleton } from '../../components/LoadingSpinner'
+import DashboardLayout from '../../components/layout/DashboardLayout'
+import { Card, Alert, CardLoadingSkeleton } from '../../components/ui'
+import DashboardHeader from '../../components/dashboard/DashboardHeader'
+import MetricsOverview from '../../components/dashboard/MetricsOverview'
+import QuickActions from '../../components/dashboard/QuickActions'
 import Link from 'next/link'
 import { 
   ChartBarIcon, 
@@ -23,7 +27,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 function DashboardContent() {
-  const { user, logout } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const { 
     systemHealth, 
     agentInsights, 
@@ -61,8 +65,8 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <DashboardLayout>
+        <div className="py-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[...Array(4)].map((_, i) => (
               <CardLoadingSkeleton key={i} />
@@ -73,147 +77,48 @@ function DashboardContent() {
             <CardLoadingSkeleton />
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Welcome back, {user?.full_name || 'User'}
-              </h1>
-              <p className="mt-1 text-gray-600">
-                {user?.barbershop_name ? `Managing ${user.barbershop_name}` : 'Your AI-powered barbershop dashboard'}
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={refreshDashboard}
-                className="flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <ArrowPathIcon className="h-4 w-4 mr-2" />
-                Refresh
-              </button>
-              <button
-                onClick={logout}
-                className="flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <DashboardLayout showQuickActions={false}>
+      {/* Enhanced Dashboard Header */}
+      <DashboardHeader
+        user={user}
+        profile={profile}
+        onRefresh={refreshDashboard}
+        systemHealth={systemHealth}
+        dashboardStats={dashboardStats}
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="space-y-8 py-8">
         {/* Error Banner */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
-              <div className="ml-3">
-                <p className="text-sm text-red-800">{error}</p>
-                <button
-                  onClick={clearError}
-                  className="text-sm text-red-600 hover:text-red-500 underline"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          </div>
+          <Alert 
+            variant="error" 
+            dismissible 
+            onDismiss={clearError}
+            title="Dashboard Error"
+          >
+            {error}
+          </Alert>
         )}
 
-        {/* System Status */}
-        <div className={`mb-6 ${systemStatusBg} border rounded-lg p-4`}>
-          <div className="flex items-center">
-            <CheckCircleIcon className={`h-5 w-5 ${systemStatusColor}`} />
-            <div className="ml-3">
-              <p className={`text-sm font-medium ${systemStatusColor}`}>
-                System Status: {systemHealth?.status || 'Unknown'}
-              </p>
-              <p className="text-sm text-gray-600">
-                AI Agent: {systemHealth?.rag_engine === 'active' ? 'Active' : 'Inactive'} • 
-                Database: {systemHealth?.database?.healthy ? 'Healthy' : 'Degraded'} • 
-                Learning: {systemHealth?.learning_enabled ? 'Enabled' : 'Disabled'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <ChatBubbleLeftRightIcon className="h-8 w-8 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Conversations</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {dashboardStats?.totalConversations || 0}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <SparklesIcon className="h-8 w-8 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Agents</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {dashboardStats?.activeAgents || 1}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <ChartBarIcon className="h-8 w-8 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">System Uptime</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {dashboardStats?.systemUptime || '99.9%'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <PhoneIcon className="h-8 w-8 text-orange-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Response Time</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {dashboardStats?.responseTime || '< 200ms'}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Enhanced Metrics Overview */}
+        <MetricsOverview
+          dashboardStats={dashboardStats}
+          systemHealth={systemHealth}
+          loading={loading}
+        />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Quick Chat */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Quick Chat with AI Coach
-              </h2>
+          <Card>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Quick Chat with AI Coach
+            </h2>
               <form onSubmit={handleQuickChat} className="space-y-4">
                 <div>
                   <textarea
@@ -239,15 +144,13 @@ function DashboardContent() {
                   )}
                 </button>
               </form>
-            </div>
-          </div>
+          </Card>
 
           {/* AI Learning Insights */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                AI Learning Insights
-              </h2>
+          <Card>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              AI Learning Insights
+            </h2>
               {agentInsights ? (
                 <div className="space-y-4">
                   <div>
@@ -275,72 +178,13 @@ function DashboardContent() {
                   </p>
                 </div>
               )}
-            </div>
-          </div>
+          </Card>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mt-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link
-              href="/dashboard/chat"
-              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center">
-                <ChatBubbleLeftRightIcon className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">AI Chat</h3>
-                  <p className="text-sm text-gray-600">Chat with AI advisors</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link
-              href="/dashboard/analytics"
-              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center">
-                <ChartBarIcon className="h-8 w-8 text-blue-600" />
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Analytics</h3>
-                  <p className="text-sm text-gray-600">View performance charts</p>
-                </div>
-              </div>
-            </Link>
-
-            <Link
-              href="/dashboard/marketing"
-              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center">
-                <SparklesIcon className="h-8 w-8 text-yellow-600" />
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Marketing</h3>
-                  <p className="text-sm text-gray-600">Manage campaigns</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-          
-          {/* Second row of actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <Link
-              href="/dashboard/ai-training"
-              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center">
-                <SparklesIcon className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">AI Training</h3>
-                  <p className="text-sm text-gray-600">Teach your AI</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
+        {/* Enhanced Quick Actions */}
+        <QuickActions profile={profile} />
       </div>
-    </div>
+    </DashboardLayout>
   )
 }
 

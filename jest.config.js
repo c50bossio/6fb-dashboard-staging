@@ -13,7 +13,8 @@ const customJestConfig = {
     '<rootDir>/.next/',
     '<rootDir>/node_modules/',
     '<rootDir>/tests/',
-    '<rootDir>/playwright.config.js'
+    '<rootDir>/playwright.config.js',
+    '<rootDir>/supabase-mcp/'
   ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  coder:
+    build: .
+    ports:
+      - "7080:7080"
+    environment:
+      - CODER_HTTP_ADDRESS=0.0.0.0:7080
+      - CODER_ACCESS_URL=http://localhost:7080
+      - CODER_TELEMETRY=false
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - coder_data:/home/coder/.config/coderv2
+    restart: unless-stopped
+    privileged: true  # Required for Docker-in-Docker workspaces
+
+volumes:
+  coder_data:
