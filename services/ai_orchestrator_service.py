@@ -10,6 +10,9 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
+# Import vector knowledge service
+from .vector_knowledge_service import vector_knowledge_service, BusinessKnowledgeType
+
 # AI Provider imports
 try:
     import openai
@@ -258,7 +261,7 @@ class AIOrchestratorService:
         }
     
     def _build_system_message(self, context: Dict = None) -> str:
-        """Build system message with business context"""
+        """Build system message with business context and RAG insights"""
         base_prompt = """You are an AI business coach specialized in barbershop operations and management. 
         You provide practical, actionable advice to help barbershop owners optimize their business operations, 
         improve customer satisfaction, and increase revenue.
@@ -283,6 +286,19 @@ class AIOrchestratorService:
             - Recent Metrics: {context.get('recent_metrics', 'Not available')}
             """
             base_prompt += business_context
+            
+            # Add contextual insights from RAG system
+            contextual_insights = context.get('contextual_insights', {})
+            if contextual_insights and contextual_insights.get('relevant_knowledge'):
+                rag_context = "\n\nRelevant Business Knowledge:\n"
+                for i, knowledge in enumerate(contextual_insights['relevant_knowledge'][:3], 1):
+                    rag_context += f"{i}. {knowledge['content'][:200]}...\n"
+                
+                if contextual_insights.get('key_insights'):
+                    rag_context += f"\nKey Insights: {', '.join(contextual_insights['key_insights'])}\n"
+                
+                rag_context += "\nUse this knowledge to provide more specific and data-driven recommendations."
+                base_prompt += rag_context
         
         return base_prompt
     
@@ -313,19 +329,28 @@ class AIOrchestratorService:
         }
     
     async def enhanced_chat(self, message: str, session_id: str, business_context: Dict = None) -> Dict:
-        """Main chat method with intelligent provider selection"""
+        """Main chat method with intelligent provider selection and RAG integration"""
         
         # Classify message type
         message_type = self.classify_message_type(message)
+        
+        # Get contextual insights from vector knowledge base
+        contextual_insights = await vector_knowledge_service.get_contextual_insights(
+            query=message,
+            context=business_context
+        )
         
         # Select optimal provider
         selected_provider = self.select_optimal_provider(message, message_type)
         
         if not selected_provider:
             logger.warning("No AI providers available, using fallback")
-            return await self._generate_fallback_response(message)
+            fallback_response = await self._generate_fallback_response(message)
+            # Enhance fallback with contextual insights
+            fallback_response['contextual_insights'] = contextual_insights
+            return fallback_response
         
-        # Prepare messages
+        # Prepare messages with RAG context
         messages = [{"role": "user", "content": message}]
         
         # Add conversation context if available
@@ -333,8 +358,12 @@ class AIOrchestratorService:
             context_messages = self.conversation_context[session_id][-4:]  # Last 4 messages for context
             messages = context_messages + messages
         
-        # Chat with selected provider
-        response = await self.chat_with_provider(selected_provider, messages, business_context)
+        # Enhance business context with vector knowledge insights
+        enhanced_context = business_context.copy() if business_context else {}
+        enhanced_context['contextual_insights'] = contextual_insights
+        
+        # Chat with selected provider using enhanced context
+        response = await self.chat_with_provider(selected_provider, messages, enhanced_context)
         
         # Store conversation context
         if session_id not in self.conversation_context:
@@ -345,14 +374,55 @@ class AIOrchestratorService:
             {"role": "assistant", "content": response['response']}
         ])
         
-        # Add metadata
+        # Store this interaction as knowledge for future learning
+        await self._store_interaction_knowledge(message, response, message_type, business_context)
+        
+        # Add metadata including RAG insights
         response.update({
             'session_id': session_id,
             'message_type': message_type.value,
-            'selected_provider': selected_provider.value if selected_provider else 'fallback'
+            'selected_provider': selected_provider.value if selected_provider else 'fallback',
+            'contextual_insights': contextual_insights,
+            'knowledge_enhanced': len(contextual_insights.get('relevant_knowledge', [])) > 0
         })
         
         return response
+    
+    async def _store_interaction_knowledge(self, message: str, response: Dict, message_type: MessageType, business_context: Dict = None):
+        """Store successful interactions as knowledge for future learning"""
+        try:
+            # Create knowledge content from interaction
+            interaction_content = f"User asked: '{message}' | AI provided advice about {message_type.value} with {response.get('confidence', 0.0)} confidence"
+            
+            # Determine appropriate knowledge type
+            knowledge_type_mapping = {
+                MessageType.BUSINESS_ANALYSIS: BusinessKnowledgeType.BUSINESS_METRICS,
+                MessageType.CUSTOMER_SERVICE: BusinessKnowledgeType.CUSTOMER_INSIGHTS,
+                MessageType.SCHEDULING: BusinessKnowledgeType.SCHEDULING_ANALYTICS,
+                MessageType.FINANCIAL: BusinessKnowledgeType.REVENUE_PATTERNS,
+                MessageType.MARKETING: BusinessKnowledgeType.MARKETING_EFFECTIVENESS,
+                MessageType.GENERAL: BusinessKnowledgeType.OPERATIONAL_BEST_PRACTICES
+            }
+            
+            knowledge_type = knowledge_type_mapping.get(message_type, BusinessKnowledgeType.OPERATIONAL_BEST_PRACTICES)
+            
+            # Store the interaction
+            await vector_knowledge_service.store_knowledge(
+                content=interaction_content,
+                knowledge_type=knowledge_type,
+                source="ai_interaction",
+                metadata={
+                    'message_type': message_type.value,
+                    'confidence': response.get('confidence', 0.0),
+                    'provider': response.get('provider', 'unknown'),
+                    'business_context': business_context or {}
+                }
+            )
+            
+            logger.info(f"✅ Stored interaction knowledge: {message_type.value}")
+            
+        except Exception as e:
+            logger.error(f"Failed to store interaction knowledge: {e}")
     
     def get_provider_status(self) -> Dict:
         """Get status of all AI providers"""

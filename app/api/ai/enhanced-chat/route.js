@@ -23,8 +23,8 @@ export async function POST(request) {
     const currentSession = sessionId || `session_${Date.now()}_${user.id}`
 
     try {
-      // For now, use intelligent mock responses since we're in development
-      const response = await generateIntelligentResponse(message, currentSession, businessContext)
+      // Use enhanced AI chat with RAG integration (mock for development)
+      const response = await generateEnhancedAIResponse(message, currentSession, businessContext)
       
       // Store conversation in Supabase
       await storeConversation(supabase, user.id, currentSession, message, response)
@@ -37,6 +37,8 @@ export async function POST(request) {
         confidence: response.confidence,
         messageType: response.messageType,
         recommendations: response.recommendations,
+        contextualInsights: response.contextualInsights,
+        knowledgeEnhanced: response.knowledgeEnhanced,
         timestamp: response.timestamp
       })
 
@@ -66,7 +68,90 @@ export async function POST(request) {
   }
 }
 
-async function generateIntelligentResponse(message, sessionId, businessContext) {
+async function generateEnhancedAIResponse(message, sessionId, businessContext) {
+  // Simulate RAG-enhanced AI response generation
+  
+  // First, get contextual insights (simulated)
+  const contextualInsights = await getContextualKnowledge(message, businessContext)
+  
+  // Then generate response based on message type and context
+  const messageType = classifyMessage(message)
+  const baseResponse = await generateIntelligentResponse(message, sessionId, businessContext, contextualInsights)
+  
+  // Enhance with RAG insights
+  const enhancedResponse = {
+    ...baseResponse,
+    contextualInsights,
+    knowledgeEnhanced: contextualInsights.relevantKnowledge.length > 0,
+    confidence: contextualInsights.relevantKnowledge.length > 0 ? 
+      Math.min(baseResponse.confidence + 0.1, 0.95) : baseResponse.confidence
+  }
+  
+  return enhancedResponse
+}
+
+async function getContextualKnowledge(message, businessContext) {
+  // Simulate retrieving contextual knowledge from RAG system
+  const messageLower = message.toLowerCase()
+  const insights = {
+    relevantKnowledge: [],
+    keyInsights: [],
+    confidence: 0.0
+  }
+  
+  // Customer service knowledge
+  if (/\b(customer|client|satisfaction|retention|feedback)\b/.test(messageLower)) {
+    insights.relevantKnowledge.push({
+      content: "Customer satisfaction analysis shows 4.2/5 average rating with high praise for beard trimming services",
+      type: "customer_insights",
+      source: "customer_feedback",
+      similarity: 0.87
+    })
+    insights.keyInsights.push("Customer retention rate is 73% indicating strong loyalty")
+  }
+  
+  // Revenue knowledge
+  if (/\b(revenue|money|profit|income|pricing)\b/.test(messageLower)) {
+    insights.relevantKnowledge.push({
+      content: "Peak revenue hours are 10am-2pm and 5pm-7pm, generating 65% of daily income",
+      type: "revenue_patterns", 
+      source: "revenue_analysis",
+      similarity: 0.91
+    })
+    insights.keyInsights.push("Premium services have 40% higher margins than basic cuts")
+  }
+  
+  // Scheduling knowledge
+  if (/\b(schedule|booking|appointment|time|availability)\b/.test(messageLower)) {
+    insights.relevantKnowledge.push({
+      content: "Booking utilization highest on Fridays (89%) and Saturdays (94%)",
+      type: "scheduling_analytics",
+      source: "scheduling_data", 
+      similarity: 0.93
+    })
+    insights.keyInsights.push("No-show rate reduced to 8% with reminder system")
+  }
+  
+  // Service performance knowledge
+  if (/\b(service|performance|popular|booking)\b/.test(messageLower)) {
+    insights.relevantKnowledge.push({
+      content: "Haircut + beard trim combo is most popular service with 35% of all bookings",
+      type: "service_performance",
+      source: "booking_analytics",
+      similarity: 0.89
+    })
+    insights.keyInsights.push("Average service time is 28 minutes allowing efficient scheduling")
+  }
+  
+  // Calculate confidence based on relevance
+  if (insights.relevantKnowledge.length > 0) {
+    insights.confidence = insights.relevantKnowledge.reduce((sum, k) => sum + k.similarity, 0) / insights.relevantKnowledge.length
+  }
+  
+  return insights
+}
+
+async function generateIntelligentResponse(message, sessionId, businessContext, contextualInsights = null) {
   // Classify message type
   const messageType = classifyMessage(message)
   
@@ -123,8 +208,31 @@ function classifyMessage(message) {
   return 'general'
 }
 
-function generateBusinessAnalysisResponse(message, context) {
-  const insights = [
+function generateBusinessAnalysisResponse(message, context, contextualInsights = null) {
+  // Use contextual insights if available
+  let dataInsights = []
+  let specificMetrics = []
+  
+  if (contextualInsights && contextualInsights.relevantKnowledge.length > 0) {
+    // Extract specific data from knowledge base
+    contextualInsights.relevantKnowledge.forEach(knowledge => {
+      if (knowledge.type === 'revenue_patterns') {
+        dataInsights.push("Your revenue data shows clear patterns we can optimize")
+        specificMetrics.push("Peak hours generate 65% of daily income (10am-2pm, 5pm-7pm)")
+      }
+      if (knowledge.type === 'service_performance') {
+        dataInsights.push("Service performance data reveals optimization opportunities")  
+        specificMetrics.push("Combo services show 35% higher booking rates")
+      }
+    })
+    
+    // Add key insights
+    if (contextualInsights.keyInsights.length > 0) {
+      specificMetrics.push(...contextualInsights.keyInsights)
+    }
+  }
+  
+  const insights = dataInsights.length > 0 ? dataInsights : [
     "Based on your current metrics, I notice opportunities for revenue optimization.",
     "Your peak hours analysis shows potential for better scheduling efficiency.",
     "Customer retention patterns suggest implementing a loyalty program could increase revenue by 15-20%.",
@@ -138,19 +246,31 @@ function generateBusinessAnalysisResponse(message, context) {
     "Set up automated follow-up messages 2-3 weeks after appointments"
   ]
 
-  return {
-    response: `${insights[Math.floor(Math.random() * insights.length)]} Let me break down some key insights from your business data:
+  // Build response with contextual data
+  let responseText = `${insights[0]} Let me break down key insights from your business data:
 
-**Revenue Optimization:**
+**Revenue Analysis:**`
+
+  if (specificMetrics.length > 0) {
+    responseText += `
+${specificMetrics.slice(0, 3).map(metric => `- ${metric}`).join('\n')}`
+  } else {
+    responseText += `
 - Your average ticket is $35, but top 20% of customers spend $55+
-- Services like beard treatments and styling have 40% higher margins
-- Peak hours (10am-2pm) are underutilized with only 70% booking capacity
+- Premium services have 40% higher margins than basic cuts
+- Peak hours show untapped revenue potential`
+  }
+
+  responseText += `
 
 **Actionable Next Steps:**
 ${recommendations.slice(0, 3).map((rec, i) => `${i + 1}. ${rec}`).join('\n')}
 
-Would you like me to dive deeper into any of these areas?`,
-    confidence: 0.88,
+Would you like me to dive deeper into any of these areas?`
+
+  return {
+    response: responseText,
+    confidence: contextualInsights ? Math.min(0.88 + (contextualInsights.confidence * 0.1), 0.95) : 0.88,
     recommendations: recommendations.slice(0, 4)
   }
 }
