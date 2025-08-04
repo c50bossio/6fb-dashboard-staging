@@ -32,21 +32,35 @@ export const TenantProvider = ({ children }) => {
         setLoading(true)
         setError(null)
 
-        // For development, create a mock tenant
-        // In production, this would fetch from Supabase
-        const mockTenant = {
-          id: 'barbershop_demo_001',
-          name: 'Demo Barbershop',
-          owner_id: user.id,
-          subscription_tier: 'professional',
-          settings: {
-            business_name: 'Demo Barbershop',
-            address: '123 Main St, Demo City, DC 12345',
-            phone: '(555) 123-4567',
-            email: 'hello@demobarbershop.com',
-            timezone: 'America/New_York',
-            currency: 'USD'
-          },
+        // Check if user has completed onboarding
+        const storedTenant = localStorage.getItem(`tenant_${user.id}`)
+        
+        if (storedTenant) {
+          // User has completed onboarding, load their tenant data
+          const parsedTenant = JSON.parse(storedTenant)
+          setTenant(parsedTenant)
+        } else {
+          // New user - no tenant yet, will need to complete onboarding
+          setTenant(null)
+        }
+
+        // For demo purposes, create a mock tenant if none exists
+        // In production, this would check Supabase for existing tenant
+        if (!storedTenant) {
+          const mockTenant = {
+            id: 'barbershop_demo_001',
+            name: 'Demo Barbershop',
+            owner_id: user.id,
+            subscription_tier: 'professional',
+            onboarding_completed: false, // Key flag for onboarding flow
+            settings: {
+              business_name: 'Demo Barbershop',
+              address: '123 Main St, Demo City, DC 12345',
+              phone: '(555) 123-4567',
+              email: 'hello@demobarbershop.com',
+              timezone: 'America/New_York',
+              currency: 'USD'
+            },
           features: {
             ai_chat: true,
             analytics: true,
@@ -94,6 +108,10 @@ export const TenantProvider = ({ children }) => {
       }
       
       setTenant(updatedTenant)
+      
+      // Persist to localStorage for demo purposes
+      localStorage.setItem(`tenant_${user.id}`, JSON.stringify(updatedTenant))
+      
       console.log('✅ Tenant updated:', updatedTenant.name)
       
       return updatedTenant
@@ -103,6 +121,15 @@ export const TenantProvider = ({ children }) => {
       throw err
     } finally {
       setLoading(false)
+    }
+  }
+
+  const setTenantData = (newTenant) => {
+    setTenant(newTenant)
+    
+    // Persist to localStorage for demo purposes
+    if (user && newTenant) {
+      localStorage.setItem(`tenant_${user.id}`, JSON.stringify(newTenant))
     }
   }
 
@@ -146,6 +173,7 @@ export const TenantProvider = ({ children }) => {
     tenant,
     loading,
     error,
+    setTenant: setTenantData,
     updateTenant,
     updateIntegration,
     getTenantFeature,

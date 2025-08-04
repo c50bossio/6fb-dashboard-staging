@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, useEffect } from 'react'
 import { useAuth } from '../../components/SupabaseAuthProvider'
+import { useTenant } from '../../contexts/TenantContext'
 import { useDashboard } from '../../contexts/DashboardContext'
 import { DashboardProvider } from '../../contexts/DashboardContext'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { Card, Alert, CardLoadingSkeleton } from '../../components/ui'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 // Lazy load heavy components for better initial performance
 const DashboardHeader = lazy(() => import('../../components/dashboard/DashboardHeader'))
@@ -29,6 +31,9 @@ import {
 
 function DashboardContent() {
   const { user, profile, signOut } = useAuth()
+  const { tenant, loading: tenantLoading } = useTenant()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { 
     systemHealth, 
     agentInsights, 
@@ -44,6 +49,21 @@ function DashboardContent() {
   const [chatMessage, setChatMessage] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [selectedMetric, setSelectedMetric] = useState(null)
+  const [showWelcome, setShowWelcome] = useState(false)
+
+  // Check for onboarding completion and welcome parameter
+  useEffect(() => {
+    if (searchParams.get('welcome') === 'true') {
+      setShowWelcome(true)
+    }
+  }, [searchParams])
+
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (!tenantLoading && tenant && !tenant.onboarding_completed) {
+      router.push('/onboarding')
+    }
+  }, [tenant, tenantLoading, router])
 
   const handleQuickChat = async (e) => {
     e.preventDefault()
@@ -121,6 +141,43 @@ function DashboardContent() {
           dashboardStats={dashboardStats}
         />
       </Suspense>
+
+      {/* Welcome Banner for New Users */}
+      {showWelcome && (
+        <div className="mb-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl">
+          <div className="flex items-start">
+            <CheckCircleIcon className="h-8 w-8 text-green-600 mt-1 mr-4 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                🎉 Welcome to Your AI-Powered Barbershop Dashboard!
+              </h3>
+              <p className="text-gray-700 mb-3">
+                Your onboarding is complete! Here's what you can do next:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="flex items-center text-sm text-gray-600">
+                  <SparklesIcon className="h-5 w-5 text-blue-600 mr-2" />
+                  Start chatting with your AI coach below
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <ChartBarIcon className="h-5 w-5 text-purple-600 mr-2" />
+                  Explore your analytics dashboard
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <CogIcon className="h-5 w-5 text-green-600 mr-2" />
+                  Customize your settings anytime
+                </div>
+              </div>
+              <button
+                onClick={() => setShowWelcome(false)}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Got it, dismiss this message
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="h-full flex flex-col space-y-4 py-4">
         {/* Error Banner */}

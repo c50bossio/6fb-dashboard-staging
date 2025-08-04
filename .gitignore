@@ -61,4 +61,10 @@ logs/
 # Test artifacts
 playwright-results.json
 test-results/
-playwright-report/
+playwright-report/# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+terraform.tfvars
+*.auto.tfvars

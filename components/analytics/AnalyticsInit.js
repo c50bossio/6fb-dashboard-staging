@@ -175,18 +175,17 @@ export default function AnalyticsInit() {
 
   // Track performance metrics
   useEffect(() => {
-    // Track Core Web Vitals when available
-    if ('web-vitals' in window) {
-      import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-        getCLS((metric) => analytics.track('core_web_vitals', { metric: 'CLS', value: metric.value }))
-        getFID((metric) => analytics.track('core_web_vitals', { metric: 'FID', value: metric.value }))
-        getFCP((metric) => analytics.track('core_web_vitals', { metric: 'FCP', value: metric.value }))
-        getLCP((metric) => analytics.track('core_web_vitals', { metric: 'LCP', value: metric.value }))
-        getTTFB((metric) => analytics.track('core_web_vitals', { metric: 'TTFB', value: metric.value }))
-      }).catch(() => {
-        // web-vitals not available, skip
-      })
-    }
+    // Track Core Web Vitals when available - using new API
+    import('web-vitals').then((vitals) => {
+      // New web-vitals API uses onCLS, onFID, etc.
+      if (vitals.onCLS) vitals.onCLS((metric) => analytics.track('core_web_vitals', { metric: 'CLS', value: metric.value }))
+      if (vitals.onFID) vitals.onFID((metric) => analytics.track('core_web_vitals', { metric: 'FID', value: metric.value }))
+      if (vitals.onFCP) vitals.onFCP((metric) => analytics.track('core_web_vitals', { metric: 'FCP', value: metric.value }))
+      if (vitals.onLCP) vitals.onLCP((metric) => analytics.track('core_web_vitals', { metric: 'LCP', value: metric.value }))
+      if (vitals.onTTFB) vitals.onTTFB((metric) => analytics.track('core_web_vitals', { metric: 'TTFB', value: metric.value }))
+    }).catch((error) => {
+      console.debug('Web vitals tracking not available:', error.message)
+    })
 
     // Track basic performance metrics
     if (typeof window !== 'undefined' && window.performance) {
