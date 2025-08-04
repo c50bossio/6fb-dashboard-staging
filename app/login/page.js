@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 import { 
   EyeIcon,
   EyeSlashIcon,
@@ -13,7 +13,7 @@ import {
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, loading: authLoading, error: authError } = useAuth()
+  const { signIn, devBypassLogin, loading: authLoading } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -21,6 +21,19 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Safety mechanism: reset loading if it's been stuck for too long
+  useEffect(() => {
+    if (isLoading) {
+      const timeout = setTimeout(() => {
+        console.warn('Login took too long, resetting loading state')
+        setIsLoading(false)
+        setError('Login timed out. Please try again.')
+      }, 10000) // 10 second timeout
+      
+      return () => clearTimeout(timeout)
+    }
+  }, [isLoading])
 
   const handleChange = (e) => {
     setFormData({
@@ -36,16 +49,37 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // Use real authentication
-      await login({
+      // Use real authentication with Supabase
+      const result = await signIn({
         email: formData.email,
         password: formData.password
       })
       
-      // Redirect to dashboard on successful login
+      console.log('Login successful:', result)
+      
+      // Note: Don't manually redirect here - let the AuthProvider handle it
+      // The onAuthStateChange listener will automatically redirect to dashboard
+      
+    } catch (err) {
+      console.error('Login error:', err)
+      setError(err.message || 'Login failed. Please try again.')
+    } finally {
+      // Always reset loading state
+      setIsLoading(false)
+    }
+  }
+
+  const handleDevBypass = async () => {
+    setIsLoading(true)
+    setError('')
+    
+    try {
+      await devBypassLogin()
+      console.log('Dev bypass successful, redirecting to dashboard')
       router.push('/dashboard')
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.')
+      console.error('Dev bypass error:', err)
+      setError('Dev bypass failed: ' + err.message)
     } finally {
       setIsLoading(false)
     }
@@ -74,9 +108,9 @@ export default function LoginPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {(error || authError) && (
+            {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
-                {error || authError}
+                {error}
               </div>
             )}
 
@@ -176,6 +210,21 @@ export default function LoginPage() {
                   'Sign in'
                 )}
               </button>
+              
+              {/* Manual reset button if loading is stuck */}
+              {(isLoading || authLoading) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLoading(false)
+                    setError('')
+                    console.log('Manually reset loading state')
+                  }}
+                  className="mt-2 w-full text-xs text-gray-500 hover:text-gray-700 underline"
+                >
+                  Cancel / Reset
+                </button>
+              )}
             </div>
           </form>
 
@@ -205,6 +254,40 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
+
+          {/* DEV BYPASS - Only shows on localhost */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white text-gray-500">Development Only</span>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={handleDevBypass}
+                  disabled={isLoading || authLoading}
+                  className="w-full flex justify-center py-2 px-4 border-2 border-dashed border-orange-300 rounded-md shadow-sm bg-orange-50 text-sm font-medium text-orange-700 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {(isLoading || authLoading) ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2"></div>
+                      Bypassing auth...
+                    </div>
+                  ) : (
+                    <div className="flex items-center">
+                      🚧 Dev Bypass Login (localhost only)
+                    </div>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6">
             <div className="text-center text-sm text-gray-600">

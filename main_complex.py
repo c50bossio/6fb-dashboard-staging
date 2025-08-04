@@ -36,6 +36,9 @@ import sys
 sys.path.append(os.path.dirname(__file__))
 from agentic_coach_design import AgenticBusinessCoach, ShopContext, BusinessStage
 
+# Import Sentry configuration
+from services.sentry_config import init_sentry, capture_exception, add_breadcrumb
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -75,6 +78,9 @@ agentic_coach = AgenticBusinessCoach()
 async def lifespan(app: FastAPI):
     """Manage application lifespan with proper database initialization and cleanup"""
     logger.info("🚀 Starting 6FB Agentic AI Coach with Async Database Pool...")
+    
+    # Initialize Sentry error tracking
+    init_sentry(app)
     
     try:
         # Initialize database with connection pool

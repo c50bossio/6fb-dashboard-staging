@@ -243,6 +243,8 @@ async def register(user: UserRegister):
 @app.post("/api/v1/auth/login", response_model=TokenResponse)
 async def login(user: UserLogin):
     """Login user"""
+    print(f"LOGIN ATTEMPT: email={user.email}, password={user.password}")
+    
     with get_db() as conn:
         cursor = conn.execute(
             "SELECT id, email, password_hash, shop_name FROM users WHERE email = ?",
@@ -250,7 +252,14 @@ async def login(user: UserLogin):
         )
         db_user = cursor.fetchone()
     
+    print(f"DB USER FOUND: {db_user is not None}")
+    if db_user:
+        print(f"DB USER: id={db_user['id']}, email={db_user['email']}")
+        password_verified = verify_password(user.password, db_user["password_hash"])
+        print(f"PASSWORD VERIFIED: {password_verified}")
+    
     if not db_user or not verify_password(user.password, db_user["password_hash"]):
+        print("LOGIN FAILED: Invalid credentials")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
@@ -626,6 +635,11 @@ async def save_barbershop_settings(settings: dict, current_user: dict = Depends(
         "message": "Settings saved successfully",
         "settings": settings
     }
+
+@app.put("/api/v1/settings/barbershop")
+async def update_barbershop_settings(settings: dict, current_user: dict = Depends(get_current_user)):
+    """Update barbershop settings (same as POST for compatibility)"""
+    return await save_barbershop_settings(settings, current_user)
 
 @app.get("/api/v1/settings/barbershop")
 async def get_barbershop_settings(current_user: dict = Depends(get_current_user)):

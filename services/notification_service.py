@@ -308,6 +308,9 @@ class NotificationService:
             preferences.get("smsEnabled", True) and 
             booking_data.get("customer_phone")):
             
+            # Use E.164 format for Twilio if available, otherwise use the provided phone
+            phone_number = booking_data.get("customer_phone_e164", booking_data["customer_phone"])
+            
             sms_data = {
                 **booking_data,
                 "content": f"Booking confirmed: {booking_data['service']} on {booking_data['date']} at {booking_data['time']}"
@@ -315,7 +318,7 @@ class NotificationService:
             sms_result = await self.send_notification(
                 user_id=user_id,
                 notification_type="sms",
-                recipient=booking_data["customer_phone"],
+                recipient=phone_number,
                 subject="",
                 content="",
                 template_id="campaign_sms",
@@ -362,10 +365,13 @@ class NotificationService:
                 results.append(result)
             
             elif campaign_data["type"] == "sms" and preferences.get("smsEnabled", True):
+                # Use E.164 format for Twilio if available
+                phone_number = recipient.get("phone_e164", recipient["phone"])
+                
                 result = await self.send_notification(
                     user_id=user_id,
                     notification_type="sms",
-                    recipient=recipient["phone"],
+                    recipient=phone_number,
                     subject="",
                     content="",
                     template_id="campaign_sms",

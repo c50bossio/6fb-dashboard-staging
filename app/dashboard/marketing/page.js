@@ -18,6 +18,7 @@ import {
 
 export default function MarketingDashboard() {
   const { user } = useAuth()
+  const [notification, setNotification] = useState(null)
   const [campaigns, setCampaigns] = useState([
     {
       id: 1,
@@ -85,7 +86,16 @@ export default function MarketingDashboard() {
                   <p className="mt-1 text-gray-600">Manage your marketing automation</p>
                 </div>
               </div>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <button 
+                onClick={() => {
+                  setNotification({
+                    type: 'info',
+                    message: 'Campaign creation interface is being developed. Contact support for assistance.'
+                  })
+                  setTimeout(() => setNotification(null), 3000)
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
                 Create Campaign
               </button>
             </div>
@@ -93,6 +103,16 @@ export default function MarketingDashboard() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Notification Banner */}
+          {notification && (
+            <div className={`mb-6 p-4 rounded-lg ${
+              notification.type === 'success' ? 'bg-green-50 text-green-800' : 
+              notification.type === 'error' ? 'bg-red-50 text-red-800' : 
+              'bg-blue-50 text-blue-800'
+            }`}>
+              <p className="font-medium">{notification.message}</p>
+            </div>
+          )}
           {/* Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
             <div className="bg-white rounded-lg shadow p-6">
@@ -219,11 +239,29 @@ export default function MarketingDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         {campaign.status === 'active' ? (
-                          <button className="text-red-600 hover:text-red-900">
+                          <button 
+                            onClick={() => {
+                              setNotification({
+                                type: 'info',
+                                message: `Campaign "${campaign.name}" pause functionality is being developed.`
+                              })
+                              setTimeout(() => setNotification(null), 3000)
+                            }}
+                            className="text-red-600 hover:text-red-900"
+                          >
                             <PauseIcon className="h-5 w-5" />
                           </button>
                         ) : campaign.status === 'draft' ? (
-                          <button className="text-green-600 hover:text-green-900">
+                          <button 
+                            onClick={() => {
+                              setNotification({
+                                type: 'info',
+                                message: `Campaign "${campaign.name}" launch functionality is being developed.`
+                              })
+                              setTimeout(() => setNotification(null), 3000)
+                            }}
+                            className="text-green-600 hover:text-green-900"
+                          >
                             <PlayIcon className="h-5 w-5" />
                           </button>
                         ) : (
