@@ -1,7 +1,9 @@
-import { OpenAIStream, StreamingTextResponse, AnthropicStream } from 'ai'
+import { streamText } from 'ai'
 import { createClient } from '@/lib/supabase/server'
-import { openai } from '@/lib/openai'
-import { anthropic, formatMessagesForClaude, extractSystemMessage, DEFAULT_CLAUDE_MODEL } from '@/lib/anthropic'
+import { openai as openaiClient } from '@/lib/openai'
+import { anthropic as anthropicClient, formatMessagesForClaude, extractSystemMessage, DEFAULT_CLAUDE_MODEL } from '@/lib/anthropic'
+import { openai as openaiProvider } from '@ai-sdk/openai'
+import { anthropic as anthropicProvider } from '@ai-sdk/anthropic'
 
 export const runtime = 'edge'
 
@@ -33,24 +35,19 @@ export async function POST(req) {
       }
     }
 
-    let stream
-    let completion
+    let result
 
     if (provider === 'anthropic') {
       // Use Claude
       const claudeMessages = formatMessagesForClaude(messages)
       const systemMessage = extractSystemMessage(messages)
       
-      const response = await anthropic.messages.create({
-        model: model || DEFAULT_CLAUDE_MODEL,
+      result = await streamText({
+        model: anthropicProvider(model || DEFAULT_CLAUDE_MODEL),
         messages: claudeMessages,
         system: systemMessage,
-        max_tokens: 4096,
-        stream: true,
-      })
-
-      stream = AnthropicStream(response, {
-        async onCompletion(completion) {
+        maxTokens: 4096,
+        onFinish: async ({ text: completion }) => {
           // Store the completion
           const lastUserMessage = messages.filter(m => m.role === 'user').pop()
           if (lastUserMessage) {
@@ -68,15 +65,11 @@ export async function POST(req) {
       })
     } else {
       // Use OpenAI (default)
-      const response = await openai.chat.completions.create({
-        model,
+      result = await streamText({
+        model: openaiProvider(model),
         messages,
         temperature: 0.7,
-        stream: true,
-      })
-
-      stream = OpenAIStream(response, {
-        async onCompletion(completion) {
+        onFinish: async ({ text: completion }) => {
           // Store the completion
           const lastUserMessage = messages.filter(m => m.role === 'user').pop()
           if (lastUserMessage) {
@@ -94,7 +87,7 @@ export async function POST(req) {
       })
     }
 
-    return new StreamingTextResponse(stream)
+    return result.toAIStreamResponse()
   } catch (error) {
     console.error('Chat error:', error)
     return new Response(

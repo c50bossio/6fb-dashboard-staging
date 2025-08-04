@@ -13,7 +13,15 @@ import {
   CogIcon,
   SparklesIcon,
   AcademicCapIcon,
-  PresentationChartLineIcon
+  PresentationChartLineIcon,
+  InformationCircleIcon,
+  PhoneIcon,
+  ShieldCheckIcon,
+  DocumentTextIcon,
+  BookOpenIcon,
+  PuzzlePieceIcon,
+  ComputerDesktopIcon,
+  LifebuoyIcon
 } from '@heroicons/react/24/outline'
 
 // New organized navigation structure
@@ -149,6 +157,75 @@ export const NAVIGATION_CATEGORIES = [
         requiresRole: ['ENTERPRISE_OWNER', 'SUPER_ADMIN']
       }
     ]
+  },
+  {
+    id: 'company',
+    name: 'Company',
+    icon: InformationCircleIcon,
+    color: 'indigo',
+    description: 'Company information and resources',
+    items: [
+      {
+        name: 'About',
+        href: '/dashboard/about',
+        icon: InformationCircleIcon,
+        description: 'About our company'
+      },
+      {
+        name: 'Features',
+        href: '/dashboard/features',
+        icon: PuzzlePieceIcon,
+        description: 'Platform features overview'
+      },
+      {
+        name: 'Demo',
+        href: '/dashboard/demo',
+        icon: ComputerDesktopIcon,
+        description: 'Interactive demo'
+      },
+      {
+        name: 'Documentation',
+        href: '/dashboard/docs',
+        icon: BookOpenIcon,
+        description: 'Technical documentation'
+      },
+      {
+        name: 'Blog',
+        href: '/dashboard/blog',
+        icon: DocumentTextIcon,
+        description: 'Company blog and updates'
+      },
+      {
+        name: 'Contact',
+        href: '/dashboard/contact',
+        icon: PhoneIcon,
+        description: 'Contact information'
+      },
+      {
+        name: 'Support',
+        href: '/dashboard/support',  
+        icon: LifebuoyIcon,
+        description: 'Help and support'
+      },
+      {
+        name: 'Privacy',
+        href: '/dashboard/privacy',
+        icon: ShieldCheckIcon,
+        description: 'Privacy policy'
+      },
+      {
+        name: 'Terms',
+        href: '/dashboard/terms',
+        icon: DocumentTextIcon,
+        description: 'Terms of service'
+      },
+      {
+        name: 'Security',
+        href: '/dashboard/security',
+        icon: ShieldCheckIcon,
+        description: 'Security information'
+      }
+    ]
   }
 ]
 
@@ -199,6 +276,13 @@ export function getCategoryColor(colorName) {
       border: 'border-gray-200',
       hover: 'hover:bg-gray-100',
       accent: 'bg-gray-600'
+    },
+    indigo: {
+      bg: 'bg-indigo-50',
+      text: 'text-indigo-700',
+      border: 'border-indigo-200',
+      hover: 'hover:bg-indigo-100',
+      accent: 'bg-indigo-600'
     }
   }
   return colors[colorName] || colors.gray

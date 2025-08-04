@@ -4,31 +4,45 @@ import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import posthog from '@/lib/posthog/client'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useTenant } from '@/contexts/TenantContext'
 import { usePostHogIdentify } from '@/lib/posthog/client'
+import tenantAnalytics from '@/lib/analytics/tenantAnalytics'
 
 export default function PostHogProvider({ children }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { user } = useAuth()
+  const { tenant, tenantId } = useTenant()
+  
+  // Set tenant context in analytics when tenant loads
+  useEffect(() => {
+    if (tenant) {
+      tenantAnalytics.setTenant(tenant)
+      console.log('🏢 Tenant analytics context set:', tenant.name)
+    }
+  }, [tenant])
   
   // Identify user when auth changes
   usePostHogIdentify(user)
 
-  // Track page views
+  // Track page views with tenant context
   useEffect(() => {
     if (pathname) {
       const url = pathname + (searchParams ? `?${searchParams}` : '')
-      posthog.capture('$pageview', {
+      
+      // Use tenant analytics wrapper for page views
+      tenantAnalytics.trackPageView(pathname, {
         $current_url: url,
         $pathname: pathname,
+        page_title: document.title
       })
     }
-  }, [pathname, searchParams])
+  }, [pathname, searchParams, tenantId])
 
-  // Track web vitals
+  // Track web vitals with tenant context
   useEffect(() => {
     const reportWebVitals = (metric) => {
-      posthog.capture('web_vitals', {
+      tenantAnalytics.track('web_vitals', {
         metric_name: metric.name,
         metric_value: metric.value,
         metric_id: metric.id,

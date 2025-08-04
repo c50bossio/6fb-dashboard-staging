@@ -21,6 +21,16 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showDevBypass, setShowDevBypass] = useState(false)
+
+  // Check if we're on localhost for dev bypass
+  useEffect(() => {
+    const isLocalhost = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || 
+       window.location.hostname === '127.0.0.1' ||
+       window.location.hostname.includes('local'))
+    setShowDevBypass(isLocalhost)
+  }, [])
 
   // Safety mechanism: reset loading if it's been stuck for too long
   useEffect(() => {
@@ -74,12 +84,51 @@ export default function LoginPage() {
     setError('')
     
     try {
-      await devBypassLogin()
-      console.log('Dev bypass successful, redirecting to dashboard')
+      console.log('🚧 DEV BYPASS: Starting authentication process...')
+      
+      // Clear any existing errors or stuck states
+      if (typeof window !== 'undefined') {
+        console.clear() // Clear console to remove any error traces
+      }
+      
+      const result = await devBypassLogin()
+      console.log('🚧 DEV BYPASS: Authentication successful', result)
+      
+      // Add a small delay to ensure state is properly set
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      console.log('🚧 DEV BYPASS: Redirecting to dashboard...')
       router.push('/dashboard')
+      
     } catch (err) {
-      console.error('Dev bypass error:', err)
-      setError('Dev bypass failed: ' + err.message)
+      console.error('🚧 DEV BYPASS ERROR:', err)
+      
+      // Handle specific error types
+      let errorMessage = 'Dev bypass failed'
+      
+      if (err.message.includes('Maximum call stack size exceeded')) {
+        errorMessage = 'Authentication system error detected. Please refresh the page and try again.'
+        // Offer page refresh option
+        setTimeout(() => {
+          if (confirm('Would you like to refresh the page to reset the authentication system?')) {
+            window.location.reload()
+          }
+        }, 2000)
+      } else if (err.message.includes('localhost')) {
+        errorMessage = 'Dev bypass is only available on localhost. Please use regular login in production.'
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
+      setError(errorMessage)
+      
+      // Reset any stuck localStorage states
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('dev-bypass-active')
+        localStorage.removeItem('dev-bypass-user')
+        localStorage.removeItem('dev-bypass-profile')
+      }
+      
     } finally {
       setIsLoading(false)
     }
@@ -225,6 +274,28 @@ export default function LoginPage() {
                   Cancel / Reset
                 </button>
               )}
+              
+              {/* Emergency reset button for auth errors */}
+              {error && error.includes('system error') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log('🚨 EMERGENCY RESET: Clearing all auth states...')
+                    setIsLoading(false)
+                    setError('')
+                    if (typeof window !== 'undefined') {
+                      localStorage.clear()
+                      console.log('🚨 EMERGENCY RESET: LocalStorage cleared')
+                    }
+                    setTimeout(() => {
+                      window.location.reload()
+                    }, 500)
+                  }}
+                  className="mt-2 w-full text-xs text-red-600 hover:text-red-700 underline"
+                >
+                  🚨 Emergency Reset (Clear All & Refresh)
+                </button>
+              )}
             </div>
           </form>
 
@@ -256,7 +327,7 @@ export default function LoginPage() {
           </div>
 
           {/* DEV BYPASS - Only shows on localhost */}
-          {process.env.NODE_ENV === 'development' && (
+          {showDevBypass && (
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">

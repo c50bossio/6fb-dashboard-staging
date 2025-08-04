@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
-import { anthropic, DEFAULT_CLAUDE_MODEL } from '@/lib/anthropic'
+import { anthropic as anthropicClient, DEFAULT_CLAUDE_MODEL } from '@/lib/anthropic'
 import { getGeminiModel, convertToGeminiFormat } from '@/lib/gemini'
-import { AnthropicStream, OpenAIStream, StreamingTextResponse } from 'ai'
+import { streamText } from 'ai'
+import { openai as openaiProvider } from '@ai-sdk/openai'
+import { anthropic as anthropicProvider } from '@ai-sdk/anthropic'
 
 // Initialize OpenAI
-const openai = new OpenAI({
+const openaiClient = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 })
 
@@ -51,16 +53,14 @@ async function handleOpenAI(messages, model = 'gpt-4o-mini', stream) {
   }
 
   if (stream) {
-    const response = await openai.chat.completions.create({
-      model,
+    const result = await streamText({
+      model: openaiProvider(model),
       messages,
-      stream: true,
     })
 
-    const stream = OpenAIStream(response)
-    return new StreamingTextResponse(stream)
+    return result.toAIStreamResponse()
   } else {
-    const response = await openai.chat.completions.create({
+    const response = await openaiClient.chat.completions.create({
       model,
       messages,
       stream: false,
@@ -89,18 +89,16 @@ async function handleAnthropic(messages, model = DEFAULT_CLAUDE_MODEL, stream) {
     }))
 
   if (stream) {
-    const response = await anthropic.messages.create({
-      model,
+    const result = await streamText({
+      model: anthropicProvider(model),
       messages: claudeMessages,
       system: systemMessage,
-      max_tokens: 4096,
-      stream: true,
+      maxTokens: 4096,
     })
 
-    const stream = AnthropicStream(response)
-    return new StreamingTextResponse(stream)
+    return result.toAIStreamResponse()
   } else {
-    const response = await anthropic.messages.create({
+    const response = await anthropicClient.messages.create({
       model,
       messages: claudeMessages,
       system: systemMessage,
@@ -165,7 +163,12 @@ async function handleGemini(messages, model = 'gemini-1.5-flash', stream) {
         },
       })
 
-      return new StreamingTextResponse(stream)
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Transfer-Encoding': 'chunked',
+        },
+      })
     } else {
       const result = await chat.sendMessage(prompt)
       const response = await result.response

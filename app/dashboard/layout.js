@@ -2,8 +2,9 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import DashboardLayout from '../../components/layout/DashboardLayout'
 
-export default function DashboardLayout({ children }) {
+export default function DashboardLayoutWrapper({ children }) {
   const router = useRouter()
 
   useEffect(() => {
@@ -17,8 +18,8 @@ export default function DashboardLayout({ children }) {
   }, [router])
 
   return (
-    <>
+    <DashboardLayout>
       {children}
-    </>
+    </DashboardLayout>
   )
 }

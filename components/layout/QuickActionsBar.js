@@ -102,15 +102,16 @@ export default function QuickActionsBar() {
                 key={action.id}
                 href={action.href}
                 className={`
-                  inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium
-                  transition-all duration-200 ease-in-out whitespace-nowrap
+                  inline-flex items-center px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium
+                  transition-all duration-200 ease-in-out whitespace-nowrap min-w-0
                   ${getColorClasses(action.color, 'default')}
                   transform hover:scale-105 shadow-sm hover:shadow-md
+                  touch-manipulation
                 `}
               >
-                <action.icon className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">{action.name}</span>
-                <span className="sm:hidden">{action.name.split(' ')[0]}</span>
+                <action.icon className="h-4 w-4 mr-1 sm:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline truncate">{action.name}</span>
+                <span className="sm:hidden truncate text-xs">{action.name.split(' ')[0]}</span>
                 {action.shortcut && (
                   <kbd className="ml-2 hidden lg:inline-block px-1.5 py-0.5 bg-white bg-opacity-20 text-xs rounded">
                     ⌘{action.shortcut}

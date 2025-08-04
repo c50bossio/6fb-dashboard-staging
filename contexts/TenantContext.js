@@ -1,0 +1,165 @@
+'use client'
+
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+
+const TenantContext = createContext()
+
+export const useTenant = () => {
+  const context = useContext(TenantContext)
+  if (!context) {
+    throw new Error('useTenant must be used within a TenantProvider')
+  }
+  return context
+}
+
+export const TenantProvider = ({ children }) => {
+  const { user } = useAuth()
+  const [tenant, setTenant] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Load tenant information based on authenticated user
+  useEffect(() => {
+    const loadTenant = async () => {
+      if (!user) {
+        setTenant(null)
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        // For development, create a mock tenant
+        // In production, this would fetch from Supabase
+        const mockTenant = {
+          id: 'barbershop_demo_001',
+          name: 'Demo Barbershop',
+          owner_id: user.id,
+          subscription_tier: 'professional',
+          settings: {
+            business_name: 'Demo Barbershop',
+            address: '123 Main St, Demo City, DC 12345',
+            phone: '(555) 123-4567',
+            email: 'hello@demobarbershop.com',
+            timezone: 'America/New_York',
+            currency: 'USD'
+          },
+          features: {
+            ai_chat: true,
+            analytics: true,
+            booking_system: true,
+            payment_processing: true,
+            email_marketing: false,
+            sms_notifications: true
+          },
+          integrations: {
+            stripe: { connected: false, account_id: null },
+            google_calendar: { connected: false },
+            mailchimp: { connected: false },
+            twilio: { connected: false }
+          },
+          created_at: '2025-01-01T00:00:00Z',
+          updated_at: new Date().toISOString()
+        }
+
+        setTenant(mockTenant)
+        console.log('🏢 Tenant loaded:', mockTenant.name, `(${mockTenant.id})`)
+
+      } catch (err) {
+        console.error('❌ Error loading tenant:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadTenant()
+  }, [user])
+
+  // Tenant management functions
+  const updateTenant = async (updates) => {
+    if (!tenant) return
+
+    try {
+      setLoading(true)
+      
+      // In production, this would update Supabase
+      const updatedTenant = {
+        ...tenant,
+        ...updates,
+        updated_at: new Date().toISOString()
+      }
+      
+      setTenant(updatedTenant)
+      console.log('✅ Tenant updated:', updatedTenant.name)
+      
+      return updatedTenant
+    } catch (err) {
+      console.error('❌ Error updating tenant:', err)
+      setError(err.message)
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateIntegration = async (provider, integrationData) => {
+    if (!tenant) return
+
+    try {
+      const updatedIntegrations = {
+        ...tenant.integrations,
+        [provider]: {
+          ...tenant.integrations[provider],
+          ...integrationData,
+          updated_at: new Date().toISOString()
+        }
+      }
+
+      await updateTenant({ integrations: updatedIntegrations })
+      console.log(`🔗 ${provider} integration updated`)
+      
+    } catch (err) {
+      console.error(`❌ Error updating ${provider} integration:`, err)
+      throw err
+    }
+  }
+
+  const getTenantFeature = (featureName) => {
+    return tenant?.features?.[featureName] || false
+  }
+
+  const hasSubscriptionTier = (tierName) => {
+    if (!tenant) return false
+    
+    const tiers = ['basic', 'professional', 'enterprise']
+    const currentTierIndex = tiers.indexOf(tenant.subscription_tier)
+    const requiredTierIndex = tiers.indexOf(tierName)
+    
+    return currentTierIndex >= requiredTierIndex
+  }
+
+  const value = {
+    tenant,
+    loading,
+    error,
+    updateTenant,
+    updateIntegration,
+    getTenantFeature,
+    hasSubscriptionTier,
+    
+    // Computed properties for easy access
+    tenantId: tenant?.id,
+    tenantName: tenant?.name,
+    subscriptionTier: tenant?.subscription_tier,
+    businessName: tenant?.settings?.business_name,
+    isOwner: user?.id === tenant?.owner_id
+  }
+
+  return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>
+}
+
+export default TenantContext

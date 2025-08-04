@@ -1,18 +1,12 @@
-import { test as setup, expect } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 
-const authFile = 'playwright/.auth/user.json'
-
-setup('authenticate', async ({ page }) => {
+test('updated authentication setup test', async ({ page }) => {
   // Navigate to login page
   await page.goto('/login')
-
-  // Wait a moment for page to load
   await page.waitForLoadState('networkidle')
 
-  // Scroll down to find the dev bypass button (mentioned in requirements)
+  // Scroll down to find the dev bypass button
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
-  
-  // Wait a moment for any dynamic content
   await page.waitForTimeout(1000)
 
   // Look for the specific dev bypass button
@@ -31,7 +25,6 @@ setup('authenticate', async ({ page }) => {
   
   // Verify we're logged in by checking we're on dashboard
   await expect(page).toHaveURL(/\/dashboard/)
-
-  // Save authentication state
-  await page.context().storageState({ path: authFile })
+  
+  console.log('✅ Authentication setup successful!')
 })

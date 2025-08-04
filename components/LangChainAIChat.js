@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useAIAgent } from '../hooks/useAIAgent'
+import { useTenant } from '@/contexts/TenantContext'
+import tenantAnalytics from '@/lib/analytics/tenantAnalytics'
 import LoadingSpinner from './LoadingSpinner'
 import { 
   SparklesIcon,
@@ -18,6 +20,7 @@ export default function LangChainAIChat() {
     clientCount: '',
     avgServicePrice: '',
   })
+  const { tenant, tenantId } = useTenant()
   
   const {
     loading,
@@ -35,26 +38,79 @@ export default function LangChainAIChat() {
     e.preventDefault()
     if (!input.trim() || loading) return
 
-    // Send message with context
-    await sendMessage(input, businessContext)
+    const startTime = Date.now()
+    
+    // Track AI chat interaction
+    tenantAnalytics.trackAIEvent('message_sent', {
+      message_length: input.length,
+      has_business_context: Object.values(businessContext).some(v => v),
+      conversation_type: 'general'
+    })
+
+    try {
+      // Send message with context
+      await sendMessage(input, businessContext)
+      
+      // Track successful response
+      tenantAnalytics.trackAIEvent('message_completed', {
+        response_time: Date.now() - startTime,
+        success: true
+      })
+      
+    } catch (error) {
+      // Track failed response
+      tenantAnalytics.trackAIEvent('message_failed', {
+        response_time: Date.now() - startTime,
+        error_type: error.name || 'unknown',
+        success: false
+      })
+    }
+
     setInput('')
   }
 
   const handleSpecializedQuestion = async (type, question) => {
     setInput(question)
     
-    switch(type) {
-      case 'marketing':
-        await coachMarketing(question, businessContext)
-        break
-      case 'financial':
-        await coachFinancial(question, businessContext)
-        break
-      case 'operations':
-        await coachOperations(question, businessContext)
-        break
-      default:
-        await sendMessage(question, businessContext)
+    // Track specialized AI coaching usage
+    tenantAnalytics.trackAIEvent('specialized_coaching_used', {
+      coaching_type: type,
+      question_length: question.length,
+      has_business_context: Object.values(businessContext).some(v => v)
+    })
+    
+    const startTime = Date.now()
+    
+    try {
+      switch(type) {
+        case 'marketing':
+          await coachMarketing(question, businessContext)
+          break
+        case 'financial':
+          await coachFinancial(question, businessContext)
+          break
+        case 'operations':
+          await coachOperations(question, businessContext)
+          break
+        default:
+          await sendMessage(question, businessContext)
+      }
+      
+      // Track successful specialized coaching
+      tenantAnalytics.trackAIEvent('specialized_coaching_completed', {
+        coaching_type: type,
+        response_time: Date.now() - startTime,
+        success: true
+      })
+      
+    } catch (error) {
+      // Track failed specialized coaching
+      tenantAnalytics.trackAIEvent('specialized_coaching_failed', {
+        coaching_type: type,
+        response_time: Date.now() - startTime,
+        error_type: error.name || 'unknown',
+        success: false
+      })
     }
     
     setInput('')

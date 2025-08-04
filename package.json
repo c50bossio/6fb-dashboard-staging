@@ -32,7 +32,10 @@
     "lint:fix": "next lint --fix"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.0",
+    "@ai-sdk/openai": "^2.0.1",
     "@anthropic-ai/sdk": "^0.57.0",
+    "@axe-core/playwright": "^4.10.2",
     "@fullcalendar/core": "^6.1.18",
     "@fullcalendar/daygrid": "^6.1.18",
     "@fullcalendar/interaction": "^6.1.18",

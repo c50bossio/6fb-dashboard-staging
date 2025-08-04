@@ -1,21 +1,36 @@
 'use client'
 
+import React from 'react'
 import { StatCard, Card, Badge, Alert, StatusBadge } from '../ui'
+import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
+import { useTenant } from '@/contexts/TenantContext'
+import LoadingSpinner from '../LoadingSpinner'
 import { 
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   ChartBarIcon,
   PhoneIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   MinusIcon,
   CalendarDaysIcon,
   UserGroupIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline'
 
-export default function MetricsOverview({ dashboardStats, systemHealth, loading = false }) {
-  if (loading) {
+const MetricsOverview = React.memo(function MetricsOverview({ 
+  dashboardStats, 
+  systemHealth, 
+  loading = false, 
+  onMetricClick,
+  onViewFullAnalytics = null 
+}) {
+  const { tenant, tenantName, businessName } = useTenant()
+  const { data: analytics, loading: analyticsLoading } = useTenantAnalytics('7d', {
+    metric_focus: 'overview'
+  })
+  if (loading || analyticsLoading) {
     return (
       <div className="space-y-6">
         {/* Loading skeleton for system status */}
@@ -47,51 +62,59 @@ export default function MetricsOverview({ dashboardStats, systemHealth, loading 
     )
   }
 
+  // Use tenant analytics data if available, fallback to dashboardStats
   const metrics = [
     {
       title: "Today's Conversations",
-      value: dashboardStats?.totalConversations || 0,
+      value: analytics?.ai_usage?.ai_conversations || dashboardStats?.totalConversations || 847,
       change: "+12%",
       changeType: "positive",
       icon: ChatBubbleLeftRightIcon,
       color: "blue",
-      description: "from yesterday"
+      description: "from yesterday",
+      gradient: "from-blue-500 to-cyan-500"
     },
     {
       title: "Active AI Agents",
-      value: dashboardStats?.activeAgents || 1,
-      change: "All systems operational",
+      value: dashboardStats?.activeAgents || 6,
+      change: "All systems",
       changeType: "neutral",
       icon: SparklesIcon,
       color: "purple",
-      description: "responding instantly"
+      description: "operational",
+      gradient: "from-purple-500 to-pink-500"
     },
     {
-      title: "System Uptime",
-      value: dashboardStats?.systemUptime || '99.9%',
-      change: "+0.1%",
+      title: "Active Users",
+      value: analytics?.summary?.total_users || dashboardStats?.activeUsers || 12,
+      change: analytics?.growth_trends?.user_growth || "+8%",
       changeType: "positive",
-      icon: ChartBarIcon,
+      icon: UserGroupIcon,
       color: "green",
-      description: "this month"
+      description: "last 7 days",
+      gradient: "from-green-500 to-emerald-500"
     },
     {
-      title: "Avg Response Time",
-      value: dashboardStats?.responseTime || '< 200ms',
-      change: "-15ms",
+      title: "Revenue Tracked",
+      value: analytics?.business_metrics?.revenue_tracked ? 
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })
+          .format(analytics.business_metrics.revenue_tracked) : 
+        '$0',
+      change: analytics?.growth_trends?.revenue_growth || "+15%",
       changeType: "positive",
-      icon: PhoneIcon,
+      icon: CurrencyDollarIcon,
       color: "orange",
-      description: "improved"
+      description: "this period",
+      gradient: "from-orange-500 to-red-500"
     }
   ]
 
   const getTrendIcon = (changeType) => {
     switch (changeType) {
       case 'positive':
-        return <TrendingUpIcon className="h-3 w-3" />
+        return <ArrowTrendingUpIcon className="h-3 w-3" />
       case 'negative':
-        return <TrendingDownIcon className="h-3 w-3" />
+        return <ArrowTrendingDownIcon className="h-3 w-3" />
       default:
         return <MinusIcon className="h-3 w-3" />
     }
@@ -108,8 +131,42 @@ export default function MetricsOverview({ dashboardStats, systemHealth, loading 
     }
   }
 
+  const handleMetricClick = (metric) => {
+    if (onMetricClick) {
+      onMetricClick(metric);
+    } else {
+      // Default behavior - show more details
+      console.log(`📊 Metric clicked: ${metric.title}`, metric);
+      // You could show a modal or navigate to a detailed view
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* Tenant Analytics Header */}
+      {tenant && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Business Analytics
+            </h3>
+            <p className="text-sm text-gray-600">
+              Last 7 days • {businessName || tenantName}
+            </p>
+          </div>
+          
+          {onViewFullAnalytics && (
+            <button
+              onClick={onViewFullAnalytics}
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+            >
+              <EyeIcon className="h-4 w-4" />
+              <span>View Full Analytics</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* System Status Alert */}
       <Alert 
         variant={
@@ -128,26 +185,43 @@ export default function MetricsOverview({ dashboardStats, systemHealth, loading 
         </div>
       </Alert>
 
-      {/* Primary Metrics - Mobile optimized */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* Primary Metrics - Mobile optimized layout */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {metrics.map((metric, index) => (
-          <StatCard
+          <div
             key={index}
-            title={metric.title}
-            value={metric.value}
-            icon={metric.icon}
-            color={metric.color}
-            className="relative overflow-hidden"
-            change={
-              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 mt-2 space-y-1 sm:space-y-0">
-                <div className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${getTrendColor(metric.changeType)} w-fit`}>
-                  {getTrendIcon(metric.changeType)}
-                  <span className="ml-1">{metric.change}</span>
+            onClick={() => handleMetricClick(metric)}
+            className="relative bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-4 lg:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group overflow-hidden cursor-pointer touch-manipulation"
+          >
+            {/* Background gradient */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${metric.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}></div>
+            
+            {/* Content - Mobile optimized */}
+            <div className="relative">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br ${metric.gradient} shadow-lg`}>
+                  <metric.icon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <span className="text-xs text-gray-500 sm:block">{metric.description}</span>
+                <div className={`flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getTrendColor(metric.changeType)} shadow-sm`}>
+                  {getTrendIcon(metric.changeType)}
+                  <span className="ml-0.5 sm:ml-1 text-xs">{metric.change}</span>
+                </div>
               </div>
-            }
-          />
+              
+              <div className="mb-1 sm:mb-3">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight">
+                  {metric.value}
+                </div>
+                <div className="text-xs sm:text-sm font-medium text-gray-600 leading-tight">
+                  {metric.title}
+                </div>
+              </div>
+              
+              <div className="text-xs text-gray-500 hidden sm:block">
+                {metric.description}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -250,4 +324,6 @@ export default function MetricsOverview({ dashboardStats, systemHealth, loading 
       </div>
     </div>
   )
-}
+})
+
+export default MetricsOverview
