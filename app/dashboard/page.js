@@ -5,7 +5,6 @@ import { useAuth } from '../../components/SupabaseAuthProvider'
 import { useDashboard } from '../../contexts/DashboardContext'
 import { DashboardProvider } from '../../contexts/DashboardContext'
 import ProtectedRoute from '../../components/ProtectedRoute'
-import DashboardLayout from '../../components/layout/DashboardLayout'
 import { Card, Alert, CardLoadingSkeleton } from '../../components/ui'
 import DashboardHeader from '../../components/dashboard/DashboardHeader'
 import MetricsOverview from '../../components/dashboard/MetricsOverview'
@@ -65,24 +64,22 @@ function DashboardContent() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="py-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[...Array(4)].map((_, i) => (
-              <CardLoadingSkeleton key={i} />
-            ))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <CardLoadingSkeleton />
-            <CardLoadingSkeleton />
-          </div>
+      <div className="py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[...Array(4)].map((_, i) => (
+            <CardLoadingSkeleton key={i} />
+          ))}
         </div>
-      </DashboardLayout>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CardLoadingSkeleton />
+          <CardLoadingSkeleton />
+        </div>
+      </div>
     )
   }
 
   return (
-    <DashboardLayout showQuickActions={false}>
+    <>
       {/* Enhanced Dashboard Header */}
       <DashboardHeader
         user={user}
@@ -184,7 +181,7 @@ function DashboardContent() {
         {/* Enhanced Quick Actions */}
         <QuickActions profile={profile} />
       </div>
-    </DashboardLayout>
+    </>
   )
 }
 

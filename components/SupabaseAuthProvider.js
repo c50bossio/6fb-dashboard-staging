@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../lib/supabase/client'
 
@@ -18,15 +18,20 @@ export function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [devBypassActive, setDevBypassActive] = useState(false)
+  const devBypassRef = useRef(false) // Track dev bypass state without causing re-renders
+  const hasRestoredFromStorage = useRef(false) // Prevent continuous localStorage restoration
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), []) // Memoize supabase client to prevent re-creation
 
   useEffect(() => {
+    let isMounted = true // Track if component is still mounted
+    
     // Check initial session
     const checkUser = async () => {
       try {
-        // First check for dev bypass in localStorage (development only)
-        if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+        // First check for dev bypass in localStorage (development only) - but only once
+        if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !hasRestoredFromStorage.current) {
           const devBypassActive = localStorage.getItem('dev-bypass-active')
           const storedUser = localStorage.getItem('dev-bypass-user')
           const storedProfile = localStorage.getItem('dev-bypass-profile')
@@ -34,18 +39,26 @@ export function SupabaseAuthProvider({ children }) {
           if (devBypassActive === 'true' && storedUser && storedProfile) {
             const user = JSON.parse(storedUser)
             const profile = JSON.parse(storedProfile)
-            setUser(user)
-            setProfile(profile)
-            console.log('🚧 DEV BYPASS: Restored from localStorage')
-            setLoading(false)
+            
+            // Only update state if component is still mounted
+            if (isMounted) {
+              setUser(user)
+              setProfile(profile)
+              setDevBypassActive(true)
+              devBypassRef.current = true
+              hasRestoredFromStorage.current = true // Mark as restored
+              setLoading(false)
+              console.log('🚧 DEV BYPASS: Restored from localStorage')
+            }
             return
           }
+          hasRestoredFromStorage.current = true // Mark attempt as done even if nothing found
         }
         
         // Check Supabase session
         const { data: { session } } = await supabase.auth.getSession()
         
-        if (session?.user) {
+        if (session?.user && isMounted) {
           setUser(session.user)
           console.log('Initial user session found:', session.user.email)
           
@@ -56,7 +69,7 @@ export function SupabaseAuthProvider({ children }) {
             .eq('id', session.user.id)
             .single()
             
-          if (profileData) {
+          if (profileData && isMounted) {
             setProfile(profileData)
           }
         } else {
@@ -65,7 +78,9 @@ export function SupabaseAuthProvider({ children }) {
       } catch (error) {
         console.error('Error checking user session:', error)
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
@@ -77,8 +92,14 @@ export function SupabaseAuthProvider({ children }) {
       setLoading(false)
     }, 5000) // 5 second fallback
 
-    // Set up auth state listener
+    // Set up auth state listener - but skip if dev bypass is active
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Don't interfere with dev bypass authentication
+      if (devBypassRef.current) {
+        console.log('🚧 DEV BYPASS: Skipping auth state change handling')
+        return
+      }
+      
       if (session?.user) {
         setUser(session.user)
         console.log('User authenticated:', session.user.email)
@@ -94,26 +115,32 @@ export function SupabaseAuthProvider({ children }) {
           setProfile(profileData)
         }
       } else {
-        setUser(null)
-        setProfile(null)
-        console.log('User logged out')
+        // Only clear user if not in dev bypass mode
+        if (!devBypassRef.current) {
+          setUser(null)
+          setProfile(null)
+          console.log('User logged out')
+        }
       }
 
-      // Handle auth events - but don't redirect from public pages
-      const currentPath = window.location.pathname
-      const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/']
-      const isPublicPath = publicPaths.includes(currentPath)
-      
-      if (event === 'SIGNED_OUT' && !isPublicPath) {
-        // Only redirect to login if user was on a protected page
-        router.push('/login')
-      } else if (event === 'SIGNED_IN' && (currentPath === '/login' || currentPath === '/register')) {
-        // Only redirect to dashboard if user is on login/register page
-        router.push('/dashboard')
+      // Handle auth events - but don't redirect from public pages or during dev bypass
+      if (!devBypassRef.current) {
+        const currentPath = window.location.pathname
+        const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/']
+        const isPublicPath = publicPaths.includes(currentPath)
+        
+        if (event === 'SIGNED_OUT' && !isPublicPath) {
+          // Only redirect to login if user was on a protected page
+          router.push('/login')
+        } else if (event === 'SIGNED_IN' && (currentPath === '/login' || currentPath === '/register')) {
+          // Only redirect to dashboard if user is on login/register page
+          router.push('/dashboard')
+        }
       }
     })
 
     return () => {
+      isMounted = false // Prevent state updates after unmount
       subscription.unsubscribe()
       clearTimeout(fallbackTimeout)
     }
@@ -218,6 +245,8 @@ export function SupabaseAuthProvider({ children }) {
       localStorage.removeItem('dev-bypass-user')
       localStorage.removeItem('dev-bypass-profile')
       localStorage.removeItem('dev-bypass-active')
+      setDevBypassActive(false)
+      devBypassRef.current = false
     }
     
     const { error } = await supabase.auth.signOut()
@@ -289,11 +318,23 @@ export function SupabaseAuthProvider({ children }) {
 
   // DEV BYPASS - Only for localhost development
   const devBypassLogin = async () => {
-    if (process.env.NODE_ENV !== 'development') {
-      throw new Error('Dev bypass only available in development mode')
+    // Check if running on localhost/local development
+    const isLocalhost = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || 
+       window.location.hostname === '127.0.0.1' ||
+       window.location.hostname.includes('local'))
+    
+    if (!isLocalhost) {
+      throw new Error('Dev bypass only available on localhost')
     }
     
     try {
+      console.log('🚧 DEV BYPASS: Starting development authentication...')
+      
+      // Set dev bypass flag FIRST to prevent auth state listener interference
+      setDevBypassActive(true)
+      devBypassRef.current = true
+      
       // Create a mock user session for development
       const mockUser = {
         id: 'dev-user-123',
@@ -325,25 +366,35 @@ export function SupabaseAuthProvider({ children }) {
         updated_at: new Date().toISOString()
       }
       
-      // Set the mock user and profile immediately
-      setUser(mockUser)
-      setProfile(mockProfile)
-      setLoading(false)
-      
-      // Store in localStorage for persistence across page reloads
+      // Store in localStorage FIRST for immediate persistence
       if (typeof window !== 'undefined') {
         localStorage.setItem('dev-bypass-user', JSON.stringify(mockUser))
         localStorage.setItem('dev-bypass-profile', JSON.stringify(mockProfile))
         localStorage.setItem('dev-bypass-active', 'true')
       }
       
+      // Set the mock user and profile in a controlled way
+      setUser(mockUser)
+      setProfile(mockProfile)
+      setLoading(false)
+      
       console.log('🚧 DEV BYPASS: Successfully logged in as development user')
+      console.log('🚧 DEV BYPASS: Auth state listener will be skipped')
       console.log('User:', mockUser)
       console.log('Profile:', mockProfile)
       
+      // Add a small delay to ensure state is set before returning
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       return { user: mockUser, profile: mockProfile }
     } catch (error) {
-      console.error('Dev bypass error:', error)
+      console.error('🚧 DEV BYPASS ERROR:', error)
+      // Reset dev bypass flag on error
+      setDevBypassActive(false)
+      devBypassRef.current = false
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('dev-bypass-active')
+      }
       throw error
     }
   }
