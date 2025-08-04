@@ -9,8 +9,8 @@ import {
   BellAlertIcon,
   SignalIcon,
   ClockIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowArrowTrendingUpIcon,
+  ArrowArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
@@ -111,9 +111,9 @@ export default function RealtimeDashboard() {
             trend.direction === 'up' ? 'text-green-600' : 'text-red-600'
           }`}>
             {trend.direction === 'up' ? (
-              <TrendingUpIcon className="h-3 w-3" />
+              <ArrowTrendingUpIcon className="h-3 w-3" />
             ) : (
-              <TrendingDownIcon className="h-3 w-3" />
+              <ArrowTrendingDownIcon className="h-3 w-3" />
             )}
             <span>{trend.percentage}%</span>
           </div>

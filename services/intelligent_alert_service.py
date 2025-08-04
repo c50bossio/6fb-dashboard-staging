@@ -141,7 +141,7 @@ class IntelligentAlertService:
         
         self._init_database()
         self._init_ml_models()
-        self._start_background_processing()
+        # Don't start background processing during module import
     
     def _init_database(self):
         """Initialize intelligent alerts database"""
@@ -170,12 +170,14 @@ class IntelligentAlertService:
                 recommended_actions TEXT,  -- JSON
                 similar_alerts_count INTEGER DEFAULT 0,
                 user_interactions TEXT,  -- JSON
-                ml_features TEXT,  -- JSON
-                INDEX(barbershop_id, created_at),
-                INDEX(status, priority),
-                INDEX(category, created_at)
+                ml_features TEXT  -- JSON
             )
         ''')
+        
+        # Create indexes separately
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alerts_barbershop_created ON alerts(barbershop_id, created_at)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alerts_status_priority ON alerts(status, priority)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alerts_category_created ON alerts(category, created_at)')
         
         # Alert rules
         cursor.execute('''
@@ -192,11 +194,13 @@ class IntelligentAlertService:
                 trigger_count INTEGER DEFAULT 0,
                 user_feedback_score REAL DEFAULT 0.5,
                 created_at TEXT,
-                updated_at TEXT,
-                INDEX(barbershop_id, enabled),
-                INDEX(category, enabled)
+                updated_at TEXT
             )
         ''')
+        
+        # Create indexes for alert_rules
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alert_rules_barbershop_enabled ON alert_rules(barbershop_id, enabled)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alert_rules_category_enabled ON alert_rules(category, enabled)')
         
         # User preferences
         cursor.execute('''
@@ -226,11 +230,13 @@ class IntelligentAlertService:
                 interaction_type TEXT,  -- viewed, acknowledged, dismissed, rated
                 interaction_data TEXT,  -- JSON
                 timestamp TEXT,
-                response_time REAL,  -- seconds to respond
-                INDEX(alert_id),
-                INDEX(user_id, timestamp)
+                response_time REAL  -- seconds to respond
             )
         ''')
+        
+        # Create indexes for alert_interactions
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alert_interactions_alert ON alert_interactions(alert_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alert_interactions_user_timestamp ON alert_interactions(user_id, timestamp)')
         
         # ML training data
         cursor.execute('''
@@ -240,10 +246,12 @@ class IntelligentAlertService:
                 alert_features TEXT,  -- JSON
                 user_response TEXT,  -- useful, spam, ignored
                 feedback_score REAL,
-                created_at TEXT,
-                INDEX(barbershop_id, created_at)
+                created_at TEXT
             )
         ''')
+        
+        # Create indexes for alert_ml_training
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alert_ml_training_barbershop_created ON alert_ml_training(barbershop_id, created_at)')
         
         # Alert clustering and patterns
         cursor.execute('''
@@ -254,10 +262,12 @@ class IntelligentAlertService:
                 pattern_data TEXT,  -- JSON
                 alerts_in_pattern TEXT,  -- JSON array of alert_ids
                 significance_score REAL,
-                identified_at TEXT,
-                INDEX(barbershop_id, pattern_type)
+                identified_at TEXT
             )
         ''')
+        
+        # Create indexes for alert_patterns
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_alert_patterns_barbershop_type ON alert_patterns(barbershop_id, pattern_type)')
         
         conn.commit()
         conn.close()
@@ -288,7 +298,7 @@ class IntelligentAlertService:
             )
             
             # Load any existing trained models
-            self._load_trained_models()
+            # Models will be initialized on first use
             
             logger.info("✅ Intelligent alert ML models initialized")
             

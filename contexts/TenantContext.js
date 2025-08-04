@@ -61,7 +61,7 @@ export const TenantProvider = ({ children }) => {
               timezone: 'America/New_York',
               currency: 'USD'
             },
-          features: {
+            features: {
             ai_chat: true,
             analytics: true,
             booking_system: true,
@@ -69,18 +69,19 @@ export const TenantProvider = ({ children }) => {
             email_marketing: false,
             sms_notifications: true
           },
-          integrations: {
-            stripe: { connected: false, account_id: null },
-            google_calendar: { connected: false },
-            mailchimp: { connected: false },
-            twilio: { connected: false }
-          },
-          created_at: '2025-01-01T00:00:00Z',
-          updated_at: new Date().toISOString()
-        }
+            integrations: {
+              stripe: { connected: false, account_id: null },
+              google_calendar: { connected: false },
+              mailchimp: { connected: false },
+              twilio: { connected: false }
+            },
+            created_at: '2025-01-01T00:00:00Z',
+            updated_at: new Date().toISOString()
+          }
 
-        setTenant(mockTenant)
-        console.log('🏢 Tenant loaded:', mockTenant.name, `(${mockTenant.id})`)
+          setTenant(mockTenant)
+          console.log('🏢 Tenant loaded:', mockTenant.name, `(${mockTenant.id})`)
+        }
 
       } catch (err) {
         console.error('❌ Error loading tenant:', err)

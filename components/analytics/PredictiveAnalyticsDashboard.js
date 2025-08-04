@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon, 
-  TrendingUpIcon, 
-  TrendingDownIcon,
+  ArrowArrowTrendingUpIcon, 
+  ArrowArrowTrendingDownIcon,
   SparklesIcon,
   LightBulbIcon,
   ExclamationTriangleIcon,
@@ -62,8 +62,8 @@ export default function PredictiveAnalyticsDashboard({ className = '' }) {
   }
 
   const getTrendIcon = (trend) => {
-    if (trend === 'increasing') return <TrendingUpIcon className="h-4 w-4 text-green-500" />
-    if (trend === 'decreasing') return <TrendingDownIcon className="h-4 w-4 text-red-500" />
+    if (trend === 'increasing') return <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
+    if (trend === 'decreasing') return <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />
     return <ClockIcon className="h-4 w-4 text-gray-500" />
   }
 

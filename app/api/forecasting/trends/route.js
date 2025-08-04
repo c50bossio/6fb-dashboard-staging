@@ -589,7 +589,7 @@ function generateTrendProjections(trendAnalysis, seasonalPatterns) {
       period: '3_months',
       projected_revenue: currentRevenue * Math.pow(1 + baseGrowthRate, 3),
       confidence: 0.89,
-      seasonal_adjustments: applySeason alAdjustments(3, seasonalPatterns),
+      seasonal_adjustments: applySeasonalAdjustments(3, seasonalPatterns),
       key_factors: ['Current trend continuation', 'Seasonal patterns', 'Market conditions']
     },
     mediumTerm: {
