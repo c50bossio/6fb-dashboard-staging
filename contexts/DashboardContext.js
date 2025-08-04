@@ -2,12 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { agenticCoach, system } from '../lib/api';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../components/SupabaseAuthProvider';
 
 const DashboardContext = createContext({});
 
 export function DashboardProvider({ children }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -27,45 +27,58 @@ export function DashboardProvider({ children }) {
 
   // Load dashboard data on mount and when user changes
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (user) {
       loadDashboardData();
     }
-  }, [isAuthenticated, user]);
+  }, [user]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Load system health and insights in parallel
-      const [healthData, insightsData] = await Promise.allSettled([
-        system.health(),
-        agenticCoach.getLearningInsights()
-      ]);
+      console.log('🔄 Loading dashboard data...');
 
-      // Process health data
-      if (healthData.status === 'fulfilled') {
-        setSystemHealth(healthData.value);
-        
-        // Update stats based on system health
-        setDashboardStats(prev => ({
-          ...prev,
-          systemUptime: healthData.value.status === 'healthy' ? '99.9%' : '95.2%',
-          responseTime: healthData.value.database?.healthy ? '< 200ms' : '< 500ms'
-        }));
-      }
+      // Create mock data for development
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate loading
 
-      // Process insights data
-      if (insightsData.status === 'fulfilled') {
-        setAgentInsights(insightsData.value);
-        
-        // Update conversation stats
-        const totalInteractions = insightsData.value.coach_learning_data?.total_interactions || 0;
-        setDashboardStats(prev => ({
-          ...prev,
-          totalConversations: totalInteractions
-        }));
-      }
+      // Mock system health data
+      const mockSystemHealth = {
+        status: 'healthy',
+        database: { healthy: true, response_time: 45 },
+        agents: { active: 6, total: 8 },
+        api: { healthy: true, response_time: 120 },
+        timestamp: new Date().toISOString()
+      };
+
+      // Mock insights data
+      const mockInsights = {
+        coach_learning_data: {
+          total_interactions: 847,
+          common_topics: ['scheduling', 'customer service', 'pricing'],
+          avg_satisfaction: 4.7,
+          learning_progress: 85
+        },
+        performance_metrics: {
+          accuracy: 94.2,
+          response_time: 1.8,
+          user_engagement: 78.5
+        }
+      };
+
+      setSystemHealth(mockSystemHealth);
+      setAgentInsights(mockInsights);
+      
+      // Update stats with mock data
+      setDashboardStats(prev => ({
+        ...prev,
+        totalConversations: mockInsights.coach_learning_data.total_interactions,
+        activeAgents: mockSystemHealth.agents.active,
+        systemUptime: '99.9%',
+        responseTime: '< 200ms'
+      }));
+
+      console.log('✅ Dashboard data loaded successfully');
 
     } catch (err) {
       console.error('Dashboard data loading error:', err);
@@ -79,10 +92,24 @@ export function DashboardProvider({ children }) {
     try {
       setError(null);
       
-      const response = await agenticCoach.chat(message, shopContext, currentSession);
+      // Mock AI response for development
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate thinking time
+      
+      const mockResponse = {
+        session_id: currentSession || `session_${Date.now()}`,
+        response: `I understand you're asking about "${message}". As your AI business coach, I can help you optimize your barbershop operations, improve customer satisfaction, and grow your revenue. What specific area would you like to focus on?`,
+        timestamp: new Date().toISOString(),
+        recommendations: [
+          'Consider implementing online booking system',
+          'Focus on customer retention strategies',
+          'Analyze peak hours for optimal staffing'
+        ],
+        confidence: 0.92,
+        domains_addressed: ['business_strategy', 'customer_service']
+      };
       
       // Update current session
-      setCurrentSession(response.session_id);
+      setCurrentSession(mockResponse.session_id);
       
       // Add to conversation history
       setConversationHistory(prev => [
@@ -94,11 +121,11 @@ export function DashboardProvider({ children }) {
         },
         {
           role: 'assistant',
-          content: response.response,
-          timestamp: response.timestamp,
-          recommendations: response.recommendations,
-          confidence: response.confidence,
-          domains_addressed: response.domains_addressed
+          content: mockResponse.response,
+          timestamp: mockResponse.timestamp,
+          recommendations: mockResponse.recommendations,
+          confidence: mockResponse.confidence,
+          domains_addressed: mockResponse.domains_addressed
         }
       ]);
 
@@ -108,7 +135,7 @@ export function DashboardProvider({ children }) {
         totalConversations: prev.totalConversations + 1
       }));
 
-      return response;
+      return mockResponse;
     } catch (err) {
       setError(err.message || 'Failed to send message');
       throw err;
@@ -117,8 +144,24 @@ export function DashboardProvider({ children }) {
 
   const loadConversationHistory = async (sessionId) => {
     try {
-      const history = await agenticCoach.getConversationHistory(sessionId);
-      setConversationHistory(history.messages || []);
+      // Mock conversation history for development
+      const mockHistory = {
+        messages: [
+          {
+            role: 'user',
+            content: 'How can I increase my barbershop revenue?',
+            timestamp: new Date(Date.now() - 3600000).toISOString()
+          },
+          {
+            role: 'assistant', 
+            content: 'Great question! Here are several proven strategies to boost your barbershop revenue: 1) Implement premium services like beard treatments, 2) Create loyalty programs, 3) Optimize your booking schedule during peak hours.',
+            timestamp: new Date(Date.now() - 3500000).toISOString(),
+            recommendations: ['Add premium services', 'Create loyalty program', 'Optimize scheduling']
+          }
+        ]
+      };
+      
+      setConversationHistory(mockHistory.messages || []);
       setCurrentSession(sessionId);
     } catch (err) {
       console.error('Failed to load conversation history:', err);
@@ -128,10 +171,12 @@ export function DashboardProvider({ children }) {
 
   const updateShopContext = async (contextData) => {
     try {
-      await agenticCoach.updateShopContext(contextData);
-      // Refresh insights after context update
-      const insightsData = await agenticCoach.getLearningInsights();
-      setAgentInsights(insightsData);
+      // Mock context update for development
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('🔄 Shop context updated:', contextData);
+      
+      // Mock refresh of insights
+      loadDashboardData();
     } catch (err) {
       console.error('Failed to update shop context:', err);
       setError('Failed to update shop context');

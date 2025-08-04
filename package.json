@@ -40,6 +40,7 @@
     "@fullcalendar/resource-timeline": "^6.1.18",
     "@fullcalendar/rrule": "^6.1.18",
     "@fullcalendar/timegrid": "^6.1.18",
+    "@google/generative-ai": "^0.24.1",
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
     "@novu/headless": "^2.6.6",

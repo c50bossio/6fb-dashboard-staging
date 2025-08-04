@@ -5,17 +5,25 @@ import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 
 const models = [
-  // OpenAI Models
-  { id: 'gpt-4-turbo-preview', name: 'GPT-4 Turbo', provider: 'openai', description: 'Most capable OpenAI model' },
-  { id: 'gpt-4', name: 'GPT-4', provider: 'openai', description: 'Advanced reasoning' },
-  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'openai', description: 'Fast and efficient' },
+  // OpenAI Models (Latest 2024/2025)
+  { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', description: 'Latest multimodal GPT-4 (Dec 2024)' },
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', description: 'Fast and affordable GPT-4o' },
+  { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', provider: 'openai', description: 'Enhanced GPT-4 with latest training' },
+  { id: 'gpt-4', name: 'GPT-4', provider: 'openai', description: 'Classic advanced reasoning model' },
+  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', provider: 'openai', description: 'Fast and cost-effective' },
   
-  // Anthropic Models
-  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'anthropic', description: 'Latest Claude model' },
-  { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', provider: 'anthropic', description: 'Fast Claude model' },
-  { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', provider: 'anthropic', description: 'Most capable Claude' },
-  { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', provider: 'anthropic', description: 'Balanced Claude model' },
-  { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', provider: 'anthropic', description: 'Fastest Claude model' },
+  // Anthropic Models (Latest 2024/2025)
+  { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet V2', provider: 'anthropic', description: 'Latest Claude with enhanced capabilities' },
+  { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', provider: 'anthropic', description: 'Fastest Claude 3.5 model' },
+  { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', provider: 'anthropic', description: 'Most capable Claude 3 model' },
+  { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', provider: 'anthropic', description: 'Balanced Claude 3 model' },
+  
+  // Google Gemini Models (Latest 2024/2025)
+  { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', provider: 'google', description: 'Latest Gemini 2.0 experimental (Dec 2024)' },
+  { id: 'gemini-1.5-pro-002', name: 'Gemini 1.5 Pro 002', provider: 'google', description: 'Enhanced Gemini 1.5 Pro (Nov 2024)' },
+  { id: 'gemini-1.5-flash-002', name: 'Gemini 1.5 Flash 002', provider: 'google', description: 'Latest fast Gemini model' },
+  { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', provider: 'google', description: 'Multimodal flagship model' },
+  { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', provider: 'google', description: 'Fast and efficient Gemini' },
 ]
 
 function classNames(...classes) {
@@ -42,7 +50,9 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
               <div className="flex items-center">
                 <span className={classNames(
                   'inline-block h-2 w-2 flex-shrink-0 rounded-full',
-                  selected.provider === 'openai' ? 'bg-green-400' : 'bg-purple-400'
+                  selected.provider === 'openai' ? 'bg-green-400' : 
+                  selected.provider === 'anthropic' ? 'bg-purple-400' : 
+                  selected.provider === 'google' ? 'bg-blue-400' : 'bg-gray-400'
                 )} />
                 <span className="ml-3 block truncate">{selected.name}</span>
               </div>
@@ -75,7 +85,9 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                         <div className="flex items-center">
                           <span className={classNames(
                             'inline-block h-2 w-2 flex-shrink-0 rounded-full',
-                            model.provider === 'openai' ? 'bg-green-400' : 'bg-purple-400'
+                            model.provider === 'openai' ? 'bg-green-400' : 
+                            model.provider === 'anthropic' ? 'bg-purple-400' : 
+                            model.provider === 'google' ? 'bg-blue-400' : 'bg-gray-400'
                           )} />
                           <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}>
                             {model.name}

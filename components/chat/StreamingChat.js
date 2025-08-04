@@ -59,14 +59,18 @@ export default function StreamingChat() {
           <div className="text-center text-gray-500 mt-8">
             <p className="text-lg font-medium mb-2">Welcome to AI Chat</p>
             <p className="text-sm">Choose a model above and start chatting!</p>
-            <div className="mt-4 grid grid-cols-2 gap-4 max-w-md mx-auto">
+            <div className="mt-4 grid grid-cols-3 gap-3 max-w-lg mx-auto">
               <div className="bg-green-50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-green-800">OpenAI Models</p>
-                <p className="text-xs text-green-600 mt-1">GPT-4, GPT-3.5</p>
+                <p className="text-xs font-semibold text-green-800">OpenAI</p>
+                <p className="text-xs text-green-600 mt-1">GPT-4o, GPT-4 Turbo</p>
               </div>
               <div className="bg-purple-50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-purple-800">Claude Models</p>
-                <p className="text-xs text-purple-600 mt-1">Claude 3.5, Claude 3</p>
+                <p className="text-xs font-semibold text-purple-800">Claude</p>
+                <p className="text-xs text-purple-600 mt-1">Claude 3.5 V2, Opus</p>
+              </div>
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-xs font-semibold text-blue-800">Gemini</p>
+                <p className="text-xs text-blue-600 mt-1">Gemini 2.0, 1.5 Pro</p>
               </div>
             </div>
           </div>
@@ -87,7 +91,10 @@ export default function StreamingChat() {
               }`}
             >
               <div className="text-xs opacity-70 mb-1">
-                {message.role === 'user' ? 'You' : modelConfig.provider === 'openai' ? 'OpenAI' : 'Claude'}
+                {message.role === 'user' ? 'You' : 
+                 modelConfig.provider === 'openai' ? 'OpenAI' : 
+                 modelConfig.provider === 'anthropic' ? 'Claude' : 
+                 modelConfig.provider === 'google' ? 'Gemini' : 'AI'}
               </div>
               <div className="whitespace-pre-wrap">{message.content}</div>
             </div>
