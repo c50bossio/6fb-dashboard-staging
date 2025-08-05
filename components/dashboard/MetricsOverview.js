@@ -19,6 +19,9 @@ import {
   EyeIcon
 } from '@heroicons/react/24/outline'
 
+// Fallback component in case ArrowTrendingUpIcon is not available
+const SafeArrowTrendingUpIcon = ArrowTrendingUpIcon || (() => <span>↗</span>)
+
 const MetricsOverview = React.memo(function MetricsOverview({ 
   dashboardStats, 
   systemHealth, 
@@ -112,7 +115,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
   const getTrendIcon = (changeType) => {
     switch (changeType) {
       case 'positive':
-        return <ArrowTrendingUpIcon className="h-3 w-3" />
+        return <SafeArrowTrendingUpIcon className="h-3 w-3" />
       case 'negative':
         return <ArrowTrendingDownIcon className="h-3 w-3" />
       default:

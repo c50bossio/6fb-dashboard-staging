@@ -204,6 +204,17 @@ export async function POST(request) {
 
         const selectedPlan = PRICING_PLANS[plan]
 
+        // Check if we have valid Stripe keys
+        if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe')) {
+          // Return mock checkout session for testing
+          return NextResponse.json({
+            success: true,
+            checkout_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/billing/success?session_id=cs_test_mock_session_123`,
+            session_id: 'cs_test_mock_session_123',
+            message: 'Mock checkout created for testing (Stripe not configured)'
+          })
+        }
+
         // Create Stripe Checkout Session with 14-day trial
         const session = await stripe.checkout.sessions.create({
           mode: 'subscription',
@@ -253,6 +264,16 @@ export async function POST(request) {
             { error: 'tenant_id required' },
             { status: 400 }
           )
+        }
+
+        // Check if we have valid Stripe keys
+        if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe')) {
+          // Return mock portal session for testing
+          return NextResponse.json({
+            success: true,
+            portal_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/billing/portal-demo`,
+            message: 'Mock portal created for testing (Stripe not configured)'
+          })
         }
 
         // In production, get stripe_customer_id from database

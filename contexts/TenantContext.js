@@ -40,19 +40,19 @@ export const TenantProvider = ({ children }) => {
           const parsedTenant = JSON.parse(storedTenant)
           setTenant(parsedTenant)
         } else {
-          // New user - no tenant yet, will need to complete onboarding
-          setTenant(null)
+          // New user - no tenant yet, create a default tenant for them
+          console.log('🆕 New user detected, creating tenant...')
         }
 
-        // For demo purposes, create a mock tenant if none exists
-        // In production, this would check Supabase for existing tenant
+        // Create a default tenant for new users
+        // In production, this would create a record in Supabase
         if (!storedTenant) {
           const mockTenant = {
             id: 'barbershop_demo_001',
             name: 'Demo Barbershop',
             owner_id: user.id,
-            subscription_tier: 'professional',
-            onboarding_completed: false, // Key flag for onboarding flow
+            subscription_tier: 'starter',
+            onboarding_completed: true, // Set to true so users can access dashboard immediately
             settings: {
               business_name: 'Demo Barbershop',
               address: '123 Main St, Demo City, DC 12345',

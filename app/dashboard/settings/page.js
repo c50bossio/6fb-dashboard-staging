@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react'
+import dynamic from 'next/dynamic'
 // Import only essential icons for initial load
 import { 
   CogIcon,
@@ -31,7 +32,6 @@ const ArrowTrendingDownIcon = dynamic(() => import('@heroicons/react/24/outline'
 import TimeRangePicker from '../../../components/TimeRangePicker'
 import NuclearInput from '../../../components/NuclearInput'
 import InternationalPhoneInput from '../../../components/InternationalPhoneInput'
-import dynamic from 'next/dynamic'
 
 // Lazy load charts to improve initial page load with loading fallback
 const ChartLoadingSpinner = () => (

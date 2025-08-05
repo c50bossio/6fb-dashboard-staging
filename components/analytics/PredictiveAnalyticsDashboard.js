@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon, 
-  ArrowArrowTrendingUpIcon, 
-  ArrowArrowTrendingDownIcon,
+  ArrowTrendingUpIcon, 
+  ArrowTrendingDownIcon,
   SparklesIcon,
   LightBulbIcon,
   ExclamationTriangleIcon,
