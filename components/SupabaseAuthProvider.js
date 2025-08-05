@@ -86,11 +86,11 @@ export function SupabaseAuthProvider({ children }) {
 
     checkUser()
     
-    // Fallback timeout to ensure loading state resolves
+    // Fallback timeout to ensure loading state resolves - increased for complex multi-tenant setup
     const fallbackTimeout = setTimeout(() => {
       console.warn('Auth loading timeout - forcing loading to false')
       setLoading(false)
-    }, 5000) // 5 second fallback
+    }, 15000) // 15 second fallback to allow for tenant context setup
 
     // Set up auth state listener - but skip if dev bypass is active
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -100,26 +100,42 @@ export function SupabaseAuthProvider({ children }) {
         return
       }
       
+      console.log('🔐 Auth state change:', event, session?.user?.email || 'No user')
+      
       if (session?.user) {
+        console.log('🔐 Setting user in auth context:', session.user.email)
         setUser(session.user)
-        console.log('User authenticated:', session.user.email)
         
-        // Fetch updated profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          
-        if (profileData) {
-          setProfile(profileData)
+        // Fetch updated profile with better error handling
+        try {
+          console.log('🔐 Fetching user profile...')
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+            
+          if (profileError) {
+            console.warn('🔐 Profile fetch error (may be expected for new users):', profileError)
+          } else if (profileData) {
+            console.log('🔐 Profile loaded successfully:', profileData.email)
+            setProfile(profileData)
+          }
+        } catch (profileErr) {
+          console.warn('🔐 Profile fetch failed:', profileErr)
+          // Continue without profile - user can still access basic features
         }
+        
+        // Set loading to false after user and profile are set
+        console.log('🔐 Auth flow completed, setting loading to false')
+        setLoading(false)
+        
       } else {
         // Only clear user if not in dev bypass mode
         if (!devBypassRef.current) {
+          console.log('🔐 Clearing user authentication state')
           setUser(null)
           setProfile(null)
-          console.log('User logged out')
         }
       }
 

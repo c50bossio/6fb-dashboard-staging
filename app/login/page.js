@@ -32,14 +32,14 @@ export default function LoginPage() {
     setShowDevBypass(isLocalhost)
   }, [])
 
-  // Safety mechanism: reset loading if it's been stuck for too long
+  // Safety mechanism: reset loading if it's been stuck for too long - increased for multi-tenant setup
   useEffect(() => {
     if (isLoading) {
       const timeout = setTimeout(() => {
         console.warn('Login took too long, resetting loading state')
         setIsLoading(false)
-        setError('Login timed out. Please try again.')
-      }, 10000) // 10 second timeout
+        setError('Login timed out. This can happen with slow connections or complex account setups. Please try again.')
+      }, 20000) // 20 second timeout to allow for full tenant/analytics context setup
       
       return () => clearTimeout(timeout)
     }
@@ -59,23 +59,39 @@ export default function LoginPage() {
     setError('')
 
     try {
+      console.log('🔐 Starting authentication process...')
+      
       // Use real authentication with Supabase
       const result = await signIn({
         email: formData.email,
         password: formData.password
       })
       
-      console.log('Login successful:', result)
+      console.log('🔐 Supabase authentication successful:', result)
+      console.log('🔐 Waiting for tenant context and analytics setup...')
       
-      // Note: Don't manually redirect here - let the AuthProvider handle it
-      // The onAuthStateChange listener will automatically redirect to dashboard
+      // Don't immediately set loading to false - let the auth flow complete
+      // The AuthProvider will handle the full flow including tenant setup
+      // Only set loading to false if there's an error or after a reasonable delay
+      
+      // Add a success timeout - if auth is successful but no redirect happens
+      setTimeout(() => {
+        if (isLoading) {
+          console.log('🔐 Authentication completed, but redirect may be delayed. Checking status...')
+          // Check if we should manually redirect
+          const currentPath = window.location.pathname
+          if (currentPath === '/login' && result?.user) {
+            console.log('🔐 Manual redirect to dashboard...')
+            router.push('/dashboard')
+          }
+          setIsLoading(false)
+        }
+      }, 3000) // Give 3 seconds for auth flow to complete
       
     } catch (err) {
-      console.error('Login error:', err)
+      console.error('🔐 Authentication error:', err)
       setError(err.message || 'Login failed. Please try again.')
-    } finally {
-      // Always reset loading state
-      setIsLoading(false)
+      setIsLoading(false) // Only set loading false on actual error
     }
   }
 
