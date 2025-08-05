@@ -51,18 +51,18 @@ const nextConfig = {
   poweredByHeader: false,
   generateEtags: false,
   
-  // Environment-specific API rewrites
+  // Environment-specific API rewrites - redirect FastAPI calls only
   async rewrites() {
     const isDev = process.env.NODE_ENV === 'development';
-    // Use NEXT_PUBLIC_API_URL if set (for Docker), otherwise default based on environment
+    // Use explicit localhost (IPv4) to avoid IPv6 connection issues
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || (isDev 
-      ? 'http://localhost:8001' 
+      ? 'http://127.0.0.1:8001' 
       : 'https://6fb-ai-backend-staging.onrender.com');
       
     return [
       {
-        source: '/api/:path*',
-        destination: `${apiUrl}/api/:path*`,
+        source: '/fastapi/:path*',
+        destination: `${apiUrl}/:path*`,
       },
     ];
   },

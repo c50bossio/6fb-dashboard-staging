@@ -83,7 +83,7 @@ export default function AIChat({ agentId = 'business_coach', onClose }) {
       return
     }
 
-    const wsUrl = `ws://localhost:8001/ws/${token}`
+    const wsUrl = `ws://127.0.0.1:8001/ws/${token}`
     console.log('Attempting to connect to:', wsUrl)
     
     try {
@@ -180,7 +180,7 @@ export default function AIChat({ agentId = 'business_coach', onClose }) {
     } else {
       // HTTP fallback mode
       try {
-        const response = await fetch('/api/chat/unified', {
+        const response = await fetch('/api/ai/enhanced-chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

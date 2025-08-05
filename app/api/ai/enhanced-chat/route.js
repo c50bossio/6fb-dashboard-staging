@@ -69,25 +69,67 @@ export async function POST(request) {
 }
 
 async function generateEnhancedAIResponse(message, sessionId, businessContext) {
-  // Simulate RAG-enhanced AI response generation
-  
-  // First, get contextual insights (simulated)
-  const contextualInsights = await getContextualKnowledge(message, businessContext)
-  
-  // Then generate response based on message type and context
-  const messageType = classifyMessage(message)
-  const baseResponse = await generateIntelligentResponse(message, sessionId, businessContext, contextualInsights)
-  
-  // Enhance with RAG insights
-  const enhancedResponse = {
-    ...baseResponse,
-    contextualInsights,
-    knowledgeEnhanced: contextualInsights.relevantKnowledge.length > 0,
-    confidence: contextualInsights.relevantKnowledge.length > 0 ? 
-      Math.min(baseResponse.confidence + 0.1, 0.95) : baseResponse.confidence
+  try {
+    // Import AI providers
+    const { 
+      callBestAIProvider, 
+      classifyBusinessMessage, 
+      generateBusinessRecommendations 
+    } = await import('@/lib/ai-providers')
+    
+    // Get real contextual insights using vector database RAG
+    const { getEnhancedContext } = await import('@/lib/vector-knowledge')
+    const contextualInsights = await getEnhancedContext(message, businessContext)
+    
+    // Classify message for optimal AI routing
+    const messageType = classifyBusinessMessage(message)
+    
+    console.log(`🤖 Routing "${messageType}" message to best AI provider`)
+    
+    // Call real AI provider with business context
+    const aiResponse = await callBestAIProvider(message, messageType, businessContext)
+    
+    // Generate business-specific recommendations
+    const recommendations = generateBusinessRecommendations(messageType, aiResponse.response)
+    
+    // Enhance with RAG insights
+    const enhancedResponse = {
+      response: aiResponse.response,
+      provider: aiResponse.provider,
+      model: aiResponse.model,
+      confidence: contextualInsights.relevantKnowledge.length > 0 ? 
+        Math.min(aiResponse.confidence + 0.1, 0.95) : aiResponse.confidence,
+      messageType: messageType,
+      recommendations: recommendations,
+      contextualInsights,
+      knowledgeEnhanced: contextualInsights.relevantKnowledge.length > 0,
+      timestamp: new Date().toISOString(),
+      tokens_used: aiResponse.tokens_used || 0
+    }
+    
+    console.log(`✅ Real AI response generated via ${aiResponse.provider}`)
+    return enhancedResponse
+    
+  } catch (aiError) {
+    console.error('Real AI provider failed:', aiError)
+    
+    // Fallback to intelligent mock if AI providers fail
+    console.log('🔄 Falling back to intelligent mock with vector RAG...')
+    
+    const { getEnhancedContext } = await import('@/lib/vector-knowledge')
+    const contextualInsights = await getEnhancedContext(message, businessContext)
+    const messageType = classifyMessage(message)
+    const mockResponse = await generateIntelligentResponse(message, sessionId, businessContext, contextualInsights)
+    
+    return {
+      ...mockResponse,
+      contextualInsights,
+      knowledgeEnhanced: contextualInsights.relevantKnowledge.length > 0,
+      confidence: contextualInsights.relevantKnowledge.length > 0 ? 
+        Math.min(mockResponse.confidence + 0.1, 0.95) : mockResponse.confidence,
+      fallback_reason: aiError.message
+    }
   }
-  
-  return enhancedResponse
 }
 
 async function getContextualKnowledge(message, businessContext) {

@@ -116,12 +116,26 @@ const DashboardHeader = React.memo(function DashboardHeader({
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-sm px-2 sm:px-3 py-2 sm:py-2 rounded-lg text-center sm:text-left">
-                <div className="bg-green-500 p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3 relative">
-                  <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <div className={`p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3 relative ${
+                  systemHealth?.status === 'healthy' ? 'bg-green-500' :
+                  systemHealth?.status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'
+                }`}>
+                  <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-pulse ${
+                    systemHealth?.status === 'healthy' ? 'bg-green-400' :
+                    systemHealth?.status === 'degraded' ? 'bg-yellow-400' : 'bg-red-400'
+                  }`}></div>
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm sm:text-lg font-bold text-green-200">System</div>
-                  <div className="text-xs text-green-300">{systemHealth?.status || 'healthy'}</div>
+                  <div className={`text-sm sm:text-lg font-bold ${
+                    systemHealth?.status === 'healthy' ? 'text-green-200' :
+                    systemHealth?.status === 'degraded' ? 'text-yellow-200' : 'text-red-200'
+                  }`}>System</div>
+                  <div className={`text-xs ${
+                    systemHealth?.status === 'healthy' ? 'text-green-300' :
+                    systemHealth?.status === 'degraded' ? 'text-yellow-300' : 'text-red-300'
+                  }`}>
+                    {systemHealth?.status || 'healthy'}
+                  </div>
                 </div>
               </div>
             </div>
