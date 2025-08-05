@@ -19,7 +19,10 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # Configuration
-SECRET_KEY = "6fb-ai-agent-system-secret-key-change-in-production"
+import os
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("JWT_SECRET_KEY environment variable is required for security")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
@@ -93,13 +96,18 @@ class AuthService:
             cursor.execute("SELECT COUNT(*) FROM users WHERE role = 'admin'")
             if cursor.fetchone()[0] == 0:
                 admin_id = str(uuid.uuid4())
-                admin_password = self.hash_password("admin123")
+                # Use secure admin password from environment
+                admin_password_plain = os.getenv("ADMIN_PASSWORD")
+                if not admin_password_plain:
+                    raise ValueError("ADMIN_PASSWORD environment variable is required for security")
+                admin_password = self.hash_password(admin_password_plain)
+                admin_email = os.getenv("ADMIN_EMAIL", "admin@6fb-ai.com")
                 cursor.execute("""
                     INSERT INTO users (id, email, hashed_password, full_name, role, organization)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, (admin_id, "admin@6fb-ai.com", admin_password, "System Administrator", "admin", "6FB AI"))
+                """, (admin_id, admin_email, admin_password, "System Administrator", "admin", "6FB AI"))
                 conn.commit()
-                logger.info("Created default admin user: admin@6fb-ai.com / admin123")
+                logger.info(f"Created default admin user: {admin_email} (password from environment)")
     
     def hash_password(self, password: str) -> str:
         """Hash a password using bcrypt"""

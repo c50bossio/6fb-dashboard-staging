@@ -6,6 +6,8 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
+from middleware.rate_limiting import RateLimitMiddleware
+from middleware.security_headers import SecurityHeadersMiddleware, SecurityReportingMiddleware
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta
 import asyncio
@@ -34,6 +36,21 @@ app = FastAPI(
     title="6FB AI Agent System API",
     description="AI-powered barbershop management system",
     version="2.0.0"
+)
+
+# Security headers middleware (first layer)
+app.add_middleware(
+    SecurityHeadersMiddleware,
+    environment=os.getenv('NODE_ENV', 'development')
+)
+
+# Security reporting middleware
+app.add_middleware(SecurityReportingMiddleware)
+
+# Rate limiting middleware (before CORS)
+app.add_middleware(
+    RateLimitMiddleware,
+    enabled=True
 )
 
 # CORS configuration
@@ -251,7 +268,7 @@ async def register(user: UserRegister):
 @app.post("/api/v1/auth/login", response_model=TokenResponse)
 async def login(user: UserLogin):
     """Login user"""
-    print(f"LOGIN ATTEMPT: email={user.email}, password={user.password}")
+    print(f"LOGIN ATTEMPT: email={user.email}")
     
     with get_db() as conn:
         cursor = conn.execute(
@@ -264,7 +281,7 @@ async def login(user: UserLogin):
     if db_user:
         print(f"DB USER: id={db_user['id']}, email={db_user['email']}")
         password_verified = verify_password(user.password, db_user["password_hash"])
-        print(f"PASSWORD VERIFIED: {password_verified}")
+        print(f"Authentication result: {'SUCCESS' if password_verified else 'FAILED'}")
     
     if not db_user or not verify_password(user.password, db_user["password_hash"]):
         print("LOGIN FAILED: Invalid credentials")

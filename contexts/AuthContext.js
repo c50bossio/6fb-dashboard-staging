@@ -1,111 +1,43 @@
-'use client'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase, getCurrentUser } from '../lib/supabase'
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../lib/api';
+const AuthContext = createContext({})
 
-const AuthContext = createContext({});
+export const useAuth = () => useContext(AuthContext)
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Check if user is authenticated on mount
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
+    // Get initial user
+    getCurrentUser().then(({ user }) => {
+      setUser(user)
+      setLoading(false)
+    })
 
-  const checkAuthStatus = async () => {
-    try {
-      if (auth.isAuthenticated()) {
-        const userData = await auth.getCurrentUser();
-        setUser(userData);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null)
+        setLoading(false)
       }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      // Token might be invalid, clear it
-      await auth.logout();
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+    )
 
-  const login = async (credentials) => {
-    try {
-      setError(null);
-      setLoading(true);
-      
-      const response = await auth.login(credentials);
-      
-      // Get user data after successful login
-      const userData = await auth.getCurrentUser();
-      setUser(userData);
-      
-      return response;
-    } catch (error) {
-      setError(error.message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (userData) => {
-    try {
-      setError(null);
-      setLoading(true);
-      
-      const response = await auth.register(userData);
-      
-      // Get user data after successful registration
-      const userInfo = await auth.getCurrentUser();
-      setUser(userInfo);
-      
-      return response;
-    } catch (error) {
-      setError(error.message);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    try {
-      await auth.logout();
-      setUser(null);
-      setError(null);
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Still clear user state even if API call fails
-      setUser(null);
-      setError(null);
-    }
-  };
+    return () => subscription.unsubscribe()
+  }, [])
 
   const value = {
     user,
     loading,
-    error,
-    login,
-    register,
-    logout,
-    isAuthenticated: !!user && auth.isAuthenticated(),
-    checkAuthStatus,
-  };
+    signUp: (email, password, metadata) => signUp(email, password, metadata),
+    signIn: (email, password) => signIn(email, password),
+    signOut: () => signOut()
+  }
 
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
-  );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  )
 }
