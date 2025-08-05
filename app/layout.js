@@ -1,7 +1,7 @@
 import './globals.css'
 import dynamic from 'next/dynamic'
 import ErrorBoundary from '../components/ErrorBoundary'
-import { AuthProvider } from '../contexts/AuthContext'
+// Simply import statically - dynamic imports are causing too many issues
 import { SupabaseAuthProvider } from '../components/SupabaseAuthProvider'
 import { TenantProvider } from '../contexts/TenantContext'
 import { ToastProvider } from '../components/ToastContainer'
@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        {/* Turnstile script moved to only pages that need CAPTCHA */}
       </head>
       <body className="bg-gray-50 antialiased">
         <SkipToContent />

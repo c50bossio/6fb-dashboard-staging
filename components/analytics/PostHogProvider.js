@@ -14,33 +14,44 @@ export default function PostHogProvider({ children }) {
   const { user } = useAuth()
   const { tenant, tenantId } = useTenant()
   
-  // Set tenant context in analytics when tenant loads
+  // Skip heavy analytics on login/register pages for better performance
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/forgot-password'
+  
+  // Set tenant context in analytics when tenant loads (skip on auth pages)
   useEffect(() => {
-    if (tenant) {
+    if (tenant && !isAuthPage) {
       tenantAnalytics.setTenant(tenant)
       console.log('🏢 Tenant analytics context set:', tenant.name)
     }
-  }, [tenant])
+  }, [tenant, isAuthPage])
   
-  // Identify user when auth changes
-  usePostHogIdentify(user)
+  // Identify user when auth changes (only after login success)
+  usePostHogIdentify(isAuthPage ? null : user)
 
-  // Track page views with tenant context
+  // Track page views with tenant context (lightweight on auth pages)
   useEffect(() => {
     if (pathname) {
-      const url = pathname + (searchParams ? `?${searchParams}` : '')
-      
-      // Use tenant analytics wrapper for page views
-      tenantAnalytics.trackPageView(pathname, {
-        $current_url: url,
-        $pathname: pathname,
-        page_title: document.title
-      })
+      if (isAuthPage) {
+        // Minimal tracking for auth pages
+        tenantAnalytics.trackPageView(pathname, {
+          $pathname: pathname,
+          auth_page: true
+        })
+      } else {
+        // Full tracking for other pages
+        const url = pathname + (searchParams ? `?${searchParams}` : '')
+        tenantAnalytics.trackPageView(pathname, {
+          $current_url: url,
+          $pathname: pathname,
+          page_title: document.title
+        })
+      }
     }
-  }, [pathname, searchParams, tenantId])
+  }, [pathname, searchParams, tenantId, isAuthPage])
 
-  // Track web vitals with tenant context
+  // Skip web vitals tracking on auth pages
   useEffect(() => {
+    if (isAuthPage) return
     const reportWebVitals = (metric) => {
       tenantAnalytics.track('web_vitals', {
         metric_name: metric.name,

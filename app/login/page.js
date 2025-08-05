@@ -83,14 +83,6 @@ export default function LoginPage() {
 
   const isFormDisabled = isLoading || authLoading
 
-  // TEMPORARY DEBUGGING - checking actual browser state
-  console.log('🔥🔥🔥 CURRENT LOGIN STATE:')
-  console.log('🔥 authLoading:', authLoading)
-  console.log('🔥 isLoading:', isLoading)
-  console.log('🔥 isFormDisabled:', isFormDisabled)
-  console.log('🔥 signIn function type:', typeof signIn)
-  console.log('🔥 Date/Time:', new Date().toLocaleTimeString())
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">

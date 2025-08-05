@@ -21,7 +21,6 @@ function SupabaseAuthProvider({ children }) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
   
-  console.log('🔥🔥 SupabaseAuthProvider RENDER, loading:', loading)
 
   useEffect(() => {
     let isMounted = true
@@ -74,7 +73,6 @@ function SupabaseAuthProvider({ children }) {
       } finally {
         // ALWAYS set loading to false, regardless of session state
         if (isMounted) {
-          console.log('🔥🔥 SupabaseAuthProvider: Setting loading to FALSE')
           setLoading(false)
         }
       }
@@ -89,7 +87,6 @@ function SupabaseAuthProvider({ children }) {
       
       if (session?.user) {
         setUser(session.user)
-        console.log('🔥🔥 Auth state change: User found, setting loading to FALSE')
         setLoading(false)
         
         // Fetch profile for authenticated user
@@ -117,7 +114,6 @@ function SupabaseAuthProvider({ children }) {
       } else {
         setUser(null)
         setProfile(null)
-        console.log('🔥🔥 Auth state change: No user, setting loading to FALSE')
         setLoading(false)
         
         // Handle sign-out redirect
