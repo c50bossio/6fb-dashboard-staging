@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useAuth } from '../components/SupabaseAuthProvider'
 
 const TenantContext = createContext()
 
@@ -13,7 +13,7 @@ export const useTenant = () => {
   return context
 }
 
-export const TenantProvider = ({ children }) => {
+const TenantProvider = ({ children }) => {
   const { user } = useAuth()
   const [tenant, setTenant] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -191,4 +191,5 @@ export const TenantProvider = ({ children }) => {
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>
 }
 
-export default TenantContext
+// Use only named export to avoid conflicts  
+export { TenantProvider, TenantContext }

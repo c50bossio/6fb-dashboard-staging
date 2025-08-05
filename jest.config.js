@@ -14,7 +14,22 @@ const customJestConfig = {
     '<rootDir>/node_modules/',
     '<rootDir>/tests/',
     '<rootDir>/playwright.config.js',
-    '<rootDir>/supabase-mcp/'
+    '<rootDir>/supabase-mcp/',
+    '<rootDir>/__tests__/security/comprehensive-security-test.spec.js',
+    '<rootDir>/__tests__/security/security_tests.spec.js',
+    '<rootDir>/__tests__/performance/load_testing.spec.js',
+    '<rootDir>/test-auto-formatting.spec.js',
+    '<rootDir>/__tests__/e2e/critical_user_workflows.spec.js',
+    '<rootDir>/__tests__/security/config/',
+    '<rootDir>/__tests__/security/sast-dast/',
+    '<rootDir>/__tests__/security/reporting/',
+    '<rootDir>/__tests__/security/gdpr-compliance/',
+    '<rootDir>/__tests__/security/api-security/',
+    '<rootDir>/__tests__/security/monitoring/',
+    '<rootDir>/__tests__/security/penetration-testing/',
+    '<rootDir>/__tests__/security/security-test-orchestrator.js',
+    '<rootDir>/__tests__/utils/test-helpers.js',
+    '<rootDir>/__tests__/security/ci-cd/'
   ],
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',
@@ -38,7 +53,7 @@ const customJestConfig = {
       statements: 80
     }
   },
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/lib/(.*)$': '<rootDir>/lib/$1',

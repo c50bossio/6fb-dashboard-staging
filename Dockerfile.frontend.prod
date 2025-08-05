@@ -1,0 +1,68 @@
+# Multi-stage production frontend Dockerfile for 6FB AI Agent System
+# Stage 1: Build stage with dependencies
+FROM node:18-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache libc6-compat git
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+
+WORKDIR /app
+
+# Copy package files first for better caching
+COPY --chown=nextjs:nodejs package*.json ./
+
+# Install all dependencies including dev dependencies for build
+ENV HUSKY=0
+RUN npm ci --ignore-scripts
+
+# Copy source code
+COPY --chown=nextjs:nodejs . .
+
+# Set build environment variables
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build the application
+RUN npm run build
+
+# Stage 2: Production runtime
+FROM node:18-alpine AS runner
+
+# Install runtime dependencies for security and health checks
+RUN apk add --no-cache curl dumb-init tzdata
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+
+WORKDIR /app
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=9999
+
+# Copy built application from builder stage
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 9999
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:9999/api/health || exit 1
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["node", "server.js"]

@@ -7,7 +7,7 @@ import {
   UserGroupIcon,
   CurrencyDollarIcon,
   ClockIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
 import { 
@@ -130,7 +130,7 @@ export default function AnalyticsPage() {
             color="blue"
           />
           <MetricCard
-            icon={TrendingUpIcon}
+            icon={ArrowTrendingUpIcon}
             label="Avg Booking Value"
             value={`$${metrics.avgBookingValue.toFixed(2)}`}
             change={-2.3}

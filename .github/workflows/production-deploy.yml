@@ -1,0 +1,416 @@
+name: Production Deployment Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_FRONTEND: ${{ github.repository }}-frontend
+  IMAGE_NAME_BACKEND: ${{ github.repository }}-backend
+
+jobs:
+  # Security and Code Quality Checks
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level high
+
+      - name: Run Semgrep SAST
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/javascript
+            p/typescript
+            p/python
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript,python
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  # Unit and Integration Tests
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    needs: security-audit
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Create test environment file
+        run: |
+          cat > .env.test << EOF
+          NODE_ENV=test
+          DATABASE_URL=postgresql://postgres:test_password@localhost:5432/test_db
+          REDIS_URL=redis://localhost:6379
+          JWT_SECRET=test_jwt_secret_for_ci_only
+          OPENAI_API_KEY=test_key
+          ANTHROPIC_API_KEY=test_key
+          EOF
+
+      - name: Run Jest unit tests
+        run: npm run test:coverage
+        env:
+          NODE_ENV: test
+
+      - name: Run Python tests
+        run: |
+          cd ${{ github.workspace }}
+          python -m pytest --cov=services --cov=database --cov-report=xml --cov-report=html
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/test_db
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info,./coverage.xml
+
+  # End-to-End Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Start test environment
+        run: |
+          docker-compose -f docker-compose.yml up -d
+          sleep 30
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:9999
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Stop test environment
+        if: always()
+        run: docker-compose -f docker-compose.yml down
+
+  # Build and Push Docker Images
+  build-and-push:
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+    needs: [security-audit, test, e2e-tests]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    outputs:
+      frontend-image: ${{ steps.meta-frontend.outputs.tags }}
+      backend-image: ${{ steps.meta-backend.outputs.tags }}
+      frontend-digest: ${{ steps.build-frontend.outputs.digest }}
+      backend-digest: ${{ steps.build-backend.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Extract metadata for backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push frontend image
+        id: build-frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.frontend.prod
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push backend image
+        id: build-backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.backend.prod
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  # Container Security Scanning
+  security-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Run Trivy vulnerability scanner - Frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-and-push.outputs.frontend-image }}
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+
+      - name: Run Trivy vulnerability scanner - Backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-and-push.outputs.backend-image }}
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-and-push, security-scan]
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.STAGING_KUBECONFIG }}
+
+      - name: Deploy to staging cluster
+        run: |
+          # Update image tags in Kubernetes manifests
+          sed -i "s|IMAGE_TAG_FRONTEND|${{ needs.build-and-push.outputs.frontend-image }}|g" infrastructure/kubernetes/staging/deployments.yaml
+          sed -i "s|IMAGE_TAG_BACKEND|${{ needs.build-and-push.outputs.backend-image }}|g" infrastructure/kubernetes/staging/deployments.yaml
+          
+          # Apply Kubernetes manifests
+          kubectl apply -f infrastructure/kubernetes/staging/
+
+      - name: Wait for deployment rollout
+        run: |
+          kubectl rollout status deployment/agent-system-frontend-staging -n staging --timeout=600s
+          kubectl rollout status deployment/agent-system-backend-staging -n staging --timeout=600s
+
+      - name: Run smoke tests
+        run: |
+          # Wait for services to be ready
+          sleep 30
+          
+          # Get staging URL
+          STAGING_URL=$(kubectl get service agent-system-frontend-staging -n staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          
+          # Run basic health checks
+          curl -f "https://${STAGING_URL}/api/health" || exit 1
+          
+          echo "✅ Staging deployment successful: https://${STAGING_URL}"
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push, security-scan, deploy-staging]
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.PRODUCTION_KUBECONFIG }}
+
+      - name: Blue-Green Deployment to Production
+        run: |
+          # Update image tags in Kubernetes manifests
+          sed -i "s|IMAGE_TAG_FRONTEND|${{ needs.build-and-push.outputs.frontend-image }}|g" infrastructure/kubernetes/production/deployments.yaml
+          sed -i "s|IMAGE_TAG_BACKEND|${{ needs.build-and-push.outputs.backend-image }}|g" infrastructure/kubernetes/production/deployments.yaml
+          
+          # Deploy to green environment
+          kubectl apply -f infrastructure/kubernetes/production/ --suffix="-green"
+          
+          # Wait for green deployment
+          kubectl rollout status deployment/agent-system-frontend-green -n production --timeout=600s
+          kubectl rollout status deployment/agent-system-backend-green -n production --timeout=600s
+
+      - name: Run production smoke tests
+        run: |
+          # Test green environment
+          GREEN_URL=$(kubectl get service agent-system-frontend-green -n production -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl -f "https://${GREEN_URL}/api/health" || exit 1
+
+      - name: Switch traffic to green deployment
+        run: |
+          # Update service selectors to point to green deployment
+          kubectl patch service agent-system-frontend -n production -p '{"spec":{"selector":{"version":"green"}}}'
+          kubectl patch service agent-system-backend -n production -p '{"spec":{"selector":{"version":"green"}}}'
+
+      - name: Monitor production deployment
+        run: |
+          # Monitor for 5 minutes
+          sleep 300
+          
+          # Check if deployment is healthy
+          PROD_URL=$(kubectl get service agent-system-frontend -n production -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl -f "https://${PROD_URL}/api/health" || exit 1
+          
+          echo "✅ Production deployment successful: https://${PROD_URL}"
+
+      - name: Clean up old blue deployment
+        run: |
+          # Remove old blue deployment
+          kubectl delete deployment agent-system-frontend-blue -n production --ignore-not-found=true
+          kubectl delete deployment agent-system-backend-blue -n production --ignore-not-found=true
+
+  # Notification
+  notify:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: |
+            6FB AI Agent System deployment completed!
+            Status: ${{ job.status }}
+            Environment: ${{ github.event.inputs.environment || 'staging' }}
+            Commit: ${{ github.sha }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

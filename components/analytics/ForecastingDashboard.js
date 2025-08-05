@@ -7,7 +7,7 @@ import {
   ComposedChart, PieChart, Pie, Cell, RadialBarChart, RadialBar
 } from 'recharts'
 import { 
-  TrendingUpIcon, TrendingDownIcon, CalendarIcon, 
+  ArrowTrendingUpIcon, ArrowTrendingDownIcon, CalendarIcon, 
   ChartBarIcon, CurrencyDollarIcon, UsersIcon,
   ExclamationTriangleIcon, InformationCircleIcon,
   ArrowUpIcon, ArrowDownIcon, ClockIcon, StarIcon
@@ -178,7 +178,7 @@ export default function ForecastingDashboard({ barbershopId }) {
           title="Growth Trend"
           value={`${(forecastData.trends.trend_analysis?.overall_trend?.growthRate * 100 || 0).toFixed(1)}%`}
           change={forecastData.trends.trend_analysis?.overall_trend?.direction || 'stable'}
-          icon={TrendingUpIcon}
+          icon={ArrowTrendingUpIcon}
           color="text-purple-600"
           bgColor="bg-purple-50"
         />
@@ -200,7 +200,7 @@ export default function ForecastingDashboard({ barbershopId }) {
               { id: 'overview', name: 'Overview', icon: ChartBarIcon },
               { id: 'revenue', name: 'Revenue Forecasting', icon: CurrencyDollarIcon },
               { id: 'bookings', name: 'Booking Demand', icon: CalendarIcon },
-              { id: 'trends', name: 'Seasonal Trends', icon: TrendingUpIcon },
+              { id: 'trends', name: 'Seasonal Trends', icon: ArrowTrendingUpIcon },
               { id: 'insights', name: 'AI Insights', icon: InformationCircleIcon }
             ].map((tab) => (
               <button

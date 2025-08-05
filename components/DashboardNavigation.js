@@ -56,6 +56,20 @@ const navigation = [
     description: 'Business insights'
   },
   { 
+    name: 'AI Insights', 
+    href: '/ai-insights', 
+    icon: SparklesIcon,
+    badge: 'AI',
+    description: 'Real-time AI intelligence'
+  },
+  { 
+    name: 'Predictive Analytics', 
+    href: '/predictive-analytics', 
+    icon: ChartBarIcon,
+    badge: 'Forecast',
+    description: 'Revenue & demand forecasting'
+  },
+  { 
     name: 'Notifications', 
     href: '/dashboard/notifications', 
     icon: BellIcon,

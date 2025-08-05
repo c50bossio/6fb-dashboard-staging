@@ -1,0 +1,202 @@
+{
+  "test_date": "2025-08-05T14:35:45.907Z",
+  "success_rate": 100,
+  "results": {
+    "tests_passed": 13,
+    "tests_failed": 0,
+    "performance_data": {
+      "realtime": {
+        "ai_orchestrator": {
+          "response_time": {
+            "value": 1.5,
+            "timestamp": "2025-08-05T14:35:40.977876",
+            "status": "good"
+          },
+          "confidence_score": {
+            "value": 0.85,
+            "timestamp": "2025-08-05T14:35:40.982635",
+            "status": "good"
+          },
+          "success_rate": {
+            "value": 0.98,
+            "timestamp": "2025-08-05T14:35:40.985690",
+            "status": "good"
+          }
+        },
+        "specialized_agents": {
+          "response_time": {
+            "value": 1.2,
+            "timestamp": "2025-08-05T14:35:40.988688",
+            "status": "good"
+          },
+          "confidence_score": {
+            "value": 0.92,
+            "timestamp": "2025-08-05T14:35:40.991285",
+            "status": "good"
+          },
+          "success_rate": {
+            "value": 0.96,
+            "timestamp": "2025-08-05T14:35:40.994149",
+            "status": "good"
+          }
+        },
+        "recommendations_engine": {
+          "response_time": {
+            "value": 2.1,
+            "timestamp": "2025-08-05T14:35:40.996796",
+            "status": "good"
+          },
+          "confidence_score": {
+            "value": 0.79,
+            "timestamp": "2025-08-05T14:35:40.999226",
+            "status": "good"
+          },
+          "success_rate": {
+            "value": 0.94,
+            "timestamp": "2025-08-05T14:35:41.001841",
+            "status": "good"
+          }
+        }
+      },
+      "realtime_after_workload": {
+        "ai_orchestrator": {
+          "response_time": {
+            "value": 1.4,
+            "timestamp": "2025-08-05T14:35:43.463227",
+            "status": "good"
+          },
+          "confidence_score": {
+            "value": 0.72,
+            "timestamp": "2025-08-05T14:35:42.637350",
+            "status": "good"
+          },
+          "success_rate": {
+            "value": 0.97,
+            "timestamp": "2025-08-05T14:35:43.669964",
+            "status": "good"
+          }
+        },
+        "specialized_agents": {
+          "response_time": {
+            "value": 0.8,
+            "timestamp": "2025-08-05T14:35:42.016164",
+            "status": "good"
+          },
+          "confidence_score": {
+            "value": 0.95,
+            "timestamp": "2025-08-05T14:35:42.223319",
+            "status": "good"
+          },
+          "success_rate": {
+            "value": 0.96,
+            "timestamp": "2025-08-05T14:35:40.994149",
+            "status": "good"
+          }
+        },
+        "recommendations_engine": {
+          "response_time": {
+            "value": 1.9,
+            "timestamp": "2025-08-05T14:35:43.049744",
+            "status": "good"
+          },
+          "confidence_score": {
+            "value": 0.98,
+            "timestamp": "2025-08-05T14:35:42.844355",
+            "status": "good"
+          },
+          "success_rate": {
+            "value": 0.94,
+            "timestamp": "2025-08-05T14:35:41.001841",
+            "status": "good"
+          }
+        }
+      },
+      "report": {
+        "overall_health": "good",
+        "overall_score": 0.85,
+        "component_health": {},
+        "optimization_opportunities": []
+      },
+      "monitoring_status": {
+        "monitoring_active": true,
+        "components_monitored": 4,
+        "total_metrics_collected": 19,
+        "last_collection": "2025-08-05T14:35:43.669964",
+        "alert_thresholds_configured": 4,
+        "optimization_cache_size": 0
+      }
+    },
+    "ai_interactions": [
+      {
+        "scenario": "fast_response",
+        "component": "specialized_agents",
+        "metric": "response_time",
+        "value": 0.8,
+        "success": true
+      },
+      {
+        "scenario": "fast_response",
+        "component": "specialized_agents",
+        "metric": "confidence_score",
+        "value": 0.95,
+        "success": true
+      },
+      {
+        "scenario": "slow_response",
+        "component": "ai_orchestrator",
+        "metric": "response_time",
+        "value": 3.2,
+        "success": true
+      },
+      {
+        "scenario": "slow_response",
+        "component": "ai_orchestrator",
+        "metric": "confidence_score",
+        "value": 0.72,
+        "success": true
+      },
+      {
+        "scenario": "high_confidence",
+        "component": "recommendations_engine",
+        "metric": "confidence_score",
+        "value": 0.98,
+        "success": true
+      },
+      {
+        "scenario": "high_confidence",
+        "component": "recommendations_engine",
+        "metric": "response_time",
+        "value": 1.9,
+        "success": true
+      },
+      {
+        "scenario": "error_simulation",
+        "component": "ai_orchestrator",
+        "metric": "success_rate",
+        "value": 0.82,
+        "success": true
+      },
+      {
+        "scenario": "recovery",
+        "component": "ai_orchestrator",
+        "metric": "response_time",
+        "value": 1.4,
+        "success": true
+      },
+      {
+        "scenario": "recovery",
+        "component": "ai_orchestrator",
+        "metric": "success_rate",
+        "value": 0.97,
+        "success": true
+      }
+    ]
+  },
+  "summary": {
+    "total_tests": 13,
+    "tests_passed": 13,
+    "tests_failed": 0,
+    "ai_interactions": 9,
+    "performance_data_points": 4
+  }
+}

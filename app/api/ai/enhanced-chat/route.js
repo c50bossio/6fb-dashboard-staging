@@ -70,65 +70,92 @@ export async function POST(request) {
 
 async function generateEnhancedAIResponse(message, sessionId, businessContext) {
   try {
-    // Import AI providers
-    const { 
-      callBestAIProvider, 
-      classifyBusinessMessage, 
-      generateBusinessRecommendations 
-    } = await import('@/lib/ai-providers')
+    // First try using the specialized AI agents (Marcus, Sophia, David)
+    console.log('🤖 Using specialized AI agents for enhanced response...')
     
-    // Get real contextual insights using vector database RAG
-    const { getEnhancedContext } = await import('@/lib/vector-knowledge')
-    const contextualInsights = await getEnhancedContext(message, businessContext)
+    // Import the specialized agents directly
+    const { execSync } = require('child_process')
+    const path = require('path')
     
-    // Classify message for optimal AI routing
-    const messageType = classifyBusinessMessage(message)
+    // Call the AI orchestrator service from Python backend
+    const pythonScript = `
+import sys
+import os
+import asyncio
+sys.path.append('${process.cwd()}')
+
+from services.ai_orchestrator_service import ai_orchestrator
+
+async def get_agent_response():
+    try:
+        response = await ai_orchestrator.enhanced_chat(
+            message="${message.replace(/"/g, '\\"')}",
+            session_id="${sessionId}",
+            business_context=${JSON.stringify(businessContext || {})}
+        )
+        print("AGENT_RESPONSE_START")
+        print(JSON.stringify(response))
+        print("AGENT_RESPONSE_END")
+        return response
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+asyncio.run(get_agent_response())
+`
     
-    console.log(`🤖 Routing "${messageType}" message to best AI provider`)
+    // Write temporary Python script
+    const fs = require('fs')
+    const tempFile = `/tmp/agent_call_${Date.now()}.py`
+    fs.writeFileSync(tempFile, pythonScript)
     
-    // Call real AI provider with business context
-    const aiResponse = await callBestAIProvider(message, messageType, businessContext)
-    
-    // Generate business-specific recommendations
-    const recommendations = generateBusinessRecommendations(messageType, aiResponse.response)
-    
-    // Enhance with RAG insights
-    const enhancedResponse = {
-      response: aiResponse.response,
-      provider: aiResponse.provider,
-      model: aiResponse.model,
-      confidence: contextualInsights.relevantKnowledge.length > 0 ? 
-        Math.min(aiResponse.confidence + 0.1, 0.95) : aiResponse.confidence,
-      messageType: messageType,
-      recommendations: recommendations,
-      contextualInsights,
-      knowledgeEnhanced: contextualInsights.relevantKnowledge.length > 0,
-      timestamp: new Date().toISOString(),
-      tokens_used: aiResponse.tokens_used || 0
+    try {
+      // Execute Python script and get response
+      const result = execSync(`cd "${process.cwd()}" && python "${tempFile}"`, { 
+        encoding: 'utf8',
+        timeout: 10000 
+      })
+      
+      // Clean up temp file
+      fs.unlinkSync(tempFile)
+      
+      // Parse the response from Python
+      const lines = result.split('\n')
+      const startIndex = lines.findIndex(line => line.includes('AGENT_RESPONSE_START'))
+      const endIndex = lines.findIndex(line => line.includes('AGENT_RESPONSE_END'))
+      
+      if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+        const responseJson = lines.slice(startIndex + 1, endIndex).join('\n')
+        const agentResponse = JSON.parse(responseJson)
+        
+        if (agentResponse && agentResponse.response) {
+          console.log('✅ Specialized agent response received')
+          return {
+            response: agentResponse.response,
+            provider: agentResponse.provider || 'specialized_agent',
+            confidence: agentResponse.confidence || 0.85,
+            messageType: agentResponse.message_type || 'business_analysis',
+            recommendations: agentResponse.agent_details?.recommendations || [],
+            agent_details: agentResponse.agent_details,
+            knowledgeEnhanced: agentResponse.knowledge_enhanced || true,
+            timestamp: new Date().toISOString(),
+            agent_enhanced: true
+          }
+        }
+      }
+    } catch (pythonError) {
+      console.error('Python agent call failed:', pythonError)
+      // Clean up temp file on error
+      try { fs.unlinkSync(tempFile) } catch {}
     }
     
-    console.log(`✅ Real AI response generated via ${aiResponse.provider}`)
-    return enhancedResponse
+    // If specialized agents fail, fallback to enhanced mock
+    console.log('🔄 Falling back to enhanced mock response...')
+    return await generateIntelligentResponse(message, sessionId, businessContext)
     
-  } catch (aiError) {
-    console.error('Real AI provider failed:', aiError)
-    
-    // Fallback to intelligent mock if AI providers fail
-    console.log('🔄 Falling back to intelligent mock with vector RAG...')
-    
-    const { getEnhancedContext } = await import('@/lib/vector-knowledge')
-    const contextualInsights = await getEnhancedContext(message, businessContext)
-    const messageType = classifyMessage(message)
-    const mockResponse = await generateIntelligentResponse(message, sessionId, businessContext, contextualInsights)
-    
-    return {
-      ...mockResponse,
-      contextualInsights,
-      knowledgeEnhanced: contextualInsights.relevantKnowledge.length > 0,
-      confidence: contextualInsights.relevantKnowledge.length > 0 ? 
-        Math.min(mockResponse.confidence + 0.1, 0.95) : mockResponse.confidence,
-      fallback_reason: aiError.message
-    }
+  } catch (error) {
+    console.error('Enhanced AI response failed:', error)
+    return await generateIntelligentResponse(message, sessionId, businessContext)
   }
 }
 

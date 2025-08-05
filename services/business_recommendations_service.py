@@ -97,6 +97,19 @@ class BusinessRecommendationsService:
             # Generate action plan
             action_plan = self._create_action_plan(prioritized_recommendations)
             
+            # Calculate dynamic confidence and ROI based on AI recommendations
+            ai_recommendations_count = sum(1 for rec in prioritized_recommendations if rec.get('ai_generated', False))
+            total_recommendations = len(prioritized_recommendations)
+            ai_enhancement_ratio = ai_recommendations_count / max(total_recommendations, 1)
+            
+            # Adjust confidence based on AI enhancement
+            base_confidence = 0.65
+            ai_confidence_boost = ai_enhancement_ratio * 0.25  # Up to 25% boost for full AI recommendations
+            final_confidence = min(base_confidence + ai_confidence_boost, 0.95)
+            
+            # Calculate estimated ROI from recommendation values
+            total_estimated_value = sum(rec.get('estimated_monthly_value', 0) for rec in prioritized_recommendations[:5])  # Top 5 recommendations
+            
             comprehensive_recommendations = {
                 'barbershop_id': barbershop_id,
                 'generated_at': datetime.now().isoformat(),
@@ -105,12 +118,18 @@ class BusinessRecommendationsService:
                 'recommendations': prioritized_recommendations,
                 'action_plan': action_plan,
                 'next_review_date': (datetime.now() + timedelta(days=7)).isoformat(),
-                'confidence_score': 0.87,
+                'confidence_score': final_confidence,
                 'implementation_timeline': '2-8 weeks',
+                'ai_enhancement_stats': {
+                    'ai_recommendations_count': ai_recommendations_count,
+                    'total_recommendations': total_recommendations,
+                    'ai_enhancement_ratio': ai_enhancement_ratio,
+                    'confidence_boost': ai_confidence_boost
+                },
                 'estimated_roi': {
-                    'monthly_revenue_increase': 450,
-                    'customer_retention_improvement': 0.15,
-                    'operational_cost_savings': 280
+                    'monthly_revenue_increase': int(total_estimated_value * 0.7),  # 70% of estimated value as revenue increase
+                    'customer_retention_improvement': min(0.20, ai_enhancement_ratio * 0.25),  # Up to 20% improvement
+                    'operational_cost_savings': int(total_estimated_value * 0.3)  # 30% as cost savings
                 }
             }
             
@@ -278,10 +297,16 @@ class BusinessRecommendationsService:
                     ]
                 })
 
-            # Add AI-enhanced recommendations if orchestrator is available
-            if self.ai_orchestrator:
-                ai_enhanced_recs = await self._get_ai_enhanced_recommendations(barbershop_id, business_data)
-                recommendations.extend(ai_enhanced_recs)
+            # Add AI-enhanced recommendations (prioritize agent system over static recommendations)
+            ai_enhanced_recs = await self._get_ai_enhanced_recommendations(barbershop_id, business_data)
+            if ai_enhanced_recs:
+                # AI recommendations take priority - add them first
+                recommendations = ai_enhanced_recs + recommendations
+                logger.info(f"✨ Enhanced with {len(ai_enhanced_recs)} AI agent recommendations")
+            elif self.ai_orchestrator:
+                logger.info("⚙️ Falling back to AI orchestrator for recommendations")
+                # Keep existing fallback logic
+                pass
 
             return recommendations
 
@@ -290,45 +315,118 @@ class BusinessRecommendationsService:
             return await self._generate_basic_recommendations()
 
     async def _get_ai_enhanced_recommendations(self, barbershop_id: str, business_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Get AI orchestrator-enhanced recommendations with business context"""
+        """Get AI agent-enhanced recommendations with sophisticated business context"""
         try:
+            # Import agent manager for AI agent recommendations
+            from .ai_agents.agent_manager import agent_manager
+            
+            ai_recommendations = []
+            
+            # Prepare business context for AI agents
             context = {
                 'barbershop_id': barbershop_id,
-                'business_data': business_data,
-                'analysis_type': 'strategic_recommendations'
+                'business_metrics': business_data.get('performance_metrics', {}),
+                'operational_data': business_data.get('operational_data', {}),
+                'predictive_insights': business_data.get('predictive_insights', {}),
+                'analysis_type': 'strategic_business_recommendations'
             }
             
-            ai_response = await self.ai_orchestrator.generate_enhanced_response(
-                "Analyze the business data and provide 2-3 specific strategic recommendations for improving this barbershop's performance",
-                context
+            # Create comprehensive business analysis prompt
+            analysis_prompt = f"""
+            Analyze this barbershop's business performance and provide strategic recommendations:
+            
+            Performance Metrics:
+            - Daily Revenue: ${business_data.get('performance_metrics', {}).get('daily_revenue', 'N/A')}
+            - Customer Satisfaction: {business_data.get('performance_metrics', {}).get('customer_satisfaction', 'N/A')}/5.0
+            - Booking Utilization: {business_data.get('performance_metrics', {}).get('booking_utilization', 'N/A') * 100:.1f}%
+            - Customer Retention: {business_data.get('performance_metrics', {}).get('customer_retention_rate', 'N/A') * 100:.1f}%
+            - No-show Rate: {business_data.get('performance_metrics', {}).get('no_show_rate', 'N/A') * 100:.1f}%
+            
+            Operational Data:
+            - Staff Utilization: {business_data.get('operational_data', {}).get('staff_utilization', 'N/A') * 100:.1f}%
+            - Peak Hours: {', '.join(business_data.get('operational_data', {}).get('peak_hours', []))}
+            - Most Popular Service: {max(business_data.get('operational_data', {}).get('service_popularity', {'haircut': 0.65}).items(), key=lambda x: x[1])[0] if business_data.get('operational_data', {}).get('service_popularity') else 'N/A'}
+            
+            Please provide 2-3 specific, actionable recommendations to improve revenue, customer satisfaction, and operational efficiency. Focus on practical strategies that can be implemented within 2-8 weeks.
+            """
+            
+            # Get AI agent collaborative response
+            agent_response = await agent_manager.process_message(
+                analysis_prompt,
+                context,
+                {'analysis_depth': 'comprehensive', 'focus_areas': ['revenue', 'operations', 'customer_experience']}
             )
             
-            # Parse AI response into structured recommendations
-            ai_recommendations = []
-            if ai_response.get('success'):
-                ai_content = ai_response.get('response', '')
-                
-                # Create AI-generated recommendation
-                ai_recommendations.append({
-                    'category': 'ai_strategic_insight',
-                    'title': 'AI Strategic Business Analysis',
-                    'description': ai_content[:200] + '...' if len(ai_content) > 200 else ai_content,
-                    'impact_score': ai_response.get('confidence', 0.75),
-                    'confidence': ai_response.get('confidence', 0.75),
-                    'estimated_monthly_value': 250,
+            if agent_response and agent_response.primary_response:
+                # Primary agent recommendation
+                primary_rec = {
+                    'category': 'ai_agent_primary',
+                    'title': f'{agent_response.primary_agent} Strategic Analysis',
+                    'description': agent_response.primary_response.response[:300] + '...' if len(agent_response.primary_response.response) > 300 else agent_response.primary_response.response,
+                    'impact_score': agent_response.total_confidence,
+                    'confidence': agent_response.total_confidence,
+                    'estimated_monthly_value': 350,
                     'implementation_difficulty': 'medium',
                     'timeline': '2-4 weeks',
                     'ai_generated': True,
-                    'provider': ai_response.get('provider', 'AI Coach'),
-                    'full_analysis': ai_content,
-                    'specific_actions': [
-                        'Review AI analysis for detailed strategic insights',
-                        'Implement AI-recommended priority actions',
-                        'Monitor performance against AI predictions',
-                        'Schedule follow-up AI analysis in 30 days'
-                    ]
-                })
+                    'agent_type': agent_response.primary_agent,
+                    'coordination_summary': agent_response.coordination_summary,
+                    'specific_actions': agent_response.combined_recommendations[:4],  # Top 4 recommendations
+                    'collaboration_score': agent_response.collaboration_score,
+                    'full_analysis': agent_response.primary_response.response
+                }
+                ai_recommendations.append(primary_rec)
+                
+                # Add collaborative insights if multiple agents were involved
+                if agent_response.collaborative_responses:
+                    for i, collab_response in enumerate(agent_response.collaborative_responses[:2]):  # Max 2 additional
+                        collab_rec = {
+                            'category': f'ai_agent_collaborative_{i+1}',
+                            'title': f'{collab_response.agent_id.replace("_", " ").title()} Insights',
+                            'description': collab_response.response[:250] + '...' if len(collab_response.response) > 250 else collab_response.response,
+                            'impact_score': collab_response.confidence,
+                            'confidence': collab_response.confidence,
+                            'estimated_monthly_value': 220,
+                            'implementation_difficulty': 'medium',
+                            'timeline': '3-5 weeks',
+                            'ai_generated': True,
+                            'agent_type': collab_response.agent_id.replace('_', ' ').title(),
+                            'specific_actions': collab_response.recommendations[:3],  # Top 3 recommendations
+                            'domain_expertise': collab_response.domain.value
+                        }
+                        ai_recommendations.append(collab_rec)
             
+            # Fallback to orchestrator if agent manager fails
+            elif self.ai_orchestrator:
+                logger.warning("Agent manager failed, falling back to AI orchestrator")
+                orchestrator_response = await self.ai_orchestrator.generate_enhanced_response(
+                    analysis_prompt,
+                    context
+                )
+                
+                if orchestrator_response.get('success'):
+                    ai_content = orchestrator_response.get('response', '')
+                    ai_recommendations.append({
+                        'category': 'ai_orchestrator_fallback',
+                        'title': 'AI Strategic Business Analysis',
+                        'description': ai_content[:200] + '...' if len(ai_content) > 200 else ai_content,
+                        'impact_score': orchestrator_response.get('confidence', 0.75),
+                        'confidence': orchestrator_response.get('confidence', 0.75),
+                        'estimated_monthly_value': 250,
+                        'implementation_difficulty': 'medium',
+                        'timeline': '2-4 weeks',
+                        'ai_generated': True,
+                        'provider': orchestrator_response.get('provider', 'AI Coach'),
+                        'full_analysis': ai_content,
+                        'specific_actions': [
+                            'Review AI analysis for detailed strategic insights',
+                            'Implement AI-recommended priority actions',
+                            'Monitor performance against AI predictions',
+                            'Schedule follow-up AI analysis in 30 days'
+                        ]
+                    })
+            
+            logger.info(f"✅ Generated {len(ai_recommendations)} AI-enhanced recommendations")
             return ai_recommendations
             
         except Exception as e:

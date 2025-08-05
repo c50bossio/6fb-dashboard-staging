@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 import { useDashboard } from '../../contexts/DashboardContext'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import LoadingSpinner, { CardLoadingSkeleton } from '../../components/LoadingSpinner'

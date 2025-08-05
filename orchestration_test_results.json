@@ -1,0 +1,140 @@
+{
+  "timestamp": "2025-08-05T14:42:43.095Z",
+  "authentication": {
+    "success": true,
+    "method": "register",
+    "userId": 6
+  },
+  "orchestration_tests": [
+    {
+      "id": "revenue_growth_complex",
+      "query": "I want to grow my barbershop revenue by 30% in 6 months. What's my complete strategy involving pricing, marketing, and operations?",
+      "expectedCollaboration": [
+        "Financial Coach",
+        "Marketing Expert",
+        "Operations Manager"
+      ],
+      "actualResponse": null,
+      "orchestrationFeatures": {
+        "agentMentions": [],
+        "collaborationTerms": [],
+        "coordinationSummary": null,
+        "confidenceScore": 0,
+        "responseLength": 0,
+        "structuredOutput": false,
+        "recommendations": [],
+        "actionItems": []
+      },
+      "collaborationScore": 0,
+      "success": false,
+      "error": "Request failed with status code 401",
+      "timestamp": "2025-08-05T14:42:43.356Z"
+    },
+    {
+      "id": "retention_cost_optimization",
+      "query": "My customer retention is low at 45% and my costs are too high. How do I fix both issues simultaneously?",
+      "expectedCollaboration": [
+        "Financial Coach",
+        "Operations Manager"
+      ],
+      "actualResponse": null,
+      "orchestrationFeatures": {
+        "agentMentions": [],
+        "collaborationTerms": [],
+        "coordinationSummary": null,
+        "confidenceScore": 0,
+        "responseLength": 0,
+        "structuredOutput": false,
+        "recommendations": [],
+        "actionItems": []
+      },
+      "collaborationScore": 0,
+      "success": false,
+      "error": "Request failed with status code 401",
+      "timestamp": "2025-08-05T14:42:45.380Z"
+    },
+    {
+      "id": "staff_marketing_growth",
+      "query": "I need to hire 2 more barbers but also need to improve my social media marketing to justify the expansion. What's the best approach?",
+      "expectedCollaboration": [
+        "Marketing Expert",
+        "Operations Manager"
+      ],
+      "actualResponse": null,
+      "orchestrationFeatures": {
+        "agentMentions": [],
+        "collaborationTerms": [],
+        "coordinationSummary": null,
+        "confidenceScore": 0,
+        "responseLength": 0,
+        "structuredOutput": false,
+        "recommendations": [],
+        "actionItems": []
+      },
+      "collaborationScore": 0,
+      "success": false,
+      "error": "Request failed with status code 401",
+      "timestamp": "2025-08-05T14:42:47.403Z"
+    },
+    {
+      "id": "comprehensive_transformation",
+      "query": "What are the top 3 priorities to transform my struggling barbershop into a premium, profitable business?",
+      "expectedCollaboration": [
+        "Financial Coach",
+        "Marketing Expert",
+        "Operations Manager"
+      ],
+      "actualResponse": null,
+      "orchestrationFeatures": {
+        "agentMentions": [],
+        "collaborationTerms": [],
+        "coordinationSummary": null,
+        "confidenceScore": 0,
+        "responseLength": 0,
+        "structuredOutput": false,
+        "recommendations": [],
+        "actionItems": []
+      },
+      "collaborationScore": 0,
+      "success": false,
+      "error": "Request failed with status code 401",
+      "timestamp": "2025-08-05T14:42:49.428Z"
+    },
+    {
+      "id": "pricing_brand_strategy",
+      "query": "How should I price my services to maximize profit while building a premium brand that attracts high-value customers?",
+      "expectedCollaboration": [
+        "Financial Coach",
+        "Marketing Expert"
+      ],
+      "actualResponse": null,
+      "orchestrationFeatures": {
+        "agentMentions": [],
+        "collaborationTerms": [],
+        "coordinationSummary": null,
+        "confidenceScore": 0,
+        "responseLength": 0,
+        "structuredOutput": false,
+        "recommendations": [],
+        "actionItems": []
+      },
+      "collaborationScore": 0,
+      "success": false,
+      "error": "Request failed with status code 401",
+      "timestamp": "2025-08-05T14:42:51.451Z"
+    }
+  ],
+  "orchestration_analysis": {
+    "totalTests": 5,
+    "successfulTests": 0,
+    "collaborationDetected": 0,
+    "avgConfidence": 0,
+    "avgResponseLength": 0,
+    "orchestrationScore": 0
+  },
+  "agent_analysis": {
+    "agentMentions": {},
+    "collaborationPatterns": [],
+    "coordinationQuality": 0
+  }
+}

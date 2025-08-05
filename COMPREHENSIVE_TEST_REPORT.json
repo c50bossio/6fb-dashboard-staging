@@ -1,0 +1,139 @@
+{
+  "total_tests": 26,
+  "passed_tests": 26,
+  "success_rate": 100.0,
+  "grade": "A+",
+  "results": {
+    "Frontend Server": {
+      "status": "PASSED",
+      "details": "Status: 200",
+      "timestamp": "2025-08-05T11:33:52.471699"
+    },
+    "Backend Server": {
+      "status": "PASSED",
+      "details": "Status: 200",
+      "timestamp": "2025-08-05T11:33:52.473875"
+    },
+    "Auth Bypass for Development": {
+      "status": "PASSED",
+      "details": "Status: 200",
+      "timestamp": "2025-08-05T11:33:52.493192"
+    },
+    "AI Agents Auth Fix": {
+      "status": "PASSED",
+      "details": "Status: 200 (not 401)",
+      "timestamp": "2025-08-05T11:33:52.506639"
+    },
+    "Rate Limiting Middleware": {
+      "status": "PASSED",
+      "details": "Backend accessible: 200",
+      "timestamp": "2025-08-05T11:33:52.508314"
+    },
+    "Rate Limiting Handling": {
+      "status": "PASSED",
+      "details": "5/5 requests succeeded",
+      "timestamp": "2025-08-05T11:33:52.514163"
+    },
+    "Generate Recommendations": {
+      "status": "PASSED",
+      "details": "6 recommendations",
+      "timestamp": "2025-08-05T11:33:53.962304"
+    },
+    "AI Enhancement Integration": {
+      "status": "PASSED",
+      "details": "3 AI recommendations",
+      "timestamp": "2025-08-05T11:33:53.962308"
+    },
+    "Dynamic Confidence Scoring": {
+      "status": "PASSED",
+      "details": "Confidence: 0.78",
+      "timestamp": "2025-08-05T11:33:53.962311"
+    },
+    "ROI Calculation": {
+      "status": "PASSED",
+      "details": "Revenue increase: $1021",
+      "timestamp": "2025-08-05T11:33:53.962313"
+    },
+    "Agent Response Generation": {
+      "status": "PASSED",
+      "details": "Primary agent: David",
+      "timestamp": "2025-08-05T11:33:53.962360"
+    },
+    "Collaboration Metrics": {
+      "status": "PASSED",
+      "details": "Score: 1.00",
+      "timestamp": "2025-08-05T11:33:53.962362"
+    },
+    "Combined Recommendations": {
+      "status": "PASSED",
+      "details": "5 recommendations",
+      "timestamp": "2025-08-05T11:33:53.962364"
+    },
+    "Coordination Summary": {
+      "status": "PASSED",
+      "details": "Summary generated",
+      "timestamp": "2025-08-05T11:33:53.962365"
+    },
+    "Agent System Status": {
+      "status": "PASSED",
+      "details": "Status: operational",
+      "timestamp": "2025-08-05T11:33:53.962373"
+    },
+    "Business Recommendations API": {
+      "status": "PASSED",
+      "details": "Status: 200",
+      "timestamp": "2025-08-05T11:33:53.967421"
+    },
+    "API Response Data": {
+      "status": "PASSED",
+      "details": "Valid response structure",
+      "timestamp": "2025-08-05T11:33:53.967500"
+    },
+    "Agent Status Endpoint": {
+      "status": "PASSED",
+      "details": "Status: 200",
+      "timestamp": "2025-08-05T11:33:53.979829"
+    },
+    "Component: components/TouchOptimizedButton.js": {
+      "status": "PASSED",
+      "details": "File exists",
+      "timestamp": "2025-08-05T11:33:53.979927"
+    },
+    "Component: components/MobileOptimizedLayout.js": {
+      "status": "PASSED",
+      "details": "File exists",
+      "timestamp": "2025-08-05T11:33:53.979944"
+    },
+    "Component: components/ResponsiveNavigation.js": {
+      "status": "PASSED",
+      "details": "File exists",
+      "timestamp": "2025-08-05T11:33:53.979964"
+    },
+    "Component: components/AgentCollaborationIndicator.js": {
+      "status": "PASSED",
+      "details": "File exists",
+      "timestamp": "2025-08-05T11:33:53.979981"
+    },
+    "Component: components/AgentActivityMonitor.js": {
+      "status": "PASSED",
+      "details": "File exists",
+      "timestamp": "2025-08-05T11:33:53.979996"
+    },
+    "Component: hooks/useAgentCollaboration.js": {
+      "status": "PASSED",
+      "details": "File exists",
+      "timestamp": "2025-08-05T11:33:53.980012"
+    },
+    "Mobile UX Test File": {
+      "status": "PASSED",
+      "details": "Test file available",
+      "timestamp": "2025-08-05T11:33:53.980017"
+    },
+    "Navigation AI Enhancement": {
+      "status": "PASSED",
+      "details": "5/5 AI items found",
+      "timestamp": "2025-08-05T11:33:53.980398"
+    }
+  },
+  "timestamp": "2025-08-05T11:33:53.980427"
+}

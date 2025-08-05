@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dashboard Widget Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .widget-test {
+            border: 1px solid #ddd;
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        iframe {
+            width: 100%;
+            height: 800px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .dashboard-preview {
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 AI Intelligent Dashboard Widget Testing</h1>
+    
+    <div class="test-container">
+        <h2>Dashboard Preview</h2>
+        <div class="dashboard-preview">
+            <iframe id="dashboardFrame" src="http://localhost:9999/dashboard/ai-intelligent"></iframe>
+        </div>
+        
+        <button onclick="refreshDashboard()">🔄 Refresh Dashboard</button>
+        <button onclick="testAllWidgets()">🧪 Test All Widgets</button>
+        <button onclick="generateReport()">📊 Generate Report</button>
+    </div>
+
+    <div class="test-container">
+        <h2>Widget Test Results</h2>
+        <div id="testResults">
+            <div class="info">Click "Test All Widgets" to start testing...</div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Widget Functionality Tests</h2>
+        
+        <div class="widget-test">
+            <h3>💰 Financial Coach Insights Widget (Marcus)</h3>
+            <div id="financial-test-result">Not tested yet</div>
+            <button onclick="testFinancialWidget()">Test Financial Widget</button>
+        </div>
+
+        <div class="widget-test">
+            <h3>📈 Marketing Expert Insights Widget (Sophia)</h3>
+            <div id="marketing-test-result">Not tested yet</div>
+            <button onclick="testMarketingWidget()">Test Marketing Widget</button>
+        </div>
+
+        <div class="widget-test">
+            <h3>⚙️ Operations Manager Insights Widget (David)</h3>
+            <div id="operations-test-result">Not tested yet</div>
+            <button onclick="testOperationsWidget()">Test Operations Widget</button>
+        </div>
+
+        <div class="widget-test">
+            <h3>💡 Business Recommendations Widget</h3>
+            <div id="recommendations-test-result">Not tested yet</div>
+            <button onclick="testRecommendationsWidget()">Test Recommendations Widget</button>
+        </div>
+
+        <div class="widget-test">
+            <h3>🟢 Agent System Status Widget</h3>
+            <div id="status-test-result">Not tested yet</div>
+            <button onclick="testStatusWidget()">Test Status Widget</button>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+
+        function addResult(test, status, message, details = null) {
+            const result = {
+                test,
+                status,
+                message,
+                details,
+                timestamp: new Date().toISOString()
+            };
+            testResults.push(result);
+            updateResultsDisplay();
+        }
+
+        function updateResultsDisplay() {
+            const container = document.getElementById('testResults');
+            container.innerHTML = testResults.map(result => {
+                const className = result.status === 'success' ? 'success' : 
+                                result.status === 'error' ? 'error' : 'info';
+                return `
+                    <div class="test-result ${className}">
+                        <strong>${result.test}:</strong> ${result.message}
+                        ${result.details ? `<br><small>${result.details}</small>` : ''}
+                        <br><small>Time: ${new Date(result.timestamp).toLocaleTimeString()}</small>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function refreshDashboard() {
+            const iframe = document.getElementById('dashboardFrame');
+            iframe.src = iframe.src;
+            addResult('Dashboard Refresh', 'info', 'Dashboard refreshed manually');
+        }
+
+        async function testWidget(widgetName, testId) {
+            try {
+                addResult(widgetName, 'info', 'Testing widget functionality...');
+                
+                // Test if widget exists in iframe
+                const iframe = document.getElementById('dashboardFrame');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                if (!iframeDoc) {
+                    throw new Error('Cannot access dashboard iframe - possible CORS issue');
+                }
+
+                // Look for widget elements
+                const widgetSelector = `[data-testid="${testId}"], .${testId.replace('-', '-')}-widget, #${testId}`;
+                const widgetElement = iframeDoc.querySelector(widgetSelector);
+                
+                if (!widgetElement) {
+                    throw new Error(`Widget element not found with selector: ${widgetSelector}`);
+                }
+
+                // Test if widget has content
+                const hasContent = widgetElement.textContent.trim().length > 0;
+                if (!hasContent) {
+                    throw new Error('Widget exists but has no content');
+                }
+
+                // Test for refresh button
+                const refreshButton = widgetElement.querySelector('button[data-action="refresh"], .refresh-btn, [title*="refresh" i]');
+                const hasRefreshBtn = !!refreshButton;
+
+                // Test for loading states
+                const hasLoadingState = widgetElement.querySelector('.loading, [data-loading="true"], .spinner') !== null;
+
+                // Test for error states
+                const hasError = widgetElement.querySelector('.error, [data-error="true"], .alert-error') !== null;
+
+                const details = [
+                    `Content: ${hasContent ? '✓' : '✗'}`,
+                    `Refresh Button: ${hasRefreshBtn ? '✓' : '✗'}`,
+                    `Loading State: ${hasLoadingState ? '✓' : '✗'}`,
+                    `Error State: ${hasError ? '✗ (has errors)' : '✓ (no errors)'}`
+                ].join(', ');
+
+                if (hasError) {
+                    throw new Error(`Widget has error state: ${details}`);
+                }
+
+                addResult(widgetName, 'success', 'Widget functioning correctly', details);
+                return true;
+
+            } catch (error) {
+                addResult(widgetName, 'error', error.message);
+                return false;
+            }
+        }
+
+        async function testFinancialWidget() {
+            const result = await testWidget('Financial Coach Widget', 'financial-insights-widget');
+            document.getElementById('financial-test-result').innerHTML = result ? 
+                '<span style="color: green;">✓ Test Passed</span>' : 
+                '<span style="color: red;">✗ Test Failed</span>';
+        }
+
+        async function testMarketingWidget() {
+            const result = await testWidget('Marketing Expert Widget', 'marketing-insights-widget');
+            document.getElementById('marketing-test-result').innerHTML = result ? 
+                '<span style="color: green;">✓ Test Passed</span>' : 
+                '<span style="color: red;">✗ Test Failed</span>';
+        }
+
+        async function testOperationsWidget() {
+            const result = await testWidget('Operations Manager Widget', 'operations-insights-widget');
+            document.getElementById('operations-test-result').innerHTML = result ? 
+                '<span style="color: green;">✓ Test Passed</span>' : 
+                '<span style="color: red;">✗ Test Failed</span>';
+        }
+
+        async function testRecommendationsWidget() {
+            const result = await testWidget('Business Recommendations Widget', 'business-recommendations-widget');
+            document.getElementById('recommendations-test-result').innerHTML = result ? 
+                '<span style="color: green;">✓ Test Passed</span>' : 
+                '<span style="color: red;">✗ Test Failed</span>';
+        }
+
+        async function testStatusWidget() {
+            const result = await testWidget('Agent System Status Widget', 'agent-status-widget');
+            document.getElementById('status-test-result').innerHTML = result ? 
+                '<span style="color: green;">✓ Test Passed</span>' : 
+                '<span style="color: red;">✗ Test Failed</span>';
+        }
+
+        async function testAllWidgets() {
+            addResult('Widget Testing', 'info', 'Starting comprehensive widget testing...');
+            
+            // Test all widgets sequentially
+            await testFinancialWidget();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second between tests
+            
+            await testMarketingWidget();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testOperationsWidget();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testRecommendationsWidget();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testStatusWidget();
+            
+            addResult('Widget Testing', 'info', 'All widget tests completed');
+        }
+
+        function generateReport() {
+            const successCount = testResults.filter(r => r.status === 'success').length;
+            const errorCount = testResults.filter(r => r.status === 'error').length;
+            const totalTests = successCount + errorCount;
+            
+            const report = {
+                summary: {
+                    totalTests,
+                    successCount,
+                    errorCount,
+                    passRate: totalTests > 0 ? Math.round((successCount / totalTests) * 100) : 0
+                },
+                results: testResults,
+                timestamp: new Date().toISOString()
+            };
+
+            // Display report
+            addResult('Test Report', 'info', 
+                `Report Generated - Pass Rate: ${report.summary.passRate}% (${successCount}/${totalTests})`);
+
+            // Download report as JSON
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ai-dashboard-widget-test-report-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Auto-start basic connectivity test
+        setTimeout(() => {
+            addResult('Dashboard Load', 'info', 'Testing dashboard connectivity...');
+            
+            const iframe = document.getElementById('dashboardFrame');
+            iframe.onload = function() {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc && iframeDoc.title) {
+                        addResult('Dashboard Load', 'success', `Dashboard loaded successfully: ${iframeDoc.title}`);
+                    } else {
+                        addResult('Dashboard Load', 'error', 'Dashboard loaded but content not accessible (possible CORS)');
+                    }
+                } catch (error) {
+                    addResult('Dashboard Load', 'error', `Dashboard access error: ${error.message}`);
+                }
+            };
+            
+            iframe.onerror = function() {
+                addResult('Dashboard Load', 'error', 'Failed to load dashboard iframe');
+            };
+        }, 1000);
+    </script>
+</body>
+</html>

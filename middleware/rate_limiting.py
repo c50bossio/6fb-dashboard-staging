@@ -11,6 +11,7 @@ from typing import Dict, Optional, Tuple, List
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 import hashlib
 import asyncio
 from collections import defaultdict, deque
@@ -256,11 +257,11 @@ class SlidingWindowRateLimiter:
         
         return await self._check_redis_limit(client_key, limit_config)
 
-class RateLimitMiddleware:
+class RateLimitMiddleware(BaseHTTPMiddleware):
     """FastAPI middleware for rate limiting"""
     
     def __init__(self, app, redis_client=None, enabled: bool = True):
-        self.app = app
+        super().__init__(app)
         self.limiter = SlidingWindowRateLimiter(redis_client)
         self.enabled = enabled
         
@@ -279,7 +280,7 @@ class RateLimitMiddleware:
         
         return any(path.startswith(skip_path) for skip_path in self.skip_paths)
     
-    async def __call__(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next):
         """Process request with rate limiting"""
         
         if not self.enabled or self._should_skip_rate_limiting(request.url.path):

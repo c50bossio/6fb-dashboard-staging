@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Debug Test</title>
+    <script>
+        // Test the frontend login process to identify why it's not working
+        async function testFrontendLogin() {
+            console.log('🔍 Testing frontend login process...');
+            
+            try {
+                // Test 1: Check if we can reach the login API from the frontend
+                console.log('🔍 Test 1: Testing login API from frontend...');
+                const response = await fetch('http://localhost:9999/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'demo@barbershop.com',
+                        password: 'demo123'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('🔍 Login API Response:', response.status, data);
+                
+                if (response.ok) {
+                    console.log('✅ Login API works from frontend');
+                    
+                    // Test 2: Check if cookies are set properly
+                    console.log('🔍 Test 2: Checking cookies...');
+                    console.log('Cookies:', document.cookie);
+                    
+                    // Test 3: Check if we can access the dashboard
+                    console.log('🔍 Test 3: Testing dashboard access...');
+                    const dashboardResponse = await fetch('http://localhost:9999/dashboard');
+                    console.log('Dashboard response:', dashboardResponse.status);
+                    
+                } else {
+                    console.error('❌ Login API failed from frontend:', data);
+                }
+                
+            } catch (error) {
+                console.error('❌ Frontend login test failed:', error);
+            }
+        }
+        
+        // Test if we can load the React login component
+        function testReactComponent() {
+            console.log('🔍 Testing React component loading...');
+            
+            // Navigate to the login page and see what happens
+            window.location.href = 'http://localhost:9999/login';
+            
+            // Set up interval to monitor page state
+            const checkInterval = setInterval(() => {
+                const emailField = document.querySelector('input[type="email"]');
+                const passwordField = document.querySelector('input[type="password"]');
+                const submitButton = document.querySelector('button[type="submit"]');
+                
+                if (emailField && passwordField && submitButton) {
+                    console.log('✅ React login form elements found');
+                    clearInterval(checkInterval);
+                    
+                    // Fill and submit the form
+                    console.log('🔍 Filling login form...');
+                    emailField.value = 'demo@barbershop.com';
+                    passwordField.value = 'demo123';
+                    
+                    // Trigger React events
+                    emailField.dispatchEvent(new Event('input', { bubbles: true }));
+                    passwordField.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    console.log('🔍 Submitting form...');
+                    submitButton.click();
+                    
+                    // Monitor for changes
+                    setTimeout(() => {
+                        console.log('🔍 Page state after 5 seconds:');
+                        console.log('URL:', window.location.href);
+                        console.log('Button text:', submitButton.textContent);
+                        console.log('Button disabled:', submitButton.disabled);
+                        
+                        // Check for error messages
+                        const errorElements = document.querySelectorAll('.text-red-500, .text-red-600, .error');
+                        if (errorElements.length > 0) {
+                            console.log('❌ Errors found:');
+                            errorElements.forEach(el => console.log(el.textContent));
+                        }
+                    }, 5000);
+                }
+            }, 1000);
+            
+            // Clear interval after 30 seconds to prevent infinite loop
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                console.log('❌ Login form not found within 30 seconds');
+            }, 30000);
+        }
+        
+        // Run tests when page loads
+        window.onload = function() {
+            console.log('🔍 Starting login debug tests...');
+            
+            // Run API test first
+            testFrontendLogin().then(() => {
+                // Then test React component
+                setTimeout(testReactComponent, 2000);
+            });
+        };
+    </script>
+</head>
+<body>
+    <h1>Login Debug Test</h1>
+    <p>Open browser console to see debug output...</p>
+    <button onclick="testFrontendLogin()">Test API Login</button>
+    <button onclick="testReactComponent()">Test React Component</button>
+</body>
+</html>

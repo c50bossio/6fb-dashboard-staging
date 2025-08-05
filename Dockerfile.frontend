@@ -20,6 +20,9 @@ RUN npm install --ignore-scripts
 # Copy source code with proper ownership
 COPY --chown=nextjs:nodejs . .
 
+# Create .next directory with proper permissions
+RUN mkdir -p /app/.next && chown -R nextjs:nodejs /app/.next
+
 # Change to non-root user
 USER nextjs
 

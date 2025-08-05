@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '../../../contexts/AuthContext'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import Link from 'next/link'
 import { 

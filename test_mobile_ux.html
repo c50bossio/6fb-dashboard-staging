@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile UX Test - 6FB AI Agent System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Touch-friendly button base styles */
+        .touch-button {
+            min-height: 44px;
+            min-width: 44px;
+            touch-action: manipulation;
+            user-select: none;
+        }
+        
+        .touch-input {
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+        
+        /* Smooth animations */
+        .touch-feedback {
+            transition: transform 0.1s ease-out;
+        }
+        
+        .touch-feedback:active {
+            transform: scale(0.95);
+        }
+        
+        /* Pull-to-refresh styles */
+        .ptr-container {
+            overscroll-behavior-y: contain;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- Mobile Header -->
+        <header class="bg-white shadow-sm border-b px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <span class="text-white font-bold text-sm">6FB</span>
+                </div>
+                <h1 class="text-lg font-bold text-gray-900">Mobile UX Test</h1>
+            </div>
+            <button class="touch-button touch-feedback p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto ptr-container" id="mainContent">
+            <div class="p-4 space-y-6">
+                <!-- Touch-friendly Cards -->
+                <section>
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Touch-Friendly Components</h2>
+                    
+                    <!-- Button Tests -->
+                    <div class="bg-white rounded-lg p-4 shadow-sm border mb-4">
+                        <h3 class="font-semibold text-gray-800 mb-3">Button Touch Targets (44px minimum)</h3>
+                        <div class="space-y-3">
+                            <button class="touch-button touch-feedback w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                                Primary Action Button
+                            </button>
+                            <button class="touch-button touch-feedback w-full bg-white text-gray-700 font-medium py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors">
+                                Secondary Action Button
+                            </button>
+                            <div class="flex space-x-3">
+                                <button class="touch-button touch-feedback flex-1 bg-green-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                                    ✅ Accept
+                                </button>
+                                <button class="touch-button touch-feedback flex-1 bg-red-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-red-700 transition-colors">
+                                    ❌ Decline
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Tests -->
+                    <div class="bg-white rounded-lg p-4 shadow-sm border mb-4">
+                        <h3 class="font-semibold text-gray-800 mb-3">Touch-Optimized Inputs</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Business Question</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="How can I improve my barbershop revenue?"
+                                    class="touch-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Detailed Description</label>
+                                <textarea 
+                                    placeholder="Describe your business situation..."
+                                    rows="4"
+                                    class="touch-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Swipeable Cards -->
+                    <div class="bg-white rounded-lg p-4 shadow-sm border mb-4">
+                        <h3 class="font-semibold text-gray-800 mb-3">Swipeable Content Cards</h3>
+                        <div class="space-y-3">
+                            <div class="swipe-card bg-gray-50 p-4 rounded-lg border touch-feedback" onclick="this.classList.toggle('bg-blue-50')">
+                                <div class="flex items-center space-x-3">
+                                    <div class="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold">💰</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-900">Marcus - Financial Coach</h4>
+                                        <p class="text-sm text-gray-600">Revenue optimization specialist</p>
+                                    </div>
+                                    <div class="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="swipe-card bg-gray-50 p-4 rounded-lg border touch-feedback" onclick="this.classList.toggle('bg-purple-50')">
+                                <div class="flex items-center space-x-3">
+                                    <div class="h-10 w-10 bg-purple-600 rounded-full flex items-center justify-center">
+                                        <span class="text-white font-bold">📱</span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-900">Sophia - Marketing Expert</h4>
+                                        <p class="text-sm text-gray-600">Social media and customer acquisition</p>
+                                    </div>
+                                    <div class="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Touch Gesture Area -->
+                    <div class="bg-white rounded-lg p-4 shadow-sm border mb-4">
+                        <h3 class="font-semibold text-gray-800 mb-3">Touch Gesture Test Area</h3>
+                        <div id="gestureArea" class="h-32 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                            <p class="text-gray-600 text-center">
+                                <span class="block font-medium">Touch and hold</span>
+                                <span class="text-sm">Try tapping, swiping, or long pressing</span>
+                            </p>
+                        </div>
+                        <div id="gestureLog" class="mt-3 text-xs text-gray-500"></div>
+                    </div>
+                </section>
+
+                <!-- Performance Test Content -->
+                <section>
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Performance & Responsiveness</h2>
+                    
+                    <!-- Scroll Performance Test -->
+                    <div class="bg-white rounded-lg p-4 shadow-sm border">
+                        <h3 class="font-semibold text-gray-800 mb-3">Smooth Scrolling Test</h3>
+                        <div class="space-y-2">
+                            <!-- Generate multiple items for scroll testing -->
+                            <script>
+                                for (let i = 1; i <= 20; i++) {
+                                    document.write(`
+                                        <div class="p-3 bg-gray-50 rounded border flex items-center justify-between">
+                                            <span>Test Item ${i}</span>
+                                            <button class="touch-button touch-feedback px-3 py-1 bg-blue-600 text-white text-sm rounded">Action</button>
+                                        </div>
+                                    `);
+                                }
+                            </script>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Floating Action Button -->
+        <button class="fixed bottom-6 right-6 h-14 w-14 bg-blue-600 text-white rounded-full shadow-xl hover:shadow-2xl touch-feedback flex items-center justify-center z-50">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Touch gesture detection
+        const gestureArea = document.getElementById('gestureArea');
+        const gestureLog = document.getElementById('gestureLog');
+        
+        let touchStartTime = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        function logGesture(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            gestureLog.innerHTML = `${timestamp}: ${message}`;
+        }
+        
+        gestureArea.addEventListener('touchstart', (e) => {
+            touchStartTime = Date.now();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            gestureArea.style.backgroundColor = '#dbeafe';
+            logGesture('Touch started');
+        });
+        
+        gestureArea.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const deltaX = e.touches[0].clientX - touchStartX;
+            const deltaY = e.touches[0].clientY - touchStartY;
+            
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                logGesture(`Horizontal swipe: ${deltaX > 0 ? 'right' : 'left'} (${Math.abs(deltaX).toFixed(0)}px)`);
+            } else {
+                logGesture(`Vertical swipe: ${deltaY > 0 ? 'down' : 'up'} (${Math.abs(deltaY).toFixed(0)}px)`);
+            }
+        });
+        
+        gestureArea.addEventListener('touchend', (e) => {
+            const touchDuration = Date.now() - touchStartTime;
+            gestureArea.style.backgroundColor = '';
+            
+            if (touchDuration > 500) {
+                logGesture(`Long press detected (${touchDuration}ms)`);
+                // Haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            } else {
+                logGesture(`Tap completed (${touchDuration}ms)`);
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            }
+        });
+        
+        // Pull-to-refresh simulation
+        const mainContent = document.getElementById('mainContent');
+        let pullStartY = 0;
+        let isPulling = false;
+        
+        mainContent.addEventListener('touchstart', (e) => {
+            if (mainContent.scrollTop === 0) {
+                pullStartY = e.touches[0].clientY;
+                isPulling = true;
+            }
+        });
+        
+        mainContent.addEventListener('touchmove', (e) => {
+            if (isPulling && mainContent.scrollTop === 0) {
+                const pullDistance = e.touches[0].clientY - pullStartY;
+                if (pullDistance > 0) {
+                    e.preventDefault();
+                    const dampenedDistance = Math.min(pullDistance * 0.5, 60);
+                    mainContent.style.paddingTop = `${dampenedDistance}px`;
+                    
+                    if (dampenedDistance > 40) {
+                        logGesture(`Pull to refresh: ${dampenedDistance.toFixed(0)}px`);
+                    }
+                }
+            }
+        });
+        
+        mainContent.addEventListener('touchend', () => {
+            if (isPulling) {
+                isPulling = false;
+                mainContent.style.paddingTop = '0px';
+                mainContent.style.transition = 'padding-top 0.3s ease-out';
+                setTimeout(() => {
+                    mainContent.style.transition = '';
+                }, 300);
+            }
+        });
+        
+        // Performance monitoring
+        let frameCount = 0;
+        let lastFrameTime = performance.now();
+        
+        function measureFPS() {
+            const now = performance.now();
+            frameCount++;
+            
+            if (now - lastFrameTime >= 1000) {
+                const fps = Math.round((frameCount * 1000) / (now - lastFrameTime));
+                console.log(`FPS: ${fps}`);
+                frameCount = 0;
+                lastFrameTime = now;
+            }
+            
+            requestAnimationFrame(measureFPS);
+        }
+        
+        measureFPS();
+        
+        console.log('Mobile UX test initialized');
+        console.log('Screen size:', window.innerWidth + 'x' + window.innerHeight);
+        console.log('Device pixel ratio:', window.devicePixelRatio);
+        console.log('Touch support:', 'ontouchstart' in window);
+        console.log('Vibration support:', 'vibrate' in navigator);
+    </script>
+</body>
+</html>

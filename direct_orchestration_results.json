@@ -1,0 +1,251 @@
+{
+  "timestamp": "2025-08-05T14:44:07.726Z",
+  "system_info": {
+    "backend_available": true,
+    "ai_service_status": "available"
+  },
+  "tests": [
+    {
+      "id": "complex_growth_strategy",
+      "query": "I want to grow my barbershop revenue by 30% in 6 months. I need a complete strategy that covers pricing optimization, marketing campaigns, operational efficiency, and staff management. What's my comprehensive roadmap?",
+      "expected_agents": [
+        "Financial",
+        "Marketing",
+        "Operations"
+      ],
+      "expected_domains": [
+        "finance",
+        "marketing",
+        "operations"
+      ],
+      "complexity": "high",
+      "response": {
+        "success": true,
+        "response": "**Staff Management Strategy**\n\nCurrent Staffing Metrics:\n• Total Staff: 2 barbers\n• Daily Customers: 25\n• Customers per Barber: 12.5/day\n• Optimal Ratio: ~12 customers per barber/day\n\n**Staffing Assessment:**\nHIGH WORKLOAD: Staff is busy but manageable with good systems.\n\n**The High-Performance Team Framework:**\n\n**1. Clear Standards & Training**\nConsistency comes from systems, not just talent.\n\n**2. Performance Metrics**\nTrack customer satisfaction, service time, and revenue per barber.\n\n**3. Growth & Development**\nInvest in your team's skills to increase their value and retention.\n\n**4. Efficient Communication**\nDaily briefings and clear processes prevent confusion and conflicts.",
+        "provider": "specialized_agent",
+        "confidence": 0.87,
+        "message_type": "operations",
+        "selected_provider": "unknown",
+        "contextual_insights": {},
+        "knowledge_enhanced": true,
+        "timestamp": "2025-08-05T14:44:07.753577",
+        "usage": {},
+        "session_id": "orchestration_complex_growth_strategy_1754405047750"
+      },
+      "analysis": {
+        "agent_mentions": [
+          "financial",
+          "marketing",
+          "operations"
+        ],
+        "domain_coverage": [
+          "finance",
+          "marketing",
+          "operations"
+        ],
+        "collaboration_terms": [],
+        "structured_response": true,
+        "confidence": 87,
+        "response_length": 690,
+        "orchestration_score": 80
+      },
+      "success": true,
+      "error": null,
+      "timestamp": "2025-08-05T14:44:07.750Z"
+    },
+    {
+      "id": "dual_challenge_solution",
+      "query": "My barbershop is struggling with two major issues: customer retention is only 45% and my operating costs are 20% higher than industry average. I need solutions that address both problems in an integrated way.",
+      "expected_agents": [
+        "Financial",
+        "Operations"
+      ],
+      "expected_domains": [
+        "finance",
+        "operations"
+      ],
+      "complexity": "medium",
+      "response": {
+        "success": true,
+        "response": "**Review Management Strategy for Your Barbershop**\n\nReviews are your digital word-of-mouth. They influence 95% of purchasing decisions and directly impact your Google rankings.\n\n**The Review Generation System:**\n\n**1. Proactive Review Requests**\nDon't leave reviews to chance. Make asking for reviews part of your service process.\n\n**2. Multi-Platform Strategy**\nFocus on Google Reviews (most important for local search), but also maintain presence on Facebook, Yelp, and industry-specific platforms.\n\n**3. Response Management**\nEvery review response is a public conversation that future customers will read.\n\n**4. Review Recovery**\nTurn negative experiences into positive outcomes through thoughtful, professional responses.\n\n**Goal:** Maintain 4.7+ stars with 50+ reviews across platforms.",
+        "provider": "specialized_agent",
+        "confidence": 0.87,
+        "message_type": "marketing",
+        "selected_provider": "unknown",
+        "contextual_insights": {},
+        "knowledge_enhanced": true,
+        "timestamp": "2025-08-05T14:44:10.764292",
+        "usage": {},
+        "session_id": "orchestration_dual_challenge_solution_1754405050759"
+      },
+      "analysis": {
+        "agent_mentions": [
+          "marketing",
+          "operations"
+        ],
+        "domain_coverage": [
+          "marketing",
+          "operations"
+        ],
+        "collaboration_terms": [],
+        "structured_response": true,
+        "confidence": 87,
+        "response_length": 791,
+        "orchestration_score": 70
+      },
+      "success": true,
+      "error": null,
+      "timestamp": "2025-08-05T14:44:10.759Z"
+    },
+    {
+      "id": "expansion_marketing_strategy",
+      "query": "I want to hire 2 additional barbers and expand to premium services, but I need to build my customer base and brand presence first. How do I coordinate staffing expansion with marketing growth?",
+      "expected_agents": [
+        "Marketing",
+        "Operations"
+      ],
+      "expected_domains": [
+        "marketing",
+        "operations"
+      ],
+      "complexity": "medium",
+      "response": {
+        "success": true,
+        "response": "**Brand Development Strategy for Your Barbershop**\n\nYour brand is the emotional connection customers have with your business. It's not just your logo - it's every interaction, every experience, every story told about you.\n\n**Brand Foundation Elements:**\n\n**1. Brand Promise:** What transformation do you deliver?\n*Example: \"From good hair to confidence that shows\"*\n\n**2. Brand Personality:** How do you want to be perceived?\n*Professional yet approachable? Classic yet modern? Trendy yet timeless?*\n\n**3. Brand Voice:** How do you communicate?\n*Friendly expert? Knowledgeable guide? Creative artist?*\n\n**4. Visual Identity:** What's your look and feel?\n*Colors, fonts, imagery style that reflects your personality*\n\n**The strongest barbershop brands combine exceptional skill with memorable personality. What makes Your Barbershop uniquely valuable?**",
+        "provider": "specialized_agent",
+        "confidence": 0.865,
+        "message_type": "marketing",
+        "selected_provider": "unknown",
+        "contextual_insights": {},
+        "knowledge_enhanced": true,
+        "timestamp": "2025-08-05T14:44:13.773683",
+        "usage": {},
+        "session_id": "orchestration_expansion_marketing_strategy_1754405053769"
+      },
+      "analysis": {
+        "agent_mentions": [
+          "marketing"
+        ],
+        "domain_coverage": [
+          "marketing"
+        ],
+        "collaboration_terms": [],
+        "structured_response": true,
+        "confidence": 87,
+        "response_length": 852,
+        "orchestration_score": 40
+      },
+      "success": false,
+      "error": null,
+      "timestamp": "2025-08-05T14:44:13.769Z"
+    },
+    {
+      "id": "premium_transformation",
+      "query": "Transform my basic barbershop into a premium men's grooming destination. I need pricing strategy, service upgrades, marketing positioning, and operational changes. What's the complete transformation plan?",
+      "expected_agents": [
+        "Financial",
+        "Marketing",
+        "Operations"
+      ],
+      "expected_domains": [
+        "finance",
+        "marketing",
+        "operations"
+      ],
+      "complexity": "high",
+      "response": {
+        "success": true,
+        "response": "**Marketing Strategy Foundation**\n\nGreat marketing for barbershops isn't about tricks or gimmicks - it's about consistently showcasing your skills and building authentic relationships.\n\n**The Marketing Hierarchy (in order of importance):**\n\n1. **Exceptional Service** - Your marketing starts with the haircut\n2. **Customer Experience** - How customers feel before, during, and after\n3. **Social Proof** - Reviews, testimonials, before/after photos\n4. **Local Presence** - Being known and visible in your community  \n5. **Digital Marketing** - Social media, online presence, content creation\n\n**Remember:** The best marketing is a great haircut that makes someone feel confident. Everything else amplifies that core value.",
+        "provider": "specialized_agent",
+        "confidence": 0.87,
+        "message_type": "marketing",
+        "selected_provider": "unknown",
+        "contextual_insights": {},
+        "knowledge_enhanced": true,
+        "timestamp": "2025-08-05T14:44:16.782366",
+        "usage": {},
+        "session_id": "orchestration_premium_transformation_1754405056777"
+      },
+      "analysis": {
+        "agent_mentions": [
+          "marketing"
+        ],
+        "domain_coverage": [
+          "marketing"
+        ],
+        "collaboration_terms": [],
+        "structured_response": true,
+        "confidence": 87,
+        "response_length": 721,
+        "orchestration_score": 33
+      },
+      "success": false,
+      "error": null,
+      "timestamp": "2025-08-05T14:44:16.777Z"
+    },
+    {
+      "id": "competitive_positioning",
+      "query": "Three new barbershops opened nearby. I need to differentiate through pricing, services, and marketing while optimizing operations to maintain profitability. How do I stay competitive?",
+      "expected_agents": [
+        "Financial",
+        "Marketing",
+        "Operations"
+      ],
+      "expected_domains": [
+        "finance",
+        "marketing",
+        "operations"
+      ],
+      "complexity": "high",
+      "response": {
+        "success": true,
+        "response": "**Operations Excellence Framework**\n\nGreat operations aren't visible to customers - they just experience the results: shorter waits, consistent quality, smooth service, and happy staff.\n\n**The Four Pillars of Barbershop Operations:**\n\n**1. Systems & Processes**\nDocument everything so quality doesn't depend on individual memory or mood.\n\n**2. Performance Measurement**\nYou can't improve what you don't measure. Track key metrics consistently.\n\n**3. Continuous Improvement**\nRegular review and optimization of all processes and systems.\n\n**4. Team Development**\nInvest in your people - they deliver the customer experience.\n\n**Remember:** The goal isn't perfection, it's consistent excellence that customers can rely on.",
+        "provider": "specialized_agent",
+        "confidence": 0.87,
+        "message_type": "operations",
+        "selected_provider": "unknown",
+        "contextual_insights": {},
+        "knowledge_enhanced": true,
+        "timestamp": "2025-08-05T14:44:19.792342",
+        "usage": {},
+        "session_id": "orchestration_competitive_positioning_1754405059788"
+      },
+      "analysis": {
+        "agent_mentions": [
+          "marketing",
+          "operations"
+        ],
+        "domain_coverage": [
+          "marketing",
+          "operations"
+        ],
+        "collaboration_terms": [],
+        "structured_response": true,
+        "confidence": 87,
+        "response_length": 720,
+        "orchestration_score": 57
+      },
+      "success": false,
+      "error": null,
+      "timestamp": "2025-08-05T14:44:19.788Z"
+    }
+  ],
+  "analysis": {
+    "total_tests": 5,
+    "successful_responses": 5,
+    "orchestration_detected": 3,
+    "avg_confidence": 87,
+    "avg_response_length": 755,
+    "collaboration_score": 56
+  },
+  "orchestration_features": {
+    "agent_mentions": {
+      "financial": 1,
+      "marketing": 5,
+      "operations": 3
+    },
+    "collaboration_indicators": [],
+    "coordination_patterns": [],
+    "multi_domain_responses": 3
+  }
+}

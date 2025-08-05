@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from './SupabaseAuthProvider'
 import { 
   PaperAirplaneIcon,
   SparklesIcon,

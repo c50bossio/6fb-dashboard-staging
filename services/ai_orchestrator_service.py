@@ -6,12 +6,18 @@ Handles multi-model AI integration and intelligent provider selection
 import asyncio
 import json
 import logging
+import os
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from enum import Enum
+from dotenv import load_dotenv
 
-# Import vector knowledge service
+# Load environment variables
+load_dotenv('.env.local')
+
+# Import vector knowledge service and agent manager
 from .vector_knowledge_service import vector_knowledge_service, BusinessKnowledgeType
+from .ai_agents.agent_manager import agent_manager
 
 # AI Provider imports
 try:
@@ -99,7 +105,7 @@ class AIOrchestratorService:
         if GEMINI_AVAILABLE:
             try:
                 import os
-                gemini_key = os.getenv('GOOGLE_GEMINI_API_KEY')
+                gemini_key = os.getenv('GOOGLE_AI_API_KEY') or os.getenv('GOOGLE_GEMINI_API_KEY')
                 if gemini_key:
                     genai.configure(api_key=gemini_key)
                     self.providers[AIProvider.GEMINI] = genai.GenerativeModel('gemini-1.5-flash')
@@ -329,8 +335,47 @@ class AIOrchestratorService:
         }
     
     async def enhanced_chat(self, message: str, session_id: str, business_context: Dict = None) -> Dict:
-        """Main chat method with intelligent provider selection and RAG integration"""
+        """Main chat method with specialized agent integration, RAG, and AI provider fallback"""
         
+        try:
+            # Step 1: Try specialized agent system first
+            agent_response = await agent_manager.process_message(
+                message=message, 
+                context=business_context or {}
+            )
+            
+            # If we got a good response from specialized agents, use it
+            if agent_response and agent_response.total_confidence > 0.6:
+                logger.info(f"✅ Specialized agent response: {agent_response.primary_agent}")
+                
+                # Format agent response for consistent API
+                return {
+                    'provider': 'specialized_agent',
+                    'response': agent_response.primary_response.response,
+                    'confidence': agent_response.total_confidence,
+                    'timestamp': datetime.now().isoformat(),
+                    'agent_details': {
+                        'primary_agent': agent_response.primary_agent,
+                        'collaborative_agents': [r.agent_id for r in agent_response.collaborative_responses],
+                        'coordination_summary': agent_response.coordination_summary,
+                        'recommendations': agent_response.combined_recommendations,
+                        'collaboration_score': agent_response.collaboration_score,
+                        'business_impact': agent_response.primary_response.business_impact,
+                        'action_items': agent_response.primary_response.action_items,
+                        'follow_up_questions': agent_response.primary_response.follow_up_questions
+                    },
+                    'message_type': agent_response.primary_response.domain.value,
+                    'knowledge_enhanced': True,  # Agents use specialized knowledge
+                    'agent_enhanced': True
+                }
+            
+            # Step 2: Fallback to traditional AI provider system
+            logger.info("Using traditional AI provider fallback")
+            
+        except Exception as e:
+            logger.error(f"Agent system error, falling back to AI providers: {e}")
+        
+        # Traditional AI provider flow (fallback)
         # Classify message type
         message_type = self.classify_message_type(message)
         
@@ -383,7 +428,8 @@ class AIOrchestratorService:
             'message_type': message_type.value,
             'selected_provider': selected_provider.value if selected_provider else 'fallback',
             'contextual_insights': contextual_insights,
-            'knowledge_enhanced': len(contextual_insights.get('relevant_knowledge', [])) > 0
+            'knowledge_enhanced': len(contextual_insights.get('relevant_knowledge', [])) > 0,
+            'agent_enhanced': False  # Traditional AI provider response
         })
         
         return response

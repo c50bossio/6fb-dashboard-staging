@@ -1,0 +1,2722 @@
+{
+  "timestamp": "2025-08-05T18:21:54.204873",
+  "schema_analysis": {
+    "main_sqlite": {
+      "path": "/Users/bossio/6FB AI Agent System/agent_system.db",
+      "tables": {
+        "users": {
+          "columns": 17,
+          "row_count": 16,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "email",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "hashed_password",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "full_name",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "barbershop_name",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "is_active",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "last_login",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "failed_login_attempts",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "locked_until",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "email_search_hash",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "encryption_version",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "phone_number",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "address",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "payment_info",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "api_keys",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "sessions": {
+          "columns": 11,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "session_id",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "last_activity",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "ip_address",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "user_agent",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "conversation_history",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "shop_context",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "encryption_version",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "device_fingerprint",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "messages": {
+          "columns": 10,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "session_id",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "role",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "content",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "domains_addressed",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "recommendations",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "confidence",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "urgency",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "requires_data",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "analytics_insights": {
+          "columns": 7,
+          "row_count": 1,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "insight_type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "insight_data",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "confidence",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "expires_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "marketing_campaigns": {
+          "columns": 12,
+          "row_count": 10,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "campaign_name",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "campaign_type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "status",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "target_audience",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "budget",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "start_date",
+              "type": "DATE",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "end_date",
+              "type": "DATE",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "metrics",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "bookings": {
+          "columns": 13,
+          "row_count": 10,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "customer_name",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "customer_email",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "customer_phone",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "service_type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "appointment_date",
+              "type": "DATETIME",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "duration_minutes",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "price",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "status",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "notes",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "ai_learning_data": {
+          "columns": 7,
+          "row_count": 154,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "learning_type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "learning_data",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "confidence",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "usage_count",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "security_events": {
+          "columns": 6,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "event_type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "ip_address",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "details",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "encryption_key_rotation": {
+          "columns": 7,
+          "row_count": 3,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "key_version",
+              "type": "VARCHAR(10)",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "rotation_date",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "rotated_by",
+              "type": "VARCHAR(255)",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "tables_affected",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "status",
+              "type": "VARCHAR(20)",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "notes",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "encryption_config": {
+          "columns": 7,
+          "row_count": 16,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "table_name",
+              "type": "VARCHAR(100)",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "field_name",
+              "type": "VARCHAR(100)",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "encryption_type",
+              "type": "VARCHAR(20)",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "is_active",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "ai_conversations": {
+          "columns": 8,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "conversation_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "user_context",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "business_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "encryption_version",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "integrations": {
+          "columns": 8,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "name",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "api_credentials",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "oauth_tokens",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "webhook_secrets",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "encryption_version",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "audit_logs": {
+          "columns": 12,
+          "row_count": 1,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "action",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "resource_type",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "resource_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "details",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "request_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "response_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "encryption_version",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "timestamp",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "ip_address",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "user_agent",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        }
+      },
+      "total_tables": 14,
+      "indexes": [
+        {
+          "name": "idx_users_email",
+          "sql": "CREATE INDEX idx_users_email ON users(email)"
+        },
+        {
+          "name": "idx_sessions_user_id",
+          "sql": "CREATE INDEX idx_sessions_user_id ON sessions(user_id)"
+        },
+        {
+          "name": "idx_sessions_session_id",
+          "sql": "CREATE INDEX idx_sessions_session_id ON sessions(session_id)"
+        },
+        {
+          "name": "idx_messages_session_id",
+          "sql": "CREATE INDEX idx_messages_session_id ON messages(session_id)"
+        },
+        {
+          "name": "idx_analytics_user_id",
+          "sql": "CREATE INDEX idx_analytics_user_id ON analytics_insights(user_id)"
+        },
+        {
+          "name": "idx_campaigns_user_id",
+          "sql": "CREATE INDEX idx_campaigns_user_id ON marketing_campaigns(user_id)"
+        },
+        {
+          "name": "idx_bookings_user_id",
+          "sql": "CREATE INDEX idx_bookings_user_id ON bookings(user_id)"
+        },
+        {
+          "name": "idx_bookings_date",
+          "sql": "CREATE INDEX idx_bookings_date ON bookings(appointment_date)"
+        },
+        {
+          "name": "idx_security_events_created_at",
+          "sql": "CREATE INDEX idx_security_events_created_at ON security_events(created_at)"
+        },
+        {
+          "name": "idx_ai_learning_type",
+          "sql": "CREATE INDEX idx_ai_learning_type ON ai_learning_data(learning_type)"
+        },
+        {
+          "name": "idx_ai_conversations_encryption_version",
+          "sql": "CREATE INDEX idx_ai_conversations_encryption_version ON ai_conversations(encryption_version)"
+        },
+        {
+          "name": "idx_integrations_encryption_version",
+          "sql": "CREATE INDEX idx_integrations_encryption_version ON integrations(encryption_version)"
+        },
+        {
+          "name": "idx_audit_logs_encryption_version",
+          "sql": "CREATE INDEX idx_audit_logs_encryption_version ON audit_logs(encryption_version)"
+        },
+        {
+          "name": "idx_users_email_search",
+          "sql": "CREATE INDEX idx_users_email_search ON users(email_search_hash)"
+        },
+        {
+          "name": "idx_users_encryption_version",
+          "sql": "CREATE INDEX idx_users_encryption_version ON users(encryption_version)"
+        },
+        {
+          "name": "idx_sessions_encryption_version",
+          "sql": "CREATE INDEX idx_sessions_encryption_version ON sessions(encryption_version)"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "users_encryption_update",
+          "sql": "CREATE TRIGGER users_encryption_update\n    AFTER UPDATE ON users\n    WHEN NEW.email != OLD.email OR NEW.phone_number != OLD.phone_number\nBEGIN\n    UPDATE users SET \n        encryption_version = (SELECT key_version FROM encryption_key_rotation WHERE status = 'active' LIMIT 1),\n        updated_at = CURRENT_TIMESTAMP\n    WHERE id = NEW.id;\nEND"
+        },
+        {
+          "name": "sessions_encryption_update",
+          "sql": "CREATE TRIGGER sessions_encryption_update\n    AFTER UPDATE ON sessions\n    WHEN NEW.user_agent != OLD.user_agent OR NEW.ip_address != OLD.ip_address\nBEGIN\n    UPDATE sessions SET \n        encryption_version = (SELECT key_version FROM encryption_key_rotation WHERE status = 'active' LIMIT 1),\n        updated_at = CURRENT_TIMESTAMP\n    WHERE id = NEW.id;\nEND"
+        }
+      ]
+    },
+    "database_dir_sqlite": {
+      "path": "/Users/bossio/6FB AI Agent System/database/agent_system.db",
+      "tables": {
+        "business_recommendations": {
+          "columns": 7,
+          "row_count": 24,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "generated_at",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "recommendations_data",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "confidence_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "implementation_status",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        }
+      },
+      "total_tables": 2,
+      "indexes": [],
+      "triggers": []
+    },
+    "data_predictive_analytics.db": {
+      "path": "/Users/bossio/6FB AI Agent System/data/predictive_analytics.db",
+      "tables": {
+        "demand_forecasts": {
+          "columns": 10,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "forecast_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "service_type",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "time_period",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "forecast_date",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "predicted_demand",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "confidence_level",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "contributing_factors",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "recommended_actions",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "dynamic_pricing": {
+          "columns": 14,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "pricing_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "service_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "barber_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "base_price",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "recommended_price",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "price_adjustment",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "pricing_reason",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "demand_level",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "valid_from",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "valid_until",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "expected_impact",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "is_active",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "business_insights": {
+          "columns": 13,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "insight_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "insight_type",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "description",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "impact_level",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "potential_value",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "actionable_recommendations",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "supporting_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "confidence_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "urgency_level",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "is_acted_upon",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "seasonal_patterns": {
+          "columns": 8,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "pattern_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "pattern_type",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "pattern_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "strength",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "next_occurrence",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "recommended_preparation",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "identified_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "analytics_snapshots": {
+          "columns": 5,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "snapshot_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "snapshot_date",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "metrics_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        }
+      },
+      "total_tables": 5,
+      "indexes": [],
+      "triggers": []
+    },
+    "data_intelligent_alerts.db": {
+      "path": "/Users/bossio/6FB AI Agent System/data/intelligent_alerts.db",
+      "tables": {
+        "alerts": {
+          "columns": 20,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "alert_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "message",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "category",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "priority",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "confidence_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "severity_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "urgency_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "business_impact",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "status",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "expires_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "metadata",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "source_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "recommended_actions",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "similar_alerts_count",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "user_interactions",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "ml_features",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "alert_rules": {
+          "columns": 13,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "rule_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "name",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "category",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "conditions",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "threshold_config",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "enabled",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "priority_weight",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "last_triggered",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "trigger_count",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "user_feedback_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "user_alert_preferences": {
+          "columns": 12,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "user_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "email_enabled",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "sms_enabled",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "push_enabled",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "priority_threshold",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "quiet_hours_start",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "quiet_hours_end",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "category_preferences",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "frequency_limits",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "learning_preferences",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "alert_interactions": {
+          "columns": 7,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "interaction_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "alert_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "user_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "interaction_type",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "interaction_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "timestamp",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "response_time",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "alert_ml_training": {
+          "columns": 6,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "training_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "alert_features",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "user_response",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "feedback_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "alert_patterns": {
+          "columns": 7,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "pattern_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "barbershop_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "pattern_type",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "pattern_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "alerts_in_pattern",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "significance_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "identified_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        }
+      },
+      "total_tables": 6,
+      "indexes": [
+        {
+          "name": "idx_alerts_barbershop_created",
+          "sql": "CREATE INDEX idx_alerts_barbershop_created ON alerts(barbershop_id, created_at)"
+        },
+        {
+          "name": "idx_alerts_status_priority",
+          "sql": "CREATE INDEX idx_alerts_status_priority ON alerts(status, priority)"
+        },
+        {
+          "name": "idx_alerts_category_created",
+          "sql": "CREATE INDEX idx_alerts_category_created ON alerts(category, created_at)"
+        },
+        {
+          "name": "idx_alert_rules_barbershop_enabled",
+          "sql": "CREATE INDEX idx_alert_rules_barbershop_enabled ON alert_rules(barbershop_id, enabled)"
+        },
+        {
+          "name": "idx_alert_rules_category_enabled",
+          "sql": "CREATE INDEX idx_alert_rules_category_enabled ON alert_rules(category, enabled)"
+        },
+        {
+          "name": "idx_alert_interactions_alert",
+          "sql": "CREATE INDEX idx_alert_interactions_alert ON alert_interactions(alert_id)"
+        },
+        {
+          "name": "idx_alert_interactions_user_timestamp",
+          "sql": "CREATE INDEX idx_alert_interactions_user_timestamp ON alert_interactions(user_id, timestamp)"
+        },
+        {
+          "name": "idx_alert_ml_training_barbershop_created",
+          "sql": "CREATE INDEX idx_alert_ml_training_barbershop_created ON alert_ml_training(barbershop_id, created_at)"
+        },
+        {
+          "name": "idx_alert_patterns_barbershop_type",
+          "sql": "CREATE INDEX idx_alert_patterns_barbershop_type ON alert_patterns(barbershop_id, pattern_type)"
+        }
+      ],
+      "triggers": []
+    },
+    "data_knowledge_backup.db": {
+      "path": "/Users/bossio/6FB AI Agent System/data/knowledge_backup.db",
+      "tables": {
+        "business_knowledge": {
+          "columns": 8,
+          "row_count": 1,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "content",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "knowledge_type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "source",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "metadata",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "embedding",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        }
+      },
+      "total_tables": 1,
+      "indexes": [],
+      "triggers": []
+    },
+    "data_enhanced_knowledge.db": {
+      "path": "/Users/bossio/6FB AI Agent System/data/enhanced_knowledge.db",
+      "tables": {
+        "enhanced_business_knowledge": {
+          "columns": 16,
+          "row_count": 8,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "title",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "content",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "summary",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "domain",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "knowledge_type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "source",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "confidence_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "relevance_tags",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "business_metrics",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "last_verified",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "usage_count",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "effectiveness_score",
+              "type": "REAL",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "metadata",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        }
+      },
+      "total_tables": 1,
+      "indexes": [],
+      "triggers": []
+    },
+    "data_6fb_agent_system.db": {
+      "path": "/Users/bossio/6FB AI Agent System/data/6fb_agent_system.db",
+      "tables": {
+        "users": {
+          "columns": 6,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "email",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "password_hash",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "shop_name",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "is_active",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "sessions": {
+          "columns": 4,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "token",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "expires_at",
+              "type": "TIMESTAMP",
+              "not_null": true,
+              "primary_key": false
+            }
+          ]
+        },
+        "chat_history": {
+          "columns": 6,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "agent_id",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "message",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "response",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "ai_conversations": {
+          "columns": 7,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "session_id",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "agent_id",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "messages",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "updated_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        }
+      },
+      "total_tables": 5,
+      "indexes": [],
+      "triggers": []
+    },
+    "data_agent_system.db": {
+      "path": "/Users/bossio/6FB AI Agent System/data/agent_system.db",
+      "tables": {
+        "users": {
+          "columns": 6,
+          "row_count": 5,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "email",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "password_hash",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "shop_name",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "is_active",
+              "type": "BOOLEAN",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "sessions": {
+          "columns": 4,
+          "row_count": 8,
+          "column_info": [
+            {
+              "name": "token",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "expires_at",
+              "type": "TIMESTAMP",
+              "not_null": true,
+              "primary_key": false
+            }
+          ]
+        },
+        "chat_history": {
+          "columns": 6,
+          "row_count": 2,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "agent_id",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "message",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "response",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "agents": {
+          "columns": 4,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "name",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "description",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "status",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "shop_profiles": {
+          "columns": 4,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "profile_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "notification_history": {
+          "columns": 10,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "recipient",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "subject",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "content",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "status",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "error_message",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "sent_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "metadata",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        },
+        "notification_queue": {
+          "columns": 16,
+          "row_count": 0,
+          "column_info": [
+            {
+              "name": "id",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": true
+            },
+            {
+              "name": "user_id",
+              "type": "INTEGER",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "notification_type",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "recipient",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "subject",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "content",
+              "type": "TEXT",
+              "not_null": true,
+              "primary_key": false
+            },
+            {
+              "name": "template_id",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "template_data",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "priority",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "status",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "retry_count",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "max_retries",
+              "type": "INTEGER",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "scheduled_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "processed_at",
+              "type": "TIMESTAMP",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "error_message",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            },
+            {
+              "name": "metadata",
+              "type": "TEXT",
+              "not_null": false,
+              "primary_key": false
+            }
+          ]
+        }
+      },
+      "total_tables": 8,
+      "indexes": [
+        {
+          "name": "idx_notification_queue_status",
+          "sql": "CREATE INDEX idx_notification_queue_status \n                ON notification_queue(status, scheduled_at)\n            "
+        }
+      ],
+      "triggers": []
+    },
+    "postgresql_schema": {
+      "path": "/Users/bossio/6FB AI Agent System/database/complete-schema.sql",
+      "extensions": [
+        "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";",
+        "CREATE EXTENSION IF NOT EXISTS \"pgvector\";"
+      ],
+      "types": [
+        "CREATE TYPE user_role AS ENUM (",
+        "CREATE TYPE appointment_status AS ENUM (",
+        "CREATE TYPE payment_status AS ENUM (",
+        "CREATE TYPE ai_agent_type AS ENUM ("
+      ],
+      "tables": [
+        "CREATE TABLE users (",
+        "CREATE TABLE organizations (",
+        "CREATE TABLE barbershops (",
+        "CREATE TABLE barbershop_staff (",
+        "CREATE TABLE services (",
+        "CREATE TABLE appointments (",
+        "CREATE TABLE payments (",
+        "CREATE TABLE ai_chat_sessions (",
+        "CREATE TABLE ai_chat_messages (",
+        "CREATE TABLE ai_knowledge_base (",
+        "CREATE TABLE business_analytics (",
+        "CREATE TABLE ai_usage_analytics ("
+      ],
+      "indexes": [
+        "CREATE INDEX idx_users_email ON users(email);",
+        "CREATE INDEX idx_users_role ON users(role);",
+        "CREATE INDEX idx_users_active ON users(is_active);",
+        "CREATE INDEX idx_barbershops_owner ON barbershops(owner_id);",
+        "CREATE INDEX idx_barbershops_org ON barbershops(organization_id);",
+        "CREATE INDEX idx_barbershop_staff_shop ON barbershop_staff(barbershop_id);",
+        "CREATE INDEX idx_appointments_barbershop ON appointments(barbershop_id);",
+        "CREATE INDEX idx_appointments_client ON appointments(client_id);",
+        "CREATE INDEX idx_appointments_barber ON appointments(barber_id);",
+        "CREATE INDEX idx_appointments_scheduled ON appointments(scheduled_at);",
+        "CREATE INDEX idx_appointments_status ON appointments(status);",
+        "CREATE INDEX idx_payments_appointment ON payments(appointment_id);",
+        "CREATE INDEX idx_payments_stripe ON payments(stripe_payment_intent_id);",
+        "CREATE INDEX idx_payments_status ON payments(status);",
+        "CREATE INDEX idx_ai_sessions_user ON ai_chat_sessions(user_id);",
+        "CREATE INDEX idx_ai_sessions_barbershop ON ai_chat_sessions(barbershop_id);",
+        "CREATE INDEX idx_ai_sessions_agent ON ai_chat_sessions(agent_type);",
+        "CREATE INDEX idx_ai_messages_session ON ai_chat_messages(session_id);",
+        "CREATE INDEX idx_ai_messages_embedding ON ai_chat_messages USING ivfflat (vector_embedding vector_cosine_ops);",
+        "CREATE INDEX idx_knowledge_embedding ON ai_knowledge_base USING ivfflat (vector_embedding vector_cosine_ops);",
+        "CREATE INDEX idx_business_analytics_shop_date ON business_analytics(barbershop_id, date);",
+        "CREATE INDEX idx_ai_usage_user_date ON ai_usage_analytics(user_id, date);"
+      ],
+      "functions": [
+        "CREATE OR REPLACE FUNCTION update_updated_at_column()"
+      ],
+      "policies": []
+    },
+    "supabase_schema": {
+      "path": "/Users/bossio/6FB AI Agent System/database/supabase-schema.sql",
+      "extensions": [
+        "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+      ],
+      "types": [],
+      "tables": [
+        "CREATE TABLE public.profiles (",
+        "CREATE TABLE public.agents (",
+        "CREATE TABLE public.chat_history (",
+        "CREATE TABLE public.notifications (",
+        "CREATE TABLE public.business_settings (",
+        "CREATE TABLE public.analytics_events (",
+        "CREATE TABLE public.feature_flags ("
+      ],
+      "indexes": [
+        "CREATE INDEX idx_chat_history_user_id ON public.chat_history(user_id);",
+        "CREATE INDEX idx_chat_history_agent_id ON public.chat_history(agent_id);",
+        "CREATE INDEX idx_chat_history_created_at ON public.chat_history(created_at DESC);",
+        "CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);",
+        "CREATE INDEX idx_notifications_status ON public.notifications(status);",
+        "CREATE INDEX idx_analytics_events_user_id ON public.analytics_events(user_id);",
+        "CREATE INDEX idx_analytics_events_event_name ON public.analytics_events(event_name);",
+        "CREATE INDEX idx_analytics_events_created_at ON public.analytics_events(created_at DESC);"
+      ],
+      "functions": [
+        "CREATE OR REPLACE FUNCTION public.handle_new_user()",
+        "CREATE OR REPLACE FUNCTION public.update_updated_at_column()"
+      ],
+      "policies": [
+        "CREATE POLICY \"Users can view own profile\" ON public.profiles",
+        "CREATE POLICY \"Users can update own profile\" ON public.profiles",
+        "CREATE POLICY \"Anyone can view agents\" ON public.agents",
+        "CREATE POLICY \"Users can view own chats\" ON public.chat_history",
+        "CREATE POLICY \"Users can create own chats\" ON public.chat_history",
+        "CREATE POLICY \"Users can view own notifications\" ON public.notifications",
+        "CREATE POLICY \"Users can view own settings\" ON public.business_settings",
+        "CREATE POLICY \"Users can update own settings\" ON public.business_settings",
+        "CREATE POLICY \"Users can insert own settings\" ON public.business_settings",
+        "CREATE POLICY \"Users can track own events\" ON public.analytics_events",
+        "CREATE POLICY \"Anyone can view feature flags\" ON public.feature_flags"
+      ]
+    }
+  },
+  "data_integrity": {
+    "crud_tests": {
+      "main_db": {
+        "create": true,
+        "read": true,
+        "update": false,
+        "delete": false,
+        "errors": [
+          "no such column: updated_at"
+        ]
+      }
+    },
+    "constraint_tests": {
+      "main_db": {
+        "unique_constraint_test": true,
+        "foreign_key_test": false,
+        "errors": []
+      }
+    },
+    "referential_integrity": {
+      "main_db": {
+        "orphaned_sessions": 0,
+        "orphaned_messages": 0,
+        "orphaned_bookings": 0,
+        "integrity_status": "CLEAN"
+      }
+    }
+  },
+  "performance_analysis": {
+    "queries": {
+      "user_count": {
+        "execution_time_ms": 0.19598007202148438,
+        "result_count": 1,
+        "query": "SELECT COUNT(*) FROM users"
+      },
+      "user_select": {
+        "execution_time_ms": 0.02193450927734375,
+        "result_count": 10,
+        "query": "SELECT * FROM users LIMIT 10"
+      },
+      "session_count": {
+        "execution_time_ms": 0.007152557373046875,
+        "result_count": 1,
+        "query": "SELECT COUNT(*) FROM sessions"
+      },
+      "message_count": {
+        "execution_time_ms": 0.0069141387939453125,
+        "result_count": 1,
+        "query": "SELECT COUNT(*) FROM messages"
+      },
+      "booking_count": {
+        "execution_time_ms": 0.0059604644775390625,
+        "result_count": 1,
+        "query": "SELECT COUNT(*) FROM bookings"
+      }
+    },
+    "table_stats": {
+      "users": {
+        "rows": 18
+      },
+      "sessions": {
+        "rows": 0
+      },
+      "messages": {
+        "rows": 0
+      },
+      "analytics_insights": {
+        "rows": 1
+      },
+      "marketing_campaigns": {
+        "rows": 10
+      },
+      "bookings": {
+        "rows": 10
+      },
+      "ai_learning_data": {
+        "rows": 154
+      },
+      "security_events": {
+        "rows": 0
+      },
+      "encryption_key_rotation": {
+        "rows": 3
+      },
+      "encryption_config": {
+        "rows": 16
+      },
+      "ai_conversations": {
+        "rows": 0
+      },
+      "integrations": {
+        "rows": 0
+      },
+      "audit_logs": {
+        "rows": 1
+      }
+    },
+    "recommendations": [
+      "Add indexes on frequently queried columns",
+      "Consider connection pooling for production",
+      "Implement query result caching",
+      "Monitor slow queries in production",
+      "Regular VACUUM operations for SQLite"
+    ]
+  },
+  "migration_compatibility": {},
+  "security_assessment": {
+    "encryption": {
+      "encryption_tables": [
+        "encryption_key_rotation",
+        "encryption_config"
+      ],
+      "encrypted_fields": [
+        "encryption_version"
+      ],
+      "encryption_active": true
+    },
+    "access_control": {},
+    "audit_logging": {},
+    "recommendations": [
+      "CRITICAL: Implement field-level encryption for sensitive data",
+      "HIGH: Enable Row Level Security (RLS) policies in PostgreSQL",
+      "HIGH: Implement comprehensive audit logging",
+      "MEDIUM: Add rate limiting on authentication endpoints",
+      "MEDIUM: Regular security audits and penetration testing",
+      "LOW: Implement automated backup encryption"
+    ]
+  },
+  "barbershop_data_model": {},
+  "recommendations": [
+    "HIGH: Implement proper UUID handling for PostgreSQL migration",
+    "HIGH: Add pgvector extension for AI embeddings",
+    "MEDIUM: Standardize timestamp handling with timezone support",
+    "MEDIUM: Add comprehensive foreign key constraints",
+    "HIGH: Add composite indexes for frequent query patterns",
+    "HIGH: Implement connection pooling for production",
+    "MEDIUM: Consider table partitioning for large datasets",
+    "LOW: Regular database maintenance (VACUUM, ANALYZE)",
+    "CRITICAL: Complete field-level encryption implementation",
+    "HIGH: Implement Row Level Security policies",
+    "HIGH: Add comprehensive audit logging",
+    "MEDIUM: Implement automated security scanning",
+    "CRITICAL: Create and test migration scripts",
+    "HIGH: Validate data integrity post-migration",
+    "MEDIUM: Implement rollback procedures",
+    "LOW: Document migration process thoroughly"
+  ]
+}

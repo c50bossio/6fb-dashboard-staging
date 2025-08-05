@@ -2,7 +2,10 @@
 
 import Link from 'next/link'
 import { Card, Badge } from '../ui'
-import { 
+import * as HeroIcons from '@heroicons/react/24/outline'
+
+// Destructure icons from the imported module to avoid bundling issues
+const {
   ChatBubbleLeftRightIcon,
   ChartBarIcon,
   SparklesIcon,
@@ -14,7 +17,12 @@ import {
   ArrowRightIcon,
   LightBulbIcon,
   RocketLaunchIcon
-} from '@heroicons/react/24/outline'
+} = HeroIcons
+
+// Fallback icon component in case of import issues
+const FallbackIcon = ({ className }) => (
+  <div className={`${className} bg-gray-300 rounded-full`} />
+)
 
 export default function QuickActions({ profile }) {
   const primaryActions = [
@@ -132,7 +140,11 @@ export default function QuickActions({ profile }) {
                 <Card clickable hover className="h-full">
                   <div className="flex items-start space-x-4">
                     <div className={`p-3 rounded-lg ${getColorClasses(action.color)}`}>
-                      <action.icon className="h-6 w-6" />
+                      {action.icon ? (
+                        <action.icon className="h-6 w-6" />
+                      ) : (
+                        <FallbackIcon className="h-6 w-6" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
@@ -141,7 +153,11 @@ export default function QuickActions({ profile }) {
                       </div>
                       <p className="text-xs text-gray-600 mt-1">{action.description}</p>
                     </div>
-                    <ArrowRightIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    {ArrowRightIcon ? (
+                      <ArrowRightIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    ) : (
+                      <FallbackIcon className="h-4 w-4" />
+                    )}
                   </div>
                 </Card>
               </Link>
@@ -163,7 +179,11 @@ export default function QuickActions({ profile }) {
               <Card clickable hover variant="elevated" className="h-full group">
                 <div className="flex items-start space-x-3 sm:space-x-4">
                   <div className={`p-3 sm:p-4 rounded-xl ${getColorClasses(action.color)} group-hover:scale-110 transition-transform duration-200 flex-shrink-0`}>
-                    <action.icon className="h-6 w-6 sm:h-8 sm:w-8" />
+                    {action.icon ? (
+                      <action.icon className="h-6 w-6 sm:h-8 sm:w-8" />
+                    ) : (
+                      <FallbackIcon className="h-6 w-6 sm:h-8 sm:w-8" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
@@ -179,7 +199,11 @@ export default function QuickActions({ profile }) {
                     <p className="text-sm text-gray-600 leading-relaxed">{action.description}</p>
                     <div className="flex items-center mt-3 sm:mt-4 text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
                       <span>Get started</span>
-                      <ArrowRightIcon className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" />
+                      {ArrowRightIcon ? (
+                        <ArrowRightIcon className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" />
+                      ) : (
+                        <FallbackIcon className="h-4 w-4" />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -202,7 +226,11 @@ export default function QuickActions({ profile }) {
               <Card clickable hover className="group">
                 <div className="flex items-center space-x-3">
                   <div className={`p-2.5 rounded-lg ${getColorClasses(action.color)}`}>
-                    <action.icon className="h-5 w-5" />
+                    {action.icon ? (
+                      <action.icon className="h-5 w-5" />
+                    ) : (
+                      <FallbackIcon className="h-5 w-5" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-gray-900 text-sm group-hover:text-gray-700 transition-colors">
@@ -210,7 +238,11 @@ export default function QuickActions({ profile }) {
                     </h3>
                     <p className="text-xs text-gray-600 mt-0.5">{action.description}</p>
                   </div>
-                  <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all duration-200" />
+                  {ArrowRightIcon ? (
+                    <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all duration-200" />
+                  ) : (
+                    <FallbackIcon className="h-4 w-4" />
+                  )}
                 </div>
               </Card>
             </Link>
@@ -227,9 +259,17 @@ export default function QuickActions({ profile }) {
           </div>
           <Link href="/dashboard/settings">
             <div className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors cursor-pointer">
-              <CogIcon className="h-5 w-5" />
+              {CogIcon ? (
+                <CogIcon className="h-5 w-5" />
+              ) : (
+                <FallbackIcon className="h-5 w-5" />
+              )}
               <span className="text-sm font-medium">Settings</span>
-              <ArrowRightIcon className="h-4 w-4" />
+              {ArrowRightIcon ? (
+                <ArrowRightIcon className="h-4 w-4" />
+              ) : (
+                <FallbackIcon className="h-4 w-4" />
+              )}
             </div>
           </Link>
         </div>

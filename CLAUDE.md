@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The 6FB AI Agent System is an enterprise-grade barbershop management platform powered by AI agents. It combines traditional booking management with advanced AI capabilities for business intelligence, customer insights, and operational automation.
 
-**Architecture**: Full-stack application with Next.js frontend, FastAPI backend, and dual database support (SQLite for development, PostgreSQL for production).
+**Architecture**: Full-stack application with Next.js 14 frontend (port 9999), FastAPI backend (port 8001), and dual database support (SQLite for development, PostgreSQL for production via Supabase).
 
 ## Key Technologies & Architecture
 
@@ -31,6 +31,8 @@ The 6FB AI Agent System is an enterprise-grade barbershop management platform po
 - **Error Tracking**: Sentry integration
 - **Analytics**: PostHog with session recording
 - **Feature Flags**: Vercel Edge Config
+- **Rate Limiting**: Middleware-based API protection with fallback to in-memory storage
+- **Security**: GDPR compliance services and comprehensive audit logging
 
 ## Common Development Commands
 
@@ -72,23 +74,26 @@ npm run test:all
 npm run test
 npm run test:watch
 npm run test:coverage
+npm run test:nuclear  # Critical component testing
 
 # E2E tests with Playwright
 npm run test:e2e
 npm run test:e2e:headed
 npm run test:e2e:debug
+npm run test:nuclear-e2e  # Nuclear Input component E2E tests
 
 # Cross-browser testing
 npm run test:cross-browser
 
-# Performance testing
-playwright test --project=performance-tests
+# Security testing
+npm run test:security
+npm run test:security:quick
+npm run test:security:api
+npm run test:security:gdpr
 
-# Visual regression testing
-playwright test --project=visual-tests
-
-# Accessibility testing
-playwright test --project=accessibility-tests
+# Test utilities
+npm run playwright:install
+npm run playwright:install-deps
 ```
 
 ### Health Checks & Debugging
@@ -103,14 +108,20 @@ npm run check-env
 
 # Database setup
 npm run setup-db
+
+# Quality checks
+npm run quality-check
+npm run lint:fix
 ```
 
 ## Architecture Patterns
 
 ### API Structure
-- **Next.js API Routes**: `/app/api/` - Frontend API endpoints
-- **FastAPI Backend**: Python services in `/services/` directory
+- **Next.js API Routes**: `/app/api/` - Frontend API endpoints with comprehensive routing
+- **Primary Backend**: `/fastapi_backend.py` - Full-featured FastAPI server (used in Docker)
+- **Fallback Backend**: `/main.py` - Simple HTTP server for deployment scenarios with limited dependencies
 - **Health Monitoring**: Comprehensive service health checks at `/api/health`
+- **Authentication**: Token-based auth with development bypass for testing
 
 ### Database Architecture
 - **Development**: SQLite database (`agent_system.db`) for simplicity
@@ -128,12 +139,21 @@ npm run setup-db
 ```
 components/
 ├── ai/              # AI chat and agent components
-├── analytics/       # PostHog and analytics components
+├── analytics/       # PostHog and analytics components  
 ├── calendar/        # FullCalendar booking components
 ├── chat/           # Real-time chat components
+├── dashboard/       # Dashboard components (header, metrics, actions)
 ├── notifications/   # Novu notification center
-└── providers/      # Context providers and wrappers
+├── providers/      # Context providers and wrappers
+├── ui/             # Base UI components (Alert, Badge, Card, etc.)
+└── [Critical]      # NuclearInput.js - bulletproof form input with 95% test coverage
 ```
+
+### Key Components
+- **NuclearInput.js**: Critical form input component with comprehensive error handling and 95% test coverage requirement
+- **ProtectedRoute.js**: Authentication wrapper for secure pages
+- **SupabaseAuthProvider.js**: Authentication context provider
+- **ErrorBoundary.js**: Application-wide error handling
 
 ### Authentication Flow
 - **Provider**: Supabase Auth with OAuth support
@@ -166,10 +186,20 @@ NEXT_PUBLIC_PUSHER_CLUSTER=
 ```
 
 ### Optional Services
-- **Sentry**: Error tracking and performance monitoring
-- **PostHog**: Product analytics and session recording
-- **Novu**: Multi-channel notification system
-- **Vercel Edge Config**: Feature flag management
+```bash
+# Error Tracking & Analytics
+NEXT_PUBLIC_SENTRY_DSN=
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=
+
+# Multi-channel Notifications
+NOVU_API_KEY=
+NEXT_PUBLIC_NOVU_APP_IDENTIFIER=
+
+# Feature Flags & AI Services
+EDGE_CONFIG=
+GOOGLE_AI_API_KEY=
+```
 
 ## Testing Strategy
 
@@ -235,5 +265,69 @@ vercel         # Preview/staging
 - **Context Management**: Maintain business context across AI interactions
 - **Real-time Intelligence**: AI-powered insights with live data updates
 - **Error Handling**: Robust error handling for AI service failures
+
+## Critical Architecture Knowledge
+
+### Database Schema Patterns
+- **User Roles**: CLIENT, BARBER, SHOP_OWNER, ENTERPRISE_OWNER, SUPER_ADMIN
+- **Multi-tenant Architecture**: Tenants table with Row Level Security (RLS)
+- **Appointment System**: Complex booking state management with status tracking
+- **AI Context Storage**: Vector embeddings for RAG system using pgvector extension
+- **Payment Integration**: Stripe customer and subscription management
+
+### Service Integration Patterns
+- **AI Orchestrator**: Central service at `/services/ai_orchestrator_service.py` coordinates all AI agents
+- **Vector Knowledge**: RAG system with embeddings stored in PostgreSQL
+- **Real-time Updates**: Pusher integration for live dashboard updates
+- **Notification Queue**: Async notification processing with multiple channels
+- **Alert System**: Intelligent monitoring with configurable thresholds
+
+### Critical Files & Locations
+```
+/app/api/health/route.js              # Comprehensive health checks for all services
+/fastapi_backend.py                   # Full-featured FastAPI backend with AI endpoints
+/main.py                              # Simple HTTP server for basic deployment
+/services/ai_orchestrator_service.py  # Central AI coordination
+/database/complete-schema.sql         # Full PostgreSQL schema with pgvector support
+/components/NuclearInput.js           # Critical form component (95% coverage)
+/playwright.config.js                 # Testing configuration with multi-browser support
+/docker-compose.yml                   # Development container orchestration
+/middleware/                          # Rate limiting and security middleware
+```
+
+### Development Workflow
+1. **Environment Setup**: Use Docker development for consistency
+2. **Database**: SQLite for dev, PostgreSQL for production via Supabase
+3. **Testing**: Triple-tool approach mandatory for critical components
+4. **Security**: Rate limiting, input validation, and comprehensive monitoring
+5. **AI Integration**: Multi-model support with graceful fallbacks
+
+### Production Considerations
+- **Monitoring**: Comprehensive health checks at `/api/health`
+- **Error Tracking**: Sentry integration for production error monitoring
+- **Performance**: PostHog analytics with Core Web Vitals tracking
+- **Infrastructure**: Kubernetes configs in `/infrastructure/kubernetes/`
+- **Security**: GDPR compliance services and security audit logging
+
+## Important Development Notes
+
+### Docker Considerations
+- **Frontend Port**: Always runs on 9999 (not 3000)
+- **Backend Port**: FastAPI on 8001, Simple server on 8000
+- **Database Path**: SQLite stored in `/data/agent_system.db` within container
+- **Volume Mounts**: Live code reloading enabled for components, app, and lib directories
+
+### Backend Architecture
+- **Primary Server**: `fastapi_backend.py` - Full FastAPI server with comprehensive AI endpoints (Docker default)
+- **Fallback Server**: `main.py` - Minimal HTTP server for constrained deployment environments
+- **AI Services**: Comprehensive integration with OpenAI, Anthropic, and Google AI
+- **Middleware Stack**: Rate limiting, security headers, and CORS handling
+- **Service Integration**: Alert system, business recommendations engine, and performance monitoring
+
+### Testing Philosophy
+- **Nuclear Input Component**: Requires 95% test coverage due to critical nature
+- **Triple-Tool Approach**: Playwright for E2E, Puppeteer for debugging, Computer Use for visual validation
+- **Cross-Browser Testing**: Chrome, Firefox, Safari, and mobile variants
+- **Security Testing**: Comprehensive GDPR, API security, and penetration testing suites
 
 This system emphasizes enterprise-grade reliability, comprehensive testing, and advanced AI integration while maintaining developer productivity through Docker containerization and modern tooling.
