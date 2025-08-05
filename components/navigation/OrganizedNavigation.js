@@ -130,18 +130,21 @@ export default function OrganizedNavigation({ user, profile, onSignOut, isMobile
   }
 
   return (
-    <nav className="flex-1 px-3 py-4 overflow-y-auto">
-      {/* Compact Mode Toggle */}
-      <div className="mb-4 px-1">
-        <button
-          onClick={() => setCompactMode(!compactMode)}
-          className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          {compactMode ? '↕ Expand' : '↕ Compact'}
-        </button>
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0 px-3 pt-4 pb-2">
+        {/* Compact Mode Toggle */}
+        <div className="px-1">
+          <button
+            onClick={() => setCompactMode(!compactMode)}
+            className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {compactMode ? '↕ Expand' : '↕ Compact'}
+          </button>
+        </div>
       </div>
       
-      <div className={compactMode ? 'space-y-0.5' : 'space-y-1'}>
+      <nav className="flex-1 overflow-y-auto px-3 pb-4">
+        <div className={compactMode ? 'space-y-0.5' : 'space-y-1'}>
       {sortedCategories.map((category) => {
         const isExpanded = expandedCategories.has(category.id)
         const visibleItems = getVisibleItems(category, profile?.role)
@@ -256,11 +259,12 @@ export default function OrganizedNavigation({ user, profile, onSignOut, isMobile
             )}
           </div>
         )
-      })}
-      </div>
+        })}
+        </div>
+      </nav>
 
       {/* User Actions - Cleaner Design */}
-      <div className="pt-3 mt-4 border-t border-gray-100">
+      <div className="flex-shrink-0 px-3 pt-3 mt-4 border-t border-gray-100">
         {isCollapsed ? (
           // Collapsed user actions - icon only
           <div className="space-y-1 px-2">
@@ -320,6 +324,6 @@ export default function OrganizedNavigation({ user, profile, onSignOut, isMobile
           </>
         )}
       </div>
-    </nav>
+    </div>
   )
 }
