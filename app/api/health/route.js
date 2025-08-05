@@ -66,26 +66,7 @@ export async function GET(request) {
     }
   }
 
-  // Check Clerk Authentication
-  try {
-    if (process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY) {
-      const pubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-      const secretKey = process.env.CLERK_SECRET_KEY
-      
-      const validPubKey = pubKey.startsWith('pk_test_') || pubKey.startsWith('pk_live_')
-      const validSecretKey = secretKey.startsWith('sk_test_') || secretKey.startsWith('sk_live_')
-      
-      health.services.clerk = {
-        status: validPubKey && validSecretKey ? 'configured' : 'error',
-        test_mode: pubKey.includes('_test_'),
-        message: validPubKey && validSecretKey ? undefined : 'Invalid key format'
-      }
-    } else {
-      health.services.clerk = { status: 'not_configured' }
-    }
-  } catch (error) {
-    health.services.clerk = { status: 'error', message: error.message }
-  }
+  // Clerk removed - using Supabase authentication only
 
   // Check OpenAI
   try {
@@ -182,7 +163,7 @@ export async function GET(request) {
   const healthy = Object.values(health.services).filter(s => s.status === 'healthy' || s.status === 'configured')
 
   // Critical services that must be configured
-  const criticalServices = ['supabase', 'clerk', 'stripe']
+  const criticalServices = ['supabase', 'stripe']
   const criticalErrors = criticalServices.filter(service => 
     health.services[service]?.status === 'error'
   )

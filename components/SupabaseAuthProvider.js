@@ -18,42 +18,17 @@ export function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [devBypassActive, setDevBypassActive] = useState(false)
-  const devBypassRef = useRef(false) // Track dev bypass state without causing re-renders
-  const hasRestoredFromStorage = useRef(false) // Prevent continuous localStorage restoration
+  // Removed dev bypass - production-ready authentication only
   const router = useRouter()
   const supabase = useMemo(() => createClient(), []) // Memoize supabase client to prevent re-creation
 
   useEffect(() => {
     let isMounted = true // Track if component is still mounted
     
-    // Check initial session
+    // Check initial session - Supabase only
     const checkUser = async () => {
       try {
-        // First check for dev bypass in localStorage (development only) - but only once
-        if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined' && !hasRestoredFromStorage.current) {
-          const devBypassActive = localStorage.getItem('dev-bypass-active')
-          const storedUser = localStorage.getItem('dev-bypass-user')
-          const storedProfile = localStorage.getItem('dev-bypass-profile')
-          
-          if (devBypassActive === 'true' && storedUser && storedProfile) {
-            const user = JSON.parse(storedUser)
-            const profile = JSON.parse(storedProfile)
-            
-            // Only update state if component is still mounted
-            if (isMounted) {
-              setUser(user)
-              setProfile(profile)
-              setDevBypassActive(true)
-              devBypassRef.current = true
-              hasRestoredFromStorage.current = true // Mark as restored
-              setLoading(false)
-              console.log('🚧 DEV BYPASS: Restored from localStorage')
-            }
-            return
-          }
-          hasRestoredFromStorage.current = true // Mark attempt as done even if nothing found
-        }
+        console.log('🔐 Checking Supabase session...')
         
         // Check Supabase session
         const { data: { session } } = await supabase.auth.getSession()
@@ -92,14 +67,8 @@ export function SupabaseAuthProvider({ children }) {
       setLoading(false)
     }, 15000) // 15 second fallback to allow for tenant context setup
 
-    // Set up auth state listener - but skip if dev bypass is active
+    // Set up auth state listener - Supabase only
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Don't interfere with dev bypass authentication
-      if (devBypassRef.current) {
-        console.log('🚧 DEV BYPASS: Skipping auth state change handling')
-        return
-      }
-      
       console.log('🔐 Auth state change:', event, session?.user?.email || 'No user')
       
       if (session?.user) {
@@ -131,16 +100,12 @@ export function SupabaseAuthProvider({ children }) {
         setLoading(false)
         
       } else {
-        // Only clear user if not in dev bypass mode
-        if (!devBypassRef.current) {
-          console.log('🔐 Clearing user authentication state')
-          setUser(null)
-          setProfile(null)
-        }
+        console.log('🔐 Clearing user authentication state')
+        setUser(null)
+        setProfile(null)
       }
 
-      // Handle auth events - but don't redirect from public pages or during dev bypass
-      if (!devBypassRef.current) {
+      // Handle auth events - don't redirect from public pages
         const currentPath = window.location.pathname
         const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/']
         const isPublicPath = publicPaths.includes(currentPath)
@@ -152,7 +117,6 @@ export function SupabaseAuthProvider({ children }) {
           // Only redirect to dashboard if user is on login/register page
           router.push('/dashboard')
         }
-      }
     })
 
     return () => {
@@ -256,15 +220,6 @@ export function SupabaseAuthProvider({ children }) {
   }
 
   const signOut = async () => {
-    // Clear dev bypass data if it exists
-    if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
-      localStorage.removeItem('dev-bypass-user')
-      localStorage.removeItem('dev-bypass-profile')
-      localStorage.removeItem('dev-bypass-active')
-      setDevBypassActive(false)
-      devBypassRef.current = false
-    }
-    
     const { error } = await supabase.auth.signOut()
     if (error) throw error
     
@@ -332,88 +287,7 @@ export function SupabaseAuthProvider({ children }) {
     return data
   }
 
-  // DEV BYPASS - Only for localhost development
-  const devBypassLogin = async () => {
-    // Check if running on localhost/local development
-    const isLocalhost = typeof window !== 'undefined' && 
-      (window.location.hostname === 'localhost' || 
-       window.location.hostname === '127.0.0.1' ||
-       window.location.hostname.includes('local'))
-    
-    if (!isLocalhost) {
-      throw new Error('Dev bypass only available on localhost')
-    }
-    
-    try {
-      console.log('🚧 DEV BYPASS: Starting development authentication...')
-      
-      // Set dev bypass flag FIRST to prevent auth state listener interference
-      setDevBypassActive(true)
-      devBypassRef.current = true
-      
-      // Create a mock user session for development
-      const mockUser = {
-        id: 'dev-user-123',
-        email: 'dev@6fbmentorship.com',
-        email_confirmed_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        user_metadata: {
-          full_name: 'Dev User',
-          shop_name: 'Dev Barbershop'
-        },
-        // Add required Supabase user properties
-        aud: 'authenticated',
-        role: 'authenticated',
-        app_metadata: {
-          provider: 'dev-bypass',
-          providers: ['dev-bypass']
-        }
-      }
-      
-      const mockProfile = {
-        id: 'dev-user-123',
-        email: 'dev@6fbmentorship.com',
-        full_name: 'Dev User',
-        shop_name: 'Dev Barbershop',
-        organization: '6FB Development',
-        role: 'shop_owner',
-        subscription_status: 'professional',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-      
-      // Store in localStorage FIRST for immediate persistence
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('dev-bypass-user', JSON.stringify(mockUser))
-        localStorage.setItem('dev-bypass-profile', JSON.stringify(mockProfile))
-        localStorage.setItem('dev-bypass-active', 'true')
-      }
-      
-      // Set the mock user and profile in a controlled way
-      setUser(mockUser)
-      setProfile(mockProfile)
-      setLoading(false)
-      
-      console.log('🚧 DEV BYPASS: Successfully logged in as development user')
-      console.log('🚧 DEV BYPASS: Auth state listener will be skipped')
-      console.log('User:', mockUser)
-      console.log('Profile:', mockProfile)
-      
-      // Add a small delay to ensure state is set before returning
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      return { user: mockUser, profile: mockProfile }
-    } catch (error) {
-      console.error('🚧 DEV BYPASS ERROR:', error)
-      // Reset dev bypass flag on error
-      setDevBypassActive(false)
-      devBypassRef.current = false
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('dev-bypass-active')
-      }
-      throw error
-    }
-  }
+  // Removed dev bypass - production-ready authentication only
 
   const value = {
     user,
@@ -426,7 +300,6 @@ export function SupabaseAuthProvider({ children }) {
     resendEmailConfirmation,
     updatePassword,
     updateProfile,
-    devBypassLogin,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

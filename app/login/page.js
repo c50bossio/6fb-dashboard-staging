@@ -13,7 +13,7 @@ import {
 
 export default function LoginPage() {
   const router = useRouter()
-  const { signIn, devBypassLogin, loading: authLoading } = useAuth()
+  const { signIn, loading: authLoading } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -21,16 +21,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [showDevBypass, setShowDevBypass] = useState(false)
-
-  // Check if we're on localhost for dev bypass
-  useEffect(() => {
-    const isLocalhost = typeof window !== 'undefined' && 
-      (window.location.hostname === 'localhost' || 
-       window.location.hostname === '127.0.0.1' ||
-       window.location.hostname.includes('local'))
-    setShowDevBypass(isLocalhost)
-  }, [])
 
   // Safety mechanism: reset loading if it's been stuck for too long - increased for multi-tenant setup
   useEffect(() => {
@@ -95,60 +85,7 @@ export default function LoginPage() {
     }
   }
 
-  const handleDevBypass = async () => {
-    setIsLoading(true)
-    setError('')
-    
-    try {
-      console.log('🚧 DEV BYPASS: Starting authentication process...')
-      
-      // Clear any existing errors or stuck states
-      if (typeof window !== 'undefined') {
-        console.clear() // Clear console to remove any error traces
-      }
-      
-      const result = await devBypassLogin()
-      console.log('🚧 DEV BYPASS: Authentication successful', result)
-      
-      // Add a small delay to ensure state is properly set
-      await new Promise(resolve => setTimeout(resolve, 200))
-      
-      console.log('🚧 DEV BYPASS: Redirecting to dashboard...')
-      router.push('/dashboard')
-      
-    } catch (err) {
-      console.error('🚧 DEV BYPASS ERROR:', err)
-      
-      // Handle specific error types
-      let errorMessage = 'Dev bypass failed'
-      
-      if (err.message.includes('Maximum call stack size exceeded')) {
-        errorMessage = 'Authentication system error detected. Please refresh the page and try again.'
-        // Offer page refresh option
-        setTimeout(() => {
-          if (confirm('Would you like to refresh the page to reset the authentication system?')) {
-            window.location.reload()
-          }
-        }, 2000)
-      } else if (err.message.includes('localhost')) {
-        errorMessage = 'Dev bypass is only available on localhost. Please use regular login in production.'
-      } else if (err.message) {
-        errorMessage = err.message
-      }
-      
-      setError(errorMessage)
-      
-      // Reset any stuck localStorage states
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('dev-bypass-active')
-        localStorage.removeItem('dev-bypass-user')
-        localStorage.removeItem('dev-bypass-profile')
-      }
-      
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // Removed dev bypass - production-ready authentication only
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -342,39 +279,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* DEV BYPASS - Only shows on localhost */}
-          {showDevBypass && (
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Development Only</span>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={handleDevBypass}
-                  disabled={isLoading || authLoading}
-                  className="w-full flex justify-center py-2 px-4 border-2 border-dashed border-orange-300 rounded-md shadow-sm bg-orange-50 text-sm font-medium text-orange-700 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {(isLoading || authLoading) ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2"></div>
-                      Bypassing auth...
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      🚧 Dev Bypass Login (localhost only)
-                    </div>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
+          {/* Dev bypass removed - production-ready authentication only */}
 
           <div className="mt-6">
             <div className="text-center text-sm text-gray-600">
