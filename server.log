@@ -1292,3 +1292,255 @@ INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_
 INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
 INFO:     Application startup complete.
 ERROR:services.realtime_analytics_service:Database connection initialization failed: [Errno 8] nodename nor servname provided, or not known
+WARNING:  WatchFiles detected changes in 'services/realtime_availability_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [81187]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [15276]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+ERROR:services.realtime_analytics_service:Database connection initialization failed: [Errno 8] nodename nor servname provided, or not known
+WARNING:  WatchFiles detected changes in 'services/sms_reminder_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [15276]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [16328]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+ERROR:services.realtime_analytics_service:Database connection initialization failed: [Errno 8] nodename nor servname provided, or not known
+WARNING:  WatchFiles detected changes in 'services/recurring_appointments_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [16328]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [21826]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+ERROR:services.realtime_analytics_service:Database connection initialization failed: [Errno 8] nodename nor servname provided, or not known
+WARNING:  WatchFiles detected changes in 'services/calendar_sync_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [21826]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [27292]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+ERROR:services.realtime_analytics_service:Database connection initialization failed: [Errno 8] nodename nor servname provided, or not known

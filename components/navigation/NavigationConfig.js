@@ -58,59 +58,11 @@ export const NAVIGATION_CATEGORIES = [
     description: 'AI-powered features and automation',
     items: [
       {
-        name: 'AI Agents',
-        href: '/ai-agents',
+        name: 'AI Tools',
+        href: '/ai-tools',
         icon: SparklesIcon,
-        badge: 'AI',
-        description: 'Marcus, Sophia, David - AI specialists'
-      },
-      {
-        name: 'AI Dashboard',
-        href: '/dashboard/ai-intelligent',
-        icon: CpuChipIcon,
-        badge: 'Intelligent',
-        description: 'AI-powered widgets and insights'
-      },
-      {
-        name: 'Knowledge Base',
-        href: '/knowledge-base',
-        icon: BookOpenIcon,
-        badge: 'RAG',
-        description: 'Business expertise and knowledge'
-      },
-      {
-        name: 'AI Performance',
-        href: '/ai-performance',
-        icon: ChartBarIcon,
-        badge: 'Monitor',
-        description: 'AI system performance metrics'
-      },
-      {
-        name: 'Business Recommendations',
-        href: '/business-recommendations',
-        icon: BoltIcon,
-        badge: 'Smart',
-        description: 'AI-powered business recommendations'
-      },
-      {
-        name: 'AI Chat',
-        href: '/dashboard/chat',
-        icon: ChatBubbleLeftRightIcon,
-        badge: 'GPT-4',
-        description: 'Multi-model AI assistant'
-      },
-      {
-        name: 'AI Test Center',
-        href: '/dashboard/ai-test',
-        icon: SparklesIcon,
-        badge: '3 Models',
-        description: 'Test AI model responses'
-      },
-      {
-        name: 'AI Training',
-        href: '/dashboard/ai-training',
-        icon: AcademicCapIcon,
-        description: 'Train and customize AI agents'
+        badge: 'All-in-One',
+        description: 'Complete AI toolkit for your barbershop'
       }
     ]
   },
@@ -123,9 +75,10 @@ export const NAVIGATION_CATEGORIES = [
     items: [
       {
         name: 'Bookings',
-        href: '/dashboard/bookings-ai-fixed',
+        href: '/dashboard/bookings-unified',
         icon: CalendarDaysIcon,
-        description: 'Smart scheduling system'
+        badge: 'Unified',
+        description: 'Complete booking system with multiple views and AI features'
       },
       {
         name: 'Customers',
