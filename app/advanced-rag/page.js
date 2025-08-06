@@ -1,10 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Button } from "@/components/ui/Button"
-import { Badge } from "@/components/ui/Badge"
-import { Alert, AlertDescription } from "@/components/ui/Alert"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Alert, AlertDescription } from "@/components/ui"
 import { Loader2, Search, Brain, Target, TrendingUp, Users, DollarSign, Clock } from 'lucide-react'
 
 export default function AdvancedRAGPage() {

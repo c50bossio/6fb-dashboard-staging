@@ -2237,6 +2237,17 @@ if REALTIME_DATA_AVAILABLE:
     app.include_router(realtime_data_router)
     print("✅ Real-time Data System included at /realtime-data/*")
 
+# Import and include Notion Integration router
+try:
+    from services.notion_endpoint import router as notion_router
+    app.include_router(notion_router)
+    print("✅ Notion Integration System included at /notion/*")
+    NOTION_INTEGRATION_AVAILABLE = True
+except ImportError as e:
+    NOTION_INTEGRATION_AVAILABLE = False
+    print(f"⚠️ Notion Integration system not available: {e}")
+
+
 # Mount alert service if available
 if ALERT_SERVICE_AVAILABLE:
     app.mount("/", alert_app)

@@ -9,6 +9,10 @@ export { default as FormInput, FormSelect } from '../FormInput'
 export { default as Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, StatCard } from './Card'
 export { default as Badge, StatusBadge, CountBadge } from './Badge'
 export { default as Alert, InlineAlert, ToastAlert } from './Alert'
+export { default as Input } from './Input'
+export { default as Textarea } from './Textarea'
+export { default as Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select'
+export { default as Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs'
 
 // Design Tokens
 export * from './DesignTokens'
