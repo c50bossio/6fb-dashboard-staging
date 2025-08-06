@@ -123,13 +123,13 @@ export const NAVIGATION_CATEGORIES = [
     items: [
       {
         name: 'Bookings',
-        href: '/dashboard/bookings',
+        href: '/dashboard/bookings-integrated',
         icon: CalendarDaysIcon,
         description: 'Smart scheduling system'
       },
       {
         name: 'Customers',
-        href: '/dashboard/customers',
+        href: '/dashboard/customers-enhanced',
         icon: UserGroupIcon,
         description: 'Customer management'
       },
