@@ -123,7 +123,7 @@ export const NAVIGATION_CATEGORIES = [
     items: [
       {
         name: 'Bookings',
-        href: '/dashboard/bookings-integrated',
+        href: '/dashboard/bookings-ai-fixed',
         icon: CalendarDaysIcon,
         description: 'Smart scheduling system'
       },
