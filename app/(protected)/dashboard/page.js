@@ -30,6 +30,8 @@ import {
 } from '@heroicons/react/24/solid'
 
 export default function BarbershopDashboard() {
+  console.log('🏪 BarbershopDashboard component loading...')
+  
   const { user } = useAuth()
   const [timeOfDay, setTimeOfDay] = useState('')
   const [dashboardData, setDashboardData] = useState({

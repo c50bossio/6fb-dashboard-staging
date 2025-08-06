@@ -59,8 +59,54 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 })
     }
 
+    // If no services found, try to get default services from payment service
+    let finalServices = services
+    if (services.length === 0) {
+      try {
+        const { spawn } = await import('child_process')
+        const path = await import('path')
+        
+        const scriptPath = path.join(process.cwd(), 'scripts', 'payment_api.py')
+        const pythonProcess = spawn('python3', [scriptPath, 'get-services'], {
+          stdio: ['pipe', 'pipe', 'pipe']
+        })
+
+        pythonProcess.stdin.write('{}')
+        pythonProcess.stdin.end()
+
+        const result = await new Promise((resolve) => {
+          let stdout = ''
+          pythonProcess.stdout.on('data', (data) => {
+            stdout += data.toString()
+          })
+          pythonProcess.on('close', () => {
+            try {
+              resolve(JSON.parse(stdout.trim()))
+            } catch {
+              resolve({ success: false, services: [] })
+            }
+          })
+        })
+
+        if (result.success && result.services) {
+          finalServices = result.services.map(service => ({
+            id: service.service_id,
+            name: service.name,
+            price: service.base_price,
+            duration_minutes: service.duration_minutes,
+            category: service.category,
+            deposit_required: service.deposit_required,
+            deposit_percentage: service.deposit_percentage,
+            is_active: true
+          }))
+        }
+      } catch (error) {
+        console.error('Failed to fetch default services:', error)
+      }
+    }
+
     // Group services by category
-    const servicesByCategory = services.reduce((acc, service) => {
+    const servicesByCategory = finalServices.reduce((acc, service) => {
       const category = service.category || 'General'
       if (!acc[category]) {
         acc[category] = []
@@ -70,9 +116,9 @@ export async function GET(request) {
     }, {})
 
     return NextResponse.json({
-      services,
+      services: finalServices,
       servicesByCategory,
-      total: services.length
+      total: finalServices.length
     })
 
   } catch (error) {

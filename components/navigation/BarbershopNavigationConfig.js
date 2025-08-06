@@ -64,6 +64,12 @@ export const BARBERSHOP_NAVIGATION = [
         href: '/dashboard/calendar-settings',
         icon: LinkIcon,
         badge: 'New'
+      },
+      {
+        name: 'My Bookings',
+        href: '/bookings',
+        icon: CurrencyDollarIcon,
+        badge: 'Pay'
       }
     ]
   },
