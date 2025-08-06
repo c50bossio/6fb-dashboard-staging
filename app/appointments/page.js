@@ -20,7 +20,7 @@ import {
 
 export default function AppointmentsPage() {
   const { user, profile } = useAuth()
-  const [view, setView] = useState('resourceTimeGridDay')
+  const [view, setView] = useState('timeGridDay')
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -66,8 +66,8 @@ export default function AppointmentsPage() {
   }
 
   const viewOptions = [
-    { value: 'resourceTimeGridDay', label: 'Day View', icon: ViewColumnsIcon },
-    { value: 'resourceTimeGridWeek', label: 'Week View', icon: CalendarDaysIcon },
+    { value: 'timeGridDay', label: 'Day View', icon: ViewColumnsIcon },
+    { value: 'timeGridWeek', label: 'Week View', icon: CalendarDaysIcon },
     { value: 'dayGridMonth', label: 'Month View', icon: Squares2X2Icon },
   ]
 

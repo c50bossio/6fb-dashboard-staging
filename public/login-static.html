@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6FB Login - Static</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+            <div class="text-center mb-6">
+                <div class="mx-auto h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center mb-3">
+                    <span class="text-white font-bold text-lg">6FB</span>
+                </div>
+                <h2 class="text-2xl font-bold">Static HTML Login</h2>
+                <p class="text-sm text-gray-600 mt-1">No React, No Next.js, No Providers</p>
+            </div>
+            
+            <div id="error" class="hidden bg-red-100 text-red-700 p-3 rounded mb-4 text-sm"></div>
+            <div id="success" class="hidden bg-green-100 text-green-700 p-3 rounded mb-4 text-sm"></div>
+            
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Email"
+                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
+                        required
+                        value="demo@barbershop.com"
+                    />
+                </div>
+                
+                <div class="relative">
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Password"
+                        class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
+                        required
+                        value="demo123"
+                    />
+                </div>
+                
+                <button
+                    type="submit"
+                    id="submitBtn"
+                    class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-sm text-gray-600">
+                <p>Demo: demo@barbershop.com / demo123</p>
+                <div class="mt-4">
+                    <a href="/" class="text-gray-500 hover:underline">Back to home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pure JavaScript - no React dependencies
+        const { createClient } = supabase
+        const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
+        const supabaseClient = createClient(supabaseUrl, supabaseKey)
+
+        const form = document.getElementById('loginForm')
+        const errorDiv = document.getElementById('error')
+        const successDiv = document.getElementById('success')
+        const submitBtn = document.getElementById('submitBtn')
+
+        function showError(message) {
+            errorDiv.textContent = message
+            errorDiv.classList.remove('hidden')
+            successDiv.classList.add('hidden')
+        }
+
+        function showSuccess(message) {
+            successDiv.textContent = message
+            successDiv.classList.remove('hidden')
+            errorDiv.classList.add('hidden')
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            
+            // Disable button
+            submitBtn.disabled = true
+            submitBtn.textContent = 'Signing in...'
+            
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            
+            try {
+                console.log('Attempting login...')
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                })
+                
+                if (error) {
+                    console.error('Login error:', error)
+                    showError(error.message)
+                    submitBtn.disabled = false
+                    submitBtn.textContent = 'Sign In'
+                    return
+                }
+                
+                console.log('Login successful:', data.user.email)
+                showSuccess('Login successful! Redirecting...')
+                
+                // Direct redirect - no React Router
+                setTimeout(() => {
+                    window.location.href = '/dashboard'
+                }, 500)
+                
+            } catch (err) {
+                console.error('Unexpected error:', err)
+                showError('An unexpected error occurred')
+                submitBtn.disabled = false
+                submitBtn.textContent = 'Sign In'
+            }
+        })
+    </script>
+</body>
+</html>

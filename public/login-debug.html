@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+            <h2 className="text-2xl font-bold mb-6 text-center">Debug Login Test</h2>
+            
+            <div id="status" class="mb-4 p-3 rounded bg-gray-100 text-sm"></div>
+            
+            <form id="loginForm" class="space-y-4">
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Email"
+                    class="w-full p-3 border rounded"
+                    value="demo@barbershop.com"
+                />
+                
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    class="w-full p-3 border rounded"
+                    value="demo123"
+                />
+                
+                <button
+                    type="submit"
+                    class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700"
+                >
+                    Test Login
+                </button>
+            </form>
+            
+            <div class="mt-4">
+                <button onclick="testSupabase()" class="w-full bg-gray-600 text-white p-2 rounded">
+                    Test Supabase Connection
+                </button>
+            </div>
+            
+            <pre id="logs" class="mt-4 p-3 bg-gray-900 text-green-400 text-xs rounded overflow-auto max-h-64"></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        const logs = document.getElementById('logs');
+        const status = document.getElementById('status');
+        
+        function log(message) {
+            const time = new Date().toTimeString().split(' ')[0];
+            logs.textContent += `[${time}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            status.textContent = message;
+            status.className = `mb-4 p-3 rounded text-sm ${
+                type === 'error' ? 'bg-red-100 text-red-700' :
+                type === 'success' ? 'bg-green-100 text-green-700' :
+                'bg-gray-100 text-gray-700'
+            }`;
+        }
+        
+        log('Page loaded');
+        updateStatus('Ready to test login');
+        
+        // Test if we can import Supabase
+        window.testSupabase = async function() {
+            try {
+                log('Testing Supabase connection...');
+                
+                // Dynamic import
+                const { createClient } = await import('https://unpkg.com/@supabase/supabase-js@2/dist/module/index.js');
+                log('Supabase module loaded');
+                
+                const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI';
+                
+                const supabase = createClient(supabaseUrl, supabaseKey);
+                log('Supabase client created');
+                
+                const { data, error } = await supabase.auth.getSession();
+                if (error) {
+                    log(`Session error: ${error.message}`);
+                    updateStatus(`Error: ${error.message}`, 'error');
+                } else {
+                    log(`Session check: ${data.session ? 'Active' : 'None'}`);
+                    updateStatus('Supabase connection successful!', 'success');
+                }
+                
+            } catch (err) {
+                log(`Error: ${err.message}`);
+                updateStatus(`Error: ${err.message}`, 'error');
+            }
+        }
+        
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            log('Form submitted');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            log(`Attempting login with: ${email}`);
+            updateStatus('Logging in...', 'info');
+            
+            try {
+                // Use fetch to call our API
+                log('Calling /api/auth/login...');
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+                
+                log(`Response status: ${response.status}`);
+                const data = await response.json();
+                log(`Response data: ${JSON.stringify(data)}`);
+                
+                if (response.ok) {
+                    updateStatus('Login successful! Redirecting...', 'success');
+                    log('Redirecting to dashboard...');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    updateStatus(`Login failed: ${data.error}`, 'error');
+                    log(`Login error: ${data.error}`);
+                }
+                
+            } catch (err) {
+                log(`Exception: ${err.message}`);
+                updateStatus(`Error: ${err.message}`, 'error');
+            }
+        });
+        
+        // Auto-test on load
+        setTimeout(() => {
+            log('Auto-testing Supabase connection...');
+            testSupabase();
+        }, 500);
+    </script>
+</body>
+</html>

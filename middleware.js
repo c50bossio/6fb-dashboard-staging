@@ -6,11 +6,11 @@ function addSecurityHeaders(response) {
   // Content Security Policy - Strict but functional
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co",
+    "connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.posthog.com",
     "frame-src 'self' https://js.stripe.com https://checkout.stripe.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -157,6 +157,6 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 }

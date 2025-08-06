@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Login</title>
+    <style>
+        body { font-family: sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; }
+        button { width: 100%; padding: 10px; background: #3b82f6; color: white; border: none; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .error { color: red; margin: 10px 0; }
+        .success { color: green; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Simple Login</h1>
+    <div id="message"></div>
+    
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" value="demo@barbershop.com" required>
+        <input type="password" id="password" placeholder="Password" value="demo123" required>
+        <button type="submit" id="submitBtn">Sign In</button>
+    </form>
+    
+    <script>
+        const form = document.getElementById('loginForm');
+        const messageDiv = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Get values
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Update UI
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+            messageDiv.className = '';
+            messageDiv.textContent = '';
+            
+            try {
+                // Call API
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    messageDiv.className = 'success';
+                    messageDiv.textContent = 'Login successful! Redirecting...';
+                    
+                    // Redirect
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    throw new Error(data.error || 'Login failed');
+                }
+                
+            } catch (error) {
+                messageDiv.className = 'error';
+                messageDiv.textContent = error.message;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+            }
+        });
+    </script>
+</body>
+</html>

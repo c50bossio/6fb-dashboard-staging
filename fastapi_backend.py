@@ -2227,6 +2227,190 @@ async def get_recommendations_status(barbershop_id: str):
             "error": str(e)
         }
 
+# Real-time Analytics Endpoints
+# Import the analytics service
+try:
+    from services.realtime_analytics_service import realtime_analytics_service
+    ANALYTICS_SERVICE_AVAILABLE = True
+except ImportError:
+    ANALYTICS_SERVICE_AVAILABLE = False
+    print("⚠️ Real-time analytics service not available")
+
+@app.get("/analytics/live-metrics")
+async def get_live_metrics(
+    barbershop_id: Optional[str] = None,
+    force_refresh: bool = False,
+    format: str = "json",
+    metric: Optional[str] = None
+):
+    """Get live business metrics for AI consumption"""
+    try:
+        if not ANALYTICS_SERVICE_AVAILABLE:
+            return {
+                "success": False,
+                "error": "Analytics service not available",
+                "data_source": "unavailable"
+            }
+        
+        if format == "formatted":
+            formatted_metrics = await realtime_analytics_service.get_formatted_metrics_for_ai(
+                barbershop_id, force_refresh
+            )
+            return {
+                "success": True,
+                "formatted_metrics": formatted_metrics,
+                "data_source": "live",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        elif format == "specific" and metric:
+            specific_value = await realtime_analytics_service.get_specific_metric(
+                metric, barbershop_id
+            )
+            return {
+                "success": True,
+                "metric": metric,
+                "value": specific_value,
+                "data_source": "live",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        else:
+            # Default JSON format
+            metrics_data = await realtime_analytics_service.get_metrics_json(
+                barbershop_id, force_refresh
+            )
+            cache_status = realtime_analytics_service.get_cache_status()
+            
+            return {
+                "success": True,
+                "data": metrics_data,
+                "cache_status": cache_status,
+                "data_source": "live",
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    except Exception as e:
+        print(f"❌ Analytics metrics error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "data_source": "error"
+        }
+
+@app.post("/analytics/refresh")
+async def refresh_analytics(request: dict):
+    """Trigger analytics cache refresh"""
+    try:
+        if not ANALYTICS_SERVICE_AVAILABLE:
+            return {
+                "success": False,
+                "error": "Analytics service not available"
+            }
+        
+        barbershop_id = request.get("barbershop_id")
+        refresh_cache = request.get("refresh_cache", True)
+        
+        if refresh_cache:
+            # Force refresh by getting fresh data
+            metrics = await realtime_analytics_service.get_live_business_metrics(
+                barbershop_id, force_refresh=True
+            )
+            
+            return {
+                "success": True,
+                "message": "Analytics cache refreshed successfully",
+                "metrics_updated": True,
+                "data_freshness": metrics.data_freshness,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {
+                "success": True,
+                "message": "Analytics refresh request acknowledged",
+                "metrics_updated": False,
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    except Exception as e:
+        print(f"❌ Analytics refresh error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@app.get("/analytics/cache-status")
+async def get_analytics_cache_status():
+    """Get analytics cache status for monitoring"""
+    try:
+        if not ANALYTICS_SERVICE_AVAILABLE:
+            return {
+                "success": False,
+                "error": "Analytics service not available"
+            }
+        
+        cache_status = realtime_analytics_service.get_cache_status()
+        return {
+            "success": True,
+            "cache_status": cache_status,
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        print(f"❌ Analytics cache status error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+# Enhanced AI Chat with Analytics Integration
+@app.post("/ai/enhanced-chat")
+async def enhanced_ai_chat(request: dict):
+    """AI chat endpoint with real-time analytics integration"""
+    try:
+        message = request.get("message", "").strip()
+        session_id = request.get("session_id", str(uuid.uuid4()))
+        business_context = request.get("business_context", {})
+        
+        if not message:
+            return {
+                "success": False,
+                "error": "Message is required"
+            }
+        
+        # Import AI orchestrator
+        try:
+            from services.ai_orchestrator_service import ai_orchestrator
+            AI_ORCHESTRATOR_AVAILABLE = True
+        except ImportError:
+            AI_ORCHESTRATOR_AVAILABLE = False
+        
+        if not AI_ORCHESTRATOR_AVAILABLE:
+            return {
+                "success": False,
+                "error": "AI orchestrator service not available"
+            }
+        
+        # Get enhanced AI response with analytics integration
+        response = await ai_orchestrator.enhanced_chat(
+            message=message,
+            session_id=session_id,
+            business_context=business_context
+        )
+        
+        # Ensure success flag is set
+        response["success"] = True
+        
+        return response
+    
+    except Exception as e:
+        print(f"❌ Enhanced AI chat error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
 # Include Advanced RAG router if available
 if ADVANCED_RAG_AVAILABLE:
     app.include_router(advanced_rag_router)

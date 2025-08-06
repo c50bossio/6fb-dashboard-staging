@@ -25,9 +25,21 @@ function SupabaseAuthProvider({ children }) {
   useEffect(() => {
     let isMounted = true
     
+    // Add timeout to prevent hanging
+    const loadingTimeout = setTimeout(() => {
+      if (isMounted && loading) {
+        console.warn('⚠️ Auth loading timeout - forcing loading = false')
+        setLoading(false)
+      }
+    }, 5000) // 5 second timeout
+    
     // Check initial session
     const checkUser = async () => {
       try {
+        console.log('🔍 Checking initial session...')
+        console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+        console.log('Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 30) + '...')
+        
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -39,6 +51,9 @@ function SupabaseAuthProvider({ children }) {
           }
           return
         }
+        
+        console.log('🔍 Session check result:', session ? 'Found session' : 'No session')
+        console.log('🍪 Cookies available:', document.cookie)
         
         if (session?.user && isMounted) {
           setUser(session.user)
@@ -80,47 +95,106 @@ function SupabaseAuthProvider({ children }) {
 
     checkUser()
     
+    // Safety net: ensure loading is false after max wait time
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ Safety timeout reached - forcing loading = false')
+        setLoading(false)
+      }
+    }, 3000)
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔔 Auth state changed! Event:', event, 'Session:', !!session)
+      console.log('📍 Current path:', window.location.pathname)
       
-      if (!isMounted) return
+      if (!isMounted) {
+        console.log('⚠️ Component unmounted, ignoring auth state change')
+        return
+      }
       
       if (session?.user) {
+        console.log('👤 User authenticated:', session.user.email)
         setUser(session.user)
         setLoading(false)
         
         // Fetch profile for authenticated user
         try {
-          const { data: profileData } = await supabase
+          console.log('📋 Fetching user profile...')
+          const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single()
             
-          if (profileData) {
+          if (profileError) {
+            console.warn('⚠️ Profile fetch error:', profileError)
+            // Create profile if it doesn't exist
+            if (profileError.code === 'PGRST116') {
+              console.log('🆕 Creating new profile for user...')
+              const { data: newProfile } = await supabase
+                .from('profiles')
+                .insert({
+                  id: session.user.id,
+                  email: session.user.email,
+                  full_name: session.user.user_metadata?.full_name || 'User',
+                  role: session.user.user_metadata?.role || 'CLIENT'
+                })
+                .select()
+                .single()
+              
+              if (newProfile) {
+                setProfile(newProfile)
+              }
+            }
+          } else if (profileData) {
+            console.log('✅ Profile loaded:', profileData.email)
             setProfile(profileData)
           }
         } catch (profileErr) {
-          console.warn('Profile fetch failed:', profileErr)
+          console.warn('❌ Profile operation failed:', profileErr)
         }
         
         // Handle successful sign-in redirect
         if (event === 'SIGNED_IN') {
+          console.log('🎉 SIGNED_IN event detected!')
           const currentPath = window.location.pathname
+          console.log('📍 Current path:', currentPath)
+          
           if (currentPath === '/login' || currentPath === '/register') {
-            router.push('/dashboard')
+            console.log('➡️ Redirecting to dashboard...')
+            // Try different redirect methods
+            try {
+              router.push('/dashboard')
+              console.log('✅ router.push called')
+              
+              // Fallback: use window.location if router doesn't work
+              setTimeout(() => {
+                if (window.location.pathname === '/login') {
+                  console.log('⚠️ Router.push didn\'t work, using window.location')
+                  window.location.href = '/dashboard'
+                }
+              }, 1000)
+            } catch (err) {
+              console.error('❌ Router error:', err)
+              // Direct navigation fallback
+              window.location.href = '/dashboard'
+            }
           }
         }
       } else {
+        console.log('👻 No user session')
         setUser(null)
         setProfile(null)
         setLoading(false)
         
         // Handle sign-out redirect
         if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out')
           const currentPath = window.location.pathname
           const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/']
           if (!publicPaths.includes(currentPath)) {
+            console.log('➡️ Redirecting to login...')
             router.push('/login')
           }
         }
@@ -129,6 +203,8 @@ function SupabaseAuthProvider({ children }) {
 
     return () => {
       isMounted = false
+      clearTimeout(loadingTimeout)
+      clearTimeout(safetyTimeout)
       subscription.unsubscribe()
     }
   }, [router, supabase])
@@ -167,30 +243,66 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const signIn = async ({ email, password }) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    console.log('🔐 SupabaseAuthProvider: signIn called with email:', email)
+    console.log('📍 Current loading state:', loading)
+    console.log('👤 Current user state:', user)
     
-    if (error) {
-      console.error('Sign in error:', error)
+    try {
+      console.log('🚀 Calling supabase.auth.signInWithPassword...')
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
       
-      // Provide specific error messages
-      if (error.message.includes('Invalid login credentials')) {
-        throw new Error('Invalid email or password. Please check your credentials and try again.')
-      } else if (error.message.includes('Email not confirmed')) {
-        throw new Error('Please verify your email address first. Check your inbox for a verification email.')
-      } else if (error.message.includes('Too many requests')) {
-        throw new Error('Too many login attempts. Please wait a moment before trying again.')
-      } else if (error.message.includes('User not found')) {
-        throw new Error('Account not found. Please register first or check your email address.')
+      console.log('📦 SupabaseAuthProvider: signIn response:', { 
+        data: data ? { user: data.user?.email, session: !!data.session } : null, 
+        error 
+      })
+      
+      if (error) {
+        console.error('❌ Sign in error:', error)
+        
+        // Provide specific error messages
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.')
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error('Please verify your email address first. Check your inbox for a verification email.')
+        } else if (error.message.includes('Too many requests')) {
+          throw new Error('Too many login attempts. Please wait a moment before trying again.')
+        } else if (error.message.includes('User not found')) {
+          throw new Error('Account not found. Please register first or check your email address.')
+        }
+        
+        throw error
       }
       
+      console.log('✅ Sign in successful! User:', data.user?.email)
+      console.log('🔄 Waiting for auth state change listener to handle redirect...')
+      
+      // Force loading state update after successful sign in
+      setLoading(false)
+      
+      // Ensure auth state is updated immediately
+      if (data?.user) {
+        setUser(data.user)
+        
+        // Manually trigger navigation after state update
+        setTimeout(() => {
+          const currentPath = window.location.pathname
+          if (currentPath === '/login') {
+            console.log('🚀 Manual redirect to dashboard after successful login')
+            router.push('/dashboard')
+          }
+        }, 100)
+      }
+      
+      return data
+    } catch (error) {
+      console.error('💥 Sign in exception:', error)
+      // Make sure loading is false on error
+      setLoading(false)
       throw error
     }
-    
-    console.log('Sign in successful:', data)
-    return data
   }
 
   const signOut = async () => {

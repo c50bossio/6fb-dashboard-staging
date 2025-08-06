@@ -267,7 +267,7 @@ class AIOrchestratorService:
         }
     
     def _build_system_message(self, context: Dict = None) -> str:
-        """Build system message with business context and RAG insights"""
+        """Build system message with business context, RAG insights, and real analytics data"""
         base_prompt = """You are an AI business coach specialized in barbershop operations and management. 
         You provide practical, actionable advice to help barbershop owners optimize their business operations, 
         improve customer satisfaction, and increase revenue.
@@ -293,6 +293,19 @@ class AIOrchestratorService:
             """
             base_prompt += business_context
             
+            # Add real-time analytics data if available
+            real_time_analytics = context.get('real_time_analytics')
+            if real_time_analytics:
+                analytics_context = f"""
+            
+            LIVE BUSINESS ANALYTICS:
+            {real_time_analytics}
+            
+            IMPORTANT: Use these ACTUAL numbers in your responses. When discussing revenue, bookings, 
+            customer metrics, or performance data, reference these real figures rather than generic examples.
+            """
+                base_prompt += analytics_context
+            
             # Add contextual insights from RAG system
             contextual_insights = context.get('contextual_insights', {})
             if contextual_insights and contextual_insights.get('relevant_knowledge'):
@@ -307,6 +320,37 @@ class AIOrchestratorService:
                 base_prompt += rag_context
         
         return base_prompt
+    
+    def _needs_analytics_data(self, message: str) -> bool:
+        """Determine if a message requires real analytics data"""
+        analytics_keywords = [
+            'revenue', 'sales', 'income', 'profit', 'money', 'earnings', 'financial',
+            'bookings', 'appointments', 'customers', 'clients', 'retention',
+            'growth', 'performance', 'metrics', 'stats', 'analytics', 'data',
+            'how much', 'how many', 'what is our', 'show me the', 'current',
+            'last month', 'this month', 'today', 'this week', 'numbers'
+        ]
+        message_lower = message.lower()
+        return any(keyword in message_lower for keyword in analytics_keywords)
+    
+    async def _fetch_analytics_data(self, barbershop_id: Optional[str] = None) -> Optional[str]:
+        """Fetch real-time analytics data for AI consumption"""
+        try:
+            # Import analytics service
+            from .realtime_analytics_service import realtime_analytics_service
+            
+            # Get formatted analytics data that's AI-ready
+            analytics_data = await realtime_analytics_service.get_formatted_metrics_for_ai(barbershop_id)
+            
+            logger.info(f"✅ Fetched analytics data: {len(analytics_data)} characters")
+            return analytics_data
+            
+        except ImportError:
+            logger.warning("⚠️ Analytics service not available for AI integration")
+            return None
+        except Exception as e:
+            logger.error(f"❌ Failed to fetch analytics data: {e}")
+            return None
     
     async def _generate_fallback_response(self, message: str) -> Dict:
         """Generate fallback response when all providers fail"""
@@ -335,13 +379,23 @@ class AIOrchestratorService:
         }
     
     async def enhanced_chat(self, message: str, session_id: str, business_context: Dict = None) -> Dict:
-        """Main chat method with specialized agent integration, RAG, and AI provider fallback"""
+        """Main chat method with specialized agent integration, RAG, real analytics, and AI provider fallback"""
         
         try:
-            # Step 1: Try specialized agent system first
+            # Step 1: Enhance business context with real-time analytics data
+            enhanced_business_context = business_context.copy() if business_context else {}
+            
+            # Fetch real-time analytics if dealing with business metrics questions
+            if self._needs_analytics_data(message):
+                analytics_data = await self._fetch_analytics_data(enhanced_business_context.get('barbershop_id'))
+                if analytics_data:
+                    enhanced_business_context['real_time_analytics'] = analytics_data
+                    logger.info("✅ Enhanced context with real-time analytics data")
+            
+            # Step 2: Try specialized agent system first
             agent_response = await agent_manager.process_message(
                 message=message, 
-                context=business_context or {}
+                context=enhanced_business_context
             )
             
             # If we got a good response from specialized agents, use it
@@ -382,7 +436,7 @@ class AIOrchestratorService:
         # Get contextual insights from vector knowledge base
         contextual_insights = await vector_knowledge_service.get_contextual_insights(
             query=message,
-            context=business_context
+            context=enhanced_business_context
         )
         
         # Select optimal provider
@@ -391,8 +445,9 @@ class AIOrchestratorService:
         if not selected_provider:
             logger.warning("No AI providers available, using fallback")
             fallback_response = await self._generate_fallback_response(message)
-            # Enhance fallback with contextual insights
+            # Enhance fallback with contextual insights and analytics
             fallback_response['contextual_insights'] = contextual_insights
+            fallback_response['has_analytics'] = 'real_time_analytics' in enhanced_business_context
             return fallback_response
         
         # Prepare messages with RAG context
@@ -403,12 +458,11 @@ class AIOrchestratorService:
             context_messages = self.conversation_context[session_id][-4:]  # Last 4 messages for context
             messages = context_messages + messages
         
-        # Enhance business context with vector knowledge insights
-        enhanced_context = business_context.copy() if business_context else {}
-        enhanced_context['contextual_insights'] = contextual_insights
+        # Add vector knowledge insights to enhanced context
+        enhanced_business_context['contextual_insights'] = contextual_insights
         
-        # Chat with selected provider using enhanced context
-        response = await self.chat_with_provider(selected_provider, messages, enhanced_context)
+        # Chat with selected provider using enhanced context (now includes real analytics)
+        response = await self.chat_with_provider(selected_provider, messages, enhanced_business_context)
         
         # Store conversation context
         if session_id not in self.conversation_context:
@@ -420,15 +474,16 @@ class AIOrchestratorService:
         ])
         
         # Store this interaction as knowledge for future learning
-        await self._store_interaction_knowledge(message, response, message_type, business_context)
+        await self._store_interaction_knowledge(message, response, message_type, enhanced_business_context)
         
-        # Add metadata including RAG insights
+        # Add metadata including RAG insights and analytics
         response.update({
             'session_id': session_id,
             'message_type': message_type.value,
             'selected_provider': selected_provider.value if selected_provider else 'fallback',
             'contextual_insights': contextual_insights,
             'knowledge_enhanced': len(contextual_insights.get('relevant_knowledge', [])) > 0,
+            'analytics_enhanced': 'real_time_analytics' in enhanced_business_context,
             'agent_enhanced': False  # Traditional AI provider response
         })
         

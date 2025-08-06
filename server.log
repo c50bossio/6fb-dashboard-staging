@@ -1,22 +1,1294 @@
-
-> 6fb-ai-agent-dashboard@1.0.0 dev
-> next dev -p 9999
-
-   ▲ Next.js 14.0.4
-   - Local:        http://localhost:9999
-   - Environments: .env.local, .env
-
- ✓ Ready in 774ms
- ✓ Compiled /middleware in 383ms (365 modules)
- ○ Compiling / ...
- ✓ Compiled / in 1973ms (735 modules)
-⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
- ✓ Compiled in 304ms (353 modules)
-<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
-<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (196kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
-<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (116kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
-<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (139kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
- ✓ Compiled /dashboard in 380ms (874 modules)
-⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
- ✓ Compiled /login in 140ms (884 modules)
-[?25h
+INFO:     Will watch for changes in these directories: ['/Users/bossio/6FB AI Agent System']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [32487] using WatchFiles
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [32609]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/users/me "HTTP/1.1 401 Unauthorized"
+ERROR:services.notion_knowledge_extractor:❌ Notion API connection failed: API token is invalid.
+ERROR:services.notion_endpoint:❌ Notion connection test failed: API token is invalid.
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:     127.0.0.1:59053 - "POST /notion/test-connection HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59487 - "GET /health HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/users/me "HTTP/1.1 401 Unauthorized"
+ERROR:services.notion_knowledge_extractor:❌ Notion API connection failed: API token is invalid.
+ERROR:services.notion_endpoint:❌ Notion connection test failed: API token is invalid.
+INFO:     127.0.0.1:60112 - "POST /notion/test-connection HTTP/1.1" 200 OK
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/users/me "HTTP/1.1 200 OK"
+ERROR:services.notion_knowledge_extractor:❌ Notion API connection failed: object dict can't be used in 'await' expression
+ERROR:services.notion_endpoint:❌ Notion connection test failed: object dict can't be used in 'await' expression
+INFO:     127.0.0.1:61479 - "POST /notion/test-connection HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'services/notion_knowledge_extractor.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [32609]
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [38294]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/notion_knowledge_extractor.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [38294]
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [38584]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/notion_knowledge_extractor.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [38584]
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [38923]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/users/me "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Notion API connection established
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:     127.0.0.1:63382 - "POST /notion/test-connection HTTP/1.1" 200 OK
+INFO:services.notion_endpoint:🚀 Starting Notion knowledge extraction...
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/users/me "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Notion API connection established
+INFO:httpx:HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: POST https://api.notion.com/v1/search "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:🔍 Found 85 pages to analyze
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/143faa35-0bcd-8056-a3a8-d10925afed2c/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Barbershop Route vs. House Hacking Route vs. Roth ... (Domain: staff_management, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/1f3faa35-0bcd-8195-a770-dc510cec26c1/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 📘 Module 1 — Why Your Job or Business Is the Real ... (Domain: technology_integration, Confidence: 0.63)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-815e-b57e-f2a5c3ec0b4b/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: On The Business CRM Setup Course... (Domain: technology_integration, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81b5-b1df-dff8c37e3741/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: 🌟 Building Citations and Boosting Local SEO f... (Domain: marketing_strategies, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-817b-959b-ea1ffdf29160/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🚀 New Business Onboarding Checklist - 6FB Online M... (Domain: marketing_strategies, Confidence: 0.68)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8180-a857-ca66ebff2d38/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 3-Hour Interactive Class Agenda: Mastering Your Ba... (Domain: staff_management, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81ed-a676-d8bc111cda88/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Day 1: Program Kickoff, Website Building & Busines... (Domain: technology_integration, Confidence: 0.67)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-816b-a0e7-e116ee9dd9fb/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🌟 Fund Your Freedom: Credit Building & Business Fu... (Domain: barbershop_operations, Confidence: 0.62)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-812c-b054-fd0ce36146a4/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🎥 Content Creation & Editing Process for Small Bus... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81a2-966d-e1e866606e98/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🎥 Content Creation & Filming Process for Small Bus... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-811c-af9a-e00f06b88bb1/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🎥 Content Creation Mastery for Small Business Owne... (Domain: barbershop_operations, Confidence: 0.63)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/9218fe4d-a3a8-4351-96e7-6c633fd8f0cc/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: PHASE 4: Business Funding $100K+ Step By Step... (Domain: technology_integration, Confidence: 0.61)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/107faa35-0bcd-807f-a583-e5645a630ec1/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: How to set up your business structure properly... (Domain: marketing_strategies, Confidence: 0.62)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/143faa35-0bcd-8056-a3a8-d10925afed2c/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Barbershop Route vs. House Hacking Route vs. Roth ... (Domain: staff_management, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/27bc8d53-8afd-482a-8b44-945e3978fa91/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 6FB Mentorship: Elevate Your Barbering Career and ... (Domain: revenue_optimization, Confidence: 0.63)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/d6388d31-c990-4e51-9356-16c8d6134f41/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Headlines Barber Shop Career Pathway... (Domain: staff_management, Confidence: 0.66)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/143faa35-0bcd-8153-bc4b-c0480263f458/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🛤️ Wealth-Building Path: Barbershop Ownership & In... (Domain: staff_management, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-810c-9f5d-fc4f771a5566/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: List: 100 keywords tailored for a Barbershop... (Domain: staff_management, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8107-a9d3-dea38b01bf54/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Step 6. SOP for Structuring Ad Groups in Google Ad... (Domain: marketing_strategies, Confidence: 0.66)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81a1-b920-de78cd683a1c/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Step 7. 🧔‍♂️ SOP: Ad Formats in Google Ads for Bar... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81d8-94a8-e94329d328e8/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Step 8. 💡 SOP: Quality Score in Google Ads for Bar... (Domain: marketing_strategies, Confidence: 0.67)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8147-b5cb-cd2085177cc7/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Setting Up Conversion Tracking for Barber Boo... (Domain: barbershop_operations, Confidence: 0.67)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8140-9d26-ff9b136f7cb4/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Negotiating and Setting Up a Barbershop Locat... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-815a-a4db-c02ba6856386/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: ✂️ SEO Optimization for Barbershops 🧑‍💻... (Domain: marketing_strategies, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8185-b9d0-fdfb07dd0c27/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Finding the right ship/ Barbershop SOP Ride Along... (Domain: staff_management, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-819e-b3e2-dcb9465f8ca0/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Five-Box Checklist for Selecting the Right Barbers... (Domain: staff_management, Confidence: 0.63)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81ac-8fef-e2bafc7faecb/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Sign up to BarberListing.com... (Domain: staff_management, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-817e-92f3-f32b4d774617/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Online Research SOP for Finding the Right Barbersh... (Domain: barbershop_operations, Confidence: 0.63)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-817a-9c76-f09dbe97a2f5/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Leveraging QR Codes with Booked Barber 📱... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8103-b6fc-e220348392f5/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Setting Up a Google Ads Account for Barbersho... (Domain: marketing_strategies, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-814d-ab08-fb595ffe61f6/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Using BarberForm – Onboarding and Key Feature... (Domain: staff_management, Confidence: 0.66)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8188-a920-ffc93d3d3347/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 📋 SOP: Troubleshooting BarberForm Issues... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8174-a318-f2995bb9a7d9/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Creating & Testing Meta Ads for Headlines Bar... (Domain: staff_management, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81dc-a9f5-cf91284eb043/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Setting Up Meta Ads for Headlines Barbershop ... (Domain: barbershop_operations, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8157-b6cb-c2fe7fede453/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🎉 Six Figure Barber Mentorship Weekly Giveaway Rul... (Domain: staff_management, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8180-a857-ca66ebff2d38/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 3-Hour Interactive Class Agenda: Mastering Your Ba... (Domain: staff_management, Confidence: 0.64)
+ERROR:services.notion_knowledge_extractor:❌ Error extracting content from page 130faa35-0bcd-8104-a9b1-c67537197ef8: Server disconnected without sending a response.
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81b8-8165-e42264342f61/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🎉 Six Figure Barber Mentorship Monthly Giveaway Ru... (Domain: staff_management, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8164-baba-dca96d569509/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: ✂️ SOP: Installing and Testing Facebook Pixel Even... (Domain: marketing_strategies, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8174-8831-df52fc9a0eda/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🎓 Welcome to the Six-Figure Barber Mentorship Prog... (Domain: customer_experience, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81de-9505-d62af57c9c8c/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 💈 Barbershop Launch SOP... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8156-808d-df2554521b09/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Setting Up Meta Ads Pixel for Barber Shops 💈... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8150-a8df-cfcd121f73e2/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 📱 SOP: Instagram Comment Automation in Booked Barb... (Domain: barbershop_operations, Confidence: 0.66)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-817a-8cd8-cb330474dd6f/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: How to Launch a Facebook Ads Campaign for Bar... (Domain: marketing_strategies, Confidence: 0.69)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81a2-8db8-c1ee421d0091/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Questions to Ask When Interviewing Barbers... (Domain: staff_management, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8160-9a99-e50675ed8812/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Module 7 - Start To Finish Paid Ads For A Barbersh... (Domain: staff_management, Confidence: 0.63)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-811a-bdfe-c52a4efcb39a/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Creating Audiences with Meta Pixel and Custom... (Domain: barbershop_operations, Confidence: 0.64)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/143faa35-0bcd-8056-a3a8-d10925afed2c/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Barbershop Route vs. House Hacking Route vs. Roth ... (Domain: staff_management, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/138faa35-0bcd-8045-8d7e-c8533d8c2745/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 📋 SOP for Student Growth Advisor (Rey): Client Ret... (Domain: customer_experience, Confidence: 0.67)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/27bc8d53-8afd-482a-8b44-945e3978fa91/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 6FB Mentorship: Elevate Your Barbering Career and ... (Domain: revenue_optimization, Confidence: 0.63)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/27bc8d53-8afd-482a-8b44-945e3978fa91/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 6FB Mentorship: Elevate Your Barbering Career and ... (Domain: revenue_optimization, Confidence: 0.63)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/077220d1-01fd-4973-b934-6c31f31788ad/children "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8182-b87b-c2db1e9b8bea/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🛠️ SOP: Tracking Marketing Campaigns with UTM Para... (Domain: marketing_strategies, Confidence: 0.72)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-812d-adef-f13f314a92c5/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 📧 Email Marketing SOP: Avoiding Spam & Ensuring Le... (Domain: marketing_strategies, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-8180-9111-ec8de79b7e1b/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 📝 Exercise: Create Your Own Core 4 Marketing Plan... (Domain: marketing_strategies, Confidence: 0.71)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-817b-959b-ea1ffdf29160/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🚀 New Business Onboarding Checklist - 6FB Online M... (Domain: marketing_strategies, Confidence: 0.68)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-819b-b3d2-c2dd952a8e1a/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: 🚀 SOP: Setting Up Email Domains for Marketing and ... (Domain: technology_integration, Confidence: 0.66)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81df-9852-d2ed8f4fa2b3/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: SOP: Recalibrating Your Prices to Market Rates Aft... (Domain: barbershop_operations, Confidence: 0.66)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81a8-969c-face4257a5f8/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:✅ Extracted: Module 2 - Marketing Machine Begins... (Domain: marketing_strategies, Confidence: 0.65)
+INFO:httpx:HTTP Request: GET https://api.notion.com/v1/blocks/130faa35-0bcd-81cf-ab5a-c57e4615a20a/children "HTTP/1.1 200 OK"
+INFO:services.notion_knowledge_extractor:🎉 Successfully extracted 57 knowledge entries from Notion
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['customer', 'management', 'shift', 'financial', 'market', 'equipment', 'service', 'barber', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_205939
+INFO:services.notion_knowledge_extractor:✅ Imported: Barbershop Route vs. House Hacking Route vs. Roth & Stock Investments (1) (ID: staff_management_20250805_205939)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['system', 'revenue', 'app', 'tools', 'package', 'automation', 'testimonial'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: technology_integration_20250805_205942
+INFO:services.notion_knowledge_extractor:✅ Imported: 📘 Module 1 — Why Your Job or Business Is the Real Money Printer (ID: technology_integration_20250805_205942)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['marketing', 'market', 'barber', 'automation', 'crm'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: technology_integration_20250805_205943
+INFO:services.notion_knowledge_extractor:✅ Imported: On The Business CRM Setup Course (ID: technology_integration_20250805_205943)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['seo', 'system', 'customer', 'performance', 'management', 'service', 'google', 'pos', 'online', 'sop'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_205944
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: 🌟 Building Citations and Boosting Local SEO for Your Business 🌟 (ID: marketing_strategies_20250805_205944)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['website', 'facebook', 'management', 'marketing', 'review', 'social media', 'onboarding', 'market', 'google', 'online'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_205945
+INFO:services.notion_knowledge_extractor:✅ Imported: 🚀 New Business Onboarding Checklist - 6FB Online Marketing Strategies (ID: marketing_strategies_20250805_205945)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['retention', 'automation', 'pricing', 'experience', 'management', 'booking', 'tools', 'marketing', 'social media', 'market'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_205949
+INFO:services.notion_knowledge_extractor:✅ Imported: 3-Hour Interactive Class Agenda: Mastering Your Barber Business💈 (ID: staff_management_20250805_205949)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['booking', 'marketing', 'profit', 'google', 'appointment', 'instagram', 'system', 'website', 'facebook', 'market'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: technology_integration_20250805_205950
+INFO:services.notion_knowledge_extractor:✅ Imported: Day 1: Program Kickoff, Website Building & Business Setup 💻 (ID: technology_integration_20250805_205950)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['sop', 'online'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_205951
+INFO:services.notion_knowledge_extractor:✅ Imported: 🌟 Fund Your Freedom: Credit Building & Business Funding SOP (ID: barbershop_operations_20250805_205951)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'schedule', 'performance', 'tools', 'review', 'online', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_205952
+INFO:services.notion_knowledge_extractor:✅ Imported: 🎥 Content Creation & Editing Process for Small Business Owners (ID: barbershop_operations_20250805_205952)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['software', 'workflow', 'process', 'pos', 'automation'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_205953
+INFO:services.notion_knowledge_extractor:✅ Imported: 🎥 Content Creation & Filming Process for Small Business Owners (ID: barbershop_operations_20250805_205953)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['software', 'workflow', 'process', 'schedule', 'shift', 'industry', 'review', 'service', 'pos', 'barber'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_205954
+INFO:services.notion_knowledge_extractor:✅ Imported: 🎥 Content Creation Mastery for Small Business Owners (ID: barbershop_operations_20250805_205954)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['pos'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: technology_integration_20250805_205955
+INFO:services.notion_knowledge_extractor:✅ Imported: PHASE 4: Business Funding $100K+ Step By Step (ID: technology_integration_20250805_205955)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'website', 'review', 'service', 'google', 'online'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_205956
+INFO:services.notion_knowledge_extractor:✅ Imported: How to set up your business structure properly (ID: marketing_strategies_20250805_205956)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['customer', 'management', 'shift', 'financial', 'market', 'equipment', 'service', 'barber', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_205957
+INFO:services.notion_knowledge_extractor:✅ Imported: Barbershop Route vs. House Hacking Route vs. Roth & Stock Investments (1) (ID: staff_management_20250805_205957)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['experience', 'industry', 'tools', 'financial', 'welcome', 'barber', 'client', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: revenue_optimization_20250805_205959
+INFO:services.notion_knowledge_extractor:✅ Imported: 6FB Mentorship: Elevate Your Barbering Career and Financial Future 💈💰 (ID: revenue_optimization_20250805_205959)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['customer', 'standard', 'performance', 'team', 'industry', 'discount', 'marketing', 'leadership', 'market', 'pos'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210000
+INFO:services.notion_knowledge_extractor:✅ Imported: Headlines Barber Shop Career Pathway (ID: staff_management_20250805_210000)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['management', 'tools', 'financial', 'market', 'profit', 'cost', 'pos', 'barber', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210000
+INFO:services.notion_knowledge_extractor:✅ Imported: 🛤️ Wealth-Building Path: Barbershop Ownership & Investments (ID: staff_management_20250805_210000)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['api', 'holiday', 'summer', 'review', 'service', 'new year', 'online', 'barber', 'appointment', 'competitor'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210001
+INFO:services.notion_knowledge_extractor:✅ Imported: List: 100 keywords tailored for a Barbershop (ID: staff_management_20250805_210001)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['advertising', 'customer', 'performance', 'review', 'campaign', 'service', 'pos', 'cost', 'google', 'appointment'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210002
+INFO:services.notion_knowledge_extractor:✅ Imported: Step 6. SOP for Structuring Ad Groups in Google Ads for Barbershops 💈 (ID: marketing_strategies_20250805_210002)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['performance', 'best practice', 'campaign', 'google', 'appointment', 'barber', 'sop', 'app', 'client'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210003
+INFO:services.notion_knowledge_extractor:✅ Imported: Step 7. 🧔‍♂️ SOP: Ad Formats in Google Ads for Barbershops (ID: barbershop_operations_20250805_210003)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['advertising', 'comparison', 'customer', 'experience', 'promotion', 'performance', 'best practice', 'tools', 'review', 'campaign'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210004
+INFO:services.notion_knowledge_extractor:✅ Imported: Step 8. 💡 SOP: Quality Score in Google Ads for Barbershops (ID: marketing_strategies_20250805_210004)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'performance indicator', 'booking', 'marketing', 'google', 'kpi', 'system', 'website', 'market', 'cost'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210005
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Setting Up Conversion Tracking for Barber Booking Software 💈 (ID: barbershop_operations_20250805_210005)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['facebook', 'team', 'maintenance', 'financial', 'review', 'equipment', 'market', 'cost', 'pos', 'barber'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210006
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Negotiating and Setting Up a Barbershop Location 💈💼 (ID: barbershop_operations_20250805_210006)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['seo', 'process', 'customer', 'website', 'review', 'service', 'google', 'online', 'barber', 'sop'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210007
+INFO:services.notion_knowledge_extractor:✅ Imported: ✂️ SEO Optimization for Barbershops 🧑‍💻 (ID: marketing_strategies_20250805_210007)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['system', 'barber', 'sop'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210007
+INFO:services.notion_knowledge_extractor:✅ Imported: Finding the right ship/ Barbershop SOP Ride Along (ID: staff_management_20250805_210007)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['pricing', 'marketing', 'market', 'barber', 'client'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210008
+INFO:services.notion_knowledge_extractor:✅ Imported: Five-Box Checklist for Selecting the Right Barbershop Location (ID: staff_management_20250805_210008)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['barber'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210009
+INFO:services.notion_knowledge_extractor:✅ Imported: Sign up to BarberListing.com (ID: staff_management_20250805_210009)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['barber', 'sop', 'online'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210010
+INFO:services.notion_knowledge_extractor:✅ Imported: Online Research SOP for Finding the Right Barbershop Location (ID: barbershop_operations_20250805_210010)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['software', 'pricing', 'website', 'promotion', 'performance', 'booking', 'tools', 'marketing', 'campaign', 'market'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210011
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Leveraging QR Codes with Booked Barber 📱 (ID: barbershop_operations_20250805_210011)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['roi', 'review', 'campaign', 'service', 'google', 'barber', 'sop', 'client'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210012
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Setting Up a Google Ads Account for Barbershops 📈💈 (ID: marketing_strategies_20250805_210012)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'booking', 'onboarding', 'barber', 'sop', 'kpi', 'app', 'client'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210013
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Using BarberForm – Onboarding and Key Features (ID: staff_management_20250805_210013)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'pos', 'communication', 'barber', 'sop', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210013
+INFO:services.notion_knowledge_extractor:✅ Imported: 📋 SOP: Troubleshooting BarberForm Issues (ID: barbershop_operations_20250805_210013)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['customer', 'facebook', 'performance', 'campaign', 'pos', 'metric', 'barber', 'sop', 'instagram'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210014
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Creating & Testing Meta Ads for Headlines Barbershop Bloomingdale 💈 (ID: staff_management_20250805_210014)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'api', 'customer', 'performance', 'management', 'booking', 'review', 'campaign', 'service', 'crm'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210016
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Setting Up Meta Ads for Headlines Barbershop Bloomingdale 💈 (ID: barbershop_operations_20250805_210016)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['system', 'hours', 'feedback', 'performance', 'tools', 'financial', 'marketing', 'social media', 'market', 'pos'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210017
+INFO:services.notion_knowledge_extractor:✅ Imported: 🎉 Six Figure Barber Mentorship Weekly Giveaway Rules 🎉 (ID: staff_management_20250805_210017)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['retention', 'automation', 'pricing', 'experience', 'management', 'booking', 'tools', 'marketing', 'social media', 'market'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210018
+INFO:services.notion_knowledge_extractor:✅ Imported: 3-Hour Interactive Class Agenda: Mastering Your Barber Business💈 (ID: staff_management_20250805_210018)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['system', 'hours', 'feedback', 'performance', 'tools', 'financial', 'marketing', 'market', 'pos', 'barber'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210018
+INFO:services.notion_knowledge_extractor:✅ Imported: 🎉 Six Figure Barber Mentorship Monthly Giveaway Rules 🎉 (ID: staff_management_20250805_210018)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['advertising', 'process', 'roi', 'website', 'facebook', 'performance', 'booking', 'campaign', 'barber', 'sop'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210019
+INFO:services.notion_knowledge_extractor:✅ Imported: ✂️ SOP: Installing and Testing Facebook Pixel Event Tags for Headlines Barbershop Website 💻 (ID: marketing_strategies_20250805_210019)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'experience', 'team', 'best practice', 'onboarding', 'welcome', 'barber', 'sop', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: customer_experience_20250805_210020
+INFO:services.notion_knowledge_extractor:✅ Imported: 🎓 Welcome to the Six-Figure Barber Mentorship Program (ID: customer_experience_20250805_210020)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['software', 'website', 'promotion', 'facebook', 'opening', 'booking', 'review', 'welcome', 'google', 'online'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210021
+INFO:services.notion_knowledge_extractor:✅ Imported: 💈 Barbershop Launch SOP (ID: barbershop_operations_20250805_210021)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'customer', 'website', 'facebook', 'performance', 'booking', 'marketing', 'review', 'market', 'google'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210022
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Setting Up Meta Ads Pixel for Barber Shops 💈 (ID: barbershop_operations_20250805_210022)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['workflow', 'sop', 'automation', 'hours', 'promotion', 'facebook', 'performance', 'procedure', 'booking', 'discount'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210023
+INFO:services.notion_knowledge_extractor:✅ Imported: 📱 SOP: Instagram Comment Automation in Booked Barber (ID: barbershop_operations_20250805_210023)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['promotion', 'facebook', 'performance', 'review', 'campaign', 'metric', 'barber', 'sop', 'kpi', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210023
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: How to Launch a Facebook Ads Campaign for Barbershops & Barbers 🚀 (ID: marketing_strategies_20250805_210023)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['experience', 'management', 'team', 'industry', 'relationship', 'barber', 'client'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210024
+INFO:services.notion_knowledge_extractor:✅ Imported: Questions to Ask When Interviewing Barbers (ID: staff_management_20250805_210024)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['barber', 'sop'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210025
+INFO:services.notion_knowledge_extractor:✅ Imported: Module 7 - Start To Finish Paid Ads For A Barbershop Location (ID: staff_management_20250805_210025)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['customer', 'performance', 'booking', 'campaign', 'service', 'sop', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210026
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Creating Audiences with Meta Pixel and Customer List 📊 (ID: barbershop_operations_20250805_210026)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['customer', 'management', 'shift', 'financial', 'market', 'equipment', 'service', 'barber', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: staff_management_20250805_210027
+INFO:services.notion_knowledge_extractor:✅ Imported: Barbershop Route vs. House Hacking Route vs. Roth & Stock Investments (1) (ID: staff_management_20250805_210027)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'retention', 'pattern', 'standard', 'feedback', 'experience', 'team', 'trend', 'onboarding', 'sop'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: customer_experience_20250805_210028
+INFO:services.notion_knowledge_extractor:✅ Imported: 📋 SOP for Student Growth Advisor (Rey): Client Retention and Follow-Up Process (ID: customer_experience_20250805_210028)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['experience', 'industry', 'tools', 'financial', 'welcome', 'barber', 'client', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: revenue_optimization_20250805_210029
+INFO:services.notion_knowledge_extractor:✅ Imported: 6FB Mentorship: Elevate Your Barbering Career and Financial Future 💈💰 (ID: revenue_optimization_20250805_210029)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['experience', 'industry', 'tools', 'financial', 'welcome', 'barber', 'client', 'app'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: revenue_optimization_20250805_210030
+INFO:services.notion_knowledge_extractor:✅ Imported: 6FB Mentorship: Elevate Your Barbering Career and Financial Future 💈💰 (ID: revenue_optimization_20250805_210030)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['performance', 'marketing', 'review', 'market', 'campaign', 'google', 'sop'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210030
+INFO:services.notion_knowledge_extractor:✅ Imported: 🛠️ SOP: Tracking Marketing Campaigns with UTM Parameters in Google Analytics (ID: marketing_strategies_20250805_210030)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['system', 'standard', 'website', 'best practice', 'tools', 'marketing', 'social media', 'campaign', 'market', 'integration'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210031
+INFO:services.notion_knowledge_extractor:✅ Imported: 📧 Email Marketing SOP: Avoiding Spam & Ensuring Legal Compliance (ID: marketing_strategies_20250805_210031)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'marketing', 'google', 'instagram', 'testimonial', 'standard', 'facebook', 'market', 'service', 'package'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210032
+INFO:services.notion_knowledge_extractor:✅ Imported: 📝 Exercise: Create Your Own Core 4 Marketing Plan (ID: marketing_strategies_20250805_210032)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['website', 'facebook', 'management', 'marketing', 'review', 'social media', 'onboarding', 'market', 'google', 'online'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210033
+INFO:services.notion_knowledge_extractor:✅ Imported: 🚀 New Business Onboarding Checklist - 6FB Online Marketing Strategies (ID: marketing_strategies_20250805_210033)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'website', 'best practice', 'marketing', 'market', 'campaign', 'service', 'pos', 'barber', 'sop'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: technology_integration_20250805_210034
+INFO:services.notion_knowledge_extractor:✅ Imported: 🚀 SOP: Setting Up Email Domains for Marketing and Personal Use in OTB CRM (ID: technology_integration_20250805_210034)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['process', 'hours', 'schedule', 'experience', 'pricing', 'booking', 'marketing', 'market', 'profit', 'service'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: barbershop_operations_20250805_210034
+INFO:services.notion_knowledge_extractor:✅ Imported: SOP: Recalibrating Your Prices to Market Rates After Learning the 6FB Mentorship Strategy (ID: barbershop_operations_20250805_210034)
+INFO:httpx:HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+ERROR:services.vector_knowledge_service:Failed to store knowledge in ChromaDB: Expected metadata value to be a str, int, float, bool, or None, got ['seo', 'software', 'customer', 'website', 'booking', 'marketing', 'word of mouth', 'relationship', 'market', 'barber'] which is a list in upsert.
+INFO:services.enhanced_business_knowledge_service:✅ Stored enhanced knowledge: marketing_strategies_20250805_210035
+INFO:services.notion_knowledge_extractor:✅ Imported: Module 2 - Marketing Machine Begins (ID: marketing_strategies_20250805_210035)
+INFO:     127.0.0.1:63457 - "POST /notion/extract-knowledge HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'services/realtime_analytics_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [38923]
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [76697]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'fastapi_backend.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [76697]
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [77468]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/ai_orchestrator_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [77468]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+⚠️ Real-time analytics service not available
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [77642]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/ai_orchestrator_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [77642]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+⚠️ Real-time analytics service not available
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [77751]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/ai_orchestrator_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [77751]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+⚠️ Real-time analytics service not available
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [77897]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/ai_orchestrator_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [77897]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+⚠️ Real-time analytics service not available
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [78046]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'services/ai_orchestrator_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [78046]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+⚠️ Real-time analytics service not available
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [78167]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'fastapi_backend.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [78167]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+⚠️ Real-time analytics service not available
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [78640]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'test_analytics_integration.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [78640]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+⚠️ Real-time analytics service not available
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [79108]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+ERROR:services.realtime_analytics_service:Database connection initialization failed: [Errno 8] nodename nor servname provided, or not known
+WARNING:  WatchFiles detected changes in 'init_analytics_database.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [79108]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [80283]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+ERROR:services.realtime_analytics_service:Database connection initialization failed: [Errno 8] nodename nor servname provided, or not known
+WARNING:  WatchFiles detected changes in 'demo_analytics_integration.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [80283]
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: staff_performance
+INFO:services.realtime_business_data_service:📴 Business metrics aggregation cancelled
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: marketing_metrics
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: revenue_realtime
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: inventory_status
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: customer_activity
+INFO:services.notification_queue:Stopped notification queue processing
+INFO:services.realtime_business_data_service:📴 Data feed cancelled: appointments_realtime
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Advanced RAG system loaded
+✅ Real-time Data system loaded
+✅ Advanced RAG System included at /enhanced-knowledge/*
+✅ Real-time Data System included at /realtime-data/*
+✅ Notion Integration System included at /notion/*
+✅ Intelligent Alert System mounted at /intelligent-alerts/*
+✅ Database initialized
+✅ Notification queue processor started
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+INFO:services.ai_agents.agent_manager:✅ Agent Manager initialized with 3 specialized agents
+INFO:services.ai_orchestrator_service:✅ OpenAI provider initialized
+INFO:services.ai_orchestrator_service:✅ Anthropic provider initialized
+INFO:services.ai_orchestrator_service:✅ Gemini provider initialized
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+INFO:services.business_recommendations_engine:✅ Business Recommendations Engine initialized
+WARNING:root:AI Orchestrator not available - using fallback recommendations
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.business_recommendations_service:✅ Business Recommendations Service initialized
+INFO:services.business_recommendations_service:🤖 AI Orchestrator: Fallback mode
+INFO:services.business_recommendations_service:📊 Predictive Analytics: Available
+INFO:services.vector_knowledge_service:✅ Connected to existing ChromaDB collection: barbershop_knowledge
+INFO:services.vector_knowledge_service:✅ OpenAI embedding service initialized
+/Users/bossio/6FB AI Agent System/services/enhanced_business_knowledge_service.py:99: RuntimeWarning: coroutine 'EnhancedBusinessKnowledgeService._load_default_knowledge_base' was never awaited
+  self._load_default_knowledge_base()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+INFO:services.enhanced_business_knowledge_service:✅ Enhanced Business Knowledge Service initialized
+INFO:services.realtime_business_data_service:✅ Real-time data database setup complete
+INFO:services.realtime_business_data_service:✅ Real-time Business Data Service initialized
+INFO:services.ai_performance_monitoring:✅ AI Performance Monitor initialized
+INFO:     Started server process [81187]
+INFO:     Waiting for application startup.
+INFO:services.realtime_business_data_service:🚀 Starting real-time data feeds...
+INFO:services.realtime_business_data_service:✅ Started 7 real-time data feeds
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started
+INFO:services.realtime_data_endpoint:✅ Real-time data service auto-started with router
+INFO:services.notification_queue:Starting notification queue processing
+INFO:services.realtime_business_data_service:🔄 Starting data feed: appointments_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: revenue_realtime
+INFO:services.realtime_business_data_service:🔄 Starting data feed: customer_activity
+INFO:services.realtime_business_data_service:🔄 Starting data feed: staff_performance
+INFO:services.realtime_business_data_service:🔄 Starting data feed: inventory_status
+INFO:services.realtime_business_data_service:🔄 Starting data feed: marketing_metrics
+INFO:services.realtime_business_data_service:🔄 Starting business metrics aggregation
+INFO:     Application startup complete.
+ERROR:services.realtime_analytics_service:Database connection initialization failed: [Errno 8] nodename nor servname provided, or not known

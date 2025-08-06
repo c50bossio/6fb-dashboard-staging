@@ -38,8 +38,9 @@ export default function GlobalNavigation() {
   const { user, profile, signOut } = useAuth()
   const pathname = usePathname()
 
-  // Don't show navigation on login/register pages
-  if (pathname === '/login' || pathname === '/register' || pathname === '/') {
+  // Don't show navigation on auth-related pages
+  const authPaths = ['/login', '/register', '/', '/login-v2', '/login-simple', '/login-api', '/login-options', '/test-auth']
+  if (authPaths.includes(pathname) || pathname.startsWith('/login') || pathname.startsWith('/auth')) {
     return null
   }
 

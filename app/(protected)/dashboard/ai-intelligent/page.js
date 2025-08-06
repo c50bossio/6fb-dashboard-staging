@@ -1,0 +1,639 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { useTenant } from '../../../../contexts/TenantContext'
+import ProtectedRoute from '../../../../components/ProtectedRoute'
+import { Card } from '../../../../components/ui'
+import { 
+  SparklesIcon,
+  ChartBarIcon,
+  BanknotesIcon,
+  MegaphoneIcon,
+  CogIcon,
+  ArrowTrendingUpIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  LightBulbIcon,
+  RocketLaunchIcon,
+  ClockIcon,
+  UserGroupIcon
+} from '@heroicons/react/24/outline'
+
+// AI-Powered Widget Components
+function FinancialInsightsWidget({ onRefresh, loading }) {
+  const [insights, setInsights] = useState(null)
+  const [widgetLoading, setWidgetLoading] = useState(true)
+
+  const fetchFinancialInsights = useCallback(async () => {
+    try {
+      setWidgetLoading(true)
+      const response = await fetch('/api/ai/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: "Analyze my current financial performance and provide revenue optimization recommendations",
+          businessContext: {
+            monthly_revenue: 8500,
+            avg_ticket: 45,
+            customer_count: 189,
+            staff_count: 3,
+            location: 'Downtown'
+          }
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setInsights(data)
+      }
+    } catch (error) {
+      console.error('Financial insights error:', error)
+    } finally {
+      setWidgetLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchFinancialInsights()
+  }, [fetchFinancialInsights, onRefresh])
+
+  return (
+    <Card className="h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center">
+          <BanknotesIcon className="h-5 w-5 mr-2 text-green-600" />
+          Financial Coach Insights
+        </h3>
+        <button
+          onClick={fetchFinancialInsights}
+          disabled={widgetLoading}
+          className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <ArrowTrendingUpIcon className={`h-4 w-4 ${widgetLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {widgetLoading ? (
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+        </div>
+      ) : insights ? (
+        <div className="space-y-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center mb-2">
+              <CheckCircleIcon className="h-4 w-4 text-green-600 mr-2" />
+              <span className="text-sm font-medium text-green-800">Marcus - Financial Coach</span>
+            </div>
+            <p className="text-sm text-gray-700 mb-3">
+              {insights.response?.substring(0, 150)}...
+            </p>
+            <div className="space-y-2">
+              <h4 className="text-xs font-medium text-gray-800">Key Recommendations:</h4>
+              {insights.agent_details?.recommendations?.slice(0, 3).map((rec, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs">
+                  <span className="text-green-600">•</span>
+                  <span className="text-gray-600">{rec}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between items-center text-xs text-gray-500">
+            <span>Confidence: {Math.round((insights.confidence || 0) * 100)}%</span>
+            {insights.agent_enhanced && <span className="text-green-600">✨ AI Enhanced</span>}
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <BanknotesIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">Loading financial insights...</p>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function MarketingInsightsWidget({ onRefresh, loading }) {
+  const [insights, setInsights] = useState(null)
+  const [widgetLoading, setWidgetLoading] = useState(true)
+
+  const fetchMarketingInsights = useCallback(async () => {
+    try {
+      setWidgetLoading(true)
+      const response = await fetch('/api/ai/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: "What's the best social media strategy to increase customer acquisition for my barbershop?",
+          businessContext: {
+            shop_name: 'Elite Cuts Barbershop',
+            customer_count: 189,
+            location: 'Downtown',
+            social_media_followers: 456,
+            monthly_new_customers: 23
+          }
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setInsights(data)
+      }
+    } catch (error) {
+      console.error('Marketing insights error:', error)
+    } finally {
+      setWidgetLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchMarketingInsights()
+  }, [fetchMarketingInsights, onRefresh])
+
+  return (
+    <Card className="h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center">
+          <MegaphoneIcon className="h-5 w-5 mr-2 text-blue-600" />
+          Marketing Expert Insights
+        </h3>
+        <button
+          onClick={fetchMarketingInsights}
+          disabled={widgetLoading}
+          className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <RocketLaunchIcon className={`h-4 w-4 ${widgetLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {widgetLoading ? (
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+        </div>
+      ) : insights ? (
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center mb-2">
+              <CheckCircleIcon className="h-4 w-4 text-blue-600 mr-2" />
+              <span className="text-sm font-medium text-blue-800">Sophia - Marketing Expert</span>
+            </div>
+            <p className="text-sm text-gray-700 mb-3">
+              {insights.response?.substring(0, 150)}...
+            </p>
+            <div className="space-y-2">
+              <h4 className="text-xs font-medium text-gray-800">Marketing Actions:</h4>
+              {insights.agent_details?.action_items?.slice(0, 3).map((action, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-xs">
+                  <span className={`px-2 py-1 rounded text-xs ${
+                    action.priority === 'high' ? 'bg-red-100 text-red-800' :
+                    action.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {action.priority}
+                  </span>
+                  <span className="text-gray-600">{action.task}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between items-center text-xs text-gray-500">
+            <span>Confidence: {Math.round((insights.confidence || 0) * 100)}%</span>
+            {insights.agent_enhanced && <span className="text-blue-600">✨ AI Enhanced</span>}
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <MegaphoneIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">Loading marketing insights...</p>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function OperationsInsightsWidget({ onRefresh, loading }) {
+  const [insights, setInsights] = useState(null)
+  const [widgetLoading, setWidgetLoading] = useState(true)
+
+  const fetchOperationsInsights = useCallback(async () => {
+    try {
+      setWidgetLoading(true)
+      const response = await fetch('/api/ai/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: "How can I optimize my staff scheduling and improve operational efficiency?",
+          businessContext: {
+            staff_count: 3,
+            operating_hours: 10,
+            daily_customers: 25,
+            avg_service_time: 45,
+            staff_utilization: 78
+          }
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setInsights(data)
+      }
+    } catch (error) {
+      console.error('Operations insights error:', error)
+    } finally {
+      setWidgetLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchOperationsInsights()
+  }, [fetchOperationsInsights, onRefresh])
+
+  return (
+    <Card className="h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center">
+          <CogIcon className="h-5 w-5 mr-2 text-purple-600" />
+          Operations Manager Insights
+        </h3>
+        <button
+          onClick={fetchOperationsInsights}
+          disabled={widgetLoading}
+          className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <ClockIcon className={`h-4 w-4 ${widgetLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {widgetLoading ? (
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+        </div>
+      ) : insights ? (
+        <div className="space-y-4">
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <div className="flex items-center mb-2">
+              <CheckCircleIcon className="h-4 w-4 text-purple-600 mr-2" />
+              <span className="text-sm font-medium text-purple-800">David - Operations Manager</span>
+            </div>
+            <p className="text-sm text-gray-700 mb-3">
+              {insights.response?.substring(0, 150)}...
+            </p>
+            <div className="space-y-2">
+              <h4 className="text-xs font-medium text-gray-800">Operational Improvements:</h4>
+              {insights.agent_details?.recommendations?.slice(0, 3).map((rec, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs">
+                  <span className="text-purple-600">•</span>
+                  <span className="text-gray-600">{rec}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between items-center text-xs text-gray-500">
+            <span>Confidence: {Math.round((insights.confidence || 0) * 100)}%</span>
+            {insights.agent_enhanced && <span className="text-purple-600">✨ AI Enhanced</span>}
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <CogIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">Loading operations insights...</p>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function BusinessRecommendationsWidget({ onRefresh, loading }) {
+  const [recommendations, setRecommendations] = useState(null)
+  const [widgetLoading, setWidgetLoading] = useState(true)
+
+  const fetchRecommendations = useCallback(async () => {
+    try {
+      setWidgetLoading(true)
+      const response = await fetch('/api/ai/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: "What are the top 3 business improvements I should focus on to grow my barbershop business?",
+          businessContext: {
+            monthly_revenue: 8500,
+            customer_count: 189,
+            staff_count: 3,
+            location: 'Downtown',
+            growth_goal: '20% increase'
+          }
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setRecommendations(data)
+      }
+    } catch (error) {
+      console.error('Recommendations error:', error)
+    } finally {
+      setWidgetLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchRecommendations()
+  }, [fetchRecommendations, onRefresh])
+
+  return (
+    <Card className="h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center">
+          <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-600" />
+          AI Business Recommendations
+        </h3>
+        <button
+          onClick={fetchRecommendations}
+          disabled={widgetLoading}
+          className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <SparklesIcon className={`h-4 w-4 ${widgetLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {widgetLoading ? (
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+        </div>
+      ) : recommendations ? (
+        <div className="space-y-4">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="flex items-center mb-2">
+              <LightBulbIcon className="h-4 w-4 text-yellow-600 mr-2" />
+              <span className="text-sm font-medium text-yellow-800">
+                {recommendations.agent_details?.primary_agent || 'AI Business Coach'}
+              </span>
+            </div>
+            <p className="text-sm text-gray-700 mb-3">
+              {recommendations.response?.substring(0, 120)}...
+            </p>
+            <div className="space-y-2">
+              <h4 className="text-xs font-medium text-gray-800">Priority Actions:</h4>
+              {recommendations.agent_details?.recommendations?.slice(0, 4).map((rec, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs">
+                  <span className="flex-shrink-0 w-4 h-4 bg-yellow-600 text-white rounded-full flex items-center justify-center text-xs">
+                    {idx + 1}
+                  </span>
+                  <span className="text-gray-600">{rec}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {recommendations.agent_details?.business_impact && (
+            <div className="bg-gray-50 rounded-lg p-3">
+              <h4 className="text-xs font-medium text-gray-800 mb-2">Expected Business Impact:</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {Object.entries(recommendations.agent_details.business_impact).slice(0, 4).map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="text-gray-600 capitalize">{key.replace('_', ' ')}:</span>
+                    <span className="font-medium">{typeof value === 'number' ? `${value}%` : value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <LightBulbIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">Loading business recommendations...</p>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function AgentSystemStatusWidget() {
+  const [status, setStatus] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const response = await fetch('/api/ai/agents')
+        if (response.ok) {
+          const data = await response.json()
+          setStatus(data)
+        }
+      } catch (error) {
+        console.error('Status fetch error:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 30000) // Update every 30s
+
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <Card className="h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center">
+          <SparklesIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          AI System Status
+        </h3>
+        <div className={`w-3 h-3 rounded-full ${
+          status?.success ? 'bg-green-500' : 'bg-red-500'
+        }`}></div>
+      </div>
+
+      {loading ? (
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-green-50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {status?.agent_system?.total_agents || 3}
+              </div>
+              <div className="text-xs text-green-700">Total Agents</div>
+            </div>
+            <div className="bg-blue-50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {status?.agent_system?.active_agents || 3}
+              </div>
+              <div className="text-xs text-blue-700">Active Agents</div>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center">
+                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                Marcus (Financial)
+              </span>
+              <span className="text-green-600 text-xs">Active</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center">
+                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                Sophia (Marketing)
+              </span>
+              <span className="text-green-600 text-xs">Active</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="flex items-center">
+                <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                David (Operations)
+              </span>
+              <span className="text-green-600 text-xs">Active</span>
+            </div>
+          </div>
+
+          {status?.performance_metrics && (
+            <div className="pt-3 border-t border-gray-200">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Avg Confidence:</span>
+                  <span className="font-medium">
+                    {Math.round((status.performance_metrics.avg_confidence || 0.85) * 100)}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Collaboration:</span>
+                  <span className="font-medium">
+                    {Math.round((status.performance_metrics.collaboration_rate || 0.3) * 100)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function IntelligentDashboardContent() {
+  const { user, profile } = useAuth()
+  const { tenant } = useTenant()
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [globalLoading, setGlobalLoading] = useState(false)
+
+  const handleGlobalRefresh = useCallback(() => {
+    setGlobalLoading(true)
+    setRefreshTrigger(prev => prev + 1)
+    setTimeout(() => setGlobalLoading(false), 2000)
+  }, [])
+
+  return (
+    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <SparklesIcon className="h-8 w-8 mr-3 text-indigo-600" />
+              Intelligent AI Dashboard
+            </h1>
+            <p className="text-gray-600 mt-2">
+              AI-powered insights and recommendations from your specialized business coaches
+            </p>
+          </div>
+          <button
+            onClick={handleGlobalRefresh}
+            disabled={globalLoading}
+            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+          >
+            <ArrowTrendingUpIcon className={`h-4 w-4 mr-2 ${globalLoading ? 'animate-spin' : ''}`} />
+            Refresh All Insights
+          </button>
+        </div>
+      </div>
+
+      {/* AI Agent Status Bar */}
+      <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <div className="text-sm">
+              <span className="text-gray-600">AI Coaches:</span>
+              <span className="ml-2 font-medium">3 Active</span>
+            </div>
+            <div className="text-sm">
+              <span className="text-gray-600">System Status:</span>
+              <span className="ml-2 font-medium text-green-600">Operational</span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <SparklesIcon className="h-4 w-4 text-indigo-600" />
+            <span>Powered by Specialized AI Agents</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Widget Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
+        {/* Financial Insights Widget */}
+        <FinancialInsightsWidget onRefresh={refreshTrigger} loading={globalLoading} />
+
+        {/* Marketing Insights Widget */}
+        <MarketingInsightsWidget onRefresh={refreshTrigger} loading={globalLoading} />
+
+        {/* Operations Insights Widget */}
+        <OperationsInsightsWidget onRefresh={refreshTrigger} loading={globalLoading} />
+
+        {/* Business Recommendations Widget - Full width on xl screens */}
+        <div className="xl:col-span-2">
+          <BusinessRecommendationsWidget onRefresh={refreshTrigger} loading={globalLoading} />
+        </div>
+
+        {/* Agent System Status Widget */}
+        <AgentSystemStatusWidget />
+      </div>
+
+      {/* Quick Actions Footer */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center">
+          <RocketLaunchIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          Quick Actions
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button className="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+            <BanknotesIcon className="h-6 w-6 text-green-600 mb-2" />
+            <span className="text-sm text-green-800">Financial Analysis</span>
+          </button>
+          <button className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+            <MegaphoneIcon className="h-6 w-6 text-blue-600 mb-2" />
+            <span className="text-sm text-blue-800">Marketing Strategy</span>
+          </button>
+          <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+            <CogIcon className="h-6 w-6 text-purple-600 mb-2" />
+            <span className="text-sm text-purple-800">Operations Review</span>
+          </button>
+          <button className="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
+            <ChartBarIcon className="h-6 w-6 text-yellow-600 mb-2" />
+            <span className="text-sm text-yellow-800">Full Analytics</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function IntelligentDashboard() {
+  return (
+    <ProtectedRoute>
+      <IntelligentDashboardContent />
+    </ProtectedRoute>
+  )
+}

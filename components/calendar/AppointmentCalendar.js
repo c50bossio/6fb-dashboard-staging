@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
+// import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid' // Temporarily disabled for testing
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
@@ -77,7 +77,7 @@ const services = [
 
 export default function AppointmentCalendar({ onAppointmentSelect, onCreateAppointment }) {
   const [events, setEvents] = useState(mockAppointments)
-  const [view, setView] = useState('resourceTimeGridDay')
+  const [view, setView] = useState('timeGridDay')
   const [selectedDate, setSelectedDate] = useState(new Date())
   const calendarRef = useRef()
 
@@ -86,7 +86,7 @@ export default function AppointmentCalendar({ onAppointmentSelect, onCreateAppoi
     plugins: [
       dayGridPlugin,
       timeGridPlugin,
-      resourceTimeGridPlugin,
+      // resourceTimeGridPlugin, // Temporarily disabled for testing
       resourceTimelinePlugin,
       interactionPlugin,
       listPlugin,
@@ -97,7 +97,7 @@ export default function AppointmentCalendar({ onAppointmentSelect, onCreateAppoi
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'resourceTimeGridDay,timeGridWeek,dayGridMonth'
+      right: 'timeGridDay,timeGridWeek,dayGridMonth'
     },
     resources: mockBarbers,
     events: events,
@@ -321,7 +321,7 @@ export default function AppointmentCalendar({ onAppointmentSelect, onCreateAppoi
               onChange={(e) => changeView(e.target.value)}
               className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              <option value="resourceTimeGridDay">Day View</option>
+              <option value="timeGridDay">Day View</option>
               <option value="timeGridWeek">Week View</option>
               <option value="dayGridMonth">Month View</option>
             </select>

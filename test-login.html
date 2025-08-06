@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Direct Supabase Login Test</h1>
+    <form id="loginForm">
+        <input type="email" id="email" value="demo@barbershop.com" placeholder="Email">
+        <input type="password" id="password" value="demo123" placeholder="Password">
+        <button type="submit">Test Login</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            const resultDiv = document.getElementById('result')
+            
+            resultDiv.innerHTML = 'Testing login...'
+            
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                })
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`
+                    console.error('Login error:', error)
+                } else {
+                    resultDiv.innerHTML = `<p style="color: green;">Success! User: ${data.user?.email}</p>`
+                    console.log('Login success:', data)
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p style="color: red;">Exception: ${err.message}</p>`
+                console.error('Login exception:', err)
+            }
+        })
+    </script>
+</body>
+</html>
