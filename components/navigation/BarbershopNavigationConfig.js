@@ -15,7 +15,8 @@ import {
   TrendingUpIcon,
   PresentationChartLineIcon,
   DevicePhoneMobileIcon,
-  MegaphoneIcon
+  MegaphoneIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline'
 
 // Barbershop-focused navigation structure
@@ -57,6 +58,12 @@ export const BARBERSHOP_NAVIGATION = [
         name: 'Walk-ins',
         href: '/dashboard/walk-ins',
         icon: UserGroupIcon
+      },
+      {
+        name: 'Calendar Sync',
+        href: '/dashboard/calendar-settings',
+        icon: LinkIcon,
+        badge: 'New'
       }
     ]
   },

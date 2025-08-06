@@ -1,345 +1,400 @@
 'use client'
 
-import { useState, lazy, Suspense, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
-import { useTenant } from '../../../contexts/TenantContext'
-import { useDashboard } from '../../../contexts/DashboardContext'
-import { DashboardProvider } from '../../../contexts/DashboardContext'
-import { Card, Alert, CardLoadingSkeleton } from '../../../components/ui'
-import { useRouter, useSearchParams } from 'next/navigation'
-
-// Lazy load heavy components for better initial performance
-const DashboardHeader = lazy(() => import('../../../components/dashboard/DashboardHeader'))
-const MetricsOverview = lazy(() => import('../../../components/dashboard/MetricsOverview'))
-const QuickActions = lazy(() => import('../../../components/dashboard/QuickActions'))
-const RealtimeDashboard = lazy(() => import('../../../components/realtime/RealtimeDashboard'))
-const PredictiveAnalyticsDashboard = lazy(() => import('../../../components/analytics/PredictiveAnalyticsDashboard'))
-import Link from 'next/link'
 import { 
-  ChartBarIcon, 
-  ChatBubbleLeftRightIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  CalendarIcon,
+  CalendarDaysIcon,
   UserGroupIcon,
-  CogIcon,
-  SparklesIcon,
+  CurrencyDollarIcon,
+  ChartBarIcon,
+  ClockIcon,
+  BellIcon,
+  PhoneIcon,
+  ScissorsIcon,
+  StarIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  ArrowPathIcon,
-  ArrowRightOnRectangleIcon
+  ArrowUpIcon,
+  ArrowDownIcon,
+  EyeIcon,
+  MapPinIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
+import { 
+  CalendarDaysIcon as CalendarSolid,
+  UserGroupIcon as UserGroupSolid,
+  CurrencyDollarIcon as CurrencySolid,
+  StarIcon as StarSolid
+} from '@heroicons/react/24/solid'
 
-function DashboardContent() {
-  const { user, profile, signOut } = useAuth()
-  const { tenant, loading: tenantLoading } = useTenant()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { 
-    systemHealth, 
-    agentInsights, 
-    dashboardStats, 
-    conversationHistory,
-    loading, 
-    error, 
-    refreshDashboard,
-    clearError,
-    chatWithAgent 
-  } = useDashboard()
-  
-  const [chatMessage, setChatMessage] = useState('')
-  const [chatLoading, setChatLoading] = useState(false)
-  const [selectedMetric, setSelectedMetric] = useState(null)
-  const [showWelcome, setShowWelcome] = useState(false)
+export default function BarbershopDashboard() {
+  const { user } = useAuth()
+  const [timeOfDay, setTimeOfDay] = useState('')
+  const [dashboardData, setDashboardData] = useState({
+    todayStats: {
+      appointments: { current: 12, previous: 8, change: 50 },
+      revenue: { current: 420, previous: 380, change: 10.5 },
+      utilization: { current: 85, previous: 72, change: 13 },
+      satisfaction: { current: 4.8, previous: 4.6, change: 4.3 }
+    },
+    recentActivity: [],
+    upcomingAppointments: [],
+    alerts: []
+  })
 
-  // Check for onboarding completion and welcome parameter
   useEffect(() => {
-    if (searchParams.get('welcome') === 'true') {
-      setShowWelcome(true)
+    const hour = new Date().getHours()
+    if (hour < 12) setTimeOfDay('morning')
+    else if (hour < 17) setTimeOfDay('afternoon')
+    else setTimeOfDay('evening')
+
+    // Load dashboard data
+    loadDashboardData()
+  }, [])
+
+  const loadDashboardData = async () => {
+    // Demo data - in production this would be real API calls
+    const mockData = {
+      todayStats: {
+        appointments: { current: 12, previous: 8, change: 50 },
+        revenue: { current: 420, previous: 380, change: 10.5 },
+        utilization: { current: 85, previous: 72, change: 13 },
+        satisfaction: { current: 4.8, previous: 4.6, change: 4.3 }
+      },
+      recentActivity: [
+        { id: 1, type: 'booking', customer: 'John Smith', barber: 'Marcus', time: '10:30 AM', service: 'Haircut' },
+        { id: 2, type: 'completion', customer: 'Mike Johnson', barber: 'David', revenue: 35, rating: 5 },
+        { id: 3, type: 'cancellation', customer: 'Tom Wilson', time: '2:00 PM', reason: 'Personal emergency' },
+        { id: 4, type: 'walk-in', customer: 'Alex Brown', barber: 'Marcus', service: 'Beard Trim' }
+      ],
+      upcomingAppointments: [
+        { customer: 'Sarah Davis', time: '11:30 AM', barber: 'Marcus', service: 'Full Service', confirmed: true },
+        { customer: 'Robert Lee', time: '12:00 PM', barber: 'David', service: 'Haircut', confirmed: false },
+        { customer: 'Linda Chen', time: '1:15 PM', barber: 'Mike', service: 'Kids Cut', confirmed: true },
+        { customer: 'James Wilson', time: '2:30 PM', barber: 'Marcus', service: 'Beard Trim', confirmed: true }
+      ],
+      alerts: [
+        { type: 'warning', message: 'Marcus is running 15 minutes behind schedule', priority: 'medium' },
+        { type: 'info', message: '3 customers waiting for confirmation calls', priority: 'low' },
+        { type: 'success', message: 'Yesterday\'s revenue target exceeded by 12%', priority: 'low' }
+      ]
     }
-  }, [searchParams])
-
-  // Redirect to onboarding if not completed
-  useEffect(() => {
-    if (!tenantLoading && tenant && !tenant.onboarding_completed) {
-      router.push('/onboarding')
-    }
-  }, [tenant, tenantLoading, router])
-
-  const handleQuickChat = async (e) => {
-    e.preventDefault()
-    if (!chatMessage.trim()) return
-
-    setChatLoading(true)
-    try {
-      await chatWithAgent(chatMessage.trim())
-      setChatMessage('')
-    } catch (err) {
-      console.error('Chat error:', err)
-    } finally {
-      setChatLoading(false)
-    }
-  }
-
-  const systemStatusColor = systemHealth?.status === 'healthy' ? 'text-green-600' : 
-                           systemHealth?.status === 'degraded' ? 'text-yellow-600' : 'text-red-600'
-  
-  const systemStatusBg = systemHealth?.status === 'healthy' ? 'bg-green-50' : 
-                        systemHealth?.status === 'degraded' ? 'bg-yellow-50' : 'bg-red-50'
-
-  const handleMetricClick = (metric) => {
-    setSelectedMetric(metric)
-    console.log(`📊 Clicked on ${metric.title}:`, metric)
     
-    // Add interactive behavior based on metric type
-    switch (metric.title) {
-      case "Today's Conversations":
-        // Could open a detailed conversation log
-        console.log(`📈 Showing detailed conversation analytics: ${metric.value} conversations`)
-        break
-      case "Active AI Agents":
-        // Could show agent status details
-        console.log(`🤖 Showing AI agent status: ${metric.value} agents active`)
-        break
-      case "System Uptime":
-        // Could show system health details
-        console.log(`⚡ Showing system health details: ${metric.value} uptime`)
-        break
-      case "Avg Response Time":
-        // Could show performance metrics
-        console.log(`⏱️ Showing response time analytics: ${metric.value} average`)
-        break
-      default:
-        console.log(`📊 Generic metric interaction: ${metric.title}`)
-    }
+    setDashboardData(mockData)
   }
 
-  if (loading) {
-    return (
-      <div className="py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {[...Array(4)].map((_, i) => (
-            <CardLoadingSkeleton key={i} />
-          ))}
+  const StatCard = ({ icon: Icon, iconSolid: IconSolid, title, value, change, changeType, color, subtitle }) => (
+    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-xl ${color}`}>
+          <IconSolid className="h-8 w-8 text-white" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CardLoadingSkeleton />
-          <CardLoadingSkeleton />
+        <div className={`flex items-center text-sm font-medium ${
+          changeType === 'positive' ? 'text-green-600' : changeType === 'negative' ? 'text-red-600' : 'text-gray-600'
+        }`}>
+          {changeType === 'positive' && <ArrowUpIcon className="h-4 w-4 mr-1" />}
+          {changeType === 'negative' && <ArrowDownIcon className="h-4 w-4 mr-1" />}
+          {change > 0 ? '+' : ''}{change}%
         </div>
       </div>
-    )
-  }
+      <div>
+        <div className="text-2xl font-bold text-gray-900 mb-1">{value}</div>
+        <div className="text-sm text-gray-600">{title}</div>
+        {subtitle && <div className="text-xs text-gray-500 mt-1">{subtitle}</div>}
+      </div>
+    </div>
+  )
+
+  const QuickActionCard = ({ icon: Icon, title, description, color, onClick, badge }) => (
+    <button 
+      onClick={onClick}
+      className={`relative bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all text-left w-full group hover:border-${color}-300`}
+    >
+      {badge && (
+        <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded-full">
+          {badge}
+        </div>
+      )}
+      <div className={`p-3 rounded-xl ${color} mb-4 inline-block`}>
+        <Icon className="h-6 w-6 text-white" />
+      </div>
+      <div className="font-semibold text-gray-900 mb-2">{title}</div>
+      <div className="text-sm text-gray-600">{description}</div>
+    </button>
+  )
 
   return (
-    <>
-      {/* Enhanced Dashboard Header */}
-      <Suspense fallback={<div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 h-32 animate-pulse rounded-lg"></div>}>
-        <DashboardHeader
-          user={user}
-          profile={profile}
-          onRefresh={refreshDashboard}
-          systemHealth={systemHealth}
-          dashboardStats={dashboardStats}
-        />
-      </Suspense>
-
-      {/* Welcome Banner for New Users */}
-      {showWelcome && (
-        <div className="mb-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl">
-          <div className="flex items-start">
-            <CheckCircleIcon className="h-8 w-8 text-green-600 mt-1 mr-4 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                🎉 Welcome to Your AI-Powered Barbershop Dashboard!
-              </h3>
-              <p className="text-gray-700 mb-3">
-                Your onboarding is complete! Here's what you can do next:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div className="flex items-center text-sm text-gray-600">
-                  <SparklesIcon className="h-5 w-5 text-blue-600 mr-2" />
-                  Start chatting with your AI coach below
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <ChartBarIcon className="h-5 w-5 text-purple-600 mr-2" />
-                  Explore your analytics dashboard
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <CogIcon className="h-5 w-5 text-green-600 mr-2" />
-                  Customize your settings anytime
-                </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 rounded-xl p-3">
+                <ScissorsIcon className="h-8 w-8" />
               </div>
-              <button
-                onClick={() => setShowWelcome(false)}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                Got it, dismiss this message
+              <div>
+                <h1 className="text-3xl font-bold">Good {timeOfDay}, {user?.user_metadata?.full_name || 'there'}! ✂️</h1>
+                <p className="text-amber-100 text-lg">6FB Barbershop Intelligence</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="text-sm text-amber-100">Today's Performance</div>
+                <div className="text-2xl font-bold">85% Utilization</div>
+              </div>
+              <div className="h-12 w-px bg-white/20"></div>
+              <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg px-4 py-2 text-sm font-medium transition-colors">
+                View Full Report
               </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
-      <div className="h-full flex flex-col space-y-4 py-4">
-        {/* Error Banner */}
-        {error && (
-          <Alert 
-            variant="error" 
-            dismissible 
-            onDismiss={clearError}
-            title="Dashboard Error"
-          >
-            {error}
-          </Alert>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Alert Bar */}
+        {dashboardData.alerts.length > 0 && (
+          <div className="mb-8">
+            {dashboardData.alerts.map((alert, index) => (
+              <div key={index} className={`rounded-lg p-4 mb-2 flex items-center ${
+                alert.type === 'warning' ? 'bg-amber-50 border border-amber-200' :
+                alert.type === 'success' ? 'bg-green-50 border border-green-200' :
+                'bg-blue-50 border border-blue-200'
+              }`}>
+                {alert.type === 'warning' && <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 mr-3 flex-shrink-0" />}
+                {alert.type === 'success' && <CheckCircleIcon className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />}
+                <div className={`flex-1 text-sm font-medium ${
+                  alert.type === 'warning' ? 'text-amber-800' :
+                  alert.type === 'success' ? 'text-green-800' :
+                  'text-blue-800'
+                }`}>
+                  {alert.message}
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
-        {/* Enhanced Metrics Overview */}
-        <div className="flex-shrink-0">
-          <Suspense fallback={<div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-gray-200 rounded-xl sm:rounded-2xl h-32 animate-pulse"></div>
-            ))}
-          </div>}>
-            <MetricsOverview
-              dashboardStats={dashboardStats}
-              systemHealth={systemHealth}
-              loading={loading}
-              onMetricClick={handleMetricClick}
+        {/* Today's Key Metrics */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+            <ChartBarIcon className="h-6 w-6 mr-2 text-amber-600" />
+            Today's Performance
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard
+              icon={CalendarDaysIcon}
+              iconSolid={CalendarSolid}
+              title="Appointments Today"
+              value={dashboardData.todayStats.appointments.current}
+              change={dashboardData.todayStats.appointments.change}
+              changeType="positive"
+              color="bg-blue-500"
+              subtitle="vs. last Tuesday"
             />
-          </Suspense>
+            <StatCard
+              icon={CurrencyDollarIcon}
+              iconSolid={CurrencySolid}
+              title="Revenue Today"
+              value={`$${dashboardData.todayStats.revenue.current}`}
+              change={dashboardData.todayStats.revenue.change}
+              changeType="positive"
+              color="bg-green-500"
+              subtitle="target: $450"
+            />
+            <StatCard
+              icon={ClockIcon}
+              iconSolid={ClockIcon}
+              title="Chair Utilization"
+              value={`${dashboardData.todayStats.utilization.current}%`}
+              change={dashboardData.todayStats.utilization.change}
+              changeType="positive"
+              color="bg-purple-500"
+              subtitle="3 chairs active"
+            />
+            <StatCard
+              icon={StarIcon}
+              iconSolid={StarSolid}
+              title="Avg Rating"
+              value={dashboardData.todayStats.satisfaction.current}
+              change={dashboardData.todayStats.satisfaction.change}
+              changeType="positive"
+              color="bg-amber-500"
+              subtitle="12 reviews today"
+            />
+          </div>
         </div>
 
-        {/* Real-time Dashboard */}
-        <div className="flex-shrink-0">
-          <Suspense fallback={<div className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>}>
-            <RealtimeDashboard />
-          </Suspense>
-        </div>
-
-        {/* Predictive Analytics Dashboard */}
-        <div className="flex-shrink-0">
-          <Suspense fallback={<div className="bg-gray-200 rounded-lg h-96 animate-pulse"></div>}>
-            <PredictiveAnalyticsDashboard />
-          </Suspense>
-        </div>
-
-        {/* Main Content Grid - Mobile optimized */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 min-h-0">
-          {/* Quick Chat - Enhanced with conversation history */}
-          <Card className="flex flex-col h-full">
-            <h2 className="text-base sm:text-lg font-medium text-gray-900 mb-3 flex items-center">
-              <ChatBubbleLeftRightIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-blue-600" />
-              <span className="hidden sm:inline">Quick Chat with AI Coach</span>
-              <span className="sm:hidden">AI Chat</span>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Quick Actions */}
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+              <BellIcon className="h-6 w-6 mr-2 text-amber-600" />
+              Quick Actions
             </h2>
-            
-            {/* Chat History - Mobile optimized */}
-            {conversationHistory.length > 0 && (
-              <div className="flex-1 max-h-32 sm:max-h-40 overflow-y-auto mb-3 p-2 sm:p-3 bg-gray-50 rounded-lg space-y-2 border">
-                {conversationHistory.slice(-2).map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs sm:max-w-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm ${
-                      msg.role === 'user' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-white text-gray-800 border'
-                    }`}>
-                      {msg.content}
-                      {msg.confidence && (
-                        <div className="text-xs opacity-70 mt-1 hidden sm:block">
-                          Confidence: {(msg.confidence * 100).toFixed(0)}%
+            <div className="space-y-4">
+              <QuickActionCard
+                icon={CalendarDaysIcon}
+                title="New Walk-in"
+                description="Book immediate appointment"
+                color="bg-blue-500"
+                onClick={() => window.location.href = '/dashboard/bookings'}
+              />
+              <QuickActionCard
+                icon={PhoneIcon}
+                title="Confirmation Calls"
+                description="Call unconfirmed appointments"
+                color="bg-green-500"
+                badge="3"
+                onClick={() => {}}
+              />
+              <QuickActionCard
+                icon={UserGroupIcon}
+                title="Customer Check-in"
+                description="Mark customers as arrived"
+                color="bg-purple-500"
+                onClick={() => {}}
+              />
+              <QuickActionCard
+                icon={SparklesIcon}
+                title="AI Insights"
+                description="Get business recommendations"
+                color="bg-amber-500"
+                onClick={() => window.location.href = '/ai-insights'}
+              />
+            </div>
+          </div>
+
+          {/* Center Column - Recent Activity */}
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+              <ClockIcon className="h-6 w-6 mr-2 text-amber-600" />
+              Live Activity
+            </h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="space-y-4">
+                {dashboardData.recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-2 h-2 rounded-full ${
+                        activity.type === 'booking' ? 'bg-green-500' :
+                        activity.type === 'completion' ? 'bg-blue-500' :
+                        activity.type === 'cancellation' ? 'bg-red-500' :
+                        'bg-purple-500'
+                      }`}></div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {activity.type === 'booking' && `${activity.customer} booked ${activity.service}`}
+                          {activity.type === 'completion' && `${activity.customer} completed (${activity.rating}⭐)`}
+                          {activity.type === 'cancellation' && `${activity.customer} cancelled`}
+                          {activity.type === 'walk-in' && `${activity.customer} walk-in`}
                         </div>
-                      )}
+                        <div className="text-xs text-gray-500">
+                          {activity.barber && `with ${activity.barber}`} • {activity.time || 'just now'}
+                        </div>
+                      </div>
                     </div>
+                    {activity.revenue && (
+                      <div className="text-sm font-medium text-green-600">+${activity.revenue}</div>
+                    )}
                   </div>
                 ))}
               </div>
-            )}
-            
-            <form onSubmit={handleQuickChat} className="flex flex-col space-y-2 sm:space-y-3">
-              <div className="flex-shrink-0">
-                <textarea
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  placeholder="Ask your AI business coach anything..."
-                  rows={2}
-                  className="w-full resize-none border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={chatLoading || !chatMessage.trim()}
-                className="w-full flex justify-center items-center px-3 sm:px-4 py-2.5 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors touch-manipulation"
-              >
-                {chatLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <SparklesIcon className="h-4 w-4 mr-2" />
-                    Send Message
-                  </>
-                )}
-              </button>
-            </form>
-          </Card>
-
-          {/* AI Learning Insights - Compact */}
-          <Card className="flex flex-col h-full">
-            <h2 className="text-lg font-medium text-gray-900 mb-3">
-              AI Learning Insights
-            </h2>
-            <div className="flex-1 flex flex-col justify-center">
-              {agentInsights ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 gap-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Shop Profiles:</span>
-                      <span className="font-medium">{agentInsights.coach_learning_data?.shop_profiles?.length || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Total Interactions:</span>
-                      <span className="font-medium">{agentInsights.coach_learning_data?.total_interactions || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Database Insights:</span>
-                      <span className="font-medium">{agentInsights.database_insights?.length || 0}</span>
-                    </div>
-                  </div>
-                  <div className="pt-3 border-t border-gray-200">
-                    <p className="text-xs text-gray-500">
-                      Last updated: {new Date(agentInsights.timestamp).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <SparklesIcon className="mx-auto h-8 w-8 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-600">
-                    AI learning insights will appear here as you interact with the system
-                  </p>
-                </div>
-              )}
             </div>
-          </Card>
+          </div>
+
+          {/* Right Column - Upcoming Appointments */}
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+              <CalendarDaysIcon className="h-6 w-6 mr-2 text-amber-600" />
+              Next Up
+            </h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="space-y-4">
+                {dashboardData.upcomingAppointments.map((appointment, index) => (
+                  <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+                    <div className="flex items-center space-x-3">
+                      <div className="text-sm font-bold text-gray-600 w-16">
+                        {appointment.time}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {appointment.customer}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {appointment.service} with {appointment.barber}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`w-3 h-3 rounded-full ${
+                      appointment.confirmed ? 'bg-green-500' : 'bg-amber-500'
+                    }`} title={appointment.confirmed ? 'Confirmed' : 'Needs confirmation'}></div>
+                  </div>
+                ))}
+              </div>
+              
+              <button className="w-full mt-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border-t border-gray-100 pt-4">
+                View Full Schedule →
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Enhanced Quick Actions - Compact */}
-        <div className="flex-shrink-0 mt-4">
-          <Suspense fallback={<div className="bg-gray-200 rounded-lg h-16 animate-pulse"></div>}>
-            <QuickActions profile={profile} />
-          </Suspense>
+        {/* Bottom Row - Weekly Overview */}
+        <div className="mt-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                <TrendingUpIcon className="h-6 w-6 mr-2 text-amber-600" />
+                This Week's Snapshot
+              </h2>
+              <button className="text-sm font-medium text-blue-600 hover:text-blue-800">
+                View Analytics →
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-900">47</div>
+                <div className="text-sm text-gray-600">Total Appointments</div>
+                <div className="text-xs text-green-600 flex items-center justify-center mt-1">
+                  <ArrowUpIcon className="h-3 w-3 mr-1" />
+                  +12% vs last week
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-900">$1,680</div>
+                <div className="text-sm text-gray-600">Total Revenue</div>
+                <div className="text-xs text-green-600 flex items-center justify-center mt-1">
+                  <ArrowUpIcon className="h-3 w-3 mr-1" />
+                  +8% vs last week
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-900">4.7⭐</div>
+                <div className="text-sm text-gray-600">Avg Rating</div>
+                <div className="text-xs text-green-600 flex items-center justify-center mt-1">
+                  <ArrowUpIcon className="h-3 w-3 mr-1" />
+                  +0.2 vs last week
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-900">5%</div>
+                <div className="text-sm text-gray-600">No-show Rate</div>
+                <div className="text-xs text-green-600 flex items-center justify-center mt-1">
+                  <ArrowDownIcon className="h-3 w-3 mr-1" />
+                  -3% vs last week
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </>
-  )
-}
-
-export default function Dashboard() {
-  return (
-    <DashboardProvider>
-      <DashboardContent />
-    </DashboardProvider>
+    </div>
   )
 }
