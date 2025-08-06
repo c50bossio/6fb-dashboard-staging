@@ -47,6 +47,24 @@ except ImportError:
     ENHANCED_RECOMMENDATIONS_AVAILABLE = False
     print("⚠️ Enhanced business recommendations service not available")
 
+# Import Advanced RAG system
+try:
+    from services.advanced_rag_endpoint import router as advanced_rag_router
+    ADVANCED_RAG_AVAILABLE = True
+    print("✅ Advanced RAG system loaded")
+except ImportError as e:
+    ADVANCED_RAG_AVAILABLE = False
+    print(f"⚠️ Advanced RAG system not available: {e}")
+
+# Import Real-time Data system
+try:
+    from services.realtime_data_endpoint import router as realtime_data_router
+    REALTIME_DATA_AVAILABLE = True
+    print("✅ Real-time Data system loaded")
+except ImportError as e:
+    REALTIME_DATA_AVAILABLE = False
+    print(f"⚠️ Real-time Data system not available: {e}")
+
 # Import AI performance monitoring
 try:
     from services.ai_performance_monitoring import ai_performance_monitor
@@ -2208,6 +2226,16 @@ async def get_recommendations_status(barbershop_id: str):
             "success": False,
             "error": str(e)
         }
+
+# Include Advanced RAG router if available
+if ADVANCED_RAG_AVAILABLE:
+    app.include_router(advanced_rag_router)
+    print("✅ Advanced RAG System included at /enhanced-knowledge/*")
+
+# Include Real-time Data router if available
+if REALTIME_DATA_AVAILABLE:
+    app.include_router(realtime_data_router)
+    print("✅ Real-time Data System included at /realtime-data/*")
 
 # Mount alert service if available
 if ALERT_SERVICE_AVAILABLE:

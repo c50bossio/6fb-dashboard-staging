@@ -14,14 +14,21 @@ import {
   ChartBarIcon,
   BellIcon,
   UserCircleIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  AcademicCapIcon,
+  SparklesIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Appointments', href: '/appointments', icon: CalendarIcon },
   { name: 'Customers', href: '/customers', icon: UsersIcon },
+  { name: 'Staff', href: '/staff', icon: UserCircleIcon },
+  { name: 'Payments', href: '/payments', icon: BanknotesIcon },
   { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
+  { name: 'AI Agents', href: '/ai-agents', icon: SparklesIcon },
+  { name: 'Advanced RAG', href: '/advanced-rag', icon: AcademicCapIcon },
   { name: 'Settings', href: '/dashboard/settings', icon: CogIcon },
 ]
 
