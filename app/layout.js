@@ -6,6 +6,7 @@ import { SupabaseAuthProvider } from '../components/SupabaseAuthProvider'
 import { TenantProvider } from '../contexts/TenantContext'
 import { ToastProvider } from '../components/ToastContainer'
 import { AccessibilityProvider, SkipToContent } from '../components/ui/AccessibilityProvider'
+import GlobalNavigation from '../components/GlobalNavigation'
 
 // Dynamically import PostHog provider to avoid SSR issues
 const PostHogProvider = dynamic(
@@ -48,6 +49,7 @@ export default function RootLayout({ children }) {
                 <TenantProvider>
                   <PostHogProvider>
                     <PerformanceMonitor />
+                    <GlobalNavigation />
                     <main id="main-content">
                       {children}
                     </main>

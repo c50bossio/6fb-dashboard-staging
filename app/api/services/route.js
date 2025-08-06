@@ -1,0 +1,136 @@
+'use server'
+
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { z } from 'zod'
+
+// Validation schema for services
+const serviceSchema = z.object({
+  barbershop_id: z.string().uuid(),
+  name: z.string().min(1).max(255),
+  description: z.string().max(500).optional(),
+  duration_minutes: z.number().min(15).max(480),
+  price: z.number().min(0),
+  category: z.string().max(100).optional(),
+  is_active: z.boolean().optional().default(true)
+})
+
+// GET /api/services - Fetch services
+export async function GET(request) {
+  try {
+    const supabase = createClient()
+    
+    // Get user session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const barbershop_id = searchParams.get('barbershop_id')
+    const category = searchParams.get('category')
+    const active_only = searchParams.get('active_only') !== 'false'
+
+    let query = supabase
+      .from('services')
+      .select(`
+        *,
+        barbershop:barbershops(id, name)
+      `)
+      .order('category', { ascending: true })
+      .order('name', { ascending: true })
+
+    if (barbershop_id) {
+      query = query.eq('barbershop_id', barbershop_id)
+    }
+    
+    if (category) {
+      query = query.eq('category', category)
+    }
+
+    if (active_only) {
+      query = query.eq('is_active', true)
+    }
+
+    const { data: services, error } = await query
+
+    if (error) {
+      console.error('Error fetching services:', error)
+      return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 })
+    }
+
+    // Group services by category
+    const servicesByCategory = services.reduce((acc, service) => {
+      const category = service.category || 'General'
+      if (!acc[category]) {
+        acc[category] = []
+      }
+      acc[category].push(service)
+      return acc
+    }, {})
+
+    return NextResponse.json({
+      services,
+      servicesByCategory,
+      total: services.length
+    })
+
+  } catch (error) {
+    console.error('Unexpected error in GET /api/services:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+// POST /api/services - Create new service
+export async function POST(request) {
+  try {
+    const supabase = createClient()
+    
+    // Get user session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    
+    // Validate request body
+    const validationResult = serviceSchema.safeParse(body)
+    if (!validationResult.success) {
+      return NextResponse.json({
+        error: 'Validation failed',
+        details: validationResult.error.errors
+      }, { status: 400 })
+    }
+
+    const serviceData = validationResult.data
+
+    // Create service
+    const { data: service, error } = await supabase
+      .from('services')
+      .insert({
+        ...serviceData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select(`
+        *,
+        barbershop:barbershops(id, name)
+      `)
+      .single()
+
+    if (error) {
+      console.error('Error creating service:', error)
+      return NextResponse.json({ error: 'Failed to create service' }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      message: 'Service created successfully',
+      service
+    }, { status: 201 })
+
+  } catch (error) {
+    console.error('Unexpected error in POST /api/services:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
