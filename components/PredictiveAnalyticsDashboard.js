@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import {
   ChartBarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CalendarDaysIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
@@ -168,7 +168,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                     </div>
                     <div className="text-xs text-indigo-600">Next {selectedTimeframe} days</div>
                   </div>
-                  <TrendingUpIcon className="h-8 w-8 text-indigo-400" />
+                  <ArrowTrendingUpIcon className="h-8 w-8 text-indigo-400" />
                 </div>
               </div>
               

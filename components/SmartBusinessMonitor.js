@@ -8,8 +8,8 @@ import {
   LightBulbIcon,
   XMarkIcon,
   ChartBarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 
 export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {

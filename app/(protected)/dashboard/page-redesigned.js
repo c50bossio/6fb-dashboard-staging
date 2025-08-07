@@ -11,7 +11,7 @@ import {
   ScissorsIcon,
   StarIcon,
   ArrowTrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ArrowUpIcon,
