@@ -268,28 +268,49 @@ class AIOrchestratorService:
     
     def _build_system_message(self, context: Dict = None) -> str:
         """Build system message with business context, RAG insights, and real analytics data"""
-        base_prompt = """You are an AI business coach specialized in barbershop operations and management. 
+        
+        # Check if we have business context available
+        has_business_data = context and context.get('business_metrics_available', False)
+        business_name = context.get('business_name', 'the barbershop') if context else 'the barbershop'
+        
+        base_prompt = f"""You are an AI business coach specialized in barbershop operations and management. 
         You provide practical, actionable advice to help barbershop owners optimize their business operations, 
         improve customer satisfaction, and increase revenue.
+        
+        IMPORTANT: You have access to live business data and should NOT ask the user for basic information like:
+        - Business name, products/services, target market, business model
+        - Revenue, customer count, appointment data, staff information
+        - Business goals, challenges, or operating history
+        
+        Instead, use the provided business context to give specific, data-driven advice.
         
         Your expertise includes:
         - Scheduling and appointment management
         - Customer service and retention
-        - Revenue optimization and pricing strategies
+        - Revenue optimization and pricing strategies  
         - Staff management and training
         - Marketing and social media
         - Financial planning and cost management
         
-        Always provide specific, actionable recommendations with clear next steps."""
+        Always provide specific, actionable recommendations with clear next steps based on the actual business data available."""
         
         if context:
             business_context = f"""
             
-            Current Business Context:
-            - Shop: {context.get('shop_name', 'Barbershop')}
-            - Location: {context.get('location', 'Not specified')}
-            - Staff: {context.get('staff_count', 'Not specified')} barbers
-            - Recent Metrics: {context.get('recent_metrics', 'Not available')}
+            CURRENT BUSINESS CONTEXT - USE THIS DATA IN YOUR RESPONSES:
+            - Business Name: {context.get('business_name', 'The Barbershop')}
+            - Business Type: {context.get('business_type', 'Barbershop')}
+            - Monthly Revenue: ${context.get('monthly_revenue', 0):,.2f}
+            - Total Customers: {context.get('customer_count', 0):,}
+            - Total Appointments: {context.get('total_appointments', 0):,}
+            - Average Service Price: ${context.get('average_service_price', 0):.2f}
+            - Revenue Growth: {context.get('revenue_growth', 0):+.1f}%
+            - Staff Count: {context.get('total_barbers', 0)} barbers
+            - Business Goals: {', '.join(context.get('business_goals', ['Business growth']))}
+            - Services Offered: {', '.join(context.get('products_services', ['Hair Services']))}
+            - Current Challenges: {', '.join(context.get('current_challenges', ['Growth optimization']))}
+            
+            Use this specific data to provide contextual, personalized business advice.
             """
             base_prompt += business_context
             
@@ -298,11 +319,12 @@ class AIOrchestratorService:
             if real_time_analytics:
                 analytics_context = f"""
             
-            LIVE BUSINESS ANALYTICS:
+            LIVE BUSINESS ANALYTICS (Available for Reference):
             {real_time_analytics}
             
-            IMPORTANT: Use these ACTUAL numbers in your responses. When discussing revenue, bookings, 
-            customer metrics, or performance data, reference these real figures rather than generic examples.
+            IMPORTANT: Reference specific metrics from this data when relevant, but do NOT repeat 
+            the entire analytics section. Instead, incorporate individual metrics naturally into 
+            your advice. Focus on actionable insights rather than restating raw data.
             """
                 base_prompt += analytics_context
             
@@ -382,15 +404,44 @@ class AIOrchestratorService:
         """Main chat method with specialized agent integration, RAG, real analytics, and AI provider fallback"""
         
         try:
-            # Step 1: Enhance business context with real-time analytics data
+            # Step 1: Always enhance business context with real-time business data
             enhanced_business_context = business_context.copy() if business_context else {}
             
-            # Fetch real-time analytics if dealing with business metrics questions
-            if self._needs_analytics_data(message):
-                analytics_data = await self._fetch_analytics_data(enhanced_business_context.get('barbershop_id'))
-                if analytics_data:
-                    enhanced_business_context['real_time_analytics'] = analytics_data
-                    logger.info("✅ Enhanced context with real-time analytics data")
+            # Always fetch business metrics to ensure AI agents have context
+            analytics_data = await self._fetch_analytics_data(enhanced_business_context.get('barbershop_id'))
+            if analytics_data:
+                enhanced_business_context['real_time_analytics'] = analytics_data
+                logger.info("✅ Enhanced context with real-time analytics data")
+            
+            # Import and use realtime analytics service to populate business context
+            try:
+                from .realtime_analytics_service import realtime_analytics_service
+                business_metrics = await realtime_analytics_service.get_live_business_metrics(
+                    enhanced_business_context.get('barbershop_id')
+                )
+                
+                # Add core business data so agents don't ask for it
+                enhanced_business_context.update({
+                    'business_name': enhanced_business_context.get('business_name', 'Your Barbershop'),
+                    'business_type': 'Barbershop',
+                    'monthly_revenue': business_metrics.monthly_revenue,
+                    'customer_count': business_metrics.total_customers,
+                    'total_appointments': business_metrics.total_appointments,
+                    'average_service_price': business_metrics.average_service_price,
+                    'revenue_growth': business_metrics.revenue_growth,
+                    'total_barbers': business_metrics.total_barbers,
+                    'business_goals': ['$500/day revenue target', 'Customer retention improvement', 'Service excellence'],
+                    'products_services': [service.get('name', 'Hair Services') for service in business_metrics.most_popular_services],
+                    'current_challenges': self._identify_business_challenges(business_metrics),
+                    'target_market': 'Local community seeking professional barbering services',
+                    'business_model': 'Service-based appointment booking with walk-ins',
+                    'operating_history': f"Currently serving {business_metrics.total_customers} customers",
+                    'business_metrics_available': True
+                })
+                logger.info("✅ Pre-populated business context to prevent AI from asking basic questions")
+                
+            except Exception as e:
+                logger.warning(f"Could not pre-populate business context: {e}")
             
             # Step 2: Try specialized agent system first
             agent_response = await agent_manager.process_message(
@@ -524,6 +575,30 @@ class AIOrchestratorService:
             
         except Exception as e:
             logger.error(f"Failed to store interaction knowledge: {e}")
+    
+    def _identify_business_challenges(self, business_metrics) -> List[str]:
+        """Identify business challenges based on current metrics"""
+        challenges = []
+        
+        if business_metrics.revenue_growth < 5:
+            challenges.append('Revenue growth below optimal levels')
+        
+        if business_metrics.customer_retention_rate < 70:
+            challenges.append('Customer retention needs improvement')
+        
+        if business_metrics.appointment_completion_rate < 85:
+            challenges.append('High cancellation/no-show rates')
+        
+        if business_metrics.occupancy_rate < 60:
+            challenges.append('Low booking capacity utilization')
+        
+        if business_metrics.average_service_price < 50:
+            challenges.append('Pricing strategy optimization needed')
+        
+        if not challenges:
+            challenges = ['Maintaining current performance levels', 'Scaling operations efficiently']
+        
+        return challenges
     
     def get_provider_status(self) -> Dict:
         """Get status of all AI providers"""

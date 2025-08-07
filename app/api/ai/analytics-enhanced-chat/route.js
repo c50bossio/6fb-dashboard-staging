@@ -45,7 +45,7 @@ export async function POST(request) {
     let aiResponse;
     
     try {
-      const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
+      const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://backend:8000';
       const response = await fetch(`${pythonServiceUrl}/ai/enhanced-chat`, {
         method: 'POST',
         headers: {

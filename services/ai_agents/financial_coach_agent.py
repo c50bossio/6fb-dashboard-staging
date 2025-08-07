@@ -82,12 +82,17 @@ class FinancialCoachAgent(BaseAgent):
         
         # High confidence for direct financial questions
         if keyword_matches >= 2:
-            confidence = min(0.95, 0.7 + (keyword_matches * 0.05))
+            confidence = min(0.95, 0.8 + (keyword_matches * 0.05))
             return True, confidence
         
-        # Medium confidence for single financial keyword
+        # Medium-high confidence for single financial keyword, especially revenue-related
         elif keyword_matches == 1:
-            confidence = 0.75
+            # Higher confidence for revenue-specific keywords
+            revenue_keywords = ['revenue', 'income', 'sales', 'earnings', 'profit', 'pricing', 'price']
+            if any(keyword in message_lower for keyword in revenue_keywords):
+                confidence = 0.85
+            else:
+                confidence = 0.75
             return True, confidence
         
         # Check for indirect financial context
@@ -106,36 +111,43 @@ class FinancialCoachAgent(BaseAgent):
         """Generate financial coaching response"""
         
         try:
-            # Extract business context
-            current_revenue = context.get('monthly_revenue', 4500)
-            current_expenses = context.get('monthly_expenses', 2800)
-            customer_count = context.get('customer_count', 120)
-            avg_ticket = current_revenue / max(customer_count, 1)
-            profit_margin = ((current_revenue - current_expenses) / current_revenue) * 100
+            # Ensure we have live business data
+            enhanced_context = await self._ensure_business_context(context)
+            
+            # Extract business context with real data
+            current_revenue = enhanced_context.get('monthly_revenue', 4500)
+            current_expenses = enhanced_context.get('monthly_expenses', current_revenue * 0.65)  # Estimate 65% expense ratio
+            customer_count = enhanced_context.get('customer_count', 120)
+            avg_ticket = enhanced_context.get('average_service_price', current_revenue / max(customer_count, 1))
+            profit_margin = ((current_revenue - current_expenses) / current_revenue) * 100 if current_revenue > 0 else 0
+            
+            # Business context available check
+            has_live_data = enhanced_context.get('business_metrics_available', False)
+            business_name = enhanced_context.get('business_name', 'Your Barbershop')
             
             # Analyze the specific financial topic
             financial_topic = self._identify_financial_topic(message)
             
-            # Generate specialized response based on topic
+            # Generate specialized response based on topic with business context
             if financial_topic == "revenue_optimization":
                 response_text, recommendations = await self._generate_revenue_advice(
-                    message, current_revenue, avg_ticket, customer_count
+                    message, current_revenue, avg_ticket, customer_count, enhanced_context, has_live_data
                 )
             elif financial_topic == "cost_management":
                 response_text, recommendations = await self._generate_cost_advice(
-                    message, current_expenses, current_revenue
+                    message, current_expenses, current_revenue, enhanced_context, has_live_data
                 )
             elif financial_topic == "pricing_strategy":
                 response_text, recommendations = await self._generate_pricing_advice(
-                    message, avg_ticket, profit_margin
+                    message, avg_ticket, profit_margin, enhanced_context, has_live_data
                 )
             elif financial_topic == "cash_flow":
                 response_text, recommendations = await self._generate_cashflow_advice(
-                    message, current_revenue, current_expenses
+                    message, current_revenue, current_expenses, enhanced_context, has_live_data
                 )
             else:
                 response_text, recommendations = await self._generate_general_financial_advice(
-                    message, context
+                    message, enhanced_context, has_live_data
                 )
             
             # Add conversation to history
@@ -145,8 +157,8 @@ class FinancialCoachAgent(BaseAgent):
             return self.format_response(
                 response_text=response_text,
                 recommendations=recommendations,
-                context=context,
-                confidence=0.88
+                context=enhanced_context,
+                confidence=0.92 if has_live_data else 0.88
             )
             
         except Exception as e:
@@ -169,30 +181,61 @@ class FinancialCoachAgent(BaseAgent):
             return "general_financial"
     
     async def _generate_revenue_advice(self, message: str, current_revenue: float, 
-                                     avg_ticket: float, customer_count: int) -> Tuple[str, List[str]]:
-        """Generate revenue optimization advice"""
+                                     avg_ticket: float, customer_count: int, context: Dict[str, Any], 
+                                     has_live_data: bool = False) -> Tuple[str, List[str]]:
+        """Generate revenue optimization advice with real business context"""
+        
+        # Extract additional context from real data
+        business_name = context.get('business_name', 'Your Barbershop')
+        revenue_growth = context.get('revenue_growth', 0.0)
+        total_appointments = context.get('total_appointments', customer_count * 2)
+        popular_services = context.get('most_popular_services', [])
+        peak_hours = context.get('peak_booking_hours', [])
         
         # Calculate revenue metrics
-        monthly_goal = current_revenue * 1.20  # 20% increase goal
-        needed_customers = monthly_goal / avg_ticket
+        monthly_goal = max(current_revenue * 1.20, 15000)  # 20% increase or $500/day goal
+        needed_customers = monthly_goal / avg_ticket if avg_ticket > 0 else customer_count * 1.2
         customer_increase = needed_customers - customer_count
         
-        response = f"""**Revenue Optimization Analysis**
+        # Build response with real business context
+        data_source = "based on your live business data" if has_live_data else "based on typical barbershop metrics"
+        
+        response = f"""**Revenue Optimization Analysis for {business_name}**
 
-Your current metrics:
+Looking at your current performance {data_source}:
 • Monthly Revenue: ${current_revenue:,.0f}
-• Average Ticket: ${avg_ticket:.0f}
-• Customer Count: {customer_count}
+• Average Service Price: ${avg_ticket:.0f}
+• Total Customers: {customer_count:,}
+• Revenue Growth Trend: {revenue_growth:+.1f}%
+• Total Appointments: {total_appointments:,}
 
-To reach our 20% growth target of ${monthly_goal:,.0f}, you have two primary levers:
+**$500/Day Goal Analysis:**
+To reach $15,000 monthly (our $500/day target), you have strategic options:
 
-**Option 1: Increase Customer Volume**
-You'd need {customer_increase:.0f} additional customers monthly at your current average ticket.
+**Option 1: Customer Acquisition**
+You'd need {max(0, customer_increase):.0f} additional customers monthly at your current pricing.
 
-**Option 2: Increase Average Ticket**
-Raising your average ticket by ${(monthly_goal/customer_count) - avg_ticket:.0f} achieves the same goal with existing customers.
+**Option 2: Service Value Optimization** ⭐ RECOMMENDED
+Increase your average service price to ${monthly_goal/customer_count:.0f} with existing customers."""
+        
+        # Add service-specific insights if we have real data
+        if popular_services:
+            response += f"""
 
-**My Recommendation:** Focus on average ticket increase first - it's more profitable and sustainable than just adding volume."""
+**Service Performance Insights:**
+Your top services are: {', '.join([s.get('name', 'Service') for s in popular_services[:3]])}
+Focus on upselling within these popular categories."""
+        
+        # Add peak hours insight
+        if peak_hours:
+            response += f"""
+
+**Peak Hour Opportunity:**
+Your busiest hours ({', '.join([f'{h}:00' for h in peak_hours[:3]])}) present premium pricing opportunities."""
+        
+        response += f"""
+
+**My Professional Recommendation:** Focus on increasing service value first - it's more profitable and sustainable than just adding volume. Your current clients already trust you."""
         
         recommendations = [
             f"Implement service upselling to increase average ticket from ${avg_ticket:.0f} to ${(monthly_goal/customer_count):.0f}",
@@ -205,7 +248,8 @@ Raising your average ticket by ${(monthly_goal/customer_count) - avg_ticket:.0f}
         return response, recommendations
     
     async def _generate_cost_advice(self, message: str, current_expenses: float, 
-                                  current_revenue: float) -> Tuple[str, List[str]]:
+                                  current_revenue: float, context: Dict[str, Any], 
+                                  has_live_data: bool = False) -> Tuple[str, List[str]]:
         """Generate cost management advice"""
         
         expense_ratio = (current_expenses / current_revenue) * 100
@@ -234,7 +278,8 @@ The key is reducing costs without compromising service quality. Let's focus on t
         return response, recommendations
     
     async def _generate_pricing_advice(self, message: str, avg_ticket: float, 
-                                     profit_margin: float) -> Tuple[str, List[str]]:
+                                     profit_margin: float, context: Dict[str, Any], 
+                                     has_live_data: bool = False) -> Tuple[str, List[str]]:
         """Generate pricing strategy advice"""
         
         optimal_margin = 40  # Target 40% profit margin
@@ -263,7 +308,8 @@ Remember: Most customers value quality and experience over lowest price. Your pr
         return response, recommendations
     
     async def _generate_cashflow_advice(self, message: str, current_revenue: float, 
-                                      current_expenses: float) -> Tuple[str, List[str]]:
+                                      current_expenses: float, context: Dict[str, Any], 
+                                      has_live_data: bool = False) -> Tuple[str, List[str]]:
         """Generate cash flow management advice"""
         
         monthly_profit = current_revenue - current_expenses
@@ -290,19 +336,51 @@ Cash flow is the lifeblood of your business. Even profitable businesses can fail
         return response, recommendations
     
     async def _generate_general_financial_advice(self, message: str, 
-                                               context: Dict[str, Any]) -> Tuple[str, List[str]]:
-        """Generate general financial guidance"""
+                                               context: Dict[str, Any], has_live_data: bool = False) -> Tuple[str, List[str]]:
+        """Generate general financial guidance with business context"""
         
-        response = f"""**Financial Health Assessment**
+        business_name = context.get('business_name', 'Your Barbershop')
+        current_revenue = context.get('monthly_revenue', 0)
+        daily_revenue = context.get('daily_revenue', 0)
+        data_source = "your actual business performance" if has_live_data else "industry best practices"
+        
+        response = f"""**Financial Health Assessment for {business_name}**
 
-As your financial coach, I always recommend starting with the fundamentals:
+Looking at {data_source}, here's my professional guidance:"""
+        
+        if has_live_data and current_revenue > 0:
+            daily_target = 500
+            monthly_target = 15000
+            current_daily = current_revenue / 30
+            
+            response += f"""
 
-1. **Know Your Numbers**: Track daily revenue, expenses, and profit
-2. **Cash Flow First**: Ensure positive cash flow before growth investments  
-3. **Profit Margins**: Target 35-45% profit margins for sustainability
-4. **Growth Strategy**: Increase average ticket before adding new customers
+**Current Financial Position:**
+• Monthly Revenue: ${current_revenue:,.0f}
+• Daily Average: ${current_daily:.0f} (Target: ${daily_target})
+• Progress to $500/day goal: {(current_daily/daily_target)*100:.0f}%
 
-Every successful barbershop owner I work with focuses on these financial pillars."""
+**Financial Strategy Priorities:**"""
+            
+            if current_daily < daily_target:
+                gap = daily_target - current_daily
+                response += f"""
+1. **Close the Revenue Gap**: Need ${gap:.0f} more daily revenue to hit your $500/day target"""
+            else:
+                response += f"""
+1. **Maintain Excellence**: You're hitting strong revenue numbers - focus on sustainability"""
+        else:
+            response += f"""
+
+**Universal Financial Principles:**"""
+        
+        response += f"""
+2. **Know Your Numbers**: Track daily revenue, expenses, and profit religiously
+3. **Cash Flow First**: Ensure positive cash flow before any growth investments  
+4. **Profit Margins**: Target 35-45% profit margins for long-term sustainability
+5. **Growth Strategy**: Increase average service price before just adding more customers
+
+Based on my experience with successful barbershop owners, these fundamentals create lasting financial success."""
         
         recommendations = [
             "Implement daily financial tracking (revenue, expenses, cash)",

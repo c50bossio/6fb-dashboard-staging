@@ -73,7 +73,7 @@ class OperationsManagerAgent(BaseAgent):
             'productivity', 'performance', 'management', 'scheduling staff',
             # Operations & Efficiency  
             'operations', 'efficiency', 'workflow', 'process', 'system',
-            'optimization', 'streamline', 'improve', 'bottleneck', 'wait time',
+            'optimization', 'streamline', 'improve operations', 'improve efficiency', 'bottleneck', 'wait time',
             # Customer Service Operations
             'customer flow', 'waiting', 'queue', 'service time', 'capacity',
             'customer experience', 'service quality', 'consistency',

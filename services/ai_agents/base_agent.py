@@ -123,6 +123,95 @@ class BaseAgent(ABC):
         
         return "\n".join(recent_context)
     
+    async def _ensure_business_context(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Ensure the agent has access to current business data
+        This is called by all agents to get real business metrics instead of asking users
+        """
+        try:
+            # Import here to avoid circular imports
+            from ..realtime_analytics_service import realtime_analytics_service
+            
+            enhanced_context = context.copy()
+            
+            # Get barbershop ID from context
+            barbershop_id = context.get('barbershop_id') or context.get('shop_id')
+            
+            # Fetch live business metrics
+            business_metrics = await realtime_analytics_service.get_live_business_metrics(barbershop_id)
+            
+            # Update context with real business data
+            enhanced_context.update({
+                'monthly_revenue': business_metrics.monthly_revenue,
+                'daily_revenue': business_metrics.daily_revenue,
+                'total_revenue': business_metrics.total_revenue,
+                'weekly_revenue': business_metrics.weekly_revenue,
+                'customer_count': business_metrics.total_customers,
+                'new_customers_this_month': business_metrics.new_customers_this_month,
+                'total_appointments': business_metrics.total_appointments,
+                'completed_appointments': business_metrics.completed_appointments,
+                'appointment_completion_rate': business_metrics.appointment_completion_rate,
+                'average_service_price': business_metrics.average_service_price,
+                'customer_retention_rate': business_metrics.customer_retention_rate,
+                'total_barbers': business_metrics.total_barbers,
+                'active_barbers': business_metrics.active_barbers,
+                'top_performing_barber': business_metrics.top_performing_barber,
+                'peak_booking_hours': business_metrics.peak_booking_hours,
+                'busiest_days': business_metrics.busiest_days,
+                'most_popular_services': business_metrics.most_popular_services,
+                'occupancy_rate': business_metrics.occupancy_rate,
+                'revenue_growth': business_metrics.revenue_growth,
+                'payment_success_rate': business_metrics.payment_success_rate,
+                'business_metrics_available': True,
+                'business_metrics_timestamp': business_metrics.last_updated,
+                
+                # Business profile information
+                'business_name': context.get('business_name', 'Your Barbershop'),
+                'business_type': 'Barbershop',
+                'service_categories': [service.get('name', 'Hair Services') for service in business_metrics.most_popular_services[:3]],
+                'target_market': 'Local community seeking professional barbering services',
+                'business_model': 'Service-based appointment booking with walk-ins',
+                'business_goals': ['$500/day revenue target', 'Customer retention improvement', 'Service excellence'],
+                'current_challenges': self._identify_challenges_from_metrics(business_metrics),
+                'products_services': [service.get('name', 'Hair Cut') for service in business_metrics.most_popular_services],
+                'operating_history': f"Currently serving {business_metrics.total_customers} customers with {business_metrics.total_appointments} appointments completed"
+            })
+            
+            logger.info(f"✅ Enhanced context with live business data for {self.name}")
+            return enhanced_context
+            
+        except Exception as e:
+            logger.error(f"Failed to enhance business context: {e}")
+            # Return original context with indication that live data is unavailable
+            enhanced_context = context.copy()
+            enhanced_context['business_metrics_available'] = False
+            enhanced_context['business_data_error'] = str(e)
+            return enhanced_context
+    
+    def _identify_challenges_from_metrics(self, metrics) -> List[str]:
+        """Identify business challenges based on current metrics"""
+        challenges = []
+        
+        if metrics.revenue_growth < 5:
+            challenges.append('Revenue growth below optimal levels')
+        
+        if metrics.customer_retention_rate < 70:
+            challenges.append('Customer retention needs improvement')
+        
+        if metrics.appointment_completion_rate < 85:
+            challenges.append('High cancellation/no-show rates')
+        
+        if metrics.occupancy_rate < 60:
+            challenges.append('Low booking capacity utilization')
+        
+        if metrics.average_service_price < 50:
+            challenges.append('Pricing strategy optimization needed')
+        
+        if not challenges:
+            challenges = ['Maintaining current performance levels', 'Scaling operations efficiently']
+        
+        return challenges
+
     async def should_collaborate(self, other_agents: List['BaseAgent'], message: str, context: Dict[str, Any]) -> List[str]:
         """
         Determine if this agent should collaborate with other agents
