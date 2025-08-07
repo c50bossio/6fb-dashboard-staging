@@ -25,7 +25,7 @@ The 6FB AI Agent System is an enterprise-grade barbershop management platform po
 - **Authentication**: Supabase Auth with OAuth provider support
 - **AI Integration**: OpenAI GPT-4, Anthropic Claude, Google Gemini
 - **Payment Processing**: Stripe with subscription management
-- **Notifications**: Novu multi-channel notification system
+- **Notifications**: Internal notification system
 
 ### Development Infrastructure
 - **Containerization**: Docker Compose with frontend:9999, backend:8001
@@ -152,7 +152,7 @@ components/
 ├── calendar/        # FullCalendar booking components
 ├── chat/           # Real-time chat components
 ├── dashboard/       # Dashboard components (header, metrics, actions)
-├── notifications/   # Novu notification center
+├── notifications/   # Internal notification center
 ├── providers/      # Context providers and wrappers
 ├── ui/             # Base UI components (Alert, Badge, Card, etc.)
 └── [Critical]      # NuclearInput.js - bulletproof form input with 95% test coverage
@@ -201,9 +201,8 @@ NEXT_PUBLIC_SENTRY_DSN=
 NEXT_PUBLIC_POSTHOG_KEY=
 NEXT_PUBLIC_POSTHOG_HOST=
 
-# Multi-channel Notifications
-NOVU_API_KEY=
-NEXT_PUBLIC_NOVU_APP_IDENTIFIER=
+# Internal Notification System
+# (No external API keys required - handled internally)
 
 # Feature Flags & AI Services
 EDGE_CONFIG=
