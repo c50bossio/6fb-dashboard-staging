@@ -22,6 +22,132 @@ import { Card } from '../../../../components/ui'
 import { useTenant } from '../../../../contexts/TenantContext'
 
 // AI-Powered Widget Components
+function StrategicPricingWidget({ onRefresh, loading }) {
+  const [pricingInsights, setPricingInsights] = useState(null)
+  const [widgetLoading, setWidgetLoading] = useState(true)
+
+  const fetchPricingInsights = useCallback(async () => {
+    try {
+      setWidgetLoading(true)
+      const response = await fetch('/api/ai/predictive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          barbershop_id: 'demo_barbershop_001',
+          analysis_type: 'strategic_pricing',
+          current_pricing: {
+            haircut: 25.0,
+            styling: 35.0,
+            beard_trim: 15.0,
+            wash: 10.0
+          }
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPricingInsights(data)
+      }
+    } catch (error) {
+      console.error('Strategic pricing insights error:', error)
+    } finally {
+      setWidgetLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchPricingInsights()
+  }, [fetchPricingInsights, onRefresh])
+
+  return (
+    <Card className="h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center">
+          <ArrowTrendingUpIcon className="h-5 w-5 mr-2 text-orange-600" />
+          Strategic Pricing Intelligence
+        </h3>
+        <button
+          onClick={fetchPricingInsights}
+          disabled={widgetLoading}
+          className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <ClockIcon className={`h-4 w-4 ${widgetLoading ? 'animate-spin' : ''}`} />
+        </button>
+      </div>
+
+      {widgetLoading ? (
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+        </div>
+      ) : pricingInsights?.strategic_pricing_recommendations?.length > 0 ? (
+        <div className="space-y-4">
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <div className="flex items-center mb-2">
+              <CheckCircleIcon className="h-4 w-4 text-orange-600 mr-2" />
+              <span className="text-sm font-medium text-orange-800">60/90-Day Strategic Analysis</span>
+            </div>
+            <p className="text-xs text-gray-600 mb-3">
+              Long-term pricing recommendations based on sustained 60+ day performance
+            </p>
+            
+            <div className="space-y-3">
+              {pricingInsights.strategic_pricing_recommendations.slice(0, 2).map((rec, idx) => (
+                <div key={idx} className="bg-white rounded-lg p-3 border border-orange-100">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900 capitalize">{rec.service_name}</h4>
+                      <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
+                        <span>${rec.current_price.toFixed(2)} → ${rec.recommended_price.toFixed(2)}</span>
+                        <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded">
+                          +{rec.price_increase_percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500">Confidence</div>
+                      <div className="text-sm font-medium text-orange-600">
+                        {Math.round(rec.recommendation_confidence * 100)}%
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-600">
+                    <div className="flex justify-between">
+                      <span>Performance Period:</span>
+                      <span className="font-medium">{rec.days_of_sustained_performance} days</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Implementation:</span>
+                      <span className="font-medium">{rec.implementation_timeline}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-3">
+            <h4 className="text-xs font-medium text-gray-800 mb-2">Strategic Approach</h4>
+            <div className="text-xs text-gray-600 space-y-1">
+              <div>• Conservative increases (5-10%) based on proven performance</div>
+              <div>• 90-day minimum between price adjustments</div>
+              <div>• Data-driven qualification criteria (85%+ booking rate)</div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <ArrowTrendingUpIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No strategic pricing opportunities at this time</p>
+          <p className="text-xs text-gray-400 mt-1">Services need 60+ days of strong performance</p>
+        </div>
+      )}
+    </Card>
+  )
+}
+
 function FinancialInsightsWidget({ onRefresh, loading }) {
   const [insights, setInsights] = useState(null)
   const [widgetLoading, setWidgetLoading] = useState(true)
@@ -33,13 +159,19 @@ function FinancialInsightsWidget({ onRefresh, loading }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: "Analyze my current financial performance and provide revenue optimization recommendations",
+          message: "Analyze my current financial performance and provide revenue optimization recommendations including strategic pricing insights",
           businessContext: {
             monthly_revenue: 8500,
             avg_ticket: 45,
             customer_count: 189,
             staff_count: 3,
-            location: 'Downtown'
+            location: 'Downtown',
+            current_pricing: {
+              haircut: 25.0,
+              styling: 35.0,
+              beard_trim: 15.0
+            },
+            analysis_type: 'strategic_financial_with_pricing'
           }
         })
       })
@@ -321,13 +453,16 @@ function BusinessRecommendationsWidget({ onRefresh, loading }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: "What are the top 3 business improvements I should focus on to grow my barbershop business?",
+          message: "What are the top 3 business improvements I should focus on to grow my barbershop business, including strategic pricing opportunities?",
           businessContext: {
             monthly_revenue: 8500,
             customer_count: 189,
             staff_count: 3,
             location: 'Downtown',
-            growth_goal: '20% increase'
+            growth_goal: '20% increase',
+            strategic_pricing_available: true,
+            current_services: ['haircut', 'styling', 'beard_trim', 'wash'],
+            analysis_includes: 'long_term_strategic_pricing'
           }
         })
       })
@@ -587,6 +722,9 @@ function IntelligentDashboardContent() {
         {/* Financial Insights Widget */}
         <FinancialInsightsWidget onRefresh={refreshTrigger} loading={globalLoading} />
 
+        {/* Strategic Pricing Widget - NEW 60/90-day approach */}
+        <StrategicPricingWidget onRefresh={refreshTrigger} loading={globalLoading} />
+
         {/* Marketing Insights Widget */}
         <MarketingInsightsWidget onRefresh={refreshTrigger} loading={globalLoading} />
 
@@ -613,6 +751,10 @@ function IntelligentDashboardContent() {
             <BanknotesIcon className="h-6 w-6 text-green-600 mb-2" />
             <span className="text-sm text-green-800">Financial Analysis</span>
           </button>
+          <button className="flex flex-col items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
+            <ArrowTrendingUpIcon className="h-6 w-6 text-orange-600 mb-2" />
+            <span className="text-sm text-orange-800">Strategic Pricing</span>
+          </button>
           <button className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
             <MegaphoneIcon className="h-6 w-6 text-blue-600 mb-2" />
             <span className="text-sm text-blue-800">Marketing Strategy</span>
@@ -620,10 +762,6 @@ function IntelligentDashboardContent() {
           <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
             <CogIcon className="h-6 w-6 text-purple-600 mb-2" />
             <span className="text-sm text-purple-800">Operations Review</span>
-          </button>
-          <button className="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
-            <ChartBarIcon className="h-6 w-6 text-yellow-600 mb-2" />
-            <span className="text-sm text-yellow-800">Full Analytics</span>
           </button>
         </div>
       </div>

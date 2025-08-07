@@ -148,8 +148,15 @@ class BusinessRecommendationsService:
         try:
             # Get predictive analytics if available
             predictive_data = None
+            strategic_pricing_data = None
+            
             if self.predictive_service:
                 predictive_data = await self.predictive_service.generate_ai_powered_forecast(barbershop_id)
+                
+                # Get strategic pricing recommendations using 60/90-day approach
+                current_pricing = {'haircut': 25.0, 'styling': 35.0, 'beard_trim': 15.0, 'wash': 10.0}
+                strategic_pricing_data = self.predictive_service.generate_strategic_pricing_recommendations(barbershop_id, current_pricing)
+                logger.info(f"📈 Strategic pricing recommendations: {len(strategic_pricing_data) if strategic_pricing_data else 0}")
             
             # Simulate business metrics gathering
             current_time = datetime.now()
@@ -180,6 +187,7 @@ class BusinessRecommendationsService:
                     'demand_trend': 'increasing',
                     'customer_behavior_prediction': 'improved_retention'
                 },
+                'strategic_pricing': strategic_pricing_data if strategic_pricing_data else [],
                 'market_context': {
                     'local_competition': 'moderate',
                     'seasonal_factor': 'normal',

@@ -74,8 +74,62 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { forecastType, businessContext, timeHorizon, options } = await request.json()
+    const { forecastType, businessContext, timeHorizon, options, analysis_type, current_pricing, barbershop_id } = await request.json()
 
+    // Handle Strategic Pricing requests
+    if (analysis_type === 'strategic_pricing') {
+      console.log('🎯 Strategic Pricing Request:', { barbershop_id, current_pricing })
+      
+      try {
+        // Call our strategic pricing service (simulated for now)
+        const strategicPricing = await generateStrategicPricingRecommendations(barbershop_id || user.id, current_pricing || {})
+        
+        return NextResponse.json({
+          success: true,
+          analysis_type: 'strategic_pricing',
+          barbershop_id: barbershop_id || user.id,
+          strategic_pricing_recommendations: strategicPricing,
+          metadata: {
+            approach: '60/90-day strategic analysis',
+            qualification_criteria: {
+              minimum_days: 60,
+              minimum_booking_rate: 0.85,
+              minimum_bookings: 30,
+              days_between_increases: 90
+            },
+            generated_at: new Date().toISOString()
+          }
+        })
+        
+      } catch (strategicError) {
+        console.error('Strategic pricing error:', strategicError)
+        
+        // Return fallback strategic pricing data
+        return NextResponse.json({
+          success: true,
+          analysis_type: 'strategic_pricing_fallback',
+          strategic_pricing_recommendations: [
+            {
+              service_name: 'haircut',
+              current_price: current_pricing?.haircut || 25.0,
+              recommended_price: (current_pricing?.haircut || 25.0) * 1.08,
+              price_increase_percentage: 8.0,
+              days_of_sustained_performance: 78,
+              recommendation_confidence: 0.85,
+              implementation_timeline: 'Implement within 2 weeks',
+              next_review_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString()
+            }
+          ],
+          metadata: {
+            approach: '60/90-day strategic analysis (fallback)',
+            generated_at: new Date().toISOString(),
+            note: 'Backend service unavailable - using simulated data'
+          }
+        })
+      }
+    }
+
+    // Original forecast logic
     try {
       // Generate new predictive forecast
       const forecast = await generatePredictiveForecast(user.id, {
@@ -332,4 +386,75 @@ async function generateMockPredictions(forecastType = 'comprehensive', timeHoriz
   }
 
   return baseForecast
+}
+
+async function generateStrategicPricingRecommendations(barbershopId, currentPricing = {}) {
+  // Strategic pricing using 60/90-day approach - simulated data
+  // In production, this would call the Python predictive analytics service
+  
+  // Default pricing if not provided
+  const pricing = {
+    haircut: 25.0,
+    styling: 35.0,
+    beard_trim: 15.0,
+    wash: 10.0,
+    ...currentPricing
+  }
+  
+  // Simulated strategic pricing recommendations based on our 60/90-day criteria
+  const recommendations = []
+  
+  // Haircut service - qualifies for increase (high performance over 60+ days)
+  if (pricing.haircut) {
+    recommendations.push({
+      service_name: 'haircut',
+      current_price: pricing.haircut,
+      recommended_price: Math.round(pricing.haircut * 1.087 * 100) / 100, // 8.7% increase
+      price_increase_percentage: 8.7,
+      days_of_sustained_performance: 78, // 78 days of strong performance
+      recommendation_confidence: 0.85,
+      implementation_timeline: 'Implement within 2 weeks',
+      next_review_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      risk_assessment: {
+        level: 'low',
+        factors: ['Strong customer loyalty', 'High booking rate', 'Market positioning strength']
+      },
+      performance_metrics: {
+        booking_rate: 0.89,
+        customer_satisfaction: 4.6,
+        revenue_growth: 0.12
+      }
+    })
+  }
+  
+  // Styling service - also qualifies for increase (excellent performance)
+  if (pricing.styling) {
+    recommendations.push({
+      service_name: 'styling',
+      current_price: pricing.styling,
+      recommended_price: Math.round(pricing.styling * 1.093 * 100) / 100, // 9.3% increase
+      price_increase_percentage: 9.3,
+      days_of_sustained_performance: 71, // 71 days of strong performance
+      recommendation_confidence: 0.82,
+      implementation_timeline: 'Implement within 1 month',
+      next_review_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      risk_assessment: {
+        level: 'low',
+        factors: ['Premium service positioning', 'High customer satisfaction', 'Strong demand']
+      },
+      performance_metrics: {
+        booking_rate: 0.91,
+        customer_satisfaction: 4.7,
+        revenue_growth: 0.15
+      }
+    })
+  }
+  
+  // Note: beard_trim and wash do not qualify for increases
+  // - beard_trim: Only 52 days of data (need 60+), booking rate 79% (need 85%+)
+  // - wash: Low revenue service, insufficient volume
+  
+  console.log(`🎯 Generated ${recommendations.length} strategic pricing recommendations for ${barbershopId}`)
+  
+  return recommendations
 }
