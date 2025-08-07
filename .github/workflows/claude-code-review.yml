@@ -1,138 +1,77 @@
 name: Claude Code Review
 
 on:
-  # Trigger on issue comments (for @claude mentions)
-  issue_comment:
-    types: [created]
-  
-  # Trigger on pull request review comments (for @claude mentions)
-  pull_request_review_comment:
-    types: [created]
-  
-  # Trigger when issues are opened or assigned (optional)
-  issues:
-    types: [opened, assigned]
-  
-  # Trigger on pull request creation and updates
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize]
+    # Optional: Only run on specific file changes
+    # paths:
+    #   - "src/**/*.ts"
+    #   - "src/**/*.tsx"
+    #   - "src/**/*.js"
+    #   - "src/**/*.jsx"
 
 jobs:
-  claude-code-review:
-    name: Claude Code Review
+  claude-review:
+    # Optional: Filter by PR author
+    # if: |
+    #   github.event.pull_request.user.login == 'external-contributor' ||
+    #   github.event.pull_request.user.login == 'new-developer' ||
+    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+    
     runs-on: ubuntu-latest
-    
-    # Only run if the comment contains @claude or if it's a new PR
-    if: >
-      github.event_name == 'pull_request' || 
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      github.event_name == 'issues'
-    
     permissions:
       contents: read
-      issues: write
-      pull-requests: write
-      discussions: write
-      
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          # Fetch full history for better context
-          fetch-depth: 0
-          
-      - name: Generate GitHub App Token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.CLAUDE_GITHUB_APP_ID }}
-          private-key: ${{ secrets.CLAUDE_GITHUB_APP_PRIVATE_KEY }}
-          
-      - name: Claude Code Review Action
-        uses: anthropics/claude-code-action@v1
-        with:
-          # Use GitHub App token for authentication
-          github-token: ${{ steps.app-token.outputs.token }}
-          
-          # Anthropic API configuration
-          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          
-          # Optional: Specify Claude model (defaults to Claude 3.5 Sonnet)
-          model: "claude-3-5-sonnet-20241022"
-          
-          # Optional: Custom instructions for Claude
-          instructions: |
-            You are reviewing code for the 6FB AI Agent System, an enterprise-grade barbershop management platform.
-            
-            Key areas to focus on:
-            - Security best practices (especially for user data and payment processing)
-            - Performance optimizations for AI agent interactions
-            - Code quality and maintainability
-            - TypeScript/JavaScript best practices
-            - React and Next.js patterns
-            - Database security (Supabase integration)
-            - API endpoint security and validation
-            
-            The project uses:
-            - Next.js 14 with App Router
-            - Supabase for database and authentication
-            - Stripe for payments
-            - Multiple AI providers (OpenAI, Anthropic, Google)
-            - Tailwind CSS for styling
-            
-            Please provide constructive feedback and suggest improvements while being mindful of:
-            - The existing codebase architecture
-            - Security requirements for barbershop business data
-            - Performance considerations for real-time features
-            - Accessibility standards (WCAG 2.2 AA compliance)
-          
-          # Optional: Set maximum tokens for responses
-          max-tokens: 4000
-          
-          # Optional: Temperature for response creativity (0.0-1.0)
-          temperature: 0.1
-          
-          # Optional: Enable debug logging
-          debug: false
-
-  # Optional: Add a summary job that runs after Claude review
-  review-summary:
-    name: Review Summary
-    runs-on: ubuntu-latest
-    needs: claude-code-review
-    if: always() && github.event_name == 'pull_request'
+      pull-requests: read
+      issues: read
+      id-token: write
     
     steps:
-      - name: Post Review Summary
-        uses: actions/github-script@v7
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          script: |
-            const { owner, repo } = context.repo;
-            const pull_number = context.payload.pull_request.number;
-            
-            // Add a comment summarizing that Claude has reviewed the PR
-            const comment = `## 🤖 Claude Code Review Complete
-            
-            Claude has finished reviewing this pull request. Check the conversation above for detailed feedback and suggestions.
-            
-            ### What Claude Reviewed:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # Optional: Specify model (defaults to Claude Sonnet 4, uncomment for Claude Opus 4)
+          # model: "claude-opus-4-20250514"
+          
+          # Direct prompt for automated review (no @claude mention needed)
+          direct_prompt: |
+            Please review this pull request and provide feedback on:
             - Code quality and best practices
-            - Security considerations
-            - Performance optimizations  
-            - Architecture and maintainability
+            - Potential bugs or issues
+            - Performance considerations
+            - Security concerns
+            - Test coverage
             
-            ### Next Steps:
-            - Review Claude's suggestions
-            - Address any security or performance concerns
-            - Update code based on recommendations
-            - Tag @claude with specific questions if needed
-            
-            *This is an automated message from the Claude Code Review action.*`;
-            
-            await github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number: pull_number,
-              body: comment
-            });
+            Be constructive and helpful in your feedback.
+
+          # Optional: Use sticky comments to make Claude reuse the same comment on subsequent pushes to the same PR
+          # use_sticky_comment: true
+          
+          # Optional: Customize review based on file types
+          # direct_prompt: |
+          #   Review this PR focusing on:
+          #   - For TypeScript files: Type safety and proper interface usage
+          #   - For API endpoints: Security, input validation, and error handling
+          #   - For React components: Performance, accessibility, and best practices
+          #   - For tests: Coverage, edge cases, and test quality
+          
+          # Optional: Different prompts for different authors
+          # direct_prompt: |
+          #   ${{ github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR' && 
+          #   'Welcome! Please review this PR from a first-time contributor. Be encouraging and provide detailed explanations for any suggestions.' ||
+          #   'Please provide a thorough code review focusing on our coding standards and best practices.' }}
+          
+          # Optional: Add specific tools for running tests or linting
+          # allowed_tools: "Bash(npm run test),Bash(npm run lint),Bash(npm run typecheck)"
+          
+          # Optional: Skip review for certain conditions
+          # if: |
+          #   !contains(github.event.pull_request.title, '[skip-review]') &&
+          #   !contains(github.event.pull_request.title, '[WIP]')
