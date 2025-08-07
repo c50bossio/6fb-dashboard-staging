@@ -5,12 +5,62 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+// Simple rate limiting store (in production, use Redis or database)
+const rateLimitStore = new Map();
+
+// Input validation helper
+function validateInput(barbershopId, format) {
+  // Validate barbershop_id (should be alphanumeric or null)
+  if (barbershopId && !/^[a-zA-Z0-9_-]+$/.test(barbershopId)) {
+    throw new Error('Invalid barbershop_id format');
+  }
+  
+  // Validate format parameter
+  const validFormats = ['dashboard', 'ai', 'json'];
+  if (!validFormats.includes(format)) {
+    throw new Error('Invalid format parameter');
+  }
+  
+  return true;
+}
+
+// Simple rate limiting (100 requests per minute per IP)
+function checkRateLimit(clientIP) {
+  const now = Date.now();
+  const minute = Math.floor(now / 60000);
+  const key = `${clientIP}-${minute}`;
+  
+  const requests = rateLimitStore.get(key) || 0;
+  if (requests >= 100) {
+    throw new Error('Rate limit exceeded');
+  }
+  
+  rateLimitStore.set(key, requests + 1);
+  
+  // Clean old entries (simple cleanup)
+  if (Math.random() < 0.01) { // 1% chance to clean
+    for (const [k, v] of rateLimitStore.entries()) {
+      const keyMinute = k.split('-')[1];
+      if (minute - parseInt(keyMinute) > 5) { // Remove entries older than 5 minutes
+        rateLimitStore.delete(k);
+      }
+    }
+  }
+}
+
 export async function GET(request) {
   try {
+    // Rate limiting
+    const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    checkRateLimit(clientIP);
+    
     const { searchParams } = new URL(request.url);
     const barbershopId = searchParams.get('barbershop_id');
     const forceRefresh = searchParams.get('force_refresh') === 'true';
     const format = searchParams.get('format') || 'dashboard'; // dashboard, ai, json
+    
+    // Input validation
+    validateInput(barbershopId, format);
 
     // Try to get data from Python backend unified business service
     let businessData;
@@ -84,6 +134,25 @@ export async function GET(request) {
 
   } catch (error) {
     console.error('Unified business data error:', error);
+    
+    // Handle specific error types
+    if (error.message === 'Rate limit exceeded') {
+      return NextResponse.json({
+        success: false,
+        error: 'Rate limit exceeded',
+        message: 'Too many requests. Please wait and try again.',
+        timestamp: new Date().toISOString(),
+      }, { status: 429 });
+    }
+    
+    if (error.message.includes('Invalid')) {
+      return NextResponse.json({
+        success: false,
+        error: 'Validation error',
+        message: error.message,
+        timestamp: new Date().toISOString(),
+      }, { status: 400 });
+    }
     
     return NextResponse.json({
       success: false,

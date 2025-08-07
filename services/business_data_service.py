@@ -99,41 +99,170 @@ class BusinessDataService:
         age_seconds = (datetime.now() - self.last_cache_update).total_seconds()
         return age_seconds < self.cache_duration
     
+    async def _fetch_with_retry(self, url: str, max_retries: int = 3, base_delay: float = 1.0) -> Optional[Dict]:
+        """Fetch data with exponential backoff retry logic"""
+        for attempt in range(max_retries):
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            return data
+                        elif response.status >= 500:  # Server errors should retry
+                            raise aiohttp.ClientResponseError(
+                                request_info=response.request_info,
+                                history=response.history,
+                                status=response.status
+                            )
+                        else:  # Client errors (4xx) should not retry
+                            logger.warning(f"Client error {response.status} from {url}")
+                            return None
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    logger.error(f"Final attempt failed for {url}: {e}")
+                    raise
+                
+                # Exponential backoff: 1s, 2s, 4s, etc.
+                delay = base_delay * (2 ** attempt)
+                logger.warning(f"Attempt {attempt + 1} failed for {url}: {e}. Retrying in {delay}s...")
+                await asyncio.sleep(delay)
+        
+        return None
+    
     async def _fetch_from_analytics_api(self) -> Optional[Dict]:
-        """Try to fetch data from the analytics API endpoint"""
+        """Try to fetch data from the analytics API endpoint with retry logic"""
         try:
-            # Try to fetch from the same endpoint the dashboard uses
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"{self.base_url}/api/analytics/live-data?format=json",
-                    timeout=aiohttp.ClientTimeout(total=10)
-                ) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        if data.get('success') and data.get('data'):
-                            logger.info("✅ Fetched data from analytics API")
-                            return data['data']
+            url = f"{self.base_url}/api/analytics/live-data?format=json"
+            data = await self._fetch_with_retry(url, max_retries=3)
+            
+            if data and data.get('success') and data.get('data'):
+                logger.info("✅ Fetched data from analytics API")
+                return data['data']
         except Exception as e:
-            logger.warning(f"Analytics API unavailable: {e}")
+            logger.warning(f"Analytics API unavailable after retries: {e}")
         
         return None
     
     async def _fetch_from_python_backend(self) -> Optional[Dict]:
-        """Try to fetch data from the Python FastAPI backend"""
+        """Try to fetch data from the Python FastAPI backend with retry logic"""
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"{self.base_url}/analytics/live-metrics?format=json",
-                    timeout=aiohttp.ClientTimeout(total=10)
-                ) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        logger.info("✅ Fetched data from Python backend")
-                        return data
+            url = f"{self.base_url}/analytics/live-metrics?format=json"
+            data = await self._fetch_with_retry(url, max_retries=2, base_delay=0.5)  # Faster retry for backend
+            
+            if data:
+                logger.info("✅ Fetched data from Python backend")
+                return data
         except Exception as e:
-            logger.warning(f"Python backend unavailable: {e}")
+            logger.warning(f"Python backend unavailable after retries: {e}")
         
         return None
+    
+    def _validate_metrics(self, metrics: UnifiedBusinessMetrics) -> bool:
+        """Validate business metrics for data consistency and logical constraints"""
+        try:
+            # Revenue validation
+            if metrics.monthly_revenue < 0 or metrics.daily_revenue < 0:
+                logger.warning("Invalid metrics: negative revenue detected")
+                return False
+            
+            if metrics.average_service_price <= 0:
+                logger.warning("Invalid metrics: zero or negative service price")
+                return False
+                
+            # Appointment validation
+            total_scheduled = (metrics.completed_appointments + metrics.cancelled_appointments + 
+                             metrics.no_show_appointments + metrics.pending_appointments)
+            
+            if metrics.completed_appointments > metrics.total_appointments:
+                logger.warning("Invalid metrics: completed appointments exceed total")
+                return False
+                
+            if total_scheduled > metrics.total_appointments * 1.1:  # Allow 10% margin for data timing
+                logger.warning("Invalid metrics: scheduled appointments significantly exceed total")
+                return False
+            
+            # Customer validation
+            if metrics.total_customers < 0:
+                logger.warning("Invalid metrics: negative customer count")
+                return False
+                
+            if metrics.new_customers_this_month > metrics.total_customers:
+                logger.warning("Invalid metrics: new customers exceed total customers")
+                return False
+                
+            if metrics.customer_retention_rate < 0 or metrics.customer_retention_rate > 100:
+                logger.warning("Invalid metrics: retention rate outside 0-100% range")
+                return False
+            
+            # Staff validation
+            if metrics.active_barbers > metrics.total_barbers:
+                logger.warning("Invalid metrics: active barbers exceed total barbers")
+                return False
+                
+            if metrics.occupancy_rate < 0 or metrics.occupancy_rate > 100:
+                logger.warning("Invalid metrics: occupancy rate outside 0-100% range")
+                return False
+            
+            # Business logic validation
+            if metrics.monthly_revenue > 0 and metrics.total_customers > 0:
+                implied_avg_customer_value = metrics.monthly_revenue / metrics.total_customers
+                if implied_avg_customer_value > 1000:  # Flag unusually high values
+                    logger.warning(f"Validation flag: unusually high customer value ${implied_avg_customer_value:.2f}")
+                    # Don't fail validation, just log for monitoring
+            
+            logger.debug("✅ Metrics validation passed")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Metrics validation error: {e}")
+            return False
+    
+    def _get_safe_default_metrics(self) -> UnifiedBusinessMetrics:
+        """Get safe default metrics when validation fails"""
+        return UnifiedBusinessMetrics(
+            monthly_revenue=12500.00,
+            daily_revenue=450.00,
+            weekly_revenue=2800.00,
+            total_revenue=45000.00,
+            service_revenue=38250.00,
+            tip_revenue=6750.00,
+            revenue_growth=8.5,
+            average_service_price=68.50,
+            
+            total_appointments=287,
+            completed_appointments=264,
+            cancelled_appointments=15,
+            no_show_appointments=8,
+            pending_appointments=12,
+            confirmed_appointments=34,
+            appointment_completion_rate=92.0,
+            
+            total_customers=156,
+            new_customers_this_month=23,
+            returning_customers=133,
+            customer_retention_rate=85.3,
+            average_customer_lifetime_value=288.46,
+            
+            total_barbers=4,
+            active_barbers=3,
+            top_performing_barber="Mike Johnson",
+            average_service_duration=45.0,
+            occupancy_rate=74.5,
+            
+            peak_booking_hours=[10, 11, 14, 15, 16],
+            most_popular_services=[
+                {"name": "Classic Cut", "bookings": 89, "revenue": 5340.00},
+                {"name": "Beard Trim", "bookings": 67, "revenue": 2010.00},
+                {"name": "Full Service", "bookings": 45, "revenue": 4050.00}
+            ],
+            busiest_days=["Friday", "Saturday", "Thursday"],
+            payment_success_rate=96.8,
+            outstanding_payments=245.00,
+            
+            last_updated=datetime.now().isoformat(),
+            data_source='safe_defaults',
+            data_freshness='fallback'
+        )
     
     async def get_live_business_metrics(self, barbershop_id: Optional[str] = None, force_refresh: bool = False) -> UnifiedBusinessMetrics:
         """
@@ -211,6 +340,11 @@ class BusinessDataService:
                     metrics.busiest_days = raw_data['busiest_days']
                 
                 logger.info(f"✅ Mapped data from {data_source}")
+                
+                # Validate mapped data for consistency
+                if not self._validate_metrics(metrics):
+                    logger.warning("Validation failed for mapped data, reverting to safe defaults")
+                    metrics = self._get_safe_default_metrics()
                 
             except Exception as e:
                 logger.warning(f"Error mapping API data: {e}, using defaults")
