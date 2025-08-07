@@ -5,6 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
 import FullCalendar from '@fullcalendar/react'
 import resourcePlugin from '@fullcalendar/resource'
+import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import rrulePlugin from '@fullcalendar/rrule'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -136,7 +137,7 @@ export default function FullCalendarWrapper({
   ]
 
   if (showResources) {
-    plugins.push(resourcePlugin, resourceTimelinePlugin)
+    plugins.push(resourcePlugin, resourceTimeGridPlugin, resourceTimelinePlugin)
   }
 
   return (
@@ -149,7 +150,7 @@ export default function FullCalendarWrapper({
           left: 'prev,next today',
           center: 'title',
           right: showResources 
-            ? 'dayGridMonth,timeGridWeek,timeGridDay,resourceTimelineWeek,resourceTimelineDay,listWeek'
+            ? 'dayGridMonth,timeGridWeek,timeGridDay,resourceTimeGridDay,resourceTimelineWeek,resourceTimelineDay,listWeek'
             : 'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
         }}
         events={events}

@@ -6,6 +6,7 @@ import listPlugin from '@fullcalendar/list'
 import FullCalendar from '@fullcalendar/react'
 import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import { FULLCALENDAR_LICENSE_KEY } from '../../../../lib/fullcalendar-config'
 import { 
   CalendarDaysIcon,
   UserGroupIcon,
@@ -708,7 +709,7 @@ export default function BookingsAIPage() {
             }}
             initialView='resourceTimeGridDay'
             resources={BARBERS}
-            schedulerLicenseKey='CC-Attribution-NonCommercial-NoDerivatives'
+            schedulerLicenseKey={FULLCALENDAR_LICENSE_KEY}
             editable={true}
             selectable={true}
             selectMirror={true}

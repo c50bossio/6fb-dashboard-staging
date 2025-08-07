@@ -771,12 +771,73 @@ export default function BookingsMobilePage() {
       )}
 
       {/* Main Content */}
-      <div className={`flex-1 ${isMobile ? 'p-4' : 'flex p-6 gap-6'} overflow-hidden`}>
+      <div className={`flex-1 ${isMobile ? 'p-4' : 'p-6'} flex flex-col overflow-hidden`}>
         {/* Mobile Stats Card */}
         {isMobile && <MobileStatsCard />}
         
-        {/* Calendar Container */}
-        <div className={`${isMobile ? '' : 'flex-1'} bg-white rounded-lg shadow-sm border border-gray-200 p-4`}>
+        {/* Desktop Top Stats Bar - Horizontal */}
+        {!isMobile && (
+          <div className="mb-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Real-time Stats - Horizontal Layout */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <WifiIcon className="h-5 w-5 mr-2 text-green-600 animate-pulse" />
+                  Real-time Status
+                </h3>
+                <button 
+                  onClick={checkRealtimeAvailability}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <ArrowPathIcon className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Available Today</p>
+                  <p className="text-2xl font-bold text-green-600">{realtimeStats.availableToday}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Utilization</p>
+                  <p className="text-2xl font-bold text-blue-600">{realtimeStats.utilization}%</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Next Available</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {realtimeStats.nextAvailable?.toLocaleTimeString('en-US', { 
+                      hour: 'numeric', 
+                      minute: '2-digit' 
+                    })}
+                  </p>
+                </div>
+                {isCheckingAvailability && (
+                  <div className="flex items-center text-sm text-blue-600">
+                    <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
+                    Checking...
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Mobile Features Info - Horizontal */}
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <h4 className="font-medium text-blue-900 mb-2 flex items-center">
+                <SparklesIcon className="h-5 w-5 mr-2" />
+                Premium Features Active
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-sm text-blue-700">
+                <div>• Resource scheduling</div>
+                <div>• Timeline views</div>
+                <div>• Drag & drop</div>
+                <div>• Real-time sync</div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Calendar Container - Full Width */}
+        <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 p-4 min-h-0">
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
@@ -795,8 +856,8 @@ export default function BookingsMobilePage() {
             eventDrop={handleEventDrop}
             slotMinTime="09:00"
             slotMaxTime="18:00"
-            slotDuration="00:30:00"
-            height={isMobile ? '400px' : 'calc(100% - 20px)'}
+            slotDuration="00:15:00"
+            height="100%"
             businessHours={{
               daysOfWeek: [1, 2, 3, 4, 5, 6],
               startTime: '09:00',
@@ -805,9 +866,9 @@ export default function BookingsMobilePage() {
             eventContent={(eventInfo) => {
               const { extendedProps } = eventInfo.event
               return (
-                <div className={`p-1 ${isMobile ? 'text-xs' : 'text-sm'} cursor-move`}>
+                <div className={`p-2 ${isMobile ? 'text-xs' : 'text-sm'} cursor-move`}>
                   <div className="font-medium truncate">{extendedProps.customerName}</div>
-                  {!isMobile && <div className="opacity-90 truncate">{extendedProps.service}</div>}
+                  <div className="opacity-90 truncate text-xs">{extendedProps.service}</div>
                   <div className="flex items-center mt-1 space-x-1">
                     {extendedProps.confirmationSent && (
                       <CheckCircleIcon className="h-3 w-3 text-green-500" title="Confirmed" />
@@ -819,74 +880,16 @@ export default function BookingsMobilePage() {
                 </div>
               )
             }}
-            // Mobile-specific options
-            dayMaxEvents={isMobile ? 2 : false}
-            moreLinkClick={isMobile ? 'popover' : 'week'}
-            eventDisplay={isMobile ? 'block' : 'auto'}
+            // Enhanced display options for more space
+            dayMaxEvents={false}
+            moreLinkClick="popover"
+            eventDisplay="block"
+            // Better aspect ratio for full width
+            aspectRatio={2.2}
+            handleWindowResize={true}
+            windowResizeDelay={100}
           />
         </div>
-
-        {/* Desktop Sidebar */}
-        {!isMobile && (
-          <div className="w-80 space-y-4">
-            {/* Real-time Stats */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <WifiIcon className="h-5 w-5 mr-2 text-green-600 animate-pulse" />
-                  Real-time Status
-                </h3>
-                <button 
-                  onClick={checkRealtimeAvailability}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <ArrowPathIcon className="h-5 w-5" />
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">Available Today</p>
-                  <p className="text-2xl font-bold text-green-600">{realtimeStats.availableToday}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">Utilization</p>
-                  <p className="text-2xl font-bold text-blue-600">{realtimeStats.utilization}%</p>
-                </div>
-              </div>
-              
-              <div className="mt-3 pt-3 border-t border-gray-200">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600">Next Available</p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {realtimeStats.nextAvailable?.toLocaleTimeString('en-US', { 
-                      hour: 'numeric', 
-                      minute: '2-digit' 
-                    })}
-                  </p>
-                </div>
-              </div>
-              
-              {isCheckingAvailability && (
-                <div className="mt-3 flex items-center text-sm text-blue-600">
-                  <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
-                  Checking availability...
-                </div>
-              )}
-            </div>
-            
-            {/* Mobile Features Info */}
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h4 className="font-medium text-blue-900 mb-2">Mobile Optimized</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• Touch-friendly interface</li>
-                <li>• Responsive calendar views</li>
-                <li>• Bottom sheet modals</li>
-                <li>• Swipe-friendly navigation</li>
-              </ul>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Booking Modal */}

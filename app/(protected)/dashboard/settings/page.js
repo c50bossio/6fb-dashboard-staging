@@ -32,6 +32,8 @@ const ArrowTrendingDownIcon = dynamic(() => import('@heroicons/react/24/outline'
 import InternationalPhoneInput from '../../../../components/InternationalPhoneInput'
 import NuclearInput from '../../../../components/NuclearInput'
 import TimeRangePicker from '../../../../components/TimeRangePicker'
+import MFASetup from '../../../../components/auth/MFASetup'
+import SubscriptionDashboard from '../../../../components/billing/SubscriptionDashboard'
 
 // Lazy load charts to improve initial page load with loading fallback
 const ChartLoadingSpinner = () => (
@@ -162,7 +164,7 @@ export default function SettingsPage() {
   // Initialize from URL hash after component mounts (client-side only)
   useEffect(() => {
     const hash = window.location.hash.replace('#', '')
-    const validSections = ['general', 'hours', 'notifications', 'billing', 'api', 'system']
+    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'api', 'system']
     if (validSections.includes(hash)) {
       setActiveSection(hash)
     }
@@ -180,7 +182,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '')
-      const validSections = ['general', 'hours', 'notifications', 'billing', 'api', 'system']
+      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'api', 'system']
       if (validSections.includes(hash)) {
         setActiveSection(hash)
       }
@@ -491,6 +493,7 @@ export default function SettingsPage() {
     { id: 'general', name: 'General', icon: BuildingOfficeIcon },
     { id: 'hours', name: 'Business Hours', icon: CalendarDaysIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
+    { id: 'security', name: 'Security & MFA', icon: KeyIcon },
     { id: 'billing', name: 'Billing & Usage', icon: CreditCardIcon },
     { id: 'api', name: 'API Services', icon: KeyIcon },
     { id: 'system', name: 'System Status', icon: CogIcon }
@@ -1351,6 +1354,128 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Security & MFA Settings */}
+            {activeSection === 'security' && (
+              <div className="space-y-6">
+                {/* MFA Setup Section */}
+                <div className="card">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <KeyIcon className="h-6 w-6 text-blue-600 mr-3" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Multi-Factor Authentication</h3>
+                        <p className="text-sm text-gray-600">Secure your account with an additional layer of protection</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-md bg-blue-500">
+                          <CheckCircleIcon className="h-5 w-5 text-white" />
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-blue-900">Enhanced Security Available</h3>
+                        <div className="mt-2 text-sm text-blue-800">
+                          <p>Set up multi-factor authentication to protect your barbershop data and customer information.</p>
+                        </div>
+                        <div className="mt-4">
+                          <div className="flex space-x-4 text-sm">
+                            <div className="flex items-center text-blue-700">
+                              <CheckCircleIcon className="h-4 w-4 mr-1" />
+                              TOTP Authentication
+                            </div>
+                            <div className="flex items-center text-blue-700">
+                              <CheckCircleIcon className="h-4 w-4 mr-1" />
+                              Backup Recovery Codes
+                            </div>
+                            <div className="flex items-center text-blue-700">
+                              <CheckCircleIcon className="h-4 w-4 mr-1" />
+                              Device Trust Management
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* MFA Setup Component */}
+                  <MFASetup 
+                    onComplete={(success) => {
+                      if (success) {
+                        setTestResult({
+                          success: true,
+                          message: 'Multi-factor authentication has been successfully enabled!'
+                        })
+                        setTimeout(() => setTestResult(null), 5000)
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Subscription Management Section */}
+                <div className="card">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <CreditCardIcon className="h-6 w-6 text-blue-600 mr-3" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Subscription & Billing</h3>
+                        <p className="text-sm text-gray-600">Manage your subscription plan and payment methods</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Subscription Dashboard Component */}
+                  <SubscriptionDashboard />
+                </div>
+
+                {/* Security Settings */}
+                <div className="card">
+                  <div className="flex items-center mb-6">
+                    <KeyIcon className="h-6 w-6 text-blue-600 mr-3" />
+                    <h3 className="text-lg font-semibold text-gray-900">Security Settings</h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <div className="font-medium text-gray-900">Session Management</div>
+                        <div className="text-sm text-gray-600">Control how long you stay logged in</div>
+                      </div>
+                      <select className="text-sm border border-gray-300 rounded-md px-3 py-1">
+                        <option value="24h">24 hours</option>
+                        <option value="7d">7 days</option>
+                        <option value="30d">30 days</option>
+                      </select>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <div className="font-medium text-gray-900">Login Notifications</div>
+                        <div className="text-sm text-gray-600">Get notified of new login attempts</div>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" defaultChecked className="sr-only peer" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <div className="font-medium text-gray-900">Password Requirements</div>
+                        <div className="text-sm text-gray-600">Enforce strong password policies</div>
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Enabled
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

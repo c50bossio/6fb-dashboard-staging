@@ -18,7 +18,8 @@ import {
   ArrowDownIcon,
   EyeIcon,
   MapPinIcon,
-  SparklesIcon
+  SparklesIcon,
+  KeyIcon
 } from '@heroicons/react/24/outline'
 import { 
   CalendarDaysIcon as CalendarSolid,
@@ -338,6 +339,13 @@ export default function BarbershopDashboard() {
                 description="Talk to your AI business assistants"
                 color="bg-amber-500"
                 onClick={() => window.location.href = '/ai-agents'}
+              />
+              <QuickActionCard
+                icon={KeyIcon}
+                title="Security Settings"
+                description="Manage MFA and account security"
+                color="bg-indigo-500"
+                onClick={() => window.location.href = '/dashboard/settings#security'}
               />
             </div>
           </div>

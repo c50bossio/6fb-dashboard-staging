@@ -3,7 +3,7 @@
 import { CalendarIcon, UserGroupIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
-import SimpleBookingCalendar from '../../../../components/calendar/SimpleBookingCalendar'
+import EnhancedBookingCalendar from '../../../../components/calendar/EnhancedBookingCalendar'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { createClient } from '../../../../lib/supabase/client'
 
@@ -107,10 +107,12 @@ export default function BookingsPage() {
       {/* Calendar */}
       <div className="flex-1 bg-gray-50 p-6">
         <div className="h-full bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <SimpleBookingCalendar
-            onBookingCreate={handleBookingCreate}
-            onBookingUpdate={handleBookingUpdate}
-            onBookingDelete={handleBookingDelete}
+          <EnhancedBookingCalendar
+            barbershop_id={user?.profile?.shop_id}
+            view="resourceTimeGridDay"
+            onAppointmentCreated={handleBookingCreate}
+            onAppointmentUpdated={handleBookingUpdate}
+            onAppointmentDeleted={handleBookingDelete}
           />
         </div>
       </div>
