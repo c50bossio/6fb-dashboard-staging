@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dev Bypass Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .step { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #28a745; }
+        .warning { background: #fff3cd; border-color: #ffc107; }
+        .error { background: #f8d7da; border-color: #dc3545; }
+        button { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🚧 Dev Bypass Login Test</h1>
+    
+    <div class="step warning">
+        <h3>Step 1: Clear Browser Data</h3>
+        <p>Press F12 → Application → Storage → Clear site data</p>
+        <p>This ensures a clean state for testing</p>
+    </div>
+    
+    <div class="step">
+        <h3>Step 2: Test Dev Bypass</h3>
+        <p>Go to: <a href="http://localhost:9999/login" target="_blank">http://localhost:9999/login</a></p>
+        <p>Click the orange "🚧 Dev Bypass Login" button</p>
+    </div>
+    
+    <div class="step">
+        <h3>Step 3: Expected Result</h3>
+        <p>✅ Should redirect to: <code>http://localhost:9999/dashboard</code></p>
+        <p>✅ Should show: "Welcome back, Dev User"</p>
+        <p>✅ Should show: "Managing Dev Barbershop"</p>
+        <p>✅ Should show: "SHOP_OWNER • PROFESSIONAL"</p>
+    </div>
+    
+    <div class="step error">
+        <h3>If Still Redirecting to Login:</h3>
+        <ol>
+            <li>Check browser console (F12 → Console) for errors</li>
+            <li>Look for the message: "🚧 DEV BYPASS: Successfully logged in"</li>
+            <li>Try refreshing the dashboard page directly</li>
+            <li>Clear localStorage: <code>localStorage.clear()</code> in console</li>
+        </ol>
+    </div>
+    
+    <div class="step success">
+        <h3>Debug Commands (run in browser console):</h3>
+        <pre>
+// Check if dev bypass is active
+console.log('Dev bypass active:', localStorage.getItem('dev-bypass-active'))
+
+// Check stored user
+console.log('Stored user:', JSON.parse(localStorage.getItem('dev-bypass-user') || 'null'))
+
+// Clear dev bypass data
+localStorage.removeItem('dev-bypass-user')
+localStorage.removeItem('dev-bypass-profile') 
+localStorage.removeItem('dev-bypass-active')
+        </pre>
+    </div>
+    
+    <div class="step">
+        <h3>Quick Links:</h3>
+        <button onclick="window.open('http://localhost:9999/login', '_blank')">Open Login Page</button>
+        <button onclick="window.open('http://localhost:9999/dashboard', '_blank')">Open Dashboard</button>
+    </div>
+</body>
+</html>

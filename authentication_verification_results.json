@@ -1,0 +1,69 @@
+{
+  "configuration": {
+    "status": "valid",
+    "supabase_url": "configured"
+  },
+  "api_endpoints": {
+    "/api/health": {
+      "status": 206,
+      "success": true,
+      "method": "GET"
+    },
+    "/api/auth/login": {
+      "status": 200,
+      "success": true,
+      "method": "POST"
+    },
+    "/api/auth/signup": {
+      "status": 200,
+      "success": true,
+      "method": "POST"
+    },
+    "/api/dashboard/metrics": {
+      "status": 200,
+      "success": true,
+      "method": "GET"
+    }
+  },
+  "frontend_components": {
+    "Auth Provider": {
+      "exists": true,
+      "valid": true
+    },
+    "Tenant Context": {
+      "exists": true,
+      "valid": true
+    },
+    "Dashboard Context": {
+      "exists": true,
+      "valid": true
+    },
+    "Login Page": {
+      "exists": true,
+      "valid": true
+    },
+    "Registration Page": {
+      "exists": true,
+      "valid": true
+    },
+    "Protected Route": {
+      "exists": true,
+      "valid": true
+    }
+  },
+  "database_schema": {
+    "schema_exists": true,
+    "profiles_table": true,
+    "rls_enabled": true,
+    "user_trigger": true,
+    "valid": true
+  },
+  "session_management": {
+    "client_exists": true,
+    "server_exists": true,
+    "client_ready": false,
+    "server_ready": false,
+    "valid": true
+  },
+  "overall_status": "success"
+}

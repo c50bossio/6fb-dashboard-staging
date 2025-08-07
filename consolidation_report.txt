@@ -1,0 +1,191 @@
+
+DATABASE CONSOLIDATION ANALYSIS REPORT
+=====================================
+
+SUMMARY:
+- Total databases: 25
+- Core system databases: 8
+- Marketing campaign databases: 11
+- Analytics dashboard databases: 4
+- Test/Demo databases: 2
+
+UNIQUE TABLES FOUND: 50
+
+barbershops:
+  Instances: 1
+  Total rows across all instances: 1
+users:
+  Instances: 5
+  Total rows across all instances: 29
+  Schema consistent: False
+  WARNING: Schema inconsistency detected!
+services:
+  Instances: 2
+  Total rows across all instances: 32
+  Schema consistent: False
+  WARNING: Schema inconsistency detected!
+barber_services:
+  Instances: 2
+  Total rows across all instances: 62
+  Schema consistent: False
+  WARNING: Schema inconsistency detected!
+sqlite_sequence:
+  Instances: 18
+  Total rows across all instances: 24
+  Schema consistent: True
+locations:
+  Instances: 1
+  Total rows across all instances: 1
+barbers:
+  Instances: 1
+  Total rows across all instances: 3
+appointments:
+  Instances: 1
+  Total rows across all instances: 6
+customer_behavior:
+  Instances: 1
+  Total rows across all instances: 1
+waitlist:
+  Instances: 1
+  Total rows across all instances: 3
+calendar_sync:
+  Instances: 1
+  Total rows across all instances: 0
+social_auth:
+  Instances: 1
+  Total rows across all instances: 0
+ai_recommendations:
+  Instances: 1
+  Total rows across all instances: 0
+ai_customer_insights:
+  Instances: 1
+  Total rows across all instances: 0
+ai_learning_feedback:
+  Instances: 1
+  Total rows across all instances: 0
+demand_forecasts:
+  Instances: 1
+  Total rows across all instances: 3
+dynamic_pricing:
+  Instances: 1
+  Total rows across all instances: 2
+business_insights:
+  Instances: 1
+  Total rows across all instances: 1
+seasonal_patterns:
+  Instances: 1
+  Total rows across all instances: 0
+analytics_snapshots:
+  Instances: 1
+  Total rows across all instances: 0
+ai_usage_records:
+  Instances: 1
+  Total rows across all instances: 1
+customer_ai_quotas:
+  Instances: 1
+  Total rows across all instances: 1
+ai_roi_metrics:
+  Instances: 1
+  Total rows across all instances: 0
+ai_billing_cycles:
+  Instances: 1
+  Total rows across all instances: 0
+chat_sessions:
+  Instances: 1
+  Total rows across all instances: 0
+chat_messages:
+  Instances: 1
+  Total rows across all instances: 0
+agentic_sessions:
+  Instances: 1
+  Total rows across all instances: 0
+agentic_messages:
+  Instances: 1
+  Total rows across all instances: 2
+learning_insights:
+  Instances: 1
+  Total rows across all instances: 0
+sqlite_stat1:
+  Instances: 1
+  Total rows across all instances: 3
+booking_preferences:
+  Instances: 1
+  Total rows across all instances: 1
+smart_recommendations:
+  Instances: 1
+  Total rows across all instances: 2
+booking_patterns:
+  Instances: 1
+  Total rows across all instances: 0
+booking_history:
+  Instances: 1
+  Total rows across all instances: 3
+user_sessions:
+  Instances: 1
+  Total rows across all instances: 0
+agent_sessions:
+  Instances: 1
+  Total rows across all instances: 3
+agent_conversations:
+  Instances: 1
+  Total rows across all instances: 4
+agent_coordination_history:
+  Instances: 1
+  Total rows across all instances: 2
+agent_performance_metrics:
+  Instances: 1
+  Total rows across all instances: 0
+business_objectives:
+  Instances: 1
+  Total rows across all instances: 0
+agent_handoffs:
+  Instances: 1
+  Total rows across all instances: 0
+customers:
+  Instances: 11
+  Total rows across all instances: 11
+  Schema consistent: True
+campaigns:
+  Instances: 10
+  Total rows across all instances: 5
+  Schema consistent: True
+campaign_sends:
+  Instances: 10
+  Total rows across all instances: 5
+  Schema consistent: True
+agent_metrics:
+  Instances: 4
+  Total rows across all instances: 0
+  Schema consistent: True
+roi_analysis:
+  Instances: 4
+  Total rows across all instances: 0
+  Schema consistent: True
+cross_agent_insights:
+  Instances: 4
+  Total rows across all instances: 0
+  Schema consistent: True
+performance_trends:
+  Instances: 4
+  Total rows across all instances: 0
+  Schema consistent: True
+agent_interactions:
+  Instances: 4
+  Total rows across all instances: 0
+  Schema consistent: True
+executive_dashboard:
+  Instances: 4
+  Total rows across all instances: 0
+  Schema consistent: True
+
+CONSOLIDATION STRATEGY:
+1. Create unified master database with all required tables
+2. Migrate data from all instances to master database
+3. Update all application code to use unified database
+4. Archive/delete redundant database files
+
+CRITICAL ISSUES IDENTIFIED:
+- Data scattered across 25 separate files
+- Potential schema inconsistencies
+- No centralized data integrity
+- Performance impact from multiple connections

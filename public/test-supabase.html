@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <button onclick="testConnection()">Test Supabase Connection</button>
+    <button onclick="testLogin()">Test Login</button>
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+        const { createClient } = supabase
+        const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
+        
+        const supabaseClient = createClient(supabaseUrl, supabaseKey)
+        const resultDiv = document.getElementById('result')
+        
+        async function testConnection() {
+            resultDiv.innerHTML = 'Testing connection...'
+            try {
+                const { data, error } = await supabaseClient.auth.getSession()
+                if (error) {
+                    resultDiv.innerHTML = `<p style="color: red;">Connection Error: ${error.message}</p>`
+                } else {
+                    resultDiv.innerHTML = `<p style="color: green;">Connection Successful!</p><pre>${JSON.stringify(data, null, 2)}</pre>`
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p style="color: red;">Exception: ${err.message}</p>`
+            }
+        }
+        
+        async function testLogin() {
+            resultDiv.innerHTML = 'Testing login with demo credentials...'
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: 'demo@barbershop.com',
+                    password: 'demo123'
+                })
+                
+                if (error) {
+                    resultDiv.innerHTML = `<p style="color: red;">Login Error: ${error.message}</p>`
+                    
+                    // Try to create the user if it doesn't exist
+                    if (error.message.includes('Invalid login credentials')) {
+                        resultDiv.innerHTML += '<p>User not found. Would you like to create the demo user?</p>'
+                    }
+                } else {
+                    resultDiv.innerHTML = `<p style="color: green;">Login Successful!</p><pre>${JSON.stringify(data, null, 2)}</pre>`
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p style="color: red;">Exception: ${err.message}</p>`
+            }
+        }
+    </script>
+</body>
+</html>

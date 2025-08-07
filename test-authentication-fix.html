@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agents Authentication Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .test-section { margin: 20px 0; padding: 20px; background: #f9f9f9; border-radius: 5px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .agent-response { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #007bff; border-radius: 5px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI Agents Authentication Fix Test</h1>
+        
+        <div class="test-section">
+            <h2>Browser Information</h2>
+            <div id="browser-info" class="info">
+                <strong>User Agent:</strong> <span id="user-agent"></span><br>
+                <strong>Browser:</strong> <span id="browser-name"></span><br>
+                <strong>Current URL:</strong> <span id="current-url"></span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔐 Authentication Status</h2>
+            <div id="auth-status" class="status info">Testing authentication...</div>
+            <button onclick="testAuthentication()">Test Authentication</button>
+        </div>
+
+        <div class="test-section">
+            <h2>🧠 AI Agents Test</h2>
+            <div id="agents-status" class="status info">Ready to test agents...</div>
+            <button onclick="testAgents()">Test AI Agents</button>
+            <div id="agent-response"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 System Status</h2>
+            <div id="system-status" class="status info">Ready to check system...</div>
+            <button onclick="checkSystemStatus()">Check System Status</button>
+            <div id="system-details"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Test Results Summary</h2>
+            <div id="test-summary" class="status info">Run tests to see summary...</div>
+        </div>
+    </div>
+
+    <script>
+        // Browser detection
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            document.getElementById('user-agent').textContent = userAgent;
+            document.getElementById('current-url').textContent = window.location.href;
+            
+            let browserName = 'Unknown';
+            if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+                browserName = 'Google Chrome';
+            } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                browserName = 'Safari';
+            } else if (userAgent.includes('Firefox')) {
+                browserName = 'Firefox';
+            } else if (userAgent.includes('Edg')) {
+                browserName = 'Microsoft Edge';
+            }
+            document.getElementById('browser-name').textContent = browserName;
+        }
+
+        // Test authentication
+        async function testAuthentication() {
+            const statusEl = document.getElementById('auth-status');
+            statusEl.textContent = 'Testing authentication...';
+            statusEl.className = 'status info';
+            
+            try {
+                const response = await fetch('/api/ai/agents', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: 'Authentication test message',
+                        businessContext: {}
+                    })
+                });
+                
+                if (response.ok) {
+                    statusEl.textContent = '✅ Authentication working correctly - No 401 errors!';
+                    statusEl.className = 'status success';
+                    return true;
+                } else if (response.status === 401) {
+                    statusEl.textContent = '❌ Authentication failed - Still getting 401 Unauthorized';
+                    statusEl.className = 'status error';
+                    return false;
+                } else {
+                    statusEl.textContent = `⚠️ Unexpected response status: ${response.status}`;
+                    statusEl.className = 'status error';
+                    return false;
+                }
+            } catch (error) {
+                statusEl.textContent = `❌ Authentication test failed: ${error.message}`;
+                statusEl.className = 'status error';
+                return false;
+            }
+        }
+
+        // Test AI agents
+        async function testAgents() {
+            const statusEl = document.getElementById('agents-status');
+            const responseEl = document.getElementById('agent-response');
+            
+            statusEl.textContent = 'Testing AI agents...';
+            statusEl.className = 'status info';
+            responseEl.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/ai/agents', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: 'How can I increase my barbershop revenue?',
+                        businessContext: {}
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    statusEl.textContent = '✅ AI agents responding correctly!';
+                    statusEl.className = 'status success';
+                    
+                    responseEl.innerHTML = `
+                        <div class="agent-response">
+                            <h4>Agent Response:</h4>
+                            <p><strong>Provider:</strong> ${data.provider}</p>
+                            <p><strong>Confidence:</strong> ${data.confidence}</p>
+                            <p><strong>Response:</strong></p>
+                            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                ${data.response}
+                            </div>
+                        </div>
+                    `;
+                    return true;
+                } else {
+                    statusEl.textContent = `❌ AI agents failed: ${data.error || 'Unknown error'}`;
+                    statusEl.className = 'status error';
+                    responseEl.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                    return false;
+                }
+            } catch (error) {
+                statusEl.textContent = `❌ AI agents test failed: ${error.message}`;
+                statusEl.className = 'status error';
+                return false;
+            }
+        }
+
+        // Check system status
+        async function checkSystemStatus() {
+            const statusEl = document.getElementById('system-status');
+            const detailsEl = document.getElementById('system-details');
+            
+            statusEl.textContent = 'Checking system status...';
+            statusEl.className = 'status info';
+            detailsEl.innerHTML = '';
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/ai/agents/status');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    const agents = data.agent_system.agent_details;
+                    const activeCount = data.agent_system.active_agents;
+                    const totalCount = data.agent_system.total_agents;
+                    
+                    statusEl.textContent = `✅ System Status: ${activeCount}/${totalCount} agents active`;
+                    statusEl.className = 'status success';
+                    
+                    detailsEl.innerHTML = `
+                        <div style="background: white; padding: 15px; border-radius: 5px; margin-top: 10px;">
+                            <h4>Active Agents:</h4>
+                            ${Object.values(agents).map(agent => `
+                                <div style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                                    <strong>${agent.name}</strong> (${agent.agent_id})<br>
+                                    <em>${agent.description}</em><br>
+                                    Status: ${agent.active ? '✅ Active' : '❌ Inactive'}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    return true;
+                } else {
+                    statusEl.textContent = `❌ System status check failed`;
+                    statusEl.className = 'status error';
+                    return false;
+                }
+            } catch (error) {
+                statusEl.textContent = `❌ System status check failed: ${error.message}`;
+                statusEl.className = 'status error';
+                return false;
+            }
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            const summaryEl = document.getElementById('test-summary');
+            summaryEl.textContent = 'Running all tests...';
+            summaryEl.className = 'status info';
+            
+            const authResult = await testAuthentication();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            
+            const agentsResult = await testAgents();
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            
+            const systemResult = await checkSystemStatus();
+            
+            const passedTests = [authResult, agentsResult, systemResult].filter(r => r).length;
+            const totalTests = 3;
+            
+            if (passedTests === totalTests) {
+                summaryEl.textContent = `✅ All tests passed! (${passedTests}/${totalTests}) - Authentication fix is working correctly.`;
+                summaryEl.className = 'status success';
+            } else {
+                summaryEl.textContent = `⚠️ Some tests failed (${passedTests}/${totalTests}) - Authentication fix may need adjustments.`;
+                summaryEl.className = 'status error';
+            }
+        }
+
+        // Initialize page
+        window.onload = function() {
+            detectBrowser();
+            // Automatically run all tests after page load
+            setTimeout(runAllTests, 1000);
+        };
+    </script>
+</body>
+</html>

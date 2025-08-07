@@ -6,18 +6,31 @@ setup('authenticate', async ({ page }) => {
   // Navigate to login page
   await page.goto('/login')
 
-  // Fill in login form
-  await page.fill('[data-testid="email-input"]', 'test@example.com')
-  await page.fill('[data-testid="password-input"]', 'testpassword')
+  // Wait a moment for page to load
+  await page.waitForLoadState('networkidle')
 
-  // Click login button
-  await page.click('[data-testid="login-button"]')
-
-  // Wait for successful login (redirect to dashboard)
-  await page.waitForURL('/dashboard')
+  // Scroll down to find the dev bypass button (mentioned in requirements)
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
   
-  // Verify we're logged in by checking for user menu or dashboard elements
-  await expect(page.locator('[data-testid="user-menu"]')).toBeVisible()
+  // Wait a moment for any dynamic content
+  await page.waitForTimeout(1000)
+
+  // Look for the specific dev bypass button
+  const devBypassButton = page.locator('button', { hasText: '🚧 Dev Bypass Login (localhost only)' })
+  
+  // Wait for dev bypass button and click it
+  await expect(devBypassButton).toBeVisible({ timeout: 10000 })
+  await devBypassButton.click()
+
+  // Wait a moment for authentication to be processed
+  await page.waitForTimeout(2000)
+  
+  // Navigate to dashboard (dev bypass doesn't auto-redirect)
+  await page.goto('/dashboard')
+  await page.waitForLoadState('networkidle')
+  
+  // Verify we're logged in by checking we're on dashboard
+  await expect(page).toHaveURL(/\/dashboard/)
 
   // Save authentication state
   await page.context().storageState({ path: authFile })

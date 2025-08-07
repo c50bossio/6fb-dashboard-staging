@@ -1,0 +1,34 @@
+# Railway-compatible Coder deployment
+FROM codercom/coder:v2.24.2
+
+# Switch to root for installation
+USER root
+
+# Install basic tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create coder user if it doesn't exist
+RUN id -u coder &>/dev/null || useradd -m -s /bin/bash coder
+
+# Create necessary directories
+RUN mkdir -p /home/coder/.config/coderv2 && \
+    chown -R coder:coder /home/coder
+
+# Switch to coder user
+USER coder
+WORKDIR /home/coder
+
+# Set environment variables
+ENV CODER_HTTP_ADDRESS=0.0.0.0:7080
+ENV CODER_ACCESS_URL=""
+ENV CODER_TELEMETRY=false
+
+# Expose port
+EXPOSE 7080
+
+# Start Coder server
+CMD ["coder", "server", "--http-address=0.0.0.0:7080", "--telemetry=false"]

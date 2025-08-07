@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: 6fb-ai-backend-staging
+    env: python
+    plan: free
+    buildCommand: echo "No dependencies needed"
+    startCommand: python main_simple.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: ENVIRONMENT
+        value: staging
+      - key: FRONTEND_URL
+        value: https://6fb-ai-staging.vercel.app
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true
+    autoDeploy: true

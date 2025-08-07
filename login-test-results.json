@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-08-05T19:08:26.849Z",
+  "testResults": {
+    "pageLoaded": true,
+    "formElementsFound": true,
+    "fieldsInteractive": false,
+    "buttonClickable": false,
+    "authLoadingState": null,
+    "finalUrl": "http://localhost:9999/dashboard"
+  }
+}

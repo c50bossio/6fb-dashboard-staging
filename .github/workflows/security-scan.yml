@@ -1,0 +1,397 @@
+name: Security Scanning Pipeline
+
+on:
+  schedule:
+    # Run daily security scans at 2 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  # Dependency Vulnerability Scanning
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level high --json > npm-audit-results.json || true
+          if [ -s npm-audit-results.json ]; then
+            echo "::warning::NPM audit found vulnerabilities"
+            cat npm-audit-results.json
+          fi
+
+      - name: Run Python safety check
+        run: |
+          pip install safety
+          safety check --json > python-safety-results.json || true
+          if [ -s python-safety-results.json ]; then
+            echo "::warning::Python safety check found vulnerabilities"
+            cat python-safety-results.json
+          fi
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-scan-results
+          path: |
+            npm-audit-results.json
+            python-safety-results.json
+
+  # Static Application Security Testing (SAST)
+  sast-scan:
+    name: SAST Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/javascript
+            p/typescript
+            p/python
+            p/docker
+            p/kubernetes
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Run Bandit for Python
+        run: |
+          pip install bandit[toml]
+          bandit -r services/ database/ -f json -o bandit-results.json || true
+
+      - name: Run ESLint Security Plugin
+        run: |
+          npm ci
+          npx eslint . --ext .js,.jsx,.ts,.tsx --format json -o eslint-security-results.json || true
+
+      - name: Upload SAST results
+        uses: actions/upload-artifact@v3
+        with:
+          name: sast-scan-results
+          path: |
+            bandit-results.json
+            eslint-security-results.json
+
+  # Secret Scanning
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Run GitLeaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Docker Image Security Scanning
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build frontend image for scanning
+        run: |
+          docker build -f Dockerfile.frontend.prod -t local/frontend:scan .
+
+      - name: Build backend image for scanning
+        run: |
+          docker build -f Dockerfile.backend.prod -t local/backend:scan .
+
+      - name: Run Trivy vulnerability scanner on frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'local/frontend:scan'
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+
+      - name: Run Trivy vulnerability scanner on backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'local/backend:scan'
+          format: 'sarif'
+          output: 'trivy-backend-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-backend-results.sarif'
+
+      - name: Run Docker Bench Security
+        run: |
+          docker run --rm --net host --pid host --userns host --cap-add audit_control \
+            -e DOCKER_CONTENT_TRUST=$DOCKER_CONTENT_TRUST \
+            -v /etc:/etc:ro \
+            -v /lib/systemd/system:/lib/systemd/system:ro \
+            -v /usr/bin/containerd:/usr/bin/containerd:ro \
+            -v /usr/bin/runc:/usr/bin/runc:ro \
+            -v /usr/lib/systemd:/usr/lib/systemd:ro \
+            -v /var/lib:/var/lib:ro \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            --label docker_bench_security \
+            docker/docker-bench-security > docker-bench-results.txt || true
+
+      - name: Upload container scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: container-scan-results
+          path: |
+            trivy-frontend-results.sarif
+            trivy-backend-results.sarif
+            docker-bench-results.txt
+
+  # Infrastructure Security Scanning
+  infrastructure-scan:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Run Checkov on Terraform
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: ./infrastructure/terraform
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov-terraform-results.sarif
+
+      - name: Run Checkov on Docker Compose
+        uses: bridgecrewio/checkov-action@master
+        with:
+          file: docker-compose.prod.yml
+          framework: docker_compose
+          output_format: sarif
+          output_file_path: checkov-docker-results.sarif
+
+      - name: Run Checkov on Kubernetes
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: ./infrastructure/kubernetes
+          framework: kubernetes
+          output_format: sarif
+          output_file_path: checkov-k8s-results.sarif
+
+      - name: Upload infrastructure scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: |
+            checkov-terraform-results.sarif
+            checkov-docker-results.sarif
+            checkov-k8s-results.sarif
+
+  # DAST (Dynamic Application Security Testing)
+  dast-scan:
+    name: DAST Security Scan
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup test environment
+        run: |
+          docker-compose -f docker-compose.yml up -d
+          sleep 60  # Wait for services to be ready
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: 'http://localhost:9999'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+      - name: Run Nuclei
+        uses: projectdiscovery/nuclei-action@main
+        with:
+          target: http://localhost:9999
+          templates: |
+            http/exposed-panels
+            http/misconfiguration
+            http/vulnerabilities
+          output: nuclei-results.txt
+
+      - name: Cleanup test environment
+        if: always()
+        run: docker-compose -f docker-compose.yml down
+
+      - name: Upload DAST results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: dast-scan-results
+          path: |
+            report_html.html
+            report_json.json
+            nuclei-results.txt
+
+  # Security Report Generation
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, sast-scan, secret-scan, container-scan, infrastructure-scan]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all scan results
+        uses: actions/download-artifact@v3
+
+      - name: Generate consolidated security report
+        run: |
+          cat > security-report.md << 'EOF'
+          # 6FB AI Agent System Security Scan Report
+          
+          **Date:** $(date)
+          **Commit:** ${{ github.sha }}
+          **Branch:** ${{ github.ref_name }}
+          
+          ## Summary
+          
+          This report consolidates security scan results from multiple tools:
+          
+          - ✅ Dependency Vulnerability Scanning
+          - ✅ Static Application Security Testing (SAST)
+          - ✅ Secret Scanning
+          - ✅ Container Security Scanning
+          - ✅ Infrastructure Security Scanning
+          
+          ## Findings Summary
+          
+          | Scan Type | Status | Critical | High | Medium | Low |
+          |-----------|--------|----------|------|--------|-----|
+          | Dependencies | ${{ needs.dependency-scan.result }} | - | - | - | - |
+          | SAST | ${{ needs.sast-scan.result }} | - | - | - | - |
+          | Secrets | ${{ needs.secret-scan.result }} | - | - | - | - |
+          | Containers | ${{ needs.container-scan.result }} | - | - | - | - |
+          | Infrastructure | ${{ needs.infrastructure-scan.result }} | - | - | - | - |
+          
+          ## Recommendations
+          
+          1. Review and remediate any HIGH or CRITICAL vulnerabilities
+          2. Update dependencies with known security issues
+          3. Rotate any exposed secrets or credentials
+          4. Apply security patches to container base images
+          5. Review infrastructure configuration for security best practices
+          
+          ## Next Steps
+          
+          - [ ] Review detailed scan results in artifacts
+          - [ ] Create security remediation tickets
+          - [ ] Schedule security fixes for next sprint
+          - [ ] Update security policies if needed
+          
+          EOF
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: security-report.md
+
+      - name: Comment security report on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('security-report.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔒 Security Scan Results\n\n${report}`
+            });
+
+  # Security notification
+  notify-security:
+    name: Security Notification
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, sast-scan, secret-scan, container-scan, infrastructure-scan]
+    if: failure()
+    steps:
+      - name: Notify security team
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#security-alerts'
+          text: |
+            🚨 Security scan failed for 6FB AI Agent System
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            
+            Please review the security scan results and take appropriate action.
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SECURITY_SLACK_WEBHOOK_URL }}

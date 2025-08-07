@@ -1,0 +1,483 @@
+{
+  "authenticated_tests": {
+    "Authentication Test": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 5.514860153198242,
+      "timestamp": "2025-08-05T18:09:59.424464",
+      "response_data": {
+        "id": "dev-user-123",
+        "email": "dev@example.com",
+        "name": "Development User",
+        "role": "shop_owner"
+      }
+    },
+    "AI Chat": {
+      "status_code": 500,
+      "success": false,
+      "duration_ms": 15.937566757202148,
+      "timestamp": "2025-08-05T18:09:59.440434",
+      "response_text": "Internal Server Error"
+    },
+    "Dashboard Stats": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 3.802061080932617,
+      "timestamp": "2025-08-05T18:09:59.444280",
+      "response_data": {
+        "revenue": {
+          "total": 12500,
+          "growth": 15.3,
+          "chart_data": [
+            3000,
+            3200,
+            2800,
+            3500
+          ]
+        },
+        "bookings": {
+          "total": 145,
+          "growth": 8.7,
+          "chart_data": [
+            35,
+            40,
+            32,
+            38
+          ]
+        },
+        "customers": {
+          "total": 89,
+          "growth": 12.1,
+          "new_this_week": 7
+        },
+        "ratings": {
+          "average": 4.8,
+          "total_reviews": 156
+        }
+      }
+    },
+    "Recent Bookings": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 1.809835433959961,
+      "timestamp": "2025-08-05T18:09:59.446113",
+      "response_data": [
+        {
+          "id": 1,
+          "customer_name": "John Doe",
+          "service": "Haircut & Beard",
+          "time": "10:00 AM",
+          "status": "confirmed"
+        },
+        {
+          "id": 2,
+          "customer_name": "Mike Smith",
+          "service": "Haircut",
+          "time": "11:30 AM",
+          "status": "confirmed"
+        },
+        {
+          "id": 3,
+          "customer_name": "David Johnson",
+          "service": "Beard Trim",
+          "time": "2:00 PM",
+          "status": "pending"
+        }
+      ]
+    },
+    "Agentic Coach Chat": {
+      "status_code": 500,
+      "success": false,
+      "duration_ms": 6.420373916625977,
+      "timestamp": "2025-08-05T18:09:59.452549",
+      "response_text": "Internal Server Error"
+    },
+    "Update Shop Context": {
+      "status_code": 500,
+      "success": false,
+      "duration_ms": 7.726192474365234,
+      "timestamp": "2025-08-05T18:09:59.460300",
+      "response_text": "Internal Server Error"
+    },
+    "Learning Insights": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 2.5739669799804688,
+      "timestamp": "2025-08-05T18:09:59.462900",
+      "response_data": {
+        "coach_learning_data": {
+          "shop_profiles": [
+            {
+              "id": 1,
+              "type": "traditional"
+            },
+            {
+              "id": 2,
+              "type": "modern"
+            }
+          ],
+          "total_interactions": 1,
+          "learning_rate": 0.92
+        },
+        "database_insights": [
+          "Peak hours identified: 10 AM - 2 PM",
+          "Most profitable service: Premium haircuts",
+          "Customer retention rate: 68%"
+        ],
+        "timestamp": "2025-08-05T22:09:59.462670"
+      }
+    },
+    "Save Barbershop Settings": {
+      "status_code": 500,
+      "success": false,
+      "duration_ms": 2.8591156005859375,
+      "timestamp": "2025-08-05T18:09:59.465781",
+      "response_text": "Internal Server Error"
+    },
+    "Get Barbershop Settings": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 2.3241043090820312,
+      "timestamp": "2025-08-05T18:09:59.468128",
+      "response_data": {
+        "barbershop": {
+          "name": "Demo Barbershop",
+          "address": "123 Main Street, City, State 12345",
+          "phone": "+1 (555) 123-4567",
+          "email": "dev@example.com",
+          "timezone": "America/New_York"
+        },
+        "notifications": {
+          "emailEnabled": true,
+          "smsEnabled": true,
+          "campaignAlerts": true,
+          "bookingAlerts": true,
+          "systemAlerts": true
+        },
+        "businessHours": {
+          "monday": {
+            "enabled": true,
+            "shifts": [
+              {
+                "open": "09:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "tuesday": {
+            "enabled": true,
+            "shifts": [
+              {
+                "open": "09:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "wednesday": {
+            "enabled": true,
+            "shifts": [
+              {
+                "open": "09:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "thursday": {
+            "enabled": true,
+            "shifts": [
+              {
+                "open": "09:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "friday": {
+            "enabled": true,
+            "shifts": [
+              {
+                "open": "09:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "saturday": {
+            "enabled": true,
+            "shifts": [
+              {
+                "open": "10:00",
+                "close": "16:00"
+              }
+            ]
+          },
+          "sunday": {
+            "enabled": false,
+            "shifts": []
+          }
+        }
+      }
+    },
+    "Save Notifications": {
+      "status_code": 500,
+      "success": false,
+      "duration_ms": 3.0040740966796875,
+      "timestamp": "2025-08-05T18:09:59.471152",
+      "response_text": "Internal Server Error"
+    },
+    "Get Notifications": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 2.167224884033203,
+      "timestamp": "2025-08-05T18:09:59.473351",
+      "response_data": {
+        "emailEnabled": true,
+        "smsEnabled": true,
+        "campaignAlerts": true,
+        "bookingAlerts": true,
+        "systemAlerts": true
+      }
+    },
+    "Save Business Hours": {
+      "status_code": 500,
+      "success": false,
+      "duration_ms": 2.9969215393066406,
+      "timestamp": "2025-08-05T18:09:59.476365",
+      "response_text": "Internal Server Error"
+    },
+    "Get Business Hours": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 2.1309852600097656,
+      "timestamp": "2025-08-05T18:09:59.478521",
+      "response_data": {
+        "monday": {
+          "enabled": true,
+          "shifts": [
+            {
+              "open": "09:00",
+              "close": "18:00"
+            }
+          ]
+        },
+        "tuesday": {
+          "enabled": true,
+          "shifts": [
+            {
+              "open": "09:00",
+              "close": "18:00"
+            }
+          ]
+        },
+        "wednesday": {
+          "enabled": true,
+          "shifts": [
+            {
+              "open": "09:00",
+              "close": "18:00"
+            }
+          ]
+        },
+        "thursday": {
+          "enabled": true,
+          "shifts": [
+            {
+              "open": "09:00",
+              "close": "18:00"
+            }
+          ]
+        },
+        "friday": {
+          "enabled": true,
+          "shifts": [
+            {
+              "open": "09:00",
+              "close": "18:00"
+            }
+          ]
+        },
+        "saturday": {
+          "enabled": true,
+          "shifts": [
+            {
+              "open": "10:00",
+              "close": "16:00"
+            }
+          ]
+        },
+        "sunday": {
+          "enabled": false,
+          "shifts": []
+        }
+      }
+    },
+    "Notification History": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 2.5899410247802734,
+      "timestamp": "2025-08-05T18:09:59.481129",
+      "response_data": {
+        "notifications": [],
+        "count": 0
+      }
+    },
+    "Queue Status": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 1.2459754943847656,
+      "timestamp": "2025-08-05T18:09:59.482385",
+      "response_data": {
+        "processing": true,
+        "status_counts": {},
+        "total": 0,
+        "next_scheduled": null
+      }
+    },
+    "Send Notification": {
+      "status_code": 500,
+      "success": false,
+      "duration_ms": 3.4360885620117188,
+      "timestamp": "2025-08-05T18:09:59.485834",
+      "response_text": "Internal Server Error"
+    },
+    "Test Email": {
+      "status_code": 500,
+      "success": false,
+      "duration_ms": 3.638029098510742,
+      "timestamp": "2025-08-05T18:09:59.489499",
+      "response_text": "Internal Server Error"
+    },
+    "Current Billing": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 1.8308162689208984,
+      "timestamp": "2025-08-05T18:09:59.491358",
+      "response_data": {
+        "currentMonth": {
+          "total": 124.5,
+          "aiUsage": 67.2,
+          "smsUsage": 42.3,
+          "emailUsage": 15.0,
+          "comparedToLastMonth": 12.5
+        },
+        "usage": {
+          "ai": {
+            "tokens": 1120000,
+            "cost": 67.2
+          },
+          "sms": {
+            "messages": 2115,
+            "cost": 42.3
+          },
+          "email": {
+            "sent": 15000,
+            "cost": 15.0
+          }
+        },
+        "paymentMethod": {
+          "last4": "4242",
+          "brand": "Visa",
+          "expMonth": 12,
+          "expYear": 2025
+        },
+        "subscription": {
+          "plan": "Professional",
+          "status": "active",
+          "nextBilling": "2024-02-01"
+        }
+      }
+    },
+    "Billing History": {
+      "status_code": 200,
+      "success": true,
+      "duration_ms": 1.1970996856689453,
+      "timestamp": "2025-08-05T18:09:59.492575",
+      "response_data": {
+        "history": [
+          {
+            "date": "Jan 1",
+            "ai": 15.2,
+            "sms": 8.4,
+            "email": 2.1
+          },
+          {
+            "date": "Jan 5",
+            "ai": 22.5,
+            "sms": 12.2,
+            "email": 3.5
+          },
+          {
+            "date": "Jan 10",
+            "ai": 18.3,
+            "sms": 15.6,
+            "email": 4.2
+          },
+          {
+            "date": "Jan 15",
+            "ai": 28.9,
+            "sms": 9.8,
+            "email": 2.8
+          },
+          {
+            "date": "Jan 20",
+            "ai": 19.4,
+            "sms": 11.5,
+            "email": 3.1
+          },
+          {
+            "date": "Jan 25",
+            "ai": 25.6,
+            "sms": 14.3,
+            "email": 4.6
+          },
+          {
+            "date": "Jan 30",
+            "ai": 32.1,
+            "sms": 16.2,
+            "email": 5.2
+          }
+        ]
+      }
+    }
+  },
+  "errors": [
+    {
+      "test": "AI Chat",
+      "status_code": 500,
+      "error": "Internal Server Error"
+    },
+    {
+      "test": "Agentic Coach Chat",
+      "status_code": 500,
+      "error": "Internal Server Error"
+    },
+    {
+      "test": "Update Shop Context",
+      "status_code": 500,
+      "error": "Internal Server Error"
+    },
+    {
+      "test": "Save Barbershop Settings",
+      "status_code": 500,
+      "error": "Internal Server Error"
+    },
+    {
+      "test": "Save Notifications",
+      "status_code": 500,
+      "error": "Internal Server Error"
+    },
+    {
+      "test": "Save Business Hours",
+      "status_code": 500,
+      "error": "Internal Server Error"
+    },
+    {
+      "test": "Send Notification",
+      "status_code": 500,
+      "error": "Internal Server Error"
+    },
+    {
+      "test": "Test Email",
+      "status_code": 500,
+      "error": "Internal Server Error"
+    }
+  ]
+}

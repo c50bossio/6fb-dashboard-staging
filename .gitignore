@@ -53,3 +53,26 @@ venv/
 *.key
 *.pem
 *.crt
+
+# Logs
+*.log
+logs/
+
+# Test artifacts
+playwright-results.json
+test-results/
+playwright-report/# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+terraform.tfvars
+*.auto.tfvars
+
+# Security credentials (added by generate-secure-credentials.sh)
+secure-credentials/
+*.env.production
+*.env.staging
+.env.local.secure
+admin-credentials.txt
+jwt-secret.txt

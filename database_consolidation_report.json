@@ -1,0 +1,11 @@
+{
+  "start_time": "2025-07-31T06:13:04.632005",
+  "databases_found": 25,
+  "databases_consolidated": 24,
+  "tables_created": 8,
+  "records_migrated": 203,
+  "errors": [],
+  "warnings": [],
+  "end_time": "2025-07-31T06:13:04.912132",
+  "duration": "0:00:00.280127"
+}

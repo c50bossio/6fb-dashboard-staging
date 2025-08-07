@@ -1,6 +1,9 @@
 # Backend Dockerfile for 6FB AI Agent System FastAPI
 FROM python:3.11-slim
 
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
 WORKDIR /app
 
 # Install system dependencies
@@ -10,23 +13,28 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements (create if doesn't exist)
-COPY requirements.txt* ./
+# Copy minimal requirements for faster builds
+COPY --chown=appuser:appuser requirements-minimal.txt ./
 
-# Install Python dependencies
-RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
-RUN pip install fastapi uvicorn[standard] python-multipart python-jose[cryptography] passlib[bcrypt] psycopg2-binary asyncpg sqlalchemy
+# Install only essential Python dependencies
+RUN pip install --no-cache-dir -r requirements-minimal.txt
 
-# Copy application code
-COPY fastapi-server.py ./
-COPY database/ ./database/
-COPY services/ ./services/
+# Copy application code with proper ownership
+COPY --chown=appuser:appuser main.py ./
+COPY --chown=appuser:appuser fastapi_backend.py ./
+COPY --chown=appuser:appuser websocket_backend.py ./
+COPY --chown=appuser:appuser database/ ./database/
+COPY --chown=appuser:appuser services/ ./services/
+COPY --chown=appuser:appuser security/ ./security/
 
-# Create database directory
-RUN mkdir -p /app/data
+# Create database directory with proper ownership
+RUN mkdir -p /app/data && chown -R appuser:appuser /app/data
+
+# Change to non-root user
+USER appuser
 
 # Expose port 8000
 EXPOSE 8000
 
 # Start FastAPI server
-CMD ["uvicorn", "fastapi-server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "fastapi_backend:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -1,7 +1,17 @@
-INFO:     Will watch for changes in these directories: ['/Users/bossio/6FB AI Agent System']
-ERROR:    [Errno 48] Address already in use
-🚀 Starting 6FB AI Agent System FastAPI Server...
-📚 Enterprise RAG Engine: Active
-🎯 Available Agents: 7 specialized agents loaded
-🔗 API Endpoints: /api/v1/ai-agents/chat, /api/v1/health
-🌐 CORS: Configured for Next.js integration
+WARNING:services.vector_knowledge_service:ChromaDB not available, using in-memory fallback
+WARNING:services.vector_knowledge_service:⚠️ OpenAI API key not found
+WARNING:services.ai_orchestrator_service:⚠️ No AI providers available - using mock responses
+WARNING:services.realtime_service:⚠️ Pusher credentials not found, using mock service
+INFO:services.predictive_analytics_service:✅ Advanced ML models initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alerts database initialized
+INFO:services.intelligent_alert_service:✅ Intelligent alert ML models initialized
+/Users/bossio/6FB AI Agent System/fastapi_backend.py:204: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+WARNING:  You must pass the application as an import string to enable 'reload' or 'workers'.
+Warning: aiosmtplib not available - email sending will use mock mode
+✅ Intelligent Alert System mounted at /intelligent-alerts/*

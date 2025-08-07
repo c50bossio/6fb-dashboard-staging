@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: agent-system-frontend
+    ports:
+      - "9999:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+    volumes:
+      - ./app:/app/app
+      - ./components:/app/components
+      - ./contexts:/app/contexts
+      - ./lib:/app/lib
+      - ./public:/app/public
+      - ./styles:/app/styles
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: agent-system-backend-websocket
+    ports:
+      - "8001:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./data:/app/data
+      - ./websocket_backend.py:/app/websocket_backend.py
+      - ./fastapi_backend.py:/app/fastapi_backend.py
+    command: ["uvicorn", "websocket_backend:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+networks:
+  default:
+    name: agent-system-network

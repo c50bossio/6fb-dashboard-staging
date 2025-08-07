@@ -1,0 +1,946 @@
+{
+  "timestamp": "2025-08-05T22:43:11.058Z",
+  "system": {
+    "frontend_url": "http://localhost:9999",
+    "backend_url": "http://localhost:8001",
+    "test_environment": "development"
+  },
+  "load_testing": {
+    "endpoints": {
+      "Health Check": {
+        "1": {
+          "concurrentRequests": 1,
+          "totalTime": 2,
+          "successfulRequests": 1,
+          "failedRequests": 0,
+          "averageResponseTime": 2,
+          "minResponseTime": 2,
+          "maxResponseTime": 2,
+          "p95ResponseTime": 2,
+          "requestsPerSecond": 500
+        },
+        "5": {
+          "concurrentRequests": 5,
+          "totalTime": 9,
+          "successfulRequests": 5,
+          "failedRequests": 0,
+          "averageResponseTime": 7,
+          "minResponseTime": 6,
+          "maxResponseTime": 8,
+          "p95ResponseTime": 8,
+          "requestsPerSecond": 555.5555555555555
+        },
+        "10": {
+          "concurrentRequests": 10,
+          "totalTime": 29,
+          "successfulRequests": 10,
+          "failedRequests": 0,
+          "averageResponseTime": 16,
+          "minResponseTime": 9,
+          "maxResponseTime": 26,
+          "p95ResponseTime": 26,
+          "requestsPerSecond": 344.8275862068965
+        },
+        "25": {
+          "concurrentRequests": 25,
+          "totalTime": 24,
+          "successfulRequests": 25,
+          "failedRequests": 0,
+          "averageResponseTime": 12,
+          "minResponseTime": 6,
+          "maxResponseTime": 20,
+          "p95ResponseTime": 18,
+          "requestsPerSecond": 1041.6666666666667
+        }
+      },
+      "Dashboard Stats": {
+        "1": {
+          "concurrentRequests": 1,
+          "totalTime": 3,
+          "successfulRequests": 0,
+          "failedRequests": 1,
+          "averageResponseTime": 0,
+          "minResponseTime": 0,
+          "maxResponseTime": 0,
+          "p95ResponseTime": 0,
+          "requestsPerSecond": 0
+        },
+        "5": {
+          "concurrentRequests": 5,
+          "totalTime": 9,
+          "successfulRequests": 0,
+          "failedRequests": 5,
+          "averageResponseTime": 0,
+          "minResponseTime": 0,
+          "maxResponseTime": 0,
+          "p95ResponseTime": 0,
+          "requestsPerSecond": 0
+        },
+        "10": {
+          "concurrentRequests": 10,
+          "totalTime": 18,
+          "successfulRequests": 0,
+          "failedRequests": 10,
+          "averageResponseTime": 0,
+          "minResponseTime": 0,
+          "maxResponseTime": 0,
+          "p95ResponseTime": 0,
+          "requestsPerSecond": 0
+        },
+        "25": {
+          "concurrentRequests": 25,
+          "totalTime": 21,
+          "successfulRequests": 0,
+          "failedRequests": 25,
+          "averageResponseTime": 0,
+          "minResponseTime": 0,
+          "maxResponseTime": 0,
+          "p95ResponseTime": 0,
+          "requestsPerSecond": 0
+        }
+      },
+      "AI Agents Status": {
+        "1": {
+          "concurrentRequests": 1,
+          "totalTime": 6,
+          "successfulRequests": 1,
+          "failedRequests": 0,
+          "averageResponseTime": 6,
+          "minResponseTime": 6,
+          "maxResponseTime": 6,
+          "p95ResponseTime": 6,
+          "requestsPerSecond": 166.66666666666666
+        },
+        "5": {
+          "concurrentRequests": 5,
+          "totalTime": 8,
+          "successfulRequests": 5,
+          "failedRequests": 0,
+          "averageResponseTime": 6,
+          "minResponseTime": 6,
+          "maxResponseTime": 6,
+          "p95ResponseTime": 6,
+          "requestsPerSecond": 625
+        },
+        "10": {
+          "concurrentRequests": 10,
+          "totalTime": 13,
+          "successfulRequests": 10,
+          "failedRequests": 0,
+          "averageResponseTime": 11,
+          "minResponseTime": 10,
+          "maxResponseTime": 12,
+          "p95ResponseTime": 12,
+          "requestsPerSecond": 769.2307692307693
+        },
+        "25": {
+          "concurrentRequests": 25,
+          "totalTime": 29,
+          "successfulRequests": 25,
+          "failedRequests": 0,
+          "averageResponseTime": 20,
+          "minResponseTime": 13,
+          "maxResponseTime": 23,
+          "p95ResponseTime": 23,
+          "requestsPerSecond": 862.0689655172413
+        }
+      },
+      "AI Performance Status": {
+        "1": {
+          "concurrentRequests": 1,
+          "totalTime": 5,
+          "successfulRequests": 1,
+          "failedRequests": 0,
+          "averageResponseTime": 5,
+          "minResponseTime": 5,
+          "maxResponseTime": 5,
+          "p95ResponseTime": 5,
+          "requestsPerSecond": 200
+        },
+        "5": {
+          "concurrentRequests": 5,
+          "totalTime": 4,
+          "successfulRequests": 5,
+          "failedRequests": 0,
+          "averageResponseTime": 2,
+          "minResponseTime": 1,
+          "maxResponseTime": 3,
+          "p95ResponseTime": 3,
+          "requestsPerSecond": 1250
+        },
+        "10": {
+          "concurrentRequests": 10,
+          "totalTime": 15,
+          "successfulRequests": 10,
+          "failedRequests": 0,
+          "averageResponseTime": 11,
+          "minResponseTime": 9,
+          "maxResponseTime": 13,
+          "p95ResponseTime": 13,
+          "requestsPerSecond": 666.6666666666667
+        },
+        "25": {
+          "concurrentRequests": 25,
+          "totalTime": 36,
+          "successfulRequests": 25,
+          "failedRequests": 0,
+          "averageResponseTime": 25,
+          "minResponseTime": 9,
+          "maxResponseTime": 33,
+          "p95ResponseTime": 32,
+          "requestsPerSecond": 694.4444444444445
+        }
+      },
+      "Business Recommendations Status": {
+        "1": {
+          "concurrentRequests": 1,
+          "totalTime": 4,
+          "successfulRequests": 1,
+          "failedRequests": 0,
+          "averageResponseTime": 4,
+          "minResponseTime": 4,
+          "maxResponseTime": 4,
+          "p95ResponseTime": 4,
+          "requestsPerSecond": 250
+        },
+        "5": {
+          "concurrentRequests": 5,
+          "totalTime": 4,
+          "successfulRequests": 5,
+          "failedRequests": 0,
+          "averageResponseTime": 3,
+          "minResponseTime": 2,
+          "maxResponseTime": 3,
+          "p95ResponseTime": 3,
+          "requestsPerSecond": 1250
+        },
+        "10": {
+          "concurrentRequests": 10,
+          "totalTime": 16,
+          "successfulRequests": 10,
+          "failedRequests": 0,
+          "averageResponseTime": 10,
+          "minResponseTime": 6,
+          "maxResponseTime": 14,
+          "p95ResponseTime": 14,
+          "requestsPerSecond": 625
+        },
+        "25": {
+          "concurrentRequests": 25,
+          "totalTime": 32,
+          "successfulRequests": 25,
+          "failedRequests": 0,
+          "averageResponseTime": 11,
+          "minResponseTime": 5,
+          "maxResponseTime": 21,
+          "p95ResponseTime": 21,
+          "requestsPerSecond": 781.25
+        }
+      }
+    }
+  },
+  "database_performance": {
+    "tests": {
+      "Database Health": {
+        "endpoint": "/api/v1/database/health",
+        "averageResponseTime": 5,
+        "minResponseTime": 2,
+        "maxResponseTime": 20,
+        "p95ResponseTime": 20,
+        "successfulRequests": 10,
+        "totalRequests": 10,
+        "lastResult": {
+          "status": "healthy",
+          "type": "sqlite",
+          "connection": "active"
+        }
+      },
+      "Database Info": {
+        "endpoint": "/api/v1/database/info",
+        "averageResponseTime": 2,
+        "minResponseTime": 1,
+        "maxResponseTime": 3,
+        "p95ResponseTime": 3,
+        "successfulRequests": 10,
+        "totalRequests": 10,
+        "lastResult": {
+          "type": "SQLite",
+          "version": "3.36.0",
+          "location": "local",
+          "features": [
+            "transactions",
+            "indexes",
+            "triggers"
+          ]
+        }
+      },
+      "Database Stats": {
+        "endpoint": "/api/v1/database/stats",
+        "averageResponseTime": 3,
+        "minResponseTime": 2,
+        "maxResponseTime": 3,
+        "p95ResponseTime": 3,
+        "successfulRequests": 10,
+        "totalRequests": 10,
+        "lastResult": {
+          "tables": {
+            "users": 6,
+            "chat_history": 1,
+            "agents": 0,
+            "shop_profiles": 3
+          },
+          "size_mb": 0.5,
+          "last_backup": "2024-01-15"
+        }
+      }
+    }
+  },
+  "real_world_scenarios": {
+    "tests": {
+      "Morning Dashboard Check": {
+        "description": "Shop owner checks dashboard and analytics first thing in the morning",
+        "success": true,
+        "dashboardLoadTime": 933,
+        "analyticsLoadTime": 917,
+        "totalTime": 1865,
+        "dashboardElements": {
+          "hasHeader": false,
+          "hasMainContent": true,
+          "hasMetrics": false,
+          "hasNavigation": false
+        },
+        "analyticsElements": {
+          "hasCharts": false,
+          "hasAnalytics": false,
+          "hasData": false
+        }
+      },
+      "AI Assistant Consultation": {
+        "description": "Shop owner asks AI for business recommendations",
+        "success": true,
+        "totalTime": 35,
+        "aiEndpointResults": {
+          "/api/v1/ai/agents/status": {
+            "success": true,
+            "status": 200,
+            "responseTime": 9,
+            "data": {
+              "success": true,
+              "agent_system": {
+                "total_agents": 3,
+                "active_agents": 3,
+                "agent_details": {
+                  "financial_coach": {
+                    "agent_id": "financial_coach_20250805",
+                    "name": "Marcus",
+                    "personality": "financial_coach",
+                    "description": "Senior Financial Advisor specializing in small business profitability and barbershop economics",
+                    "expertise_areas": [
+                      "Revenue Optimization",
+                      "Cost Management",
+                      "Pricing Strategy",
+                      "Financial Forecasting",
+                      "Cash Flow Management",
+                      "Profit Margin Analysis",
+                      "Investment Planning",
+                      "Tax Optimization",
+                      "Business Valuation",
+                      "Financial KPI Tracking"
+                    ],
+                    "conversation_history_count": 1,
+                    "primary_domain": "financial",
+                    "active": true,
+                    "last_interaction": "2025-08-05T22:25:54.298475"
+                  },
+                  "marketing_expert": {
+                    "agent_id": "marketing_expert_20250805",
+                    "name": "Sophia",
+                    "personality": "marketing_expert",
+                    "description": "Digital Marketing Strategist specializing in local business growth and social media marketing",
+                    "expertise_areas": [
+                      "Social Media Marketing",
+                      "Local SEO & Google My Business",
+                      "Customer Acquisition",
+                      "Brand Development",
+                      "Content Marketing",
+                      "Influencer Partnerships",
+                      "Review Management",
+                      "Email Marketing",
+                      "Referral Programs",
+                      "Community Engagement"
+                    ],
+                    "conversation_history_count": 0,
+                    "primary_domain": "marketing",
+                    "active": true,
+                    "last_interaction": null
+                  },
+                  "operations_manager": {
+                    "agent_id": "operations_manager_20250805",
+                    "name": "David",
+                    "personality": "operations_manager",
+                    "description": "Operations Management Consultant specializing in small business efficiency and workflow optimization",
+                    "expertise_areas": [
+                      "Scheduling Optimization",
+                      "Staff Management",
+                      "Workflow Efficiency",
+                      "Inventory Management",
+                      "Customer Flow Management",
+                      "Quality Control Systems",
+                      "Process Automation",
+                      "Equipment Management",
+                      "Performance Metrics",
+                      "Resource Allocation"
+                    ],
+                    "conversation_history_count": 0,
+                    "primary_domain": "operations",
+                    "active": true,
+                    "last_interaction": null
+                  }
+                },
+                "routing_history_count": 3,
+                "collaboration_patterns": 10,
+                "last_activity": "2025-08-05T22:26:32.897668",
+                "system_status": "operational"
+              },
+              "performance_metrics": {
+                "avg_agents_matched": 0.3333333333333333,
+                "avg_confidence": 0.25,
+                "most_used_agent": "Marcus",
+                "routing_success_rate": 0.3333333333333333,
+                "collaboration_rate": 0
+              },
+              "timestamp": "2025-08-05T22:43:48.325088"
+            }
+          },
+          "/api/v1/business/recommendations/status": {
+            "success": true,
+            "status": 200,
+            "responseTime": 7,
+            "data": {
+              "success": true,
+              "engine_status": {
+                "cached_businesses": 0,
+                "total_recommendations_generated": 0,
+                "engine_status": "operational",
+                "last_generation": null
+              },
+              "recommendations_engine_available": true,
+              "timestamp": "2025-08-05T22:43:48.332683"
+            }
+          },
+          "/api/v1/ai/performance/status": {
+            "success": true,
+            "status": 200,
+            "responseTime": 19,
+            "data": {
+              "success": true,
+              "monitoring_status": {
+                "monitoring_active": true,
+                "components_monitored": 0,
+                "total_metrics_collected": 0,
+                "last_collection": null,
+                "alert_thresholds_configured": 4,
+                "optimization_cache_size": 0
+              },
+              "performance_monitoring_available": true,
+              "timestamp": "2025-08-05T22:43:48.337975"
+            }
+          }
+        }
+      }
+    }
+  },
+  "concurrent_user_testing": {
+    "scenarios": {
+      "1": {
+        "userCount": 1,
+        "totalTime": 2739,
+        "successfulUsers": 1,
+        "failedUsers": 0,
+        "averageUserTime": 2630,
+        "userResults": [
+          {
+            "userIndex": 0,
+            "success": true,
+            "totalTime": 2630,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 951
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 885
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 794
+              }
+            ]
+          }
+        ]
+      },
+      "3": {
+        "userCount": 3,
+        "totalTime": 2981,
+        "successfulUsers": 3,
+        "failedUsers": 0,
+        "averageUserTime": 2940,
+        "userResults": [
+          {
+            "userIndex": 0,
+            "success": true,
+            "totalTime": 2948,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1089
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1006
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 853
+              }
+            ]
+          },
+          {
+            "userIndex": 1,
+            "success": true,
+            "totalTime": 2939,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1089
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1007
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 843
+              }
+            ]
+          },
+          {
+            "userIndex": 2,
+            "success": true,
+            "totalTime": 2933,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1083
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 998
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 852
+              }
+            ]
+          }
+        ]
+      },
+      "5": {
+        "userCount": 5,
+        "totalTime": 3358,
+        "successfulUsers": 5,
+        "failedUsers": 0,
+        "averageUserTime": 3311,
+        "userResults": [
+          {
+            "userIndex": 0,
+            "success": true,
+            "totalTime": 3315,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1289
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1090
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 936
+              }
+            ]
+          },
+          {
+            "userIndex": 1,
+            "success": true,
+            "totalTime": 3305,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1288
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1091
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 926
+              }
+            ]
+          },
+          {
+            "userIndex": 2,
+            "success": true,
+            "totalTime": 3316,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1290
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1089
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 937
+              }
+            ]
+          },
+          {
+            "userIndex": 3,
+            "success": true,
+            "totalTime": 3316,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1286
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1093
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 937
+              }
+            ]
+          },
+          {
+            "userIndex": 4,
+            "success": true,
+            "totalTime": 3303,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1288
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1076
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 939
+              }
+            ]
+          }
+        ]
+      },
+      "10": {
+        "userCount": 10,
+        "totalTime": 4122,
+        "successfulUsers": 10,
+        "failedUsers": 0,
+        "averageUserTime": 4056,
+        "userResults": [
+          {
+            "userIndex": 0,
+            "success": true,
+            "totalTime": 4050,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1257
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1641
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1152
+              }
+            ]
+          },
+          {
+            "userIndex": 1,
+            "success": true,
+            "totalTime": 4053,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1273
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1625
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1155
+              }
+            ]
+          },
+          {
+            "userIndex": 2,
+            "success": true,
+            "totalTime": 4054,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1270
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1631
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1153
+              }
+            ]
+          },
+          {
+            "userIndex": 3,
+            "success": true,
+            "totalTime": 4067,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1276
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1628
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1163
+              }
+            ]
+          },
+          {
+            "userIndex": 4,
+            "success": true,
+            "totalTime": 4051,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1282
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1612
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1157
+              }
+            ]
+          },
+          {
+            "userIndex": 5,
+            "success": true,
+            "totalTime": 4055,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1277
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1623
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1155
+              }
+            ]
+          },
+          {
+            "userIndex": 6,
+            "success": true,
+            "totalTime": 4065,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1278
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1622
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1165
+              }
+            ]
+          },
+          {
+            "userIndex": 7,
+            "success": true,
+            "totalTime": 4065,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1275
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1623
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1167
+              }
+            ]
+          },
+          {
+            "userIndex": 8,
+            "success": true,
+            "totalTime": 4048,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1278
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1621
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1149
+              }
+            ]
+          },
+          {
+            "userIndex": 9,
+            "success": true,
+            "totalTime": 4050,
+            "steps": [
+              {
+                "action": "Load Dashboard",
+                "success": true,
+                "time": 1275
+              },
+              {
+                "action": "View Analytics",
+                "success": true,
+                "time": 1623
+              },
+              {
+                "action": "Navigate Back to Dashboard",
+                "success": true,
+                "time": 1152
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "category": "Scalability",
+      "priority": "Critical",
+      "issue": "Dashboard Stats fails under 1 concurrent requests (1 failures)",
+      "recommendation": "Implement proper error handling, rate limiting, and connection pooling"
+    },
+    {
+      "category": "Scalability",
+      "priority": "Critical",
+      "issue": "Dashboard Stats fails under 5 concurrent requests (5 failures)",
+      "recommendation": "Implement proper error handling, rate limiting, and connection pooling"
+    },
+    {
+      "category": "Scalability",
+      "priority": "Critical",
+      "issue": "Dashboard Stats fails under 10 concurrent requests (10 failures)",
+      "recommendation": "Implement proper error handling, rate limiting, and connection pooling"
+    },
+    {
+      "category": "Scalability",
+      "priority": "Critical",
+      "issue": "Dashboard Stats fails under 25 concurrent requests (25 failures)",
+      "recommendation": "Implement proper error handling, rate limiting, and connection pooling"
+    }
+  ],
+  "summary": {
+    "databasePerformanceScore": 96.66666666666667,
+    "loadTestingScore": null,
+    "concurrentUserScore": 100,
+    "realWorldScenarioScore": 100,
+    "overallAdvancedScore": 99,
+    "criticalIssues": 4,
+    "recommendations": 4
+  }
+}

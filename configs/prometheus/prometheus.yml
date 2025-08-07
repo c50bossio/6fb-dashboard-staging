@@ -1,0 +1,206 @@
+# Prometheus Configuration for 6FB AI Agent System
+# Comprehensive monitoring and alerting setup
+
+global:
+  # Scrape interval for all jobs
+  scrape_interval: 15s
+  
+  # Evaluation interval for rules
+  evaluation_interval: 15s
+  
+  # External labels for federation and alerting
+  external_labels:
+    cluster: '6fb-ai-agent-system'
+    environment: 'production'
+    datacenter: 'primary'
+
+# Rule files for alerting
+rule_files:
+  - "alerts.yml"
+  - "recording_rules.yml"
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      timeout: 10s
+      api_version: v2
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # FastAPI Backend Application
+  - job_name: 'fastapi-backend'
+    static_configs:
+      - targets: ['backend:8090']  # Metrics endpoint
+    scrape_interval: 15s
+    metrics_path: /metrics
+    honor_labels: true
+    scrape_timeout: 10s
+    
+  # Next.js Frontend Application  
+  - job_name: 'nextjs-frontend'
+    static_configs:
+      - targets: ['frontend:3001']  # Next.js metrics endpoint
+    scrape_interval: 30s
+    metrics_path: /api/metrics
+    scrape_timeout: 10s
+    
+  # PostgreSQL Database
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres:5432']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    params:
+      format: ['prometheus']
+    
+  # Redis Cache
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # Nginx Reverse Proxy
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']  # nginx-prometheus-exporter
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # Node Exporter (System Metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # cAdvisor (Container Metrics)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # Blackbox Exporter (Endpoint Monitoring)
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://agent.6fb.ai/health
+        - https://agent.6fb.ai/api/health
+        - https://staging-agent.6fb.ai/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+        
+  # SSL Certificate Monitoring
+  - job_name: 'ssl-exporter'
+    static_configs:
+      - targets: ['ssl-exporter:9219']
+    scrape_interval: 300s  # Check SSL certificates every 5 minutes
+    params:
+      target:
+        - https://agent.6fb.ai:443
+        - https://staging-agent.6fb.ai:443
+        
+  # AI Service Monitoring (Custom Metrics)
+  - job_name: 'ai-services'
+    static_configs:
+      - targets: ['backend:8091']  # Custom AI metrics endpoint
+    scrape_interval: 60s
+    metrics_path: /ai-metrics
+    scrape_timeout: 30s
+    
+  # Security Monitoring
+  - job_name: 'security-metrics'
+    static_configs:
+      - targets: ['backend:8092']  # Security metrics endpoint
+    scrape_interval: 30s
+    metrics_path: /security-metrics
+    
+  # Business Metrics
+  - job_name: 'business-metrics'
+    static_configs:
+      - targets: ['backend:8093']  # Business metrics endpoint
+    scrape_interval: 60s
+    metrics_path: /business-metrics
+
+# Remote write configuration (for long-term storage)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint/api/v1/write"
+#     basic_auth:
+#       username: "username"
+#       password: "password"
+#     queue_config:
+#       max_samples_per_send: 1000
+#       max_shards: 200
+#       capacity: 2500
+
+# Storage configuration
+storage:
+  tsdb:
+    # Retention time for metrics data
+    retention.time: 30d
+    
+    # Retention size for metrics data
+    retention.size: 10GB
+    
+    # Compression
+    wal-compression: true
+    
+    # Block chunk range
+    min-block-duration: 2h
+    max-block-duration: 25h
+
+# Query configuration
+query:
+  # Maximum number of concurrent queries
+  max-concurrency: 20
+  
+  # Query timeout
+  timeout: 2m
+  
+  # Max samples per query
+  max-samples: 50000000
+
+# Web configuration
+web:
+  # Enable admin APIs
+  enable-admin-api: true
+  
+  # Enable lifecycle management
+  enable-lifecycle: true
+  
+  # Console templates and libraries
+  console.templates: /etc/prometheus/consoles
+  console.libraries: /etc/prometheus/console_libraries
+  
+  # External URL
+  external-url: http://prometheus:9090
+
+# Feature flags
+# Enable new features
+feature_flags:
+  - promql-at-modifier
+  - promql-negative-offset
+
+# Tracing configuration (if using distributed tracing)
+# tracing:
+#   endpoint: "jaeger:14268/api/traces"
+#   sampling_fraction: 0.1

@@ -1,21 +1,28 @@
-# 6FB AI Agent System - AWS Infrastructure
-# Terraform configuration for production-grade infrastructure
+# Main Terraform configuration for 6FB AI Agent System
+# Multi-cloud deployment with AWS, GCP, and Azure support
 
 terraform {
-  required_version = ">= 1.5"
-  
+  required_version = ">= 1.6"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
+    }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.20"
+      version = "~> 2.23"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.10"
+      version = "~> 2.11"
     }
     random = {
       source  = "hashicorp/random"
@@ -26,16 +33,14 @@ terraform {
       version = "~> 4.0"
     }
   }
-  
+
+  # Remote state configuration
   backend "s3" {
-    bucket         = "sixfb-ai-terraform-state"
-    key            = "infrastructure/terraform.tfstate"
-    region         = "us-west-2"
+    bucket         = "6fb-agent-system-terraform-state"
+    key            = "production/terraform.tfstate"
+    region         = "us-east-1"
     encrypt        = true
-    dynamodb_table = "sixfb-ai-terraform-lock"
-    
-    # Versioning and lifecycle management
-    versioning = true
+    dynamodb_table = "terraform-state-lock"
   }
 }
 

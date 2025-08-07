@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Orchestration UI Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .query-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196f3;
+        }
+        .response-box {
+            background: #f3e5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #9c27b0;
+        }
+        .agent-indicators {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .agent-chip {
+            background: #4caf50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .test-button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #1976d2;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: #f44336;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .metric {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧠 AI Agent Orchestration UI Test</h1>
+    <p>Testing multi-agent collaboration patterns in the 6FB AI Agent System</p>
+
+    <div class="test-container">
+        <h3>🎯 Orchestration Test Queries</h3>
+        <p>Click a button to test agent collaboration with complex business queries:</p>
+        
+        <button class="test-button" onclick="testQuery('growth')">
+            📈 Revenue Growth Strategy
+        </button>
+        <button class="test-button" onclick="testQuery('retention')">
+            🔄 Retention + Cost Optimization
+        </button>
+        <button class="test-button" onclick="testQuery('expansion')">
+            🚀 Staff + Marketing Expansion
+        </button>
+        <button class="test-button" onclick="testQuery('premium')">
+            ⭐ Premium Transformation
+        </button>
+        <button class="test-button" onclick="testQuery('competition')">
+            🏆 Competitive Positioning
+        </button>
+        
+        <div style="margin-top: 15px;">
+            <button class="test-button" onclick="runAllTests()" style="background: #ff5722;">
+                🧪 Run All Orchestration Tests
+            </button>
+            <button class="test-button" onclick="clearResults()" style="background: #757575;">
+                🗑️ Clear Results
+            </button>
+        </div>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const testQueries = {
+            growth: "I want to grow my barbershop revenue by 30% in 6 months. What's my complete strategy involving pricing, marketing, and operations?",
+            retention: "My customer retention is low at 45% and my costs are too high. How do I fix both issues simultaneously?",
+            expansion: "I need to hire 2 more barbers but also improve my social media marketing to justify the expansion. What's the best approach?",
+            premium: "Transform my basic barbershop into a premium men's grooming destination. What's the complete transformation plan?",
+            competition: "Three new barbershops opened nearby. I need to differentiate through pricing, services, and marketing. How do I stay competitive?"
+        };
+
+        let testResults = [];
+
+        async function testQuery(queryType) {
+            const query = testQueries[queryType];
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-container';
+            resultDiv.innerHTML = `
+                <h4>🧪 Testing: ${queryType.charAt(0).toUpperCase() + queryType.slice(1)} Strategy</h4>
+                <div class="query-box">
+                    <strong>Query:</strong> ${query}
+                </div>
+                <div class="loading">🔄 Testing agent orchestration...</div>
+            `;
+            
+            document.getElementById('results').appendChild(resultDiv);
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                // Test via frontend API (if available)
+                const response = await testFrontendAPI(query);
+                displayResult(resultDiv, response, queryType);
+            } catch (error) {
+                // Fallback to backend API
+                try {
+                    const response = await testBackendAPI(query);
+                    displayResult(resultDiv, response, queryType, true);
+                } catch (backendError) {
+                    displayError(resultDiv, backendError);
+                }
+            }
+        }
+
+        async function testFrontendAPI(query) {
+            const response = await fetch('/api/ai/agents', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: query,
+                    businessContext: {
+                        shop_name: 'Test Barbershop',
+                        monthly_revenue: 8000,
+                        customer_count: 200,
+                        staff_count: 2
+                    },
+                    sessionId: `ui_test_${Date.now()}`
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Frontend API failed: ${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        async function testBackendAPI(query) {
+            const response = await fetch('http://localhost:8001/api/v1/ai/enhanced-chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: query,
+                    session_id: `ui_backend_test_${Date.now()}`,
+                    business_context: {
+                        shop_name: 'Test Barbershop',
+                        monthly_revenue: 8000,
+                        customer_count: 200,
+                        staff_count: 2
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Backend API failed: ${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        function displayResult(container, response, queryType, isBackend = false) {
+            const analysisResult = analyzeOrchestration(response);
+            testResults.push({ queryType, response, analysis: analysisResult });
+
+            container.innerHTML = `
+                <h4>🧪 ${queryType.charAt(0).toUpperCase() + queryType.slice(1)} Strategy ${analysisResult.success ? '✅' : '❌'}</h4>
+                <div class="query-box">
+                    <strong>Query:</strong> ${testQueries[queryType]}
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">${analysisResult.orchestrationScore}</div>
+                        <div class="metric-label">Orchestration Score</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${analysisResult.confidence}%</div>
+                        <div class="metric-label">Confidence</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${analysisResult.agentMentions.length}</div>
+                        <div class="metric-label">Agents Detected</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${analysisResult.responseLength}</div>
+                        <div class="metric-label">Response Length</div>
+                    </div>
+                </div>
+
+                ${analysisResult.agentMentions.length > 0 ? `
+                    <div class="agent-indicators">
+                        <strong>Agents Detected:</strong>
+                        ${analysisResult.agentMentions.map(agent => 
+                            `<span class="agent-chip">${agent}</span>`
+                        ).join('')}
+                    </div>
+                ` : ''}
+
+                <div class="response-box">
+                    <strong>AI Response ${isBackend ? '(via Backend)' : '(via Frontend)'}:</strong><br>
+                    ${response.response || 'No response received'}
+                </div>
+
+                ${analysisResult.collaborationIndicators.length > 0 ? `
+                    <div style="margin: 10px 0;">
+                        <strong>🤝 Collaboration Indicators:</strong>
+                        ${analysisResult.collaborationIndicators.join(', ')}
+                    </div>
+                ` : ''}
+
+                <div style="font-size: 12px; color: #666; margin-top: 10px;">
+                    Provider: ${response.provider || 'Unknown'} | 
+                    Timestamp: ${new Date().toLocaleTimeString()} |
+                    ${response.fallback ? 'Fallback Mode' : 'Normal Mode'}
+                </div>
+            `;
+        }
+
+        function analyzeOrchestration(response) {
+            const responseText = (response.response || '').toLowerCase();
+            const fullResponse = JSON.stringify(response).toLowerCase();
+            
+            // Detect agent mentions
+            const agentPatterns = {
+                'Marcus (Financial)': ['marcus', 'financial', 'pricing', 'revenue', 'profit'],
+                'Sophia (Marketing)': ['sophia', 'marketing', 'brand', 'customer', 'social'],
+                'David (Operations)': ['david', 'operations', 'staff', 'scheduling', 'efficiency']
+            };
+
+            const agentMentions = [];
+            Object.entries(agentPatterns).forEach(([agent, keywords]) => {
+                if (keywords.some(keyword => responseText.includes(keyword))) {
+                    agentMentions.push(agent);
+                }
+            });
+
+            // Detect collaboration terms
+            const collaborationTerms = [
+                'comprehensive', 'integrated', 'coordinated', 'holistic',
+                'multi-faceted', 'strategic', 'combined approach'
+            ];
+
+            const collaborationIndicators = collaborationTerms.filter(term => 
+                responseText.includes(term)
+            );
+
+            // Calculate orchestration score
+            let score = 0;
+            score += agentMentions.length * 25; // 25 points per agent
+            score += collaborationIndicators.length * 10; // 10 points per collaboration term
+            if (response.agent_details) score += 15; // Structured response
+            if (responseText.length > 500) score += 10; // Substantial response
+
+            return {
+                agentMentions,
+                collaborationIndicators,
+                orchestrationScore: Math.min(score, 100),
+                confidence: Math.round((response.confidence || 0) * 100),
+                responseLength: (response.response || '').length,
+                success: score >= 60 && agentMentions.length >= 2
+            };
+        }
+
+        function displayError(container, error) {
+            container.innerHTML = `
+                <h4>❌ Test Failed</h4>
+                <div class="error">
+                    Error: ${error.message}
+                </div>
+            `;
+        }
+
+        async function runAllTests() {
+            clearResults();
+            const queries = Object.keys(testQueries);
+            
+            for (let i = 0; i < queries.length; i++) {
+                await testQuery(queries[i]);
+                if (i < queries.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Rate limiting
+                }
+            }
+
+            // Display summary after all tests
+            setTimeout(displaySummary, 1000);
+        }
+
+        function displaySummary() {
+            if (testResults.length === 0) return;
+
+            const successfulTests = testResults.filter(r => r.analysis.success).length;
+            const avgScore = Math.round(
+                testResults.reduce((sum, r) => sum + r.analysis.orchestrationScore, 0) / testResults.length
+            );
+            const avgConfidence = Math.round(
+                testResults.reduce((sum, r) => sum + r.analysis.confidence, 0) / testResults.length
+            );
+
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'test-container';
+            summaryDiv.style.background = '#e8f5e8';
+            summaryDiv.innerHTML = `
+                <h3>📊 Orchestration Test Summary</h3>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">${successfulTests}/${testResults.length}</div>
+                        <div class="metric-label">Tests Passed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${avgScore}/100</div>
+                        <div class="metric-label">Avg Orchestration Score</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${avgConfidence}%</div>
+                        <div class="metric-label">Avg Confidence</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <strong>Assessment:</strong>
+                    ${avgScore >= 80 ? '🎉 Excellent orchestration!' :
+                      avgScore >= 60 ? '✅ Good orchestration with room for improvement' :
+                      avgScore >= 40 ? '⚠️ Basic orchestration present' :
+                      '❌ Orchestration needs significant improvement'}
+                </div>
+            `;
+            
+            document.getElementById('results').appendChild(summaryDiv);
+            summaryDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testResults = [];
+        }
+    </script>
+</body>
+</html>

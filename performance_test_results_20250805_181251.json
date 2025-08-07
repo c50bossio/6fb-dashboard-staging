@@ -1,0 +1,353 @@
+{
+  "load_tests": {
+    "moderate__health": {
+      "total_requests": 50,
+      "successful_requests": 50,
+      "failed_requests": 0,
+      "error_requests": 0,
+      "success_rate": 100.0,
+      "total_time_seconds": 0.028760194778442383,
+      "requests_per_second": 1738.513956013894,
+      "response_times": {
+        "min_ms": 8.878946304321289,
+        "max_ms": 28.600215911865234,
+        "avg_ms": 14.412999153137207,
+        "median_ms": 12.211799621582031,
+        "p95_ms": 27.921926975250244,
+        "p99_ms": 28.37369203567505
+      }
+    },
+    "moderate__api_v1_agents": {
+      "total_requests": 50,
+      "successful_requests": 50,
+      "failed_requests": 0,
+      "error_requests": 0,
+      "success_rate": 100.0,
+      "total_time_seconds": 0.021371126174926758,
+      "requests_per_second": 2339.6052969197985,
+      "response_times": {
+        "min_ms": 9.763956069946289,
+        "max_ms": 21.189212799072266,
+        "avg_ms": 14.391012191772461,
+        "median_ms": 13.953089714050293,
+        "p95_ms": 20.70997953414917,
+        "p99_ms": 21.07250452041626
+      }
+    },
+    "moderate__api_v1_dashboard_stats": {
+      "total_requests": 50,
+      "successful_requests": 40,
+      "failed_requests": 10,
+      "error_requests": 0,
+      "success_rate": 80.0,
+      "total_time_seconds": 0.023833036422729492,
+      "requests_per_second": 2097.928233446375,
+      "response_times": {
+        "min_ms": 10.773181915283203,
+        "max_ms": 23.159027099609375,
+        "avg_ms": 15.926718711853027,
+        "median_ms": 15.415072441101074,
+        "p95_ms": 22.68366813659668,
+        "p99_ms": 23.035824298858643
+      }
+    },
+    "complex__api_v1_ai_enhanced-chat": {
+      "total_requests": 15,
+      "successful_requests": 10,
+      "failed_requests": 5,
+      "error_requests": 0,
+      "success_rate": 66.66666666666666,
+      "total_time_seconds": 0.00897216796875,
+      "requests_per_second": 1671.8367346938776,
+      "response_times": {
+        "min_ms": 8.196115493774414,
+        "max_ms": 8.657217025756836,
+        "avg_ms": 8.376216888427734,
+        "median_ms": 8.324146270751953,
+        "p95_ms": 8.643591403961182,
+        "p99_ms": 8.654491901397705
+      }
+    },
+    "complex__api_v1_business_recommendations_generate": {
+      "total_requests": 15,
+      "successful_requests": 15,
+      "failed_requests": 0,
+      "error_requests": 0,
+      "success_rate": 100.0,
+      "total_time_seconds": 0.062252044677734375,
+      "requests_per_second": 240.95594092775292,
+      "response_times": {
+        "min_ms": 44.94595527648926,
+        "max_ms": 62.11996078491211,
+        "avg_ms": 50.84695816040039,
+        "median_ms": 45.40705680847168,
+        "p95_ms": 62.05286979675293,
+        "p99_ms": 62.10654258728027
+      }
+    }
+  },
+  "performance_metrics": {
+    "baseline__health": {
+      "total_requests": 10,
+      "successful_requests": 10,
+      "failed_requests": 0,
+      "error_requests": 0,
+      "success_rate": 100.0,
+      "total_time_seconds": 0.018270254135131836,
+      "requests_per_second": 547.3377614803409,
+      "response_times": {
+        "min_ms": 12.613296508789062,
+        "max_ms": 18.18108558654785,
+        "avg_ms": 15.838837623596191,
+        "median_ms": 16.16060733795166,
+        "p95_ms": 17.941617965698242,
+        "p99_ms": 18.13319206237793
+      }
+    },
+    "baseline__": {
+      "total_requests": 10,
+      "successful_requests": 10,
+      "failed_requests": 0,
+      "error_requests": 0,
+      "success_rate": 100.0,
+      "total_time_seconds": 0.010020017623901367,
+      "requests_per_second": 998.0022366573869,
+      "response_times": {
+        "min_ms": 6.654024124145508,
+        "max_ms": 9.768962860107422,
+        "avg_ms": 8.322381973266602,
+        "median_ms": 8.292436599731445,
+        "p95_ms": 9.679913520812988,
+        "p99_ms": 9.751152992248535
+      }
+    },
+    "baseline__api_v1_agents": {
+      "total_requests": 10,
+      "successful_requests": 10,
+      "failed_requests": 0,
+      "error_requests": 0,
+      "success_rate": 100.0,
+      "total_time_seconds": 0.0060176849365234375,
+      "requests_per_second": 1661.7686212361332,
+      "response_times": {
+        "min_ms": 3.854036331176758,
+        "max_ms": 5.832910537719727,
+        "avg_ms": 4.956531524658203,
+        "median_ms": 5.070090293884277,
+        "p95_ms": 5.805981159210205,
+        "p99_ms": 5.827524662017822
+      }
+    },
+    "baseline__api_v1_dashboard_stats": {
+      "total_requests": 10,
+      "successful_requests": 10,
+      "failed_requests": 0,
+      "error_requests": 0,
+      "success_rate": 100.0,
+      "total_time_seconds": 0.008288860321044922,
+      "requests_per_second": 1206.4384743715125,
+      "response_times": {
+        "min_ms": 5.68699836730957,
+        "max_ms": 8.001089096069336,
+        "avg_ms": 7.036948204040527,
+        "median_ms": 6.8912506103515625,
+        "p95_ms": 7.898414134979248,
+        "p99_ms": 7.980554103851318
+      }
+    },
+    "baseline__api_v1_ai_provider-status": {
+      "total_requests": 10,
+      "successful_requests": 10,
+      "failed_requests": 0,
+      "error_requests": 0,
+      "success_rate": 100.0,
+      "total_time_seconds": 0.007033109664916992,
+      "requests_per_second": 1421.8461642767552,
+      "response_times": {
+        "min_ms": 3.9560794830322266,
+        "max_ms": 6.939888000488281,
+        "avg_ms": 5.7349443435668945,
+        "median_ms": 6.0825347900390625,
+        "p95_ms": 6.884419918060303,
+        "p99_ms": 6.9287943840026855
+      }
+    }
+  },
+  "resource_usage": {
+    "cpu_usage": {
+      "avg_percent": 16.64,
+      "max_percent": 31.8,
+      "min_percent": 0.0
+    },
+    "memory_usage": {
+      "avg_percent": 68.956,
+      "max_percent": 69.7,
+      "min_percent": 68.2
+    },
+    "duration_seconds": 15
+  },
+  "stress_tests": {
+    "/health": {
+      "5_users": {
+        "total_requests": 15,
+        "successful_requests": 15,
+        "failed_requests": 0,
+        "error_requests": 0,
+        "success_rate": 100.0,
+        "total_time_seconds": 0.013733148574829102,
+        "requests_per_second": 1092.247704032916,
+        "response_times": {
+          "min_ms": 11.654138565063477,
+          "max_ms": 12.951135635375977,
+          "avg_ms": 12.317689259847006,
+          "median_ms": 12.115955352783203,
+          "p95_ms": 12.943792343139648,
+          "p99_ms": 12.949666976928711
+        }
+      },
+      "10_users": {
+        "total_requests": 30,
+        "successful_requests": 30,
+        "failed_requests": 0,
+        "error_requests": 0,
+        "success_rate": 100.0,
+        "total_time_seconds": 0.032318830490112305,
+        "requests_per_second": 928.2514108664379,
+        "response_times": {
+          "min_ms": 11.142730712890625,
+          "max_ms": 32.05299377441406,
+          "avg_ms": 23.389887809753418,
+          "median_ms": 23.809432983398438,
+          "p95_ms": 31.73438310623169,
+          "p99_ms": 31.966912746429443
+        }
+      },
+      "20_users": {
+        "total_requests": 60,
+        "successful_requests": 60,
+        "failed_requests": 0,
+        "error_requests": 0,
+        "success_rate": 100.0,
+        "total_time_seconds": 0.04417109489440918,
+        "requests_per_second": 1358.3543750371086,
+        "response_times": {
+          "min_ms": 15.977859497070312,
+          "max_ms": 43.78199577331543,
+          "avg_ms": 33.2413911819458,
+          "median_ms": 36.13400459289551,
+          "p95_ms": 43.27549934387207,
+          "p99_ms": 43.68774890899658
+        }
+      },
+      "50_users": {
+        "total_requests": 150,
+        "successful_requests": 150,
+        "failed_requests": 0,
+        "error_requests": 0,
+        "success_rate": 100.0,
+        "total_time_seconds": 0.08368921279907227,
+        "requests_per_second": 1792.3456916739312,
+        "response_times": {
+          "min_ms": 15.762805938720703,
+          "max_ms": 78.31072807312012,
+          "avg_ms": 51.21790885925293,
+          "median_ms": 69.43202018737793,
+          "p95_ms": 77.14296579360962,
+          "p99_ms": 78.19118976593018
+        }
+      }
+    },
+    "/api/v1/agents": {
+      "5_users": {
+        "total_requests": 15,
+        "successful_requests": 0,
+        "failed_requests": 15,
+        "error_requests": 0,
+        "success_rate": 0.0,
+        "total_time_seconds": 0.030466079711914062,
+        "requests_per_second": 492.35084204595256,
+        "response_times": {
+          "min_ms": 0,
+          "max_ms": 0,
+          "avg_ms": 0,
+          "median_ms": 0,
+          "p95_ms": 0,
+          "p99_ms": 0
+        }
+      }
+    },
+    "/api/v1/dashboard/stats": {
+      "5_users": {
+        "total_requests": 15,
+        "successful_requests": 0,
+        "failed_requests": 15,
+        "error_requests": 0,
+        "success_rate": 0.0,
+        "total_time_seconds": 0.011039972305297852,
+        "requests_per_second": 1358.6990605766116,
+        "response_times": {
+          "min_ms": 0,
+          "max_ms": 0,
+          "avg_ms": 0,
+          "median_ms": 0,
+          "p95_ms": 0,
+          "p99_ms": 0
+        }
+      }
+    },
+    "/api/v1/ai/provider-status": {
+      "5_users": {
+        "total_requests": 15,
+        "successful_requests": 15,
+        "failed_requests": 0,
+        "error_requests": 0,
+        "success_rate": 100.0,
+        "total_time_seconds": 0.005605936050415039,
+        "requests_per_second": 2675.735125249862,
+        "response_times": {
+          "min_ms": 4.581928253173828,
+          "max_ms": 5.394935607910156,
+          "avg_ms": 5.127096176147461,
+          "median_ms": 5.153656005859375,
+          "p95_ms": 5.341029167175293,
+          "p99_ms": 5.384154319763184
+        }
+      },
+      "10_users": {
+        "total_requests": 30,
+        "successful_requests": 30,
+        "failed_requests": 0,
+        "error_requests": 0,
+        "success_rate": 100.0,
+        "total_time_seconds": 0.03844714164733887,
+        "requests_per_second": 780.2920767212993,
+        "response_times": {
+          "min_ms": 17.927885055541992,
+          "max_ms": 38.195133209228516,
+          "avg_ms": 31.0013214747111,
+          "median_ms": 32.0819616317749,
+          "p95_ms": 37.97856569290161,
+          "p99_ms": 38.17660331726074
+        }
+      },
+      "20_users": {
+        "total_requests": 60,
+        "successful_requests": 45,
+        "failed_requests": 15,
+        "error_requests": 0,
+        "success_rate": 75.0,
+        "total_time_seconds": 0.058259010314941406,
+        "requests_per_second": 1029.8836124343172,
+        "response_times": {
+          "min_ms": 18.15485954284668,
+          "max_ms": 55.956125259399414,
+          "avg_ms": 44.453631507025825,
+          "median_ms": 49.71194267272949,
+          "p95_ms": 55.13029098510742,
+          "p99_ms": 55.84744453430176
+        }
+      }
+    }
+  },
+  "timestamp": "2025-08-05T18:12:29.998344"
+}

@@ -4,17 +4,27 @@ FROM node:18-alpine
 # Install curl for health checks
 RUN apk add --no-cache curl
 
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files with proper ownership
+COPY --chown=nextjs:nodejs package*.json ./
 
 # Install dependencies (skip husky in production)
 ENV HUSKY=0
 RUN npm install --ignore-scripts
 
-# Copy source code
-COPY . .
+# Copy source code with proper ownership
+COPY --chown=nextjs:nodejs . .
+
+# Create .next directory with proper permissions
+RUN mkdir -p /app/.next && chown -R nextjs:nodejs /app/.next
+
+# Change to non-root user
+USER nextjs
 
 # Expose port 9999
 EXPOSE 9999
