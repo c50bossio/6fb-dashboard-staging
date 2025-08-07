@@ -2363,6 +2363,192 @@ async def get_analytics_cache_status():
             "error": str(e)
         }
 
+# Unified Business Data Endpoints
+# Import the unified business data service
+try:
+    from services.business_data_service import business_data_service
+    BUSINESS_DATA_SERVICE_AVAILABLE = True
+except ImportError:
+    BUSINESS_DATA_SERVICE_AVAILABLE = False
+    print("⚠️ Unified business data service not available")
+
+@app.get("/business-data/metrics")
+async def get_unified_business_metrics(
+    barbershop_id: Optional[str] = None,
+    force_refresh: bool = False,
+    format: str = "json"
+):
+    """Get unified business metrics for dashboard and AI consistency"""
+    try:
+        if not BUSINESS_DATA_SERVICE_AVAILABLE:
+            return {
+                "success": False,
+                "error": "Unified business data service not available",
+                "data_source": "unavailable"
+            }
+        
+        if format == "ai":
+            formatted_metrics = await business_data_service.get_formatted_metrics_for_ai(
+                barbershop_id, force_refresh
+            )
+            return {
+                "success": True,
+                "ai_summary": formatted_metrics,
+                "data_source": "unified",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        elif format == "dashboard":
+            dashboard_data = await business_data_service.get_metrics_for_dashboard(barbershop_id)
+            return dashboard_data
+        
+        else:
+            # Default JSON format
+            metrics = await business_data_service.get_live_business_metrics(
+                barbershop_id, force_refresh
+            )
+            
+            # Convert to dict for JSON response
+            import json
+            from dataclasses import asdict
+            
+            return {
+                "success": True,
+                "data": asdict(metrics),
+                "cache_status": business_data_service.get_cache_status(),
+                "data_source": "unified",
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    except Exception as e:
+        print(f"❌ Unified business data error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "data_source": "error"
+        }
+
+@app.post("/business-data/metrics") 
+async def get_unified_business_metrics_post(request: dict):
+    """POST version for unified business metrics"""
+    try:
+        barbershop_id = request.get("barbershop_id")
+        force_refresh = request.get("force_refresh", False)
+        format = request.get("format", "json")
+        
+        if not BUSINESS_DATA_SERVICE_AVAILABLE:
+            return {
+                "success": False,
+                "error": "Unified business data service not available",
+                "data_source": "unavailable"
+            }
+        
+        if format == "ai":
+            formatted_metrics = await business_data_service.get_formatted_metrics_for_ai(
+                barbershop_id, force_refresh
+            )
+            return {
+                "success": True,
+                "ai_summary": formatted_metrics,
+                "data_source": "unified",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        elif format == "dashboard":
+            dashboard_data = await business_data_service.get_metrics_for_dashboard(barbershop_id)
+            return dashboard_data
+        
+        else:
+            # Default JSON format
+            metrics = await business_data_service.get_live_business_metrics(
+                barbershop_id, force_refresh
+            )
+            
+            # Convert to dict for JSON response
+            from dataclasses import asdict
+            
+            return {
+                "success": True,
+                "data": asdict(metrics),
+                "cache_status": business_data_service.get_cache_status(),
+                "data_source": "unified",
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    except Exception as e:
+        print(f"❌ Unified business data POST error: {e}")
+        return {
+            "success": False,
+            "error": str(e),
+            "data_source": "error"
+        }
+
+@app.post("/business-data/refresh")
+async def refresh_unified_business_data(request: dict):
+    """Trigger unified business data refresh"""
+    try:
+        if not BUSINESS_DATA_SERVICE_AVAILABLE:
+            return {
+                "success": False,
+                "error": "Unified business data service not available"
+            }
+        
+        barbershop_id = request.get("barbershop_id")
+        refresh_cache = request.get("refresh_cache", True)
+        
+        if refresh_cache:
+            # Force refresh by getting fresh data
+            metrics = await business_data_service.get_live_business_metrics(
+                barbershop_id, force_refresh=True
+            )
+            
+            return {
+                "success": True,
+                "message": "Unified business data cache refreshed successfully",
+                "metrics_updated": True,
+                "data_freshness": metrics.data_freshness,
+                "data_source": metrics.data_source,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {
+                "success": True,
+                "message": "Unified business data refresh request acknowledged",
+                "metrics_updated": False,
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    except Exception as e:
+        print(f"❌ Unified business data refresh error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@app.get("/business-data/cache-status")
+async def get_unified_business_data_cache_status():
+    """Get unified business data cache status for monitoring"""
+    try:
+        if not BUSINESS_DATA_SERVICE_AVAILABLE:
+            return {
+                "success": False,
+                "error": "Unified business data service not available"
+            }
+        
+        cache_status = business_data_service.get_cache_status()
+        return {
+            "success": True,
+            "cache_status": cache_status,
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        print(f"❌ Unified business data cache status error: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
 # Enhanced AI Chat with Analytics Integration
 @app.post("/ai/enhanced-chat")
 async def enhanced_ai_chat(request: dict):

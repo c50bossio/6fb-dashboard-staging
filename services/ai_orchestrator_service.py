@@ -356,22 +356,22 @@ class AIOrchestratorService:
         return any(keyword in message_lower for keyword in analytics_keywords)
     
     async def _fetch_analytics_data(self, barbershop_id: Optional[str] = None) -> Optional[str]:
-        """Fetch real-time analytics data for AI consumption"""
+        """Fetch real-time analytics data for AI consumption using unified business data service"""
         try:
-            # Import analytics service
-            from .realtime_analytics_service import realtime_analytics_service
+            # Import unified business data service
+            from .business_data_service import business_data_service
             
-            # Get formatted analytics data that's AI-ready
-            analytics_data = await realtime_analytics_service.get_formatted_metrics_for_ai(barbershop_id)
+            # Get formatted analytics data that's AI-ready and matches dashboard data
+            analytics_data = await business_data_service.get_formatted_metrics_for_ai(barbershop_id)
             
-            logger.info(f"✅ Fetched analytics data: {len(analytics_data)} characters")
+            logger.info(f"✅ Fetched unified analytics data: {len(analytics_data)} characters")
             return analytics_data
             
         except ImportError:
-            logger.warning("⚠️ Analytics service not available for AI integration")
+            logger.warning("⚠️ Unified business data service not available for AI integration")
             return None
         except Exception as e:
-            logger.error(f"❌ Failed to fetch analytics data: {e}")
+            logger.error(f"❌ Failed to fetch unified analytics data: {e}")
             return None
     
     async def _generate_fallback_response(self, message: str) -> Dict:
@@ -413,10 +413,10 @@ class AIOrchestratorService:
                 enhanced_business_context['real_time_analytics'] = analytics_data
                 logger.info("✅ Enhanced context with real-time analytics data")
             
-            # Import and use realtime analytics service to populate business context
+            # Import and use unified business data service to populate business context
             try:
-                from .realtime_analytics_service import realtime_analytics_service
-                business_metrics = await realtime_analytics_service.get_live_business_metrics(
+                from .business_data_service import business_data_service
+                business_metrics = await business_data_service.get_live_business_metrics(
                     enhanced_business_context.get('barbershop_id')
                 )
                 
@@ -438,7 +438,7 @@ class AIOrchestratorService:
                     'operating_history': f"Currently serving {business_metrics.total_customers} customers",
                     'business_metrics_available': True
                 })
-                logger.info("✅ Pre-populated business context to prevent AI from asking basic questions")
+                logger.info("✅ Pre-populated business context with unified data service")
                 
             except Exception as e:
                 logger.warning(f"Could not pre-populate business context: {e}")

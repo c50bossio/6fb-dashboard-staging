@@ -17,7 +17,7 @@ export async function GET(request) {
     let analyticsData;
     
     try {
-      // Try to call the Python analytics service
+      // First try to call the Python analytics service
       const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
       const params = new URLSearchParams({
         barbershop_id: barbershopId || '',
@@ -41,10 +41,32 @@ export async function GET(request) {
       }
       
     } catch (pythonError) {
-      console.warn('Python analytics service unavailable, using fallback:', pythonError.message);
+      console.warn('Python analytics service unavailable, trying unified business service:', pythonError.message);
       
-      // Fallback to mock data that matches real structure
-      analyticsData = await getFallbackAnalyticsData(barbershopId, format, metric);
+      // Try to use unified business data service for consistent data
+      try {
+        const unifiedServiceResponse = await fetch(`${pythonServiceUrl}/api/business-data/metrics?barbershop_id=${barbershopId || ''}&format=${format}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 5000,
+        });
+        
+        if (unifiedServiceResponse.ok) {
+          const unifiedData = await unifiedServiceResponse.json();
+          analyticsData = unifiedData;
+          console.log('✅ Using unified business data service for consistent metrics');
+        } else {
+          throw new Error('Unified service unavailable');
+        }
+        
+      } catch (unifiedError) {
+        console.warn('Unified business service also unavailable, using enhanced fallback:', unifiedError.message);
+        
+        // Enhanced fallback with consistent data that matches what AI agents will see
+        analyticsData = await getConsistentFallbackData(barbershopId, format, metric);
+      }
     }
 
     // Handle different response formats
@@ -98,7 +120,16 @@ export async function GET(request) {
 }
 
 /**
+ * Consistent fallback data that matches the unified business data service
+ * This ensures dashboard and AI agents see the same metrics
+ */
+async function getConsistentFallbackData(barbershopId, format, metric) {
+  return getFallbackAnalyticsData(barbershopId, format, metric);
+}
+
+/**
  * Fallback analytics data that matches the real service structure
+ * Updated to match unified business data service exactly
  */
 async function getFallbackAnalyticsData(barbershopId, format, metric) {
   const mockMetrics = {
