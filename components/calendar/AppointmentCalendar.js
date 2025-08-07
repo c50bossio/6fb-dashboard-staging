@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
 // import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid' // Temporarily disabled for testing
-import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
+import FullCalendar from '@fullcalendar/react'
+import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import rrulePlugin from '@fullcalendar/rrule'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import { useState, useRef, useEffect } from 'react'
 
 // Mock data for barbers/resources
 const mockBarbers = [

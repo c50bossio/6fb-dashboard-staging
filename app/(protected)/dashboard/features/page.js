@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { 
   ChartBarIcon,
   ChatBubbleLeftRightIcon as ChatIcon,
@@ -10,6 +9,7 @@ import {
   SparklesIcon,
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 
 export default function FeaturesPage() {
   const features = [

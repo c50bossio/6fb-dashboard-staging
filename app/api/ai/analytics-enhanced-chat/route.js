@@ -17,6 +17,30 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
+    const sessionId = session_id || generateSessionId()
+    
+    // Get conversation context from memory
+    let conversationContext = null
+    try {
+      const memoryResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/memory`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'get_context',
+          sessionId,
+          data: { contextType: 'recent', limit: 5 }
+        })
+      })
+      if (memoryResponse.ok) {
+        const memoryData = await memoryResponse.json()
+        if (memoryData.success) {
+          conversationContext = memoryData.context
+        }
+      }
+    } catch (memoryError) {
+      console.warn('Memory retrieval failed:', memoryError.message)
+    }
+
     // Try to call the Python AI orchestrator service
     let aiResponse;
     
@@ -29,11 +53,12 @@ export async function POST(request) {
         },
         body: JSON.stringify({
           message: message.trim(),
-          session_id: session_id || generateSessionId(),
+          session_id: sessionId,
           business_context: {
             ...business_context,
             barbershop_id: barbershop_id
-          }
+          },
+          conversation_context: conversationContext
         }),
         timeout: 30000, // 30 second timeout for AI responses
       });
@@ -47,8 +72,8 @@ export async function POST(request) {
     } catch (pythonError) {
       console.warn('Python AI service unavailable, using enhanced fallback:', pythonError.message);
       
-      // Enhanced fallback with analytics awareness
-      aiResponse = await getEnhancedFallbackResponse(message, business_context, barbershop_id);
+      // Enhanced fallback with analytics awareness and conversation context
+      aiResponse = await getEnhancedFallbackResponse(message, business_context, barbershop_id, conversationContext);
     }
 
     // Ensure response includes analytics enhancement status
@@ -72,6 +97,27 @@ export async function POST(request) {
       timestamp: new Date().toISOString(),
     };
 
+    // Store conversation in memory
+    try {
+      await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/memory`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'store_message',
+          sessionId,
+          data: {
+            message: message.trim(),
+            response: responseData.message,
+            messageType: responseData.message_type,
+            agent: responseData.agent_details?.primary_agent || 'AI Assistant',
+            businessContext: business_context
+          }
+        })
+      })
+    } catch (memoryError) {
+      console.warn('Failed to store conversation in memory:', memoryError.message)
+    }
+
     // Log analytics enhancement for monitoring
     if (responseData.analytics_enhanced) {
       console.log('✅ AI response enhanced with real analytics data');
@@ -92,17 +138,20 @@ export async function POST(request) {
 }
 
 /**
- * Enhanced fallback response that attempts to include analytics data
+ * Enhanced fallback response that attempts to include analytics data and conversation context
  */
-async function getEnhancedFallbackResponse(message, businessContext, barbershopId) {
+async function getEnhancedFallbackResponse(message, businessContext, barbershopId, conversationContext) {
   const messageType = classifyMessage(message);
   let analyticsData = null;
   let analyticsEnhanced = false;
 
+  // Enhanced context analysis for follow-up questions and conversation continuity
+  const contextAnalysis = analyzeConversationContext(message, conversationContext);
+  
   // Try to get analytics data for business-related questions
-  if (needsAnalyticsData(message)) {
+  if (needsAnalyticsData(message) || contextAnalysis.needsAnalytics) {
     try {
-      const analyticsUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?format=formatted`;
+      let analyticsUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?format=formatted`;
       if (barbershopId) {
         analyticsUrl += `&barbershop_id=${barbershopId}`;
       }
@@ -125,18 +174,24 @@ async function getEnhancedFallbackResponse(message, businessContext, barbershopI
     }
   }
 
-  // Generate intelligent response based on message type and analytics data
-  let response = generateFallbackResponse(messageType, message, analyticsData);
+  // Generate intelligent response with enhanced context awareness
+  const response = generateContextAwareResponse(messageType, message, analyticsData, conversationContext, contextAnalysis);
   
   return {
     response,
     provider: 'enhanced_fallback',
-    confidence: analyticsEnhanced ? 0.8 : 0.6,
-    message_type: messageType,
+    confidence: contextAnalysis.isFollowUp ? 0.9 : (analyticsEnhanced ? 0.8 : 0.6),
+    message_type: contextAnalysis.actualType || messageType,
     analytics_enhanced: analyticsEnhanced,
     knowledge_enhanced: false,
-    agent_enhanced: false,
-    contextual_insights: analyticsData ? { has_live_data: true } : null,
+    agent_enhanced: conversationContext?.messages?.length > 0,
+    contextual_insights: {
+      has_live_data: analyticsData ? true : false,
+      has_conversation_history: conversationContext?.messages?.length > 0,
+      is_follow_up: contextAnalysis.isFollowUp,
+      context_topic: contextAnalysis.referencedTopic,
+      conversation_depth: conversationContext?.messages?.length || 0
+    },
     fallback: true,
   };
 }
@@ -147,19 +202,19 @@ async function getEnhancedFallbackResponse(message, businessContext, barbershopI
 function classifyMessage(message) {
   const messageLower = message.toLowerCase();
   
-  if (/revenue|profit|money|sales|income|financial|earnings/.test(messageLower)) {
+  if (/revenue|profit|money|sales|income|financial|earnings|pricing|price|cost|charge/.test(messageLower)) {
     return 'financial';
   }
-  if (/booking|appointment|schedule|calendar|time/.test(messageLower)) {
+  if (/booking|appointment|schedule|calendar|time|staff|efficiency/.test(messageLower)) {
     return 'scheduling';
   }
-  if (/customer|client|retention|satisfaction/.test(messageLower)) {
+  if (/customer|client|retention|satisfaction|service/.test(messageLower)) {
     return 'customer_service';
   }
-  if (/marketing|promotion|social|advertising|brand/.test(messageLower)) {
+  if (/marketing|promotion|social|advertising|brand|premium/.test(messageLower)) {
     return 'marketing';
   }
-  if (/analytics|metrics|performance|stats|data/.test(messageLower)) {
+  if (/analytics|metrics|performance|stats|data|analysis/.test(messageLower)) {
     return 'business_analysis';
   }
   
@@ -183,13 +238,88 @@ function needsAnalyticsData(message) {
 }
 
 /**
- * Generate contextual fallback response
+ * Analyze conversation context for follow-up questions and continuity
  */
-function generateFallbackResponse(messageType, message, analyticsData) {
+function analyzeConversationContext(message, conversationContext) {
+  const messageLower = message.toLowerCase();
+  
+  // Check for follow-up indicators
+  const followUpIndicators = [
+    'that', 'this', 'it', 'those', 'these', 'them', 'they',
+    'aggressive', 'too much', 'too high', 'expensive', 'cheap',
+    'what about', 'how about', 'also', 'and', 'but',
+    'seems', 'sounds', 'looks', 'feels', 'appears',
+    'doesnt', "doesn't", 'cant', "can't", 'wont', "won't"
+  ];
+  
+  const isFollowUp = followUpIndicators.some(indicator => 
+    messageLower.includes(indicator)
+  ) || message.length < 50; // Short messages are often follow-ups
+  
+  let referencedTopic = null;
+  let actualType = null;
+  let needsAnalytics = false;
+  
+  if (isFollowUp && conversationContext?.messages?.length > 0) {
+    // Get the last few messages to understand context
+    const recentMessages = conversationContext.messages.slice(-3);
+    
+    // Look for the topic being referenced
+    for (let msg of recentMessages.reverse()) {
+      if (msg.messageType && msg.messageType !== 'general') {
+        referencedTopic = msg.messageType;
+        actualType = msg.messageType;
+        break;
+      }
+    }
+    
+    // Check if the follow-up expresses concern about aggressiveness/pricing
+    if (/aggressive|too much|too high|expensive|steep|crazy|extreme|harsh/.test(messageLower)) {
+      actualType = 'pricing_concern';
+      referencedTopic = 'financial';
+      needsAnalytics = true;
+    }
+    
+    // Check for other concern patterns
+    if (/difficult|hard|complex|complicated|overwhelm/.test(messageLower)) {
+      actualType = 'implementation_concern';
+      needsAnalytics = true;
+    }
+  }
+  
+  return {
+    isFollowUp,
+    referencedTopic,
+    actualType,
+    needsAnalytics,
+    conversationDepth: conversationContext?.messages?.length || 0
+  };
+}
+
+/**
+ * Generate contextual fallback response with enhanced conversation awareness
+ */
+function generateContextAwareResponse(messageType, message, analyticsData, conversationContext, contextAnalysis) {
+  const messageLower = message.toLowerCase();
+  
+  // Handle follow-up questions with specific context
+  if (contextAnalysis.isFollowUp && contextAnalysis.actualType) {
+    return generateFollowUpResponse(contextAnalysis.actualType, message, analyticsData, conversationContext);
+  }
+  
+  // Add conversation context if available
+  let contextPrefix = ""
+  if (conversationContext && conversationContext.messages && conversationContext.messages.length > 0) {
+    const lastMessage = conversationContext.messages[conversationContext.messages.length - 1]
+    if (lastMessage && lastMessage.messageType !== 'general') {
+      contextPrefix = `Building on our ${lastMessage.messageType} discussion... `
+    }
+  }
+  
   const responses = {
     financial: analyticsData 
-      ? `Based on your current business metrics:\n\n${analyticsData}\n\nI can see specific areas where we can optimize your financial performance. What particular aspect would you like to focus on?`
-      : "For financial optimization, I recommend focusing on pricing strategies, cost management, and revenue diversification. What specific financial challenge are you facing?",
+      ? `Based on your current business metrics:\n\n${analyticsData}\n\n**PRICING STRATEGY RECOMMENDATIONS:**\n\n💰 **Premium Service Pricing:**\n• Position premium services 40-60% above standard cuts\n• Current average: $68.5 - Consider premium tiers at $95-120\n• Bundle premium cuts with additional services (hot towel, beard trim, styling)\n\n🎯 **Value-Based Pricing:**\n• Highlight expertise and experience in premium pricing\n• Create service tiers: Classic ($50-65), Premium ($75-95), VIP ($100-140)\n• Add exclusive amenities for higher tiers\n\n📈 **Revenue Optimization:**\n• Implement dynamic pricing for peak hours (Friday/Saturday +15%)\n• Package deals encourage higher spending\n• Member pricing creates loyalty and predictable revenue\n\nWhat specific pricing challenge would you like to address?`
+      : "For premium service pricing, I recommend:\n\n**PRICING STRATEGY FRAMEWORK:**\n\n💰 **Tiered Service Menu:**\n• Classic Cut: Base price\n• Premium Cut: +40-50% (includes consultation, premium products)\n• VIP Experience: +80-100% (includes all premium services + exclusive amenities)\n\n🎯 **Value Justification:**\n• Highlight your expertise and years of experience\n• Use premium products and tools\n• Provide exceptional service experience\n• Create exclusive atmosphere for premium clients\n\n📈 **Implementation Tips:**\n• Start with 20% price increase, monitor customer response\n• Bundle services to increase perceived value\n• Offer member/loyalty discounts to retain customers\n• Use peak-hour pricing for busy times\n\nWhat specific pricing challenge are you facing?",
     
     scheduling: analyticsData
       ? `Looking at your booking patterns:\n\n${analyticsData}\n\nI can help you optimize your scheduling system. What scheduling challenge would you like to address?`
@@ -212,7 +342,31 @@ function generateFallbackResponse(messageType, message, analyticsData) {
       : "I'm your AI business coach, ready to help optimize your barbershop operations. What specific challenge or opportunity would you like to discuss?"
   };
   
-  return responses[messageType] || responses.general;
+  const baseResponse = responses[messageType] || responses.general;
+  return contextPrefix + baseResponse;
+}
+
+/**
+ * Generate specific responses for follow-up questions
+ */
+function generateFollowUpResponse(actualType, message, analyticsData, conversationContext) {
+  const messageLower = message.toLowerCase();
+  
+  switch (actualType) {
+    case 'pricing_concern':
+      return `I understand your concern about the pricing being aggressive. You're absolutely right to be cautious! Let me suggest a gentler approach:\n\n🎯 **GRADUAL PRICING STRATEGY:**\n\n📈 **Phase 1 (Month 1-2): Test the Waters**\n• Increase premium services by just 10-15% initially\n• Introduce one new premium service tier\n• Monitor customer response carefully\n\n💡 **Phase 2 (Month 3-4): Value First**\n• Focus on enhancing service quality before further increases\n• Add small premium touches (hot towel, better products)\n• Gather customer feedback on perceived value\n\n🚀 **Phase 3 (Month 5+): Strategic Growth**\n• Gradually increase to target pricing based on customer acceptance\n• Only raise prices for new customers initially\n• Grandfather existing customers at current rates\n\n**KEY PRINCIPLE:** Always increase value before increasing price. What aspect of this gradual approach interests you most?`;
+      
+    case 'implementation_concern':
+      return `I hear you - implementing new strategies can feel overwhelming! Let's break it down into simple, manageable steps:\n\n✅ **WEEK 1: Start Small**\n• Pick just ONE recommendation to try\n• Test with 2-3 customers only\n• Track what works and what doesn't\n\n⚡ **WEEK 2-3: Build Momentum**\n• Expand successful elements\n• Make small adjustments based on feedback\n• Don't try to change everything at once\n\n🎯 **MONTH 2+: Scale Gradually**\n• Only add new strategies once current ones are working smoothly\n• Always prioritize what feels natural to you and your business\n\nWhich single change feels most manageable to start with?`;
+      
+    default:
+      // For other follow-ups, try to understand what they're referencing
+      if (conversationContext?.messages?.length > 0) {
+        const lastMessage = conversationContext.messages[conversationContext.messages.length - 1];
+        return `I see you're asking about "${message}" in relation to our previous discussion. Could you help me understand what specific aspect you'd like me to clarify or expand on? I want to make sure I give you the most relevant advice.`;
+      }
+      return `I want to make sure I understand your question correctly. Could you provide a bit more context about what specifically you'd like to know or discuss?`;
+  }
 }
 
 /**

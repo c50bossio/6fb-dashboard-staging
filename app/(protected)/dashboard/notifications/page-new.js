@@ -1,8 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
-import { useNotifications } from '@/hooks/useNotifications'
 import { 
   BellIcon,
   EnvelopeIcon,
@@ -13,6 +10,11 @@ import {
   TrashIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
+import dynamic from 'next/dynamic'
+import { useState } from 'react'
+
+import { useNotifications } from '@/hooks/useNotifications'
+
 
 // Dynamically import Novu components
 const NotificationCenter = dynamic(

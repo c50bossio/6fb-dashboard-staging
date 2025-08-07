@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -279,8 +280,8 @@ function classifyMessage(message) {
 
 function generateBusinessAnalysisResponse(message, context, contextualInsights = null) {
   // Use contextual insights if available
-  let dataInsights = []
-  let specificMetrics = []
+  const dataInsights = []
+  const specificMetrics = []
   
   if (contextualInsights && contextualInsights.relevantKnowledge.length > 0) {
     // Extract specific data from knowledge base

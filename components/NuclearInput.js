@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, forwardRef, memo } from 'react'
+
 import { autoFormat, validators } from '../lib/formatters'
 
 // NUCLEAR SOLUTION: DOM-only input that completely bypasses React state

@@ -1,9 +1,5 @@
 'use client'
 
-import React from 'react'
-import { Badge } from '../ui'
-import Button from '../Button'
-import { useTenant } from '@/contexts/TenantContext'
 import { 
   ArrowPathIcon, 
   BellIcon, 
@@ -13,6 +9,12 @@ import {
   ClockIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline'
+import React from 'react'
+
+import Button from '../Button'
+import { Badge } from '../ui'
+
+import { useTenant } from '@/contexts/TenantContext'
 
 const DashboardHeader = React.memo(function DashboardHeader({ 
   user, 

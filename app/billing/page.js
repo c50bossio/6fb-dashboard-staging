@@ -1,6 +1,4 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   CreditCardIcon,
   ChartBarIcon,
@@ -12,6 +10,8 @@ import {
   CogIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function BillingDashboard() {
   const router = useRouter()

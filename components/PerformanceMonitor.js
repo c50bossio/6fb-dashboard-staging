@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+
 import { getPerformanceMonitor } from '../lib/performance'
 
 export default function PerformanceMonitor() {

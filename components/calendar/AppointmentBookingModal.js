@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
 import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback } from 'react'
+import { Fragment } from 'react'
+
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function AppointmentBookingModal({

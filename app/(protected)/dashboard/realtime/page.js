@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
-import { useRealtimeNotifications } from '@/hooks/usePusher'
 import { BellIcon, ChatBubbleLeftRightIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import dynamic from 'next/dynamic'
+import { useState } from 'react'
+
+import { useRealtimeNotifications } from '@/hooks/usePusher'
+
 
 // Dynamically import components to avoid SSR issues
 const RealtimeDashboard = dynamic(

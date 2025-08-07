@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
 import { 
   CalendarDaysIcon,
   UserGroupIcon,
@@ -12,7 +10,7 @@ import {
   PhoneIcon,
   ScissorsIcon,
   StarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   TrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -28,6 +26,9 @@ import {
   CurrencyDollarIcon as CurrencySolid,
   StarIcon as StarSolid
 } from '@heroicons/react/24/solid'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 export default function RedesignedDashboardPage() {
   const { user } = useAuth()
@@ -350,7 +351,7 @@ export default function RedesignedDashboardPage() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                <TrendingUpIcon className="h-6 w-6 mr-2 text-amber-600" />
+                <ArrowTrendingUpIcon className="h-6 w-6 mr-2 text-amber-600" />
                 This Week's Snapshot
               </h2>
               <button className="text-sm font-medium text-blue-600 hover:text-blue-800">

@@ -1,8 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { usePathname } from 'next/navigation'
-import { getBreadcrumbs } from './BarbershopNavigationConfig'
 import { 
   Bars3Icon,
   BellIcon,
@@ -11,6 +8,11 @@ import {
   ChevronRightIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
+
+import { getBreadcrumbs } from './BarbershopNavigationConfig'
+
 
 export default function MobileHeader({ onMenuClick, showSearch = false }) {
   const pathname = usePathname()

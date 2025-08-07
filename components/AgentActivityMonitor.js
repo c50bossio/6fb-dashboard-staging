@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   SparklesIcon, 
   ChartBarIcon, 
@@ -11,6 +10,7 @@ import {
   ExclamationTriangleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 const AGENT_ICONS = {
   'Marcus': ChartBarIcon,  // Financial Coach

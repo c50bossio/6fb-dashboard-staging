@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
+import NotionIntegration from './NotionIntegration'
+
 import { Button, Badge, Alert } from "@/components/ui"
 import Card, { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 // Using emoji alternatives instead of lucide-react for Node.js compatibility
@@ -13,7 +16,6 @@ const Lock = () => <span>🔒</span>
 const Plus = () => <span>➕</span>
 const Search = () => <span>🔍</span>
 const Database = () => <span>🗄️</span>
-import NotionIntegration from './NotionIntegration'
 
 // Manual Entry Tab Component
 function ManualEntryTab() {

@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+
 import BookingCalendar from '../../../../components/calendar/BookingCalendar'
-import { createClient } from '../../../../lib/supabase/client'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../../lib/supabase/client'
 
 export default function BookingsPage() {
   const [showResources, setShowResources] = useState(true)

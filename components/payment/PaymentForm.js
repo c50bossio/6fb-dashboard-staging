@@ -1,13 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements
-} from '@stripe/react-stripe-js'
 import {
   CreditCardIcon,
   LockClosedIcon,
@@ -15,6 +7,14 @@ import {
   ExclamationTriangleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements
+} from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
+import { useState, useEffect } from 'react'
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_...')

@@ -1,10 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../components/SupabaseAuthProvider'
-import { useTenant } from '../../contexts/TenantContext'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui'
 import { 
   ChevronRightIcon, 
   CheckCircleIcon, 
@@ -12,6 +7,13 @@ import {
   CogIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../components/SupabaseAuthProvider'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui'
+import { useTenant } from '../../contexts/TenantContext'
+
 
 const ONBOARDING_STEPS = [
   {

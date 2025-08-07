@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import posthog from '@/lib/posthog/client'
+import { useEffect } from 'react'
+
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useTenant } from '@/contexts/TenantContext'
-import { usePostHogIdentify } from '@/lib/posthog/client'
 import tenantAnalytics from '@/lib/analytics/tenantAnalytics'
+import posthog from '@/lib/posthog/client'
+import { usePostHogIdentify } from '@/lib/posthog/client'
 
 export default function PostHogProvider({ children }) {
   const pathname = usePathname()

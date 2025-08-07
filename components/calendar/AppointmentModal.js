@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect, Fragment } from 'react'
 
 const services = [
   { id: 'haircut', name: 'Classic Haircut', duration: 30, price: 25 },

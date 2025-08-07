@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -267,7 +268,7 @@ async function generateMockInsights(limit = 10, type = null) {
   ]
   
   // Filter by type if specified
-  let filteredInsights = type 
+  const filteredInsights = type 
     ? mockInsights.filter(insight => insight.type === type)
     : mockInsights
   

@@ -1,13 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { createClient } from '../../../../lib/supabase/client'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
+import FullCalendar from '@fullcalendar/react'
+import timeGridPlugin from '@fullcalendar/timegrid'
 import { 
   CalendarDaysIcon,
   UserGroupIcon,
@@ -28,6 +25,10 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import { useState, useEffect, useRef } from 'react'
+
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../../lib/supabase/client'
 
 // Service types with colors matching FullCalendar
 const SERVICES = [

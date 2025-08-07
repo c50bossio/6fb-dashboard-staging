@@ -1,10 +1,5 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import { useTenant } from '../../../../contexts/TenantContext'
-import ProtectedRoute from '../../../../components/ProtectedRoute'
-import { Card } from '../../../../components/ui'
 import { 
   SparklesIcon,
   ChartBarIcon,
@@ -19,6 +14,12 @@ import {
   ClockIcon,
   UserGroupIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback } from 'react'
+
+import ProtectedRoute from '../../../../components/ProtectedRoute'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { Card } from '../../../../components/ui'
+import { useTenant } from '../../../../contexts/TenantContext'
 
 // AI-Powered Widget Components
 function FinancialInsightsWidget({ onRefresh, loading }) {

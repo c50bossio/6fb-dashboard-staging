@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRealtime } from '../../hooks/useRealtime'
 import { 
   ChatBubbleLeftRightIcon,
   PaperAirplaneIcon,
@@ -9,6 +7,9 @@ import {
   SignalIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useRef } from 'react'
+
+import { useRealtime } from '../../hooks/useRealtime'
 
 export default function RealtimeChat({ className = '' }) {
   const {

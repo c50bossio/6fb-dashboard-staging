@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../components/SupabaseAuthProvider'
-import ProtectedRoute from '../../components/ProtectedRoute'
 import { 
   CreditCardIcon,
   BanknotesIcon,
@@ -13,6 +10,10 @@ import {
   ClockIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+
+import ProtectedRoute from '../../components/ProtectedRoute'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 
 // Mock payment data
 const mockPayments = [

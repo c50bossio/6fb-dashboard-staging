@@ -1,10 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
 import { 
   XMarkIcon, 
   ClockIcon, 
@@ -13,6 +9,11 @@ import {
   TrashIcon,
   PencilIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback } from 'react'
+import { Fragment } from 'react'
+
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
 
 const daysOfWeek = [
   { value: 0, label: 'Sunday', short: 'Sun' },

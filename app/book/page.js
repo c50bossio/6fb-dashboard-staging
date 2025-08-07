@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '../../lib/supabase/client'
 import { 
   CalendarDaysIcon,
   UserGroupIcon,
@@ -21,6 +19,9 @@ import {
   GiftIcon
 } from '@heroicons/react/24/outline'
 import { CheckIcon, StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import { useState, useEffect } from 'react'
+
+import { createClient } from '../../lib/supabase/client'
 
 // Service types with customer-friendly descriptions
 const SERVICES = [

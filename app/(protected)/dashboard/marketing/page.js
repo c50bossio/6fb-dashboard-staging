@@ -1,9 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import ProtectedRoute from '../../../../components/ProtectedRoute'
-import Link from 'next/link'
 import { 
   ArrowLeftIcon,
   MegaphoneIcon,
@@ -15,6 +11,11 @@ import {
   PauseIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+
+import ProtectedRoute from '../../../../components/ProtectedRoute'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function MarketingDashboard() {
   const { user } = useAuth()

@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { 
   BuildingStorefrontIcon,
   EnvelopeIcon,
@@ -15,6 +13,8 @@ import {
   BellAlertIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export default function TenantSignup() {
   const router = useRouter()

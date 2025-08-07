@@ -1,6 +1,7 @@
-import { TenantProvider } from '../../contexts/TenantContext'
-import ProtectedRoute from '../../components/ProtectedRoute'
+import FloatingAIChat from '../../components/FloatingAIChat'
 import ModernSidebar from '../../components/navigation/ModernSidebar'
+import ProtectedRoute from '../../components/ProtectedRoute'
+import { TenantProvider } from '../../contexts/TenantContext'
 
 export default function ProtectedLayout({ children }) {
   return (
@@ -13,6 +14,7 @@ export default function ProtectedLayout({ children }) {
               {children}
             </div>
           </main>
+          <FloatingAIChat />
         </div>
       </ProtectedRoute>
     </TenantProvider>

@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
 import { 
   EyeIcon,
   EyeSlashIcon,
   LockClosedIcon,
   EnvelopeIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../../components/SupabaseAuthProvider'
+
 
 export default function LoginPage() {
   const router = useRouter()

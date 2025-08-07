@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, lazy, Suspense } from 'react'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
-import TabbedPageLayout, { TabContent, EmptyStates } from '../../../components/layout/TabbedPageLayout'
 import { 
   SparklesIcon,
   ChatBubbleLeftRightIcon,
@@ -14,6 +11,10 @@ import {
   BeakerIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline'
+import { useState, lazy, Suspense } from 'react'
+
+import TabbedPageLayout, { TabContent, EmptyStates } from '../../../components/layout/TabbedPageLayout'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 // Lazy load AI components
 const AIAgentChat = lazy(() => import('../../../components/ai/AIAgentChat'))

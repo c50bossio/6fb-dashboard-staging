@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useAuth } from '../../components/SupabaseAuthProvider'
 import { 
   LockClosedIcon,
   EyeIcon,
   EyeSlashIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../components/SupabaseAuthProvider'
+
 
 export default function ResetPasswordPage() {
   const router = useRouter()

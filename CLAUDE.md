@@ -8,6 +8,8 @@ The 6FB AI Agent System is an enterprise-grade barbershop management platform po
 
 **Architecture**: Full-stack application with Next.js 14 frontend (port 9999), FastAPI backend (port 8001), and dual database support (SQLite for development, PostgreSQL for production via Supabase).
 
+**Important Note**: This is part of a larger monorepo structure at `/Users/bossio/` which includes multiple related projects. The main parent directory contains a comprehensive CLAUDE.md with universal guidelines that apply across all projects.
+
 ## Key Technologies & Architecture
 
 ### Frontend Stack
@@ -38,17 +40,22 @@ The 6FB AI Agent System is an enterprise-grade barbershop management platform po
 
 ### Docker Development (Recommended)
 ```bash
-# Start development environment
+# Start development environment (creates data directory and handles containers)
 ./docker-dev-start.sh
 
 # Stop services
 ./docker-stop.sh
+# or
+docker compose down
 
 # View logs
 docker compose logs -f
 
 # Restart services
 docker compose restart
+
+# Check service health
+docker compose ps
 ```
 
 ### Manual Development
@@ -60,9 +67,9 @@ npm install
 npm run dev
 
 # Start backend separately if needed
-python main.py  # Simple HTTP server
+python main.py  # Simple HTTP server (port 8000)
 # or
-python fastapi_backend.py  # Full FastAPI server
+python fastapi_backend.py  # Full FastAPI server with AI endpoints (port 8000)
 ```
 
 ### Testing Commands
@@ -117,17 +124,19 @@ npm run lint:fix
 ## Architecture Patterns
 
 ### API Structure
-- **Next.js API Routes**: `/app/api/` - Frontend API endpoints with comprehensive routing
-- **Primary Backend**: `/fastapi_backend.py` - Full-featured FastAPI server (used in Docker)
+- **Next.js API Routes**: `/app/api/` - Frontend API endpoints with comprehensive routing (health, auth, etc.)
+- **Primary Backend**: `/fastapi_backend.py` - Full-featured FastAPI server with middleware stack (used in Docker)
 - **Fallback Backend**: `/main.py` - Simple HTTP server for deployment scenarios with limited dependencies
-- **Health Monitoring**: Comprehensive service health checks at `/api/health`
-- **Authentication**: Token-based auth with development bypass for testing
+- **Health Monitoring**: Service health checks at both `/api/health` (Next.js) and `/health` (FastAPI)
+- **Authentication**: Token-based auth with Supabase integration and development bypass for testing
+- **Middleware Stack**: Rate limiting, security headers, and CORS handling
 
 ### Database Architecture
-- **Development**: SQLite database (`agent_system.db`) for simplicity
+- **Development**: SQLite database stored in `/data/agent_system.db` (Docker volume mounted)
 - **Production**: PostgreSQL via Supabase with Row Level Security (RLS)
-- **Schema Management**: Complete schemas in `/database/` directory
+- **Schema Management**: Complete schemas in `/database/` directory including multi-tenant, GDPR compliance
 - **Migrations**: Supabase migrations for production deployments
+- **Vector Storage**: pgvector extension support for RAG system embeddings
 
 ### AI Agent System
 - **Agent Types**: Master Coach, Financial, Client Acquisition, Operations, Brand, Growth, Strategic Mindset
@@ -292,7 +301,9 @@ vercel         # Preview/staging
 /components/NuclearInput.js           # Critical form component (95% coverage)
 /playwright.config.js                 # Testing configuration with multi-browser support
 /docker-compose.yml                   # Development container orchestration
+/docker-dev-start.sh                  # Development environment startup script
 /middleware/                          # Rate limiting and security middleware
+/services/                            # AI agents, business logic, and integrations
 ```
 
 ### Development Workflow
@@ -312,17 +323,20 @@ vercel         # Preview/staging
 ## Important Development Notes
 
 ### Docker Considerations
-- **Frontend Port**: Always runs on 9999 (not 3000)
-- **Backend Port**: FastAPI on 8001, Simple server on 8000
-- **Database Path**: SQLite stored in `/data/agent_system.db` within container
-- **Volume Mounts**: Live code reloading enabled for components, app, and lib directories
+- **Frontend Port**: Always runs on 9999 (exposed as 9999:9999)
+- **Backend Port**: FastAPI on 8000 internally, exposed as 8001:8000
+- **Database Path**: SQLite stored in `/data/agent_system.db` with persistent volume
+- **Volume Mounts**: Live code reloading enabled for components, app, lib, and public directories
+- **Networks**: Services communicate via `agent-network` bridge
+- **Health Checks**: Both frontend and backend have healthcheck configurations
 
 ### Backend Architecture
 - **Primary Server**: `fastapi_backend.py` - Full FastAPI server with comprehensive AI endpoints (Docker default)
 - **Fallback Server**: `main.py` - Minimal HTTP server for constrained deployment environments
-- **AI Services**: Comprehensive integration with OpenAI, Anthropic, and Google AI
-- **Middleware Stack**: Rate limiting, security headers, and CORS handling
-- **Service Integration**: Alert system, business recommendations engine, and performance monitoring
+- **AI Services**: Comprehensive integration with OpenAI, Anthropic, and Google AI with graceful fallbacks
+- **Middleware Stack**: Rate limiting, security headers, and CORS handling with environment-based configuration
+- **Service Integration**: Alert system, business recommendations engine, performance monitoring, and GDPR compliance
+- **Dynamic Loading**: Services are imported dynamically with availability flags for graceful degradation
 
 ### Testing Philosophy
 - **Nuclear Input Component**: Requires 95% test coverage due to critical nature
@@ -331,3 +345,35 @@ vercel         # Preview/staging
 - **Security Testing**: Comprehensive GDPR, API security, and penetration testing suites
 
 This system emphasizes enterprise-grade reliability, comprehensive testing, and advanced AI integration while maintaining developer productivity through Docker containerization and modern tooling.
+
+## Project-Specific Important Notes
+
+### Extensive Documentation & Guides
+This project contains comprehensive documentation including:
+- **Deployment Guides**: Multiple deployment strategies (Vercel, Docker, Render, Railway, DigitalOcean)
+- **Setup Guides**: Authentication, Supabase, PostHog, Novu, and various integrations
+- **Security Documentation**: GDPR compliance, security audits, and penetration testing reports
+- **Performance Reports**: Load testing, cross-browser compatibility, and optimization guides
+- **Integration Guides**: Calendars, payments, notifications, and third-party services
+
+### Scripts & Automation
+The `/scripts/` directory contains extensive automation including:
+- **Database Management**: Setup, migration, and backup scripts
+- **Security Tools**: Audit tools, vulnerability scanning, and compliance checking  
+- **Testing Utilities**: Cross-browser testing, authentication testing, and integration testing
+- **Deployment Automation**: Production deployment, environment setup, and monitoring
+- **Development Tools**: User creation, database seeding, and debugging utilities
+
+### Development Environment Variations
+Multiple development setups are supported:
+- **Docker (Recommended)**: Full containerization with SQLite for rapid development
+- **Manual Setup**: Traditional npm/python setup for debugging
+- **Production Docker**: Full stack with PostgreSQL, Redis, and Nginx
+- **Cloud Deployment**: Vercel, Render, Railway with various database options
+
+### Key Project Characteristics
+- **Monorepo Structure**: Part of larger 6FB ecosystem with shared guidelines
+- **Enterprise Focus**: GDPR compliance, security auditing, and comprehensive monitoring
+- **AI-First Architecture**: Multiple AI providers with intelligent fallback strategies
+- **Comprehensive Testing**: Security, performance, accessibility, and visual regression testing
+- **Production Ready**: Full deployment automation and monitoring infrastructure

@@ -1,9 +1,5 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../../components/SupabaseAuthProvider'
-import ProtectedRoute from '../../components/ProtectedRoute'
-import { Card } from '../../components/ui'
 import { 
   ChartBarIcon,
   ArrowPathIcon,
@@ -20,6 +16,11 @@ import {
   Cog6ToothIcon,
   SignalIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback } from 'react'
+
+import ProtectedRoute from '../../components/ProtectedRoute'
+import { useAuth } from '../../components/SupabaseAuthProvider'
+import { Card } from '../../components/ui'
 
 function MetricCard({ title, value, unit, status, trend, icon: Icon, description }) {
   const statusColors = {

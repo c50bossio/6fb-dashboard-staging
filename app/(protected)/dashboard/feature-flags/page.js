@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useFeatureFlags } from '@/hooks/useFeatureFlag'
-import { FLAGS } from '@/lib/feature-flags'
 import { 
   BeakerIcon, 
   BoltIcon,
@@ -12,6 +9,10 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+
+import { useFeatureFlags } from '@/hooks/useFeatureFlag'
+import { FLAGS } from '@/lib/feature-flags'
 
 const flagCategories = {
   'UI/UX Features': {

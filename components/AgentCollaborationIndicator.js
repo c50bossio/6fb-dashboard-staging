@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { SparklesIcon, UsersIcon, CheckBadgeIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function AgentCollaborationIndicator({ collaborationData, isVisible = true }) {
   const [isExpanded, setIsExpanded] = useState(false)

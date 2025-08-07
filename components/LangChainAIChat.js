@@ -1,10 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { useAIAgent } from '../hooks/useAIAgent'
-import { useTenant } from '@/contexts/TenantContext'
-import tenantAnalytics from '@/lib/analytics/tenantAnalytics'
-import LoadingSpinner from './LoadingSpinner'
 import { 
   SparklesIcon,
   LightBulbIcon,
@@ -12,6 +7,14 @@ import {
   CurrencyDollarIcon,
   MegaphoneIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+
+import { useAIAgent } from '../hooks/useAIAgent'
+
+import LoadingSpinner from './LoadingSpinner'
+
+import { useTenant } from '@/contexts/TenantContext'
+import tenantAnalytics from '@/lib/analytics/tenantAnalytics'
 
 export default function LangChainAIChat() {
   const [input, setInput] = useState('')

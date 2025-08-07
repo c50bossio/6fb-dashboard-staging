@@ -1,7 +1,7 @@
 'use client'
 
-import { useFeatureFlag, useABTest } from '@/hooks/useFeatureFlag'
 import FeatureFlag from '@/components/FeatureFlag'
+import { useFeatureFlag, useABTest } from '@/hooks/useFeatureFlag'
 import { FLAGS } from '@/lib/feature-flags'
 
 // Example 1: Dark Mode Toggle

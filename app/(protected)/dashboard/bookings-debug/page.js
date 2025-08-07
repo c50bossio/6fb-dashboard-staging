@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '../../../../lib/supabase/client'
+
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../../lib/supabase/client'
 
 export default function BookingsDebugPage() {
   const [bookings, setBookings] = useState([])

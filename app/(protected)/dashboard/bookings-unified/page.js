@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, lazy, Suspense } from 'react'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import TabbedPageLayout, { TabContent, EmptyStates } from '../../../../components/layout/TabbedPageLayout'
 import { 
   CalendarDaysIcon,
   SparklesIcon,
@@ -13,6 +10,10 @@ import {
   PlusIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
+import { useState, lazy, Suspense } from 'react'
+
+import TabbedPageLayout, { TabContent, EmptyStates } from '../../../../components/layout/TabbedPageLayout'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 // Lazy load the different booking components
 const BookingCalendar = lazy(() => import('../../../../components/calendar/BookingCalendar'))

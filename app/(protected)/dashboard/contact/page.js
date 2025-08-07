@@ -1,7 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 
 export default function ContactPage() {
   return (

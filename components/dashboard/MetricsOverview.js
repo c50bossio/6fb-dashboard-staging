@@ -1,10 +1,5 @@
 'use client'
 
-import React from 'react'
-import { StatCard, Card, Badge, Alert, StatusBadge } from '../ui'
-import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
-import { useTenant } from '@/contexts/TenantContext'
-import LoadingSpinner from '../LoadingSpinner'
 import { 
   ChatBubbleLeftRightIcon,
   SparklesIcon,
@@ -18,6 +13,13 @@ import {
   CurrencyDollarIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
+import React from 'react'
+
+import LoadingSpinner from '../LoadingSpinner'
+import { StatCard, Card, Badge, Alert, StatusBadge } from '../ui'
+
+import { useTenant } from '@/contexts/TenantContext'
+import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
 
 // Fallback component in case ArrowTrendingUpIcon is not available
 const SafeArrowTrendingUpIcon = ArrowTrendingUpIcon || (() => <span>↗</span>)

@@ -1,7 +1,5 @@
 'use client'
 
-import TabbedPageLayout from '../../../../components/layout/TabbedPageLayout'
-import { Card } from '../../../../components/ui'
 import { 
   SparklesIcon,
   CheckCircleIcon,
@@ -10,6 +8,9 @@ import {
   CalendarDaysIcon,
   CpuChipIcon
 } from '@heroicons/react/24/outline'
+
+import TabbedPageLayout from '../../../../components/layout/TabbedPageLayout'
+import { Card } from '../../../../components/ui'
 
 // Demo content components
 const BeforeAfter = () => (

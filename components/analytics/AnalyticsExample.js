@@ -1,7 +1,8 @@
 'use client'
 
-import { useAnalytics } from '@/hooks/useAnalytics'
 import { useState, useEffect } from 'react'
+
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 export default function AnalyticsExample() {
   const { trackFeature, trackBooking, trackPayment, checkFeatureFlag } = useAnalytics()

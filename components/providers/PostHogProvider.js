@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { PostHogProvider, usePostHog } from 'posthog-js/react'
+import { useEffect } from 'react'
+
 import { posthog } from '@/lib/posthog'
 
 // Analytics tracker component

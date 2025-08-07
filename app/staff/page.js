@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../components/SupabaseAuthProvider'
-import ProtectedRoute from '../../components/ProtectedRoute'
 import { 
   UsersIcon,
   PlusIcon,
@@ -18,6 +15,10 @@ import {
   StarIcon,
   CogIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+
+import ProtectedRoute from '../../components/ProtectedRoute'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 
 // Mock staff data
 const mockStaff = [

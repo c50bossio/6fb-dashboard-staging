@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { PaperAirplaneIcon, BellIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect, useRef } from 'react'
+
 import { useAIAgent } from '../hooks/useAIAgent'
 import { 
   subscribeToChannel, 
@@ -10,8 +12,9 @@ import {
   EVENTS,
   triggerClientEvent
 } from '../lib/pusher-client'
+
 import LoadingSpinner from './LoadingSpinner'
-import { PaperAirplaneIcon, BellIcon } from '@heroicons/react/24/outline'
+
 
 export default function RealTimeAIChat() {
   const { user } = useUser()

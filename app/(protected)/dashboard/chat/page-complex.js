@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import StreamingChat from '../../../../components/ai/StreamingChat'
-import { createClient } from '../../../../lib/supabase/client'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import ProtectedRoute from '../../../../components/ProtectedRoute'
-import Link from 'next/link'
 import { 
   ArrowLeftIcon,
   ChatBubbleLeftRightIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+
+import StreamingChat from '../../../../components/ai/StreamingChat'
+import ProtectedRoute from '../../../../components/ProtectedRoute'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../../lib/supabase/client'
 
 export default function ChatDashboard() {
   const [agents, setAgents] = useState([])

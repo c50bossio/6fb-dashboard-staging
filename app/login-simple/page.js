@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { createClient } from '../../lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
+import { createClient } from '../../lib/supabase/client'
 
 export default function SimpleLoginPage() {
   const [email, setEmail] = useState('demo@barbershop.com')

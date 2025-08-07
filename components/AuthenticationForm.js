@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from './SupabaseAuthProvider'
-import { getStripe, createCustomer } from '../lib/stripe'
-import TurnstileWidget from './TurnstileWidget'
+
 import { triggerNotification, NOTIFICATION_TEMPLATES } from '../lib/novu'
 import { posthog } from '../lib/posthog'
 import { captureException, setUser } from '../lib/sentry'
+import { getStripe, createCustomer } from '../lib/stripe'
+
 import { useFeatureFlags, WhenFeatureEnabled } from './EdgeConfigFeatureFlag'
+import { useAuth } from './SupabaseAuthProvider'
+import TurnstileWidget from './TurnstileWidget'
 
 export default function AuthenticationForm({ mode = 'login' }) {
   const { signIn, signUp, resetPassword, loading: authLoading } = useAuth()

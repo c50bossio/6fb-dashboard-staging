@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import { 
   BellIcon, 
   ChartBarIcon,
@@ -10,6 +9,8 @@ import {
   CheckCircleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+
 import AlertManagementDashboard from '../../../../components/alerts/AlertManagementDashboard';
 
 const AlertsDashboardPage = () => {

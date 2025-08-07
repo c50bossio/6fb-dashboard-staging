@@ -1,7 +1,7 @@
 'use client'
 
-import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
+import FullCalendar from '@fullcalendar/react'
 
 export default function CalendarTestPage() {
   return (

@@ -1,8 +1,8 @@
 import './globals.css'
 import ErrorBoundary from '../components/ErrorBoundary'
-import { AccessibilityProvider, SkipToContent } from '../components/ui/AccessibilityProvider'
 import { SupabaseAuthProvider } from '../components/SupabaseAuthProvider'
 import { ToastProvider } from '../components/ToastContainer'
+import { AccessibilityProvider, SkipToContent } from '../components/ui/AccessibilityProvider'
 
 export const metadata = {
   title: '6FB AI Agent System - Barbershop Dashboard',

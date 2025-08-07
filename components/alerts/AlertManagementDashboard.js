@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   BellIcon, 
   ExclamationTriangleIcon,
@@ -14,6 +13,7 @@ import {
   EyeIcon,
   EyeSlashIcon
 } from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 const AlertManagementDashboard = ({ 
   barbershopId, 

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../components/SupabaseAuthProvider'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../components/SupabaseAuthProvider'
 
 export default function TestAuthPage() {
   const { user, profile, loading, signIn, signOut } = useAuth()

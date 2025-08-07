@@ -1,17 +1,17 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-import { 
-  LineChart, Line, AreaChart, Area, BarChart, Bar, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  ComposedChart, PieChart, Pie, Cell, RadialBarChart, RadialBar
-} from 'recharts'
 import { 
   ArrowTrendingUpIcon, ArrowTrendingDownIcon, CalendarIcon, 
   ChartBarIcon, CurrencyDollarIcon, UsersIcon,
   ExclamationTriangleIcon, InformationCircleIcon,
   ArrowUpIcon, ArrowDownIcon, ClockIcon, StarIcon
 } from '@heroicons/react/24/outline'
+import React, { useState, useEffect, useMemo } from 'react'
+import { 
+  LineChart, Line, AreaChart, Area, BarChart, Bar, 
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  ComposedChart, PieChart, Pie, Cell, RadialBarChart, RadialBar
+} from 'recharts'
 
 // Color palette for charts
 const COLORS = {

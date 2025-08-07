@@ -1,9 +1,5 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../../components/SupabaseAuthProvider'
-import ProtectedRoute from '../../components/ProtectedRoute'
-import { Card } from '../../components/ui'
 import { 
   BookOpenIcon,
   MagnifyingGlassIcon,
@@ -20,6 +16,11 @@ import {
   FolderIcon,
   StarIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback } from 'react'
+
+import ProtectedRoute from '../../components/ProtectedRoute'
+import { useAuth } from '../../components/SupabaseAuthProvider'
+import { Card } from '../../components/ui'
 
 function KnowledgeDocumentCard({ document, onViewDetails }) {
   const domainColors = {

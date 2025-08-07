@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { CalendarDaysIcon, PlusIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function BookingsBasicPage() {
   const [selectedDate, setSelectedDate] = useState(new Date())

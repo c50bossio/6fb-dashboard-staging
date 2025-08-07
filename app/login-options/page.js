@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { resetAuthState, debugAuthState } from '../../lib/auth-reset'
 import { useState } from 'react'
+
+import { resetAuthState, debugAuthState } from '../../lib/auth-reset'
 
 export default function LoginOptionsPage() {
   const [debugInfo, setDebugInfo] = useState(null)

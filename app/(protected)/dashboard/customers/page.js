@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   PlusIcon,
   MagnifyingGlassIcon,
@@ -13,6 +12,7 @@ import {
   PencilSquareIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState([])
@@ -84,7 +84,7 @@ export default function CustomersPage() {
   }, [])
 
   useEffect(() => {
-    let filtered = customers.filter(customer => {
+    const filtered = customers.filter(customer => {
       const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            customer.phone.includes(searchTerm)

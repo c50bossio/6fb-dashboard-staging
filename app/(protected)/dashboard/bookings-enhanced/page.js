@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '../../../../lib/supabase/client'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { 
   CalendarDaysIcon, 
   UserGroupIcon, 
@@ -15,6 +12,10 @@ import {
   ScissorsIcon,
   UserIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../../lib/supabase/client'
 
 // Service types with duration
 const SERVICES = [

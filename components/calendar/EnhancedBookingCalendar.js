@@ -1,12 +1,15 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import { createClient } from '@/lib/supabase/client'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { captureException } from '@/lib/sentry'
-import { FULLCALENDAR_LICENSE_KEY, premiumConfig } from '@/lib/fullcalendar-config'
+import { useState, useCallback, useEffect, useMemo } from 'react'
+
 import AppointmentBookingModal from './AppointmentBookingModal'
+
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { FULLCALENDAR_LICENSE_KEY, premiumConfig } from '@/lib/fullcalendar-config'
+import { captureException } from '@/lib/sentry'
+import { createClient } from '@/lib/supabase/client'
+
 
 // Dynamic import to avoid SSR issues
 const FullCalendarWrapper = dynamic(

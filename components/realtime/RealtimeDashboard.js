@@ -1,7 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRealtime } from '../../hooks/useRealtime'
 import { 
   BoltIcon, 
   UserGroupIcon, 
@@ -14,6 +12,9 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import { useEffect, useState } from 'react'
+
+import { useRealtime } from '../../hooks/useRealtime'
 
 export default function RealtimeDashboard() {
   const {

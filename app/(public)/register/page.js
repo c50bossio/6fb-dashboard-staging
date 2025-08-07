@@ -1,9 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
 import { 
   EyeIcon,
   EyeSlashIcon,
@@ -13,6 +9,12 @@ import {
   UserIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../../components/SupabaseAuthProvider'
+
 
 export default function RegisterPage() {
   const router = useRouter()

@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, memo } from 'react'
-import dynamic from 'next/dynamic'
-// Import only essential icons for initial load
 import { 
   CogIcon,
   BellIcon,
@@ -17,6 +14,9 @@ import {
   CalendarDaysIcon,
   PencilIcon
 } from '@heroicons/react/24/outline'
+import dynamic from 'next/dynamic'
+import { useState, useEffect, useCallback, useRef, memo } from 'react'
+// Import only essential icons for initial load
 
 // Lazy load heavy/optional icons
 const KeyIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.KeyIcon })))
@@ -29,9 +29,9 @@ const ChartBarIcon = dynamic(() => import('@heroicons/react/24/outline').then(mo
 const ArrowDownTrayIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowDownTrayIcon })))
 const ArrowTrendingUpIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingUpIcon })))
 const ArrowTrendingDownIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingDownIcon })))
-import TimeRangePicker from '../../../../components/TimeRangePicker'
-import NuclearInput from '../../../../components/NuclearInput'
 import InternationalPhoneInput from '../../../../components/InternationalPhoneInput'
+import NuclearInput from '../../../../components/NuclearInput'
+import TimeRangePicker from '../../../../components/TimeRangePicker'
 
 // Lazy load charts to improve initial page load with loading fallback
 const ChartLoadingSpinner = () => (

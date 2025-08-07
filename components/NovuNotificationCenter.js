@@ -1,7 +1,7 @@
 'use client'
 
-import { NovuProvider, PopoverNotificationCenter, NotificationBell } from '@novu/notification-center'
 import { useUser } from '@clerk/nextjs'
+import { NovuProvider, PopoverNotificationCenter, NotificationBell } from '@novu/notification-center'
 
 export default function NovuNotificationCenter() {
   const { user } = useUser()

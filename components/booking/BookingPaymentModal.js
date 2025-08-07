@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../SupabaseAuthProvider'
-import PaymentForm from '../payment/PaymentForm'
 import {
   XMarkIcon,
   CreditCardIcon,
@@ -13,6 +10,10 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+
+import PaymentForm from '../payment/PaymentForm'
+import { useAuth } from '../SupabaseAuthProvider'
 
 export default function BookingPaymentModal({
   isOpen,

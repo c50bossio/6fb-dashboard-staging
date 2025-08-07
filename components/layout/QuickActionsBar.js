@@ -1,8 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useAuth } from '../SupabaseAuthProvider'
 import { 
   ChatBubbleLeftRightIcon,
   CalendarDaysIcon,
@@ -11,6 +8,11 @@ import {
   SparklesIcon,
   UserGroupIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useState } from 'react'
+
+import { useAuth } from '../SupabaseAuthProvider'
+
 
 const QUICK_ACTIONS = [
   {

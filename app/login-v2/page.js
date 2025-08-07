@@ -1,14 +1,16 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { createClient } from '../../lib/supabase/client'
 import { 
   EyeIcon,
   EyeSlashIcon,
   LockClosedIcon,
   EnvelopeIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useState } from 'react'
+
+import { createClient } from '../../lib/supabase/client'
+
 
 export default function LoginV2Page() {
   const [formData, setFormData] = useState({

@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import ProtectedRoute from '../../../../components/ProtectedRoute'
-import Link from 'next/link'
 import { 
   ArrowLeftIcon,
   AcademicCapIcon,
@@ -13,6 +9,11 @@ import {
   PlusCircleIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useState } from 'react'
+
+import ProtectedRoute from '../../../../components/ProtectedRoute'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function AITrainingDashboard() {
   const { user } = useAuth()

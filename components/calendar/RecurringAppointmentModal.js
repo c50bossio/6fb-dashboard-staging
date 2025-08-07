@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment } from 'react'
 import { XMarkIcon, CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { Fragment } from 'react'
 import { RRule, RRuleSet } from 'rrule'
 
 const RECURRENCE_OPTIONS = [

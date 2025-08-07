@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { 
   BellIcon,
   EnvelopeIcon,
@@ -11,6 +9,9 @@ import {
   ClockIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function NotificationsPage() {
   const { user } = useAuth()

@@ -1,8 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
 import { 
   HomeIcon,
   ChatBubbleLeftRightIcon,
@@ -19,6 +16,9 @@ import {
   ArrowRightOnRectangleIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },

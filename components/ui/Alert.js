@@ -156,3 +156,12 @@ export function ToastAlert({
     </Alert>
   )
 }
+
+// Alert Description - For detailed alert content
+export function AlertDescription({ children, className = '' }) {
+  return (
+    <div className={`mt-1 text-sm ${className}`}>
+      {children}
+    </div>
+  )
+}

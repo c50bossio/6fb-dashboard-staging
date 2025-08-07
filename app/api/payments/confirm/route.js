@@ -1,14 +1,9 @@
-'use server'
+import { NextResponse } from 'next/server'
+import Stripe from 'stripe'
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { spawn } from 'child_process'
-import path from 'path'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16'
+})
 
 export async function POST(request) {
   try {
@@ -22,72 +17,41 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Call Python payment service
-    const scriptPath = path.join(process.cwd(), 'scripts', 'payment_api.py')
-    
-    const pythonProcess = spawn('python3', [scriptPath, 'confirm-payment'], {
-      stdio: ['pipe', 'pipe', 'pipe']
-    })
+    // Retrieve payment intent from Stripe
+    const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id)
 
-    // Send request data to Python script
-    const requestData = JSON.stringify({
-      payment_intent_id
-    })
-
-    pythonProcess.stdin.write(requestData)
-    pythonProcess.stdin.end()
-
-    // Collect response from Python script
-    let stdout = ''
-    let stderr = ''
-
-    pythonProcess.stdout.on('data', (data) => {
-      stdout += data.toString()
-    })
-
-    pythonProcess.stderr.on('data', (data) => {
-      stderr += data.toString()
-    })
-
-    // Wait for Python process to complete
-    const result = await new Promise((resolve, reject) => {
-      pythonProcess.on('close', (code) => {
-        if (code !== 0) {
-          console.error('Python script error:', stderr)
-          reject(new Error(`Payment confirmation error: ${stderr}`))
-          return
-        }
-
-        try {
-          const response = JSON.parse(stdout.trim())
-          resolve(response)
-        } catch (e) {
-          console.error('Failed to parse payment confirmation response:', stdout)
-          reject(new Error('Invalid payment confirmation response'))
-        }
-      })
-
-      pythonProcess.on('error', (error) => {
-        console.error('Python process error:', error)
-        reject(error)
-      })
-    })
-
-    if (result.success) {
-      return NextResponse.json({
-        success: true,
-        payment_intent_id: result.payment_intent_id,
-        amount: result.amount,
-        receipt_url: result.receipt_url,
-        booking_id: result.booking_id,
-        payment_status: result.payment_status
-      })
-    } else {
+    if (!paymentIntent) {
       return NextResponse.json({
         success: false,
-        error: result.error || 'Failed to confirm payment'
-      }, { status: 400 })
+        error: 'Payment intent not found'
+      }, { status: 404 })
     }
+
+    // Update database with payment status (optional)
+    try {
+      // For now, just log the payment confirmation
+      // Future: Update database when Supabase client is properly configured
+      console.log('Payment confirmed:', {
+        payment_intent_id,
+        status: paymentIntent.status,
+        amount: paymentIntent.amount,
+        updated_at: new Date().toISOString()
+      })
+    } catch (dbError) {
+      console.warn('Database update failed:', dbError.message)
+    }
+
+    return NextResponse.json({
+      success: true,
+      payment_intent_id: paymentIntent.id,
+      status: paymentIntent.status,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      metadata: paymentIntent.metadata,
+      receipt_url: paymentIntent.receipt_email,
+      booking_id: paymentIntent.metadata?.booking_id,
+      payment_status: paymentIntent.status
+    })
 
   } catch (error) {
     console.error('Payment confirmation error:', error)

@@ -14,6 +14,8 @@ services:
       - NEXT_PUBLIC_ENABLE_RAG=true
       - NEXT_PUBLIC_ENABLE_MOCK_FALLBACK=true
       - NEXT_PUBLIC_DEV_MODE=true
+      - NOVU_API_KEY=e129dfe59c2e1a8664ebf87ca67ada9b
+      - NEXT_PUBLIC_NOVU_APP_IDENTIFIER=ayi7qzY4ZJPE
     env_file:
       - .env.local
     volumes:

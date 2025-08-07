@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { SparklesIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 const AI_PROVIDERS = [
   { id: 'openai', name: 'OpenAI', models: ['gpt-4o', 'gpt-4o-mini', 'gpt-3.5-turbo'] },

@@ -1,10 +1,5 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../../components/SupabaseAuthProvider'
-import ProtectedRoute from '../../components/ProtectedRoute'
-import AppointmentCalendar from '../../components/calendar/AppointmentCalendar'
-import AppointmentModal from '../../components/calendar/AppointmentModal'
 import { 
   CalendarIcon, 
   PlusIcon, 
@@ -17,6 +12,12 @@ import {
   CalendarDaysIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback } from 'react'
+
+import AppointmentCalendar from '../../components/calendar/AppointmentCalendar'
+import AppointmentModal from '../../components/calendar/AppointmentModal'
+import ProtectedRoute from '../../components/ProtectedRoute'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 
 export default function AppointmentsPage() {
   const { user, profile } = useAuth()

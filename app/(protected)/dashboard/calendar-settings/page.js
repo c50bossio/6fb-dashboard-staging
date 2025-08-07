@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { 
   CalendarDaysIcon,
   LinkIcon,
@@ -13,6 +11,9 @@ import {
   Cog6ToothIcon
 } from '@heroicons/react/24/outline'
 import { CalendarDaysIcon as CalendarSolid } from '@heroicons/react/24/solid'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function CalendarSettings() {
   const { user } = useAuth()

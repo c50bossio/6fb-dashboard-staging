@@ -1,10 +1,11 @@
+import { anthropic as anthropicProvider } from '@ai-sdk/anthropic'
+import { openai as openaiProvider } from '@ai-sdk/openai'
+import { streamText } from 'ai'
 import { NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
+
 import { anthropic as anthropicClient, DEFAULT_CLAUDE_MODEL } from '@/lib/anthropic'
 import { getGeminiModel, convertToGeminiFormat } from '@/lib/gemini'
-import { streamText } from 'ai'
-import { openai as openaiProvider } from '@ai-sdk/openai'
-import { anthropic as anthropicProvider } from '@ai-sdk/anthropic'
 
 // Initialize OpenAI
 const openaiClient = new OpenAI({

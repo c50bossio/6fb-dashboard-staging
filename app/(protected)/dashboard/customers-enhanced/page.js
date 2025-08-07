@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '../../../../lib/supabase/client'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { 
   PlusIcon,
   MagnifyingGlassIcon,
@@ -21,6 +18,10 @@ import {
   CheckIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../../lib/supabase/client'
 
 // Customer segments
 const SEGMENTS = {

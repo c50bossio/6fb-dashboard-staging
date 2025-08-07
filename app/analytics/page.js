@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import ProtectedRoute from '@/components/ProtectedRoute'
-import TenantAnalyticsDashboard from '@/components/analytics/TenantAnalyticsDashboard'
-import { useTenant } from '@/contexts/TenantContext'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
+import TenantAnalyticsDashboard from '@/components/analytics/TenantAnalyticsDashboard'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { useTenant } from '@/contexts/TenantContext'
 
 export default function AnalyticsPage() {
   const router = useRouter()

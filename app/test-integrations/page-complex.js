@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { supabase } from '@/lib/supabase'
 import * as Sentry from '@sentry/nextjs'
+import { useState } from 'react'
+
 import ClerkUserButton from '@/components/ClerkUserButton'
+import { supabase } from '@/lib/supabase'
 
 export default function TestIntegrations() {
   const { user: clerkUser } = useUser()

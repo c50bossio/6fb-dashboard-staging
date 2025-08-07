@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useAuth } from './SupabaseAuthProvider'
 import { 
   Bars3Icon, 
   XMarkIcon,
@@ -19,6 +15,12 @@ import {
   SparklesIcon,
   BanknotesIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
+
+import { useAuth } from './SupabaseAuthProvider'
+
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },

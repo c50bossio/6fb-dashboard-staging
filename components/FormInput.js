@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { EyeIcon, EyeSlashIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function FormInput({ 
   label, 

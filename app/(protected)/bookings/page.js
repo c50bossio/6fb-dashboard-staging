@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
-import BookingPaymentModal from '../../../components/booking/BookingPaymentModal'
 import {
   CalendarDaysIcon,
   ClockIcon,
@@ -11,6 +8,10 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+
+import BookingPaymentModal from '../../../components/booking/BookingPaymentModal'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 export default function BookingsPage() {
   const { user } = useAuth()

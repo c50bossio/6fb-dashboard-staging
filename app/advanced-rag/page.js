@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Alert, AlertDescription } from "@/components/ui"
 import { Loader2, Search, Brain, Target, TrendingUp, Users, DollarSign, Clock } from 'lucide-react'
+import { useState } from 'react'
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Alert, AlertDescription } from "@/components/ui"
 
 export default function AdvancedRAGPage() {
   const [query, setQuery] = useState('')

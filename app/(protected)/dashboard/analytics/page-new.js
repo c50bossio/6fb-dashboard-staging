@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAnalytics } from '@/hooks/useAnalytics'
 import { 
   ChartBarIcon, 
   UserGroupIcon,
@@ -10,11 +8,14 @@ import {
   ArrowTrendingUpIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { 
   LineChart, Line, AreaChart, Area, BarChart, Bar, 
   PieChart, Pie, Cell, ResponsiveContainer, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend 
 } from 'recharts'
+
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 // Mock data for demonstration
 const mockData = {

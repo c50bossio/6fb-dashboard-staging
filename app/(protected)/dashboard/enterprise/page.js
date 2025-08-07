@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import FeatureFlagExamples from '@/components/examples/FeatureFlagExamples'
-import AnalyticsExample from '@/components/analytics/AnalyticsExample'
-import { useFeatureFlags } from '@/hooks/useFeatureFlag'
 import { 
   RocketLaunchIcon,
   SparklesIcon,
@@ -13,6 +9,11 @@ import {
   BellIcon,
   FlagIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+
+import AnalyticsExample from '@/components/analytics/AnalyticsExample'
+import FeatureFlagExamples from '@/components/examples/FeatureFlagExamples'
+import { useFeatureFlags } from '@/hooks/useFeatureFlag'
 
 export default function EnterpriseFeaturesPage() {
   const [activeTab, setActiveTab] = useState('overview')

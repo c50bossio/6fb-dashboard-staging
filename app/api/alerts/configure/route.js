@@ -130,7 +130,7 @@ export async function POST(request) {
       );
     }
     
-    let response = { updates: [] };
+    const response = { updates: [] };
     
     // Update user preferences
     if (action === 'update_preferences' && preferences) {

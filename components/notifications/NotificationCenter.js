@@ -1,6 +1,7 @@
 'use client'
 
 import { NotificationCenter } from '@novu/notification-center'
+
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function NovuNotificationCenter() {

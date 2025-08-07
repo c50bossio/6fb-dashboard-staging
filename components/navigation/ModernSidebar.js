@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useAuth } from '../SupabaseAuthProvider'
 import { 
   ChevronRightIcon,
   ChevronDownIcon,
@@ -13,6 +9,13 @@ import {
   BellIcon,
   ScissorsIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
+
+import { useAuth } from '../SupabaseAuthProvider'
+
+
 import { BARBERSHOP_NAVIGATION, getActiveNavItem } from './BarbershopNavigationConfig'
 // import MobileHeader from './MobileHeader'
 

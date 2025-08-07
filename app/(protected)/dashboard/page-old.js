@@ -1,10 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../components/SupabaseAuthProvider'
-import { useDashboard } from '../../contexts/DashboardContext'
-import ProtectedRoute from '../../components/ProtectedRoute'
-import LoadingSpinner, { CardLoadingSkeleton } from '../../components/LoadingSpinner'
 import { 
   ChartBarIcon, 
   ChatBubbleLeftRightIcon,
@@ -18,6 +13,12 @@ import {
   CheckCircleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+
+import LoadingSpinner, { CardLoadingSkeleton } from '../../components/LoadingSpinner'
+import ProtectedRoute from '../../components/ProtectedRoute'
+import { useAuth } from '../../components/SupabaseAuthProvider'
+import { useDashboard } from '../../contexts/DashboardContext'
 
 function DashboardContent() {
   const { user, logout } = useAuth()

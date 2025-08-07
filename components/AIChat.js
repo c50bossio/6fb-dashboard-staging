@@ -1,13 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useAuth } from './SupabaseAuthProvider'
 import { 
   PaperAirplaneIcon,
   SparklesIcon,
   UserIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useRef } from 'react'
+
+import { useAuth } from './SupabaseAuthProvider'
 
 export default function AIChat({ agentId = 'business_coach', onClose }) {
   const { user } = useAuth()

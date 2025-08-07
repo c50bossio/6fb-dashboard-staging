@@ -1,96 +1,86 @@
-'use server'
+import { NextResponse } from 'next/server'
+import Stripe from 'stripe'
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { spawn } from 'child_process'
-import path from 'path'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16'
+})
 
 export async function POST(request) {
   try {
-    const { booking_id, customer_id, barber_id, service_id, payment_type } = await request.json()
+    const { booking_id, customer_id, barber_id, service_id, payment_type, amount } = await request.json()
 
     // Validate required parameters
-    if (!booking_id || !customer_id || !barber_id || !service_id) {
+    if (!booking_id || !service_id || !amount) {
       return NextResponse.json({
         success: false,
-        error: 'Missing required parameters'
+        error: 'Missing required parameters: booking_id, service_id, amount'
       }, { status: 400 })
     }
 
-    // Call Python payment service
-    const scriptPath = path.join(process.cwd(), 'scripts', 'payment_api.py')
-    
-    const pythonProcess = spawn('python3', [scriptPath, 'create-intent'], {
-      stdio: ['pipe', 'pipe', 'pipe']
-    })
-
-    // Send request data to Python script
-    const requestData = JSON.stringify({
-      booking_id,
-      customer_id,
-      barber_id,
-      service_id,
-      payment_type: payment_type || 'full_payment'
-    })
-
-    pythonProcess.stdin.write(requestData)
-    pythonProcess.stdin.end()
-
-    // Collect response from Python script
-    let stdout = ''
-    let stderr = ''
-
-    pythonProcess.stdout.on('data', (data) => {
-      stdout += data.toString()
-    })
-
-    pythonProcess.stderr.on('data', (data) => {
-      stderr += data.toString()
-    })
-
-    // Wait for Python process to complete
-    const result = await new Promise((resolve, reject) => {
-      pythonProcess.on('close', (code) => {
-        if (code !== 0) {
-          console.error('Python script error:', stderr)
-          reject(new Error(`Payment service error: ${stderr}`))
-          return
-        }
-
-        try {
-          const response = JSON.parse(stdout.trim())
-          resolve(response)
-        } catch (e) {
-          console.error('Failed to parse payment service response:', stdout)
-          reject(new Error('Invalid payment service response'))
-        }
-      })
-
-      pythonProcess.on('error', (error) => {
-        console.error('Python process error:', error)
-        reject(error)
-      })
-    })
-
-    if (result.success) {
-      return NextResponse.json({
-        success: true,
-        client_secret: result.client_secret,
-        amount: result.amount,
-        payment_intent_id: result.payment_intent_id,
-        service_info: result.service_info
-      })
-    } else {
+    // Check if Stripe is properly configured
+    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'your_stripe_secret_key_here') {
       return NextResponse.json({
         success: false,
-        error: result.error || 'Failed to create payment intent'
-      }, { status: 400 })
+        error: 'Stripe not configured - add STRIPE_SECRET_KEY to environment variables',
+        mock_response: {
+          payment_intent_id: 'pi_mock_' + Date.now(),
+          client_secret: 'pi_mock_' + Date.now() + '_secret_mock',
+          amount: amount,
+          currency: 'usd',
+          status: 'requires_payment_method',
+          note: 'This is a mock response - configure Stripe for real payments'
+        }
+      }, { status: 200 })
     }
+
+    // Get service information to set payment details
+    const serviceInfo = {
+      id: service_id,
+      name: 'Barbershop Service',
+      price: amount
+    }
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // Convert to cents
+      currency: 'usd',
+      metadata: {
+        booking_id,
+        customer_id: customer_id || 'guest',
+        barber_id: barber_id || 'staff',
+        service_id,
+        payment_type: payment_type || 'full_payment'
+      },
+      description: `Payment for ${serviceInfo.name}`,
+      automatic_payment_methods: {
+        enabled: true
+      }
+    })
+
+    // Store payment intent in database (optional - payment works without DB)
+    try {
+      // For now, just log the payment intent info
+      // Future: Store in database when Supabase client is properly configured
+      console.log('Payment intent created:', {
+        id: paymentIntent.id,
+        booking_id,
+        customer_id,
+        amount,
+        status: 'pending'
+      })
+    } catch (dbError) {
+      console.warn('Database operation failed:', dbError.message)
+      // Continue - Stripe integration works without DB
+    }
+
+    return NextResponse.json({
+      success: true,
+      client_secret: paymentIntent.client_secret,
+      amount: amount,
+      payment_intent_id: paymentIntent.id,
+      service_info: serviceInfo,
+      metadata: paymentIntent.metadata
+    })
 
   } catch (error) {
     console.error('Payment intent creation error:', error)

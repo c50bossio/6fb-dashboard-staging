@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
 import { Card } from '../ui'
 
 export default function TabbedPageLayout({ 

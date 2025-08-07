@@ -12,7 +12,7 @@ import {
   CogIcon,
   SparklesIcon,
   MapPinIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   PresentationChartLineIcon,
   DevicePhoneMobileIcon,
   MegaphoneIcon,
@@ -117,18 +117,25 @@ export const BARBERSHOP_NAVIGATION = [
       {
         name: 'Performance',
         href: '/dashboard/performance',
-        icon: TrendingUpIcon
+        icon: ArrowTrendingUpIcon
       }
     ]
   },
   {
     id: 'ai-tools',
     name: 'AI Assistant',
-    href: '/ai-tools',
+    href: '/ai-agents',
     icon: SparklesIcon,
-    description: 'AI-powered business insights',
+    description: 'AI agents & business intelligence',
     badge: 'AI',
     children: [
+      {
+        name: 'AI Agents Chat',
+        href: '/ai-agents',
+        icon: SparklesIcon,
+        badge: 'Chat',
+        description: 'Talk to your AI business assistants'
+      },
       {
         name: 'Business Insights',
         href: '/ai-insights',
@@ -136,9 +143,15 @@ export const BARBERSHOP_NAVIGATION = [
         badge: 'AI'
       },
       {
+        name: 'AI Training',
+        href: '/dashboard/ai-training',
+        icon: SparklesIcon,
+        badge: 'Learn'
+      },
+      {
         name: 'Forecasting',
         href: '/dashboard/forecasting',
-        icon: TrendingUpIcon,
+        icon: ArrowTrendingUpIcon,
         badge: 'Predict'
       },
       {
@@ -204,11 +217,11 @@ export const QUICK_ACTIONS = [
     description: 'Process payment'
   },
   {
-    name: 'AI Insights',
-    href: '/ai-insights',
+    name: 'AI Chat',
+    href: '/ai-agents',
     icon: SparklesIcon,
     color: 'bg-amber-600 hover:bg-amber-700',
-    description: 'Get business recommendations'
+    description: 'Chat with AI business assistants'
   }
 ]
 

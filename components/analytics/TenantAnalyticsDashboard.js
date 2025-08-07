@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
-import { useTenant } from '@/contexts/TenantContext'
-import LoadingSpinner from '../LoadingSpinner'
 import {
   ChartBarIcon,
   UsersIcon,
@@ -15,6 +11,12 @@ import {
   TrophyIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+
+import LoadingSpinner from '../LoadingSpinner'
+
+import { useTenant } from '@/contexts/TenantContext'
+import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
 
 export default function TenantAnalyticsDashboard() {
   const { tenant, tenantName, businessName, subscriptionTier } = useTenant()

@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '../../../../lib/supabase/client'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { 
   CalendarDaysIcon,
   UserGroupIcon,
@@ -23,6 +20,10 @@ import {
   PauseIcon
 } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/24/solid'
+import { useState, useEffect } from 'react'
+
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../../lib/supabase/client'
 
 // Service types
 const SERVICES = [
@@ -57,7 +58,7 @@ export default function RecurringBookingsPage() {
   const [analytics, setAnalytics] = useState({
     totalSeries: 0,
     activeSeries: 0,
-    upcomingThis month: 0,
+    upcomingThisMonth: 0,
     autoBookingRate: 0
   })
   

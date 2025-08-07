@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -207,11 +208,11 @@ async function generateRealtimeDataFallback(action, feedId, limit, user) {
     const isBusinessHours = hour >= 9 && hour <= 19
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
     
-    let revenueToday = isBusinessHours ? 
+    const revenueToday = isBusinessHours ? 
       (isWeekend ? Math.random() * 1200 + 800 : Math.random() * 1000 + 600) : 
       Math.random() * 300
     
-    let appointmentsToday = isBusinessHours ?
+    const appointmentsToday = isBusinessHours ?
       (isWeekend ? Math.floor(Math.random() * 18 + 12) : Math.floor(Math.random() * 15 + 8)) :
       Math.floor(Math.random() * 5)
     

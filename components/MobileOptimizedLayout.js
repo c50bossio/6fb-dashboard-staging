@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import { ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect, useRef } from 'react'
 
 export default function MobileOptimizedLayout({ children }) {
   const [showBottomSheet, setShowBottomSheet] = useState(false)

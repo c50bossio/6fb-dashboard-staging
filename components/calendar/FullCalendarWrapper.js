@@ -1,14 +1,15 @@
 'use client'
 
-import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
+import FullCalendar from '@fullcalendar/react'
 import resourcePlugin from '@fullcalendar/resource'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import rrulePlugin from '@fullcalendar/rrule'
+import timeGridPlugin from '@fullcalendar/timegrid'
 import { useState, useCallback, useRef } from 'react'
+
 import { captureException } from '@/lib/sentry'
 
 export default function FullCalendarWrapper({

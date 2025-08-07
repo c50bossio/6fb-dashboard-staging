@@ -1,8 +1,9 @@
 'use client'
 
+import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import { useChat } from 'ai/react'
 import { useState, useRef, useEffect } from 'react'
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
+
 import { captureException } from '@/lib/sentry'
 
 export default function StreamingChat({ 

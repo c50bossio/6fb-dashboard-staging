@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
 import { useAnalytics } from '../providers/PostHogProvider'
+
 import { useFeatureFlag } from '@/hooks/useFeatureFlags'
 
 /**

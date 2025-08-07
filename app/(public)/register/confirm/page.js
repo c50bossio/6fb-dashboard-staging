@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { CheckCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { CheckCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function RegisterConfirmPage() {

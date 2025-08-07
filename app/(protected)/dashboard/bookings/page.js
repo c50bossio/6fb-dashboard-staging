@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import SimpleBookingCalendar from '../../../../components/calendar/SimpleBookingCalendar'
-import { createClient } from '../../../../lib/supabase/client'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { CalendarIcon, UserGroupIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
+
+import SimpleBookingCalendar from '../../../../components/calendar/SimpleBookingCalendar'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../../lib/supabase/client'
 
 export default function BookingsPage() {
   const [showResources, setShowResources] = useState(true)
