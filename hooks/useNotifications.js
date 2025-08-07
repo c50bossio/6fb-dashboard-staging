@@ -1,99 +1,122 @@
-'use client'
+/**
+ * useNotifications Hook
+ * Simple React hook for internal notification system
+ */
 
-import { useEffect, useState } from 'react'
-import { useHeadlessService } from '@novu/headless'
-import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useState, useCallback } from 'react';
 
 export function useNotifications() {
-  const { user } = useAuth()
-  const [notifications, setNotifications] = useState([])
-  const [unseenCount, setUnseenCount] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const headlessService = useHeadlessService({
-    applicationIdentifier: process.env.NEXT_PUBLIC_NOVU_APP_IDENTIFIER,
-    subscriberId: user?.id,
-  })
+  /**
+   * Send a notification
+   */
+  const sendNotification = useCallback(async (type, data) => {
+    setLoading(true);
+    setError(null);
 
-  useEffect(() => {
-    if (!user || !headlessService) return
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type, data })
+      });
 
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        
-        // Fetch notifications
-        const notificationsData = await headlessService.fetchNotifications({
-          page: 1,
-          limit: 20,
-        })
-        setNotifications(notificationsData.data || [])
-        
-        // Fetch unseen count
-        const count = await headlessService.fetchUnseenCount()
-        setUnseenCount(count.data?.count || 0)
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error)
-      } finally {
-        setLoading(false)
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send notification');
       }
+
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    fetchData()
+  /**
+   * Send appointment confirmation
+   */
+  const sendAppointmentConfirmation = useCallback(async (appointmentData) => {
+    return sendNotification('appointment-confirmation', appointmentData);
+  }, [sendNotification]);
 
-    // Listen for real-time updates
-    const unsubscribe = headlessService.listenUnseenCountChange((data) => {
-      setUnseenCount(data.unseenCount)
-    })
+  /**
+   * Send booking reminder
+   */
+  const sendBookingReminder = useCallback(async (reminderData) => {
+    return sendNotification('booking-reminder', reminderData);
+  }, [sendNotification]);
 
-    return () => {
-      unsubscribe?.()
-    }
-  }, [user, headlessService])
+  /**
+   * Send payment confirmation
+   */
+  const sendPaymentConfirmation = useCallback(async (paymentData) => {
+    return sendNotification('payment-confirmation', paymentData);
+  }, [sendNotification]);
 
-  const markAsRead = async (notificationId) => {
-    try {
-      await headlessService.markNotificationAsRead(notificationId)
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-      )
-      setUnseenCount(prev => Math.max(0, prev - 1))
-    } catch (error) {
-      console.error('Failed to mark as read:', error)
-    }
-  }
-
-  const markAllAsRead = async () => {
-    try {
-      await headlessService.markAllNotificationsAsRead()
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
-      setUnseenCount(0)
-    } catch (error) {
-      console.error('Failed to mark all as read:', error)
-    }
-  }
-
-  const deleteNotification = async (notificationId) => {
-    try {
-      await headlessService.removeNotification(notificationId)
-      setNotifications(prev => prev.filter(n => n.id !== notificationId))
-      
-      // Update unseen count if the deleted notification was unread
-      const notification = notifications.find(n => n.id === notificationId)
-      if (notification && !notification.read) {
-        setUnseenCount(prev => Math.max(0, prev - 1))
-      }
-    } catch (error) {
-      console.error('Failed to delete notification:', error)
-    }
-  }
+  /**
+   * Test notification system
+   */
+  const testNotifications = useCallback(async () => {
+    return sendNotification('test', {});
+  }, [sendNotification]);
 
   return {
-    notifications,
-    unseenCount,
     loading,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-  }
+    error,
+    sendNotification,
+    sendAppointmentConfirmation,
+    sendBookingReminder,
+    sendPaymentConfirmation,
+    testNotifications
+  };
 }
+
+// Helper function to create notification data
+export const createNotificationData = {
+  appointmentConfirmation: (appointment, customer, shop = {}) => ({
+    customerName: customer.name,
+    customerEmail: customer.email,
+    customerPhone: customer.phone,
+    appointmentDate: appointment.date,
+    appointmentTime: appointment.time,
+    serviceName: appointment.serviceName,
+    barberName: appointment.barberName,
+    shopName: shop.name || '6FB Premium Barbershop',
+    shopPhone: shop.phone || '(555) 123-4567',
+    totalPrice: appointment.totalPrice,
+    confirmationNumber: appointment.confirmationNumber
+  }),
+
+  bookingReminder: (appointment, customer, shop = {}) => ({
+    customerName: customer.name,
+    customerEmail: customer.email,
+    customerPhone: customer.phone,
+    appointmentDate: appointment.date,
+    appointmentTime: appointment.time,
+    serviceName: appointment.serviceName,
+    barberName: appointment.barberName,
+    shopName: shop.name || '6FB Premium Barbershop',
+    shopPhone: shop.phone || '(555) 123-4567',
+    confirmationNumber: appointment.confirmationNumber
+  }),
+
+  paymentConfirmation: (payment, appointment, customer) => ({
+    customerName: customer.name,
+    customerEmail: customer.email,
+    customerPhone: customer.phone,
+    paymentAmount: payment.amount,
+    paymentMethod: payment.method,
+    transactionId: payment.transactionId,
+    serviceName: appointment.serviceName,
+    appointmentDate: appointment.date,
+    appointmentTime: appointment.time
+  })
+};
