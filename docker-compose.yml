@@ -17,7 +17,7 @@ services:
       - SMTP_HOST=smtp.sendgrid.net
       - SMTP_PORT=587
     env_file:
-      - .env
+      - .env.local
     volumes:
       - ./app:/app/app
       - ./components:/app/components
@@ -52,7 +52,7 @@ services:
       - CORS_ORIGINS=http://localhost:9999
       - PYTHONPATH=/app
     env_file:
-      - .env
+      - .env.local
     volumes:
       - ./:/app
       - agent_data:/app/data
