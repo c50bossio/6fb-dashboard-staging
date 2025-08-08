@@ -31,6 +31,10 @@ export {
   useAccessibility 
 } from './AccessibilityProvider'
 
+// Touch Accessibility Components
+export { default as TouchOptimizedIconButton, TouchCloseButton, TouchMenuButton, TouchNotificationButton } from './TouchOptimizedIconButton'
+export { default as SkipLinks, withSkipTargets, MobileSkipLinks } from './SkipLinks'
+
 // Specialized Components (Re-export existing)
 export { default as Toast } from '../Toast'
 export { default as ToastContainer } from '../ToastContainer'

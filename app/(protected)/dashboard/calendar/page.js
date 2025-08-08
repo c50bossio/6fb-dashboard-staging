@@ -1,66 +1,48 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { 
   CalendarIcon, 
   PlusCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronDownIcon,
   ClockIcon,
   QrCodeIcon,
   LinkIcon,
   ShareIcon,
-  CopyIcon,
+  ClipboardIcon,
   CheckIcon,
   MapPinIcon,
   UserIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline'
 import QRCode from 'qrcode'
+import { useToast } from '../../../../components/ToastContainer'
 
-// Dynamic import of FullCalendar to avoid SSR issues
-// Using forwardRef to properly handle refs with dynamic imports
-const FullCalendar = dynamic(
-  () => import('@fullcalendar/react').then(mod => mod.default),
+// Use our standardized FullCalendarWrapper component with FullCalendar SDK
+const FullCalendarWrapper = dynamic(
+  () => import('../../../../components/calendar/FullCalendarWrapper'),
   { 
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-[600px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="mt-4 text-gray-600">Loading FullCalendar...</p>
       </div>
     )
   }
 )
 
-// Lazy load plugins
-const loadCalendarPlugins = async () => {
-  const [
-    dayGridPlugin,
-    timeGridPlugin,
-    interactionPlugin,
-    resourcePlugin,
-    resourceTimeGridPlugin
-  ] = await Promise.all([
-    import('@fullcalendar/daygrid').then(mod => mod.default),
-    import('@fullcalendar/timegrid').then(mod => mod.default),
-    import('@fullcalendar/interaction').then(mod => mod.default),
-    import('@fullcalendar/resource').then(mod => mod.default),
-    import('@fullcalendar/resource-timegrid').then(mod => mod.default)
-  ])
-  
-  return {
-    dayGridPlugin,
-    timeGridPlugin,
-    interactionPlugin,
-    resourcePlugin,
-    resourceTimeGridPlugin
-  }
-}
+// Import the appointment modal
+const AppointmentBookingModal = dynamic(
+  () => import('../../../../components/calendar/AppointmentBookingModal'),
+  { ssr: false }
+)
 
 export default function StableCalendarPage() {
   const [mounted, setMounted] = useState(false)
-  const [plugins, setPlugins] = useState(null)
   const [events, setEvents] = useState([])
   const [resources, setResources] = useState([])
   const [showQRModal, setShowQRModal] = useState(false)
@@ -68,17 +50,101 @@ export default function StableCalendarPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [copied, setCopied] = useState({})
   const [quickLinks, setQuickLinks] = useState([])
-  // Remove ref since dynamic components don't support it directly
-  // const calendarRef = useRef(null)
+  const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
+  const { success, error: showError, info } = useToast()
+  
+  // Modal states
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+  const [selectedSlot, setSelectedSlot] = useState(null)
+  const [selectedEvent, setSelectedEvent] = useState(null)
+  const [services, setServices] = useState([])
+  const [barbershopId] = useState('demo-shop-001') // For production, get from context
 
-  // Initialize calendar
+  // Initialize calendar with real data
   useEffect(() => {
     setMounted(true)
     
-    // Load plugins
-    loadCalendarPlugins().then(setPlugins)
-    
-    // Set up mock data
+    // Fetch real data from API instead of using mock data
+    fetchRealAppointments()
+    fetchRealBarbers()
+    fetchServices()
+  }, [])
+
+  // Fetch real appointments from API
+  const fetchRealAppointments = async () => {
+    try {
+      const params = new URLSearchParams()
+      const now = new Date()
+      const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+      
+      params.append('start_date', now.toISOString())
+      params.append('end_date', oneWeekFromNow.toISOString())
+
+      const response = await fetch(`/api/appointments?${params.toString()}`)
+      const result = await response.json()
+      
+      if (response.ok) {
+        const appointments = result.appointments || []
+        const formattedEvents = appointments.map(appointment => ({
+          id: appointment.id,
+          title: `${appointment.client_name || 'Client'} - ${appointment.service?.name || 'Service'}`,
+          start: appointment.scheduled_at,
+          end: new Date(new Date(appointment.scheduled_at).getTime() + (appointment.duration_minutes || 30) * 60000).toISOString(),
+          resourceId: appointment.barber_id,
+          backgroundColor: '#3b82f6',
+          extendedProps: {
+            customer: appointment.client_name,
+            service: appointment.service?.name,
+            duration: appointment.duration_minutes,
+            price: appointment.service_price,
+            status: appointment.status
+          }
+        }))
+        setEvents(formattedEvents)
+      } else {
+        // Fallback to mock events if API fails
+        generateMockEvents()
+      }
+    } catch (error) {
+      console.error('Error fetching appointments:', error)
+      generateMockEvents()
+    }
+  }
+
+  // Fetch services from API
+  const fetchServices = async () => {
+    try {
+      const response = await fetch('/api/services')
+      const result = await response.json()
+      
+      if (response.ok) {
+        setServices(result.services || [])
+      } else {
+        // Use mock services if API fails
+        setServices([
+          { id: '1', name: 'Haircut', price: 35, duration_minutes: 30, description: 'Professional haircut' },
+          { id: '2', name: 'Beard Trim', price: 20, duration_minutes: 20, description: 'Beard shaping and trim' },
+          { id: '3', name: 'Hair & Beard', price: 50, duration_minutes: 45, description: 'Complete grooming package' },
+          { id: '4', name: 'Kids Cut', price: 25, duration_minutes: 25, description: 'Children\'s haircut' },
+          { id: '5', name: 'Shave', price: 30, duration_minutes: 30, description: 'Traditional hot towel shave' }
+        ])
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error)
+      // Use mock services on error
+      setServices([
+        { id: '1', name: 'Haircut', price: 35, duration_minutes: 30, description: 'Professional haircut' },
+        { id: '2', name: 'Beard Trim', price: 20, duration_minutes: 20, description: 'Beard shaping and trim' },
+        { id: '3', name: 'Hair & Beard', price: 50, duration_minutes: 45, description: 'Complete grooming package' },
+        { id: '4', name: 'Kids Cut', price: 25, duration_minutes: 25, description: 'Children\'s haircut' },
+        { id: '5', name: 'Shave', price: 30, duration_minutes: 30, description: 'Traditional hot towel shave' }
+      ])
+    }
+  }
+
+  // Fetch real barbers from API or use mock data
+  const fetchRealBarbers = () => {
+    // Use mock barbers data (can be enhanced later to fetch from API)
     const mockResources = [
       { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
       { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#3b82f6' },
@@ -86,6 +152,48 @@ export default function StableCalendarPage() {
       { id: 'barber-4', title: 'Lisa Davis', eventColor: '#8b5cf6' }
     ]
     
+    setResources(mockResources)
+    generateQuickLinks(mockResources)
+  }
+
+  // Generate quick links for QR code sharing
+  const generateQuickLinks = (barberResources) => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://6fb-ai.com'
+    const mockQuickLinks = [
+      {
+        id: 'main-location',
+        type: 'location',
+        title: 'Main Barbershop',
+        subtitle: 'Downtown Location',
+        url: `${baseUrl}/book/location/main-downtown`,
+        icon: BuildingStorefrontIcon,
+        color: 'blue'
+      },
+      {
+        id: 'north-location',
+        type: 'location', 
+        title: 'North Branch',
+        subtitle: 'Uptown Location',
+        url: `${baseUrl}/book/location/north-uptown`,
+        icon: MapPinIcon,
+        color: 'green'
+      },
+      ...(barberResources || resources).map(barber => ({
+        id: barber.id,
+        type: 'barber',
+        title: barber.title,
+        subtitle: 'Book directly',
+        url: `${baseUrl}/book/${barber.id}`,
+        icon: UserIcon,
+        color: 'purple'
+      }))
+    ]
+    
+    setQuickLinks(mockQuickLinks)
+  }
+
+  // Fallback mock events when API is not available
+  const generateMockEvents = () => {
     const mockEvents = []
     const now = new Date()
     const services = [
@@ -93,6 +201,13 @@ export default function StableCalendarPage() {
       { name: 'Beard Trim', duration: 30, price: 25 },
       { name: 'Fade Cut', duration: 45, price: 45 },
       { name: 'Hair Color', duration: 90, price: 85 }
+    ]
+    
+    const mockResources = [
+      { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
+      { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#3b82f6' },
+      { id: 'barber-3', title: 'Mike Brown', eventColor: '#f59e0b' },
+      { id: 'barber-4', title: 'Lisa Davis', eventColor: '#8b5cf6' }
     ]
     
     // Generate events for today
@@ -158,35 +273,92 @@ export default function StableCalendarPage() {
     ]
     
     setQuickLinks(mockQuickLinks)
-  }, [])
+  }
+
+  // Click outside detection for share dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (shareDropdownOpen && !event.target.closest('.share-dropdown')) {
+        setShareDropdownOpen(false)
+      }
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [shareDropdownOpen])
+
+  // Organize quick links by type for dropdown
+  const organizedLinks = useMemo(() => {
+    const locations = quickLinks.filter(link => link.type === 'location')
+    const barbers = quickLinks.filter(link => link.type === 'barber')
+    return { locations, barbers }
+  }, [quickLinks])
 
   const handleEventClick = useCallback((clickInfo) => {
     const event = clickInfo.event
-    alert(`
-Appointment Details:
-Client: ${event.title}
-Time: ${event.start.toLocaleTimeString()}
-Service: ${event.extendedProps.service}
-Duration: ${event.extendedProps.duration} minutes
-Price: $${event.extendedProps.price}
-    `.trim())
+    setSelectedEvent({
+      id: event.id,
+      title: event.title,
+      start: event.start,
+      end: event.end,
+      barber_id: event.resourceId,
+      service: event.extendedProps.service,
+      customer: event.extendedProps.customer,
+      duration: event.extendedProps.duration,
+      price: event.extendedProps.price,
+      status: event.extendedProps.status
+    })
+    setShowAppointmentModal(true)
   }, [])
 
   const handleDateSelect = useCallback((selectInfo) => {
-    const title = prompt('Enter client name and service:')
-    if (title) {
-      const calendarApi = selectInfo.view.calendar
-      calendarApi.unselect()
+    // Open appointment modal with selected slot info
+    setSelectedSlot({
+      start: selectInfo.start,
+      end: selectInfo.end,
+      barberId: selectInfo.resource?.id
+    })
+    setShowAppointmentModal(true)
+    
+    // Unselect the time slot
+    const calendarApi = selectInfo.view.calendar
+    calendarApi.unselect()
+  }, [])
+
+  // Handle appointment save
+  const handleAppointmentSave = async (appointmentData) => {
+    try {
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(appointmentData)
+      })
       
-      calendarApi.addEvent({
-        id: `new-${Date.now()}`,
-        title,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-        resourceId: selectInfo.resource?.id
+      const result = await response.json()
+      
+      if (response.ok) {
+        success('Appointment booked successfully!', {
+          title: 'Success',
+          duration: 3000
+        })
+        
+        // Refresh appointments
+        fetchRealAppointments()
+        setShowAppointmentModal(false)
+      } else {
+        showError(result.error || 'Failed to book appointment', {
+          title: 'Booking Failed',
+          duration: 5000
+        })
+      }
+    } catch (error) {
+      showError('Failed to book appointment: ' + error.message, {
+        title: 'Error',
+        duration: 5000
       })
     }
-  }, [])
+  }
 
   const generateQRCode = useCallback(async (resource) => {
     setSelectedResource(resource)
@@ -228,7 +400,7 @@ Price: $${event.extendedProps.price}
     }
   }
 
-  if (!mounted || !plugins) {
+  if (!mounted) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -254,18 +426,124 @@ Price: $${event.extendedProps.price}
             </div>
             
             <div className="flex items-center space-x-3">
-              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              <button 
+                onClick={() => {
+                  setSelectedSlot(null)
+                  setSelectedEvent(null)
+                  setShowAppointmentModal(true)
+                }}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
                 <PlusCircleIcon className="h-5 w-5" />
                 <span>New Appointment</span>
               </button>
               
-              <button 
-                onClick={() => setShowQRModal(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                <QrCodeIcon className="h-5 w-5" />
-                <span>QR Codes</span>
-              </button>
+              {/* Share Dropdown */}
+              <div className="relative share-dropdown">
+                <button 
+                  onClick={() => setShareDropdownOpen(!shareDropdownOpen)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  <ShareIcon className="h-5 w-5" />
+                  <span>Share</span>
+                  <ChevronDownIcon className="h-4 w-4" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {shareDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-screen sm:w-80 max-w-sm bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                    {/* Locations Section */}
+                    {organizedLinks.locations.length > 0 && (
+                      <div>
+                        <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50">
+                          📍 LOCATIONS
+                        </div>
+                        {organizedLinks.locations.map((link) => {
+                          const IconComponent = link.icon
+                          return (
+                            <div key={link.id} className="flex items-center justify-between px-3 py-3 hover:bg-gray-50 border-b border-gray-100">
+                              <div className="flex items-center space-x-3">
+                                <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <IconComponent className="h-4 w-4 text-blue-600" />
+                                </div>
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">{link.title}</div>
+                                  <div className="text-xs text-gray-500">{link.subtitle}</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <button 
+                                  onClick={() => generateQRCode({ id: link.id, title: link.title, url: link.url })}
+                                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                                  title="Generate QR Code"
+                                >
+                                  <QrCodeIcon className="h-4 w-4" />
+                                </button>
+                                <button 
+                                  onClick={() => copyToClipboard(link.url, link.id)}
+                                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                                  title="Copy Link"
+                                >
+                                  {copied[link.id] ? (
+                                    <CheckIcon className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <ClipboardIcon className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {/* Barbers Section */}
+                    {organizedLinks.barbers.length > 0 && (
+                      <div>
+                        <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50">
+                          👤 BARBERS
+                        </div>
+                        {organizedLinks.barbers.map((link) => {
+                          const IconComponent = link.icon
+                          return (
+                            <div key={link.id} className="flex items-center justify-between px-3 py-3 hover:bg-gray-50">
+                              <div className="flex items-center space-x-3">
+                                <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                  <IconComponent className="h-4 w-4 text-purple-600" />
+                                </div>
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">{link.title}</div>
+                                  <div className="text-xs text-gray-500">{link.subtitle}</div>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <button 
+                                  onClick={() => generateQRCode({ id: link.id, title: link.title, url: link.url })}
+                                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                                  title="Generate QR Code"
+                                >
+                                  <QrCodeIcon className="h-4 w-4" />
+                                </button>
+                                <button 
+                                  onClick={() => copyToClipboard(link.url, link.id)}
+                                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                                  title="Copy Link"
+                                >
+                                  {copied[link.id] ? (
+                                    <CheckIcon className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <ClipboardIcon className="h-4 w-4" />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               
               <div className="flex items-center text-sm text-gray-600">
                 <ClockIcon className="h-4 w-4 mr-1" />
@@ -276,100 +554,17 @@ Price: $${event.extendedProps.price}
         </div>
       </div>
 
-      {/* Quick Links Section */}
-      <div className="px-6 py-4">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                <LinkIcon className="h-5 w-5 mr-2 text-blue-600" />
-                Quick Booking Links
-              </h2>
-              <p className="text-sm text-gray-600">Generate QR codes and share booking links</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {quickLinks.map((link) => {
-              const IconComponent = link.icon
-              const colorClasses = {
-                blue: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
-                green: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
-                purple: 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700'
-              }
-              
-              return (
-                <div key={link.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className={`h-10 w-10 bg-gradient-to-r ${colorClasses[link.color]} rounded-lg flex items-center justify-center`}>
-                        <IconComponent className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-900">{link.title}</h3>
-                        <p className="text-xs text-gray-500">{link.subtitle}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => generateQRCode({ id: link.id, title: link.title, url: link.url })}
-                      className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-white border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300"
-                    >
-                      <QrCodeIcon className="h-3 w-3" />
-                      <span>QR Code</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => copyToClipboard(link.url, link.id)}
-                      className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-white border border-gray-200 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300"
-                    >
-                      {copied[link.id] ? (
-                        <>
-                          <CheckIcon className="h-3 w-3 text-green-600" />
-                          <span className="text-green-600">Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <CopyIcon className="h-3 w-3" />
-                          <span>Copy</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
 
       {/* Calendar Container */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
-          <FullCalendar
-            plugins={[
-              plugins.dayGridPlugin,
-              plugins.timeGridPlugin,
-              plugins.interactionPlugin,
-              plugins.resourcePlugin,
-              plugins.resourceTimeGridPlugin
-            ]}
-            initialView="resourceTimeGridDay"
-            schedulerLicenseKey="0875458679-fcs-1754609365"
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'resourceTimeGridDay,timeGridWeek,dayGridMonth'
-            }}
+          <FullCalendarWrapper
+            view="resourceTimeGridDay"
             resources={resources}
             events={events}
-            editable={true}
-            selectable={true}
-            selectMirror={true}
-            eventClick={handleEventClick}
-            select={handleDateSelect}
+            onEventClick={handleEventClick}
+            onDateSelect={handleDateSelect}
+            showResources={true}
             businessHours={{
               daysOfWeek: [1, 2, 3, 4, 5, 6],
               startTime: '09:00',
@@ -379,28 +574,9 @@ Price: $${event.extendedProps.price}
             slotMaxTime="20:00:00"
             slotDuration="00:30:00"
             height="650px"
-            nowIndicator={true}
-            dayMaxEvents={true}
-            weekends={true}
-            eventDisplay="block"
-            eventTimeFormat={{
-              hour: 'numeric',
-              minute: '2-digit',
-              meridiem: 'short'
-            }}
           />
         </div>
 
-        {/* Instructions for License */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">FullCalendar License Setup</h3>
-          <ol className="text-sm text-blue-800 space-y-1">
-            <li>1. Add your FullCalendar license key to <code className="bg-white px-1 py-0.5 rounded">.env.local</code></li>
-            <li>2. Set: <code className="bg-white px-1 py-0.5 rounded">NEXT_PUBLIC_FULLCALENDAR_LICENSE_KEY=your-actual-key</code></li>
-            <li>3. Restart the Docker container: <code className="bg-white px-1 py-0.5 rounded">docker compose restart frontend</code></li>
-            <li>4. The license warning will disappear once configured</li>
-          </ol>
-        </div>
       </div>
 
       {/* QR Code Modal */}
@@ -446,7 +622,7 @@ Price: $${event.extendedProps.price}
                         {copied.modal ? (
                           <CheckIcon className="h-4 w-4" />
                         ) : (
-                          <CopyIcon className="h-4 w-4" />
+                          <ClipboardIcon className="h-4 w-4" />
                         )}
                       </button>
                     </div>
@@ -503,6 +679,24 @@ Price: $${event.extendedProps.price}
             )}
           </div>
         </div>
+      )}
+
+      {/* Appointment Booking Modal */}
+      {showAppointmentModal && (
+        <AppointmentBookingModal
+          isOpen={showAppointmentModal}
+          onClose={() => {
+            setShowAppointmentModal(false)
+            setSelectedSlot(null)
+            setSelectedEvent(null)
+          }}
+          selectedSlot={selectedSlot}
+          barbershopId={barbershopId}
+          barbers={resources.map(r => ({ id: r.id, name: r.title }))}
+          services={services}
+          onBookingComplete={handleAppointmentSave}
+          editingAppointment={selectedEvent}
+        />
       )}
     </div>
   )

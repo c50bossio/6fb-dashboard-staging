@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import Head from 'next/head'
 import { 
@@ -192,7 +192,7 @@ function BookingPageContent() {
       const date = new Date(today)
       date.setDate(date.getDate() + i)
       
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'lowercase' })
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
       const daySlots = barberData?.availability[dayName] || []
       
       const filteredSlots = urlTimeSlots.length > 0 
@@ -305,7 +305,9 @@ function BookingPageContent() {
            customerInfo.phone.trim()
   }
 
-  const availableSlots = generateAvailableSlots()
+  const availableSlots = useMemo(() => {
+    return generateAvailableSlots()
+  }, [urlTimeSlots, barberData])
 
   if (loading && !barberData) {
     return (

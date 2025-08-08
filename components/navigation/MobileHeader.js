@@ -56,7 +56,8 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
             {/* Mobile Menu Button */}
             <button
               onClick={onMenuClick}
-              className="lg:hidden p-2 -ml-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              className="lg:hidden min-h-[44px] min-w-[44px] p-3 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 flex items-center justify-center"
+              aria-label="Open navigation menu"
             >
               <Bars3Icon className="h-6 w-6" />
             </button>

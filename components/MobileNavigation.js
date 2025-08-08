@@ -110,7 +110,8 @@ export default function MobileNavigation() {
         <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={() => setIsOpen(true)}
-            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            className="min-h-[44px] min-w-[44px] p-3 rounded-lg text-gray-600 hover:bg-gray-100 flex items-center justify-center"
+            aria-label="Open navigation menu"
           >
             <Bars3Icon className="h-6 w-6" />
           </button>
@@ -122,9 +123,12 @@ export default function MobileNavigation() {
             <span className="font-semibold text-gray-900">Barbershop</span>
           </div>
 
-          <button className="relative p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+          <button 
+            className="relative min-h-[44px] min-w-[44px] p-3 rounded-lg text-gray-600 hover:bg-gray-100 flex items-center justify-center"
+            aria-label="View notifications"
+          >
             <BellIcon className="h-6 w-6" />
-            <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+            <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full"></span>
           </button>
         </div>
       </div>
@@ -167,7 +171,7 @@ export default function MobileNavigation() {
                   <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
                     <button
                       type="button"
-                      className="-m-2.5 p-2.5"
+                      className="min-h-[44px] min-w-[44px] p-3 flex items-center justify-center"
                       onClick={() => setIsOpen(false)}
                     >
                       <span className="sr-only">Close sidebar</span>
@@ -263,7 +267,7 @@ export default function MobileNavigation() {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-2 px-1 rounded-lg ${
+              className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg min-h-[44px] min-w-[44px] ${
                 isActive(item.href)
                   ? 'text-amber-600'
                   : 'text-gray-600 hover:text-gray-900'

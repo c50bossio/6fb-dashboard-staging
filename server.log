@@ -2,22 +2,256 @@
 > 6fb-ai-agent-dashboard@1.0.0 dev
 > next dev -p 9999
 
- ⨯ Failed to start server
-Error: listen EADDRINUSE: address already in use :::9999
-    at Server.setupListenHandle [as _listen2] (node:net:1817:16)
-    at listenInCluster (node:net:1865:12)
-    at Server.listen (node:net:1953:7)
-    at /Users/bossio/6FB AI Agent System/node_modules/next/dist/server/lib/start-server.js:280:16
-    at new Promise (<anonymous>)
-    at startServer (/Users/bossio/6FB AI Agent System/node_modules/next/dist/server/lib/start-server.js:191:11)
-    at /Users/bossio/6FB AI Agent System/node_modules/next/dist/server/lib/start-server.js:310:52
-    at Span.traceAsyncFn (/Users/bossio/6FB AI Agent System/node_modules/next/dist/trace/trace.js:154:26)
-    at process.<anonymous> (/Users/bossio/6FB AI Agent System/node_modules/next/dist/server/lib/start-server.js:310:35)
-    at process.emit (node:events:517:28) {
-  code: 'EADDRINUSE',
-  errno: -48,
-  syscall: 'listen',
-  address: '::',
-  port: 9999
-}
+(node:22361) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/bossio/6FB%20AI%20Agent%20System/next.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/bossio/6FB AI Agent System/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ▲ Next.js 14.2.31
+  - Local:        http://localhost:9999
+  - Environments: .env.local, .env
+
+ ✓ Starting...
+(node:22364) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/bossio/6FB%20AI%20Agent%20System/next.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/bossio/6FB AI Agent System/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ Ready in 603ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.3s (733 modules)
+🔐 Creating Supabase client:
+  URL: https://dfhqjdoydihajmjxniee.supabase.co
+  Key: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+  Using real client: true
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /_next/static/webpack/9b2f3593d27e5fe4.webpack.hot-update.json 404 in 2612ms
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1213ms (908 modules)
+🔐 Creating Supabase client:
+  URL: https://dfhqjdoydihajmjxniee.supabase.co
+  Key: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+  Using real client: true
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /_next/static/webpack/9b2f3593d27e5fe4.webpack.hot-update.json 404 in 1020ms
+ ○ Compiling /dashboard/calendar ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (108kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ⚠ ./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@prisma/instrumentation/dist/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/prisma.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/postgresjs.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+🔐 Creating Supabase client:
+  URL: https://dfhqjdoydihajmjxniee.supabase.co
+  Key: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+  Using real client: true
+🔐 Creating Supabase client:
+  URL: https://dfhqjdoydihajmjxniee.supabase.co
+  Key: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+  Using real client: true
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /dashboard/calendar 200 in 3584ms
+ GET /_next/static/webpack/9b2f3593d27e5fe4.webpack.hot-update.json 404 in 93ms
+🔐 Creating Supabase client:
+  URL: https://dfhqjdoydihajmjxniee.supabase.co
+  Key: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+  Using real client: true
+ GET /dashboard/calendar 200 in 16ms
+ ⚠ ./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@prisma/instrumentation/dist/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/prisma.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/postgresjs.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+ ⚠ ./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@prisma/instrumentation/dist/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/prisma.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/postgresjs.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+
+./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+./node_modules/@supabase/realtime-js/dist/module/index.js
+./node_modules/@supabase/supabase-js/dist/module/index.js
+./node_modules/@supabase/ssr/dist/module/createBrowserClient.js
+./node_modules/@supabase/ssr/dist/module/index.js
+./lib/supabase/server.js
+./app/api/appointments/route.js
+ ⚠ ./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@prisma/instrumentation/dist/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/prisma.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/postgresjs.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+
+./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+./node_modules/@supabase/realtime-js/dist/module/index.js
+./node_modules/@supabase/supabase-js/dist/module/index.js
+./node_modules/@supabase/ssr/dist/module/createBrowserClient.js
+./node_modules/@supabase/ssr/dist/module/index.js
+./lib/supabase/server.js
+./app/api/appointments/route.js
+ ⚠ ./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@prisma/instrumentation/node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@prisma/instrumentation/dist/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/prisma.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@sentry/node/build/cjs/integrations/tracing/postgresjs.js
+./node_modules/@sentry/node/build/cjs/index.js
+./node_modules/@sentry/nextjs/build/cjs/index.server.js
+./lib/sentry.js
+./components/calendar/FullCalendarWrapper.js
+./app/(protected)/dashboard/calendar/page.js
+
+./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+Critical dependency: the request of a dependency is an expression
+
+Import trace for requested module:
+./node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+./node_modules/@supabase/realtime-js/dist/module/index.js
+./node_modules/@supabase/supabase-js/dist/module/index.js
+./node_modules/@supabase/ssr/dist/module/createBrowserClient.js
+./node_modules/@supabase/ssr/dist/module/index.js
+./lib/supabase/server.js
+./app/api/appointments/route.js
+ GET /api/appointments?start_date=2025-08-08T17%3A54%3A55.141Z&end_date=2025-08-15T17%3A54%3A55.141Z 401 in 607ms
+ GET /api/appointments?start_date=2025-08-08T17%3A54%3A55.138Z&end_date=2025-08-15T17%3A54%3A55.138Z 401 in 608ms
+ GET /api/services 401 in 609ms
+ GET /api/services 401 in 10ms
+🔐 Creating Supabase client:
+  URL: https://dfhqjdoydihajmjxniee.supabase.co
+  Key: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...
+  Using real client: true
+ GET /dashboard/calendar 200 in 71ms
+ GET /api/appointments?start_date=2025-08-08T17%3A54%3A56.526Z&end_date=2025-08-15T17%3A54%3A56.526Z 401 in 54ms
+ GET /api/appointments?start_date=2025-08-08T17%3A54%3A56.529Z&end_date=2025-08-15T17%3A54%3A56.529Z 401 in 44ms
+ GET /api/services 401 in 60ms
+ GET /api/services 401 in 8ms
 [?25h

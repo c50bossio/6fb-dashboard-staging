@@ -242,7 +242,7 @@ export default function AppointmentBookingModal({
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="min-h-[44px] min-w-[44px] p-3 rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center"
                     onClick={onClose}
                   >
                     <span className="sr-only">Close</span>
@@ -367,7 +367,7 @@ export default function AppointmentBookingModal({
                                   type="button"
                                   onClick={() => handleTimeSlotSelect(slot)}
                                   disabled={!slot.available}
-                                  className={`p-2 text-xs rounded-md border transition-colors ${
+                                  className={`min-h-[44px] px-3 py-2 text-xs rounded-md border transition-colors ${
                                     slot.available
                                       ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
                                       : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
@@ -536,14 +536,14 @@ export default function AppointmentBookingModal({
                         <button
                           type="button"
                           onClick={onClose}
-                          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                          className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto min-h-[44px]"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={loading || checkingAvailability}
-                          className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="inline-flex w-full justify-center rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                         >
                           {loading ? (
                             <>

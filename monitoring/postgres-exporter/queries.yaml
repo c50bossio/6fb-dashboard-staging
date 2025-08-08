@@ -1,0 +1,258 @@
+# PostgreSQL Exporter Custom Queries for 6FB AI Agent System
+# Business-specific metrics and extended database monitoring
+
+# Database size metrics
+pg_database_size:
+  query: "SELECT pg_database_size(current_database()) as bytes"
+  master: true
+  metrics:
+    - bytes:
+        usage: "GAUGE"
+        description: "Database size in bytes"
+
+# Table size metrics
+pg_table_size:
+  query: |
+    SELECT 
+      schemaname,
+      tablename,
+      pg_total_relation_size(schemaname||'.'||tablename) as bytes,
+      pg_relation_size(schemaname||'.'||tablename) as table_bytes,
+      pg_indexes_size(schemaname||'.'||tablename) as index_bytes
+    FROM pg_tables 
+    WHERE schemaname NOT IN ('information_schema', 'pg_catalog')
+  master: true
+  metrics:
+    - schemaname:
+        usage: "LABEL"
+        description: "Schema name"
+    - tablename:
+        usage: "LABEL" 
+        description: "Table name"
+    - bytes:
+        usage: "GAUGE"
+        description: "Total table size including indexes in bytes"
+    - table_bytes:
+        usage: "GAUGE"
+        description: "Table size in bytes"
+    - index_bytes:
+        usage: "GAUGE"
+        description: "Index size in bytes"
+
+# Connection pool metrics
+pg_connection_pool:
+  query: |
+    SELECT 
+      state,
+      COUNT(*) as connections
+    FROM pg_stat_activity 
+    WHERE state IS NOT NULL
+    GROUP BY state
+  master: true
+  metrics:
+    - state:
+        usage: "LABEL"
+        description: "Connection state"
+    - connections:
+        usage: "GAUGE"
+        description: "Number of connections in this state"
+
+# Query performance metrics
+pg_slow_queries:
+  query: |
+    SELECT 
+      query,
+      calls,
+      total_time,
+      mean_time,
+      stddev_time,
+      rows
+    FROM pg_stat_statements 
+    WHERE mean_time > 100
+    ORDER BY mean_time DESC 
+    LIMIT 10
+  master: true
+  metrics:
+    - query:
+        usage: "LABEL"
+        description: "Query text"
+    - calls:
+        usage: "COUNTER"
+        description: "Number of times executed"
+    - total_time:
+        usage: "COUNTER"
+        description: "Total time spent in milliseconds"
+    - mean_time:
+        usage: "GAUGE"
+        description: "Mean execution time in milliseconds"
+    - stddev_time:
+        usage: "GAUGE"
+        description: "Standard deviation of execution time"
+    - rows:
+        usage: "COUNTER"
+        description: "Total number of rows retrieved or affected"
+
+# Booking system specific metrics
+pg_booking_metrics:
+  query: |
+    SELECT 
+      status,
+      COUNT(*) as bookings,
+      AVG(EXTRACT(epoch FROM (updated_at - created_at))) as avg_processing_time
+    FROM bookings 
+    WHERE created_at > NOW() - INTERVAL '1 hour'
+    GROUP BY status
+  master: true
+  metrics:
+    - status:
+        usage: "LABEL"
+        description: "Booking status"
+    - bookings:
+        usage: "GAUGE"
+        description: "Number of bookings in this status"
+    - avg_processing_time:
+        usage: "GAUGE"
+        description: "Average booking processing time in seconds"
+
+# AI agent performance metrics
+pg_ai_agent_metrics:
+  query: |
+    SELECT 
+      agent_type,
+      AVG(response_time) as avg_response_time,
+      COUNT(*) as total_requests,
+      SUM(CASE WHEN success = true THEN 1 ELSE 0 END) as successful_requests
+    FROM ai_agent_logs 
+    WHERE created_at > NOW() - INTERVAL '1 hour'
+    GROUP BY agent_type
+  master: true
+  metrics:
+    - agent_type:
+        usage: "LABEL"
+        description: "Type of AI agent"
+    - avg_response_time:
+        usage: "GAUGE"
+        description: "Average response time in milliseconds"
+    - total_requests:
+        usage: "GAUGE"
+        description: "Total number of requests"
+    - successful_requests:
+        usage: "GAUGE"
+        description: "Number of successful requests"
+
+# User activity metrics
+pg_user_activity:
+  query: |
+    SELECT 
+      user_type,
+      COUNT(DISTINCT user_id) as active_users,
+      COUNT(*) as total_sessions
+    FROM user_sessions 
+    WHERE last_activity > NOW() - INTERVAL '1 hour'
+    GROUP BY user_type
+  master: true
+  metrics:
+    - user_type:
+        usage: "LABEL"
+        description: "Type of user (CLIENT, BARBER, SHOP_OWNER, etc.)"
+    - active_users:
+        usage: "GAUGE"
+        description: "Number of active users"
+    - total_sessions:
+        usage: "GAUGE"
+        description: "Total number of active sessions"
+
+# Transaction metrics
+pg_transaction_metrics:
+  query: |
+    SELECT 
+      xact_commit as commits,
+      xact_rollback as rollbacks,
+      tup_returned as tuples_returned,
+      tup_fetched as tuples_fetched,
+      tup_inserted as tuples_inserted,
+      tup_updated as tuples_updated,
+      tup_deleted as tuples_deleted
+    FROM pg_stat_database 
+    WHERE datname = current_database()
+  master: true
+  metrics:
+    - commits:
+        usage: "COUNTER"
+        description: "Number of committed transactions"
+    - rollbacks:
+        usage: "COUNTER"
+        description: "Number of rolled back transactions"
+    - tuples_returned:
+        usage: "COUNTER"
+        description: "Number of tuples returned by queries"
+    - tuples_fetched:
+        usage: "COUNTER"
+        description: "Number of tuples fetched by queries"
+    - tuples_inserted:
+        usage: "COUNTER"
+        description: "Number of tuples inserted"
+    - tuples_updated:
+        usage: "COUNTER"
+        description: "Number of tuples updated"
+    - tuples_deleted:
+        usage: "COUNTER"
+        description: "Number of tuples deleted"
+
+# Lock monitoring
+pg_locks:
+  query: |
+    SELECT 
+      mode,
+      COUNT(*) as lock_count
+    FROM pg_locks 
+    WHERE NOT granted
+    GROUP BY mode
+  master: true
+  metrics:
+    - mode:
+        usage: "LABEL"
+        description: "Lock mode"
+    - lock_count:
+        usage: "GAUGE"
+        description: "Number of locks not granted"
+
+# Vacuum and analyze metrics
+pg_vacuum_stats:
+  query: |
+    SELECT 
+      schemaname,
+      relname,
+      n_tup_ins as tuples_inserted,
+      n_tup_upd as tuples_updated,
+      n_tup_del as tuples_deleted,
+      n_live_tup as live_tuples,
+      n_dead_tup as dead_tuples,
+      last_vacuum,
+      last_autovacuum,
+      last_analyze,
+      last_autoanalyze
+    FROM pg_stat_user_tables
+  master: true
+  metrics:
+    - schemaname:
+        usage: "LABEL"
+        description: "Schema name"
+    - relname:
+        usage: "LABEL"
+        description: "Table name"
+    - tuples_inserted:
+        usage: "COUNTER"
+        description: "Number of tuples inserted"
+    - tuples_updated:
+        usage: "COUNTER"
+        description: "Number of tuples updated"
+    - tuples_deleted:
+        usage: "COUNTER"
+        description: "Number of tuples deleted"
+    - live_tuples:
+        usage: "GAUGE"
+        description: "Number of live tuples"
+    - dead_tuples:
+        usage: "GAUGE"
+        description: "Number of dead tuples"

@@ -96,7 +96,10 @@ export default function GlobalNavigation() {
           {/* Right side - user menu and mobile menu button */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+            <button 
+              className="min-h-[44px] min-w-[44px] p-3 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+              aria-label="View notifications"
+            >
               <BellIcon className="h-5 w-5" />
             </button>
 

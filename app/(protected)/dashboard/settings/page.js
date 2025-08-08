@@ -164,7 +164,17 @@ export default function SettingsPage() {
   // Initialize from URL hash after component mounts (client-side only)
   useEffect(() => {
     const hash = window.location.hash.replace('#', '')
-    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'api', 'system']
+    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
+    
+    // Explicitly block API section access
+    if (hash === 'api') {
+      // Redirect to general section and update URL
+      setActiveSection('general')
+      window.location.hash = 'general'
+      setIsInitialized(true)
+      return
+    }
+    
     if (validSections.includes(hash)) {
       setActiveSection(hash)
     }
@@ -182,7 +192,15 @@ export default function SettingsPage() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '')
-      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'api', 'system']
+      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
+      
+      // Explicitly block API section access
+      if (hash === 'api') {
+        setActiveSection('general')
+        window.location.hash = 'general'
+        return
+      }
+      
       if (validSections.includes(hash)) {
         setActiveSection(hash)
       }
@@ -495,7 +513,6 @@ export default function SettingsPage() {
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'security', name: 'Security & MFA', icon: KeyIcon },
     { id: 'billing', name: 'Billing & Usage', icon: CreditCardIcon },
-    { id: 'api', name: 'API Services', icon: KeyIcon },
     { id: 'system', name: 'System Status', icon: CogIcon }
   ]
 
@@ -1807,73 +1824,6 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* API Services */}
-            {activeSection === 'api' && (
-              <div className="card">
-                <div className="flex items-center mb-6">
-                  <KeyIcon className="h-6 w-6 text-blue-600 mr-3" />
-                  <h3 className="text-lg font-semibold text-gray-900">AI & Communication Services</h3>
-                </div>
-                
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <h4 className="font-medium text-blue-900 mb-2">✨ All-Inclusive API Services</h4>
-                  <p className="text-sm text-blue-800 mb-3">
-                    We handle all AI and communication services for you. No complex setup or API management needed!
-                  </p>
-                  <div className="space-y-3">
-                    <div className="bg-white rounded-md p-3">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className="font-medium text-gray-900">AI Business Coach</span>
-                          <p className="text-xs text-gray-600">Powered by GPT-4 & Claude</p>
-                        </div>
-                        <span className="font-semibold text-blue-600">$0.06/1K tokens</span>
-                      </div>
-                    </div>
-                    <div className="bg-white rounded-md p-3">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className="font-medium text-gray-900">SMS Marketing</span>
-                          <p className="text-xs text-gray-600">Automated appointment reminders & campaigns</p>
-                        </div>
-                        <span className="font-semibold text-blue-600">$0.02/message</span>
-                      </div>
-                    </div>
-                    <div className="bg-white rounded-md p-3">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className="font-medium text-gray-900">Email Campaigns</span>
-                          <p className="text-xs text-gray-600">Professional templates & automation</p>
-                        </div>
-                        <span className="font-semibold text-blue-600">$0.001/email</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-blue-200">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Current Month Usage</p>
-                        <p className="text-xs text-gray-600">Resets on the 1st</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-blue-600">$124.50</p>
-                        <a href="/dashboard/billing" className="text-xs text-blue-700 hover:underline">View detailed breakdown →</a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                  <h5 className="font-medium text-gray-900 mb-2">💡 How It Works</h5>
-                  <ul className="space-y-1 text-sm text-gray-600">
-                    <li>• All AI and communication services are included</li>
-                    <li>• Pay only for what you use - no setup fees</li>
-                    <li>• Usage automatically billed to your account</li>
-                    <li>• Detailed analytics in your billing dashboard</li>
-                  </ul>
-                </div>
-              </div>
-            )}
 
             {/* System Status */}
             {activeSection === 'system' && (

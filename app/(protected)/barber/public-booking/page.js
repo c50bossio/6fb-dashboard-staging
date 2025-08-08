@@ -1,25 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import QRCode from 'qrcode'
+
 import { 
   GlobeAltIcon, 
   ShareIcon,
   QrCodeIcon,
-  CopyIcon,
+  ClipboardIcon,
   CheckIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   LinkIcon,
   DevicePhoneMobileIcon,
-  ComputerDesktopIcon,
   PhotoIcon,
   EyeIcon,
-  PhoneIcon,
   EnvelopeIcon,
   StarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '@/lib/auth-config'
-import QRCode from 'qrcode'
+
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function PublicBookingPage() {
   const { user } = useAuth()
@@ -30,6 +30,12 @@ export default function PublicBookingPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [previewData, setPreviewData] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  // Force component refresh to clear any cached icon references
+  useEffect(() => {
+    // Clear any cached references
+    console.log('🔄 PublicBookingPage mounted, all icons should be ClipboardIcon')
+  }, [])
 
   // Mock barber data - in production, this would come from user profile
   const barberData = {
@@ -170,7 +176,7 @@ export default function PublicBookingPage() {
                 {copied.header ? (
                   <CheckIcon className="h-4 w-4 mr-2 text-green-600" />
                 ) : (
-                  <CopyIcon className="h-4 w-4 mr-2" />
+                  <ClipboardIcon className="h-4 w-4 mr-2" />
                 )}
                 {copied.header ? 'Copied!' : 'Copy Link'}
               </button>
@@ -342,7 +348,7 @@ export default function PublicBookingPage() {
                     {copied.sidebar ? (
                       <CheckIcon className="h-4 w-4 mr-2 text-green-600" />
                     ) : (
-                      <CopyIcon className="h-4 w-4 mr-2" />
+                      <ClipboardIcon className="h-4 w-4 mr-2" />
                     )}
                     {copied.sidebar ? 'Copied!' : 'Copy Link'}
                   </button>
@@ -420,7 +426,7 @@ export default function PublicBookingPage() {
                         onClick={() => copyToClipboard(urls.main, 'main')}
                         className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700"
                       >
-                        {copied.main ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                        {copied.main ? <CheckIcon className="h-4 w-4" /> : <ClipboardIcon className="h-4 w-4" />}
                       </button>
                     </div>
                   </div>
@@ -440,7 +446,7 @@ export default function PublicBookingPage() {
                         onClick={() => copyToClipboard(urls.utmSocial, 'social')}
                         className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700"
                       >
-                        {copied.social ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                        {copied.social ? <CheckIcon className="h-4 w-4" /> : <ClipboardIcon className="h-4 w-4" />}
                       </button>
                     </div>
                   </div>
@@ -460,7 +466,7 @@ export default function PublicBookingPage() {
                         onClick={() => copyToClipboard(urls.utmEmail, 'email')}
                         className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700"
                       >
-                        {copied.email ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+                        {copied.email ? <CheckIcon className="h-4 w-4" /> : <ClipboardIcon className="h-4 w-4" />}
                       </button>
                     </div>
                   </div>
@@ -527,7 +533,7 @@ export default function PublicBookingPage() {
                           </>
                         ) : (
                           <>
-                            <DownloadIcon className="h-4 w-4 mr-2" />
+                            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                             Download PNG
                           </>
                         )}

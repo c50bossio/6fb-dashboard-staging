@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from fastapi import Request, Response, HTTPException, status
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse
 import ipaddress
 import re

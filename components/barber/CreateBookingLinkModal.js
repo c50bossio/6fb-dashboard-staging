@@ -195,7 +195,8 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+            className="min-h-[44px] min-w-[44px] p-3 hover:bg-gray-100 rounded-lg transition-all flex items-center justify-center"
+            aria-label="Close modal"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>

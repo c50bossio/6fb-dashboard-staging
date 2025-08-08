@@ -240,7 +240,8 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+            className="min-h-[44px] min-w-[44px] p-3 hover:bg-gray-100 rounded-lg transition-all flex items-center justify-center"
+            aria-label="Close modal"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>
@@ -251,7 +252,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
           <div className="flex">
             <button
               onClick={() => setActiveTab('basic')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-all ${
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-all min-h-[44px] ${
                 activeTab === 'basic'
                   ? 'text-blue-600 border-blue-600'
                   : 'text-gray-600 border-transparent hover:text-gray-900'
@@ -261,7 +262,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
             </button>
             <button
               onClick={() => setActiveTab('customize')}
-              className={`px-6 py-3 text-sm font-medium border-b-2 transition-all ${
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-all min-h-[44px] ${
                 activeTab === 'customize'
                   ? 'text-blue-600 border-blue-600'
                   : 'text-gray-600 border-transparent hover:text-gray-900'
@@ -334,7 +335,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
                 </p>
                 <button
                   onClick={() => navigator.clipboard.writeText(`${window.location.origin}${bookingLink?.url}`)}
-                  className="flex items-center gap-1 mt-2 text-sm text-blue-600 hover:text-blue-800"
+                  className="flex items-center gap-2 mt-2 text-sm text-blue-600 hover:text-blue-800 min-h-[44px] px-3 py-2 rounded-lg hover:bg-blue-50 transition-all"
                 >
                   <ClipboardIcon className="h-4 w-4" />
                   Copy Link

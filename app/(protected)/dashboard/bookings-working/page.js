@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { useUser } from '@/components/SupabaseAuthProvider'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 // Dynamic import to avoid SSR issues
 const FullCalendarWrapper = dynamic(
@@ -18,7 +18,7 @@ const FullCalendarWrapper = dynamic(
 )
 
 export default function BookingsPage() {
-  const { user } = useUser()
+  const { user } = useAuth()
   const [events, setEvents] = useState([])
   const [resources, setResources] = useState([])
   const [loading, setLoading] = useState(false)

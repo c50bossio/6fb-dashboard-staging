@@ -12,6 +12,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import { useState, useCallback, useRef, useEffect } from 'react'
 
 import { captureException } from '@/lib/sentry'
+import { useToast } from '../ToastContainer'
 
 export default function FullCalendarWrapper({
   events = [],
@@ -39,6 +40,7 @@ export default function FullCalendarWrapper({
 }) {
   const calendarRef = useRef(null)
   const [currentView, setCurrentView] = useState(view)
+  const { success, error: showError, info } = useToast()
 
   // Handle external event drop (from waitlist)
   const handleExternalEventDrop = useCallback((info) => {
@@ -96,11 +98,17 @@ export default function FullCalendarWrapper({
         draggedEl.remove()
       }
 
-      alert(`✅ ${eventData.customer} scheduled successfully!`)
+      success(`${eventData.customer} scheduled successfully!`, {
+        title: 'Appointment Scheduled',
+        duration: 3000
+      })
       
     } catch (error) {
       captureException(error, { context: 'FullCalendar.externalEventDrop' })
-      alert('❌ Failed to schedule appointment from waitlist')
+      showError('Failed to schedule appointment from waitlist', {
+        title: 'Scheduling Error',
+        duration: 4000
+      })
     }
   }, [onExternalEventDrop])
 
@@ -161,19 +169,28 @@ export default function FullCalendarWrapper({
       
       // Additional validation with user feedback
       if (startHour < 9 || endHour > 18) {
-        alert('❌ Cannot schedule appointments outside business hours (9 AM - 6 PM)')
+        showError('Cannot schedule appointments outside business hours (9 AM - 6 PM)', {
+          title: 'Business Hours Violation',
+          duration: 4000
+        })
         info.revert()
         return
       }
       
       if (event.start.getDay() === 0) {
-        alert('❌ Barbershop is closed on Sundays')
+        showError('Barbershop is closed on Sundays', {
+          title: 'Closed Day',
+          duration: 3000
+        })
         info.revert()
         return
       }
       
       if (startHour < 13 && endHour > 12) {
-        alert('❌ Cannot schedule during lunch break (12:00 PM - 1:00 PM)')
+        showError('Cannot schedule during lunch break (12:00 PM - 1:00 PM)', {
+          title: 'Lunch Break',
+          duration: 3000
+        })
         info.revert()
         return
       }
@@ -203,25 +220,37 @@ export default function FullCalendarWrapper({
       
       // Validate resize constraints with user feedback
       if (startHour < 9 || endHour > 18) {
-        alert('❌ Appointments must be within business hours (9 AM - 6 PM)')
+        showError('Appointments must be within business hours (9 AM - 6 PM)', {
+          title: 'Business Hours Violation',
+          duration: 4000
+        })
         info.revert()
         return
       }
       
       if (durationMinutes < 15) {
-        alert('❌ Minimum appointment duration is 15 minutes')
+        showError('Minimum appointment duration is 15 minutes', {
+          title: 'Duration Too Short',
+          duration: 3000
+        })
         info.revert()
         return
       }
       
       if (durationMinutes > 240) {
-        alert('❌ Maximum appointment duration is 4 hours')
+        showError('Maximum appointment duration is 4 hours', {
+          title: 'Duration Too Long',
+          duration: 3000
+        })
         info.revert()
         return
       }
       
       if (startHour < 13 && endHour > 12) {
-        alert('❌ Appointments cannot extend into lunch break (12:00 PM - 1:00 PM)')
+        showError('Appointments cannot extend into lunch break (12:00 PM - 1:00 PM)', {
+          title: 'Lunch Break Conflict',
+          duration: 3000
+        })
         info.revert()
         return
       }
@@ -341,11 +370,17 @@ export default function FullCalendarWrapper({
       // Remove loading indicator
       document.body.removeChild(loadingDiv)
       
-      alert('✅ Schedule exported to PDF successfully!')
+      success('Schedule exported to PDF successfully!', {
+        title: 'PDF Export Complete',
+        duration: 3000
+      })
       
     } catch (error) {
       captureException(error, { context: 'FullCalendarWrapper.exportToPDF' })
-      alert('❌ Failed to export PDF. Please try again.')
+      showError('Failed to export PDF. Please try again.', {
+        title: 'Export Failed',
+        duration: 4000
+      })
     }
   }, [currentView])
 
@@ -353,7 +388,10 @@ export default function FullCalendarWrapper({
   const exportToCSV = useCallback(() => {
     try {
       if (!events || events.length === 0) {
-        alert('No events to export')
+        info('No events to export', {
+          title: 'Nothing to Export',
+          duration: 3000
+        })
         return
       }
 
@@ -422,11 +460,17 @@ export default function FullCalendarWrapper({
         document.body.removeChild(link)
       }
       
-      alert('✅ Appointments exported to CSV successfully!')
+      success('Appointments exported to CSV successfully!', {
+        title: 'CSV Export Complete',
+        duration: 3000
+      })
       
     } catch (error) {
       captureException(error, { context: 'FullCalendarWrapper.exportToCSV' })
-      alert('❌ Failed to export CSV. Please try again.')
+      showError('Failed to export CSV. Please try again.', {
+        title: 'Export Failed',
+        duration: 4000
+      })
     }
   }, [events, resources])
 
@@ -477,7 +521,10 @@ export default function FullCalendarWrapper({
       
     } catch (error) {
       captureException(error, { context: 'FullCalendarWrapper.printCalendar' })
-      alert('❌ Failed to print calendar. Please try again.')
+      showError('Failed to print calendar. Please try again.', {
+        title: 'Print Failed',
+        duration: 4000
+      })
     }
   }, [])
 

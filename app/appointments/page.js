@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback } from 'react'
 
-import AppointmentCalendar from '../../components/calendar/AppointmentCalendar'
+import BookingCalendar from '../../components/calendar/BookingCalendar'
 import AppointmentModal from '../../components/calendar/AppointmentModal'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
@@ -146,9 +146,9 @@ export default function AppointmentsPage() {
 
         {/* Calendar */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <AppointmentCalendar
-            onCreateAppointment={handleCreateAppointment}
-            onAppointmentSelect={handleAppointmentSelect}
+          <BookingCalendar
+            onBookingCreate={handleCreateAppointment}
+            onBookingUpdate={handleAppointmentSelect}
           />
           
           {/* Appointment Modal */}

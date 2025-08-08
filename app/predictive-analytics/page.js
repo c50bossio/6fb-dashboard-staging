@@ -22,7 +22,7 @@ export default function PredictiveAnalyticsPage() {
   const loadPredictions = async () => {
     try {
       setError(null)
-      const response = await fetch(`/api/ai/predictive?type=${selectedForecastType}&horizon=${selectedTimeHorizon}`)
+      const response = await fetch(`/api/ai/predictive-analytics?barbershop_id=demo`)
       const data = await response.json()
 
       if (data.success) {
@@ -53,14 +53,16 @@ export default function PredictiveAnalyticsPage() {
         service_utilization: 0.7 + Math.random() * 0.2
       }
 
-      const response = await fetch('/api/ai/predictive', {
+      const response = await fetch('/api/ai/predictive-analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          forecastType: selectedForecastType,
-          businessContext,
-          timeHorizon: selectedTimeHorizon,
-          options: { forceRefresh: true }
+          prediction_type: 'revenue_forecast',
+          barbershop_id: 'demo',
+          parameters: { 
+            timeframe: selectedTimeHorizon === 'weekly' ? 7 : selectedTimeHorizon === 'monthly' ? 30 : 1,
+            confidence_level: 0.85
+          }
         })
       })
 

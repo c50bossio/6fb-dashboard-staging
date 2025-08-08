@@ -13,10 +13,14 @@ import {
   LinkIcon,
   QrCodeIcon,
   GlobeAltIcon,
-  EyeIcon
+  EyeIcon,
+  Bars3Icon,
+  XMarkIcon,
+  PresentationChartLineIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 const navigation = [
   { 
@@ -46,6 +50,13 @@ const navigation = [
     icon: TrophyIcon,
     description: 'Performance rankings, achievements & personalized coaching',
     badge: 'Gamified'
+  },
+  { 
+    name: 'Predictive Analytics', 
+    href: '/predictive-analytics', 
+    icon: PresentationChartLineIcon,
+    description: 'AI-powered revenue forecasting, demand prediction & pricing optimization',
+    badge: 'Forecasting'
   }
 ]
 
@@ -80,6 +91,13 @@ const barberOperations = [
     description: 'Manage your appointments and availability'
   },
   { 
+    name: 'Website Settings', 
+    href: '/dashboard/website-settings', 
+    icon: GlobeAltIcon,
+    description: 'Customize your website, branding, colors, and content',
+    badge: 'Customize'
+  },
+  { 
     name: 'Booking Links & QR Codes', 
     href: '/barber/booking-links', 
     icon: LinkIcon,
@@ -95,8 +113,8 @@ const barberOperations = [
   { 
     name: 'Public Booking Page', 
     href: '/barber/public-booking', 
-    icon: GlobeAltIcon,
-    description: 'Preview, share, and manage your public booking page',
+    icon: EyeIcon,
+    description: 'Preview and share your customized public booking page',
     badge: 'SEO Ready'
   }
 ]
@@ -113,10 +131,44 @@ const legacyPages = [
 
 export default function Navigation() {
   const pathname = usePathname()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   
   // For development, we'll assume SHOP_OWNER role
   // In production, this would come from useAuth() context
   const userRole = 'SHOP_OWNER' // This would normally be: const { user } = useAuth() and user.role
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 1024) // lg breakpoint
+    }
+    
+    checkIsMobile()
+    window.addEventListener('resize', checkIsMobile)
+    
+    return () => window.removeEventListener('resize', checkIsMobile)
+  }, [])
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [pathname])
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobileMenuOpen && !event.target.closest('.mobile-navigation')) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+    
+    if (isMobileMenuOpen) {
+      document.addEventListener('click', handleClickOutside)
+    }
+    
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [isMobileMenuOpen])
 
   // Filter core operations based on role
   const filteredCoreOperations = coreOperations.filter(item => {
@@ -128,23 +180,30 @@ export default function Navigation() {
     return true
   })
 
-  return (
-    <nav className="bg-white shadow-sm border-r border-gray-200 w-80 fixed h-full flex flex-col">
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
-        {/* Header */}
-        <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center mb-4">
-          <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-            <SparklesIcon className="h-6 w-6 text-white" />
-          </div>
-          <div className="ml-3">
-            <h1 className="text-lg font-bold text-gray-900">6FB AI System</h1>
-            <p className="text-xs text-gray-500">Business Intelligence Platform</p>
-          </div>
+  // Mobile Header Component
+  const MobileHeader = () => (
+    <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <div className="flex items-center">
+        <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+          <SparklesIcon className="h-5 w-5 text-white" />
+        </div>
+        <div className="ml-3">
+          <h1 className="text-lg font-bold text-gray-900">6FB AI</h1>
         </div>
       </div>
-      
+      <button
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+        aria-label="Open navigation menu"
+      >
+        <Bars3Icon className="h-6 w-6" />
+      </button>
+    </div>
+  )
+
+  // Navigation Items Component (reusable for both desktop and mobile)
+  const NavigationItems = ({ onItemClick = () => {} }) => (
+    <>
       {/* Main Navigation */}
       <div className="px-4 py-4">
         <div className="mb-4">
@@ -162,6 +221,7 @@ export default function Navigation() {
               <li key={item.name}>
                 <Link
                   href={item.href}
+                  onClick={onItemClick}
                   className={`
                     group block px-3 py-3 rounded-xl transition-all duration-200 hover:scale-105
                     ${isActive 
@@ -243,6 +303,7 @@ export default function Navigation() {
               <li key={item.name}>
                 <Link
                   href={item.href}
+                  onClick={onItemClick}
                   className={`
                     group block px-3 py-3 rounded-xl transition-all duration-200 hover:scale-105
                     ${isActive 
@@ -308,6 +369,7 @@ export default function Navigation() {
               <li key={item.name}>
                 <Link
                   href={item.href}
+                  onClick={onItemClick}
                   className={`
                     group block px-3 py-3 rounded-xl transition-all duration-200 hover:scale-105
                     ${isActive 
@@ -357,7 +419,6 @@ export default function Navigation() {
         </div>
       )}
 
-
       {/* Legacy Pages */}
       <div className="px-4 py-2">
         <ul className="space-y-1">
@@ -368,6 +429,7 @@ export default function Navigation() {
               <li key={item.name}>
                 <Link
                   href={item.href}
+                  onClick={onItemClick}
                   className={`
                     group block px-3 py-2 rounded-lg transition-colors opacity-60
                     ${isActive ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}
@@ -397,55 +459,126 @@ export default function Navigation() {
           })}
         </ul>
       </div>
-      </div>
+    </>
+  )
 
-      {/* Settings - Fixed at Bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 border-gray-300 shadow-2xl z-50">
-        <div className="p-4">
-          <div className="mb-2">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              SYSTEM
-            </h2>
+  return (
+    <>
+      {/* Mobile Header */}
+      <MobileHeader />
+      
+      {/* Mobile Navigation Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          
+          {/* Slide-out Menu */}
+          <div className="mobile-navigation absolute inset-y-0 left-0 w-80 max-w-full bg-white shadow-xl transform transition-transform ease-in-out duration-300">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <SparklesIcon className="h-6 w-6 text-white" />
+                </div>
+                <div className="ml-3">
+                  <h1 className="text-lg font-bold text-gray-900">6FB AI System</h1>
+                  <p className="text-xs text-gray-500">Business Intelligence Platform</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                aria-label="Close navigation menu"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 140px)' }}>
+              <NavigationItems onItemClick={() => setIsMobileMenuOpen(false)} />
+              
+              {/* Settings Section */}
+              <div className="border-t border-gray-100 p-3 sticky bottom-0 bg-white">
+                <Link
+                  href="/dashboard/settings"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`
+                    group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
+                    ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
+                      ? 'bg-slate-100 text-slate-900' 
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }
+                  `}
+                >
+                  <Cog6ToothIcon
+                    className={`
+                      mr-2 h-4 w-4 flex-shrink-0
+                      ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
+                        ? 'text-slate-600' 
+                        : 'text-gray-400 group-hover:text-gray-600'
+                      }
+                    `}
+                  />
+                  <span className="truncate">Settings</span>
+                </Link>
+              </div>
+            </div>
           </div>
-          <Link
-            href="/dashboard/settings"
-            className={`
-              group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 hover:scale-105
-              ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                ? 'bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 shadow-md text-gray-900' 
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }
-            `}
-          >
-            <Cog6ToothIcon
+        </div>
+      )}
+
+      {/* Desktop Navigation */}
+      <nav className="hidden lg:flex bg-white shadow-sm border-r border-gray-200 w-80 fixed h-full flex-col">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
+          {/* Header */}
+          <div className="p-6 border-b border-gray-100">
+            <div className="flex items-center mb-4">
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <SparklesIcon className="h-6 w-6 text-white" />
+              </div>
+              <div className="ml-3">
+                <h1 className="text-lg font-bold text-gray-900">6FB AI System</h1>
+                <p className="text-xs text-gray-500">Business Intelligence Platform</p>
+              </div>
+            </div>
+          </div>
+          
+          <NavigationItems />
+        </div>
+
+        {/* Settings - Fixed at Bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+          <div className="p-3">
+            <Link
+              href="/dashboard/settings"
               className={`
-                mr-3 h-5 w-5 flex-shrink-0
+                group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
                 ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                  ? 'text-slate-600' 
-                  : 'text-gray-400 group-hover:text-gray-600'
+                  ? 'bg-slate-100 text-slate-900' 
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }
               `}
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium truncate">Settings</p>
-                <span className={`
-                  ml-2 px-2 py-1 text-xs font-medium rounded-full
+            >
+              <Cog6ToothIcon
+                className={`
+                  mr-2 h-4 w-4 flex-shrink-0
                   ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                    ? 'bg-slate-100 text-slate-700' 
-                    : 'bg-gray-100 text-gray-600'
+                    ? 'text-slate-600' 
+                    : 'text-gray-400 group-hover:text-gray-600'
                   }
-                `}>
-                  System
-                </span>
-              </div>
-              <p className="mt-1 text-xs text-gray-500 leading-tight">
-                Account preferences, notifications & system configuration
-              </p>
-            </div>
-          </Link>
+                `}
+              />
+              <span className="truncate">Settings</span>
+            </Link>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   )
 }

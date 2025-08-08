@@ -1,0 +1,124 @@
+# Blackbox Exporter Configuration for 6FB AI Agent System
+# External endpoint monitoring and SSL certificate checking
+
+modules:
+  # HTTP 2xx check
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions:
+        - "HTTP/1.1"
+        - "HTTP/2.0"
+      valid_status_codes: [200, 201, 202, 204]
+      method: GET
+      headers:
+        Host: localhost
+        Accept-Language: en-US
+      no_follow_redirects: false
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
+  # HTTP health check with JSON response validation
+  http_health_check:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions:
+        - "HTTP/1.1"
+        - "HTTP/2.0"
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        Accept: application/json
+      body_size_limit: 1MB
+      fail_if_not_matches_regexp:
+        - '"status":\s*"healthy"'
+
+  # HTTP POST check for API endpoints
+  http_post_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions:
+        - "HTTP/1.1"
+        - "HTTP/2.0"
+      method: POST
+      headers:
+        Content-Type: application/json
+      body: '{"test": "ping"}'
+      valid_status_codes: [200, 201, 202]
+
+  # HTTPS check with SSL certificate validation
+  https_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions:
+        - "HTTP/1.1"
+        - "HTTP/2.0"
+      method: GET
+      tls_config:
+        insecure_skip_verify: false
+        ca_file: ""
+        cert_file: ""
+        key_file: ""
+        server_name: ""
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
+  # SSL certificate expiry check
+  ssl_expiry:
+    prober: http
+    timeout: 10s
+    http:
+      method: GET
+      tls_config:
+        insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"
+
+  # TCP connectivity check
+  tcp_connect:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
+  # Database connectivity check
+  postgres_connect:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+      query_response:
+        - expect: "^\\x00"
+          send: "\\x00\\x00\\x00\\x17\\x00\\x03\\x00\\x00user\\x00postgres\\x00\\x00"
+
+  # Redis connectivity check
+  redis_connect:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+      query_response:
+        - send: "PING\r\n"
+        - expect: "PONG"
+
+  # DNS resolution check
+  dns_check:
+    prober: dns
+    timeout: 5s
+    dns:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+      query_name: "localhost"
+      query_type: "A"
+
+  # ICMP ping check
+  icmp_check:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true

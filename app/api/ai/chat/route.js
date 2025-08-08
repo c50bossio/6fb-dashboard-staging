@@ -1,4 +1,4 @@
-import { StreamingTextResponse } from 'ai'
+import { streamText } from 'ai'
 import { NextResponse } from 'next/server'
 
 /**

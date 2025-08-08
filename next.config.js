@@ -7,6 +7,15 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
   
+  // Add webpack configuration for path aliases
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': __dirname,
+    }
+    return config
+  },
+  
   async rewrites() {
     const isDev = process.env.NODE_ENV === 'development';
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || (isDev 
@@ -22,4 +31,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

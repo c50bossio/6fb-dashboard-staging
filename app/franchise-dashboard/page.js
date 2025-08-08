@@ -3,10 +3,7 @@
 import { TrendingUp, TrendingDown, MapPin, Users, Calendar, DollarSign, Star, BarChart3, Building2, Zap } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
-import { Alert, AlertDescription } from '../../components/ui/Alert'
-import { Badge } from '../../components/ui/Badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/Card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs'
+import { Alert, AlertDescription, Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui'
 
 export default function FranchiseDashboard() {
   const [franchiseData, setFranchiseData] = useState(null)

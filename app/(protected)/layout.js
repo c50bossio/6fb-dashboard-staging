@@ -1,6 +1,5 @@
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
-import MobileNavigation from '../../components/MobileNavigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { TenantProvider } from '../../contexts/TenantContext'
 
@@ -9,13 +8,8 @@ export default function ProtectedLayout({ children }) {
     <TenantProvider>
       <ProtectedRoute>
         <div className="min-h-screen bg-gray-50">
-          {/* Desktop Navigation */}
-          <div className="hidden lg:block">
-            <Navigation />
-          </div>
-          
-          {/* Mobile Navigation */}
-          <MobileNavigation />
+          {/* Responsive Navigation - handles both mobile and desktop */}
+          <Navigation />
           
           {/* Main Content */}
           <main className="lg:ml-80 transition-all duration-300 ease-in-out pt-16 lg:pt-0 pb-20 lg:pb-0">

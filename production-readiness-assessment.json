@@ -1,0 +1,225 @@
+{
+  "security": {
+    "endpoints": {
+      "http://localhost:9999/": {
+        "status": 200,
+        "responseTime": 100,
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "x-xss-protection": "1; mode=block",
+          "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.posthog.com; frame-src 'self' https://js.stripe.com https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+        },
+        "accessible": true,
+        "secure": false
+      },
+      "http://localhost:9999/api/health": {
+        "status": 206,
+        "responseTime": 390,
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "x-xss-protection": "1; mode=block",
+          "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.posthog.com; frame-src 'self' https://js.stripe.com https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+        },
+        "accessible": true,
+        "secure": false
+      },
+      "http://localhost:8001/health": {
+        "status": 200,
+        "responseTime": 3,
+        "headers": {
+          "x-content-type-options": "Missing",
+          "x-frame-options": "Missing",
+          "x-xss-protection": "Missing",
+          "content-security-policy": "Missing",
+          "strict-transport-security": "Missing"
+        },
+        "accessible": true,
+        "secure": false
+      },
+      "http://localhost:9999/.env": {
+        "status": 200,
+        "responseTime": 622,
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "x-xss-protection": "1; mode=block",
+          "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.posthog.com; frame-src 'self' https://js.stripe.com https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+        },
+        "accessible": true,
+        "secure": false
+      },
+      "http://localhost:9999/config.json": {
+        "status": 200,
+        "responseTime": 77,
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "x-xss-protection": "1; mode=block",
+          "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.posthog.com; frame-src 'self' https://js.stripe.com https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+        },
+        "accessible": true,
+        "secure": false
+      },
+      "http://localhost:9999/.git/config": {
+        "status": 404,
+        "responseTime": 35,
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "x-xss-protection": "1; mode=block",
+          "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.posthog.com; frame-src 'self' https://js.stripe.com https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+        },
+        "accessible": false,
+        "secure": false
+      },
+      "http://localhost:9999/admin": {
+        "status": 200,
+        "responseTime": 72,
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "x-xss-protection": "1; mode=block",
+          "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.posthog.com; frame-src 'self' https://js.stripe.com https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+        },
+        "accessible": true,
+        "secure": false
+      },
+      "http://localhost:9999/debug": {
+        "status": 200,
+        "responseTime": 68,
+        "headers": {
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "DENY",
+          "x-xss-protection": "1; mode=block",
+          "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com wss://*.supabase.co https://*.posthog.com; frame-src 'self' https://js.stripe.com https://checkout.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+          "strict-transport-security": "max-age=31536000; includeSubDomains; preload"
+        },
+        "accessible": true,
+        "secure": false
+      }
+    },
+    "headers": {},
+    "vulnerabilities": [
+      {
+        "severity": "MEDIUM",
+        "endpoint": "http://localhost:8001/health",
+        "issue": "Missing security headers",
+        "description": "Missing headers: x-content-type-options, x-frame-options, x-xss-protection, content-security-policy, strict-transport-security"
+      },
+      {
+        "severity": "CRITICAL",
+        "endpoint": "http://localhost:9999/.env",
+        "issue": "Sensitive endpoint exposed",
+        "description": "Endpoint http://localhost:9999/.env is accessible and may expose sensitive information"
+      },
+      {
+        "severity": "CRITICAL",
+        "endpoint": "http://localhost:9999/config.json",
+        "issue": "Sensitive endpoint exposed",
+        "description": "Endpoint http://localhost:9999/config.json is accessible and may expose sensitive information"
+      },
+      {
+        "severity": "CRITICAL",
+        "endpoint": "http://localhost:9999/admin",
+        "issue": "Sensitive endpoint exposed",
+        "description": "Endpoint http://localhost:9999/admin is accessible and may expose sensitive information"
+      },
+      {
+        "severity": "CRITICAL",
+        "endpoint": "http://localhost:9999/debug",
+        "issue": "Sensitive endpoint exposed",
+        "description": "Endpoint http://localhost:9999/debug is accessible and may expose sensitive information"
+      }
+    ],
+    "score": 0
+  },
+  "performance": {
+    "responseTimesMs": {
+      "http://localhost:9999/": {
+        "average": 63,
+        "min": 54,
+        "max": 75,
+        "runs": 5
+      },
+      "http://localhost:9999/api/health": {
+        "average": 131,
+        "min": 120,
+        "max": 141,
+        "runs": 5
+      },
+      "http://localhost:8001/health": {
+        "average": 1,
+        "min": 1,
+        "max": 1,
+        "runs": 5
+      }
+    },
+    "coreWebVitals": {},
+    "loadTests": {
+      "concurrentRequests": 10,
+      "successfulRequests": 10,
+      "failedRequests": 0,
+      "totalTime": 328,
+      "avgResponseTime": 265,
+      "requestsPerSecond": 30
+    },
+    "score": 100
+  },
+  "infrastructure": {
+    "services": {
+      "Frontend (port 9999)": {
+        "status": "Healthy",
+        "responseTime": 134
+      },
+      "Backend (port 8001)": {
+        "status": "Healthy",
+        "responseTime": 1
+      }
+    },
+    "connectivity": {
+      "Database": {
+        "status": "Configured",
+        "type": "Supabase"
+      }
+    },
+    "score": 100
+  },
+  "overall": {
+    "score": 67,
+    "riskLevel": "HIGH",
+    "recommendations": [
+      {
+        "priority": "IMMEDIATE",
+        "category": "Security",
+        "action": "Address 4 critical security vulnerabilities immediately",
+        "impact": "High"
+      },
+      {
+        "priority": "HIGH",
+        "category": "Security",
+        "action": "Implement missing security headers (CSP, X-Frame-Options, etc.)",
+        "impact": "Medium"
+      },
+      {
+        "priority": "MEDIUM",
+        "category": "Monitoring",
+        "action": "Set up comprehensive production monitoring and alerting",
+        "impact": "High"
+      },
+      {
+        "priority": "LOW",
+        "category": "Testing",
+        "action": "Implement automated security and performance testing in CI/CD",
+        "impact": "Medium"
+      }
+    ]
+  }
+}

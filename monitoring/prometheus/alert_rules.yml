@@ -1,0 +1,252 @@
+# Prometheus Alert Rules for 6FB AI Agent System
+# Comprehensive alerting for production monitoring
+
+groups:
+  # High Priority - Critical System Alerts
+  - name: critical_alerts
+    rules:
+      # Service availability alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on instance {{ $labels.instance }} has been down for more than 1 minute."
+
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 90% on {{ $labels.instance }} for more than 5 minutes."
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 90% on {{ $labels.instance }} for more than 5 minutes."
+
+      # Disk space critical
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+          category: storage
+        annotations:
+          summary: "Critical disk space shortage"
+          description: "Disk space is below 10% on {{ $labels.instance }}."
+
+      # Database connection failures
+      - alert: DatabaseConnectionFailure
+        expr: postgres_up == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "Database connection failed"
+          description: "PostgreSQL database is not accessible."
+
+  # High Priority - Application Alerts
+  - name: application_alerts
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+        for: 3m
+        labels:
+          severity: warning
+          category: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for {{ $labels.job }} service."
+
+      # Slow response time
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Slow response time detected"
+          description: "95th percentile response time is above 2 seconds for {{ $labels.job }}."
+
+      # AI service failures
+      - alert: AIServiceFailure
+        expr: ai_service_requests_total{status="error"} / ai_service_requests_total > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          category: ai_services
+        annotations:
+          summary: "AI service failure rate high"
+          description: "AI service {{ $labels.service }} error rate is above 10%."
+
+      # Queue backup
+      - alert: QueueBackup
+        expr: queue_size > 1000
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Queue backup detected"
+          description: "Queue {{ $labels.queue }} has over 1000 pending items."
+
+  # Medium Priority - Performance Alerts
+  - name: performance_alerts
+    rules:
+      # High CPU sustained
+      - alert: HighCPUSustained
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 70
+        for: 15m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Sustained high CPU usage"
+          description: "CPU usage is above 70% on {{ $labels.instance }} for more than 15 minutes."
+
+      # High memory sustained
+      - alert: HighMemorySustained
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 70
+        for: 15m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Sustained high memory usage"
+          description: "Memory usage is above 70% on {{ $labels.instance }} for more than 15 minutes."
+
+      # Disk I/O high
+      - alert: HighDiskIO
+        expr: rate(node_disk_io_time_seconds_total[5m]) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High disk I/O utilization"
+          description: "Disk I/O utilization is above 80% on {{ $labels.instance }}."
+
+  # Security Alerts
+  - name: security_alerts
+    rules:
+      # Too many failed logins
+      - alert: HighFailedLoginRate
+        expr: rate(auth_login_failures_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High failed login rate"
+          description: "More than 10 failed logins per minute detected."
+
+      # DDoS attack indicators
+      - alert: PossibleDDoSAttack
+        expr: rate(nginx_http_requests_total[1m]) > 1000
+        for: 2m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Possible DDoS attack"
+          description: "Request rate is above 1000 requests per minute."
+
+      # SSL certificate expiry
+      - alert: SSLCertificateExpiring
+        expr: probe_ssl_earliest_cert_expiry - time() < 7 * 24 * 3600
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate will expire in less than 7 days."
+
+  # Infrastructure Alerts
+  - name: infrastructure_alerts
+    rules:
+      # Container restart
+      - alert: ContainerRestart
+        expr: increase(container_spec_cpu_shares[1h]) > 5
+        for: 0m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Container restarted frequently"
+          description: "Container {{ $labels.name }} has restarted more than 5 times in the last hour."
+
+      # Network connectivity
+      - alert: NetworkConnectivityIssue
+        expr: probe_success{job="blackbox"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Network connectivity issue"
+          description: "Cannot reach {{ $labels.instance }} for more than 2 minutes."
+
+      # Redis connection issues
+      - alert: RedisConnectionIssue
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Redis connection issue"
+          description: "Cannot connect to Redis cache."
+
+  # Business Metrics Alerts
+  - name: business_alerts
+    rules:
+      # Low booking conversion rate
+      - alert: LowBookingConversionRate
+        expr: booking_conversions_total / booking_attempts_total < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low booking conversion rate"
+          description: "Booking conversion rate is below 10% for the last 10 minutes."
+
+      # AI recommendation accuracy drop
+      - alert: AIAccuracyDrop
+        expr: ai_recommendation_accuracy < 0.7
+        for: 5m
+        labels:
+          severity: warning
+          category: ai_quality
+        annotations:
+          summary: "AI recommendation accuracy dropped"
+          description: "AI recommendation accuracy is below 70%."
+
+      # Revenue per user drop
+      - alert: RevenuePerUserDrop
+        expr: revenue_per_user < 50
+        for: 30m
+        labels:
+          severity: info
+          category: business
+        annotations:
+          summary: "Revenue per user dropped"
+          description: "Revenue per user is below $50 for the last 30 minutes."

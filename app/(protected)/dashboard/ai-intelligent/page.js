@@ -29,17 +29,19 @@ function StrategicPricingWidget({ onRefresh, loading }) {
   const fetchPricingInsights = useCallback(async () => {
     try {
       setWidgetLoading(true)
-      const response = await fetch('/api/ai/predictive', {
+      const response = await fetch('/api/ai/predictive-analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          prediction_type: 'pricing_optimization',
           barbershop_id: 'demo_barbershop_001',
-          analysis_type: 'strategic_pricing',
-          current_pricing: {
-            haircut: 25.0,
-            styling: 35.0,
-            beard_trim: 15.0,
-            wash: 10.0
+          parameters: {
+            current_pricing: {
+              haircut: 25.0,
+              styling: 35.0,
+              beard_trim: 15.0,
+              wash: 10.0
+            }
           }
         })
       })

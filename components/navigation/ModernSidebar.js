@@ -89,7 +89,8 @@ export default function ModernSidebar() {
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            className="min-h-[44px] min-w-[44px] p-3 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors flex items-center justify-center"
+            aria-label="Toggle sidebar"
           >
             <Bars3Icon className="h-5 w-5" />
           </button>

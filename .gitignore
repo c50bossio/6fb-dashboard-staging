@@ -76,3 +76,7 @@ secure-credentials/
 .env.local.secure
 admin-credentials.txt
 jwt-secret.txt
+
+# Security keys
+.master.key
+.secrets.encrypted
