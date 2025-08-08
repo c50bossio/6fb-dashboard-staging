@@ -3,11 +3,11 @@
 import { CheckCircleIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
-export default function RegisterConfirmPage() {
+function RegisterConfirmContent() {
   const searchParams = useSearchParams()
   const email = searchParams.get('email') || 'your email'
   const { resendEmailConfirmation } = useAuth()
@@ -177,5 +177,13 @@ export default function RegisterConfirmPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RegisterConfirmPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <RegisterConfirmContent />
+    </Suspense>
   )
 }

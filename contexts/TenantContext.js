@@ -8,6 +8,16 @@ const TenantContext = createContext()
 export const useTenant = () => {
   const context = useContext(TenantContext)
   if (!context) {
+    // During build time or server-side rendering, return default values
+    if (typeof window === 'undefined' || process.env.NODE_ENV === 'build') {
+      return {
+        tenant: null,
+        loading: false,
+        error: null,
+        refreshTenant: () => {},
+        updateTenant: () => {}
+      }
+    }
     throw new Error('useTenant must be used within a TenantProvider')
   }
   return context
