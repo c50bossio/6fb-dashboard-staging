@@ -91,22 +91,12 @@ const barberOperations = [
     href: '/barber/clients', 
     icon: UserGroupIcon,
     description: 'View and manage your client relationships'
-  }
-]
-
-const publicPages = [
-  { 
-    name: 'Preview Booking Page', 
-    href: '/book/preview', 
-    icon: EyeIcon,
-    description: 'Preview how clients see your public booking page',
-    badge: 'Public'
   },
   { 
-    name: 'Share Booking Page', 
-    href: '/public/booking-share', 
+    name: 'Public Booking Page', 
+    href: '/barber/public-booking', 
     icon: GlobeAltIcon,
-    description: 'Get shareable links and QR codes for your booking page',
+    description: 'Preview, share, and manage your public booking page',
     badge: 'SEO Ready'
   }
 ]
@@ -367,69 +357,6 @@ export default function Navigation() {
         </div>
       )}
 
-      {/* Public Booking Pages - Available to all authenticated users */}
-      <div className="px-4 py-4 border-t border-gray-100">
-        <div className="mb-4">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            PUBLIC BOOKING PAGES
-          </h2>
-        </div>
-        
-        <ul className="space-y-2">
-          {publicPages.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href)
-          
-          return (
-            <li key={item.name}>
-              <Link
-                href={item.href}
-                className={`
-                  group block px-3 py-3 rounded-xl transition-all duration-200 hover:scale-105
-                  ${isActive 
-                    ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 shadow-md' 
-                    : 'hover:bg-gray-50'
-                  }
-                `}
-              >
-                <div className="flex items-start space-x-3">
-                  <item.icon
-                    className={`
-                      mt-0.5 h-5 w-5 flex-shrink-0
-                      ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}
-                    `}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className={`text-sm font-medium truncate ${
-                        isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
-                      }`}>
-                        {item.name}
-                      </p>
-                      {item.badge && (
-                        <span className={`
-                          ml-2 px-2 py-1 text-xs font-medium rounded-full
-                          ${isActive 
-                            ? 'bg-indigo-100 text-indigo-700' 
-                            : 'bg-gray-100 text-gray-600'
-                          }
-                        `}>
-                          {item.badge}
-                        </span>
-                      )}
-                    </div>
-                    {item.description && (
-                      <p className="mt-1 text-xs text-gray-500 leading-tight">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            </li>
-          )
-        })}
-      </ul>
-      </div>
 
       {/* Legacy Pages */}
       <div className="px-4 py-2">
