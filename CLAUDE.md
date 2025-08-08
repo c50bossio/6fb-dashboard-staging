@@ -8,6 +8,19 @@ The 6FB AI Agent System is an enterprise-grade barbershop management platform co
 
 **Architecture**: Full-stack application with Next.js 14 frontend (port 9999), FastAPI backend (port 8001), and dual database support (SQLite for development, PostgreSQL for production via Supabase).
 
+## 🚨 CRITICAL: Full-Stack Development Protocol
+
+**MANDATORY**: Every feature MUST be implemented as a complete full-stack solution. See `FULLSTACK_DEVELOPMENT_PROTOCOL.md` for detailed requirements.
+
+### Key Rules:
+- **NEVER create frontend without connecting backend**
+- **NEVER create backend without frontend UI**
+- **NEVER create APIs without corresponding dashboard representation**
+- **ALWAYS implement complete user workflows**
+- **ALWAYS test end-to-end functionality before marking complete**
+
+This prevents half-done features and ensures every implementation provides immediate user value.
+
 ## Key Technologies & Architecture
 
 ### Frontend Stack
@@ -33,6 +46,16 @@ The 6FB AI Agent System is an enterprise-grade barbershop management platform co
 - **Feature Flags**: Vercel Edge Config
 - **Rate Limiting**: Middleware-based API protection with fallback to in-memory storage
 - **Security**: GDPR compliance services and comprehensive audit logging
+- **MCP Integration**: Supabase MCP server configured in Claude Desktop with 19+ database tools
+
+#### 🤖 Model Context Protocol (MCP) Setup
+**Claude Desktop**: Full Supabase MCP server access configured with:
+- **Server**: `@supabase/mcp-server-supabase@latest` 
+- **Project**: `dfhqjdoydihajmjxniee.supabase.co`
+- **Access**: Personal Access Token with read-only permissions
+- **Tools**: 19+ database management and query tools
+
+**Claude Code**: Direct database access via `lib/supabase-query.js` utility (bypasses MCP tool limitations)
 
 ## Common Development Commands
 
@@ -99,6 +122,9 @@ npm run test:security:gdpr
 # Test utilities
 npm run playwright:install
 npm run playwright:install-deps
+
+# Database access testing
+node test-supabase-access.js  # Test Claude Code Supabase connection
 ```
 
 ### Health Checks & Debugging
@@ -135,6 +161,32 @@ npm run lint:fix
 - **Schema Management**: Complete schemas in `/database/` directory including multi-tenant, GDPR compliance
 - **Migrations**: Supabase migrations for production deployments
 - **Vector Storage**: pgvector extension support for RAG system embeddings
+
+#### 🔗 Claude Code Database Access
+Claude Code has **direct Supabase database access** through a custom utility:
+
+- **Location**: `lib/supabase-query.js` - Direct database query utility
+- **Test Script**: `test-supabase-access.js` - Validates connection and functionality
+- **Authentication**: Uses `SUPABASE_SERVICE_ROLE_KEY` for full database permissions
+- **Capabilities**: Query tables, filter data, get schemas, execute read-only SQL
+- **Tables Available**: 15+ tables including profiles, agents, tenants, notifications, analytics
+
+**Usage Example:**
+```javascript
+import supabaseQuery from './lib/supabase-query.js'
+
+// Query profiles table with filters
+const profiles = await supabaseQuery.queryTable('profiles', { 
+  select: 'id, email, role',
+  filter: { role: 'user' },
+  limit: 10 
+})
+
+// Get table schema
+const schema = await supabaseQuery.getTableSchema('agents')
+```
+
+**Note**: This provides Claude Code with the same database access as the Supabase MCP server, bypassing MCP tool limitations.
 
 ### AI Agent System
 - **Agent Types**: Master Coach, Financial, Client Acquisition, Operations, Brand, Growth, Strategic Mindset
