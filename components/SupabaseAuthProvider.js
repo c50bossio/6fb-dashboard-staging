@@ -26,6 +26,38 @@ function SupabaseAuthProvider({ children }) {
   useEffect(() => {
     let isMounted = true
     
+    // Development mode bypass for testing calendar functionality
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const enableDevBypass = isDevelopment && (
+      window.location.pathname.includes('/dashboard/calendar') ||
+      window.location.pathname.includes('/calendar') ||
+      window.location.pathname.includes('/dashboard/website-settings')
+    )
+    
+    if (enableDevBypass) {
+      console.log('🔧 DEV MODE: Auth bypass enabled for calendar testing')
+      const devUser = {
+        id: 'dev-user-123',
+        email: 'dev@localhost.com',
+        user_metadata: { full_name: 'Dev User', role: 'SHOP_OWNER' }
+      }
+      const devProfile = {
+        id: 'dev-user-123',
+        email: 'dev@localhost.com',
+        full_name: 'Dev User',
+        role: 'SHOP_OWNER',
+        shop_id: 'demo-shop-001',
+        shop_name: 'Demo Barbershop'
+      }
+      
+      if (isMounted) {
+        setUser(devUser)
+        setProfile(devProfile)
+        setLoading(false)
+      }
+      return () => { isMounted = false }
+    }
+    
     // Add timeout to prevent hanging
     const loadingTimeout = setTimeout(() => {
       if (isMounted && loading) {
