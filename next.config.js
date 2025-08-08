@@ -2,6 +2,9 @@ const path = require('path')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Disable React StrictMode in development to prevent double renders
+  // This eliminates duplicate console logs and API calls
+  reactStrictMode: false,
   
   // Path aliases for cleaner imports
   webpack: (config, { dev, isServer }) => {

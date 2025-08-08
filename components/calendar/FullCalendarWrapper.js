@@ -9,7 +9,7 @@ import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import rrulePlugin from '@fullcalendar/rrule'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 
 import { captureException } from '@/lib/sentry'
 
@@ -32,9 +32,111 @@ export default function FullCalendarWrapper({
   slotMaxTime = '20:00:00',
   slotDuration = '00:30:00',
   showResources = false,
+  showExportTools = true,
+  showWaitlist = false,
+  waitlistItems = [],
+  onExternalEventDrop,
 }) {
   const calendarRef = useRef(null)
   const [currentView, setCurrentView] = useState(view)
+
+  // Handle external event drop (from waitlist)
+  const handleExternalEventDrop = useCallback((info) => {
+    try {
+      const { draggedEl, date, resource } = info
+      
+      // Get data from the dragged element
+      const eventData = {
+        id: draggedEl.dataset.eventId,
+        title: draggedEl.dataset.eventTitle,
+        customer: draggedEl.dataset.customer,
+        service: draggedEl.dataset.service,
+        duration: parseInt(draggedEl.dataset.duration) || 30,
+        price: parseFloat(draggedEl.dataset.price) || 0,
+        phone: draggedEl.dataset.phone,
+        email: draggedEl.dataset.email,
+        notes: draggedEl.dataset.notes,
+        priority: draggedEl.dataset.priority || 'normal'
+      }
+
+      // Calculate end time based on duration
+      const startTime = date
+      const endTime = new Date(startTime.getTime() + eventData.duration * 60000)
+      
+      // Create the new calendar event
+      const newEvent = {
+        ...eventData,
+        start: startTime,
+        end: endTime,
+        resourceId: resource?.id,
+        backgroundColor: draggedEl.dataset.color || '#3b82f6',
+        borderColor: draggedEl.dataset.color || '#3b82f6',
+        extendedProps: {
+          customer: eventData.customer,
+          customerPhone: eventData.phone,
+          customerEmail: eventData.email,
+          service: eventData.service,
+          duration: eventData.duration,
+          price: eventData.price,
+          status: 'confirmed',
+          notes: eventData.notes,
+          priority: eventData.priority,
+          fromWaitlist: true
+        }
+      }
+
+      // Call the callback to handle the drop
+      if (onExternalEventDrop) {
+        onExternalEventDrop(newEvent, () => {
+          // Remove the dragged element from waitlist on success
+          draggedEl.remove()
+        })
+      } else {
+        // Remove the element from waitlist
+        draggedEl.remove()
+      }
+
+      alert(`✅ ${eventData.customer} scheduled successfully!`)
+      
+    } catch (error) {
+      captureException(error, { context: 'FullCalendar.externalEventDrop' })
+      alert('❌ Failed to schedule appointment from waitlist')
+    }
+  }, [onExternalEventDrop])
+
+  // Initialize external draggable events
+  useEffect(() => {
+    if (!showWaitlist || !waitlistItems.length) return
+
+    // Import Draggable on client-side only
+    const initializeDraggable = async () => {
+      try {
+        const { Draggable } = await import('@fullcalendar/interaction')
+        
+        // Find all draggable elements
+        const draggableElements = document.querySelectorAll('.fc-external-event')
+        
+        draggableElements.forEach(el => {
+          new Draggable(el, {
+            eventData: {
+              title: el.dataset.eventTitle,
+              duration: el.dataset.duration + ':00', // Convert minutes to HH:MM:SS
+              backgroundColor: el.dataset.color,
+              borderColor: el.dataset.color,
+            },
+            scroll: true,
+            revert: true,
+            revertDuration: 0
+          })
+        })
+      } catch (error) {
+        console.warn('Could not initialize draggable events:', error)
+      }
+    }
+
+    // Small delay to ensure DOM is ready
+    setTimeout(initializeDraggable, 100)
+  }, [showWaitlist, waitlistItems])
 
   const handleEventClick = useCallback((info) => {
     try {
@@ -94,6 +196,36 @@ export default function FullCalendarWrapper({
 
   const handleEventResize = useCallback((info) => {
     try {
+      const { event } = info
+      const startHour = event.start.getHours()
+      const endHour = event.end.getHours()
+      const durationMinutes = (event.end - event.start) / (1000 * 60)
+      
+      // Validate resize constraints with user feedback
+      if (startHour < 9 || endHour > 18) {
+        alert('❌ Appointments must be within business hours (9 AM - 6 PM)')
+        info.revert()
+        return
+      }
+      
+      if (durationMinutes < 15) {
+        alert('❌ Minimum appointment duration is 15 minutes')
+        info.revert()
+        return
+      }
+      
+      if (durationMinutes > 240) {
+        alert('❌ Maximum appointment duration is 4 hours')
+        info.revert()
+        return
+      }
+      
+      if (startHour < 13 && endHour > 12) {
+        alert('❌ Appointments cannot extend into lunch break (12:00 PM - 1:00 PM)')
+        info.revert()
+        return
+      }
+      
       if (onEventResize) {
         onEventResize({
           event: info.event,
@@ -150,6 +282,205 @@ export default function FullCalendarWrapper({
     setCurrentView(info.view.type)
   }, [])
 
+  // Export to PDF function
+  const exportToPDF = useCallback(async () => {
+    try {
+      const calendarElement = calendarRef.current?.el
+      if (!calendarElement) return
+
+      // Create loading indicator
+      const loadingDiv = document.createElement('div')
+      loadingDiv.innerHTML = `
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                    background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 9999; font-family: system-ui;">
+          <div style="text-align: center;">
+            <div style="margin-bottom: 10px;">📄 Generating PDF...</div>
+            <div style="width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top-color: #3b82f6; 
+                        border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+          </div>
+        </div>
+        <style>
+          @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        </style>
+      `
+      document.body.appendChild(loadingDiv)
+
+      // Dynamically import html2canvas and jsPDF only when needed
+      const [html2canvasModule, jsPDFModule] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf')
+      ])
+      
+      const html2canvas = html2canvasModule.default
+      const { jsPDF } = jsPDFModule
+
+      // Capture calendar as canvas
+      const canvas = await html2canvas(calendarElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      })
+
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      })
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height)
+      
+      // Generate filename with current date and view
+      const today = new Date().toISOString().split('T')[0]
+      const filename = `barbershop-schedule-${currentView}-${today}.pdf`
+      
+      pdf.save(filename)
+      
+      // Remove loading indicator
+      document.body.removeChild(loadingDiv)
+      
+      alert('✅ Schedule exported to PDF successfully!')
+      
+    } catch (error) {
+      captureException(error, { context: 'FullCalendarWrapper.exportToPDF' })
+      alert('❌ Failed to export PDF. Please try again.')
+    }
+  }, [currentView])
+
+  // Export to CSV function
+  const exportToCSV = useCallback(() => {
+    try {
+      if (!events || events.length === 0) {
+        alert('No events to export')
+        return
+      }
+
+      // Prepare CSV headers
+      const headers = [
+        'Date',
+        'Start Time',
+        'End Time',
+        'Customer',
+        'Service',
+        'Barber',
+        'Duration (min)',
+        'Price',
+        'Status',
+        'Phone',
+        'Email',
+        'Notes'
+      ]
+
+      // Convert events to CSV format
+      const csvData = events.map(event => {
+        const start = new Date(event.start)
+        const end = new Date(event.end)
+        const duration = Math.round((end - start) / (1000 * 60))
+
+        return [
+          start.toLocaleDateString('en-US'),
+          start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          end.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          event.extendedProps?.customer || event.title.split(' - ')[0] || 'N/A',
+          event.extendedProps?.service || event.title.split(' - ')[1] || event.title,
+          resources.find(r => r.id === event.resourceId)?.title || 'N/A',
+          duration,
+          event.extendedProps?.price ? `$${event.extendedProps.price}` : 'N/A',
+          event.extendedProps?.status || 'confirmed',
+          event.extendedProps?.customerPhone || 'N/A',
+          event.extendedProps?.customerEmail || 'N/A',
+          event.extendedProps?.notes || 'N/A'
+        ]
+      })
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(','),
+        ...csvData.map(row => row.map(cell => 
+          typeof cell === 'string' && (cell.includes(',') || cell.includes('"')) 
+            ? `"${cell.replace(/"/g, '""')}"` 
+            : cell
+        ).join(','))
+      ].join('\n')
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      
+      const today = new Date().toISOString().split('T')[0]
+      const filename = `barbershop-appointments-${today}.csv`
+      
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob)
+        link.setAttribute('href', url)
+        link.setAttribute('download', filename)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
+      
+      alert('✅ Appointments exported to CSV successfully!')
+      
+    } catch (error) {
+      captureException(error, { context: 'FullCalendarWrapper.exportToCSV' })
+      alert('❌ Failed to export CSV. Please try again.')
+    }
+  }, [events, resources])
+
+  // Print calendar function
+  const printCalendar = useCallback(() => {
+    try {
+      const calendarElement = calendarRef.current?.el
+      if (!calendarElement) return
+
+      // Create print-specific styles
+      const printStyles = `
+        @media print {
+          body * { visibility: hidden; }
+          .fc-wrapper, .fc-wrapper * { visibility: visible; }
+          .fc-wrapper {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100% !important;
+            height: auto !important;
+          }
+          .fc-event {
+            background-color: #f3f4f6 !important;
+            color: #000 !important;
+            border: 1px solid #000 !important;
+          }
+          .fc-toolbar {
+            display: none !important;
+          }
+          .fc-resource-cell {
+            font-weight: bold !important;
+          }
+        }
+      `
+      
+      // Add print styles to document
+      const styleSheet = document.createElement('style')
+      styleSheet.textContent = printStyles
+      document.head.appendChild(styleSheet)
+      
+      // Print
+      window.print()
+      
+      // Remove print styles after printing
+      setTimeout(() => {
+        document.head.removeChild(styleSheet)
+      }, 1000)
+      
+    } catch (error) {
+      captureException(error, { context: 'FullCalendarWrapper.printCalendar' })
+      alert('❌ Failed to print calendar. Please try again.')
+    }
+  }, [])
+
   // FullCalendar plugins configuration
   const plugins = [
     dayGridPlugin,
@@ -164,11 +495,140 @@ export default function FullCalendarWrapper({
   }
 
   return (
-    <div className="fc-wrapper" style={{ height }}>
-      <FullCalendar
+    <div className={`fc-wrapper ${showWaitlist ? 'flex' : ''}`} style={{ height }}>
+      {/* Waitlist Sidebar */}
+      {showWaitlist && (
+        <div className="fc-waitlist-sidebar bg-white border-r border-gray-200 w-80 p-4 overflow-y-auto">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+              📋 Waitlist ({waitlistItems.length})
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Drag appointments to schedule them on the calendar
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            {waitlistItems.map((item, index) => (
+              <div
+                key={item.id || index}
+                className="fc-external-event p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-grab hover:bg-gray-100 hover:border-blue-300 transition-all duration-200"
+                data-event-id={item.id}
+                data-event-title={`${item.customer} - ${item.service}`}
+                data-customer={item.customer}
+                data-service={item.service}
+                data-duration={item.duration || 30}
+                data-price={item.price || 0}
+                data-phone={item.phone || ''}
+                data-email={item.email || ''}
+                data-notes={item.notes || ''}
+                data-priority={item.priority || 'normal'}
+                data-color={
+                  item.priority === 'high' ? '#ef4444' :
+                  item.priority === 'medium' ? '#f59e0b' : 
+                  '#3b82f6'
+                }
+                style={{
+                  borderLeftColor: 
+                    item.priority === 'high' ? '#ef4444' :
+                    item.priority === 'medium' ? '#f59e0b' : 
+                    '#3b82f6',
+                  borderLeftWidth: '4px'
+                }}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900 text-sm">
+                      {item.customer}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {item.service} • {item.duration || 30} min
+                    </div>
+                    {item.price && (
+                      <div className="text-sm font-medium text-green-600 mt-1">
+                        ${item.price}
+                      </div>
+                    )}
+                    {item.phone && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        📞 {item.phone}
+                      </div>
+                    )}
+                    {item.notes && (
+                      <div className="text-xs text-gray-600 mt-1 italic">
+                        "{item.notes}"
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-col items-end ml-2">
+                    {item.priority && (
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        item.priority === 'high' ? 'bg-red-100 text-red-800' :
+                        item.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {item.priority}
+                      </span>
+                    )}
+                    
+                    <div className="text-xs text-gray-400 mt-1 flex items-center">
+                      🔄 Drag to schedule
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {waitlistItems.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <div className="text-4xl mb-2">📋</div>
+                <div className="text-sm">No items in waitlist</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Main Calendar Container */}
+      <div className={`flex-1 ${showWaitlist ? 'ml-0' : ''}`}>
+        {/* Export Toolbar */}
+        {showExportTools && (
+        <div className="fc-export-toolbar bg-gray-50 border-b border-gray-200 px-4 py-2 flex items-center justify-between mb-2">
+          <div className="text-sm font-medium text-gray-700">
+            📅 Current View: {currentView.charAt(0).toUpperCase() + currentView.slice(1).replace(/([A-Z])/g, ' $1')}
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={printCalendar}
+              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              title="Print Schedule"
+            >
+              🖨️ Print
+            </button>
+            <button
+              onClick={exportToPDF}
+              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              title="Export as PDF"
+            >
+              📄 PDF
+            </button>
+            <button
+              onClick={exportToCSV}
+              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              title="Export Appointments as CSV"
+            >
+              📊 CSV
+            </button>
+          </div>
+        </div>
+        )}
+        
+        <FullCalendar
         ref={calendarRef}
         plugins={plugins}
         initialView={view}
+        schedulerLicenseKey="0875458679-fcs-1754609365"
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
@@ -190,6 +650,13 @@ export default function FullCalendarWrapper({
         dayMaxEvents={true}
         weekends={true}
         businessHours={businessHours}
+        // External event dragging configuration
+        droppable={true}
+        drop={handleExternalEventDrop}
+        eventReceive={(info) => {
+          // Additional processing when external event is dropped
+          console.log('External event received:', info.event.title)
+        }}
         // Advanced event constraints
         eventConstraint="businessHours"
         selectConstraint="businessHours"
@@ -458,7 +925,7 @@ export default function FullCalendarWrapper({
               hidePopover()
             }
           })
-        })
+        }}
         // Custom event content
         eventContent={(eventInfo) => {
           const { event } = eventInfo
@@ -551,6 +1018,52 @@ export default function FullCalendarWrapper({
           cursor: default;
         }
 
+        /* Event constraint violation styling */
+        .fc-slot[data-time="12:00:00"],
+        .fc-slot[data-time="12:15:00"],
+        .fc-slot[data-time="12:30:00"],
+        .fc-slot[data-time="12:45:00"] {
+          background-color: #fef3c7 !important;
+          cursor: not-allowed !important;
+        }
+        
+        .fc-slot[data-time="12:00:00"]:after {
+          content: "🍽️ Lunch";
+          font-size: 10px;
+          color: #f59e0b;
+          position: absolute;
+          right: 2px;
+          top: 2px;
+        }
+        
+        .fc-day-sun .fc-timegrid-col {
+          background-color: #fecaca !important;
+          pointer-events: none;
+        }
+        
+        .fc-day-sun .fc-col-header-cell {
+          background-color: #fecaca !important;
+          color: #ef4444 !important;
+        }
+        
+        .fc-day-sun .fc-col-header-cell:after {
+          content: " ❌ CLOSED";
+          font-size: 10px;
+          font-weight: bold;
+        }
+        
+        /* Invalid selection highlighting */
+        .fc-highlight.fc-invalid {
+          background-color: rgba(239, 68, 68, 0.2) !important;
+        }
+        
+        /* Constraint violation feedback */
+        .fc-event-dragging.fc-invalid {
+          opacity: 0.3;
+          transform: scale(0.95);
+          box-shadow: 0 0 0 2px #ef4444;
+        }
+
         /* Resource hierarchy styling */
         .fc-resource-timeline-lane[data-resource-id^="shop-"] {
           background-color: #f9fafb;
@@ -637,6 +1150,7 @@ export default function FullCalendarWrapper({
           }
         }
       `}</style>
+      </div>
     </div>
   )
 }

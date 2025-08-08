@@ -28,18 +28,29 @@ class MarketingExpertAgent(BaseAgent):
     
     def _initialize_personality(self):
         """Initialize Marketing Expert personality traits and expertise"""
+        # RAG-compatible knowledge types
         self.expertise_areas = [
-            "Social Media Marketing",
-            "Local SEO & Google My Business",
-            "Customer Acquisition",
-            "Brand Development", 
-            "Content Marketing",
-            "Influencer Partnerships",
-            "Review Management",
-            "Email Marketing",
-            "Referral Programs",
-            "Community Engagement"
+            "marketing_intelligence",
+            "marketing_effectiveness", 
+            "customer_insights",
+            "social_media_strategies",
+            "local_marketing",
+            "brand_development",
+            "review_management",
+            "customer_acquisition",
+            "content_strategy",
+            "referral_programs"
         ]
+        
+        # RAG system knowledge domains for enhanced responses
+        if self.rag_service:
+            self.knowledge_domains = [
+                "marketing_strategies",
+                "customer_experience",
+                "social_media_mastery",
+                "local_seo_optimization",
+                "brand_positioning"
+            ]
         
         self.personality_traits = {
             "communication_style": "Creative, enthusiastic, and trend-aware",
@@ -105,9 +116,12 @@ class MarketingExpertAgent(BaseAgent):
         return False, 0.0
     
     async def generate_response(self, message: str, context: Dict[str, Any]) -> AgentResponse:
-        """Generate marketing strategy response"""
+        """Generate marketing strategy response with RAG-enhanced knowledge"""
         
         try:
+            # Get relevant knowledge from RAG system first
+            relevant_knowledge = await self.get_relevant_knowledge(message, limit=2)
+            
             # Extract business context
             business_name = context.get('business_name', 'Your Barbershop')
             customer_count = context.get('customer_count', 120)
@@ -143,6 +157,13 @@ class MarketingExpertAgent(BaseAgent):
                     message, context
                 )
             
+            # Enhance response with RAG knowledge if available
+            if relevant_knowledge:
+                response_text = await self.enhance_response_with_knowledge(response_text, message)
+            
+            # Store successful interaction as knowledge for future learning
+            await self.store_interaction_knowledge(message, response_text, context)
+            
             # Add conversation to history
             self.add_to_conversation_history(message, response_text)
             
@@ -151,7 +172,7 @@ class MarketingExpertAgent(BaseAgent):
                 response_text=response_text,
                 recommendations=recommendations,
                 context=context,
-                confidence=0.87
+                confidence=0.92 if relevant_knowledge else 0.87
             )
             
         except Exception as e:

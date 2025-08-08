@@ -4,11 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-The 6FB AI Agent System is an enterprise-grade barbershop management platform powered by AI agents. It combines traditional booking management with advanced AI capabilities for business intelligence, customer insights, and operational automation.
+The 6FB AI Agent System is an enterprise-grade barbershop management platform combining traditional booking management with advanced AI capabilities for business intelligence, customer insights, and operational automation.
 
 **Architecture**: Full-stack application with Next.js 14 frontend (port 9999), FastAPI backend (port 8001), and dual database support (SQLite for development, PostgreSQL for production via Supabase).
-
-**Important Note**: This is part of a larger monorepo structure at `/Users/bossio/` which includes multiple related projects. The main parent directory contains a comprehensive CLAUDE.md with universal guidelines that apply across all projects.
 
 ## Key Technologies & Architecture
 
@@ -344,35 +342,3 @@ vercel         # Preview/staging
 - **Security Testing**: Comprehensive GDPR, API security, and penetration testing suites
 
 This system emphasizes enterprise-grade reliability, comprehensive testing, and advanced AI integration while maintaining developer productivity through Docker containerization and modern tooling.
-
-## Project-Specific Important Notes
-
-### Extensive Documentation & Guides
-This project contains comprehensive documentation including:
-- **Deployment Guides**: Multiple deployment strategies (Vercel, Docker, Render, Railway, DigitalOcean)
-- **Setup Guides**: Authentication, Supabase, PostHog, Novu, and various integrations
-- **Security Documentation**: GDPR compliance, security audits, and penetration testing reports
-- **Performance Reports**: Load testing, cross-browser compatibility, and optimization guides
-- **Integration Guides**: Calendars, payments, notifications, and third-party services
-
-### Scripts & Automation
-The `/scripts/` directory contains extensive automation including:
-- **Database Management**: Setup, migration, and backup scripts
-- **Security Tools**: Audit tools, vulnerability scanning, and compliance checking  
-- **Testing Utilities**: Cross-browser testing, authentication testing, and integration testing
-- **Deployment Automation**: Production deployment, environment setup, and monitoring
-- **Development Tools**: User creation, database seeding, and debugging utilities
-
-### Development Environment Variations
-Multiple development setups are supported:
-- **Docker (Recommended)**: Full containerization with SQLite for rapid development
-- **Manual Setup**: Traditional npm/python setup for debugging
-- **Production Docker**: Full stack with PostgreSQL, Redis, and Nginx
-- **Cloud Deployment**: Vercel, Render, Railway with various database options
-
-### Key Project Characteristics
-- **Monorepo Structure**: Part of larger 6FB ecosystem with shared guidelines
-- **Enterprise Focus**: GDPR compliance, security auditing, and comprehensive monitoring
-- **AI-First Architecture**: Multiple AI providers with intelligent fallback strategies
-- **Comprehensive Testing**: Security, performance, accessibility, and visual regression testing
-- **Production Ready**: Full deployment automation and monitoring infrastructure

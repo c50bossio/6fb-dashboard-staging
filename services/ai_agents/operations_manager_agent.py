@@ -28,18 +28,29 @@ class OperationsManagerAgent(BaseAgent):
     
     def _initialize_personality(self):
         """Initialize Operations Manager personality traits and expertise"""
+        # RAG-compatible knowledge types
         self.expertise_areas = [
-            "Scheduling Optimization",
-            "Staff Management",
-            "Workflow Efficiency",
-            "Inventory Management",
-            "Customer Flow Management",
-            "Quality Control Systems",
-            "Process Automation",
-            "Equipment Management",
-            "Performance Metrics",
-            "Resource Allocation"
+            "operational_best_practices",
+            "scheduling_analytics",
+            "staff_management",
+            "workflow_optimization",
+            "inventory_management",
+            "customer_flow_management",
+            "quality_control",
+            "process_automation",
+            "performance_metrics",
+            "resource_allocation"
         ]
+        
+        # RAG system knowledge domains for enhanced responses
+        if self.rag_service:
+            self.knowledge_domains = [
+                "barbershop_operations",
+                "staff_management",
+                "operational_excellence",
+                "quality_control",
+                "scheduling_optimization"
+            ]
         
         self.personality_traits = {
             "communication_style": "Systematic, process-focused, and solution-oriented",
@@ -107,9 +118,12 @@ class OperationsManagerAgent(BaseAgent):
         return False, 0.0
     
     async def generate_response(self, message: str, context: Dict[str, Any]) -> AgentResponse:
-        """Generate operations management response"""
+        """Generate operations management response with RAG-enhanced knowledge"""
         
         try:
+            # Get relevant knowledge from RAG system first
+            relevant_knowledge = await self.get_relevant_knowledge(message, limit=2)
+            
             # Extract business context
             business_name = context.get('business_name', 'Your Barbershop')
             staff_count = context.get('staff_count', 3)
@@ -146,6 +160,13 @@ class OperationsManagerAgent(BaseAgent):
                     message, context
                 )
             
+            # Enhance response with RAG knowledge if available
+            if relevant_knowledge:
+                response_text = await self.enhance_response_with_knowledge(response_text, message)
+            
+            # Store successful interaction as knowledge for future learning
+            await self.store_interaction_knowledge(message, response_text, context)
+            
             # Add conversation to history
             self.add_to_conversation_history(message, response_text)
             
@@ -154,7 +175,7 @@ class OperationsManagerAgent(BaseAgent):
                 response_text=response_text,
                 recommendations=recommendations,
                 context=context,
-                confidence=0.86
+                confidence=0.91 if relevant_knowledge else 0.86
             )
             
         except Exception as e:

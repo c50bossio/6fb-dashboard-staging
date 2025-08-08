@@ -319,6 +319,28 @@ export default function BarbershopDashboard() {
                 onClick={() => window.location.href = '/dashboard/bookings'}
               />
               <QuickActionCard
+                icon={ScissorsIcon}
+                title="Barber Dashboard"
+                description="View earnings & performance"
+                color="bg-amber-600"
+                badge="New"
+                onClick={() => window.location.href = '/barber/dashboard'}
+              />
+              <QuickActionCard
+                icon={ClockIcon}
+                title="My Schedule"
+                description="Manage your appointments"
+                color="bg-purple-600"
+                onClick={() => window.location.href = '/barber/schedule'}
+              />
+              <QuickActionCard
+                icon={UserGroupIcon}
+                title="My Clients"
+                description="View client database"
+                color="bg-green-600"
+                onClick={() => window.location.href = '/barber/clients'}
+              />
+              <QuickActionCard
                 icon={PhoneIcon}
                 title="Confirmation Calls"
                 description="Call unconfirmed appointments"
@@ -327,25 +349,11 @@ export default function BarbershopDashboard() {
                 onClick={() => {}}
               />
               <QuickActionCard
-                icon={UserGroupIcon}
-                title="Customer Check-in"
-                description="Mark customers as arrived"
-                color="bg-purple-500"
-                onClick={() => {}}
-              />
-              <QuickActionCard
                 icon={SparklesIcon}
                 title="AI Chat"
                 description="Talk to your AI business assistants"
                 color="bg-amber-500"
                 onClick={() => window.location.href = '/ai-agents'}
-              />
-              <QuickActionCard
-                icon={KeyIcon}
-                title="Security Settings"
-                description="Manage MFA and account security"
-                color="bg-indigo-500"
-                onClick={() => window.location.href = '/dashboard/settings#security'}
               />
             </div>
           </div>

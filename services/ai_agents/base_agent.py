@@ -12,6 +12,14 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
+# Import RAG system for knowledge-enhanced responses
+try:
+    from ..vector_knowledge_service import VectorKnowledgeService
+    from ..enhanced_business_knowledge_service import BusinessDomain
+    RAG_AVAILABLE = True
+except ImportError:
+    RAG_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 class AgentPersonality(Enum):
@@ -59,6 +67,16 @@ class BaseAgent(ABC):
         self.expertise_areas = []
         self.personality_traits = {}
         self.response_templates = {}
+        
+        # Initialize RAG system integration
+        if RAG_AVAILABLE:
+            self.rag_service = VectorKnowledgeService()
+            self.knowledge_domains = []
+            logger.info(f"✅ {self.name} initialized with RAG integration")
+        else:
+            self.rag_service = None
+            logger.warning(f"⚠️ {self.name} initialized without RAG system")
+        
         self._initialize_personality()
     
     @abstractmethod
@@ -97,6 +115,107 @@ class BaseAgent(ABC):
         4. Maintain a professional but personable tone
         5. Focus on barbershop business optimization
         """
+    
+    async def get_relevant_knowledge(self, query: str, limit: int = 3) -> List[str]:
+        """Retrieve relevant knowledge from RAG system to enhance responses"""
+        if not self.rag_service:
+            return []
+        
+        try:
+            # Search for relevant knowledge based on query and agent's expertise
+            knowledge_items = await self.rag_service.search_knowledge(
+                query=query,
+                knowledge_types=self.expertise_areas,
+                limit=limit
+            )
+            
+            # Extract content from knowledge items
+            relevant_knowledge = []
+            for item in knowledge_items:
+                if hasattr(item, 'content'):
+                    relevant_knowledge.append(item.content)
+                elif isinstance(item, dict) and 'content' in item:
+                    relevant_knowledge.append(item['content'])
+            
+            logger.info(f"📚 {self.name} retrieved {len(relevant_knowledge)} knowledge items for query")
+            return relevant_knowledge
+            
+        except Exception as e:
+            logger.error(f"Error retrieving knowledge for {self.name}: {e}")
+            return []
+    
+    async def enhance_response_with_knowledge(self, base_response: str, query: str) -> str:
+        """Enhance response with relevant knowledge from RAG system"""
+        if not self.rag_service:
+            return base_response
+        
+        try:
+            # Get relevant knowledge
+            knowledge_items = await self.get_relevant_knowledge(query, limit=2)
+            
+            if not knowledge_items:
+                return base_response
+            
+            # Integrate knowledge into response
+            enhanced_response = base_response
+            
+            # Add knowledge-based insights
+            if knowledge_items:
+                enhanced_response += "\n\n**Knowledge-Based Insights:**\n"
+                for i, knowledge in enumerate(knowledge_items, 1):
+                    # Extract key insight from knowledge
+                    insight = knowledge.split(':')[1].strip() if ':' in knowledge else knowledge
+                    if len(insight) > 200:
+                        insight = insight[:197] + "..."
+                    enhanced_response += f"{i}. {insight}\n"
+            
+            return enhanced_response
+            
+        except Exception as e:
+            logger.error(f"Error enhancing response with knowledge: {e}")
+            return base_response
+    
+    async def store_interaction_knowledge(self, message: str, response: str, context: Dict[str, Any]):
+        """Store successful interactions as knowledge for future use"""
+        if not self.rag_service:
+            return
+        
+        try:
+            # Create knowledge from successful interaction
+            knowledge_content = f"User Query: {message}\nAgent Response: {response}\nContext: {json.dumps(context, default=str)}"
+            
+            # Determine knowledge type based on agent personality
+            knowledge_type = self._get_knowledge_type_for_personality()
+            
+            await self.rag_service.store_knowledge(
+                content=knowledge_content,
+                knowledge_type=knowledge_type,
+                source=f"{self.agent_id}_interaction",
+                metadata={
+                    "agent_personality": self.personality.value,
+                    "interaction_date": datetime.now().isoformat(),
+                    "context_keys": list(context.keys()),
+                    "category": "agent_interaction"
+                }
+            )
+            
+            logger.info(f"📝 {self.name} stored interaction knowledge")
+            
+        except Exception as e:
+            logger.error(f"Error storing interaction knowledge: {e}")
+    
+    def _get_knowledge_type_for_personality(self) -> str:
+        """Get appropriate knowledge type based on agent personality"""
+        personality_mapping = {
+            AgentPersonality.FINANCIAL_COACH: "revenue_patterns",
+            AgentPersonality.MARKETING_EXPERT: "marketing_intelligence", 
+            AgentPersonality.OPERATIONS_MANAGER: "operational_best_practices",
+            AgentPersonality.CUSTOMER_RELATIONS: "customer_insights",
+            AgentPersonality.GROWTH_STRATEGY: "growth_strategies",
+            AgentPersonality.STRATEGIC_MINDSET: "strategic_insights"
+        }
+        
+        return personality_mapping.get(self.personality, "general_business_knowledge")
     
     def add_to_conversation_history(self, message: str, response: str):
         """Add interaction to conversation history"""

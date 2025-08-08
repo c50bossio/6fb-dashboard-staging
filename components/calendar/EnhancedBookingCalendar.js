@@ -13,7 +13,10 @@ import { createClient } from '@/lib/supabase/client'
 
 // Dynamic import to avoid SSR issues
 const FullCalendarWrapper = dynamic(
-  () => import('./FullCalendarWrapper'),
+  () => import('./FullCalendarWrapper').catch(err => {
+    console.error('Failed to load FullCalendarWrapper:', err)
+    return { default: () => <div className="p-4 text-red-600">Failed to load calendar component. Please refresh the page.</div> }
+  }),
   { 
     ssr: false,
     loading: () => (
@@ -136,19 +139,29 @@ export default function EnhancedBookingCalendar({
     const loadData = async () => {
       setLoading(true)
       try {
-        await Promise.all([
-          fetchBarbers(),
-          fetchServices(),
-          fetchAppointments()
-        ])
+        // If no barbershop_id, we'll show the calendar with no data
+        if (!barbershop_id) {
+          console.warn('No barbershop_id provided to calendar')
+          setBarbers([])
+          setServices([])
+          setAppointments([])
+        } else {
+          await Promise.all([
+            fetchBarbers(),
+            fetchServices(),
+            fetchAppointments()
+          ])
+        }
+      } catch (error) {
+        console.error('Error loading calendar data:', error)
+        captureException(error, { context: 'EnhancedBookingCalendar.loadData' })
       } finally {
         setLoading(false)
       }
     }
     
-    if (barbershop_id && user) {
-      loadData()
-    }
+    // Always load the calendar, even without barbershop_id
+    loadData()
   }, [barbershop_id, user, fetchBarbers, fetchServices, fetchAppointments])
 
   // Real-time subscriptions
@@ -396,7 +409,7 @@ export default function EnhancedBookingCalendar({
         onDateSelect={handleDateSelect}
         onEventDrop={handleEventDrop}
         onEventResize={handleEventResize}
-        view={view}
+        view={view === 'resourceTimeGridDay' ? 'resourceTimelineWeek' : view}
         height="100%"
         slotMinTime="07:00:00"
         slotMaxTime="21:00:00"

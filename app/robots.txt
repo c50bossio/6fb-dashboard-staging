@@ -1,0 +1,39 @@
+User-agent: *
+Allow: /
+Allow: /book/*
+Allow: /api/health
+Allow: /api/public/*
+
+# Disallow admin and sensitive areas
+Disallow: /api/
+Disallow: /(protected)/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /dashboard/
+Disallow: /auth/
+
+# Allow important booking pages for SEO
+Allow: /book/*/
+Allow: /api/health
+
+# Sitemap location
+Sitemap: https://6fb.ai/sitemap.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1
+
+# Cache-friendly crawling
+# Major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot  
+Allow: /
+Crawl-delay: 1
+
+User-agent: facebookexternalhit
+Allow: /book/*
+
+User-agent: Twitterbot
+Allow: /book/*

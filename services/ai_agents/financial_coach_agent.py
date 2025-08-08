@@ -29,17 +29,26 @@ class FinancialCoachAgent(BaseAgent):
     def _initialize_personality(self):
         """Initialize Financial Coach personality traits and expertise"""
         self.expertise_areas = [
-            "Revenue Optimization",
-            "Cost Management", 
-            "Pricing Strategy",
-            "Financial Forecasting",
-            "Cash Flow Management",
-            "Profit Margin Analysis",
-            "Investment Planning",
-            "Tax Optimization",
-            "Business Valuation",
-            "Financial KPI Tracking"
+            "revenue_patterns",
+            "pricing_strategies", 
+            "cost_optimization",
+            "financial_forecasting",
+            "cash_flow_management",
+            "profit_margin_analysis",
+            "investment_planning",
+            "tax_optimization",
+            "business_valuation",
+            "financial_kpi_tracking"
         ]
+        
+        # RAG system knowledge domains for enhanced responses
+        if self.rag_service:
+            self.knowledge_domains = [
+                "revenue_optimization",
+                "pricing_psychology", 
+                "industry_benchmarks",
+                "six_figure_strategies"
+            ]
         
         self.personality_traits = {
             "communication_style": "Direct, data-driven, and results-focused",
@@ -108,9 +117,12 @@ class FinancialCoachAgent(BaseAgent):
         return False, 0.0
     
     async def generate_response(self, message: str, context: Dict[str, Any]) -> AgentResponse:
-        """Generate financial coaching response"""
+        """Generate financial coaching response with RAG-enhanced knowledge"""
         
         try:
+            # Get relevant knowledge from RAG system first
+            relevant_knowledge = await self.get_relevant_knowledge(message, limit=2)
+            
             # Ensure we have live business data
             enhanced_context = await self._ensure_business_context(context)
             
@@ -150,6 +162,13 @@ class FinancialCoachAgent(BaseAgent):
                     message, enhanced_context, has_live_data
                 )
             
+            # Enhance response with RAG knowledge if available
+            if relevant_knowledge:
+                response_text = await self.enhance_response_with_knowledge(response_text, message)
+            
+            # Store successful interaction as knowledge for future learning
+            await self.store_interaction_knowledge(message, response_text, enhanced_context)
+            
             # Add conversation to history
             self.add_to_conversation_history(message, response_text)
             
@@ -158,7 +177,7 @@ class FinancialCoachAgent(BaseAgent):
                 response_text=response_text,
                 recommendations=recommendations,
                 context=enhanced_context,
-                confidence=0.92 if has_live_data else 0.88
+                confidence=0.95 if (has_live_data and relevant_knowledge) else 0.92 if has_live_data else 0.88
             )
             
         except Exception as e:
