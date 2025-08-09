@@ -31,7 +31,6 @@ import { useState, useEffect } from 'react'
 
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 import SmartBusinessMonitor from '../../../components/SmartBusinessMonitor'
-import AITaskManager from '../../../components/AITaskManager'
 
 export default function BarbershopDashboard() {
   console.log('🏪 BarbershopDashboard component loading...')
@@ -297,10 +296,6 @@ export default function BarbershopDashboard() {
           </div>
         </div>
 
-        {/* AI Task Manager */}
-        <div className="mb-8">
-          <AITaskManager barbershop_id="demo" />
-        </div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

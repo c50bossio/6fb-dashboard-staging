@@ -1,20 +1,14 @@
 'use client'
 
 import Navigation from '../../components/Navigation'
-import MobileNavigation from '../../components/MobileNavigation'
+import { NavigationProvider } from '../../contexts/NavigationContext'
 
 export default function TestNavigation() {
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Desktop Navigation */}
-      <div className="hidden lg:block">
+    <NavigationProvider>
+      <div className="flex h-screen bg-gray-50">
+        {/* Navigation - responsive for both desktop and mobile */}
         <Navigation />
-      </div>
-      
-      {/* Mobile Navigation */}
-      <div className="lg:hidden">
-        <MobileNavigation />
-      </div>
       
       {/* Main Content */}
       <div className="flex-1 lg:ml-80 p-8">
@@ -40,5 +34,6 @@ export default function TestNavigation() {
         </div>
       </div>
     </div>
+    </NavigationProvider>
   )
 }
