@@ -25,7 +25,13 @@ export default function AppointmentBookingModal({
     if (selectedSlot?.start) {
       // Handle both Date objects and ISO strings
       const date = selectedSlot.start instanceof Date ? selectedSlot.start : new Date(selectedSlot.start)
-      return date.toISOString().slice(0, 16)
+      // Convert to local time string for datetime-local input
+      const year = date.getFullYear()
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const hours = String(date.getHours()).padStart(2, '0')
+      const minutes = String(date.getMinutes()).padStart(2, '0')
+      return `${year}-${month}-${day}T${hours}:${minutes}`
     }
     return ''
   }
@@ -55,10 +61,22 @@ export default function AppointmentBookingModal({
   // Populate form when modal opens with selectedSlot or when editing
   useEffect(() => {
     if (isEditing && editingAppointment) {
+      // Convert appointment time to local time for editing
+      let scheduledAt = ''
+      if (editingAppointment.scheduled_at) {
+        const date = new Date(editingAppointment.scheduled_at)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        const hours = String(date.getHours()).padStart(2, '0')
+        const minutes = String(date.getMinutes()).padStart(2, '0')
+        scheduledAt = `${year}-${month}-${day}T${hours}:${minutes}`
+      }
+      
       setFormData({
         barber_id: editingAppointment.barber_id || '',
         service_id: editingAppointment.service_id || '',
-        scheduled_at: editingAppointment.scheduled_at ? new Date(editingAppointment.scheduled_at).toISOString().slice(0, 16) : '',
+        scheduled_at: scheduledAt,
         duration_minutes: editingAppointment.duration_minutes || 60,
         service_price: editingAppointment.service_price || 0,
         tip_amount: editingAppointment.tip_amount || 0,
@@ -72,9 +90,28 @@ export default function AppointmentBookingModal({
       })
     } else if (selectedSlot && !isEditing) {
       // Update form when opening with a new selected slot
-      const dateTime = selectedSlot.start instanceof Date 
-        ? selectedSlot.start.toISOString().slice(0, 16)
-        : new Date(selectedSlot.start).toISOString().slice(0, 16)
+      let dateTime
+      const slotDate = selectedSlot.start instanceof Date 
+        ? selectedSlot.start 
+        : new Date(selectedSlot.start)
+      
+      // Handle different view types
+      if (selectedSlot.needsTimePicker) {
+        // Month view: Use selected date with suggested time
+        const year = slotDate.getFullYear()
+        const month = String(slotDate.getMonth() + 1).padStart(2, '0')
+        const day = String(slotDate.getDate()).padStart(2, '0')
+        const time = selectedSlot.suggestedTime || '09:00'
+        dateTime = `${year}-${month}-${day}T${time}`
+      } else {
+        // Other views: Use exact time from slot - convert to local time
+        const year = slotDate.getFullYear()
+        const month = String(slotDate.getMonth() + 1).padStart(2, '0')
+        const day = String(slotDate.getDate()).padStart(2, '0')
+        const hours = String(slotDate.getHours()).padStart(2, '0')
+        const minutes = String(slotDate.getMinutes()).padStart(2, '0')
+        dateTime = `${year}-${month}-${day}T${hours}:${minutes}`
+      }
       
       setFormData(prev => ({
         ...prev,
@@ -338,6 +375,11 @@ export default function AppointmentBookingModal({
                         <div>
                           <label htmlFor="scheduled_at" className="block text-sm font-medium text-gray-700">
                             Date & Time <span className="text-red-500">*</span>
+                            {selectedSlot?.needsTimePicker && (
+                              <span className="ml-2 text-xs text-blue-600 font-normal">
+                                (Please select a time for {selectedSlot.selectedDate})
+                              </span>
+                            )}
                           </label>
                           <input
                             type="datetime-local"

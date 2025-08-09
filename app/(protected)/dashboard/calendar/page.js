@@ -31,9 +31,9 @@ import {
   formatAppointment 
 } from '../../../../lib/calendar-data'
 
-// Professional calendar component with clean implementation
+// Professional calendar component with enhanced views and auto-population
 const ProfessionalCalendar = dynamic(
-  () => import('../../../../components/calendar/FinalProfessionalCalendar'), // Final working version
+  () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
   { 
     ssr: false,
     loading: () => (
@@ -325,16 +325,49 @@ export default function CalendarPage() {
   }, [])
 
   const handleDateSelect = useCallback((selectInfo) => {
-    console.log('Slot clicked:', selectInfo)
-    // Open appointment modal with selected slot info
-    setSelectedSlot({
+    console.log('📅 Enhanced slot clicked:', selectInfo)
+    
+    // Build comprehensive slot data based on view type
+    const slotData = {
       start: selectInfo.start,
       end: selectInfo.end,
       barberId: selectInfo.resourceId || selectInfo.resource?.id,
-      barberName: selectInfo.resource?.title || resources.find(r => r.id === selectInfo.resourceId)?.title
-    })
+      barberName: selectInfo.resource?.title || resources.find(r => r.id === selectInfo.resourceId)?.title,
+      viewType: selectInfo.viewType,
+      allDay: selectInfo.allDay
+    }
+    
+    // Handle different view types
+    if (selectInfo.isMonthView) {
+      // Month view: Show time picker with suggested time
+      slotData.needsTimePicker = true
+      slotData.suggestedTime = selectInfo.suggestedTime || '09:00'
+      slotData.selectedDate = selectInfo.selectedDate
+      info(`Selected date: ${selectInfo.selectedDate}. Please choose a time.`)
+    } else if (selectInfo.isListView) {
+      // List view: Use smart suggestions
+      slotData.nearbyEvents = selectInfo.nearbyEvents
+      info('Smart booking mode - checking availability...')
+    } else if (selectInfo.isTimeGrid && !selectInfo.resourceId) {
+      // Time grid without resources: Use suggested barber
+      if (selectInfo.suggestedBarber?.available) {
+        slotData.barberId = selectInfo.suggestedBarber.id
+        slotData.barberName = selectInfo.suggestedBarber.name
+        info(`Auto-selected ${selectInfo.suggestedBarber.name} for this time slot`)
+      } else {
+        showError('No barbers available for this time slot')
+        return
+      }
+    }
+    
+    // Add exact time for display
+    if (selectInfo.exactTime) {
+      slotData.displayTime = selectInfo.exactTime
+    }
+    
+    setSelectedSlot(slotData)
     setShowAppointmentModal(true)
-  }, [resources])
+  }, [resources, info, showError])
 
   // Handle appointment save
   const handleAppointmentSave = async (appointmentData) => {
