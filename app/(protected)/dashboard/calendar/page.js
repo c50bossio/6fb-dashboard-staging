@@ -54,6 +54,12 @@ const AppointmentBookingModal = dynamic(
   { ssr: false }
 )
 
+// Import the reschedule confirmation modal
+const RescheduleConfirmationModal = dynamic(
+  () => import('../../../../components/calendar/RescheduleConfirmationModal'),
+  { ssr: false }
+)
+
 export default function CalendarPage() {
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
@@ -69,8 +75,10 @@ export default function CalendarPage() {
   
   // Modal states
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
+  const [pendingReschedule, setPendingReschedule] = useState(null)
   const [services, setServices] = useState([])
   const [barbershopId] = useState('demo-shop-001') // For production, get from context
   
@@ -127,23 +135,20 @@ export default function CalendarPage() {
       params.append('start_date', now.toISOString())
       params.append('end_date', oneWeekFromNow.toISOString())
 
-      const response = await fetch(`/api/appointments?${params.toString()}`)
+      const response = await fetch(`/api/calendar/appointments?${params.toString()}`)
       const result = await response.json()
       
+      console.log('📅 Fetched appointments:', result)
+      
       if (response.ok && result.appointments?.length) {
-        const appointments = result.appointments
-        const formattedEvents = appointments.map(apt => 
-          formatAppointment(apt, resources.find(r => r.id === apt.barber_id))
-        )
-        setEvents(formattedEvents)
+        // Use the appointments directly as they're already formatted
+        setEvents(result.appointments)
       } else {
         // Use centralized mock data generation
         const mockEvents = generateMockEvents(new Date(), resources, services)
-        setEvents(mockEvents)
+        const recurring = generateRecurringEvents(new Date())
+        setEvents([...mockEvents, ...recurring])
       }
-      // Add recurring appointments
-      const recurring = generateRecurringEvents(new Date())
-      setEvents(prev => [...prev, ...recurring])
     } catch (error) {
       console.error('Error fetching appointments:', error)
       // Use centralized mock data generation
@@ -157,8 +162,10 @@ export default function CalendarPage() {
   // Fetch services from API
   const fetchServices = async () => {
     try {
-      const response = await fetch('/api/services')
+      const response = await fetch('/api/calendar/services')
       const result = await response.json()
+      
+      console.log('📅 Fetched services:', result)
       
       if (response.ok && result.services?.length) {
         setServices(result.services)
@@ -174,12 +181,21 @@ export default function CalendarPage() {
   // Fetch barbers from API or use default data
   const fetchRealBarbers = async () => {
     try {
-      const response = await fetch('/api/barbers')
+      const response = await fetch('/api/calendar/barbers')
       const result = await response.json()
       
+      console.log('📅 Fetched barbers:', result)
+      
       if (response.ok && result.barbers?.length) {
-        setResources(result.barbers)
-        generateQuickLinks(result.barbers)
+        // Transform to FullCalendar resource format if needed
+        const resources = result.barbers.map(barber => ({
+          id: barber.id,
+          title: barber.title || barber.name,
+          eventColor: barber.eventColor || barber.color || '#3b82f6',
+          ...barber
+        }))
+        setResources(resources)
+        generateQuickLinks(resources)
       } else {
         setResources(DEFAULT_RESOURCES)
         generateQuickLinks(DEFAULT_RESOURCES)
@@ -370,14 +386,86 @@ export default function CalendarPage() {
   }, [resources, info, showError])
 
   // Handle appointment save
+  // Handle appointment reschedule confirmation
+  const handleRescheduleConfirm = async (rescheduleData) => {
+    try {
+      // Update the appointment in the database
+      const response = await fetch(`/api/calendar/appointments/${rescheduleData.appointmentId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          start_time: rescheduleData.newTime.start,
+          end_time: rescheduleData.newTime.end,
+          barber_id: rescheduleData.newTime.barberId,
+          notify_customer: rescheduleData.notifyCustomer,
+          notification_methods: rescheduleData.notificationMethods,
+          custom_message: rescheduleData.customMessage
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok) {
+        // Update the event in the calendar
+        const eventIndex = events.findIndex(e => e.id === rescheduleData.appointmentId)
+        if (eventIndex !== -1) {
+          const updatedEvents = [...events]
+          updatedEvents[eventIndex] = {
+            ...updatedEvents[eventIndex],
+            start: rescheduleData.newTime.start,
+            end: rescheduleData.newTime.end,
+            resourceId: rescheduleData.newTime.barberId
+          }
+          setEvents(updatedEvents)
+        }
+        
+        success('Appointment rescheduled successfully!', {
+          title: 'Success',
+          duration: 3000
+        })
+        
+        if (rescheduleData.notifyCustomer) {
+          info('Customer notification sent', {
+            duration: 3000
+          })
+        }
+        
+        // Refresh appointments
+        fetchRealAppointments()
+      } else {
+        showError(result.error || 'Failed to reschedule appointment', {
+          title: 'Reschedule Failed',
+          duration: 5000
+        })
+      }
+    } catch (error) {
+      console.error('Error rescheduling appointment:', error)
+      showError('Failed to reschedule appointment', {
+        title: 'Error',
+        duration: 5000
+      })
+    } finally {
+      setShowRescheduleModal(false)
+      setPendingReschedule(null)
+    }
+  }
+
   const handleAppointmentSave = async (appointmentData) => {
     try {
-      const response = await fetch('/api/appointments', {
+      const response = await fetch('/api/calendar/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(appointmentData)
+        body: JSON.stringify({
+          ...appointmentData,
+          shop_id: barbershopId, // Include shop ID
+          customer_name: appointmentData.client_name,
+          customer_email: appointmentData.client_email,
+          customer_phone: appointmentData.client_phone
+        })
       })
       
       const result = await response.json()
@@ -388,7 +476,12 @@ export default function CalendarPage() {
           duration: 3000
         })
         
-        // Refresh appointments
+        // Add the new appointment to the calendar immediately
+        if (result.appointment) {
+          setEvents(prev => [...prev, result.appointment])
+        }
+        
+        // Refresh appointments from database
         fetchRealAppointments()
         setShowAppointmentModal(false)
       } else {
@@ -730,9 +823,36 @@ export default function CalendarPage() {
             events={events} // Use all events temporarily to debug
             onEventClick={handleEventClick}
             onSlotClick={handleDateSelect}
-            onEventDrop={(info) => {
-              console.log('Event dropped:', info)
-              // Handle event drop/reschedule
+            onEventDrop={(dropInfo) => {
+              console.log('Event dropped:', dropInfo)
+              
+              // Prepare reschedule data
+              const appointment = {
+                id: dropInfo.event.id,
+                title: dropInfo.event.title,
+                start: dropInfo.oldEvent.start,
+                end: dropInfo.oldEvent.end,
+                resourceId: dropInfo.oldEvent.resourceId || dropInfo.oldResource?.id,
+                extendedProps: dropInfo.event.extendedProps
+              }
+              
+              const newSlot = {
+                start: dropInfo.event.start,
+                end: dropInfo.event.end,
+                resourceId: dropInfo.event.resourceId || dropInfo.newResource?.id,
+                barberName: dropInfo.newResource?.title || resources.find(r => r.id === dropInfo.event.resourceId)?.title
+              }
+              
+              // Revert the change immediately (will be applied after confirmation)
+              dropInfo.revert()
+              
+              // Show confirmation modal
+              setPendingReschedule({
+                appointment,
+                newSlot,
+                dropInfo
+              })
+              setShowRescheduleModal(true)
             }}
             height="650px"
           />
@@ -857,6 +977,20 @@ export default function CalendarPage() {
           services={services}
           onBookingComplete={handleAppointmentSave}
           editingAppointment={selectedEvent}
+        />
+      )}
+      
+      {/* Reschedule Confirmation Modal */}
+      {showRescheduleModal && pendingReschedule && (
+        <RescheduleConfirmationModal
+          isOpen={showRescheduleModal}
+          onClose={() => {
+            setShowRescheduleModal(false)
+            setPendingReschedule(null)
+          }}
+          onConfirm={handleRescheduleConfirm}
+          appointmentDetails={pendingReschedule.appointment}
+          newTimeSlot={pendingReschedule.newSlot}
         />
       )}
       
