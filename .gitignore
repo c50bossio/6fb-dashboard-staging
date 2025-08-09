@@ -80,3 +80,4 @@ jwt-secret.txt
 # Security keys
 .master.key
 .secrets.encrypted
+.env.local.backup
