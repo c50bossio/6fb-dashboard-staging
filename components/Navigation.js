@@ -16,11 +16,14 @@ import {
   EyeIcon,
   Bars3Icon,
   XMarkIcon,
-  PresentationChartLineIcon
+  PresentationChartLineIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { useNavigation } from '../contexts/NavigationContext'
 
 const navigation = [
   { 
@@ -131,15 +134,21 @@ const legacyPages = [
 
 export default function Navigation() {
   const pathname = usePathname()
+  const { isCollapsed, setIsCollapsed } = useNavigation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(true) // Default to mobile for SSR consistency
+  const [currentTime, setCurrentTime] = useState('--:--') // Consistent initial state
+  const [isClient, setIsClient] = useState(false)
   
   // For development, we'll assume SHOP_OWNER role
   // In production, this would come from useAuth() context
   const userRole = 'SHOP_OWNER' // This would normally be: const { user } = useAuth() and user.role
 
-  // Detect mobile screen size
+  // Client-side only initialization
   useEffect(() => {
+    setIsClient(true)
+    
+    // Detect mobile screen size
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 1024) // lg breakpoint
     }
@@ -147,7 +156,18 @@ export default function Navigation() {
     checkIsMobile()
     window.addEventListener('resize', checkIsMobile)
     
-    return () => window.removeEventListener('resize', checkIsMobile)
+    // Update time every second - only after client hydration
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    }
+    
+    updateTime() // Set initial time
+    const timeInterval = setInterval(updateTime, 1000)
+    
+    return () => {
+      window.removeEventListener('resize', checkIsMobile)
+      clearInterval(timeInterval)
+    }
   }, [])
 
   // Close mobile menu when route changes
@@ -157,6 +177,8 @@ export default function Navigation() {
 
   // Close mobile menu when clicking outside
   useEffect(() => {
+    if (!isClient) return // Only run after client hydration
+    
     const handleClickOutside = (event) => {
       if (isMobileMenuOpen && !event.target.closest('.mobile-navigation')) {
         setIsMobileMenuOpen(false)
@@ -168,7 +190,7 @@ export default function Navigation() {
     }
     
     return () => document.removeEventListener('click', handleClickOutside)
-  }, [isMobileMenuOpen])
+  }, [isMobileMenuOpen, isClient])
 
   // Filter core operations based on role
   const filteredCoreOperations = coreOperations.filter(item => {
@@ -202,15 +224,17 @@ export default function Navigation() {
   )
 
   // Navigation Items Component (reusable for both desktop and mobile)
-  const NavigationItems = ({ onItemClick = () => {} }) => (
+  const NavigationItems = ({ onItemClick = () => {}, collapsed = false }) => (
     <>
       {/* Main Navigation */}
-      <div className="px-4 py-4">
-        <div className="mb-4">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+      <div className={`${collapsed ? 'px-2' : 'px-4'} py-4`}>
+        {!collapsed && (
+          <div className="mb-4">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
             AI-POWERED MODULES
-          </h2>
-        </div>
+            </h2>
+          </div>
+        )}
         
         <ul className="space-y-2">
           {navigation.map((item) => {
@@ -222,21 +246,12 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`
-                    group block px-3 py-3 rounded-xl transition-all duration-200 hover:scale-105
-                    ${isActive 
-                      ? isLegacy 
-                        ? 'bg-gray-100 shadow-sm' 
-                        : 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 shadow-md' 
-                      : 'hover:bg-gray-50'
-                    }
-                    ${isLegacy ? 'opacity-60' : ''}
-                  `}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? (isLegacy ? 'bg-gray-100 shadow-sm' : 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 shadow-md') : 'hover:bg-gray-50'} ${isLegacy ? 'opacity-60' : ''}`}
                 >
-                  <div className="flex items-start space-x-3">
+                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
                       className={`
-                        mt-0.5 h-5 w-5 flex-shrink-0
+                        ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
                         ${isActive 
                           ? isLegacy 
                             ? 'text-gray-500' 
@@ -244,8 +259,10 @@ export default function Navigation() {
                           : 'text-gray-400 group-hover:text-gray-600'
                         }
                       `}
+                      title={collapsed ? item.name : undefined}
                     />
-                    <div className="flex-1 min-w-0">
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
                           isActive 
@@ -278,7 +295,8 @@ export default function Navigation() {
                           {item.description}
                         </p>
                       )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </li>
@@ -288,12 +306,14 @@ export default function Navigation() {
       </div>
 
       {/* Core Business Operations */}
-      <div className="px-4 py-4 border-t border-gray-100">
-        <div className="mb-4">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+      <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+        {!collapsed && (
+          <div className="mb-4">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
             CORE OPERATIONS
-          </h2>
-        </div>
+            </h2>
+          </div>
+        )}
         
         <ul className="space-y-2">
           {filteredCoreOperations.map((item) => {
@@ -304,22 +324,18 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`
-                    group block px-3 py-3 rounded-xl transition-all duration-200 hover:scale-105
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 shadow-md' 
-                      : 'hover:bg-gray-50'
-                    }
-                  `}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 shadow-md' : 'hover:bg-gray-50'}`}
                 >
-                  <div className="flex items-start space-x-3">
+                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
                       className={`
-                        mt-0.5 h-5 w-5 flex-shrink-0
+                        ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
                         ${isActive ? 'text-green-600' : 'text-gray-400 group-hover:text-gray-600'}
                       `}
+                      title={collapsed ? item.name : undefined}
                     />
-                    <div className="flex-1 min-w-0">
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
                           isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
@@ -343,7 +359,8 @@ export default function Navigation() {
                           {item.description}
                         </p>
                       )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </li>
@@ -354,7 +371,7 @@ export default function Navigation() {
 
       {/* Barber Operations - Only show for barbers and owners */}
       {['BARBER', 'SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
-        <div className="px-4 py-4 border-t border-gray-100">
+        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
           <div className="mb-4">
             <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
               BARBER OPERATIONS
@@ -370,22 +387,18 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`
-                    group block px-3 py-3 rounded-xl transition-all duration-200 hover:scale-105
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 shadow-md' 
-                      : 'hover:bg-gray-50'
-                    }
-                  `}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 shadow-md' : 'hover:bg-gray-50'}`}
                 >
-                  <div className="flex items-start space-x-3">
+                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
                       className={`
-                        mt-0.5 h-5 w-5 flex-shrink-0
+                        ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
                         ${isActive ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-600'}
                       `}
+                      title={collapsed ? item.name : undefined}
                     />
-                    <div className="flex-1 min-w-0">
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
                           isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
@@ -409,7 +422,8 @@ export default function Navigation() {
                           {item.description}
                         </p>
                       )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </li>
@@ -420,7 +434,7 @@ export default function Navigation() {
       )}
 
       {/* Legacy Pages */}
-      <div className="px-4 py-2">
+      <div className={`${collapsed ? 'px-2' : 'px-4'} py-2`}>
         <ul className="space-y-1">
           {legacyPages.map((item) => {
             const isActive = pathname === item.href
@@ -430,14 +444,12 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`
-                    group block px-3 py-2 rounded-lg transition-colors opacity-60
-                    ${isActive ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}
-                  `}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-2'} rounded-lg transition-colors opacity-60 ${isActive ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}`}
                 >
-                  <div className="flex items-start space-x-3">
-                    <item.icon className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
-                    <div className="flex-1 min-w-0">
+                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
+                    <item.icon className={`${collapsed ? '' : 'mt-0.5'} h-4 w-4 flex-shrink-0 text-gray-400`} title={collapsed ? item.name : undefined} />
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium truncate text-gray-600">
                           {item.name}
@@ -451,7 +463,8 @@ export default function Navigation() {
                           {item.description}
                         </p>
                       )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </li>
@@ -464,11 +477,11 @@ export default function Navigation() {
 
   return (
     <>
-      {/* Mobile Header */}
-      <MobileHeader />
+      {/* Mobile Header - Only render after client hydration to prevent mismatch */}
+      {isClient && <MobileHeader />}
       
       {/* Mobile Navigation Overlay */}
-      {isMobileMenuOpen && (
+      {isClient && isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 overflow-hidden">
           {/* Backdrop */}
           <div 
@@ -532,53 +545,69 @@ export default function Navigation() {
         </div>
       )}
 
-      {/* Desktop Navigation */}
-      <nav className="hidden lg:flex bg-white shadow-sm border-r border-gray-200 w-80 fixed h-full flex-col">
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
-          {/* Header */}
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center mb-4">
-              <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <SparklesIcon className="h-6 w-6 text-white" />
-              </div>
-              <div className="ml-3">
-                <h1 className="text-lg font-bold text-gray-900">6FB AI System</h1>
-                <p className="text-xs text-gray-500">Business Intelligence Platform</p>
+      {/* Desktop Navigation - Only render after client hydration to prevent mismatch */}
+      {isClient && (
+        <nav className={`hidden lg:flex bg-white shadow-sm border-r border-gray-200 fixed h-full flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'}`}>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
+            {/* Header */}
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`flex items-center ${isCollapsed ? 'hidden' : ''}`}>
+                  <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <SparklesIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="ml-3">
+                    <h1 className="text-lg font-bold text-gray-900">6FB AI System</h1>
+                    <p className="text-xs text-gray-500">Business Intelligence Platform</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsCollapsed(!isCollapsed)}
+                  className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${isCollapsed ? 'mx-auto' : ''}`}
+                  title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                >
+                  {isCollapsed ? (
+                    <ChevronDoubleRightIcon className="h-5 w-5 text-gray-600" />
+                  ) : (
+                    <ChevronDoubleLeftIcon className="h-5 w-5 text-gray-600" />
+                  )}
+                </button>
               </div>
             </div>
+            
+            <NavigationItems collapsed={isCollapsed} />
           </div>
-          
-          <NavigationItems />
-        </div>
 
-        {/* Settings - Fixed at Bottom */}
-        <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-          <div className="p-3">
-            <Link
-              href="/dashboard/settings"
-              className={`
-                group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
-                ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                  ? 'bg-slate-100 text-slate-900' 
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }
-              `}
-            >
-              <Cog6ToothIcon
+          {/* Settings - Fixed at Bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+            <div className="p-3">
+              <Link
+                href="/dashboard/settings"
                 className={`
-                  mr-2 h-4 w-4 flex-shrink-0
+                  group flex items-center ${isCollapsed ? 'justify-center' : ''} px-3 py-2 text-sm font-medium rounded-lg transition-colors
                   ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                    ? 'text-slate-600' 
-                    : 'text-gray-400 group-hover:text-gray-600'
+                    ? 'bg-slate-100 text-slate-900' 
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }
                 `}
-              />
-              <span className="truncate">Settings</span>
-            </Link>
+              >
+                <Cog6ToothIcon
+                  className={`
+                    ${isCollapsed ? '' : 'mr-2'} h-4 w-4 flex-shrink-0
+                    ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
+                      ? 'text-slate-600' 
+                      : 'text-gray-400 group-hover:text-gray-600'
+                    }
+                  `}
+                  title={isCollapsed ? 'Settings' : undefined}
+                />
+                {!isCollapsed && <span className="truncate">Settings</span>}
+              </Link>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
+      )}
     </>
   )
 }

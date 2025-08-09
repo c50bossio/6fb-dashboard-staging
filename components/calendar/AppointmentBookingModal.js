@@ -20,11 +20,20 @@ export default function AppointmentBookingModal({
   const { user } = useAuth()
   const isEditing = !!editingAppointment
   
-  // Form state
+  // Form state - Initialize with selectedSlot data
+  const getInitialDateTime = () => {
+    if (selectedSlot?.start) {
+      // Handle both Date objects and ISO strings
+      const date = selectedSlot.start instanceof Date ? selectedSlot.start : new Date(selectedSlot.start)
+      return date.toISOString().slice(0, 16)
+    }
+    return ''
+  }
+  
   const [formData, setFormData] = useState({
     barber_id: selectedSlot?.barberId || '',
     service_id: '',
-    scheduled_at: selectedSlot?.start?.toISOString().slice(0, 16) || '',
+    scheduled_at: getInitialDateTime(),
     duration_minutes: 60,
     service_price: 0,
     tip_amount: 0,
@@ -43,7 +52,7 @@ export default function AppointmentBookingModal({
   const [error, setError] = useState('')
   const [availabilityError, setAvailabilityError] = useState('')
 
-  // Populate form if editing
+  // Populate form when modal opens with selectedSlot or when editing
   useEffect(() => {
     if (isEditing && editingAppointment) {
       setFormData({
@@ -61,8 +70,19 @@ export default function AppointmentBookingModal({
         booking_source: editingAppointment.booking_source || 'online',
         priority: editingAppointment.priority || 0
       })
+    } else if (selectedSlot && !isEditing) {
+      // Update form when opening with a new selected slot
+      const dateTime = selectedSlot.start instanceof Date 
+        ? selectedSlot.start.toISOString().slice(0, 16)
+        : new Date(selectedSlot.start).toISOString().slice(0, 16)
+      
+      setFormData(prev => ({
+        ...prev,
+        barber_id: selectedSlot.barberId || '',
+        scheduled_at: dateTime
+      }))
     }
-  }, [isEditing, editingAppointment])
+  }, [isEditing, editingAppointment, selectedSlot])
 
   // Update service details when service is selected
   useEffect(() => {

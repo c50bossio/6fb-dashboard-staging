@@ -93,6 +93,24 @@ python main.py  # Simple HTTP server (port 8000)
 python fastapi_backend.py  # Full FastAPI server with AI endpoints (port 8000)
 ```
 
+### Quick Development Workflow
+```bash
+# 1. Start development environment
+./docker-dev-start.sh
+
+# 2. Verify services are running
+curl http://localhost:9999/api/health  # Frontend health
+curl http://localhost:8001/health      # Backend health
+
+# 3. Run tests before making changes
+npm run test:nuclear    # Critical component tests
+npm run test:e2e       # End-to-end tests
+
+# 4. After making changes, run quality checks
+npm run quality-check   # Linting and formatting
+npm run test:all       # Full test suite
+```
+
 ### Testing Commands
 ```bash
 # Run all tests
@@ -355,6 +373,34 @@ vercel         # Preview/staging
 /services/                            # AI agents, business logic, and integrations
 ```
 
+### Common Development Patterns
+
+#### Adding New API Endpoints
+1. **Next.js API Route**: Create in `/app/api/[endpoint]/route.js`
+2. **FastAPI Endpoint**: Add to `/fastapi_backend.py` or create service module
+3. **Frontend Integration**: Add API call in `/lib/api.js`
+4. **Type Safety**: Define interfaces in relevant component files
+5. **Testing**: Add tests in `/__tests__/api/` directory
+
+#### Creating New Components
+1. **Component Location**: `/components/[category]/ComponentName.js`
+2. **Styling**: Use Tailwind CSS classes with design system tokens
+3. **State Management**: Use React hooks or context providers
+4. **Accessibility**: Include ARIA labels and keyboard navigation
+5. **Testing**: Add unit tests in `/__tests__/components/`
+
+#### Database Operations
+1. **Development**: SQLite operations via direct file access
+2. **Production**: Supabase operations via `lib/supabase-query.js`
+3. **Schema Changes**: Update `/database/complete-schema.sql`
+4. **Migrations**: Use Supabase migration system for production
+
+#### AI Integration
+1. **Service Creation**: Add to `/services/` directory
+2. **API Integration**: Import in `/fastapi_backend.py`
+3. **Error Handling**: Use graceful fallbacks between providers
+4. **Context Management**: Store conversation context for session continuity
+
 ### Development Workflow
 1. **Environment Setup**: Use Docker development for consistency
 2. **Database**: SQLite for dev, PostgreSQL for production via Supabase
@@ -392,5 +438,53 @@ vercel         # Preview/staging
 - **Triple-Tool Approach**: Playwright for E2E, Puppeteer for debugging, Computer Use for visual validation
 - **Cross-Browser Testing**: Chrome, Firefox, Safari, and mobile variants
 - **Security Testing**: Comprehensive GDPR, API security, and penetration testing suites
+
+## Troubleshooting Common Issues
+
+### Docker Issues
+```bash
+# Container startup failures
+docker compose down && docker compose up --build -d
+
+# Database connection issues
+rm -rf data/agent_system.db && ./docker-dev-start.sh
+
+# Port conflicts
+docker compose down && docker system prune -f
+```
+
+### Frontend Issues
+```bash
+# Build failures
+rm -rf .next/ node_modules/ && npm install && npm run build
+
+# Hot reload not working
+docker compose restart frontend
+
+# TypeScript errors
+npx tsc --noEmit  # Check types without building
+```
+
+### Backend Issues
+```bash
+# FastAPI startup failures
+docker compose logs backend  # Check error logs
+
+# Database migration issues
+python -c "import database.async_database_init; database.async_database_init.init_database()"
+
+# AI service connection issues
+curl http://localhost:8001/ai/health  # Check AI service status
+```
+
+### Database Access
+```bash
+# Test Supabase connection (Claude Code)
+node test-supabase-access.js
+
+# SQLite operations (Development)
+sqlite3 data/agent_system.db ".tables"  # List tables
+sqlite3 data/agent_system.db ".schema profiles"  # View schema
+```
 
 This system emphasizes enterprise-grade reliability, comprehensive testing, and advanced AI integration while maintaining developer productivity through Docker containerization and modern tooling.

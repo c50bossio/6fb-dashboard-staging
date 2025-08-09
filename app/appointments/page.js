@@ -17,6 +17,7 @@ import { useState, useEffect, useCallback } from 'react'
 import BookingCalendar from '../../components/calendar/BookingCalendar'
 import AppointmentModal from '../../components/calendar/AppointmentModal'
 import ProtectedRoute from '../../components/ProtectedRoute'
+import GlobalNavigation from '../../components/GlobalNavigation'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
 export default function AppointmentsPage() {
@@ -74,9 +75,12 @@ export default function AppointmentsPage() {
 
   return (
     <ProtectedRoute>
+      <GlobalNavigation />
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
+        {/* Main Content - adjusting for sidebar */}
+        <div className="lg:ml-80 transition-all duration-300 ease-in-out pt-16 lg:pt-0">
+          {/* Header */}
+          <div className="bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="md:flex md:items-center md:justify-between">
               <div className="min-w-0 flex-1">
@@ -210,6 +214,7 @@ export default function AppointmentsPage() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </ProtectedRoute>

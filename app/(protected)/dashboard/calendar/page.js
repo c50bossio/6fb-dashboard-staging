@@ -16,24 +16,37 @@ import {
   CheckIcon,
   MapPinIcon,
   UserIcon,
-  BuildingStorefrontIcon
+  BuildingStorefrontIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import QRCode from 'qrcode'
 import { useToast } from '../../../../components/ToastContainer'
+import { 
+  DEFAULT_RESOURCES, 
+  DEFAULT_SERVICES, 
+  generateMockEvents,
+  generateRecurringEvents,
+  formatAppointment 
+} from '../../../../lib/calendar-data'
 
-// Use our standardized FullCalendarWrapper component with FullCalendar SDK
-const FullCalendarWrapper = dynamic(
-  () => import('../../../../components/calendar/FullCalendarWrapper'),
+// Professional calendar component with clean implementation
+const ProfessionalCalendar = dynamic(
+  () => import('../../../../components/calendar/FinalProfessionalCalendar'), // Final working version
   { 
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-[600px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="mt-4 text-gray-600">Loading FullCalendar...</p>
+        <p className="mt-4 text-gray-600">Loading Calendar...</p>
       </div>
     )
   }
 )
+
+// Import professional calendar styles
+import '../../../../styles/professional-calendar.css'
 
 // Import the appointment modal
 const AppointmentBookingModal = dynamic(
@@ -41,7 +54,7 @@ const AppointmentBookingModal = dynamic(
   { ssr: false }
 )
 
-export default function StableCalendarPage() {
+export default function CalendarPage() {
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
   const [resources, setResources] = useState([])
@@ -51,6 +64,7 @@ export default function StableCalendarPage() {
   const [copied, setCopied] = useState({})
   const [quickLinks, setQuickLinks] = useState([])
   const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
+  const [currentTime, setCurrentTime] = useState('')
   const { success, error: showError, info } = useToast()
   
   // Modal states
@@ -59,16 +73,49 @@ export default function StableCalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [services, setServices] = useState([])
   const [barbershopId] = useState('demo-shop-001') // For production, get from context
+  
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterBarber, setFilterBarber] = useState('all')
+  const [filterService, setFilterService] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterLocation, setFilterLocation] = useState('all')
 
   // Initialize calendar with real data
   useEffect(() => {
     setMounted(true)
     
-    // Fetch real data from API instead of using mock data
-    fetchRealAppointments()
+    // Set up time display
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    }
+    
+    updateTime() // Set initial time
+    const timeInterval = setInterval(updateTime, 1000)
+    
+    // Initialize with mock data immediately for testing
+    setResources(DEFAULT_RESOURCES)
+    setServices(DEFAULT_SERVICES)
+    
+    // Generate mock events for today
+    const today = new Date()
+    const mockEvents = generateMockEvents(today, DEFAULT_RESOURCES, DEFAULT_SERVICES)
+    const recurringEvents = generateRecurringEvents(today)
+    setEvents([...mockEvents, ...recurringEvents])
+    
+    // Also try to fetch real data
     fetchRealBarbers()
     fetchServices()
+    fetchRealAppointments()
+    
+    return () => clearInterval(timeInterval)
   }, [])
+  
+  // Debug log resources when they change
+  useEffect(() => {
+    console.log('📅 Calendar resources updated:', resources)
+    console.log('📅 Calendar events updated:', events)
+  }, [resources, events])
 
   // Fetch real appointments from API
   const fetchRealAppointments = async () => {
@@ -83,33 +130,29 @@ export default function StableCalendarPage() {
       const response = await fetch(`/api/appointments?${params.toString()}`)
       const result = await response.json()
       
-      if (response.ok) {
-        const appointments = result.appointments || []
-        const formattedEvents = appointments.map(appointment => ({
-          id: appointment.id,
-          title: `${appointment.client_name || 'Client'} - ${appointment.service?.name || 'Service'}`,
-          start: appointment.scheduled_at,
-          end: new Date(new Date(appointment.scheduled_at).getTime() + (appointment.duration_minutes || 30) * 60000).toISOString(),
-          resourceId: appointment.barber_id,
-          backgroundColor: '#3b82f6',
-          extendedProps: {
-            customer: appointment.client_name,
-            service: appointment.service?.name,
-            duration: appointment.duration_minutes,
-            price: appointment.service_price,
-            status: appointment.status
-          }
-        }))
+      if (response.ok && result.appointments?.length) {
+        const appointments = result.appointments
+        const formattedEvents = appointments.map(apt => 
+          formatAppointment(apt, resources.find(r => r.id === apt.barber_id))
+        )
         setEvents(formattedEvents)
       } else {
-        // Fallback to mock events if API fails
-        generateMockEvents()
+        // Use centralized mock data generation
+        const mockEvents = generateMockEvents(new Date(), resources, services)
+        setEvents(mockEvents)
       }
+      // Add recurring appointments
+      const recurring = generateRecurringEvents(new Date())
+      setEvents(prev => [...prev, ...recurring])
     } catch (error) {
       console.error('Error fetching appointments:', error)
-      generateMockEvents()
+      // Use centralized mock data generation
+      const mockEvents = generateMockEvents(new Date(), resources, services)
+      const recurring = generateRecurringEvents(new Date())
+      setEvents([...mockEvents, ...recurring])
     }
   }
+
 
   // Fetch services from API
   const fetchServices = async () => {
@@ -117,48 +160,40 @@ export default function StableCalendarPage() {
       const response = await fetch('/api/services')
       const result = await response.json()
       
-      if (response.ok) {
-        setServices(result.services || [])
+      if (response.ok && result.services?.length) {
+        setServices(result.services)
       } else {
-        // Use mock services if API fails
-        setServices([
-          { id: '1', name: 'Haircut', price: 35, duration_minutes: 30, description: 'Professional haircut' },
-          { id: '2', name: 'Beard Trim', price: 20, duration_minutes: 20, description: 'Beard shaping and trim' },
-          { id: '3', name: 'Hair & Beard', price: 50, duration_minutes: 45, description: 'Complete grooming package' },
-          { id: '4', name: 'Kids Cut', price: 25, duration_minutes: 25, description: 'Children\'s haircut' },
-          { id: '5', name: 'Shave', price: 30, duration_minutes: 30, description: 'Traditional hot towel shave' }
-        ])
+        setServices(DEFAULT_SERVICES)
       }
     } catch (error) {
       console.error('Error fetching services:', error)
-      // Use mock services on error
-      setServices([
-        { id: '1', name: 'Haircut', price: 35, duration_minutes: 30, description: 'Professional haircut' },
-        { id: '2', name: 'Beard Trim', price: 20, duration_minutes: 20, description: 'Beard shaping and trim' },
-        { id: '3', name: 'Hair & Beard', price: 50, duration_minutes: 45, description: 'Complete grooming package' },
-        { id: '4', name: 'Kids Cut', price: 25, duration_minutes: 25, description: 'Children\'s haircut' },
-        { id: '5', name: 'Shave', price: 30, duration_minutes: 30, description: 'Traditional hot towel shave' }
-      ])
+      setServices(DEFAULT_SERVICES)
     }
   }
 
-  // Fetch real barbers from API or use mock data
-  const fetchRealBarbers = () => {
-    // Use mock barbers data (can be enhanced later to fetch from API)
-    const mockResources = [
-      { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
-      { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#3b82f6' },
-      { id: 'barber-3', title: 'Mike Brown', eventColor: '#f59e0b' },
-      { id: 'barber-4', title: 'Lisa Davis', eventColor: '#8b5cf6' }
-    ]
-    
-    setResources(mockResources)
-    generateQuickLinks(mockResources)
+  // Fetch barbers from API or use default data
+  const fetchRealBarbers = async () => {
+    try {
+      const response = await fetch('/api/barbers')
+      const result = await response.json()
+      
+      if (response.ok && result.barbers?.length) {
+        setResources(result.barbers)
+        generateQuickLinks(result.barbers)
+      } else {
+        setResources(DEFAULT_RESOURCES)
+        generateQuickLinks(DEFAULT_RESOURCES)
+      }
+    } catch (error) {
+      console.error('Error fetching barbers:', error)
+      setResources(DEFAULT_RESOURCES)
+      generateQuickLinks(DEFAULT_RESOURCES)
+    }
   }
 
   // Generate quick links for QR code sharing
   const generateQuickLinks = (barberResources) => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://6fb-ai.com'
+    const baseUrl = typeof window !== 'undefined' && window.location ? window.location.origin : 'https://6fb-ai.com'
     const mockQuickLinks = [
       {
         id: 'main-location',
@@ -192,88 +227,6 @@ export default function StableCalendarPage() {
     setQuickLinks(mockQuickLinks)
   }
 
-  // Fallback mock events when API is not available
-  const generateMockEvents = () => {
-    const mockEvents = []
-    const now = new Date()
-    const services = [
-      { name: 'Haircut', duration: 60, price: 35 },
-      { name: 'Beard Trim', duration: 30, price: 25 },
-      { name: 'Fade Cut', duration: 45, price: 45 },
-      { name: 'Hair Color', duration: 90, price: 85 }
-    ]
-    
-    const mockResources = [
-      { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
-      { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#3b82f6' },
-      { id: 'barber-3', title: 'Mike Brown', eventColor: '#f59e0b' },
-      { id: 'barber-4', title: 'Lisa Davis', eventColor: '#8b5cf6' }
-    ]
-    
-    // Generate events for today
-    mockResources.forEach((resource, idx) => {
-      for (let i = 0; i < 3; i++) {
-        const startHour = 9 + idx * 2 + i
-        if (startHour < 18) {
-          const service = services[Math.floor(Math.random() * services.length)]
-          const start = new Date(now)
-          start.setHours(startHour, 0, 0, 0)
-          const end = new Date(start.getTime() + service.duration * 60000)
-          
-          mockEvents.push({
-            id: `${resource.id}-${i}`,
-            title: `Client ${idx * 3 + i + 1} - ${service.name}`,
-            start,
-            end,
-            resourceId: resource.id,
-            backgroundColor: resource.eventColor,
-            extendedProps: {
-              service: service.name,
-              price: service.price,
-              duration: service.duration
-            }
-          })
-        }
-      }
-    })
-    
-    setResources(mockResources)
-    setEvents(mockEvents)
-    
-    // Generate quick links for barbershop locations and barbers
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://6fb-ai.com'
-    const mockQuickLinks = [
-      {
-        id: 'main-location',
-        type: 'location',
-        title: 'Main Barbershop',
-        subtitle: 'Downtown Location',
-        url: `${baseUrl}/book/location/main-downtown`,
-        icon: BuildingStorefrontIcon,
-        color: 'blue'
-      },
-      {
-        id: 'north-location',
-        type: 'location', 
-        title: 'North Branch',
-        subtitle: 'Uptown Location',
-        url: `${baseUrl}/book/location/north-uptown`,
-        icon: MapPinIcon,
-        color: 'green'
-      },
-      ...mockResources.map(barber => ({
-        id: barber.id,
-        type: 'barber',
-        title: barber.title,
-        subtitle: 'Book directly',
-        url: `${baseUrl}/book/${barber.id}`,
-        icon: UserIcon,
-        color: 'purple'
-      }))
-    ]
-    
-    setQuickLinks(mockQuickLinks)
-  }
 
   // Click outside detection for share dropdown
   useEffect(() => {
@@ -292,6 +245,67 @@ export default function StableCalendarPage() {
     const barbers = quickLinks.filter(link => link.type === 'barber')
     return { locations, barbers }
   }, [quickLinks])
+  
+  // Filter events based on search and filter criteria
+  const filteredEvents = useMemo(() => {
+    console.log('Filtering events. Total events:', events.length);
+    console.log('First few events:', events.slice(0, 3));
+    return events.filter(event => {
+      // Search filter
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase()
+        const matchesSearch = 
+          event.title?.toLowerCase().includes(searchLower) ||
+          event.extendedProps?.customer?.toLowerCase().includes(searchLower) ||
+          event.extendedProps?.service?.toLowerCase().includes(searchLower) ||
+          event.extendedProps?.notes?.toLowerCase().includes(searchLower)
+        
+        if (!matchesSearch) return false
+      }
+      
+      // Location filter
+      if (filterLocation !== 'all') {
+        const barber = resources.find(r => r.id === event.resourceId)
+        const barberLocation = barber?.extendedProps?.location || 'Unknown'
+        if (barberLocation !== filterLocation) {
+          return false
+        }
+      }
+      
+      // Barber filter
+      if (filterBarber !== 'all' && event.resourceId !== filterBarber) {
+        return false
+      }
+      
+      // Service filter
+      if (filterService !== 'all') {
+        const eventService = event.extendedProps?.service || event.title.split(' - ')[1] || ''
+        if (!eventService.toLowerCase().includes(filterService.toLowerCase())) {
+          return false
+        }
+      }
+      
+      // Status filter
+      if (filterStatus !== 'all') {
+        const eventStatus = event.extendedProps?.status || 'confirmed'
+        if (eventStatus !== filterStatus) {
+          return false
+        }
+      }
+      
+      return true
+    })
+  }, [events, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources])
+  
+  // Get unique services for filter dropdown
+  const uniqueServices = useMemo(() => {
+    const services = new Set()
+    events.forEach(event => {
+      const service = event.extendedProps?.service || event.title.split(' - ')[1]
+      if (service) services.add(service)
+    })
+    return Array.from(services).sort()
+  }, [events])
 
   const handleEventClick = useCallback((clickInfo) => {
     const event = clickInfo.event
@@ -311,18 +325,16 @@ export default function StableCalendarPage() {
   }, [])
 
   const handleDateSelect = useCallback((selectInfo) => {
+    console.log('Slot clicked:', selectInfo)
     // Open appointment modal with selected slot info
     setSelectedSlot({
       start: selectInfo.start,
       end: selectInfo.end,
-      barberId: selectInfo.resource?.id
+      barberId: selectInfo.resourceId || selectInfo.resource?.id,
+      barberName: selectInfo.resource?.title || resources.find(r => r.id === selectInfo.resourceId)?.title
     })
     setShowAppointmentModal(true)
-    
-    // Unselect the time slot
-    const calendarApi = selectInfo.view.calendar
-    calendarApi.unselect()
-  }, [])
+  }, [resources])
 
   // Handle appointment save
   const handleAppointmentSave = async (appointmentData) => {
@@ -362,7 +374,10 @@ export default function StableCalendarPage() {
 
   const generateQRCode = useCallback(async (resource) => {
     setSelectedResource(resource)
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://6fb-ai.com'
+    
+    if (typeof window === 'undefined') return
+    
+    const baseUrl = window.location ? window.location.origin : 'https://6fb-ai.com'
     const bookingUrl = `${baseUrl}/book/${resource.id}?utm_source=qr&utm_medium=calendar&utm_campaign=booking`
     
     try {
@@ -382,6 +397,8 @@ export default function StableCalendarPage() {
   }, [])
 
   const copyToClipboard = async (text, key) => {
+    if (typeof window === 'undefined' || !navigator.clipboard) return
+    
     try {
       await navigator.clipboard.writeText(text)
       setCopied({ ...copied, [key]: true })
@@ -545,11 +562,128 @@ export default function StableCalendarPage() {
                 )}
               </div>
               
-              <div className="flex items-center text-sm text-gray-600">
-                <ClockIcon className="h-4 w-4 mr-1" />
-                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
+              {mounted && (
+                <div className="flex items-center text-sm text-gray-600">
+                  <ClockIcon className="h-4 w-4 mr-1" />
+                  {currentTime}
+                </div>
+              )}
             </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Search and Filter Bar */}
+      <div className="bg-gray-50 border-b px-6 py-3">
+        <div className="flex items-center space-x-4">
+          {/* Search Input */}
+          <div className="flex-1 max-w-md">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search customers, services, or notes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {/* Filter Dropdowns */}
+          <div className="flex items-center space-x-2">
+            <FunnelIcon className="h-5 w-5 text-gray-500" />
+            
+            {/* Location Filter */}
+            <select
+              value={filterLocation}
+              onChange={(e) => setFilterLocation(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Locations</option>
+              <option value="Downtown">Downtown</option>
+              <option value="Uptown">Uptown</option>
+            </select>
+            
+            {/* Barber Filter */}
+            <select
+              value={filterBarber}
+              onChange={(e) => setFilterBarber(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Barbers</option>
+              {resources.map(barber => (
+                <option key={barber.id} value={barber.id}>
+                  {barber.title}
+                </option>
+              ))}
+            </select>
+            
+            {/* Service Filter */}
+            <select
+              value={filterService}
+              onChange={(e) => setFilterService(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Services</option>
+              {uniqueServices.map(service => (
+                <option key={service} value={service}>
+                  {service}
+                </option>
+              ))}
+            </select>
+            
+            {/* Status Filter */}
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Status</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="pending">Pending</option>
+              <option value="recurring">Recurring</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            
+            {/* Clear Filters Button */}
+            {(searchTerm || filterLocation !== 'all' || filterBarber !== 'all' || filterService !== 'all' || filterStatus !== 'all') && (
+              <button
+                onClick={() => {
+                  setSearchTerm('')
+                  setFilterLocation('all')
+                  setFilterBarber('all')
+                  setFilterService('all')
+                  setFilterStatus('all')
+                }}
+                className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm flex items-center space-x-1"
+              >
+                <XMarkIcon className="h-4 w-4" />
+                <span>Clear</span>
+              </button>
+            )}
+          </div>
+          
+          {/* Results Count */}
+          <div className="text-sm text-gray-600">
+            {filteredEvents.length !== events.length ? (
+              <span>
+                Showing <span className="font-semibold">{filteredEvents.length}</span> of {events.length} appointments
+              </span>
+            ) : (
+              <span>
+                <span className="font-semibold">{events.length}</span> appointments
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -558,21 +692,15 @@ export default function StableCalendarPage() {
       {/* Calendar Container */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
-          <FullCalendarWrapper
-            view="resourceTimeGridDay"
+          <ProfessionalCalendar
             resources={resources}
-            events={events}
+            events={events} // Use all events temporarily to debug
             onEventClick={handleEventClick}
-            onDateSelect={handleDateSelect}
-            showResources={true}
-            businessHours={{
-              daysOfWeek: [1, 2, 3, 4, 5, 6],
-              startTime: '09:00',
-              endTime: '18:00'
+            onSlotClick={handleDateSelect}
+            onEventDrop={(info) => {
+              console.log('Event dropped:', info)
+              // Handle event drop/reschedule
             }}
-            slotMinTime="08:00:00"
-            slotMaxTime="20:00:00"
-            slotDuration="00:30:00"
             height="650px"
           />
         </div>
@@ -698,6 +826,7 @@ export default function StableCalendarPage() {
           editingAppointment={selectedEvent}
         />
       )}
+      
     </div>
   )
 }

@@ -18,6 +18,7 @@ import {
 import { useState, useEffect } from 'react'
 
 import ProtectedRoute from '../../components/ProtectedRoute'
+import GlobalNavigation from '../../components/GlobalNavigation'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
 // Mock staff data
@@ -157,8 +158,12 @@ export default function StaffPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <GlobalNavigation />
+      <div className="min-h-screen bg-gray-50">
+        {/* Main Content - adjusting for sidebar */}
+        <div className="lg:ml-80 transition-all duration-300 ease-in-out pt-16 lg:pt-0">
+          <div className="py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
             <div className="md:flex md:items-center md:justify-between">
@@ -390,6 +395,7 @@ export default function StaffPage() {
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
