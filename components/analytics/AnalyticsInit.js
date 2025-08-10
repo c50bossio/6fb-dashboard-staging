@@ -143,26 +143,42 @@ export default function AnalyticsInit() {
     }
   }, [])
 
-  // Track errors
+  // Track errors (temporarily disabled to prevent infinite recursion)
   useEffect(() => {
     const handleError = (event) => {
-      analytics.events.errorOccurred(event.error, {
-        filename: event.filename,
-        line_number: event.lineno,
-        column_number: event.colno,
-        user_agent: navigator.userAgent,
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
-      })
+      // Prevent infinite recursion by checking if this is an analytics error
+      if (event.error?.message?.includes('Maximum call stack')) return
+      
+      try {
+        analytics.events.errorOccurred(event.error, {
+          filename: event.filename,
+          line_number: event.lineno,
+          column_number: event.colno,
+          user_agent: navigator.userAgent,
+          url: window.location.href,
+          timestamp: new Date().toISOString(),
+        })
+      } catch (analyticsError) {
+        // Silently ignore analytics errors to prevent recursion
+        console.warn('Analytics error tracking failed:', analyticsError.message)
+      }
     }
 
     const handleUnhandledRejection = (event) => {
-      analytics.events.errorOccurred(new Error(event.reason), {
-        type: 'unhandled_promise_rejection',
-        user_agent: navigator.userAgent,
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
-      })
+      // Prevent infinite recursion
+      if (event.reason?.message?.includes('Maximum call stack')) return
+      
+      try {
+        analytics.events.errorOccurred(new Error(event.reason), {
+          type: 'unhandled_promise_rejection',
+          user_agent: navigator.userAgent,
+          url: window.location.href,
+          timestamp: new Date().toISOString(),
+        })
+      } catch (analyticsError) {
+        // Silently ignore analytics errors to prevent recursion
+        console.warn('Analytics promise rejection tracking failed:', analyticsError.message)
+      }
     }
 
     window.addEventListener('error', handleError)

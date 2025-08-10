@@ -5,6 +5,8 @@ pydantic[email]
 python-multipart
 websockets==10.4
 python-jose[cryptography]
+PyJWT==2.8.0
+bcrypt==4.1.2
 openai>=1.0.0
 google-generativeai>=0.3.0
 anthropic>=0.7.0

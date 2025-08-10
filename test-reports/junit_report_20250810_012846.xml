@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        <testsuites name="6FB AI Agent System Test Pipeline" 
+                   tests="10" 
+                   failures="0" 
+                   time="2.02">
+        
+        <testsuite name="ai_system_unit_tests" 
+                  tests="5" 
+                  failures="0" 
+                  time="0.51">
+            <testcase name="test_ai_orchestrator" time="0.10"/>
+<testcase name="test_ai_agents" time="0.10"/>
+<testcase name="test_vector_knowledge" time="0.10"/>
+<testcase name="test_caching_service" time="0.10"/>
+<testcase name="test_security_features" time="0.10"/>
+</testsuite>
+
+        <testsuite name="security_tests" 
+                  tests="5" 
+                  failures="0" 
+                  time="1.51">
+            <testcase name="test_prompt_injection_protection" time="0.30"/>
+<testcase name="test_authentication_security" time="0.30"/>
+<testcase name="test_api_rate_limiting" time="0.30"/>
+<testcase name="test_data_sanitization" time="0.30"/>
+<testcase name="test_sql_injection_prevention" time="0.30"/>
+</testsuite>
+</testsuites>

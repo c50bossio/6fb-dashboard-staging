@@ -36,6 +36,43 @@ function transformBookingToEvent(appointment) {
   }
 }
 
+export async function GET(request, { params }) {
+  try {
+    const { id } = params
+    
+    // Fetch appointment from bookings table
+    const { data: appointment, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        customers(id, name, email, phone),
+        services(id, name, duration_minutes, price),
+        barbers(id, name, color)
+      `)
+      .eq('id', id)
+      .single()
+    
+    if (error || !appointment) {
+      return NextResponse.json(
+        { error: 'Appointment not found' },
+        { status: 404 }
+      )
+    }
+    
+    // Return the appointment data
+    return NextResponse.json({ 
+      appointment: appointment
+    })
+    
+  } catch (error) {
+    console.error('Error fetching appointment:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch appointment', details: error.message },
+      { status: 500 }
+    )
+  }
+}
+
 export async function PATCH(request, { params }) {
   try {
     const { id } = params

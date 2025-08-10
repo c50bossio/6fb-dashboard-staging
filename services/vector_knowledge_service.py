@@ -260,8 +260,47 @@ class VectorKnowledgeService:
     async def retrieve_relevant_knowledge(self, 
                                         query: str, 
                                         knowledge_types: List[str] = None,
-                                        limit: int = 5) -> List[BusinessKnowledge]:
-        """Retrieve relevant business knowledge for a query"""
+                                        limit: int = 5,
+                                        use_advanced_retrieval: bool = True) -> List[BusinessKnowledge]:
+        """Enhanced retrieval with advanced accuracy improvements"""
+        
+        if use_advanced_retrieval:
+            return await self._advanced_retrieve_knowledge(query, knowledge_types, limit)
+        else:
+            return await self._basic_retrieve_knowledge(query, knowledge_types, limit)
+    
+    async def _advanced_retrieve_knowledge(self, 
+                                         query: str, 
+                                         knowledge_types: List[str] = None,
+                                         limit: int = 5) -> List[BusinessKnowledge]:
+        """Advanced retrieval with multiple strategies for improved accuracy"""
+        
+        try:
+            # Strategy 1: Multi-vector retrieval with query expansion
+            expanded_queries = await self._expand_query(query)
+            multi_results = await self._multi_vector_search(expanded_queries, knowledge_types, limit * 2)
+            
+            # Strategy 2: Semantic similarity scoring with reranking
+            reranked_results = await self._rerank_by_semantic_relevance(multi_results, query, limit)
+            
+            # Strategy 3: Context-aware filtering
+            context_filtered = await self._apply_context_filtering(reranked_results, query)
+            
+            # Strategy 4: Diversity injection to prevent redundancy
+            diverse_results = await self._inject_diversity(context_filtered, limit)
+            
+            logger.info(f"🧠 Advanced RAG retrieval: {len(diverse_results)} results with enhanced accuracy")
+            return diverse_results
+            
+        except Exception as e:
+            logger.error(f"❌ Advanced retrieval failed: {e}, falling back to basic")
+            return await self._basic_retrieve_knowledge(query, knowledge_types, limit)
+    
+    async def _basic_retrieve_knowledge(self, 
+                                      query: str, 
+                                      knowledge_types: List[str] = None,
+                                      limit: int = 5) -> List[BusinessKnowledge]:
+        """Basic retrieval method (original implementation)"""
         
         # Generate query embedding
         query_embedding = await self.generate_embedding(query)
@@ -305,6 +344,232 @@ class VectorKnowledgeService:
             relevant_knowledge = await self._retrieve_from_sqlite(query, knowledge_types, limit)
         
         return relevant_knowledge
+    
+    async def _expand_query(self, original_query: str) -> List[str]:
+        """Expand query with synonyms and related terms for better retrieval"""
+        
+        # Business domain expansions
+        business_expansions = {
+            'revenue': ['income', 'earnings', 'sales', 'profit', 'money'],
+            'customers': ['clients', 'patrons', 'guests', 'bookings', 'appointments'],
+            'marketing': ['advertising', 'promotion', 'outreach', 'social media', 'branding'],
+            'operations': ['workflow', 'processes', 'efficiency', 'productivity', 'management'],
+            'scheduling': ['appointments', 'bookings', 'calendar', 'availability', 'time slots'],
+            'staff': ['employees', 'barbers', 'team', 'workers', 'personnel'],
+            'service': ['haircut', 'styling', 'grooming', 'treatment', 'appointment'],
+            'performance': ['metrics', 'analytics', 'KPIs', 'results', 'success']
+        }
+        
+        expanded_queries = [original_query]
+        query_lower = original_query.lower()
+        
+        # Add expansions for detected keywords
+        for base_term, expansions in business_expansions.items():
+            if base_term in query_lower:
+                for expansion in expansions:
+                    expanded_query = query_lower.replace(base_term, expansion)
+                    if expanded_query not in expanded_queries:
+                        expanded_queries.append(expanded_query)
+        
+        # Add contextual variations
+        if 'how to' in query_lower:
+            expanded_queries.append(query_lower.replace('how to', 'best practices for'))
+            expanded_queries.append(query_lower.replace('how to', 'strategies to'))
+        
+        if 'what is' in query_lower:
+            expanded_queries.append(query_lower.replace('what is', 'definition of'))
+            expanded_queries.append(query_lower.replace('what is', 'explanation of'))
+        
+        return expanded_queries[:5]  # Limit to prevent over-expansion
+    
+    async def _multi_vector_search(self, 
+                                 queries: List[str], 
+                                 knowledge_types: List[str] = None,
+                                 limit: int = 10) -> List[BusinessKnowledge]:
+        """Search using multiple query vectors and combine results"""
+        
+        all_results = []
+        seen_content = set()
+        
+        for query in queries:
+            query_embedding = await self.generate_embedding(query)
+            
+            if self.collection:
+                try:
+                    where_clause = None
+                    if knowledge_types:
+                        where_clause = {"knowledge_type": {"$in": knowledge_types}}
+                    
+                    results = self.collection.query(
+                        query_embeddings=[query_embedding],
+                        n_results=limit // len(queries),
+                        where=where_clause,
+                        include=["documents", "metadatas", "distances"]
+                    )
+                    
+                    # Process results and avoid duplicates
+                    for i, doc in enumerate(results['documents'][0]):
+                        if doc not in seen_content:
+                            seen_content.add(doc)
+                            metadata = results['metadatas'][0][i]
+                            distance = results['distances'][0][i]
+                            
+                            knowledge = BusinessKnowledge(
+                                id=f"multi_retrieved_{len(all_results)}",
+                                content=doc,
+                                knowledge_type=metadata.get('knowledge_type', 'unknown'),
+                                source=metadata.get('source', 'unknown'),
+                                metadata={
+                                    **metadata, 
+                                    'similarity_score': 1 - distance,
+                                    'search_query': query
+                                }
+                            )
+                            all_results.append(knowledge)
+                
+                except Exception as e:
+                    logger.error(f"Multi-vector search failed for query '{query}': {e}")
+        
+        return all_results
+    
+    async def _rerank_by_semantic_relevance(self, 
+                                          results: List[BusinessKnowledge], 
+                                          original_query: str, 
+                                          limit: int) -> List[BusinessKnowledge]:
+        """Rerank results by semantic relevance to original query"""
+        
+        if not results:
+            return results
+        
+        # Calculate semantic relevance scores
+        original_embedding = await self.generate_embedding(original_query)
+        
+        for result in results:
+            content_embedding = await self.generate_embedding(result.content)
+            
+            # Calculate cosine similarity
+            similarity = self._cosine_similarity(original_embedding, content_embedding)
+            
+            # Combine with existing similarity score (weighted average)
+            existing_score = result.metadata.get('similarity_score', 0.5)
+            combined_score = (similarity * 0.7) + (existing_score * 0.3)
+            
+            result.metadata['semantic_relevance'] = similarity
+            result.metadata['combined_score'] = combined_score
+        
+        # Sort by combined score
+        results.sort(key=lambda x: x.metadata.get('combined_score', 0), reverse=True)
+        
+        return results[:limit]
+    
+    def _cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
+        """Calculate cosine similarity between two vectors"""
+        
+        try:
+            vec1_np = np.array(vec1)
+            vec2_np = np.array(vec2)
+            
+            dot_product = np.dot(vec1_np, vec2_np)
+            norm1 = np.linalg.norm(vec1_np)
+            norm2 = np.linalg.norm(vec2_np)
+            
+            if norm1 == 0 or norm2 == 0:
+                return 0.0
+            
+            return dot_product / (norm1 * norm2)
+        
+        except Exception:
+            return 0.5  # Fallback similarity
+    
+    async def _apply_context_filtering(self, 
+                                     results: List[BusinessKnowledge], 
+                                     query: str) -> List[BusinessKnowledge]:
+        """Apply context-aware filtering to improve relevance"""
+        
+        # Identify query intent
+        query_lower = query.lower()
+        
+        # Business context filters
+        context_weights = {
+            'financial': ['revenue', 'profit', 'cost', 'pricing', 'money', 'income'],
+            'operational': ['schedule', 'appointment', 'booking', 'workflow', 'process'],
+            'marketing': ['customer', 'client', 'promotion', 'advertising', 'social'],
+            'performance': ['metric', 'analytics', 'KPI', 'result', 'success', 'track']
+        }
+        
+        # Determine query context
+        query_contexts = []
+        for context, keywords in context_weights.items():
+            if any(keyword in query_lower for keyword in keywords):
+                query_contexts.append(context)
+        
+        # Apply context boosting
+        for result in results:
+            content_lower = result.content.lower()
+            knowledge_type = result.knowledge_type.lower()
+            
+            # Boost score for matching contexts
+            context_boost = 0.0
+            for context in query_contexts:
+                if any(keyword in content_lower for keyword in context_weights[context]):
+                    context_boost += 0.1
+                if context in knowledge_type:
+                    context_boost += 0.15
+            
+            # Apply boost to combined score
+            current_score = result.metadata.get('combined_score', 0.5)
+            result.metadata['combined_score'] = min(1.0, current_score + context_boost)
+            result.metadata['context_boost'] = context_boost
+        
+        # Re-sort with context boosts
+        results.sort(key=lambda x: x.metadata.get('combined_score', 0), reverse=True)
+        
+        return results
+    
+    async def _inject_diversity(self, 
+                              results: List[BusinessKnowledge], 
+                              limit: int) -> List[BusinessKnowledge]:
+        """Inject diversity to prevent redundant results"""
+        
+        if len(results) <= limit:
+            return results
+        
+        diverse_results = []
+        used_knowledge_types = set()
+        similarity_threshold = 0.85  # Prevent very similar content
+        
+        for result in results:
+            # Check knowledge type diversity
+            knowledge_type = result.knowledge_type
+            type_count = len([r for r in diverse_results if r.knowledge_type == knowledge_type])
+            
+            # Limit same knowledge type to prevent clustering
+            if type_count >= 2 and len(diverse_results) > 2:
+                continue
+            
+            # Check content similarity with existing results
+            is_similar = False
+            for existing in diverse_results:
+                if len(existing.content) > 0 and len(result.content) > 0:
+                    # Simple similarity check based on overlapping words
+                    existing_words = set(existing.content.lower().split())
+                    result_words = set(result.content.lower().split())
+                    
+                    if existing_words and result_words:
+                        overlap = len(existing_words & result_words) / len(existing_words | result_words)
+                        if overlap > similarity_threshold:
+                            is_similar = True
+                            break
+            
+            if not is_similar:
+                diverse_results.append(result)
+                result.metadata['diversity_selected'] = True
+            
+            if len(diverse_results) >= limit:
+                break
+        
+        logger.info(f"📊 Diversity injection: {len(diverse_results)} diverse results from {len(results)} candidates")
+        return diverse_results
     
     async def _retrieve_from_sqlite(self, 
                                   query: str, 

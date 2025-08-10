@@ -62,6 +62,12 @@ const RescheduleConfirmationModal = dynamic(
   { ssr: false }
 )
 
+// Import the booking confirmation modal
+const BookingConfirmationModal = dynamic(
+  () => import('../../../../components/calendar/BookingConfirmationModal'),
+  { ssr: false }
+)
+
 export default function CalendarPage() {
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
@@ -78,9 +84,11 @@ export default function CalendarPage() {
   // Modal states
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showRescheduleModal, setShowRescheduleModal] = useState(false)
+  const [showBookingConfirmation, setShowBookingConfirmation] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [pendingReschedule, setPendingReschedule] = useState(null)
+  const [confirmedAppointment, setConfirmedAppointment] = useState(null)
   const [services, setServices] = useState([])
   const [barbershopId] = useState('demo-shop-001') // For production, get from context
   
@@ -514,16 +522,69 @@ export default function CalendarPage() {
     // Handle conversion to recurring case - appointment already exists in DB
     if (appointmentData?.id && appointmentData?.is_recurring) {
       console.log('Appointment converted to recurring, refreshing calendar...')
-      success('Appointment converted to recurring series!', {
-        title: 'Success',
-        duration: 3000
-      })
+      
+      // Store the appointment data for confirmation modal
+      setConfirmedAppointment(appointmentData)
+      
+      // Close booking modal and show confirmation modal
       setShowAppointmentModal(false)
+      setShowBookingConfirmation(true)
+      
       // Refresh the calendar by fetching appointments again
       fetchRealAppointments()
       return
     }
     
+    // Create optimistic appointment for immediate UI update
+    const startDate = new Date(appointmentData.scheduled_at)
+    const durationMinutes = appointmentData.duration_minutes || 60
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
+    
+    // Validate dates before creating optimistic appointment
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      console.error('Invalid date for optimistic appointment:', {
+        scheduled_at: appointmentData.scheduled_at,
+        startDate: startDate.toString(),
+        endDate: endDate.toString()
+      })
+      // Skip optimistic update if dates are invalid
+    } else {
+      const optimisticAppointment = {
+        id: `temp-${Date.now()}`, // Temporary ID
+        title: `${appointmentData.client_name} - ${appointmentData.service_name || 'Service'}`,
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+        resourceId: appointmentData.barber_id,
+        backgroundColor: resources.find(r => r.id === appointmentData.barber_id)?.eventColor || '#3b82f6',
+        borderColor: resources.find(r => r.id === appointmentData.barber_id)?.eventColor || '#3b82f6',
+        extendedProps: {
+          customer_name: appointmentData.client_name,
+          customer_phone: appointmentData.client_phone,
+          service_name: appointmentData.service_name || 'Service',
+          status: 'booking', // Special status for optimistic update
+          isOptimistic: true // Flag to identify optimistic appointments
+        }
+      }
+      
+      // Add optimistic appointment immediately to calendar
+      if (!realtimeConnected) {
+        setEvents(prev => [...prev, optimisticAppointment])
+        info('Booking appointment...', {
+          title: 'Processing',
+          duration: 2000
+        })
+      }
+    }
+    
+    // Add optimistic appointment immediately to calendar
+    if (!realtimeConnected) {
+      setEvents(prev => [...prev, optimisticAppointment])
+      info('Booking appointment...', {
+        title: 'Processing',
+        duration: 2000
+      })
+    }
+
     try {
       const response = await fetch('/api/calendar/appointments', {
         method: 'POST',
@@ -542,31 +603,51 @@ export default function CalendarPage() {
       const result = await response.json()
       
       if (response.ok) {
-        success('Appointment booked successfully!', {
-          title: 'Success',
-          duration: 3000
-        })
+        // Store the appointment data for confirmation modal
+        setConfirmedAppointment(result.appointment || result)
         
-        // Add the new appointment to the calendar immediately if not using realtime
-        if (result.appointment && !realtimeConnected) {
-          setEvents(prev => [...prev, result.appointment])
+        // Close booking modal and show confirmation modal
+        setShowAppointmentModal(false)
+        setShowBookingConfirmation(true)
+        
+        // Replace optimistic appointment with real appointment data
+        if (!realtimeConnected) {
+          setEvents(prev => prev.map(event => 
+            event.id === optimisticAppointment.id 
+              ? {
+                  ...result.appointment,
+                  // Keep the visual properties from optimistic update
+                  backgroundColor: optimisticAppointment.backgroundColor,
+                  borderColor: optimisticAppointment.borderColor
+                }
+              : event
+          ))
         }
         
         // Update realtime status
         setLastRealtimeUpdate(new Date())
         
-        // Refresh appointments from database if not using realtime
+        // Refresh appointments from database if not using realtime (after a delay to avoid race conditions)
         if (!realtimeConnected) {
-          fetchRealAppointments()
+          setTimeout(() => fetchRealAppointments(), 1000)
         }
-        setShowAppointmentModal(false)
       } else {
+        // Remove optimistic appointment on failure
+        if (!realtimeConnected) {
+          setEvents(prev => prev.filter(event => event.id !== optimisticAppointment.id))
+        }
+        
         showError(result.error || 'Failed to book appointment', {
           title: 'Booking Failed',
           duration: 5000
         })
       }
     } catch (error) {
+      // Remove optimistic appointment on error
+      if (!realtimeConnected) {
+        setEvents(prev => prev.filter(event => event.id !== optimisticAppointment.id))
+      }
+      
       showError('Failed to book appointment: ' + error.message, {
         title: 'Error',
         duration: 5000
@@ -1144,6 +1225,31 @@ export default function CalendarPage() {
           onConfirm={handleRescheduleConfirm}
           appointmentDetails={pendingReschedule.appointment}
           newTimeSlot={pendingReschedule.newSlot}
+        />
+      )}
+
+      {/* Booking Confirmation Modal */}
+      {showBookingConfirmation && confirmedAppointment && (
+        <BookingConfirmationModal
+          isOpen={showBookingConfirmation}
+          onClose={() => {
+            setShowBookingConfirmation(false)
+            setConfirmedAppointment(null)
+            setSelectedSlot(null)
+            setSelectedEvent(null)
+          }}
+          appointmentData={confirmedAppointment}
+          barberName={
+            resources.find(r => 
+              r.id === confirmedAppointment.barber_id || 
+              r.id === confirmedAppointment.resource_id
+            )?.title || 'Unknown Barber'
+          }
+          serviceName={
+            services.find(s => 
+              s.id === confirmedAppointment.service_id
+            )?.name || confirmedAppointment.service_name || 'Service'
+          }
         />
       )}
       

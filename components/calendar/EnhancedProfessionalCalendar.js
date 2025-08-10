@@ -299,6 +299,12 @@ export default function EnhancedProfessionalCalendar({
         .fc-timegrid-now-indicator-arrow {
           border-color: #ef4444 !important;
         }
+        /* Pulse animation for optimistic updates */
+        @keyframes pulse {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
+          100% { opacity: 1; transform: scale(1); }
+        }
       `}</style>
       <FullCalendar
         ref={calendarRef}
@@ -383,6 +389,8 @@ export default function EnhancedProfessionalCalendar({
           const { event } = arg
           const isRecurring = event.extendedProps?.isRecurring
           const isRecurringInstance = event.extendedProps?.isRecurringInstance
+          const isOptimistic = event.extendedProps?.isOptimistic
+          const status = event.extendedProps?.status
           
           // Parse the title to separate customer and service
           const title = event.title || ''
@@ -392,12 +400,14 @@ export default function EnhancedProfessionalCalendar({
           
           return {
             html: `
-              <div class="fc-event-main-frame" style="height: 100%; cursor: pointer;">
+              <div class="fc-event-main-frame" style="height: 100%; cursor: pointer; ${isOptimistic ? 'opacity: 0.7; position: relative;' : ''}">
+                ${isOptimistic ? '<div style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; animation: pulse 1.5s infinite;"></div>' : ''}
                 <div class="fc-event-title-container">
                   <div class="fc-event-title fc-sticky" style="font-weight: 600; font-size: 12px;">
-                    ${isRecurring || isRecurringInstance ? '🔄 ' : ''}${customer}
+                    ${isRecurring || isRecurringInstance ? '🔄 ' : ''}${isOptimistic ? '⏳ ' : ''}${customer}
                   </div>
                   ${service ? `<div style="font-size: 11px; opacity: 0.9;">${service}</div>` : ''}
+                  ${isOptimistic ? '<div style="font-size: 10px; opacity: 0.7; font-style: italic;">Booking...</div>' : ''}
                 </div>
               </div>
             `

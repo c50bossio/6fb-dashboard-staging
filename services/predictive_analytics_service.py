@@ -1557,6 +1557,283 @@ class PredictiveAnalyticsService:
         conn.close()
         return history
 
+    async def generate_predictive_insights(self, barbershop_id: str) -> Dict[str, Any]:
+        """
+        Generate comprehensive predictive insights for a specific barbershop
+        This is the main method called by the test suite and API endpoints
+        """
+        
+        try:
+            logger.info(f"🔮 Generating predictive insights for barbershop {barbershop_id}")
+            
+            # Generate comprehensive AI-powered forecast
+            ai_forecast = await self.generate_ai_powered_forecast(barbershop_id, "comprehensive")
+            
+            # Get existing predictive dashboard data
+            dashboard_data = await self.get_predictive_dashboard_data(barbershop_id)
+            
+            # Analyze historical patterns for insights
+            historical_data = self._get_historical_booking_data(barbershop_id)
+            business_insights = self.generate_business_insights(barbershop_id, historical_data)
+            
+            # Generate strategic pricing recommendations if pricing data exists
+            current_pricing = self._get_current_pricing(barbershop_id)
+            pricing_recommendations = []
+            if current_pricing:
+                pricing_recommendations = self.generate_strategic_pricing_recommendations(barbershop_id, current_pricing)
+            
+            # Compile comprehensive insights
+            insights_result = {
+                'barbershop_id': barbershop_id,
+                'status': 'success',
+                'generated_at': datetime.now().isoformat(),
+                'overall_confidence': ai_forecast.get('confidence_level', 0.75),
+                'predictions': {
+                    'revenue_forecast': ai_forecast.get('predictions', {}).get('revenue', {}),
+                    'demand_forecast': ai_forecast.get('predictions', {}).get('demand', {}),
+                    'customer_behavior': ai_forecast.get('predictions', {}).get('customer_behavior', {}),
+                },
+                'business_insights': [asdict(insight) for insight in business_insights],
+                'strategic_recommendations': ai_forecast.get('recommendations', []),
+                'pricing_opportunities': [asdict(rec) for rec in pricing_recommendations],
+                'ai_insights': ai_forecast.get('ai_insights', []),
+                'forecast_details': {
+                    'forecast_id': ai_forecast.get('forecast_id'),
+                    'forecast_type': ai_forecast.get('forecast_type', 'comprehensive'),
+                    'confidence_level': ai_forecast.get('confidence_level', 0.75),
+                    'method': 'ai_powered_predictive_analytics'
+                },
+                'dashboard_metrics': {
+                    'demand_forecasts_count': len(dashboard_data.get('demand_forecasts', [])),
+                    'seasonal_patterns_count': len(dashboard_data.get('seasonal_patterns', [])),
+                    'pricing_recommendations_count': len(pricing_recommendations),
+                    'ml_models_available': dashboard_data.get('ml_models_status', {}).get('available', False),
+                    'ai_integration_active': dashboard_data.get('ml_models_status', {}).get('ai_integration', False)
+                },
+                'implementation_roadmap': self._create_insights_implementation_roadmap(
+                    business_insights, pricing_recommendations, ai_forecast.get('recommendations', [])
+                ),
+                'risk_assessment': self._assess_insights_risk(ai_forecast, business_insights),
+                'next_review_date': (datetime.now() + timedelta(days=30)).isoformat(),
+                'metadata': {
+                    'total_insights_generated': len(business_insights),
+                    'high_confidence_insights': len([i for i in business_insights if i.confidence_score > 0.8]),
+                    'actionable_recommendations': len(ai_forecast.get('recommendations', [])),
+                    'pricing_opportunities_identified': len(pricing_recommendations),
+                    'forecast_horizon': '90_days'
+                }
+            }
+            
+            logger.info(f"✅ Generated comprehensive predictive insights for {barbershop_id}")
+            return insights_result
+            
+        except Exception as e:
+            logger.error(f"❌ Error generating predictive insights for {barbershop_id}: {e}")
+            return {
+                'barbershop_id': barbershop_id,
+                'status': 'error',
+                'error': str(e),
+                'generated_at': datetime.now().isoformat(),
+                'fallback_insights': self._generate_fallback_insights()
+            }
+    
+    def _get_historical_booking_data(self, barbershop_id: str) -> List[Dict]:
+        """Get historical booking data for analysis"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Check if bookings table exists
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='bookings'")
+            if not cursor.fetchone():
+                conn.close()
+                return self._generate_sample_historical_data(barbershop_id)
+            
+            # Get recent booking history
+            cutoff_date = (datetime.now() - timedelta(days=90)).isoformat()
+            cursor.execute('''
+                SELECT customer_id, service_name, scheduled_at, price, status 
+                FROM bookings 
+                WHERE barbershop_id = ? AND scheduled_at >= ?
+                ORDER BY scheduled_at
+            ''', (barbershop_id, cutoff_date))
+            
+            bookings = cursor.fetchall()
+            conn.close()
+            
+            return [
+                {
+                    'customer_id': row[0],
+                    'service_name': row[1],
+                    'scheduled_at': row[2],
+                    'price': row[3],
+                    'status': row[4]
+                }
+                for row in bookings
+            ]
+            
+        except Exception as e:
+            logger.warning(f"Error getting historical data, using sample data: {e}")
+            return self._generate_sample_historical_data(barbershop_id)
+    
+    def _get_current_pricing(self, barbershop_id: str) -> Dict[str, float]:
+        """Get current pricing for services"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Try to get pricing from recent bookings
+            cursor.execute('''
+                SELECT service_name, AVG(price) as avg_price
+                FROM bookings 
+                WHERE barbershop_id = ? AND price IS NOT NULL AND price > 0
+                GROUP BY service_name
+            ''', (barbershop_id,))
+            
+            pricing = {}
+            for row in cursor.fetchall():
+                if row[0] and row[1]:
+                    pricing[row[0]] = float(row[1])
+            
+            conn.close()
+            
+            # If no pricing data, use defaults
+            if not pricing:
+                pricing = {
+                    'Classic Haircut': 35.0,
+                    'Beard Trim': 20.0,
+                    'Hair Wash & Style': 25.0,
+                    'Deluxe Service': 55.0
+                }
+            
+            return pricing
+            
+        except Exception as e:
+            logger.warning(f"Error getting pricing data: {e}")
+            return {
+                'Classic Haircut': 35.0,
+                'Beard Trim': 20.0,
+                'Hair Wash & Style': 25.0
+            }
+    
+    def _generate_sample_historical_data(self, barbershop_id: str) -> List[Dict]:
+        """Generate sample historical data for testing"""
+        sample_data = []
+        services = ['Classic Haircut', 'Beard Trim', 'Hair Wash & Style', 'Deluxe Service']
+        
+        for i in range(60):  # 60 days of sample data
+            for j in range(2 + (i % 3)):  # Variable bookings per day
+                sample_data.append({
+                    'customer_id': f'customer_{(i*3 + j) % 50}',
+                    'service_name': services[(i + j) % len(services)],
+                    'scheduled_at': (datetime.now() - timedelta(days=i, hours=9 + j*2)).isoformat(),
+                    'price': [35.0, 20.0, 25.0, 55.0][(i + j) % len(services)],
+                    'status': 'completed'
+                })
+        
+        return sample_data
+    
+    def _create_insights_implementation_roadmap(self, business_insights: List, pricing_recs: List, ai_recs: List) -> List[Dict]:
+        """Create implementation roadmap for insights"""
+        roadmap = []
+        
+        # Phase 1: Immediate opportunities (1-2 weeks)
+        immediate_actions = []
+        for insight in business_insights[:3]:  # Top 3 insights
+            if insight.urgency_level >= 7:
+                immediate_actions.append({
+                    'type': 'business_insight',
+                    'title': insight.title,
+                    'action': insight.actionable_recommendations[0] if insight.actionable_recommendations else 'Review insight',
+                    'timeline': '1-2 weeks'
+                })
+        
+        if immediate_actions:
+            roadmap.append({
+                'phase': 1,
+                'title': 'Immediate Opportunities',
+                'timeframe': '1-2 weeks',
+                'actions': immediate_actions
+            })
+        
+        # Phase 2: Strategic improvements (1-3 months)
+        strategic_actions = []
+        for rec in pricing_recs[:2]:  # Top 2 pricing recommendations
+            strategic_actions.append({
+                'type': 'pricing_optimization',
+                'title': f"Price optimization for {rec.service_name}",
+                'action': f"Implement {rec.price_increase_percentage:.1f}% increase",
+                'timeline': rec.implementation_timeline
+            })
+        
+        for ai_rec in ai_recs[:2]:  # Top 2 AI recommendations
+            strategic_actions.append({
+                'type': 'ai_recommendation',
+                'title': ai_rec[:50] + "...",
+                'action': ai_rec,
+                'timeline': '2-4 weeks'
+            })
+        
+        if strategic_actions:
+            roadmap.append({
+                'phase': 2,
+                'title': 'Strategic Improvements',
+                'timeframe': '1-3 months',
+                'actions': strategic_actions
+            })
+        
+        return roadmap
+    
+    def _assess_insights_risk(self, ai_forecast: Dict, business_insights: List) -> Dict[str, Any]:
+        """Assess risk levels for implementing insights"""
+        confidence = ai_forecast.get('confidence_level', 0.75)
+        high_confidence_insights = len([i for i in business_insights if i.confidence_score > 0.8])
+        total_insights = len(business_insights)
+        
+        risk_level = 'low'
+        if confidence < 0.6 or high_confidence_insights < (total_insights * 0.5):
+            risk_level = 'medium'
+        elif confidence < 0.4:
+            risk_level = 'high'
+        
+        return {
+            'overall_risk': risk_level,
+            'confidence_level': confidence,
+            'high_confidence_ratio': high_confidence_insights / max(total_insights, 1),
+            'risk_factors': [
+                'Market volatility' if confidence < 0.7 else 'Market conditions stable',
+                'Limited historical data' if total_insights < 5 else 'Sufficient data available',
+                'Implementation complexity' if len(ai_forecast.get('recommendations', [])) > 5 else 'Manageable implementation'
+            ],
+            'mitigation_strategies': [
+                'Monitor key metrics weekly',
+                'Implement changes gradually',
+                'Track customer feedback closely',
+                'Review and adjust monthly'
+            ]
+        }
+    
+    def _generate_fallback_insights(self) -> Dict[str, Any]:
+        """Generate fallback insights when main analysis fails"""
+        return {
+            'predictions': {
+                'revenue_forecast': {
+                    'method': 'statistical',
+                    'predictions': {
+                        '1_week': {'value': 1200, 'confidence': 0.65, 'trend': 'stable'},
+                        '1_month': {'value': 5000, 'confidence': 0.60, 'trend': 'stable'}
+                    }
+                }
+            },
+            'strategic_recommendations': [
+                'Focus on customer retention strategies',
+                'Optimize appointment scheduling',
+                'Consider service package offerings'
+            ],
+            'business_insights': [],
+            'overall_confidence': 0.65
+        }
+
 # Global instance for Phase 5 enhanced analytics
 predictive_analytics_service = PredictiveAnalyticsService()
 

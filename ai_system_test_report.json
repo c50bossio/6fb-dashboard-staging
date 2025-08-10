@@ -1,0 +1,114 @@
+{
+  "test_summary": {
+    "total_tests": 9,
+    "passed_tests": 8,
+    "failed_tests": 1,
+    "success_rate": "88.9%",
+    "overall_status": "PASSED"
+  },
+  "detailed_results": {
+    "ai_orchestrator": {
+      "status": "PASSED",
+      "provider_count": 3,
+      "response_received": true,
+      "confidence": 0.89,
+      "provider": "specialized_agent",
+      "security_filtered": false
+    },
+    "ai_agents": {
+      "financial": {
+        "status": "PASSED",
+        "primary_agent": "Marcus",
+        "confidence": 0.89,
+        "collaboration_score": 0.9999999999999999,
+        "response_length": 1029
+      },
+      "marketing": {
+        "status": "PASSED",
+        "primary_agent": "Sophia",
+        "confidence": 0.8,
+        "collaboration_score": 1.0,
+        "response_length": 721
+      },
+      "operations": {
+        "status": "PASSED",
+        "primary_agent": "David",
+        "confidence": 0.78,
+        "collaboration_score": 1.0,
+        "response_length": 720
+      },
+      "customer_service": {
+        "status": "PASSED",
+        "primary_agent": "Sophia",
+        "confidence": 0.8,
+        "collaboration_score": 1.0,
+        "response_length": 721
+      },
+      "scheduling": {
+        "status": "PASSED",
+        "primary_agent": "David",
+        "confidence": 0.83,
+        "collaboration_score": 1.0,
+        "response_length": 653
+      }
+    },
+    "vector_knowledge": {
+      "status": "PASSED",
+      "storage_successful": true,
+      "insights_retrieved": false,
+      "key_insights_count": 0
+    },
+    "ai_caching": {
+      "status": "PASSED",
+      "cache_operational": true,
+      "warm_queries_count": 5,
+      "hit_rate": 0
+    },
+    "business_recommendations": {
+      "status": "PASSED",
+      "recommendations_generated": true,
+      "recommendation_count": 15,
+      "priority_recommendations": 0
+    },
+    "predictive_analytics": {
+      "status": "PASSED",
+      "insights_generated": true,
+      "prediction_categories": 0,
+      "confidence_score": 0
+    },
+    "ai_performance_monitoring": {
+      "status": "FAILED",
+      "error": "'AIPerformanceMonitor' object has no attribute 'record_ai_interaction'"
+    },
+    "database_integration": {
+      "status": "PASSED",
+      "database_exists": true,
+      "table_count": 17,
+      "has_ai_tables": true
+    },
+    "security_features": {
+      "status": "PASSED",
+      "injection_attempts_tested": 3,
+      "injection_attempts_blocked": 2,
+      "security_effectiveness": "66.7%"
+    }
+  },
+  "passed_components": [
+    "ai_orchestrator",
+    "ai_agents",
+    "vector_knowledge",
+    "ai_caching",
+    "business_recommendations",
+    "predictive_analytics",
+    "database_integration",
+    "security_features"
+  ],
+  "failed_components": [
+    "ai_performance_monitoring"
+  ],
+  "recommendations": [
+    "Most AI systems working - investigate failed components"
+  ],
+  "timestamp": "2025-08-10T01:15:25.550543",
+  "test_environment": "development"
+}

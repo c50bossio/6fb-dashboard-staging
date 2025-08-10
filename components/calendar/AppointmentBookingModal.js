@@ -69,6 +69,9 @@ export default function AppointmentBookingModal({
   const [conflicts, setConflicts] = useState(null)
   const [conflictResolution, setConflictResolution] = useState('skip')
   const [showConversionConfirmation, setShowConversionConfirmation] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [isValidating, setIsValidating] = useState(false)
+  const [availabilityDebounceTimer, setAvailabilityDebounceTimer] = useState(null)
   
   // Delete confirmation dialog state
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
@@ -215,10 +218,102 @@ export default function AppointmentBookingModal({
     }
   }, [formData.barber_id, formData.scheduled_at, formData.duration_minutes, isEditing, editingAppointment?.id])
 
+  // Debounced availability check
+  const debouncedAvailabilityCheck = useCallback(() => {
+    // Clear existing timer
+    if (availabilityDebounceTimer) {
+      clearTimeout(availabilityDebounceTimer)
+    }
+    
+    // Set new timer
+    const timerId = setTimeout(() => {
+      checkAvailability()
+    }, 800) // Wait 800ms after user stops typing/changing
+    
+    setAvailabilityDebounceTimer(timerId)
+  }, [checkAvailability, availabilityDebounceTimer])
+
   useEffect(() => {
-    const timeoutId = setTimeout(checkAvailability, 500)
-    return () => clearTimeout(timeoutId)
-  }, [checkAvailability])
+    debouncedAvailabilityCheck()
+    
+    // Cleanup timer on unmount
+    return () => {
+      if (availabilityDebounceTimer) {
+        clearTimeout(availabilityDebounceTimer)
+      }
+    }
+  }, [debouncedAvailabilityCheck])
+
+  // Validation function
+  const validateField = (name, value) => {
+    const errors = {}
+    
+    switch (name) {
+      case 'client_name':
+        if (!value.trim()) {
+          errors.client_name = 'Customer name is required'
+        } else if (value.trim().length < 2) {
+          errors.client_name = 'Name must be at least 2 characters'
+        }
+        break
+      case 'client_phone':
+        if (!value.trim()) {
+          errors.client_phone = 'Phone number is required'
+        } else if (!/^[\+]?[\d\s\-\(\)]{10,}$/.test(value.trim())) {
+          errors.client_phone = 'Please enter a valid phone number'
+        }
+        break
+      case 'client_email':
+        if (value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+          errors.client_email = 'Please enter a valid email address'
+        }
+        break
+      case 'scheduled_at':
+        if (!value) {
+          errors.scheduled_at = 'Appointment time is required'
+        } else {
+          const appointmentDate = new Date(value)
+          const now = new Date()
+          if (appointmentDate < now) {
+            errors.scheduled_at = 'Appointment must be in the future'
+          }
+        }
+        break
+      case 'barber_id':
+        if (!value) {
+          errors.barber_id = 'Please select a barber'
+        }
+        break
+      case 'service_id':
+        if (!value) {
+          errors.service_id = 'Please select a service'
+        }
+        break
+    }
+    
+    return errors
+  }
+
+  // Validate all required fields
+  const validateForm = () => {
+    const requiredFields = ['client_name', 'client_phone', 'scheduled_at', 'barber_id', 'service_id']
+    let allErrors = {}
+    
+    requiredFields.forEach(field => {
+      const fieldValue = formData[field]
+      const fieldErrors = validateField(field, fieldValue)
+      allErrors = { ...allErrors, ...fieldErrors }
+    })
+    
+    // Validate email if provided
+    if (formData.client_email) {
+      const emailErrors = validateField('client_email', formData.client_email)
+      allErrors = { ...allErrors, ...emailErrors }
+    }
+    
+    setFieldErrors(allErrors)
+    return Object.keys(allErrors).length === 0
+  }
 
   const handleInputChange = async (e) => {
     const { name, value, type, checked } = e.target
@@ -262,6 +357,17 @@ export default function AppointmentBookingModal({
         ...prev,
         [name]: type === 'checkbox' ? checked : value
       }))
+      
+      // Real-time validation for individual fields
+      if (['client_name', 'client_phone', 'client_email', 'scheduled_at', 'barber_id', 'service_id'].includes(name)) {
+        const fieldErrors = validateField(name, type === 'checkbox' ? checked : value)
+        setFieldErrors(prev => ({
+          ...prev,
+          ...fieldErrors,
+          // Clear error if field is now valid
+          ...(Object.keys(fieldErrors).length === 0 ? { [name]: undefined } : {})
+        }))
+      }
     }
     setError('')
   }
@@ -270,6 +376,15 @@ export default function AppointmentBookingModal({
     e.preventDefault()
     setLoading(true)
     setError('')
+    setIsValidating(true)
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      setIsValidating(false)
+      setLoading(false)
+      setError('Please fix the errors above before submitting.')
+      return
+    }
     
     try {
       // Validate required fields
@@ -346,7 +461,22 @@ export default function AppointmentBookingModal({
         }
       } else {
         // Create new appointment
-        onBookingComplete(appointmentData)
+        const response = await fetch('/api/calendar/appointments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(appointmentData)
+        })
+        
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to create appointment')
+        }
+        
+        const data = await response.json()
+        console.log('New appointment created:', data)
+        onBookingComplete(data.appointment || data)
       }
       
     } catch (error) {
@@ -595,7 +725,12 @@ export default function AppointmentBookingModal({
                           name="barber_id"
                           value={formData.barber_id}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          className={`mt-1 block w-full rounded-md shadow-sm ${
+                            fieldErrors.barber_id 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                          } ${loading ? 'bg-gray-50' : ''}`}
+                          disabled={loading}
                           required
                         >
                           <option value="">Select a barber</option>
@@ -605,6 +740,9 @@ export default function AppointmentBookingModal({
                             </option>
                           ))}
                         </select>
+                        {fieldErrors.barber_id && (
+                          <p className="mt-1 text-sm text-red-600">{fieldErrors.barber_id}</p>
+                        )}
                       </div>
 
                       {/* Service Selection */}
@@ -617,7 +755,12 @@ export default function AppointmentBookingModal({
                           name="service_id"
                           value={formData.service_id}
                           onChange={handleInputChange}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          className={`mt-1 block w-full rounded-md shadow-sm ${
+                            fieldErrors.service_id 
+                              ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                          } ${loading ? 'bg-gray-50' : ''}`}
+                          disabled={loading}
                           required
                         >
                           <option value="">Select a service</option>
@@ -627,6 +770,9 @@ export default function AppointmentBookingModal({
                             </option>
                           ))}
                         </select>
+                        {fieldErrors.service_id && (
+                          <p className="mt-1 text-sm text-red-600">{fieldErrors.service_id}</p>
+                        )}
                         {selectedService && (
                           <p className="mt-1 text-sm text-gray-500">
                             {selectedService.description}
@@ -651,9 +797,17 @@ export default function AppointmentBookingModal({
                             name="scheduled_at"
                             value={formData.scheduled_at}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            className={`mt-1 block w-full rounded-md shadow-sm ${
+                              fieldErrors.scheduled_at 
+                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                            } ${loading ? 'bg-gray-50' : ''}`}
+                            disabled={loading}
                             required
                           />
+                          {fieldErrors.scheduled_at && (
+                            <p className="mt-1 text-sm text-red-600">{fieldErrors.scheduled_at}</p>
+                          )}
                         </div>
                         
                         <div>
@@ -683,7 +837,9 @@ export default function AppointmentBookingModal({
                           {checkingAvailability ? (
                             <div className="flex items-center justify-center py-4">
                               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                              <span className="ml-2 text-sm text-gray-600">Checking availability...</span>
+                              <span className="ml-2 text-sm text-gray-600">
+                                {availabilityDebounceTimer ? 'Updating availability...' : 'Checking availability...'}
+                              </span>
                             </div>
                           ) : (
                             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-32 overflow-y-auto">
@@ -725,9 +881,17 @@ export default function AppointmentBookingModal({
                               name="client_name"
                               value={formData.client_name}
                               onChange={handleInputChange}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                              className={`mt-1 block w-full rounded-md shadow-sm ${
+                                fieldErrors.client_name 
+                                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                              } ${loading ? 'bg-gray-50' : ''}`}
+                              disabled={loading}
                               required
                             />
+                            {fieldErrors.client_name && (
+                              <p className="mt-1 text-sm text-red-600">{fieldErrors.client_name}</p>
+                            )}
                           </div>
                           
                           <div>
@@ -740,8 +904,16 @@ export default function AppointmentBookingModal({
                               name="client_phone"
                               value={formData.client_phone}
                               onChange={handleInputChange}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                              className={`mt-1 block w-full rounded-md shadow-sm ${
+                                fieldErrors.client_phone 
+                                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                              } ${loading ? 'bg-gray-50' : ''}`}
+                              disabled={loading}
                             />
+                            {fieldErrors.client_phone && (
+                              <p className="mt-1 text-sm text-red-600">{fieldErrors.client_phone}</p>
+                            )}
                           </div>
                         </div>
                         
@@ -755,8 +927,16 @@ export default function AppointmentBookingModal({
                             name="client_email"
                             value={formData.client_email}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            className={`mt-1 block w-full rounded-md shadow-sm ${
+                              fieldErrors.client_email 
+                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                            } ${loading ? 'bg-gray-50' : ''}`}
+                            disabled={loading}
                           />
+                          {fieldErrors.client_email && (
+                            <p className="mt-1 text-sm text-red-600">{fieldErrors.client_email}</p>
+                          )}
                         </div>
                         
                         <div>
