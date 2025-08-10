@@ -36,15 +36,16 @@ const navigation = [
       { name: 'Executive Overview', mode: 'executive', icon: ChartPieIcon },
       { name: 'AI Insights', mode: 'ai_insights', icon: SparklesIcon },
       { name: 'Analytics', mode: 'analytics', icon: ChartBarIcon },
+      { name: 'Predictive', mode: 'predictive', icon: PresentationChartLineIcon },
       { name: 'Operations', mode: 'operations', icon: Cog6ToothIcon }
     ]
   },
   { 
-    name: 'Predictive Analytics', 
-    href: '/predictive-analytics', 
-    icon: PresentationChartLineIcon,
-    description: 'AI-powered revenue forecasting, demand prediction & pricing optimization',
-    badge: 'Forecasting'
+    name: 'AI Chat', 
+    href: '/dashboard/ai-command-center', 
+    icon: ChatBubbleLeftRightIcon,
+    description: 'Interactive AI assistant with conversation history',
+    badge: 'Chat'
   }
 ]
 

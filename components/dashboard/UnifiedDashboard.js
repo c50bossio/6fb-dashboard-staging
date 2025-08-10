@@ -8,27 +8,31 @@ import {
   ClipboardDocumentListIcon,
   SparklesIcon,
   ArrowPathIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  PresentationChartLineIcon
 } from '@heroicons/react/24/outline'
 import { 
   ChartBarIcon as ChartBarSolid,
   CpuChipIcon as CpuChipSolid,
   ClipboardDocumentListIcon as ClipboardSolid,
-  SparklesIcon as SparklesSolid
+  SparklesIcon as SparklesSolid,
+  PresentationChartLineIcon as PresentationChartSolid
 } from '@heroicons/react/24/solid'
 
 // Import existing components we'll integrate
-import SmartBusinessMonitor from '../SmartBusinessMonitor'
 import AICoachPanel from './AICoachPanel'
 import AnalyticsPanel from './AnalyticsPanel'
+import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
 import ActionCenter from './ActionCenter'
-import ExecutiveSummary from './ExecutiveSummary'
+import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
+import SmartAlertsPanel from './SmartAlertsPanel'
 
 // Dashboard modes for different user needs
 const DASHBOARD_MODES = {
   EXECUTIVE: 'executive',
   AI_INSIGHTS: 'ai_insights', 
   ANALYTICS: 'analytics',
+  PREDICTIVE: 'predictive',
   OPERATIONS: 'operations'
 }
 
@@ -54,6 +58,13 @@ const modeConfigs = {
     solidIcon: ChartBarSolid,
     color: 'blue',
     description: 'Detailed performance metrics'
+  },
+  [DASHBOARD_MODES.PREDICTIVE]: {
+    label: 'Predictive',
+    icon: PresentationChartLineIcon,
+    solidIcon: PresentationChartSolid,
+    color: 'purple',
+    description: 'AI-powered forecasting & predictions'
   },
   [DASHBOARD_MODES.OPERATIONS]: {
     label: 'Operations',
@@ -225,7 +236,8 @@ export default function UnifiedDashboard({ user }) {
 
     switch (currentMode) {
       case DASHBOARD_MODES.EXECUTIVE:
-        return <ExecutiveSummary data={dashboardData} />
+        // Executive Summary is now rendered directly in the main component above
+        return null
         
       case DASHBOARD_MODES.AI_INSIGHTS:
         return (
@@ -261,6 +273,9 @@ export default function UnifiedDashboard({ user }) {
       case DASHBOARD_MODES.ANALYTICS:
         return <AnalyticsPanel data={dashboardData} />
         
+      case DASHBOARD_MODES.PREDICTIVE:
+        return <PredictiveAnalyticsPanel data={dashboardData} />
+        
       case DASHBOARD_MODES.OPERATIONS:
         return <ActionCenter data={dashboardData} />
         
@@ -280,13 +295,16 @@ export default function UnifiedDashboard({ user }) {
         <ModeSelector />
       </div>
 
-      {/* Smart Business Monitor - Only for Executive mode */}
-      {currentMode === DASHBOARD_MODES.EXECUTIVE && (
-        <SmartBusinessMonitor barbershop_id={user?.barbershop_id || 'demo'} />
+      {/* Unified Executive Summary - Only for Executive mode - Consolidated view */}
+      {currentMode === DASHBOARD_MODES.EXECUTIVE && dashboardData && (
+        <>
+          <UnifiedExecutiveSummary data={dashboardData} />
+          <SmartAlertsPanel barbershop_id={user?.barbershop_id || 'demo'} />
+        </>
       )}
 
-      {/* Mode-specific content */}
-      {renderModeContent()}
+      {/* Mode-specific content - Render other modes */}
+      {currentMode !== DASHBOARD_MODES.EXECUTIVE && renderModeContent()}
     </div>
   )
 }
@@ -337,6 +355,85 @@ const generateMockPredictions = () => ({
   busy_periods: ['Monday 10-12', 'Friday 2-5', 'Saturday 9-1']
 })
 
+const generateMockPredictiveData = () => ({
+  id: `demo_forecast_${Date.now()}`,
+  type: 'comprehensive',
+  timeHorizon: 'weekly',
+  generated_at: new Date().toISOString(),
+  overallConfidence: 0.84,
+  revenueForecast: {
+    currentRevenue: 1350,
+    predictions: {
+      '1_day': { value: 1280, confidence: 0.91, trend: 'stable' },
+      '1_week': { value: 8950, confidence: 0.86, trend: 'increasing' },
+      '1_month': { value: 39200, confidence: 0.79, trend: 'increasing' }
+    },
+    factors: [
+      'Holiday season demand increase (+18%)',
+      'Customer retention improvement (+12%)',
+      'Premium service uptake (+8%)'
+    ],
+    recommendations: [
+      'Extend holiday hours to capture peak demand',
+      'Promote premium services to loyal customers',
+      'Implement holiday booking incentives'
+    ]
+  },
+  customerBehavior: {
+    segments: [
+      {
+        name: 'VIP Customers',
+        size: 92,
+        retentionRate: 0.94,
+        predictedGrowth: 0.06,
+        avgMonthlyValue: 195,
+        recommendations: [
+          'Offer exclusive holiday packages',
+          'Provide VIP scheduling priority'
+        ]
+      }
+    ],
+    churnPrediction: {
+      highRisk: 15,
+      mediumRisk: 32,
+      lowRisk: 388,
+      interventionRecommendations: [
+        'Priority outreach to high-risk customers',
+        'Satisfaction surveys for medium-risk segment'
+      ]
+    }
+  },
+  demandForecast: {
+    peakHours: ['10:00-12:00', '14:00-16:00', '17:00-19:00'],
+    peakDays: ['Friday', 'Saturday', 'Sunday'],
+    servicePopularity: [
+      { service: 'Classic Haircut', demandTrend: 'stable', growth: 0.03 },
+      { service: 'Beard Styling', demandTrend: 'increasing', growth: 0.18 }
+    ],
+    capacityUtilization: {
+      current: 0.76,
+      predicted: 0.84,
+      peakUtilization: 0.97,
+      optimizationOpportunity: 0.13
+    }
+  },
+  pricingOptimization: {
+    services: [
+      {
+        name: 'Classic Haircut',
+        currentPrice: 30,
+        optimalPrice: 34,
+        revenueImpact: '+11%',
+        recommendation: 'Gradual price increase over 6 weeks'
+      }
+    ],
+    dynamicPricingOpportunities: [
+      'Weekend premium pricing (+18%)',
+      'Peak hour surge pricing (+15%)'
+    ]
+  }
+})
+
 const generateMockLocationPerformance = () => ([
   { name: 'Downtown Elite', efficiency: 92, rating: 4.8, revenue: 45000 },
   { name: 'Midtown Barber Co', efficiency: 87, rating: 4.6, revenue: 38000 },
@@ -366,6 +463,10 @@ const generateMockDataForMode = (mode) => {
         liveData: generateMockAnalytics(), 
         predictive: generateMockPredictions(), 
         performance: generateMockLocationPerformance() 
+      }
+    case DASHBOARD_MODES.PREDICTIVE:
+      return {
+        predictions: generateMockPredictiveData()
       }
     case DASHBOARD_MODES.OPERATIONS:
       return { 
