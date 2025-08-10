@@ -6,23 +6,25 @@ import {
   StopIcon,
   SparklesIcon,
   ArrowPathIcon,
-  Cog6ToothIcon 
+  Cog6ToothIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import { getStreamingClient } from '@/lib/ai-streaming-client'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import CacheStatsModal from './CacheStatsModal'
 
 /**
- * Optimized AI Chat Component with SSE Streaming
- * Features: Real-time streaming, typing indicators, error recovery
+ * Virtual Scrolling AI Chat Component
+ * Optimized for large message histories with efficient rendering
  */
-export default function OptimizedAIChat({
+export default function VirtualScrollChat({
   className = '',
   height = '600px',
   placeholder = 'Ask me anything about your business...',
   showAgentSelector = true,
   persistConversation = true,
-  enableVoice = false,
+  itemHeight = 80, // Estimated height per message
+  overscan = 5, // Number of items to render outside viewport
   onMessage = null,
 }) {
   const { user } = useAuth()
@@ -34,13 +36,57 @@ export default function OptimizedAIChat({
   const [sessionId, setSessionId] = useState(null)
   const [error, setError] = useState(null)
   const [showCacheStats, setShowCacheStats] = useState(false)
+  const [scrollPosition, setScrollPosition] = useState(0)
+  const [containerHeight, setContainerHeight] = useState(500)
+  const [isAtBottom, setIsAtBottom] = useState(true)
+  const [unreadCount, setUnreadCount] = useState(0)
   
-  const messagesEndRef = useRef(null)
+  const messagesContainerRef = useRef(null)
   const inputRef = useRef(null)
   const streamControllerRef = useRef(null)
   const streamingClient = useMemo(() => getStreamingClient(), [])
+  const resizeObserverRef = useRef(null)
 
-  // Initialize session
+  // Virtual scrolling calculations
+  const { visibleItems, totalHeight, scrollTop } = useMemo(() => {
+    const totalMessages = messages.length + (streamingMessage ? 1 : 0)
+    const containerPixelHeight = containerHeight
+    const startIndex = Math.max(0, Math.floor(scrollPosition / itemHeight) - overscan)
+    const endIndex = Math.min(
+      totalMessages,
+      Math.ceil((scrollPosition + containerPixelHeight) / itemHeight) + overscan
+    )
+    
+    const visibleMessages = []
+    
+    // Add regular messages
+    for (let i = startIndex; i < Math.min(endIndex, messages.length); i++) {
+      visibleMessages.push({
+        ...messages[i],
+        index: i,
+        top: i * itemHeight
+      })
+    }
+    
+    // Add streaming message if visible
+    if (streamingMessage && endIndex > messages.length) {
+      visibleMessages.push({
+        role: 'assistant',
+        content: streamingMessage,
+        isStreaming: true,
+        index: messages.length,
+        top: messages.length * itemHeight
+      })
+    }
+    
+    return {
+      visibleItems: visibleMessages,
+      totalHeight: totalMessages * itemHeight,
+      scrollTop: scrollPosition
+    }
+  }, [messages, streamingMessage, scrollPosition, containerHeight, itemHeight, overscan])
+
+  // Initialize session and container height observer
   useEffect(() => {
     const storedSessionId = localStorage.getItem('ai_chat_session')
     if (storedSessionId && persistConversation) {
@@ -53,16 +99,48 @@ export default function OptimizedAIChat({
         localStorage.setItem('ai_chat_session', newSessionId)
       }
     }
+
+    // Set up resize observer for container
+    if (messagesContainerRef.current && !resizeObserverRef.current) {
+      resizeObserverRef.current = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          setContainerHeight(entry.contentRect.height)
+        }
+      })
+      resizeObserverRef.current.observe(messagesContainerRef.current)
+    }
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect()
+      }
+    }
   }, [persistConversation])
 
-  // Auto-scroll to bottom
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [])
+  // Handle scroll events
+  const handleScroll = useCallback((e) => {
+    const container = e.target
+    const newScrollPosition = container.scrollTop
+    setScrollPosition(newScrollPosition)
+    
+    // Check if user is at bottom
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100
+    setIsAtBottom(isNearBottom)
+    
+    if (isNearBottom && unreadCount > 0) {
+      setUnreadCount(0)
+    }
+  }, [unreadCount])
 
+  // Auto-scroll to bottom for new messages
   useEffect(() => {
-    scrollToBottom()
-  }, [messages, streamingMessage, scrollToBottom])
+    if (isAtBottom && messagesContainerRef.current) {
+      const container = messagesContainerRef.current
+      container.scrollTop = container.scrollHeight
+    } else if (!isAtBottom) {
+      setUnreadCount(prev => prev + 1)
+    }
+  }, [messages, streamingMessage, isAtBottom])
 
   // Load conversation history
   const loadConversationHistory = async (sessionId) => {
@@ -92,7 +170,6 @@ export default function OptimizedAIChat({
     }
   }, [messages, sessionId, persistConversation])
 
-  // Save on message update
   useEffect(() => {
     saveConversation()
   }, [messages, saveConversation])
@@ -119,7 +196,6 @@ export default function OptimizedAIChat({
     const aiMessageId = Date.now() + 1
     
     try {
-      // Start streaming
       streamControllerRef.current = await streamingClient.streamChat(
         userMessage.content,
         {
@@ -127,8 +203,8 @@ export default function OptimizedAIChat({
           agentId: selectedAgent === 'auto' ? null : selectedAgent,
           context: {
             userId: user?.id,
-            shopName: 'Demo Barbershop', // Replace with actual shop data
-            previousMessages: messages.slice(-5) // Last 5 messages for context
+            shopName: 'Demo Barbershop',
+            previousMessages: messages.slice(-5)
           }
         },
         // On chunk callback
@@ -136,24 +212,22 @@ export default function OptimizedAIChat({
           setStreamingMessage(prev => prev + chunk)
         },
         // On complete callback
-        ({ response }) => {
+        ({ response, fromCache }) => {
           const aiMessage = {
             id: aiMessageId,
             role: 'assistant',
             content: response,
             agent: selectedAgent,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            fromCache
           }
           
           setMessages(prev => [...prev, aiMessage])
           setStreamingMessage('')
           setIsStreaming(false)
           
-          // Callback
           onMessage?.(aiMessage)
-          
-          // Track analytics
-          trackUsage('message_sent', { agent: selectedAgent })
+          trackUsage('message_sent', { agent: selectedAgent, fromCache })
         },
         // On error callback
         (error) => {
@@ -177,7 +251,6 @@ export default function OptimizedAIChat({
     if (streamControllerRef.current) {
       streamControllerRef.current.abort()
       
-      // Save partial message
       if (streamingMessage) {
         const aiMessage = {
           id: Date.now(),
@@ -214,6 +287,16 @@ export default function OptimizedAIChat({
     }
   }
 
+  // Scroll to bottom
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current
+      container.scrollTop = container.scrollHeight
+      setIsAtBottom(true)
+      setUnreadCount(0)
+    }
+  }
+
   // Agent options
   const agents = [
     { id: 'auto', name: 'Auto Select', icon: SparklesIcon },
@@ -223,7 +306,7 @@ export default function OptimizedAIChat({
   ]
 
   return (
-    <div className={`flex flex-col bg-white rounded-lg shadow-lg ${className}`} style={{ height }}>
+    <div className={`flex flex-col bg-white rounded-lg shadow-lg relative ${className}`} style={{ height }}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
@@ -233,7 +316,7 @@ export default function OptimizedAIChat({
           <div>
             <h3 className="text-lg font-semibold text-gray-900">AI Business Assistant</h3>
             <p className="text-sm text-gray-500">
-              {isStreaming ? 'Thinking...' : 'Ready to help'}
+              {isStreaming ? 'Thinking...' : `Ready to help • ${messages.length} messages`}
             </p>
           </div>
         </div>
@@ -264,38 +347,61 @@ export default function OptimizedAIChat({
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 && !streamingMessage && (
-          <div className="text-center text-gray-500 mt-8">
-            <SparklesIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium mb-2">Start a conversation</p>
-            <p className="text-sm">Ask about bookings, revenue, marketing, or operations</p>
-          </div>
-        )}
-        
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-        
-        {streamingMessage && (
-          <MessageBubble 
-            message={{
-              role: 'assistant',
-              content: streamingMessage,
-              isStreaming: true
-            }}
-          />
-        )}
+      {/* Virtual Scrolled Messages */}
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto"
+        onScroll={handleScroll}
+        style={{ height: 'calc(100% - 140px)' }}
+      >
+        <div style={{ height: totalHeight, position: 'relative' }}>
+          {visibleItems.length === 0 && !streamingMessage && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <SparklesIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg font-medium mb-2">Start a conversation</p>
+                <p className="text-sm">Ask about bookings, revenue, marketing, or operations</p>
+              </div>
+            </div>
+          )}
+          
+          {visibleItems.map((message, index) => (
+            <div
+              key={message.id || `streaming-${index}`}
+              style={{
+                position: 'absolute',
+                top: message.top,
+                left: 16,
+                right: 16,
+                minHeight: itemHeight
+              }}
+            >
+              <MessageBubble message={message} />
+            </div>
+          ))}
+        </div>
         
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="sticky bottom-0 bg-red-50 border border-red-200 text-red-700 px-4 py-3 mx-4 rounded-lg">
             {error}
           </div>
         )}
-        
-        <div ref={messagesEndRef} />
       </div>
+
+      {/* Scroll to bottom button */}
+      {!isAtBottom && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute right-4 bottom-20 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-10"
+        >
+          <ChevronDownIcon className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+      )}
 
       {/* Input */}
       <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200">
@@ -340,13 +446,13 @@ export default function OptimizedAIChat({
 }
 
 /**
- * Message bubble component
+ * Virtual message bubble component
  */
 function MessageBubble({ message }) {
   const isUser = message.role === 'user'
   
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
       <div 
         className={`
           max-w-[80%] rounded-lg px-4 py-2
@@ -370,6 +476,11 @@ function MessageBubble({ message }) {
               </div>
             )}
           </div>
+          {message.timestamp && (
+            <span className={`text-xs ${isUser ? 'text-blue-100' : 'text-gray-500'}`}>
+              {new Date(message.timestamp).toLocaleTimeString()}
+            </span>
+          )}
         </div>
       </div>
     </div>
