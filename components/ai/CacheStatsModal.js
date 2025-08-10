@@ -198,6 +198,24 @@ export default function CacheStatsModal({ isOpen, onClose }) {
                     </span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Fallback Rate</span>
+                    <span className="text-sm font-medium text-yellow-600">
+                      {streamStats?.fallbackRate || '0%'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Prefetch Hits</span>
+                    <span className="text-sm font-medium text-blue-600">
+                      {streamStats?.prefetchHits || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Prefetch Efficiency</span>
+                    <span className="text-sm font-medium text-blue-600">
+                      {streamStats?.prefetchEfficiency || '0%'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Valid Entries</span>
                     <span className="text-sm font-medium text-gray-900">
                       {stats?.validEntries || 0}
