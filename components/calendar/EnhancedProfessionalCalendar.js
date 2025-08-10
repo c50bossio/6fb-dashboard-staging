@@ -2,6 +2,7 @@
 
 import FullCalendar from '@fullcalendar/react'
 import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
+import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
@@ -9,7 +10,7 @@ import interactionPlugin from '@fullcalendar/interaction'
 import rrulePlugin from '@fullcalendar/rrule'
 // Import RRule class explicitly to ensure proper plugin initialization
 import { RRule } from 'rrule'
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
 
 export default function EnhancedProfessionalCalendar({
   resources: externalResources,
@@ -79,16 +80,40 @@ export default function EnhancedProfessionalCalendar({
   
   const events = externalEvents || generateWeekEvents()
   
+  // Process events based on current view
+  // For non-resource views, we need to ensure events display properly
+  const processedEvents = useMemo(() => {
+    if (!events || events.length === 0) return []
+    
+    // Check if current view is a resource view
+    const isResourceView = currentView?.includes('resource') || currentView?.includes('Resource') || currentView?.includes('timeline')
+    
+    // For non-resource views, remove resourceId so events display properly
+    // For resource views, keep resourceId for column assignment
+    return events.map(event => {
+      if (isResourceView) {
+        // Keep resourceId for resource views
+        return event
+      } else {
+        // Remove resourceId for non-resource views so events display
+        const { resourceId, ...eventWithoutResource } = event
+        return eventWithoutResource
+      }
+    })
+  }, [events, currentView])
+  
   // Debug: Log events to see what we're working with
   useEffect(() => {
     console.log('🔍 Calendar Debug:', {
       externalEventsCount: externalEvents?.length || 0,
       usingExternalEvents: !!externalEvents,
       finalEventsCount: events.length,
+      processedEventsCount: processedEvents.length,
       resourcesCount: resources.length,
-      resources: resources.map(r => r.id)
+      resources: resources.map(r => r.id),
+      currentView: currentView
     })
-  }, [externalEvents, events, resources])
+  }, [externalEvents, events, processedEvents, resources, currentView])
   
   // Enhanced slot selection handler with view awareness
   const handleDateSelect = useCallback((selectInfo) => {
@@ -299,6 +324,31 @@ export default function EnhancedProfessionalCalendar({
         .fc-timegrid-now-indicator-arrow {
           border-color: #ef4444 !important;
         }
+        /* Force resource area to be visible */
+        .fc-resource-area {
+          width: 15% !important;
+          min-width: 120px !important;
+          display: block !important;
+        }
+        .fc-resource-area-header {
+          background: #f3f4f6 !important;
+          font-weight: 600 !important;
+        }
+        .fc-resource-cell {
+          padding: 8px !important;
+          background: #ffffff !important;
+          border-right: 1px solid #e5e7eb !important;
+        }
+        .fc-resource-lane {
+          min-height: 50px !important;
+        }
+        /* Ensure resource time grid view shows columns */
+        .fc-resource-timegrid .fc-resource-col {
+          width: 25% !important; /* 4 barbers = 25% each */
+        }
+        .fc-resource-timegrid-divider {
+          display: block !important;
+        }
         /* Pulse animation for optimistic updates */
         @keyframes pulse {
           0% { opacity: 1; transform: scale(1); }
@@ -310,6 +360,7 @@ export default function EnhancedProfessionalCalendar({
         ref={calendarRef}
         plugins={[
           resourceTimeGridPlugin,
+          resourceTimelinePlugin,
           dayGridPlugin,
           timeGridPlugin,
           listPlugin,
@@ -325,7 +376,7 @@ export default function EnhancedProfessionalCalendar({
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,resourceTimeGridWeek,resourceTimeGridDay,listWeek'
+          right: 'dayGridMonth,timeGridWeek,resourceTimeGridWeek,resourceTimelineWeek,listWeek'
         }}
         views={{
           dayGridMonth: {
@@ -337,6 +388,11 @@ export default function EnhancedProfessionalCalendar({
           resourceTimeGridWeek: {
             buttonText: 'Week (Resources)'
           },
+          resourceTimelineWeek: {
+            buttonText: 'Timeline',
+            slotDuration: '01:00:00',
+            slotLabelInterval: '01:00:00'
+          },
           resourceTimeGridDay: {
             buttonText: 'Day'
           },
@@ -345,9 +401,17 @@ export default function EnhancedProfessionalCalendar({
           }
         }}
         
-        // Data
+        // Data - resources must be passed as initialResources for proper rendering
+        // For non-resource views, we'll let FullCalendar handle resource events properly
+        initialResources={resources}
         resources={resources}
-        events={events}
+        events={processedEvents}  // Use processed events
+        // This allows resource events to display in non-resource views
+        resourcesInitiallyExpanded={true}
+        resourceLabelDidMount={(info) => {
+          // Ensure resource labels are visible
+          console.log('Resource mounted:', info.resource.title)
+        }}
         
         // Time configuration
         slotMinTime="08:00:00"
@@ -383,36 +447,38 @@ export default function EnhancedProfessionalCalendar({
         eventClick={handleEventClick}
         eventDrop={handleEventDrop}
         viewDidMount={handleViewChange}
+        datesSet={handleViewChange}  // Also handle when navigating dates
         
-        // Event content rendering - Re-enable with proper click handling
-        eventContent={(arg) => {
-          const { event } = arg
-          const isRecurring = event.extendedProps?.isRecurring
-          const isRecurringInstance = event.extendedProps?.isRecurringInstance
-          const isOptimistic = event.extendedProps?.isOptimistic
-          const status = event.extendedProps?.status
-          
-          // Parse the title to separate customer and service
-          const title = event.title || ''
-          const titleParts = title.split(' - ')
-          const customer = titleParts[0] || ''
-          const service = titleParts[1] || ''
-          
-          return {
-            html: `
-              <div class="fc-event-main-frame" style="height: 100%; cursor: pointer; ${isOptimistic ? 'opacity: 0.7; position: relative;' : ''}">
-                ${isOptimistic ? '<div style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; animation: pulse 1.5s infinite;"></div>' : ''}
-                <div class="fc-event-title-container">
-                  <div class="fc-event-title fc-sticky" style="font-weight: 600; font-size: 12px;">
-                    ${isRecurring || isRecurringInstance ? '🔄 ' : ''}${isOptimistic ? '⏳ ' : ''}${customer}
-                  </div>
-                  ${service ? `<div style="font-size: 11px; opacity: 0.9;">${service}</div>` : ''}
-                  ${isOptimistic ? '<div style="font-size: 10px; opacity: 0.7; font-style: italic;">Booking...</div>' : ''}
-                </div>
-              </div>
-            `
-          }
-        }}
+        // Event content rendering - Using default rendering to preserve click handling
+        // Commented out custom HTML rendering as it breaks React event handling
+        // eventContent={(arg) => {
+        //   const { event } = arg
+        //   const isRecurring = event.extendedProps?.isRecurring
+        //   const isRecurringInstance = event.extendedProps?.isRecurringInstance
+        //   const isOptimistic = event.extendedProps?.isOptimistic
+        //   const status = event.extendedProps?.status
+        //   
+        //   // Parse the title to separate customer and service
+        //   const title = event.title || ''
+        //   const titleParts = title.split(' - ')
+        //   const customer = titleParts[0] || ''
+        //   const service = titleParts[1] || ''
+        //   
+        //   return {
+        //     html: `
+        //       <div class="fc-event-main-frame" style="height: 100%; cursor: pointer; ${isOptimistic ? 'opacity: 0.7; position: relative;' : ''}">
+        //         ${isOptimistic ? '<div style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; animation: pulse 1.5s infinite;"></div>' : ''}
+        //         <div class="fc-event-title-container">
+        //           <div class="fc-event-title fc-sticky" style="font-weight: 600; font-size: 12px;">
+        //             ${isRecurring || isRecurringInstance ? '🔄 ' : ''}${isOptimistic ? '⏳ ' : ''}${customer}
+        //           </div>
+        //           ${service ? `<div style="font-size: 11px; opacity: 0.9;">${service}</div>` : ''}
+        //           ${isOptimistic ? '<div style="font-size: 10px; opacity: 0.7; font-style: italic;">Booking...</div>' : ''}
+        //         </div>
+        //       </div>
+        //     `
+        //   }
+        // }}
         // Old custom eventContent that was causing issues - kept commented
         // eventContent={(arg) => {
         //   const { event } = arg
@@ -455,10 +521,19 @@ export default function EnhancedProfessionalCalendar({
         //   )
         // }}
         
-        // Resources
+        // Resources - Enhanced configuration for proper rendering
         schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
         resourceAreaHeaderContent="Barbers"
         resourceAreaWidth="15%"
+        resourceAreaColumns={[
+          {
+            field: 'title',
+            headerContent: 'Barbers'
+          }
+        ]}
+        datesAboveResources={false}
+        refetchResourcesOnNavigate={true}
+        resourceOrder="title"
         
         // Mobile responsiveness
         dayHeaderFormat={{ weekday: 'short', month: 'numeric', day: 'numeric' }}

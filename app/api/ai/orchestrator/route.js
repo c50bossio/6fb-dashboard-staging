@@ -90,7 +90,7 @@ async function callPythonAIOrchestrator(message, sessionId, businessContext = {}
   
   try {
     // Enhanced orchestrator with RAG-powered agents and executable actions
-    const response = await fetch(`${fastAPIUrl}/api/v1/ai/agents/orchestrate`, {
+    const response = await fetch(`${fastAPIUrl}/api/v1/ai/enhanced-chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -233,14 +233,22 @@ Please try rephrasing your question, and I'll do my best to help!`,
 function routeAndGenerateFallback(message, businessContext) {
   const messageLower = message.toLowerCase()
   
-  // Financial fallback
+  // Financial fallback - Check if Stripe is configured
   if (['revenue', 'money', 'profit', 'pricing', 'cost'].some(keyword => messageLower.includes(keyword))) {
+    const stripeConfigured = process.env.STRIPE_SECRET_KEY && 
+                            process.env.STRIPE_SECRET_KEY.startsWith('sk_')
+    
+    const modeLabel = stripeConfigured ? 'Full Mode' : 'Limited Mode'
+    const agentName = stripeConfigured ? 'Marcus' : 'Marcus (Fallback Mode)'
+    
     return {
-      agent_name: 'Marcus (Fallback Mode)',
+      agent_name: agentName,
       agent_personality: 'financial_coach',
-      response: `💰 **Financial Analysis - Limited Mode**
+      response: `💰 **Financial Analysis - ${modeLabel}**
 
-I'm currently operating in fallback mode, but I can share some key financial insights:
+${stripeConfigured 
+  ? "I have access to your Stripe financial data and can provide comprehensive insights:" 
+  : "I'm currently operating in fallback mode, but I can share some key financial insights:"}
 
 **Revenue Optimization Strategy:**
 • **Daily Target**: Aim for consistent $500+ days ($15,000 monthly)
