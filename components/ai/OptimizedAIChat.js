@@ -136,13 +136,17 @@ export default function OptimizedAIChat({
           setStreamingMessage(prev => prev + chunk)
         },
         // On complete callback
-        ({ response }) => {
+        ({ response, fromCache, fromFallback, provider, suggestions }) => {
           const aiMessage = {
             id: aiMessageId,
             role: 'assistant',
             content: response,
             agent: selectedAgent,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            fromCache,
+            fromFallback,
+            provider,
+            suggestions
           }
           
           setMessages(prev => [...prev, aiMessage])
@@ -153,7 +157,12 @@ export default function OptimizedAIChat({
           onMessage?.(aiMessage)
           
           // Track analytics
-          trackUsage('message_sent', { agent: selectedAgent })
+          trackUsage('message_sent', { 
+            agent: selectedAgent, 
+            fromCache, 
+            fromFallback, 
+            provider 
+          })
         },
         // On error callback
         (error) => {
@@ -369,8 +378,29 @@ function MessageBubble({ message }) {
                 <span className="text-xs opacity-75">cached</span>
               </div>
             )}
+            {message.fromFallback && (
+              <div className="flex items-center space-x-1">
+                <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-xs opacity-75">fallback</span>
+              </div>
+            )}
           </div>
         </div>
+        
+        {/* Show suggestions for fallback responses */}
+        {message.fromFallback && message.suggestions && message.suggestions.length > 0 && (
+          <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+            <p className="text-xs font-medium text-yellow-800 mb-2">Suggestions while AI reconnects:</p>
+            <ul className="text-xs text-yellow-700 space-y-1">
+              {message.suggestions.slice(0, 3).map((suggestion, index) => (
+                <li key={index} className="flex items-start space-x-1">
+                  <span className="text-yellow-500">•</span>
+                  <span>{suggestion}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   )
