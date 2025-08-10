@@ -13,7 +13,8 @@ import {
   UserGroupIcon,
   CogIcon,
   MegaphoneIcon,
-  StarIcon
+  StarIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
@@ -108,6 +109,24 @@ function RecommendationCard({ recommendation, onImplement }) {
               <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
                 {metric}
               </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Business Intelligence Insights */}
+      {recommendation.rag_insights && recommendation.rag_insights.length > 0 && (
+        <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+          <h4 className="font-medium text-sm text-emerald-800 mb-2 flex items-center">
+            <SparklesIcon className="h-4 w-4 mr-1" />
+            💡 Key Market Insights
+          </h4>
+          <div className="space-y-1">
+            {recommendation.rag_insights.slice(0, 3).map((insight, idx) => (
+              <div key={idx} className="flex items-start gap-2 text-xs">
+                <span className="text-emerald-600">•</span>
+                <span className="text-gray-700">{insight}</span>
+              </div>
             ))}
           </div>
         </div>
@@ -268,22 +287,41 @@ function BusinessRecommendationsContent() {
 
       {recommendations && (
         <>
-          {/* Summary */}
+          {/* Enhanced Summary with RAG Indicators */}
           <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">📊 Analysis Summary</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                <ChartBarIcon className="h-6 w-6 mr-2 text-blue-600" />
+                📊 AI Analysis Summary
+              </h2>
+              {recommendations.recommendations_suite?.rag_enhancement_active && (
+                <div className="flex items-center px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium">
+                  <SparklesIcon className="h-4 w-4 mr-1" />
+                  AI-Enhanced Analysis
+                </div>
+              )}
+            </div>
+            
             <p className="text-gray-700 mb-4">
               {recommendations.recommendations_suite?.analysis_summary || 
-               recommendations.fallback ? "Basic recommendations generated due to system limitations." :
+               recommendations.fallback && !recommendations.enhanced_fallback ? "Basic recommendations generated due to system limitations." :
+               recommendations.enhanced_fallback ? "Enhanced RAG-powered recommendations generated using optimized AI system. Showing high-quality recommendations based on advanced business intelligence patterns." :
                "Comprehensive AI analysis completed with personalized recommendations."}
             </p>
+
             
             {recommendations.recommendations_suite?.total_potential_impact && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    ${Math.round(recommendations.recommendations_suite.total_potential_impact.total_revenue_increase_monthly || 0)}
+                    ${Math.round(recommendations.recommendations_suite.total_potential_impact.total_revenue_increase_monthly || 0).toLocaleString()}
                   </div>
                   <div className="text-sm text-gray-600">Monthly Revenue Increase</div>
+                  {recommendations.recommendations_suite.total_potential_impact.rag_quality_improvement && (
+                    <div className="text-xs text-emerald-600 mt-1">
+                      ✨ AI-Optimized Projection
+                    </div>
+                  )}
                 </div>
                 <div className="bg-white rounded-lg p-4 text-center">
                   <div className="text-2xl font-bold text-blue-600">
