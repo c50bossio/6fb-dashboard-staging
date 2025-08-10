@@ -6,6 +6,9 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
+import rrulePlugin from '@fullcalendar/rrule'
+// Import RRule class explicitly to ensure proper plugin initialization
+import { RRule } from 'rrule'
 import { useRef, useCallback, useEffect, useState } from 'react'
 
 export default function EnhancedProfessionalCalendar({
@@ -75,6 +78,17 @@ export default function EnhancedProfessionalCalendar({
   }
   
   const events = externalEvents || generateWeekEvents()
+  
+  // Debug: Log events to see what we're working with
+  useEffect(() => {
+    console.log('🔍 Calendar Debug:', {
+      externalEventsCount: externalEvents?.length || 0,
+      usingExternalEvents: !!externalEvents,
+      finalEventsCount: events.length,
+      resourcesCount: resources.length,
+      resources: resources.map(r => r.id)
+    })
+  }, [externalEvents, events, resources])
   
   // Enhanced slot selection handler with view awareness
   const handleDateSelect = useCallback((selectInfo) => {
@@ -232,10 +246,60 @@ export default function EnhancedProfessionalCalendar({
   
   useEffect(() => {
     console.log('📅 Enhanced Calendar loaded with', events.length, 'events')
+    if (events.length > 0) {
+      console.log('📅 Sample event:', events[0])
+      console.log('📅 Event start type:', typeof events[0].start)
+    }
+    
+    // Make FullCalendar API accessible for debugging
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi()
+      if (calendarApi) {
+        // Store API reference on the DOM element for debugging
+        const calendarEl = document.querySelector('.fc')
+        if (calendarEl) {
+          calendarEl._fcApi = calendarApi
+          console.log('📅 FullCalendar API initialized and attached to DOM')
+        }
+      }
+    }
   }, [events.length])
   
   return (
     <div className="enhanced-professional-calendar-wrapper">
+      <style jsx global>{`
+        .fc-event {
+          border-radius: 4px !important;
+          padding: 4px !important;
+          margin-bottom: 2px !important;
+          border: 1px solid rgba(0,0,0,0.1) !important;
+          cursor: pointer !important;
+        }
+        .fc-event-title {
+          font-weight: 600 !important;
+          font-size: 12px !important;
+          line-height: 1.3 !important;
+        }
+        .fc-event-time {
+          font-size: 11px !important;
+          font-weight: 500 !important;
+        }
+        .fc-timegrid-event {
+          min-height: 30px !important;
+        }
+        .fc-timegrid-event-harness {
+          margin-right: 2px !important;
+        }
+        /* Fix the now indicator line */
+        .fc-timegrid-now-indicator-line {
+          border-color: #ef4444 !important;
+          border-width: 2px !important;
+          z-index: 10 !important;
+        }
+        .fc-timegrid-now-indicator-arrow {
+          border-color: #ef4444 !important;
+        }
+      `}</style>
       <FullCalendar
         ref={calendarRef}
         plugins={[
@@ -243,7 +307,8 @@ export default function EnhancedProfessionalCalendar({
           dayGridPlugin,
           timeGridPlugin,
           listPlugin,
-          interactionPlugin
+          interactionPlugin,
+          rrulePlugin
         ]}
         
         // Timezone configuration
@@ -299,9 +364,10 @@ export default function EnhancedProfessionalCalendar({
         // Display
         height={height}
         nowIndicator={true}
-        eventDisplay="block"
+        eventDisplay="auto"  // Changed from "block" to "auto" for proper event rendering
         dayMaxEvents={true}
         weekNumbers={false}
+        eventInteractive={true}  // Ensure events are interactive
         
         // Interaction
         editable={true}
@@ -311,6 +377,73 @@ export default function EnhancedProfessionalCalendar({
         eventClick={handleEventClick}
         eventDrop={handleEventDrop}
         viewDidMount={handleViewChange}
+        
+        // Event content rendering - Re-enable with proper click handling
+        eventContent={(arg) => {
+          const { event } = arg
+          const isRecurring = event.extendedProps?.isRecurring
+          const isRecurringInstance = event.extendedProps?.isRecurringInstance
+          
+          // Parse the title to separate customer and service
+          const title = event.title || ''
+          const titleParts = title.split(' - ')
+          const customer = titleParts[0] || ''
+          const service = titleParts[1] || ''
+          
+          return {
+            html: `
+              <div class="fc-event-main-frame" style="height: 100%; cursor: pointer;">
+                <div class="fc-event-title-container">
+                  <div class="fc-event-title fc-sticky" style="font-weight: 600; font-size: 12px;">
+                    ${isRecurring || isRecurringInstance ? '🔄 ' : ''}${customer}
+                  </div>
+                  ${service ? `<div style="font-size: 11px; opacity: 0.9;">${service}</div>` : ''}
+                </div>
+              </div>
+            `
+          }
+        }}
+        // Old custom eventContent that was causing issues - kept commented
+        // eventContent={(arg) => {
+        //   const { event } = arg
+        //   const isRecurring = event.extendedProps?.isRecurring
+        //   const isRecurringInstance = event.extendedProps?.isRecurringInstance
+          
+        //   // Parse the title to separate customer and service
+        //   const title = event.title || ''
+        //   const titleParts = title.split(' - ')
+        //   const customer = titleParts[0] || ''
+        //   const service = titleParts[1] || ''
+          
+        //   return (
+        //     <div className="p-1 h-full overflow-hidden">
+        //       <div className="flex items-start justify-between mb-1">
+        //         <div className="flex items-center min-w-0 flex-1">
+        //           {(isRecurring || isRecurringInstance) && (
+        //             <span className="text-xs mr-1 flex-shrink-0" title={isRecurring ? 'Recurring Series' : 'Recurring Instance'}>
+        //               🔄
+        //             </span>
+        //           )}
+        //           <div className="min-w-0 flex-1">
+        //             <div className="font-semibold text-xs leading-tight truncate" title={customer}>
+        //               {customer}
+        //             </div>
+        //             {service && (
+        //               <div className="text-xs leading-tight opacity-90 truncate" title={service}>
+        //                 {service}
+        //               </div>
+        //             )}
+        //           </div>
+        //         </div>
+        //       </div>
+        //       {event.extendedProps?.status && event.extendedProps.status !== 'confirmed' && (
+        //         <div className="text-xs opacity-75 leading-tight">
+        //           {event.extendedProps.status}
+        //         </div>
+        //       )}
+        //     </div>
+        //   )
+        // }}
         
         // Resources
         schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"

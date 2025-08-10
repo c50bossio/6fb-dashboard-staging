@@ -1,0 +1,9 @@
+# Kubernetes Namespace for 6FB AI Agent System
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agent-system
+  labels:
+    name: agent-system
+    environment: production
+    app: 6fb-ai-agent

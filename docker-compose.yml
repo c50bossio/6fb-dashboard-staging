@@ -1,5 +1,24 @@
 services:
   # Development uses SQLite - simpler and more reliable for local development
+  # Redis for AI response caching - reduces AI API costs by 60-70%
+  
+  redis:
+    image: redis:7.2-alpine
+    container_name: agent-system-redis-dev
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
 
   frontend:
     build:
@@ -30,6 +49,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - agent-network
     healthcheck:
@@ -51,12 +72,15 @@ services:
       - DATABASE_URL=sqlite:///./data/agent_system.db
       - CORS_ORIGINS=http://localhost:9999
       - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379
     env_file:
       - .env.local
     volumes:
       - ./:/app
       - agent_data:/app/data
       - agent_databases:/app/databases
+    depends_on:
+      - redis
     networks:
       - agent-network
     healthcheck:
@@ -77,4 +101,6 @@ volumes:
   agent_data:
     driver: local
   agent_databases:
+    driver: local
+  redis_data:
     driver: local

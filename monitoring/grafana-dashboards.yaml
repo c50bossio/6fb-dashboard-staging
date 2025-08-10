@@ -1,0 +1,187 @@
+# Grafana Dashboard ConfigMap for 6FB AI Agent System
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+data:
+  dashboard-provider.yaml: |
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 10
+      options:
+        path: /var/lib/grafana/dashboards
+  
+  overview.json: |
+    {
+      "dashboard": {
+        "title": "6FB AI Agent System Overview",
+        "tags": ["agent-system", "overview"],
+        "timezone": "browser",
+        "editable": true,
+        "panels": [
+          {
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "id": 1,
+            "title": "System Health",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "up{namespace=\"agent-system\"}",
+                "refId": "A"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "mappings": [
+                  {"type": "value", "value": 1, "text": "UP"},
+                  {"type": "value", "value": 0, "text": "DOWN"}
+                ],
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"color": "red", "value": 0},
+                    {"color": "green", "value": 1}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "id": 2,
+            "title": "Request Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{namespace=\"agent-system\"}[5m])",
+                "legendFormat": "{{pod}}",
+                "refId": "A"
+              }
+            ]
+          },
+          {
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "id": 3,
+            "title": "Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "container_memory_usage_bytes{namespace=\"agent-system\"}",
+                "legendFormat": "{{pod}}",
+                "refId": "A"
+              }
+            ],
+            "yaxes": [
+              {"format": "bytes", "show": true},
+              {"show": false}
+            ]
+          },
+          {
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "id": 4,
+            "title": "CPU Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(container_cpu_usage_seconds_total{namespace=\"agent-system\"}[5m])",
+                "legendFormat": "{{pod}}",
+                "refId": "A"
+              }
+            ],
+            "yaxes": [
+              {"format": "percentunit", "show": true},
+              {"show": false}
+            ]
+          },
+          {
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+            "id": 5,
+            "title": "AI Service Response Time",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(ai_request_duration_seconds_bucket[5m]))",
+                "legendFormat": "95th percentile",
+                "refId": "A"
+              },
+              {
+                "expr": "histogram_quantile(0.50, rate(ai_request_duration_seconds_bucket[5m]))",
+                "legendFormat": "50th percentile",
+                "refId": "B"
+              }
+            ],
+            "yaxes": [
+              {"format": "s", "show": true},
+              {"show": false}
+            ]
+          },
+          {
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+            "id": 6,
+            "title": "Database Connection Pool",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "database_connections_active",
+                "legendFormat": "Active",
+                "refId": "A"
+              },
+              {
+                "expr": "database_connections_idle",
+                "legendFormat": "Idle",
+                "refId": "B"
+              },
+              {
+                "expr": "database_connections_max",
+                "legendFormat": "Max",
+                "refId": "C"
+              }
+            ]
+          },
+          {
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+            "id": 7,
+            "title": "Redis Cache Hit Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))",
+                "legendFormat": "Hit Rate",
+                "refId": "A"
+              }
+            ],
+            "yaxes": [
+              {"format": "percentunit", "show": true},
+              {"show": false}
+            ]
+          },
+          {
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+            "id": 8,
+            "title": "Error Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{status=~\"5..\",namespace=\"agent-system\"}[5m])",
+                "legendFormat": "5xx Errors",
+                "refId": "A"
+              },
+              {
+                "expr": "rate(http_requests_total{status=~\"4..\",namespace=\"agent-system\"}[5m])",
+                "legendFormat": "4xx Errors",
+                "refId": "B"
+              }
+            ]
+          }
+        ],
+        "refresh": "10s",
+        "schemaVersion": 16,
+        "version": 1
+      }
+    }

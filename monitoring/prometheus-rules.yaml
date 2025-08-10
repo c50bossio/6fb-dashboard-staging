@@ -1,0 +1,122 @@
+# Prometheus Alert Rules for 6FB AI Agent System
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: monitoring
+data:
+  alerts.yml: |
+    groups:
+    - name: agent-system-alerts
+      interval: 30s
+      rules:
+      
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes{namespace="agent-system"} / container_spec_memory_limit_bytes{namespace="agent-system"}) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: "{{ $labels.pod }}"
+        annotations:
+          summary: "High memory usage detected"
+          description: "Pod {{ $labels.pod }} is using more than 90% of its memory limit"
+      
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{namespace="agent-system"}[5m]) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: "{{ $labels.pod }}"
+        annotations:
+          summary: "High CPU usage detected"
+          description: "Pod {{ $labels.pod }} is using more than 90% CPU"
+      
+      # Pod Restart
+      - alert: PodRestarting
+        expr: rate(kube_pod_container_status_restarts_total{namespace="agent-system"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          component: "{{ $labels.pod }}"
+        annotations:
+          summary: "Pod is restarting frequently"
+          description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes"
+      
+      # Service Down
+      - alert: ServiceDown
+        expr: up{namespace="agent-system"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: "{{ $labels.job }}"
+        annotations:
+          summary: "Service is down"
+          description: "Service {{ $labels.job }} in namespace {{ $labels.namespace }} is down"
+      
+      # API Response Time
+      - alert: HighAPIResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{namespace="agent-system"}[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API response time"
+          description: "95th percentile API response time is above 2 seconds (current: {{ $value }}s)"
+      
+      # AI Service Failures
+      - alert: AIServiceFailures
+        expr: rate(ai_request_failures_total{namespace="agent-system"}[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: ai-service
+        annotations:
+          summary: "AI service experiencing high failure rate"
+          description: "AI service failure rate is {{ $value | humanizePercentage }}"
+      
+      # Database Connection Pool Exhaustion
+      - alert: DatabasePoolExhaustion
+        expr: (database_connections_active / database_connections_max) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Database connection pool is {{ $value | humanizePercentage }} full"
+      
+      # Redis Memory Usage
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis is using {{ $value | humanizePercentage }} of available memory"
+      
+      # Disk Space
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Low disk space"
+          description: "Less than 10% disk space remaining on {{ $labels.instance }}"
+      
+      # Certificate Expiry
+      - alert: CertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value }} days"

@@ -30,6 +30,8 @@ import {
   generateRecurringEvents,
   formatAppointment 
 } from '../../../../lib/calendar-data'
+import { useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointments'
+import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 
 // Professional calendar component with enhanced views and auto-population
 const ProfessionalCalendar = dynamic(
@@ -88,6 +90,16 @@ export default function CalendarPage() {
   const [filterService, setFilterService] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterLocation, setFilterLocation] = useState('all')
+  const [showTestData, setShowTestData] = useState(true)
+  
+  // Use realtime appointments hook
+  const { 
+    appointments: realtimeAppointments, 
+    loading: realtimeLoading, 
+    error: realtimeErrorMsg,
+    isConnected: realtimeConnected,
+    lastUpdate: lastRealtimeUpdate
+  } = useRealtimeAppointments(barbershopId)
 
   // Initialize calendar with real data
   useEffect(() => {
@@ -101,23 +113,36 @@ export default function CalendarPage() {
     updateTime() // Set initial time
     const timeInterval = setInterval(updateTime, 1000)
     
-    // Initialize with mock data immediately for testing
+    // Initialize resources and services
     setResources(DEFAULT_RESOURCES)
     setServices(DEFAULT_SERVICES)
     
-    // Generate mock events for today
-    const today = new Date()
-    const mockEvents = generateMockEvents(today, DEFAULT_RESOURCES, DEFAULT_SERVICES)
-    const recurringEvents = generateRecurringEvents(today)
-    setEvents([...mockEvents, ...recurringEvents])
-    
-    // Also try to fetch real data
+    // Always fetch real barbers and services
     fetchRealBarbers()
     fetchServices()
-    fetchRealAppointments()
     
     return () => clearInterval(timeInterval)
   }, [])
+  
+  // Update events when realtime appointments change
+  useEffect(() => {
+    if (realtimeAppointments && realtimeAppointments.length > 0) {
+      console.log('🔄 Realtime appointments received:', realtimeAppointments.length)
+      setEvents(realtimeAppointments)
+      setRealtimeConnected(true)
+      setLastRealtimeUpdate(new Date())
+    } else if (!realtimeLoading) {
+      // Only fetch via API if realtime isn't loading and has no data
+      console.log('📡 No realtime data, fetching via API...')
+      fetchRealAppointments()
+    }
+    
+    // Update realtime error state
+    if (realtimeErrorMsg) {
+      setRealtimeError(realtimeErrorMsg)
+      setRealtimeConnected(false)
+    }
+  }, [realtimeAppointments, realtimeLoading, realtimeErrorMsg])
   
   // Debug log resources when they change
   useEffect(() => {
@@ -267,6 +292,10 @@ export default function CalendarPage() {
     console.log('Filtering events. Total events:', events.length);
     console.log('First few events:', events.slice(0, 3));
     return events.filter(event => {
+      // Test data filter
+      const isTestAppointment = event.id?.toString().startsWith('test-booking-')
+      if (!showTestData && isTestAppointment) return false
+      
       // Search filter
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase()
@@ -311,7 +340,7 @@ export default function CalendarPage() {
       
       return true
     })
-  }, [events, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources])
+  }, [events, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources, showTestData])
   
   // Get unique services for filter dropdown
   const uniqueServices = useMemo(() => {
@@ -325,17 +354,33 @@ export default function CalendarPage() {
 
   const handleEventClick = useCallback((clickInfo) => {
     const event = clickInfo.event
+    
+    // Debug logging to see what data we have
+    console.log('🔍 Event clicked - Debug data:', {
+      resourceId: event.resourceId,
+      extendedProps: event.extendedProps,
+      service_id: event.extendedProps.service_id,
+      barber_id: event.extendedProps.barber_id
+    })
+    
     setSelectedEvent({
       id: event.id,
       title: event.title,
-      start: event.start,
-      end: event.end,
-      barber_id: event.resourceId,
+      scheduled_at: event.start,
+      end_time: event.end,
+      start: event.start, // Add start for delete handler
+      barber_id: event.extendedProps.barber_id || event.resourceId, // Use extendedProps barber_id first, fallback to resourceId
+      service_id: event.extendedProps.service_id || '',
       service: event.extendedProps.service,
-      customer: event.extendedProps.customer,
-      duration: event.extendedProps.duration,
-      price: event.extendedProps.price,
-      status: event.extendedProps.status
+      client_name: event.extendedProps.customer,
+      client_phone: event.extendedProps.customerPhone || '',
+      client_email: event.extendedProps.customerEmail || '',
+      duration_minutes: event.extendedProps.duration || 30,
+      service_price: event.extendedProps.price || 0,
+      client_notes: event.extendedProps.notes || '',
+      status: event.extendedProps.status || 'confirmed',
+      isRecurring: event.extendedProps.isRecurring || false,
+      extendedProps: event.extendedProps // Pass all extended props for delete handler
     })
     setShowAppointmentModal(true)
   }, [])
@@ -453,6 +498,32 @@ export default function CalendarPage() {
   }
 
   const handleAppointmentSave = async (appointmentData) => {
+    // Handle deletion case - just refresh the calendar
+    if (appointmentData?.isDeleted) {
+      console.log('Appointment deleted, refreshing calendar...')
+      success('Appointment deleted successfully!', {
+        title: 'Success',
+        duration: 3000
+      })
+      setShowAppointmentModal(false)
+      // Refresh the calendar by fetching appointments again
+      fetchRealAppointments()
+      return
+    }
+    
+    // Handle conversion to recurring case - appointment already exists in DB
+    if (appointmentData?.id && appointmentData?.is_recurring) {
+      console.log('Appointment converted to recurring, refreshing calendar...')
+      success('Appointment converted to recurring series!', {
+        title: 'Success',
+        duration: 3000
+      })
+      setShowAppointmentModal(false)
+      // Refresh the calendar by fetching appointments again
+      fetchRealAppointments()
+      return
+    }
+    
     try {
       const response = await fetch('/api/calendar/appointments', {
         method: 'POST',
@@ -476,13 +547,18 @@ export default function CalendarPage() {
           duration: 3000
         })
         
-        // Add the new appointment to the calendar immediately
-        if (result.appointment) {
+        // Add the new appointment to the calendar immediately if not using realtime
+        if (result.appointment && !realtimeConnected) {
           setEvents(prev => [...prev, result.appointment])
         }
         
-        // Refresh appointments from database
-        fetchRealAppointments()
+        // Update realtime status
+        setLastRealtimeUpdate(new Date())
+        
+        // Refresh appointments from database if not using realtime
+        if (!realtimeConnected) {
+          fetchRealAppointments()
+        }
         setShowAppointmentModal(false)
       } else {
         showError(result.error || 'Failed to book appointment', {
@@ -569,6 +645,13 @@ export default function CalendarPage() {
             </div>
             
             <div className="flex items-center space-x-3">
+              {/* Realtime Status Indicator */}
+              <RealtimeIndicator 
+                isConnected={realtimeConnected}
+                lastUpdate={lastRealtimeUpdate}
+                errorMessage={realtimeErrorMsg}
+              />
+              
               <button 
                 onClick={() => {
                   setSelectedSlot(null)
@@ -699,24 +782,25 @@ export default function CalendarPage() {
         </div>
       </div>
       
-      {/* Search and Filter Bar */}
-      <div className="bg-gray-50 border-b px-6 py-3">
-        <div className="flex items-center space-x-4">
+      {/* Search and Filter Bar - Mobile Responsive */}
+      <div className="bg-gray-50 border-b px-3 sm:px-6 py-3">
+        {/* Mobile-First Layout: Stack on small screens, row on larger screens */}
+        <div className="flex flex-col space-y-3 lg:flex-row lg:space-y-0 lg:space-x-4 lg:items-center">
           {/* Search Input */}
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 lg:max-w-md">
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search customers, services, or notes..."
+                placeholder="Search customers, services..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
                 >
                   <XMarkIcon className="h-5 w-5" />
                 </button>
@@ -724,15 +808,15 @@ export default function CalendarPage() {
             </div>
           </div>
           
-          {/* Filter Dropdowns */}
-          <div className="flex items-center space-x-2">
-            <FunnelIcon className="h-5 w-5 text-gray-500" />
+          {/* Filter Dropdowns - Horizontal scroll on mobile */}
+          <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            <FunnelIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
             
             {/* Location Filter */}
             <select
               value={filterLocation}
               onChange={(e) => setFilterLocation(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Locations</option>
               <option value="Downtown">Downtown</option>
@@ -743,7 +827,7 @@ export default function CalendarPage() {
             <select
               value={filterBarber}
               onChange={(e) => setFilterBarber(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Barbers</option>
               {resources.map(barber => (
@@ -757,7 +841,7 @@ export default function CalendarPage() {
             <select
               value={filterService}
               onChange={(e) => setFilterService(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Services</option>
               {uniqueServices.map(service => (
@@ -771,7 +855,7 @@ export default function CalendarPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Status</option>
               <option value="confirmed">Confirmed</option>
@@ -781,8 +865,76 @@ export default function CalendarPage() {
               <option value="cancelled">Cancelled</option>
             </select>
             
+            {/* Test Data Toggle */}
+            <div className="flex items-center space-x-2 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 flex-shrink-0 min-h-[44px]">
+              <input
+                type="checkbox"
+                id="test-data-toggle"
+                checked={showTestData}
+                onChange={(e) => setShowTestData(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="test-data-toggle" className="text-gray-700 font-medium whitespace-nowrap text-sm">
+                <span className="hidden sm:inline">Show Test Data</span>
+                <span className="sm:hidden">Test</span>
+              </label>
+            </div>
+            
+            {/* Test Edit Modal Button - Temporary for testing */}
+            <button
+              onClick={() => {
+                // Use an actual appointment from the database
+                if (filteredEvents.length > 0) {
+                  const firstEvent = filteredEvents[0]
+                  const testEvent = {
+                    id: firstEvent.id,
+                    title: firstEvent.title,
+                    scheduled_at: firstEvent.start,
+                    end_time: firstEvent.end,
+                    barber_id: firstEvent.resourceId || firstEvent.extendedProps?.barber_id,
+                    service_id: firstEvent.extendedProps?.service_id,
+                    service: firstEvent.extendedProps?.service,
+                    client_name: firstEvent.extendedProps?.customer || 'Test Customer',
+                    client_phone: firstEvent.extendedProps?.customerPhone || '555-1234',
+                    client_email: firstEvent.extendedProps?.customerEmail || 'test@example.com',
+                    duration_minutes: firstEvent.extendedProps?.duration || 30,
+                    service_price: firstEvent.extendedProps?.price || 35,
+                    client_notes: firstEvent.extendedProps?.notes || 'Test appointment',
+                    status: firstEvent.extendedProps?.status || 'confirmed'
+                  }
+                  console.log('🧪 Testing with real appointment:', testEvent)
+                  setSelectedEvent(testEvent)
+                  setShowAppointmentModal(true)
+                } else {
+                  // Fallback to fake appointment if no real appointments exist
+                  const testEvent = {
+                    id: 'test-1',
+                    title: 'Test Customer - Haircut',
+                    scheduled_at: new Date().toISOString(),
+                    end_time: new Date(Date.now() + 30 * 60000).toISOString(),
+                    barber_id: resources[0]?.id || 'test-barber-1',
+                    service_id: services[0]?.id || 'test-service-1',
+                    service: services[0]?.name || 'Haircut',
+                    client_name: 'Test Customer',
+                    client_phone: '555-1234',
+                    client_email: 'test@example.com',
+                    duration_minutes: 30,
+                    service_price: services[0]?.price || 35,
+                    client_notes: 'Test appointment to verify dropdowns work',
+                    status: 'confirmed'
+                  }
+                  console.log('🧪 Testing with fake appointment (no real appointments found):', testEvent)
+                  setSelectedEvent(testEvent)
+                  setShowAppointmentModal(true)
+                }
+              }}
+              className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            >
+              Test Edit
+            </button>
+            
             {/* Clear Filters Button */}
-            {(searchTerm || filterLocation !== 'all' || filterBarber !== 'all' || filterService !== 'all' || filterStatus !== 'all') && (
+            {(searchTerm || filterLocation !== 'all' || filterBarber !== 'all' || filterService !== 'all' || filterStatus !== 'all' || !showTestData) && (
               <button
                 onClick={() => {
                   setSearchTerm('')
@@ -790,11 +942,12 @@ export default function CalendarPage() {
                   setFilterBarber('all')
                   setFilterService('all')
                   setFilterStatus('all')
+                  setShowTestData(true)
                 }}
-                className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm flex items-center space-x-1"
+                className="flex-shrink-0 px-2 sm:px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm flex items-center space-x-1 min-h-[44px]"
               >
                 <XMarkIcon className="h-4 w-4" />
-                <span>Clear</span>
+                <span className="hidden sm:inline">Clear</span>
               </button>
             )}
           </div>
@@ -820,7 +973,7 @@ export default function CalendarPage() {
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
           <ProfessionalCalendar
             resources={resources}
-            events={events} // Use all events temporarily to debug
+            events={filteredEvents} // Use filtered events
             onEventClick={handleEventClick}
             onSlotClick={handleDateSelect}
             onEventDrop={(dropInfo) => {

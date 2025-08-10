@@ -18,11 +18,11 @@ import logging
 sys.path.append('/Users/bossio/6FB AI Agent System/services/integrations')
 sys.path.append('/Users/bossio/6FB AI Agent System/services/marketing-automation')
 sys.path.append('/Users/bossio/6FB AI Agent System/services/orchestration')
-sys.path.append('/Users/bossio/6FB AI Agent System/services/ai-agents')
+sys.path.append('/Users/bossio/6FB AI Agent System/services/ai_agents')
 
 # Import marketing automation components
 from mcp_agent_orchestrator import MCPAgentOrchestrator
-from EnhancedAgenticBusinessCoach import EnhancedAgenticBusinessCoach, ShopContext, BusinessStage
+from enhanced_agentic_business_coach import EnhancedAgenticBusinessCoach, ShopContext, BusinessStage
 
 class ContextIntegrationType(Enum):
     BEHAVIORAL_LEARNING = "behavioral_learning"

@@ -62,7 +62,13 @@
     "monitoring:restart": "npm run monitoring:stop && npm run monitoring:start",
     "backup:create": "./scripts/create-full-backup.sh",
     "backup:restore": "./scripts/restore-system.sh",
-    "backup:list": "ls -lht /backup/*backup*.tar.gz 2>/dev/null || echo 'No backups found'"
+    "backup:list": "ls -lht /backup/*backup*.tar.gz 2>/dev/null || echo 'No backups found'",
+    "seed-calendar": "node scripts/seed-calendar-data.js",
+    "cleanup-test-data": "node scripts/cleanup-test-data.js",
+    "cleanup-test-data:dry": "node scripts/cleanup-test-data.js --dry-run",
+    "migrate:recurring": "node scripts/run-recurring-migration.js",
+    "migrate:recurring:help": "node scripts/run-migration.js --help",
+    "test:recurring": "node scripts/test-new-recurring-system.js"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.0",
@@ -109,6 +115,7 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.536.0",
+    "luxon": "^3.4.4",
     "next": "^14.2.31",
     "nodemailer": "^6.10.1",
     "openai": "^5.11.0",
@@ -123,7 +130,7 @@
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.5.2",
     "recharts": "^3.1.0",
-    "rrule": "^2.8.1",
+    "rrule": "^2.7.2",
     "stripe": "^18.4.0",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.3.6",

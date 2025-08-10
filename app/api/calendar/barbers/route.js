@@ -13,7 +13,7 @@ export async function GET(request) {
     let { data: barbers, error } = await supabase
       .from('barbers')
       .select('*')
-      .eq('active', true)
+      .eq('is_active', true)
       .order('name')
     
     if (error) {

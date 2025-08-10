@@ -13,7 +13,7 @@ export async function GET(request) {
     const { data: services, error } = await supabase
       .from('services')
       .select('*')
-      .eq('active', true)
+      .eq('is_active', true)
       .order('name')
     
     if (error) {
@@ -39,7 +39,7 @@ export async function GET(request) {
       id: service.id,
       name: service.name,
       price: parseFloat(service.price),
-      duration_minutes: service.duration || 30,
+      duration_minutes: service.duration_minutes || 30,
       description: service.description,
       color: service.color || '#3b82f6',
       category: service.category
@@ -70,10 +70,10 @@ export async function POST(request) {
       .insert([{
         name: body.name,
         description: body.description,
-        duration: body.duration_minutes || 30,
+        duration_minutes: body.duration_minutes || 30,
         price: body.price || 0,
         color: body.color || '#3b82f6',
-        active: true
+        is_active: true
       }])
       .select()
       .single()

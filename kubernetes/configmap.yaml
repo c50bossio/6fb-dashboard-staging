@@ -1,0 +1,31 @@
+# ConfigMap for 6FB AI Agent System
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-config
+  namespace: agent-system
+data:
+  # Frontend configuration
+  NODE_ENV: "production"
+  NEXT_PUBLIC_API_URL: "http://backend-service:8000"
+  NODE_OPTIONS: "--max-old-space-size=256 --optimize-for-size --gc-interval=100"
+  
+  # Backend configuration
+  DATABASE_PATH: "/app/data/agent_system.db"
+  REDIS_URL: "redis://redis-service:6379"
+  PYTHONOPTIMIZE: "2"
+  PYTHONUNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  
+  # API rate limiting
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "60"
+  
+  # AI service configuration
+  AI_CACHE_ENABLED: "true"
+  AI_CACHE_TTL: "3600"
+  AI_PARALLEL_PROCESSING: "true"
+  
+  # Monitoring
+  PROMETHEUS_ENABLED: "true"
+  METRICS_PORT: "9090"

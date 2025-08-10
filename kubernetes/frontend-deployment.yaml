@@ -1,0 +1,89 @@
+# Frontend Deployment for 6FB AI Agent System
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: agent-system
+  labels:
+    app: frontend
+    component: ui
+spec:
+  replicas: 2  # High availability
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: frontend
+      component: ui
+  template:
+    metadata:
+      labels:
+        app: frontend
+        component: ui
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: frontend
+        image: your-registry/6fb-ai-frontend:latest  # Update with your registry
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9999
+          name: http
+        env:
+        - name: PORT
+          value: "9999"
+        - name: HOSTNAME
+          value: "0.0.0.0"
+        envFrom:
+        - configMapRef:
+            name: agent-config
+        - secretRef:
+            name: agent-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "384Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: http
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: agent-system
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+    component: ui
+  ports:
+  - port: 9999
+    targetPort: 9999
+    protocol: TCP
+    name: http
+  type: ClusterIP

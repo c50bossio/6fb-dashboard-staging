@@ -44,10 +44,13 @@ class User:
     email: str
     password_hash: str
     role: UserRole
+    tenant_id: Optional[str] = None  # Multi-tenancy support
+    shop_name: Optional[str] = None
     is_active: bool = True
     is_verified: bool = False
     failed_login_attempts: int = 0
     last_login: Optional[datetime] = None
+    tenant_permissions: List[str] = field(default_factory=list)  # Tenant-specific permissions
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     password_changed_at: Optional[datetime] = None
@@ -204,7 +207,12 @@ class EnhancedAuthService:
         self.users_by_email = {}  # email -> User
         self.active_sessions = {}  # session_id -> user_id
         
-        logger.info("Enhanced authentication service initialized")
+        # Multi-tenancy support
+        self.tenants = {}  # tenant_id -> tenant_info
+        self.users_by_tenant = defaultdict(list)  # tenant_id -> [user_ids]
+        self.tenant_permissions = {}  # tenant_id -> [permissions]
+        
+        logger.info("Enhanced authentication service initialized with multi-tenancy support")
     
     async def register_user(self, email: str, password: str, role: UserRole,
                           ip_address: str, user_agent: str) -> Tuple[bool, str, Optional[User]]:
@@ -606,8 +614,184 @@ class EnhancedAuthService:
             'failed_attempts_by_ip': len(self.security_monitor.failed_attempts_by_ip),
             'failed_attempts_by_user': len(self.security_monitor.failed_attempts_by_user),
             'total_users': len(self.users),
-            'audit_log_entries': len(self.audit_log)
+            'audit_log_entries': len(self.audit_log),
+            'total_tenants': len(self.tenants)
         }
+    
+    # Multi-Tenancy Methods
+    async def create_tenant(self, tenant_name: str, admin_email: str, admin_password: str,
+                          ip_address: str, user_agent: str) -> Tuple[bool, str, Optional[str]]:
+        """
+        Create a new tenant with admin user
+        
+        Returns:
+            (success, message, tenant_id)
+        """
+        try:
+            tenant_id = f"tenant_{self._generate_secure_id()}"
+            
+            # Create tenant
+            tenant_info = {
+                'id': tenant_id,
+                'name': tenant_name,
+                'created_at': datetime.now(timezone.utc),
+                'is_active': True,
+                'admin_email': admin_email,
+                'settings': {
+                    'max_users': 100,
+                    'features_enabled': ['basic_auth', 'user_management'],
+                    'security_level': 'standard'
+                }
+            }
+            
+            self.tenants[tenant_id] = tenant_info
+            
+            # Create admin user for tenant
+            success, message, admin_user = await self.register_user_with_tenant(
+                admin_email, admin_password, UserRole.SHOP_OWNER, 
+                tenant_id, tenant_name, ip_address, user_agent
+            )
+            
+            if not success:
+                # Cleanup tenant if admin creation fails
+                del self.tenants[tenant_id]
+                return False, f"Failed to create tenant admin: {message}", None
+            
+            await self._log_auth_event(admin_user.id, AuthEventType.LOGIN_SUCCESS,
+                                     ip_address, user_agent, True,
+                                     details={'event': 'tenant_created', 'tenant_id': tenant_id})
+            
+            logger.info(f"Tenant created successfully: {tenant_id} with admin {admin_email}")
+            return True, f"Tenant '{tenant_name}' created successfully", tenant_id
+            
+        except Exception as e:
+            logger.error(f"Tenant creation failed: {e}")
+            return False, "Tenant creation failed due to system error", None
+    
+    async def register_user_with_tenant(self, email: str, password: str, role: UserRole,
+                                      tenant_id: str, shop_name: Optional[str] = None,
+                                      ip_address: str = "", user_agent: str = "") -> Tuple[bool, str, Optional[User]]:
+        """
+        Register a new user within a specific tenant
+        
+        Returns:
+            (success, message, user)
+        """
+        try:
+            # Validate tenant exists
+            if tenant_id not in self.tenants:
+                return False, "Invalid tenant", None
+            
+            # Check if tenant is active
+            tenant = self.tenants[tenant_id]
+            if not tenant.get('is_active', False):
+                return False, "Tenant is not active", None
+            
+            # Check tenant user limits
+            current_users = len(self.users_by_tenant[tenant_id])
+            max_users = tenant.get('settings', {}).get('max_users', 100)
+            if current_users >= max_users:
+                return False, f"Tenant user limit reached ({max_users})", None
+            
+            # Register user using existing method
+            success, message, user = await self.register_user(email, password, role, ip_address, user_agent)
+            
+            if success and user:
+                # Add tenant information to user
+                user.tenant_id = tenant_id
+                user.shop_name = shop_name or tenant.get('name', 'Unknown Shop')
+                
+                # Add to tenant user tracking
+                self.users_by_tenant[tenant_id].append(user.id)
+                
+                # Set tenant-specific permissions
+                user.tenant_permissions = self._get_tenant_permissions(role, tenant_id)
+                
+                logger.info(f"User {email} registered for tenant {tenant_id}")
+                
+            return success, message, user
+            
+        except Exception as e:
+            logger.error(f"Tenant user registration failed: {e}")
+            return False, "Registration failed due to system error", None
+    
+    def validate_tenant_access(self, user_id: str, tenant_id: str) -> bool:
+        """Validate that a user has access to a specific tenant"""
+        if user_id not in self.users:
+            return False
+            
+        user = self.users[user_id]
+        
+        # Super admins have access to all tenants
+        if user.role == UserRole.SUPER_ADMIN:
+            return True
+            
+        # Regular users can only access their own tenant
+        return user.tenant_id == tenant_id
+    
+    def get_tenant_users(self, tenant_id: str) -> List[User]:
+        """Get all users for a specific tenant"""
+        if tenant_id not in self.tenants:
+            return []
+        
+        user_ids = self.users_by_tenant.get(tenant_id, [])
+        return [self.users[uid] for uid in user_ids if uid in self.users]
+    
+    def get_user_tenant(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get tenant information for a user"""
+        if user_id not in self.users:
+            return None
+            
+        user = self.users[user_id]
+        if not user.tenant_id:
+            return None
+            
+        return self.tenants.get(user.tenant_id)
+    
+    def _get_tenant_permissions(self, role: UserRole, tenant_id: str) -> List[str]:
+        """Get tenant-specific permissions for a role"""
+        base_permissions = self._get_role_permissions(role)
+        
+        # Add tenant-specific permissions based on tenant settings
+        tenant = self.tenants.get(tenant_id, {})
+        tenant_features = tenant.get('settings', {}).get('features_enabled', [])
+        
+        tenant_permissions = []
+        if 'advanced_analytics' in tenant_features:
+            tenant_permissions.extend(['view_advanced_analytics', 'export_analytics'])
+        if 'multi_location' in tenant_features:
+            tenant_permissions.extend(['manage_locations', 'view_all_locations'])
+        if 'api_access' in tenant_features:
+            tenant_permissions.extend(['api_read', 'api_write'])
+            
+        return base_permissions + tenant_permissions
+    
+    async def deactivate_tenant(self, tenant_id: str, admin_user_id: str) -> Tuple[bool, str]:
+        """Deactivate a tenant and all its users"""
+        try:
+            if tenant_id not in self.tenants:
+                return False, "Tenant not found"
+            
+            # Verify admin permissions
+            admin_user = self.users.get(admin_user_id)
+            if not admin_user or admin_user.role not in [UserRole.SUPER_ADMIN, UserRole.ENTERPRISE_OWNER]:
+                return False, "Insufficient permissions to deactivate tenant"
+            
+            # Deactivate tenant
+            self.tenants[tenant_id]['is_active'] = False
+            self.tenants[tenant_id]['deactivated_at'] = datetime.now(timezone.utc)
+            
+            # Deactivate all tenant users
+            tenant_users = self.get_tenant_users(tenant_id)
+            for user in tenant_users:
+                user.is_active = False
+                
+            logger.info(f"Tenant {tenant_id} deactivated by admin {admin_user_id}")
+            return True, f"Tenant deactivated successfully"
+            
+        except Exception as e:
+            logger.error(f"Tenant deactivation failed: {e}")
+            return False, "Deactivation failed due to system error"
 
 # Global authentication service instance
 # In production, initialize with secure JWT secret from environment
