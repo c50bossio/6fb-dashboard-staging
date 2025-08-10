@@ -113,7 +113,7 @@ function QuickActions({ onQuickAction, isLoading }) {
 }
 
 // Message Bubble Component
-function MessageBubble({ message, isUser, agent, isLoading = false }) {
+function MessageBubble({ message, isUser, agent, isLoading = false, handleExecuteAction }) {
   if (isUser) {
     return (
       <div className="flex justify-end mb-4">
@@ -287,7 +287,31 @@ function AICommandCenter() {
 
   useEffect(() => {
     scrollToBottom()
+    
+    // Save conversation when messages update
+    if (messages.length > 0 && messages[messages.length - 1].id !== 'welcome') {
+      saveCurrentConversation()
+    }
   }, [messages])
+
+  // Load conversations from localStorage on mount
+  useEffect(() => {
+    const savedConversations = localStorage.getItem('ai-conversations')
+    if (savedConversations) {
+      try {
+        const parsed = JSON.parse(savedConversations)
+        setConversations(parsed)
+        // Load the most recent conversation
+        if (parsed.length > 0) {
+          const mostRecent = parsed[0]
+          setActiveConversation(mostRecent.id)
+          setMessages(mostRecent.messages || [])
+        }
+      } catch (e) {
+        console.error('Failed to load conversations:', e)
+      }
+    }
+  }, [])
 
   // Initialize with welcome message
   useEffect(() => {
@@ -334,7 +358,13 @@ Try the quick actions below or just start chatting! 💬`,
       timestamp: new Date().toISOString()
     }
 
-    setMessages(prev => [...prev, userMessage])
+    console.log('Adding user message:', userMessage)
+    setMessages(prev => {
+      console.log('Previous messages:', prev)
+      const newMessages = [...prev, userMessage]
+      console.log('New messages:', newMessages)
+      return newMessages
+    })
     setInputMessage('')
     setIsLoading(true)
 
@@ -373,9 +403,10 @@ Try the quick actions below or just start chatting! 💬`,
       const data = await response.json()
 
       // Remove loading message and add AI response
+      console.log('AI Response received:', data)
       setMessages(prev => {
         const filtered = prev.filter(msg => !msg.isLoading)
-        return [...filtered, {
+        const aiMessage = {
           id: `ai-${Date.now()}`,
           text: data.response || data.message || 'I apologize, but I encountered an issue processing your request. Please try again.',
           isUser: false,
@@ -388,7 +419,11 @@ Try the quick actions below or just start chatting! 💬`,
             follow_up_questions: data.follow_up_questions || []
           },
           timestamp: new Date().toISOString()
-        }]
+        }
+        console.log('Adding AI message:', aiMessage)
+        const newMessages = [...filtered, aiMessage]
+        console.log('Updated messages after AI response:', newMessages)
+        return newMessages
       })
 
     } catch (error) {
@@ -512,6 +547,42 @@ Please try your question again in a moment!`,
     sendMessage(inputMessage)
   }
 
+  const saveCurrentConversation = () => {
+    if (messages.length === 0) return
+    
+    const conversationId = activeConversation || `conv-${Date.now()}`
+    const title = messages.find(m => m.isUser)?.text.substring(0, 50) || 'New Conversation'
+    
+    const currentConversation = {
+      id: conversationId,
+      title,
+      messages,
+      created_at: activeConversation 
+        ? conversations.find(c => c.id === activeConversation)?.created_at || new Date().toISOString()
+        : new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+    
+    let updatedConversations = [...conversations]
+    const existingIndex = updatedConversations.findIndex(c => c.id === conversationId)
+    
+    if (existingIndex >= 0) {
+      updatedConversations[existingIndex] = currentConversation
+    } else {
+      updatedConversations.unshift(currentConversation)
+      setActiveConversation(conversationId)
+    }
+    
+    // Sort by updated_at (most recent first)
+    updatedConversations.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+    
+    // Keep only last 20 conversations
+    updatedConversations = updatedConversations.slice(0, 20)
+    
+    setConversations(updatedConversations)
+    localStorage.setItem('ai-conversations', JSON.stringify(updatedConversations))
+  }
+
   const handleNewConversation = () => {
     setMessages([])
     setActiveConversation(null)
@@ -545,7 +616,13 @@ What would you like to work on today?`,
         <ConversationHistory
           conversations={conversations}
           activeConversation={activeConversation}
-          onSelectConversation={setActiveConversation}
+          onSelectConversation={(conversationId) => {
+            const conversation = conversations.find(c => c.id === conversationId)
+            if (conversation) {
+              setActiveConversation(conversationId)
+              setMessages(conversation.messages || [])
+            }
+          }}
           onNewConversation={handleNewConversation}
         />
       )}
@@ -587,6 +664,10 @@ What would you like to work on today?`,
 
           {/* Messages */}
           <div className="space-y-4">
+            {/* Debug: Show message count */}
+            <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded">
+              Debug: {messages.length} messages in state
+            </div>
             {messages.map((message) => (
               <MessageBubble
                 key={message.id}
@@ -594,6 +675,7 @@ What would you like to work on today?`,
                 isUser={message.isUser}
                 agent={message.agent}
                 isLoading={message.isLoading}
+                handleExecuteAction={handleExecuteAction}
               />
             ))}
             <div ref={messagesEndRef} />

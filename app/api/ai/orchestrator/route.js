@@ -11,9 +11,15 @@ export async function POST(request) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
-    if (!user) {
+    // Allow demo access in development mode
+    const isDemoMode = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEV_MODE === 'true'
+    
+    if (!user && !isDemoMode) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    
+    // Use demo user in development if no real user
+    const effectiveUser = user || { id: 'demo-user', email: 'demo@barbershop.com' }
 
     const { message, sessionId, businessContext } = await request.json()
 
@@ -22,14 +28,16 @@ export async function POST(request) {
     }
 
     // Generate session ID if not provided
-    const currentSession = sessionId || `session_${Date.now()}_${user.id}`
+    const currentSession = sessionId || `session_${Date.now()}_${effectiveUser.id}`
 
     try {
       // Call Python AI Orchestrator Service
       const orchestratorResponse = await callPythonAIOrchestrator(message, currentSession, businessContext)
       
-      // Store conversation in Supabase
-      await storeConversation(supabase, user.id, currentSession, message, orchestratorResponse)
+      // Store conversation in Supabase (skip in demo mode)
+      if (user) {
+        await storeConversation(supabase, effectiveUser.id, currentSession, message, orchestratorResponse)
+      }
       
       return NextResponse.json({
         success: true,

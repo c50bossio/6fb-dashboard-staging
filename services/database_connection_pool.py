@@ -521,7 +521,7 @@ def initialize_connection_pool(database_type: str = "sqlite", **kwargs):
     """Initialize the global database connection pool"""
     
     if database_type == "sqlite":
-        db_path = kwargs.get('database_path', 'data/agent_system.db')
+        db_path = kwargs.pop('database_path', 'data/agent_system.db')  # Use pop to remove from kwargs
         db_connection_manager.initialize_sqlite(db_path, **kwargs)
         
     elif database_type == "postgresql":

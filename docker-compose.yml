@@ -30,6 +30,7 @@ services:
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://backend:8000
+      - FASTAPI_BASE_URL=http://backend:8000
       - NEXT_PUBLIC_ENABLE_RAG=true
       - NEXT_PUBLIC_ENABLE_MOCK_FALLBACK=true
       - NEXT_PUBLIC_DEV_MODE=true
@@ -73,6 +74,8 @@ services:
       - CORS_ORIGINS=http://localhost:9999
       - PYTHONPATH=/app
       - REDIS_URL=redis://redis:6379
+      - USE_FASTAPI=true
+      - DOCKER_ENVIRONMENT=true
     env_file:
       - .env.local
     volumes:

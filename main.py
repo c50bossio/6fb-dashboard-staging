@@ -1,12 +1,51 @@
 #!/usr/bin/env python3
 """
-Ultra-simple HTTP server for Render - no dependencies issues
+Backend entry point - automatically chooses FastAPI (Docker/dev) or simple HTTP (production)
 """
 import json
 import os
+import sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
+
+# Check if we're in Docker or development environment
+DOCKER_ENV = os.path.exists('/.dockerenv') or os.getenv('DOCKER_ENVIRONMENT') == 'true'
+DEV_MODE = os.getenv('NODE_ENV') == 'development' or os.getenv('PYTHONPATH') == '/app'
+
+def should_use_fastapi():
+    """Determine if we should use FastAPI instead of simple HTTP server"""
+    return DOCKER_ENV or DEV_MODE or os.getenv('USE_FASTAPI', 'false').lower() == 'true'
+
+def run_fastapi():
+    """Launch FastAPI application using uvicorn"""
+    print("🚀 Launching FastAPI backend for development/Docker environment...")
+    
+    try:
+        import uvicorn
+        
+        port = int(os.getenv("PORT", 8000))
+        print(f"✅ Starting FastAPI on port {port}")
+        
+        # Use string import to avoid import-time issues
+        uvicorn.run(
+            "fastapi_backend:app",
+            host="0.0.0.0",
+            port=port,
+            reload=True,
+            access_log=True,
+            log_level="info"
+        )
+        return True
+        
+    except ImportError as e:
+        print(f"❌ FastAPI dependencies not available: {e}")
+        print("🔄 Falling back to simple HTTP server...")
+        return False
+    except Exception as e:
+        print(f"❌ Failed to start FastAPI: {e}")
+        print("🔄 Falling back to simple HTTP server...")
+        return False
 
 class APIHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -104,4 +143,17 @@ def run_server():
         httpd.shutdown()
 
 if __name__ == "__main__":
-    run_server()
+    # Auto-detect environment and choose appropriate backend
+    if should_use_fastapi():
+        print(f"🐳 Environment Detection:")
+        print(f"   Docker: {DOCKER_ENV}")
+        print(f"   Dev Mode: {DEV_MODE}")
+        print(f"   PYTHONPATH: {os.getenv('PYTHONPATH', 'not set')}")
+        print(f"   USE_FASTAPI: {os.getenv('USE_FASTAPI', 'not set')}")
+        
+        if not run_fastapi():
+            print("🔄 FastAPI failed, starting simple HTTP server...")
+            run_server()
+    else:
+        print("🌐 Production mode - using simple HTTP server")
+        run_server()
