@@ -27,32 +27,17 @@ import { useNavigation } from '../contexts/NavigationContext'
 
 const navigation = [
   { 
-    name: 'Business Intelligence', 
-    href: '/dashboard/ai-intelligent', 
-    icon: ChartPieIcon,
-    description: 'Daily, weekly, monthly & yearly reports with 6-figure insights',
-    badge: 'AI Enhanced'
-  },
-  { 
-    name: 'AI Command Center', 
-    href: '/dashboard/ai-command-center', 
-    icon: ChatBubbleLeftRightIcon,
-    description: 'LLM-style chat with all agents, conversation history & actions',
-    badge: 'Live Chat'
-  },
-  { 
-    name: 'Deep Analytics', 
-    href: '/dashboard/analytics-enhanced', 
-    icon: ChartBarIcon,
-    description: 'Multi-dimensional analytics: Enterprise → Location → Barber',
-    badge: 'Multi-Level'
-  },
-  { 
-    name: 'Leaderboards & Coaching', 
-    href: '/dashboard/leaderboard-gamified', 
-    icon: TrophyIcon,
-    description: 'Performance rankings, achievements & personalized coaching',
-    badge: 'Gamified'
+    name: 'Main Dashboard', 
+    href: '/dashboard', 
+    icon: SparklesIcon,
+    description: 'All-in-one intelligent business dashboard with AI insights & analytics',
+    badge: 'NEW ✨',
+    submodes: [
+      { name: 'Executive Overview', mode: 'executive', icon: ChartPieIcon },
+      { name: 'AI Insights', mode: 'ai_insights', icon: SparklesIcon },
+      { name: 'Analytics', mode: 'analytics', icon: ChartBarIcon },
+      { name: 'Operations', mode: 'operations', icon: Cog6ToothIcon }
+    ]
   },
   { 
     name: 'Predictive Analytics', 
@@ -294,6 +279,21 @@ export default function Navigation() {
                         <p className="mt-1 text-xs text-gray-500 leading-tight">
                           {item.description}
                         </p>
+                      )}
+                      {/* Show submodes for Unified Dashboard */}
+                      {item.submodes && isActive && (
+                        <div className="mt-3 pl-2 space-y-1">
+                          {item.submodes.map((submode) => (
+                            <Link
+                              key={submode.mode}
+                              href={`${item.href}?mode=${submode.mode}`}
+                              className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600 py-1"
+                            >
+                              <submode.icon className="h-3 w-3" />
+                              <span>{submode.name}</span>
+                            </Link>
+                          ))}
+                        </div>
                       )}
                       </div>
                     )}

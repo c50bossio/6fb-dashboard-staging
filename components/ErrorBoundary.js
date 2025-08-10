@@ -59,7 +59,7 @@ class ErrorBoundary extends React.Component {
                       <p className="text-xs text-red-700 font-mono whitespace-pre-wrap">
                         {this.state.error.toString()}
                       </p>
-                      {this.state.errorInfo.componentStack && (
+                      {this.state.errorInfo?.componentStack && (
                         <div className="mt-2">
                           <p className="text-xs text-red-600 font-mono whitespace-pre-wrap">
                             {this.state.errorInfo.componentStack}
