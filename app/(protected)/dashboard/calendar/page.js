@@ -30,10 +30,13 @@ import {
   generateRecurringEvents,
   formatAppointment 
 } from '../../../../lib/calendar-data'
-import { useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointments'
+// import { useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointments' // Old broken version
+// import { useRealtimeAppointmentsV2 as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsV2' // V2 not connecting
+import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
 import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
 import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
+// import WebSocketDebugPanel from '../../../../components/calendar/WebSocketDebugPanel' // Temporarily disabled
 
 // Professional calendar component with enhanced views and auto-population
 const ProfessionalCalendar = dynamic(
@@ -126,16 +129,31 @@ export default function CalendarPage() {
   
   // Debug info (moved to useEffect to prevent render loop)
   
-  // Use realtime appointments hook
+  // Use realtime appointments hook V2
   const { 
     appointments: realtimeAppointments, 
     loading: realtimeLoading, 
     error: realtimeErrorMsg,
     isConnected: realtimeHookConnected,
     lastUpdate,
-    connectionAttempts,
-    diagnostics
+    stats: realtimeStats,
+    refresh: refreshAppointments,
+    log: websocketLog
   } = useRealtimeAppointments(barbershopId)
+  
+  // Create diagnostics object for backward compatibility with debug panel
+  const diagnostics = useMemo(() => ({
+    subscriptionStatus: realtimeHookConnected ? 'connected' : 'disconnected',
+    channelStatus: realtimeHookConnected ? 'SUBSCRIBED' : 'CLOSED',
+    eventCounts: realtimeStats || { INSERT: 0, UPDATE: 0, DELETE: 0 },
+    connectionTime: null,
+    errorHistory: realtimeErrorMsg ? [{ error: realtimeErrorMsg, timestamp: new Date().toISOString() }] : [],
+    subscriptionStatusHistory: [],
+    connected: realtimeStats?.connected || false
+  }), [realtimeHookConnected, realtimeStats, realtimeErrorMsg])
+  
+  // Backward compatibility for old hook variables
+  const connectionAttempts = 1 // V2 always connects on first attempt
   
   // Debug info moved to useEffect to prevent infinite renders
 
@@ -220,34 +238,38 @@ export default function CalendarPage() {
     return result
   }
 
-  // Use API route for initial data (properly formatted), then real-time for updates
+  // Use real-time appointments from WebSocket hook
   useEffect(() => {
-    console.log('🔍 CRITICAL DEBUG: useEffect condition check:', {
-      realtimeAppointments: realtimeAppointments,
-      appointmentsType: typeof realtimeAppointments,
+    console.log('🔍 CALENDAR PAGE: Realtime appointments changed:', {
+      hasAppointments: !!realtimeAppointments,
       appointmentsLength: Array.isArray(realtimeAppointments) ? realtimeAppointments.length : 'not array',
-      isNull: realtimeAppointments === null,
-      isUndefined: realtimeAppointments === undefined,
-      conditionMet: realtimeAppointments !== null && realtimeAppointments !== undefined,
-      realtimeErrorMsg: realtimeErrorMsg,
-      realtimeHookConnected: realtimeHookConnected
+      isConnected: realtimeHookConnected,
+      lastUpdate: lastUpdate,
+      timestamp: new Date().toISOString()
     })
     
-    if (realtimeAppointments !== null && realtimeAppointments !== undefined) {
-      // Always prefer API route data for proper cancelled appointment formatting
-      console.log('✅ CRITICAL: Condition met - calling fetchRealAppointments()')
-      fetchRealAppointments() // Use API route which formats cancelled appointments correctly
+    if (realtimeAppointments && Array.isArray(realtimeAppointments) && realtimeAppointments.length > 0) {
+      // 🚨 CRITICAL FIX: Use WebSocket data directly instead of ignoring it
+      console.log('📡 CALENDAR PAGE: Updating with', realtimeAppointments.length, 'appointments from WebSocket')
+      
+      // Count cancelled appointments for debugging
+      const cancelledCount = realtimeAppointments.filter(apt => 
+        apt.extendedProps?.status === 'cancelled' || apt.title?.startsWith('❌')
+      ).length
+      console.log('📡 CALENDAR PAGE: Cancelled appointments:', cancelledCount)
+      
+      setEvents(realtimeAppointments)
       setRealtimeConnected(realtimeHookConnected)
-    } else if (realtimeErrorMsg) {
-      // Real-time failed, use manual fetch as fallback
-      setRealtimeError(realtimeErrorMsg)
-      setRealtimeConnected(false)
-      console.log('📅 Real-time failed, using manual fetch fallback:', realtimeErrorMsg)
+      
+      // Update tracking set
+      const newIds = new Set(realtimeAppointments.map(apt => apt.id))
+      setAppointmentIds(newIds)
+    } else if (!realtimeLoading && (!realtimeAppointments || realtimeAppointments.length === 0)) {
+      // Only fetch from API if WebSocket fails to provide data
+      console.log('📅 CALENDAR PAGE: WebSocket has no data, fetching from API as fallback')
       fetchRealAppointments()
-    } else {
-      console.log('❌ CRITICAL: Neither condition met - appointments won\'t load!')
     }
-  }, [realtimeAppointments, realtimeErrorMsg, realtimeHookConnected])
+  }, [realtimeAppointments, realtimeHookConnected, lastUpdate, realtimeAppointments?.length])
   
   // Timeout fallback if real-time doesn't load within 5 seconds
   // Only trigger if we have no events AND real-time hasn't connected
@@ -334,9 +356,9 @@ export default function CalendarPage() {
     }
   }
 
-  // Auto-refresh function for the AutoRefreshComponent
+  // Auto-refresh function for the AutoRefreshComponent (fallback when WebSocket fails)
   const handleAutoRefresh = async () => {
-    console.log('🔄 Auto-refresh triggered')
+    console.log('🔄 Auto-refresh triggered (WebSocket fallback mode)')
     await fetchRealAppointments()
   }
 
@@ -447,8 +469,19 @@ export default function CalendarPage() {
   
   // Filter events based on search and filter criteria
   const filteredEvents = useMemo(() => {
-    // Moved debug logs to prevent infinite loops
-    return events.filter(event => {
+    // 🚨 CRITICAL FIX: Merge both events and appointments arrays
+    // events = optimistic appointments, realtimeAppointments = real WebSocket appointments
+    const combinedEvents = [...events, ...realtimeAppointments]
+    const uniqueEvents = deduplicateAppointments(combinedEvents)
+    
+    console.log('🔄 MERGE DEBUG:', {
+      eventsCount: events.length,
+      realtimeAppointmentsCount: realtimeAppointments.length,
+      combinedCount: combinedEvents.length,
+      uniqueCount: uniqueEvents.length
+    })
+    
+    return uniqueEvents.filter(event => {
       // Improved test data classification
       // Consider something test data if:
       // 1. ID starts with known test patterns
@@ -608,7 +641,7 @@ export default function CalendarPage() {
     })
     
     return filteredResult
-  }, [events, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources, showTestData])
+  }, [events, realtimeAppointments, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources, showTestData])
   
   // Get unique services for filter dropdown
   const uniqueServices = useMemo(() => {
@@ -788,6 +821,34 @@ export default function CalendarPage() {
       // Real-time subscription will automatically remove the appointment
       // This prevents desync between manual removal and real-time updates
       
+      return
+    }
+
+    // Handle cancellation case - let real-time subscription handle the update
+    if (appointmentData?.isCancelled) {
+      console.log('Appointment cancelled, waiting for real-time update...')
+      
+      success('Appointment cancelled successfully!', {
+        title: 'Success',
+        duration: 3000
+      })
+      setShowAppointmentModal(false)
+      
+      // Real-time subscription will automatically update the appointment status
+      return
+    }
+
+    // Handle uncancellation case - let real-time subscription handle the update
+    if (appointmentData?.isUncancelled) {
+      console.log('Appointment uncancelled, waiting for real-time update...')
+      
+      success('Appointment uncancelled successfully!', {
+        title: 'Success',
+        duration: 3000
+      })
+      setShowAppointmentModal(false)
+      
+      // Real-time subscription will automatically update the appointment status
       return
     }
     
@@ -1083,6 +1144,9 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
+      {/* WebSocket Debug Panel - Temporarily disabled due to logs error */}
+      {/* <WebSocketDebugPanel /> */}
+      
       {/* Connection Status Overlay */}
       <div className={`realtime-status ${realtimeConnected ? 'connected' : 'disconnected'}`}>
         <span className="status-dot"></span>
@@ -1106,9 +1170,13 @@ export default function CalendarPage() {
               <RealtimeStatusIndicator 
                 isConnected={realtimeHookConnected}
                 lastUpdate={lastUpdate}
-                connectionAttempts={connectionAttempts}
+                connectionAttempts={1}
                 appointmentCount={events.length}
-                eventCounts={diagnostics?.eventCounts}
+                eventCounts={realtimeStats ? {
+                  INSERT: realtimeStats.inserts,
+                  UPDATE: realtimeStats.updates,
+                  DELETE: realtimeStats.deletes
+                } : null}
                 error={realtimeErrorMsg}
               />
               
@@ -1760,11 +1828,13 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* Auto-refresh component temporarily enabled for debugging */}
-      <AutoRefreshComponent 
-        onRefresh={handleAutoRefresh}
-        intervalMs={5000} // Check every 5 seconds for testing
-      />
+      {/* Auto-refresh component - Only when WebSocket V2 is not connected */}
+      {!realtimeHookConnected && (
+        <AutoRefreshComponent 
+          onRefresh={handleAutoRefresh}
+          intervalMs={10000} // Check every 10 seconds as fallback
+        />
+      )}
       
       {/* Diagnostics Toggle Button */}
       <button

@@ -73,8 +73,12 @@ export default function RescheduleConfirmationModal({
   
   const oldBarberName = appointmentDetails.extendedProps?.barberName || 'Previous Barber'
   const newBarberName = newTimeSlot.barberName || 'New Barber'
-  const customerName = appointmentDetails.extendedProps?.customer || appointmentDetails.title?.split(' - ')[0] || 'Customer'
-  const serviceName = appointmentDetails.extendedProps?.service || appointmentDetails.title?.split(' - ')[1] || 'Service'
+  const customerName = appointmentDetails.extendedProps?.customer || 
+                      (appointmentDetails.title && appointmentDetails.title.includes(' - ') ? appointmentDetails.title.split(' - ')[0] : null) || 
+                      'Customer'
+  const serviceName = appointmentDetails.extendedProps?.service || 
+                     (appointmentDetails.title && appointmentDetails.title.includes(' - ') ? appointmentDetails.title.split(' - ')[1] : null) || 
+                     'Service'
   
   return (
     <Transition.Root show={isOpen} as={Fragment}>

@@ -103,7 +103,7 @@
     "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/mcp-server-supabase": "^0.4.5",
     "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.53.0",
+    "@supabase/supabase-js": "^2.54.0",
     "@vercel/edge-config": "^1.4.0",
     "ai": "^5.0.0",
     "autoprefixer": "^10.4.16",

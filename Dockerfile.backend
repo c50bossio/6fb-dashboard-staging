@@ -23,6 +23,7 @@ RUN pip install --no-cache-dir -r requirements-minimal.txt
 COPY --chown=appuser:appuser main.py ./
 COPY --chown=appuser:appuser fastapi_backend.py ./
 COPY --chown=appuser:appuser websocket_backend.py ./
+COPY --chown=appuser:appuser start-fastapi.sh ./
 COPY --chown=appuser:appuser database/ ./database/
 COPY --chown=appuser:appuser services/ ./services/
 COPY --chown=appuser:appuser security/ ./security/
@@ -30,11 +31,14 @@ COPY --chown=appuser:appuser security/ ./security/
 # Create database directory with proper ownership
 RUN mkdir -p /app/data && chown -R appuser:appuser /app/data
 
+# Make start script executable
+RUN chmod +x /app/start-fastapi.sh
+
 # Change to non-root user
 USER appuser
 
 # Expose port 8000
 EXPOSE 8000
 
-# Start FastAPI server
-CMD ["uvicorn", "fastapi_backend:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Auto-detects environment and runs FastAPI in Docker/dev, simple HTTP in production
+CMD ["python", "main.py"]

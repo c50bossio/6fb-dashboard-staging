@@ -1,7 +1,7 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon, TrashIcon, ExclamationTriangleIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Fragment } from 'react'
 
@@ -87,13 +87,19 @@ export default function AppointmentBookingModal({
     reminders: true
   })
   
-  // Delete confirmation dialog state
+  // Delete/Cancel confirmation dialog state
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [deleteOption, setDeleteOption] = useState('single') // 'single' or 'all' for recurring
   const [deletingAppointment, setDeletingAppointment] = useState(false)
+  const [actionType, setActionType] = useState('cancel') // 'cancel' or 'delete'
 
   // Populate form when modal opens with selectedSlot or when editing
   useEffect(() => {
+    // PHASE 1 FIX: Reset delete option when modal opens
+    setDeleteOption('single')
+    setActionType('cancel')
+    setShowDeleteConfirmation(false)
+    
     if (isEditing && editingAppointment) {
       // Convert appointment time to local time for editing
       let scheduledAt = ''
@@ -635,7 +641,105 @@ export default function AppointmentBookingModal({
     }
   }
   
-  // Handle appointment deletion
+  // Handle appointment uncancellation (reactivate cancelled appointment)
+  const handleUncancel = async () => {
+    if (!editingAppointment || !editingAppointment.id) {
+      console.error('No appointment to uncancel', editingAppointment)
+      setError('No appointment ID found. This may be demo data that cannot be uncancelled.')
+      return
+    }
+    
+    console.log('Attempting to uncancel appointment:', editingAppointment.id)
+    
+    setDeletingAppointment(true)
+    setError('')
+    
+    try {
+      const response = await fetch('/api/calendar/appointments/uncancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appointmentId: editingAppointment.id
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to uncancel appointment')
+      }
+      
+      console.log('Uncancel successful:', data)
+      
+      // Close the modal and refresh the calendar
+      setShowDeleteConfirmation(false)
+      onClose()
+      
+      // Call the booking complete callback to refresh the calendar
+      if (onBookingComplete) {
+        await onBookingComplete({ isUncancelled: true })
+      }
+      
+    } catch (error) {
+      console.error('Error uncancelling appointment:', error)
+      setError('Failed to uncancel appointment: ' + error.message)
+    } finally {
+      setDeletingAppointment(false)
+    }
+  }
+
+  // Handle appointment cancellation (soft delete - marks as cancelled, stays visible)
+  const handleCancel = async () => {
+    if (!editingAppointment || !editingAppointment.id) {
+      console.error('No appointment to cancel', editingAppointment)
+      setError('No appointment ID found. This may be demo data that cannot be cancelled.')
+      return
+    }
+    
+    console.log('Attempting to cancel appointment:', editingAppointment.id)
+    
+    setDeletingAppointment(true)
+    setError('')
+    
+    try {
+      const response = await fetch('/api/calendar/appointments/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appointmentId: editingAppointment.id
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to cancel appointment')
+      }
+      
+      console.log('Cancel successful:', data)
+      
+      // Close the modal and refresh the calendar
+      setShowDeleteConfirmation(false)
+      onClose()
+      
+      // Call the booking complete callback to refresh the calendar
+      if (onBookingComplete) {
+        await onBookingComplete({ isCancelled: true })
+      }
+      
+    } catch (error) {
+      console.error('Error cancelling appointment:', error)
+      setError('Failed to cancel appointment: ' + error.message)
+    } finally {
+      setDeletingAppointment(false)
+    }
+  }
+
+  // Handle appointment deletion (hard delete - completely removes from calendar and history)
   const handleDelete = async () => {
     if (!editingAppointment || !editingAppointment.id) {
       console.error('No appointment to delete', editingAppointment)
@@ -643,10 +747,12 @@ export default function AppointmentBookingModal({
       return
     }
     
-    console.log('Attempting to delete appointment:', {
+    console.log('🔴 DELETE ATTEMPT - Appointment Details:', {
       id: editingAppointment.id,
+      status: editingAppointment.extendedProps?.status,
       isRecurring: editingAppointment.isRecurring,
-      extendedProps: editingAppointment.extendedProps
+      extendedProps: editingAppointment.extendedProps,
+      fullAppointment: editingAppointment
     })
     
     setDeletingAppointment(true)
@@ -657,14 +763,35 @@ export default function AppointmentBookingModal({
       let deleteUrl = `/api/calendar/appointments/${editingAppointment.id}`
       const params = new URLSearchParams()
       
-      // For recurring appointments, determine delete scope
-      if (editingAppointment.isRecurring || editingAppointment.extendedProps?.isRecurring) {
-        if (deleteOption === 'all') {
-          params.append('deleteAll', 'true')
-        } else if (deleteOption === 'single' && editingAppointment.start) {
-          // Get the date of this specific occurrence
-          const occurrenceDate = new Date(editingAppointment.start)
-          params.append('cancelDate', occurrenceDate.toISOString().split('T')[0])
+      // PHASE 1 ENHANCED: Explicitly check for cancelled status FIRST
+      const isCancelled = editingAppointment.extendedProps?.status === 'cancelled'
+      
+      if (isCancelled) {
+        // PHASE 1 FIX: Cancelled appointments NEVER get parameters
+        console.log('🔴 DELETE - CANCELLED APPOINTMENT - NO PARAMETERS WILL BE SENT')
+        console.log('🔴 DELETE - Status:', editingAppointment.extendedProps?.status)
+        // Do NOT add any parameters - just use base URL
+      } else {
+        // Only check recurring logic for NON-cancelled appointments
+        const isActuallyRecurring = editingAppointment.isRecurring || editingAppointment.extendedProps?.isRecurring
+        
+        console.log('🔴 DELETE - Non-Cancelled Appointment Check:', {
+          isRecurring: editingAppointment.isRecurring,
+          extendedPropsRecurring: editingAppointment.extendedProps?.isRecurring,
+          status: editingAppointment.extendedProps?.status,
+          isActuallyRecurring,
+          deleteOption
+        })
+        
+        // Only add parameters for actual recurring appointments that are NOT cancelled
+        if (isActuallyRecurring) {
+          if (deleteOption === 'all') {
+            params.append('deleteAll', 'true')
+          } else if (deleteOption === 'single' && editingAppointment.start) {
+            // Get the date of this specific occurrence
+            const occurrenceDate = new Date(editingAppointment.start)
+            params.append('cancelDate', occurrenceDate.toISOString().split('T')[0])
+          }
         }
       }
       
@@ -672,16 +799,15 @@ export default function AppointmentBookingModal({
         deleteUrl += `?${params.toString()}`
       }
       
-      console.log('Deleting appointment:', deleteUrl)
+      console.log('🔴 DELETE URL:', deleteUrl)
+      console.log('🔴 URL PARAMS:', params.toString() || 'NONE')
       
-      const response = await fetch('/api/calendar/appointments/cancel', {
-        method: 'POST',
+      // Use DELETE method to actually remove from database
+      const response = await fetch(deleteUrl, {
+        method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          appointmentId: editingAppointment.id
-        })
+          'Content-Type': 'application/json',
+        }
       })
       
       const data = await response.json()
@@ -1643,32 +1769,67 @@ export default function AppointmentBookingModal({
                       </div>
 
                       {/* Actions */}
-                      <div className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-between">
-                        {/* Delete button (left side) - only show when editing */}
+                      <div className="mt-6 flex flex-col sm:flex-row sm:justify-between gap-3">
+                        {/* Cancel/Uncancel/Delete buttons (left side) - only show when editing */}
                         {isEditing && (
-                          <button
-                            type="button"
-                            onClick={() => setShowDeleteConfirmation(true)}
-                            className="inline-flex items-center rounded-md bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:w-auto min-h-[44px] mt-3 sm:mt-0"
-                          >
-                            <XMarkIcon className="h-4 w-4 mr-2" />
-                            Cancel Appointment
-                          </button>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            {/* Show different first button based on appointment status */}
+                            {editingAppointment?.extendedProps?.status === 'cancelled' ? (
+                              // Restore button for cancelled appointments
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActionType('uncancel')
+                                  setShowDeleteConfirmation(true)
+                                }}
+                                className="inline-flex items-center justify-center rounded-lg border-2 border-green-600 bg-white px-4 py-2 text-sm font-medium text-green-600 shadow-sm hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                              >
+                                <CheckIcon className="h-5 w-5 mr-2" />
+                                Restore
+                              </button>
+                            ) : (
+                              // Cancel button for active appointments
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActionType('cancel')
+                                  setShowDeleteConfirmation(true)
+                                }}
+                                className="inline-flex items-center justify-center rounded-lg border-2 border-orange-600 bg-white px-4 py-2 text-sm font-medium text-orange-600 shadow-sm hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                              >
+                                <XMarkIcon className="h-5 w-5 mr-2" />
+                                Cancel
+                              </button>
+                            )}
+                            
+                            {/* Delete button - always show for both active and cancelled appointments */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActionType('delete')
+                                setShowDeleteConfirmation(true)
+                              }}
+                              className="inline-flex items-center justify-center rounded-lg border-2 border-red-600 bg-white px-4 py-2 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                            >
+                              <TrashIcon className="h-5 w-5 mr-2" />
+                              Delete
+                            </button>
+                          </div>
                         )}
                         
                         {/* Right side buttons */}
-                        <div className="flex flex-col-reverse sm:flex-row sm:space-x-3 sm:ml-auto">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <button
                             type="button"
                             onClick={onClose}
-                            className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-4 py-3 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto min-h-[44px]"
+                            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                           >
                             Cancel
                           </button>
                           <button
                             type="submit"
                           disabled={loading || checkingAvailability || (conflicts && conflicts.has_conflicts && conflictResolution === 'cancel')}
-                          className="inline-flex w-full justify-center items-center rounded-md bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {loading ? (
                             <>
@@ -1735,7 +1896,7 @@ export default function AppointmentBookingModal({
                   </div>
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                     <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
-                      Cancel Appointment
+                      {actionType === 'cancel' ? 'Cancel Appointment' : actionType === 'uncancel' ? 'Uncancel Appointment' : 'Delete Appointment'}
                     </Dialog.Title>
                     <div className="mt-2">
                       {editingAppointment?.isRecurring || editingAppointment?.extendedProps?.isRecurring ? (
@@ -1773,9 +1934,57 @@ export default function AppointmentBookingModal({
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-500">
-                          Are you sure you want to delete this appointment? This action cannot be undone.
-                        </p>
+                        <div className="text-sm text-gray-500">
+                          {actionType === 'cancel' ? (
+                            <div className="space-y-2">
+                              <p>
+                                Are you sure you want to <strong>cancel</strong> this appointment?
+                              </p>
+                              <p>
+                                • The appointment will be marked as cancelled
+                              </p>
+                              <p>
+                                • It will appear as a red block in the calendar
+                              </p>
+                              <p>
+                                • It will remain in your appointment history
+                              </p>
+                            </div>
+                          ) : actionType === 'uncancel' ? (
+                            <div className="space-y-2">
+                              <p>
+                                Are you sure you want to <strong>uncancel</strong> this appointment?
+                              </p>
+                              <p>
+                                • The appointment will be reactivated
+                              </p>
+                              <p>
+                                • It will return to its normal color in the calendar
+                              </p>
+                              <p>
+                                • It will be restored to confirmed status
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <p>
+                                Are you sure you want to <strong>permanently delete</strong> this appointment?
+                              </p>
+                              <p>
+                                • The appointment will be completely removed
+                              </p>
+                              <p>
+                                • It will disappear from the calendar
+                              </p>
+                              <p>
+                                • It will be removed from your appointment history
+                              </p>
+                              <p className="text-red-600 font-semibold">
+                                • This action cannot be undone
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -1784,16 +1993,26 @@ export default function AppointmentBookingModal({
                   <button
                     type="button"
                     disabled={deletingAppointment}
-                    onClick={handleDelete}
-                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={
+                      actionType === 'cancel' ? handleCancel : 
+                      actionType === 'uncancel' ? handleUncancel : 
+                      handleDelete
+                    }
+                    className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed ${
+                      actionType === 'cancel' 
+                        ? 'bg-orange-600 hover:bg-orange-500' 
+                        : actionType === 'uncancel'
+                        ? 'bg-green-600 hover:bg-green-500'
+                        : 'bg-red-600 hover:bg-red-500'
+                    }`}
                   >
                     {deletingAppointment ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Cancelling...
+                        {actionType === 'cancel' ? 'Cancelling...' : actionType === 'uncancel' ? 'Uncancelling...' : 'Deleting...'}
                       </>
                     ) : (
-                      'Cancel Appointment'
+                      actionType === 'cancel' ? 'Cancel Appointment' : actionType === 'uncancel' ? 'Uncancel Appointment' : 'Delete Permanently'
                     )}
                   </button>
                   <button

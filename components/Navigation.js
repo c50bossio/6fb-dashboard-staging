@@ -10,6 +10,7 @@ import {
   Cog6ToothIcon,
   CalendarDaysIcon,
   UserGroupIcon,
+  UserPlusIcon,
   LinkIcon,
   QrCodeIcon,
   GlobeAltIcon,
@@ -18,7 +19,15 @@ import {
   XMarkIcon,
   PresentationChartLineIcon,
   ChevronDoubleLeftIcon,
-  ChevronDoubleRightIcon
+  ChevronDoubleRightIcon,
+  PaintBrushIcon,
+  CurrencyDollarIcon,
+  CubeIcon,
+  CreditCardIcon,
+  BuildingStorefrontIcon,
+  ScissorsIcon,
+  ShoppingBagIcon,
+  DocumentChartBarIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -67,11 +76,16 @@ const coreOperations = [
 
 const barberOperations = [
   { 
-    name: 'Barber Dashboard', 
+    name: 'My Dashboard', 
     href: '/barber/dashboard', 
     icon: HomeIcon,
-    description: 'Barber earnings, stats, and daily overview',
-    badge: 'New'
+    description: 'Your earnings, stats, and daily overview'
+  },
+  { 
+    name: 'Profile & Branding', 
+    href: '/barber/profile', 
+    icon: PaintBrushIcon,
+    description: 'Customize your landing page and personal brand'
   },
   { 
     name: 'My Schedule', 
@@ -80,33 +94,72 @@ const barberOperations = [
     description: 'Manage your appointments and availability'
   },
   { 
-    name: 'Website Settings', 
-    href: '/dashboard/website-settings', 
-    icon: GlobeAltIcon,
-    description: 'Customize your website, branding, colors, and content',
-    badge: 'Customize'
-  },
-  { 
-    name: 'Booking Links & QR Codes', 
-    href: '/barber/booking-links', 
-    icon: LinkIcon,
-    description: 'Create custom booking links with QR codes for client sharing',
-    badge: 'New'
-  },
-  { 
     name: 'My Clients', 
     href: '/barber/clients', 
     icon: UserGroupIcon,
     description: 'View and manage your client relationships'
   },
   { 
-    name: 'Public Booking Page', 
+    name: 'Performance Reports', 
+    href: '/barber/reports', 
+    icon: ChartBarIcon,
+    description: 'Track your earnings and performance metrics'
+  },
+  { 
+    name: 'Public Page Preview', 
     href: '/barber/public-booking', 
     icon: EyeIcon,
-    description: 'Preview and share your customized public booking page',
-    badge: 'SEO Ready'
+    description: 'Preview and share your customized booking page'
   }
+  // Coming Soon:
+  // - My Services (manage your services and pricing)
+  // - Financial Overview (detailed earnings and payouts)
+  // - Product Sales (track product commissions)
 ]
+
+const shopManagement = [
+  { 
+    name: 'Shop Dashboard', 
+    href: '/shop/dashboard', 
+    icon: BuildingStorefrontIcon,
+    description: 'Multi-barber overview and shop analytics'
+  },
+  { 
+    name: 'Shop Settings', 
+    href: '/shop/settings', 
+    icon: Cog6ToothIcon,
+    description: 'Configure shop details and preferences'
+  },
+  { 
+    name: 'Add Barber', 
+    href: '/shop/barbers/add', 
+    icon: UserPlusIcon,
+    description: 'Add new barbers to your team'
+  },
+  { 
+    name: 'Financial Overview', 
+    href: '/shop/financial', 
+    icon: CurrencyDollarIcon,
+    description: 'Commission settings and financial arrangements'
+  },
+  { 
+    name: 'Product Inventory', 
+    href: '/shop/products', 
+    icon: CubeIcon,
+    description: 'Manage product inventory'
+  }
+  // Coming Soon:
+  // - Staff Management (manage all barbers)
+  // - Point of Sale (process sales)
+  // - Advanced Reports (detailed analytics)
+]
+
+// Enterprise operations - Coming Soon
+const enterpriseOperations = []
+// Future features:
+// - Enterprise Dashboard (multi-location overview)
+// - Location Management (manage all shops)
+// - Cross-Shop Analytics (performance comparison)
 
 const legacyPages = [
   { 
@@ -281,25 +334,26 @@ export default function Navigation() {
                           {item.description}
                         </p>
                       )}
-                      {/* Show submodes for Unified Dashboard */}
-                      {item.submodes && isActive && (
-                        <div className="mt-3 pl-2 space-y-1">
-                          {item.submodes.map((submode) => (
-                            <Link
-                              key={submode.mode}
-                              href={`${item.href}?mode=${submode.mode}`}
-                              className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600 py-1"
-                            >
-                              <submode.icon className="h-3 w-3" />
-                              <span>{submode.name}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      )}
                       </div>
                     )}
                   </div>
                 </Link>
+                {/* Show submodes for Unified Dashboard - moved outside main Link */}
+                {!collapsed && item.submodes && isActive && (
+                  <div className="mt-2 ml-8 pl-2 space-y-1">
+                    {item.submodes.map((submode) => (
+                      <Link
+                        key={submode.mode}
+                        href={`${item.href}?mode=${submode.mode}`}
+                        onClick={onItemClick}
+                        className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600 py-1"
+                      >
+                        <submode.icon className="h-3 w-3" />
+                        <span>{submode.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </li>
             )
           })}
@@ -373,11 +427,13 @@ export default function Navigation() {
       {/* Barber Operations - Only show for barbers and owners */}
       {['BARBER', 'SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
         <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
-          <div className="mb-4">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              BARBER OPERATIONS
-            </h2>
-          </div>
+          {!collapsed && (
+            <div className="mb-4">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                BARBER OPERATIONS
+              </h2>
+            </div>
+          )}
           
           <ul className="space-y-2">
             {barberOperations.map((item) => {
@@ -411,6 +467,138 @@ export default function Navigation() {
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
                             ${isActive 
                               ? 'bg-amber-100 text-amber-700' 
+                              : 'bg-gray-100 text-gray-600'
+                            }
+                          `}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                      {item.description && (
+                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                          {item.description}
+                        </p>
+                      )}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+        </div>
+      )}
+
+      {/* Shop Management - Only show for shop owners and above */}
+      {['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
+        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+          {!collapsed && (
+            <div className="mb-4">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                SHOP MANAGEMENT
+              </h2>
+            </div>
+          )}
+          
+          <ul className="space-y-2">
+            {shopManagement.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href)
+            
+            return (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  onClick={onItemClick}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 shadow-md' : 'hover:bg-gray-50'}`}
+                >
+                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
+                    <item.icon
+                      className={`
+                        ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
+                        ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}
+                      `}
+                      title={collapsed ? item.name : undefined}
+                    />
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className={`text-sm font-medium truncate ${
+                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                        }`}>
+                          {item.name}
+                        </p>
+                        {item.badge && (
+                          <span className={`
+                            ml-2 px-2 py-1 text-xs font-medium rounded-full
+                            ${isActive 
+                              ? 'bg-indigo-100 text-indigo-700' 
+                              : 'bg-gray-100 text-gray-600'
+                            }
+                          `}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                      {item.description && (
+                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                          {item.description}
+                        </p>
+                      )}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+        </div>
+      )}
+
+      {/* Enterprise Operations - Only show for enterprise owners */}
+      {['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
+        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+          {!collapsed && (
+            <div className="mb-4">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                ENTERPRISE OPERATIONS
+              </h2>
+            </div>
+          )}
+          
+          <ul className="space-y-2">
+            {enterpriseOperations.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href)
+            
+            return (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  onClick={onItemClick}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 shadow-md' : 'hover:bg-gray-50'}`}
+                >
+                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
+                    <item.icon
+                      className={`
+                        ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
+                        ${isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-gray-600'}
+                      `}
+                      title={collapsed ? item.name : undefined}
+                    />
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className={`text-sm font-medium truncate ${
+                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                        }`}>
+                          {item.name}
+                        </p>
+                        {item.badge && (
+                          <span className={`
+                            ml-2 px-2 py-1 text-xs font-medium rounded-full
+                            ${isActive 
+                              ? 'bg-purple-100 text-purple-700' 
                               : 'bg-gray-100 text-gray-600'
                             }
                           `}>

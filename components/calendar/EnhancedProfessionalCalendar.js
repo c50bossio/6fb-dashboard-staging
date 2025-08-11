@@ -80,46 +80,22 @@ export default function EnhancedProfessionalCalendar({
   
   const events = externalEvents || generateWeekEvents()
   
-  // Process events based on current view
-  // For non-resource views, we need to ensure events display properly
-  const processedEvents = useMemo(() => {
-    if (!events || events.length === 0) return []
-    
-    // Check if current view is a resource view
-    const isResourceView = currentView?.includes('resource') || currentView?.includes('Resource') || currentView?.includes('timeline')
-    
-    // For non-resource views, remove resourceId so events display properly
-    // For resource views, keep resourceId for column assignment
-    return events.map(event => {
-      if (isResourceView) {
-        // Keep resourceId for resource views
-        return event
-      } else {
-        // Remove resourceId for non-resource views so events display
-        const { resourceId, ...eventWithoutResource } = event
-        return eventWithoutResource
-      }
-    })
-  }, [events, currentView])
+  // Use events directly without processing
+  // FullCalendar handles resource vs non-resource views internally
+  const processedEvents = events
   
-  // Debug: Log events to see what we're working with
+  // Minimal debug logging
   useEffect(() => {
-    console.log('🔍 Calendar Debug:', {
-      externalEventsCount: externalEvents?.length || 0,
-      usingExternalEvents: !!externalEvents,
-      finalEventsCount: events.length,
-      processedEventsCount: processedEvents.length,
-      resourcesCount: resources.length,
-      resources: resources.map(r => r.id),
-      currentView: currentView
-    })
-  }, [externalEvents, events, processedEvents, resources, currentView])
+    if (events.length > 0) {
+      console.log('📅 Calendar events loaded:', events.length, 'for view:', currentView)
+    }
+  }, [events.length, currentView])
   
-  // Enhanced slot selection handler with view awareness
+  // Enhanced slot selection handler with view awareness (for drag selection)
   const handleDateSelect = useCallback((selectInfo) => {
     const viewType = selectInfo.view.type
     
-    // Capture comprehensive slot data
+    // Capture comprehensive slot data from drag selection
     const slotData = {
       start: selectInfo.start,
       end: selectInfo.end,
@@ -130,7 +106,10 @@ export default function EnhancedProfessionalCalendar({
       resource: selectInfo.resource,
       resourceId: selectInfo.resource?.id,
       resourceTitle: selectInfo.resource?.title,
-      jsEvent: selectInfo.jsEvent
+      jsEvent: selectInfo.jsEvent,
+      selectionType: 'drag',
+      // Calculate duration in minutes
+      duration: Math.round((selectInfo.end - selectInfo.start) / 60000)
     }
     
     // Add view-specific enhancements
@@ -408,12 +387,14 @@ export default function EnhancedProfessionalCalendar({
         events={processedEvents}  // Use processed events
         // This allows resource events to display in non-resource views
         resourcesInitiallyExpanded={true}
+        refetchResourcesOnNavigate={false}  // Prevent unnecessary resource refetching
         resourceLabelDidMount={(info) => {
           // Ensure resource labels are visible
           console.log('Resource mounted:', info.resource.title)
         }}
         
         // Time configuration
+        timeZone="local"  // Use local timezone to prevent date/time issues
         slotMinTime="08:00:00"
         slotMaxTime="20:00:00"
         slotDuration="00:30:00"
@@ -423,6 +404,9 @@ export default function EnhancedProfessionalCalendar({
           minute: '2-digit',
           meridiem: 'short'
         }}
+        slotEventOverlap={false}  // Prevent visual event overlap in time slots
+        scrollTime="09:00:00"  // Initial scroll position to 9am
+        expandRows={true}  // Expand rows to fill available height
         
         // Business hours
         businessHours={{
@@ -434,23 +418,147 @@ export default function EnhancedProfessionalCalendar({
         // Display
         height={height}
         nowIndicator={true}
+        nowIndicatorClassNames={['current-time-indicator']}
         eventDisplay="auto"  // Changed from "block" to "auto" for proper event rendering
-        dayMaxEvents={true}
+        dayMaxEvents={3}  // Show max 3 events, rest in popover
+        moreLinkClick="popover"  // Show events in popover when there are too many
+        moreLinkClassNames={['more-events-link']}
         weekNumbers={false}
         eventInteractive={true}  // Ensure events are interactive
+        lazyFetching={true}  // Enable lazy loading for better performance
+        progressiveEventRendering={true}  // Progressive rendering for better performance
+        eventMaxStack={3}  // Max 3 events stacked in TimeGrid views
+        eventMinHeight={20}  // Minimum height for events
+        eventShortHeight={30}  // Height for short events
         
         // Interaction
         editable={true}
         selectable={true}
         selectMirror={true}
+        selectMinDistance={2}  // Reduce to make selection easier
+        selectLongPressDelay={250}  // Touch device long-press delay
+        unselectAuto={true}  // Auto-unselect when clicking elsewhere
+        unselectCancel=".fc-event,.modal"  // Don't unselect when clicking events or modals
         select={handleDateSelect}
+        dateClick={(info) => {
+          // Handle single clicks on dates/times
+          console.log('📅 Single click on date/time:', info)
+          
+          // Only process clicks in time-based views (not month view)
+          if (info.view.type.includes('timeGrid') || info.view.type.includes('resource')) {
+            // For single clicks, we'll pass the start time and let the service selection determine duration
+            // Initially show a provisional 1-hour slot, but this will update based on selected service
+            const provisionalEnd = new Date(info.date)
+            provisionalEnd.setHours(provisionalEnd.getHours() + 1)
+            
+            const slotData = {
+              start: info.date,
+              end: provisionalEnd, // This is provisional and will be recalculated based on service
+              startStr: info.dateStr,
+              endStr: provisionalEnd.toISOString(),
+              allDay: false,
+              viewType: info.view.type,
+              resource: info.resource,
+              resourceId: info.resource?.id,
+              resourceTitle: info.resource?.title,
+              jsEvent: info.jsEvent,
+              selectionType: 'click',
+              duration: null, // Will be determined by service selection
+              isProvisional: true, // Indicates duration needs to be set by service
+              // Add barber info for resource views
+              barberId: info.resource?.id || null,
+              barberName: info.resource?.title || null
+            }
+            
+            console.log('📅 Opening modal from single click with data:', slotData)
+            
+            // Call the slot click handler
+            if (onSlotClick) {
+              onSlotClick(slotData)
+            }
+          } else if (info.view.type === 'dayGridMonth') {
+            // For month view, create an all-day selection or default morning slot
+            const slotData = {
+              start: info.date,
+              end: info.date,
+              startStr: info.dateStr,
+              endStr: info.dateStr,
+              allDay: true,
+              viewType: info.view.type,
+              needsTimePicker: true,
+              suggestedTime: '09:00',
+              selectedDate: info.dateStr,
+              selectionType: 'click',
+              duration: 60
+            }
+            
+            console.log('📅 Month view click - needs time selection:', slotData)
+            
+            if (onSlotClick) {
+              onSlotClick(slotData)
+            }
+          }
+        }}
+        selectConstraint={{  // Constrain selection to business hours
+          startTime: '08:00',
+          endTime: '20:00'
+        }}
+        selectAllow={(selectInfo) => {
+          // Additional validation for selection
+          const duration = selectInfo.end - selectInfo.start
+          return duration <= 4 * 60 * 60 * 1000  // Max 4 hours selection
+        }}
         eventClick={handleEventClick}
         eventDrop={handleEventDrop}
+        eventResizableFromStart={true}  // Allow resizing from both ends
+        eventDragMinDistance={5}  // Minimum drag distance before event moves
+        dragRevertDuration={500}  // Animation duration when drag is reverted
+        dragScroll={true}  // Enable auto-scroll while dragging
         viewDidMount={handleViewChange}
         datesSet={handleViewChange}  // Also handle when navigating dates
+        loading={(isLoading) => {
+          // Handle loading state
+          console.log('Calendar loading:', isLoading)
+        }}
+        eventAdd={(info) => {
+          console.log('Event added:', info.event.id)
+        }}
+        eventChange={(info) => {
+          console.log('Event changed:', info.event.id)
+        }}
+        eventRemove={(info) => {
+          console.log('Event removed:', info.event.id)
+        }}
         
-        // Event content rendering - Using default rendering to preserve click handling
-        // Commented out custom HTML rendering as it breaks React event handling
+        // Event Display Configuration
+        eventTimeFormat={{  // Better time formatting
+          hour: 'numeric',
+          minute: '2-digit',
+          meridiem: 'short'
+        }}
+        displayEventTime={true}
+        displayEventEnd={false}  // Don't show end time in event title
+        eventOrder="-duration,title"  // Order by duration (longest first), then title
+        eventOrderStrict={false}  // Allow some flexibility in ordering
+        nextDayThreshold="06:00:00"  // Events ending before 6am count as previous day
+        
+        // Event content rendering - Using eventDidMount for styling instead of eventContent
+        // This preserves React event handling while allowing customization
+        eventDidMount={(info) => {
+          // Add custom classes based on event properties
+          const { event } = info
+          if (event.extendedProps?.isOptimistic) {
+            info.el.classList.add('optimistic-event')
+            info.el.style.opacity = '0.7'
+          }
+          if (event.extendedProps?.isRecurring) {
+            info.el.classList.add('recurring-event')
+          }
+          // Add status-based styling
+          if (event.extendedProps?.status) {
+            info.el.classList.add(`event-status-${event.extendedProps.status}`)
+          }
+        }}
         // eventContent={(arg) => {
         //   const { event } = arg
         //   const isRecurring = event.extendedProps?.isRecurring
@@ -524,7 +632,7 @@ export default function EnhancedProfessionalCalendar({
         // Resources - Enhanced configuration for proper rendering
         schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
         resourceAreaHeaderContent="Barbers"
-        resourceAreaWidth="15%"
+        resourceAreaWidth="12%"
         resourceAreaColumns={[
           {
             field: 'title',
@@ -535,8 +643,11 @@ export default function EnhancedProfessionalCalendar({
         refetchResourcesOnNavigate={true}
         resourceOrder="title"
         
-        // Mobile responsiveness
-        dayHeaderFormat={{ weekday: 'short', month: 'numeric', day: 'numeric' }}
+        // Mobile responsiveness and better date formatting
+        dayHeaderFormat={currentView.includes('resource') ? 
+          { day: '2-digit' } :  // For resource views: just "10", "11", "12"
+          { weekday: 'short', month: 'numeric', day: 'numeric' }  // For other views: "Mon 8/10"
+        }
         
         // Performance
         lazyFetching={true}

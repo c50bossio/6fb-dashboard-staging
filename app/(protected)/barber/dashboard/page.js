@@ -12,6 +12,7 @@ import {
   BellIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import Link from 'next/link'
 
 export default function BarberDashboard() {
   const { user, profile } = useAuth()
@@ -181,22 +182,22 @@ export default function BarberDashboard() {
         <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <button className="p-3 sm:p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors">
+            <Link href="/barber/schedule" className="p-3 sm:p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors text-center">
               <CalendarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-amber-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">View Schedule</p>
-            </button>
-            <button className="p-3 sm:p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+            </Link>
+            <Link href="/barber/clients" className="p-3 sm:p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors text-center">
               <UserGroupIcon className="h-5 sm:h-6 w-5 sm:w-6 text-blue-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">My Clients</p>
-            </button>
-            <button className="p-3 sm:p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+            </Link>
+            <Link href="/barber/reports" className="p-3 sm:p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors text-center">
               <ChartBarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-green-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">View Reports</p>
-            </button>
-            <button className="p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+            </Link>
+            <Link href="/barber/schedule#availability" className="p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors text-center">
               <ClockIcon className="h-5 sm:h-6 w-5 sm:w-6 text-purple-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">Set Availability</p>
-            </button>
+            </Link>
           </div>
         </div>
 

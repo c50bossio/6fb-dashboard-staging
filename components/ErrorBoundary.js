@@ -14,8 +14,31 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error to console and potentially to external service
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    // Safely log error to console with multiple safety layers
+    try {
+      // Try to safely stringify the error first
+      const safeError = {
+        message: error?.message || 'Unknown error',
+        stack: error?.stack || 'No stack trace',
+        name: error?.name || 'Error'
+      }
+      
+      // Use a safer logging approach
+      console.group('🚨 ErrorBoundary caught an error')
+      console.log('Error message:', safeError.message)
+      console.log('Error name:', safeError.name)
+      if (errorInfo?.componentStack) {
+        console.log('Component stack:', errorInfo.componentStack)
+      }
+      console.groupEnd()
+    } catch (logError) {
+      // Even safer fallback - just log a simple string
+      try {
+        console.log('ErrorBoundary: An error occurred but could not be logged safely')
+      } catch (e) {
+        // Last resort - do nothing, avoid any potential infinite loops
+      }
+    }
     
     this.setState({
       error,
@@ -57,7 +80,17 @@ class ErrorBoundary extends React.Component {
                     </summary>
                     <div className="mt-2 p-3 bg-red-50 rounded-md">
                       <p className="text-xs text-red-700 font-mono whitespace-pre-wrap">
-                        {this.state.error.toString()}
+                        {(() => {
+                          try {
+                            // Safely convert error to string
+                            if (typeof this.state.error === 'string') {
+                              return this.state.error
+                            }
+                            return this.state.error?.message || this.state.error?.toString() || 'Unknown error'
+                          } catch (e) {
+                            return 'Error details could not be displayed'
+                          }
+                        })()}
                       </p>
                       {this.state.errorInfo?.componentStack && (
                         <div className="mt-2">

@@ -1,0 +1,205 @@
+'use client'
+
+import { useEffect, useState, useCallback } from 'react'
+import { createClient } from '@supabase/supabase-js'
+
+export function useRealtimeAppointmentsSimple(shopId) {
+  const [appointments, setAppointments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [isConnected, setIsConnected] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState(null)
+  const [stats, setStats] = useState({
+    inserts: 0,
+    updates: 0,
+    deletes: 0,
+    connected: false
+  })
+
+  // Transform booking to FullCalendar event format
+  const transformToEvent = useCallback((booking) => {
+    const isCancelled = booking.status === 'cancelled'
+    
+    return {
+      id: booking.id,
+      resourceId: booking.barber_id,
+      title: `${isCancelled ? '❌ ' : ''}${booking.customer_name || 'Customer'} - ${booking.service_name || 'Service'}`,
+      start: booking.start_time,
+      end: booking.end_time,
+      backgroundColor: isCancelled ? '#ef4444' : '#3b82f6',
+      borderColor: isCancelled ? '#dc2626' : '#3b82f6',
+      classNames: isCancelled ? ['cancelled-appointment'] : [],
+      extendedProps: {
+        customer: booking.customer_name,
+        customerPhone: booking.customer_phone,
+        customerEmail: booking.customer_email,
+        service: booking.service_name,
+        service_id: booking.service_id,
+        barber_id: booking.barber_id,
+        duration: booking.duration_minutes,
+        price: booking.price,
+        status: booking.status,
+        notes: booking.notes,
+        shop_id: booking.shop_id
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    console.log('🎯 Simple WebSocket hook starting for shop:', shopId)
+    
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('❌ Missing Supabase environment variables')
+      setError('Missing configuration')
+      setLoading(false)
+      return
+    }
+    
+    // Create Supabase client with service role for realtime to work
+    // Note: Using service role because anon key doesn't receive realtime events due to RLS
+    const serviceRoleKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY || 
+                          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
+    
+    const supabase = createClient(supabaseUrl, serviceRoleKey)
+    console.log('✅ Simple hook: Supabase client created with service role for realtime')
+    
+    // Fetch initial appointments
+    const fetchAppointments = async () => {
+      try {
+        console.log('📡 Fetching initial appointments...')
+        
+        const { data, error } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('shop_id', shopId)
+          .order('start_time', { ascending: true })
+        
+        if (error) throw error
+        
+        const events = data.map(transformToEvent)
+        setAppointments(events)
+        setLoading(false)
+        
+        console.log('✅ Loaded', events.length, 'appointments')
+      } catch (err) {
+        console.error('❌ Error fetching appointments:', err)
+        setError(err.message)
+        setLoading(false)
+      }
+    }
+    
+    fetchAppointments()
+    
+    // Set up realtime subscription
+    console.log('📡 Setting up realtime subscription...')
+    
+    const channel = supabase
+      .channel(`simple-bookings-${shopId}`)
+      .on('postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `shop_id=eq.${shopId}`
+        },
+        (payload) => {
+          console.log('📦 Simple hook received event:', payload.eventType)
+          
+          const eventType = payload.eventType
+          setLastUpdate(new Date().toISOString())
+          
+          // Update stats
+          if (eventType === 'INSERT') {
+            setStats(prev => ({ ...prev, inserts: prev.inserts + 1 }))
+            const newEvent = transformToEvent(payload.new)
+            // CRITICAL: Check if appointment already exists before adding
+            setAppointments(prev => {
+              const exists = prev.some(apt => apt.id === newEvent.id)
+              if (exists) {
+                console.log('🔄 Skipping duplicate INSERT for ID:', newEvent.id)
+                return prev // Don't add duplicate
+              }
+              console.log('➕ Adding new appointment:', newEvent.id)
+              return [...prev, newEvent]
+            })
+          } else if (eventType === 'UPDATE') {
+            setStats(prev => ({ ...prev, updates: prev.updates + 1 }))
+            const updatedEvent = transformToEvent(payload.new)
+            setAppointments(prev => prev.map(apt => 
+              apt.id === updatedEvent.id ? updatedEvent : apt
+            ))
+          } else if (eventType === 'DELETE') {
+            setStats(prev => ({ ...prev, deletes: prev.deletes + 1 }))
+            setAppointments(prev => prev.filter(apt => apt.id !== payload.old.id))
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('🔔 Simple hook subscription status:', status)
+        
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Simple hook CONNECTED!')
+          setIsConnected(true)
+          setStats(prev => ({ ...prev, connected: true }))
+          
+          // Store in window for debugging
+          if (typeof window !== 'undefined') {
+            window.simpleHookConnected = true
+            window.simpleHookStatus = status
+          }
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('❌ Simple hook connection failed:', status)
+          setIsConnected(false)
+          setStats(prev => ({ ...prev, connected: false }))
+          setError(`Connection failed: ${status}`)
+        } else if (status === 'CLOSED') {
+          console.log('⚠️ Simple hook connection closed')
+          setIsConnected(false)
+          setStats(prev => ({ ...prev, connected: false }))
+        }
+      })
+    
+    // Cleanup
+    return () => {
+      console.log('🧹 Cleaning up simple hook subscription')
+      supabase.removeChannel(channel)
+    }
+  }, [shopId, transformToEvent])
+
+  // Manual refresh function
+  const refresh = useCallback(async () => {
+    console.log('🔄 Manual refresh triggered')
+    // Re-fetch appointments
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (supabaseUrl && supabaseAnonKey) {
+      const supabase = createClient(supabaseUrl, supabaseAnonKey)
+      
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('start_time', { ascending: true })
+      
+      if (!error && data) {
+        const events = data.map(transformToEvent)
+        setAppointments(events)
+      }
+    }
+  }, [shopId, transformToEvent])
+
+  return {
+    appointments,
+    loading,
+    error,
+    isConnected,
+    lastUpdate,
+    stats,
+    refresh,
+    log: () => {} // Dummy log function for compatibility
+  }
+}

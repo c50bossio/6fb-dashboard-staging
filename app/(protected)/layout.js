@@ -2,6 +2,7 @@
 
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
+import DashboardHeader from '../../components/DashboardHeader'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { TenantProvider } from '../../contexts/TenantContext'
 import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
@@ -15,7 +16,10 @@ function ProtectedLayoutContent({ children }) {
       <Navigation />
       
       {/* Main Content - Adjust margin based on sidebar collapse state */}
-      <main className={`${isCollapsed ? 'lg:ml-16' : 'lg:ml-80'} transition-all duration-300 ease-in-out pt-16 lg:pt-0 pb-20 lg:pb-0`}>
+      <main className={`${isCollapsed ? 'lg:ml-16' : 'lg:ml-80'} transition-all duration-300 ease-in-out`}>
+        {/* Dashboard Header with ViewSwitcher */}
+        <DashboardHeader />
+        
         <div className="py-6 px-4 sm:px-6 lg:px-8">
           {children}
         </div>

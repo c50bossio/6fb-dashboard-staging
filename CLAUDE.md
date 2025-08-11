@@ -4,9 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-The 6FB AI Agent System is an enterprise-grade barbershop management platform combining traditional booking management with advanced AI capabilities for business intelligence, customer insights, and operational automation.
+The 6FB AI Agent System is an enterprise-grade barbershop management platform combining traditional booking management with advanced AI capabilities for business intelligence, customer insights, and operational automation. The system features a hierarchical barber operations structure that scales from individual barbers to multi-location enterprises.
 
 **Architecture**: Full-stack application with Next.js 14 frontend (port 9999), FastAPI backend (port 8001), and dual database support (SQLite for development, PostgreSQL for production via Supabase).
+
+**Barber Operations Hierarchy**:
+- **Individual Barbers**: Personal landing pages at `barbershop.com/barber-name`, custom services, pricing, and branding
+- **Shop Owners**: Multi-barber management, financial oversight (commission/booth rent), product inventory
+- **Enterprise Owners**: Multi-location management, cross-shop analytics, franchise operations
 
 ## 🚨 CRITICAL: Full-Stack Development Protocol
 
@@ -29,6 +34,7 @@ This prevents half-done features and ensures every implementation provides immed
 - **Calendar**: FullCalendar.io Premium with resource management
 - **Charts**: Recharts for analytics visualization
 - **Real-time**: Pusher for live updates and WebSocket connections
+- **Reviews**: Google Reviews embeds/widgets only (no internal reviews)
 
 ### Backend Stack
 - **API**: Next.js API Routes + FastAPI Python backend
@@ -37,6 +43,7 @@ This prevents half-done features and ensures every implementation provides immed
 - **AI Integration**: OpenAI GPT-4, Anthropic Claude, Google Gemini
 - **Payment Processing**: Stripe with subscription management
 - **Notifications**: Internal notification system
+- **Reviews**: Google My Business API integration (no internal review storage)
 
 ### Development Infrastructure
 - **Containerization**: Docker Compose with frontend:9999, backend:8001
@@ -277,6 +284,39 @@ EDGE_CONFIG=
 GOOGLE_AI_API_KEY=
 ```
 
+## 🎯 Important Architectural Decisions
+
+### Data Philosophy
+- **NO MOCK DATA**: System uses only real database data. Empty states when no data exists, never fake/mock data
+- **TEST DATA**: Use database seed scripts to populate test data, not hardcoded mock values
+- **FALLBACK BEHAVIOR**: Show empty states or zero values, not placeholder data
+
+### Reviews System
+- **GOOGLE REVIEWS ONLY**: All reviews come from Google My Business/Google Reviews API
+- **NO INTERNAL REVIEWS**: No reviews table in database, no custom review system
+- **BENEFITS**: Better SEO, customer trust, Google handles verification/spam
+- **IMPLEMENTATION**: Google Reviews widgets/embeds or Google My Business API
+
+### Database Tables
+**Required Tables**:
+- `appointments` - Booking management and scheduling
+- `transactions` - Financial tracking and commissions
+- `barbershops` - Shop information
+- `barbershop_staff` - Staff and barber management
+- `customers` - Customer profiles
+- `services` - Service catalog
+- `barber_availability` - Schedule management
+
+**NOT Required**:
+- ❌ `reviews` - Use Google Reviews instead
+- ❌ `ratings` - Part of Google Reviews
+- ❌ Mock data tables - Use real data only
+
+### Financial Models
+- **Commission Model**: Barber receives percentage (e.g., 60%) of service revenue
+- **Booth Rent Model**: Barber pays fixed weekly/monthly rent
+- **Tips**: Can go 100% to barber or split with shop
+
 ## Testing Strategy
 
 ### Triple-Tool Testing Approach
@@ -350,6 +390,10 @@ vercel         # Preview/staging
 - **Appointment System**: Complex booking state management with status tracking
 - **AI Context Storage**: Vector embeddings for RAG system using pgvector extension
 - **Payment Integration**: Stripe customer and subscription management
+- **Barber Customization**: Individual barber landing pages, services, and branding
+- **Financial Arrangements**: Commission, booth rent, and hybrid payment models
+- **Product Inventory**: POS system with inventory tracking and commission management
+- **View Switching**: Shop owners can view barber dashboards (read-only)
 
 ### Service Integration Patterns
 - **AI Orchestrator**: Central service at `/services/ai_orchestrator_service.py` coordinates all AI agents
@@ -365,12 +409,19 @@ vercel         # Preview/staging
 /main.py                              # Simple HTTP server for basic deployment
 /services/ai_orchestrator_service.py  # Central AI coordination
 /database/complete-schema.sql         # Full PostgreSQL schema with pgvector support
+/database/barber-operations-schema.sql # Barber hierarchy and customization schema
 /components/NuclearInput.js           # Critical form component (95% coverage)
 /playwright.config.js                 # Testing configuration with multi-browser support
 /docker-compose.yml                   # Development container orchestration
 /docker-dev-start.sh                  # Development environment startup script
 /middleware/                          # Rate limiting and security middleware
 /services/                            # AI agents, business logic, and integrations
+
+# Barber Operations Files
+/app/[barbershop]/[barber]/page.js   # Dynamic barber landing pages
+/app/(protected)/barber/profile/     # Barber profile management
+/components/barber-landing/          # Barber page components
+/components/pos/                     # Point of sale components
 ```
 
 ### Common Development Patterns

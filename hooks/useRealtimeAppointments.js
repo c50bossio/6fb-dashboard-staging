@@ -1,7 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
+
+// Create Supabase client outside component to prevent recreation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null
 
 export function useRealtimeAppointments(barbershopId) {
   console.log('🔥 HOOK CALLED: useRealtimeAppointments with barbershopId:', barbershopId)
@@ -48,19 +53,11 @@ export function useRealtimeAppointments(barbershopId) {
       }
     }
     
-    // Initialize Supabase client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    
-    console.log('🔐 Environment variables:', {
+    // Check if Supabase client is available
+    console.log('🔐 Supabase client check:', {
+      hasClient: !!supabase,
       hasUrl: !!supabaseUrl,
       hasKey: !!supabaseAnonKey
-    })
-    
-    console.log('🔐 Initializing Supabase client in hook:', {
-      url: supabaseUrl,
-      hasKey: !!supabaseAnonKey,
-      keyPrefix: supabaseAnonKey?.substring(0, 40) + '...'
     })
     
     // Store debug info in localStorage for inspection
@@ -70,10 +67,9 @@ export function useRealtimeAppointments(barbershopId) {
         barbershopId,
         supabaseUrl,
         hasAnonKey: !!supabaseAnonKey,
-        keyPrefix: supabaseAnonKey?.substring(0, 20) + '...',
+        hasSupabaseClient: !!supabase,
         timestamp: new Date().toISOString(),
-        windowDefined: typeof window !== 'undefined',
-        processEnvDefined: typeof process !== 'undefined'
+        windowDefined: typeof window !== 'undefined'
       }
       
       localStorage.setItem('realtimeDebug', JSON.stringify(debugInfo))
@@ -84,18 +80,16 @@ export function useRealtimeAppointments(barbershopId) {
       ...prev,
       subscriptionStatus: 'attempting',
       lastConnectionAttempt: new Date().toISOString(),
-      supabaseConfigured: !!(supabaseUrl && supabaseAnonKey)
+      supabaseConfigured: !!supabase
     }))
     setConnectionAttempts(prev => prev + 1)
     
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.log('❌ Supabase not configured')
+    if (!supabase) {
+      console.log('❌ Supabase client not available')
       setLoading(false)
       setAppointments([])
       return
     }
-    
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
     
     console.log('🔄 Initializing real-time connection for shop:', barbershopId)
 
@@ -330,6 +324,17 @@ export function useRealtimeAppointments(barbershopId) {
           console.error('📡 Unexpected error in INSERT handler:', err)
         }
       } else if (eventType === 'UPDATE' && payload.new) {
+        // Store UPDATE event in window for debugging
+        if (typeof window !== 'undefined') {
+          window.lastWebSocketUpdate = {
+            timestamp: new Date().toISOString(),
+            appointmentId: payload.new?.id,
+            status: payload.new?.status,
+            shopId: payload.new?.shop_id
+          }
+          console.log('🚨 WINDOW DEBUG: WebSocket UPDATE stored in window.lastWebSocketUpdate')
+        }
+        
         console.log('🔥 REALTIME DEBUG: UPDATE event received:', {
           appointmentId: payload.new?.id,
           oldStatus: payload.old?.status,
@@ -464,27 +469,66 @@ export function useRealtimeAppointments(barbershopId) {
     
     const channel = supabase
       .channel(`bookings-${barbershopId}`)
-      // INSERT events with filter
+      // TEST: Listen for ALL events on bookings table
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings'
+        },
+        (payload) => {
+          console.log('🚨🚨🚨 ANY EVENT RECEIVED:', {
+            eventType: payload.eventType,
+            table: payload.table,
+            id: payload.new?.id || payload.old?.id,
+            timestamp: new Date().toISOString()
+          })
+          if (typeof window !== 'undefined') {
+            window.lastAnyEvent = {
+              eventType: payload.eventType,
+              timestamp: new Date().toISOString()
+            }
+          }
+        }
+      )
+      // INSERT events WITHOUT filter to test
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'bookings',
-          filter: `shop_id=eq.${barbershopId}`
+          table: 'bookings'
+          // REMOVED filter temporarily to debug
         },
-        (payload) => handleRealtimeEvent('INSERT', payload)
+        (payload) => {
+          // Manual filter in handler
+          if (payload.new?.shop_id === barbershopId) {
+            handleRealtimeEvent('INSERT', payload)
+          }
+        }
       )
-      // UPDATE events with filter
+      // UPDATE events WITHOUT filter to test
       .on(
         'postgres_changes',
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'bookings',
-          filter: `shop_id=eq.${barbershopId}`
+          table: 'bookings'
+          // REMOVED filter temporarily to debug
         },
-        (payload) => handleRealtimeEvent('UPDATE', payload)
+        (payload) => {
+          console.log('🚨 RAW UPDATE EVENT:', {
+            id: payload.new?.id,
+            shop_id: payload.new?.shop_id,
+            ourShop: barbershopId,
+            matches: payload.new?.shop_id === barbershopId
+          })
+          // Manual filter in handler
+          if (payload.new?.shop_id === barbershopId) {
+            handleRealtimeEvent('UPDATE', payload)
+          }
+        }
       )
       // DELETE events - Supabase doesn't include shop_id even with REPLICA IDENTITY FULL
       // So we track appointment IDs and only delete ones we know about
@@ -506,15 +550,26 @@ export function useRealtimeAppointments(barbershopId) {
           }
         }
       )
-      .subscribe((status) => {
+      .subscribe((status, error) => {
         const statusTimestamp = new Date().toISOString()
         console.log('📡 ENHANCED Subscription status:', {
           status,
+          error: error || 'none',
           timestamp: statusTimestamp,
           barbershopId,
           channelName: `bookings-${barbershopId}`,
           connectionTime: Date.now() - startTime
         })
+        
+        // Store subscription status in window for debugging
+        if (typeof window !== 'undefined') {
+          window.websocketStatus = {
+            status,
+            error,
+            timestamp: statusTimestamp,
+            channelName: `bookings-${barbershopId}`
+          }
+        }
         
         setDiagnostics(prev => ({
           ...prev,
@@ -571,7 +626,7 @@ export function useRealtimeAppointments(barbershopId) {
     }
   }, [barbershopId])
 
-  // Debug log periodically
+  // Debug log periodically and on updates
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('📊 Real-time diagnostics:', {
@@ -583,6 +638,15 @@ export function useRealtimeAppointments(barbershopId) {
     
     return () => clearInterval(interval)
   }, [isConnected, appointments.length])
+  
+  // Log when appointments change
+  useEffect(() => {
+    console.log('🚨 HOOK: Appointments updated!', {
+      count: appointments.length,
+      timestamp: new Date().toISOString(),
+      lastUpdate: lastUpdate
+    })
+  }, [appointments])
 
   return { 
     appointments, 

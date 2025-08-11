@@ -41,8 +41,10 @@ services:
     volumes:
       - ./app:/app/app
       - ./components:/app/components
+      - ./hooks:/app/hooks
       - ./lib:/app/lib
       - ./public:/app/public
+      - ./styles:/app/styles
       - ./package.json:/app/package.json
       - ./next.config.js:/app/next.config.js
       - ./tailwind.config.js:/app/tailwind.config.js
@@ -70,11 +72,15 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=sqlite:///./data/agent_system.db
+      - DATABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - CORS_ORIGINS=http://localhost:9999
       - PYTHONPATH=/app
       - REDIS_URL=redis://redis:6379
       - USE_FASTAPI=true
+      - USE_SUPABASE=true
       - DOCKER_ENVIRONMENT=true
     env_file:
       - .env.local

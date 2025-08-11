@@ -14,14 +14,16 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     setIsClient(true)
     
-    // Development mode bypass for calendar testing
+    // Development mode bypass for calendar and analytics testing
     const isDevelopment = process.env.NODE_ENV === 'development'
     const isCalendarPage = window.location.pathname.includes('/calendar')
+    const isAnalyticsPage = window.location.pathname.includes('/analytics')
+    const isShopPage = window.location.pathname.includes('/shop')
     
     // Check for dev session or development mode bypass
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
-    const enableDevBypass = isDevelopment && isCalendarPage
+    const enableDevBypass = isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage)
     
     if (devAuth || devSession || enableDevBypass) {
       console.log('🔓 Dev session active - bypassing auth check')
@@ -47,17 +49,19 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
-  // Development mode bypass for calendar testing
+  // Development mode bypass for calendar and analytics testing
   const isDevelopment = process.env.NODE_ENV === 'development'
   const isCalendarPage = window.location.pathname.includes('/calendar')
-  const enableDevBypass = isDevelopment && isCalendarPage
+  const isAnalyticsPage = window.location.pathname.includes('/analytics')
+  const isShopPage = window.location.pathname.includes('/shop')
+  const enableDevBypass = isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage)
 
   // Check for dev session or development bypass
   const devAuth = document.cookie.includes('dev_auth=true')
   const devSession = localStorage.getItem('dev_session')
   
   if (devAuth || devSession || enableDevBypass) {
-    console.log('🔓 DEV MODE: Bypassing protected route for calendar testing')
+    console.log('🔓 DEV MODE: Bypassing protected route for calendar/analytics testing')
     return <>{children}</>
   }
 

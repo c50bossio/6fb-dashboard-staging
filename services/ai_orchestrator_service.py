@@ -565,7 +565,10 @@ class AIOrchestratorService:
         }
     
     def _build_system_message(self, context: Dict = None) -> str:
-        """Build system message with business context, RAG insights, and real analytics data"""
+        """Build system message with REAL business context from database"""
+        
+        # Import our business data service to get REAL data
+        from .business_data_service import business_data_service
         
         # Check if we have business context available
         has_business_data = context and context.get('business_metrics_available', False)

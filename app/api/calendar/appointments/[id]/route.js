@@ -9,14 +9,23 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 // Helper function to transform appointment to calendar event
 function transformBookingToEvent(appointment) {
+  // Determine background color based on status
+  let backgroundColor = appointment.barbers?.color || '#3b82f6'
+  let borderColor = appointment.barbers?.color || '#3b82f6'
+  
+  if (appointment.status === 'cancelled') {
+    backgroundColor = '#ef4444' // Red color for cancelled appointments
+    borderColor = '#dc2626'     // Darker red border
+  }
+
   return {
     id: appointment.id,
     resourceId: appointment.barber_id,
     title: `${appointment.clients?.name || appointment.client_name || 'Customer'} - ${appointment.services?.name || 'Service'}`,
     start: appointment.scheduled_at,
     end: appointment.end_time,
-    backgroundColor: appointment.barbers?.color || '#3b82f6',
-    borderColor: appointment.barbers?.color || '#3b82f6',
+    backgroundColor: backgroundColor,
+    borderColor: borderColor,
     extendedProps: {
       customer: appointment.clients?.name || appointment.client_name,
       customerPhone: appointment.clients?.phone || appointment.client_phone,
@@ -148,7 +157,12 @@ export async function DELETE(request, { params }) {
     const deleteAll = searchParams.get('deleteAll') === 'true' // For recurring appointments
     const cancelDate = searchParams.get('cancelDate') // For cancelling single occurrence
     
-    console.log('Delete appointment request:', { id, deleteAll, cancelDate })
+    console.log('🔴 DELETE API - Request received:', { 
+      id, 
+      deleteAll, 
+      cancelDate,
+      url: request.url 
+    })
     
     // First, get the appointment to check if it's recurring
     const { data: appointment, error: fetchError } = await supabase
@@ -165,10 +179,110 @@ export async function DELETE(request, { params }) {
       )
     }
     
-    console.log('Found appointment:', appointment)
+    console.log('🔴 DELETE API - Found appointment:', {
+      id: appointment.id,
+      status: appointment.status,
+      is_recurring: appointment.is_recurring,
+      recurring_pattern: appointment.recurring_pattern
+    })
     
-    // If it's a recurring appointment and user wants to delete just one occurrence
-    if (appointment.is_recurring && appointment.recurring_pattern && !deleteAll && cancelDate) {
+    // ===================================================
+    // PHASE 2: CLEAR DECISION TREE FOR DELETE OPERATIONS
+    // ===================================================
+    
+    // RULE 1: CANCELLED APPOINTMENTS - ALWAYS DELETE DIRECTLY
+    if (appointment.status === 'cancelled') {
+      console.log('🔴 DELETE API - RULE 1: CANCELLED APPOINTMENT')
+      console.log('🔴 DELETE API - Action: DELETE DIRECTLY (ignore all parameters)')
+      
+      const { error: deleteError } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', id)
+      
+      if (deleteError) {
+        console.error('🔴 DELETE API - ERROR deleting cancelled appointment:', deleteError)
+        return NextResponse.json(
+          { error: 'Failed to delete cancelled appointment', details: deleteError.message },
+          { status: 500 }
+        )
+      }
+      
+      console.log('✅ DELETE API - Successfully deleted cancelled appointment ID:', id)
+      
+      return NextResponse.json({ 
+        success: true,
+        message: 'Cancelled appointment deleted successfully',
+        deleted_id: id,
+        wasCancelled: true,
+        ruleApplied: 'RULE_1_CANCELLED'
+      })
+    }
+    
+    // RULE 2: NON-RECURRING APPOINTMENTS - DELETE DIRECTLY
+    if (!appointment.is_recurring || !appointment.recurring_pattern) {
+      console.log('🔴 DELETE API - RULE 2: NON-RECURRING APPOINTMENT')
+      console.log('🔴 DELETE API - Action: DELETE DIRECTLY')
+      
+      const { error: deleteError } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', id)
+      
+      if (deleteError) {
+        console.error('🔴 DELETE API - ERROR deleting non-recurring appointment:', deleteError)
+        return NextResponse.json(
+          { error: 'Failed to delete appointment', details: deleteError.message },
+          { status: 500 }
+        )
+      }
+      
+      console.log('✅ DELETE API - Successfully deleted non-recurring appointment ID:', id)
+      
+      return NextResponse.json({ 
+        success: true,
+        message: 'Appointment deleted successfully',
+        deleted_id: id,
+        wasRecurring: false,
+        ruleApplied: 'RULE_2_NON_RECURRING'
+      })
+    }
+    
+    // RULE 3: RECURRING APPOINTMENT WITH deleteAll=true - DELETE ENTIRE SERIES
+    if (appointment.is_recurring && deleteAll === true) {
+      console.log('🔴 DELETE API - RULE 3: RECURRING SERIES DELETE')
+      console.log('🔴 DELETE API - Action: DELETE ENTIRE RECURRING SERIES')
+      
+      const { error: deleteError } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', id)
+      
+      if (deleteError) {
+        console.error('🔴 DELETE API - ERROR deleting recurring series:', deleteError)
+        return NextResponse.json(
+          { error: 'Failed to delete recurring series', details: deleteError.message },
+          { status: 500 }
+        )
+      }
+      
+      console.log('✅ DELETE API - Successfully deleted recurring series ID:', id)
+      
+      return NextResponse.json({ 
+        success: true,
+        message: 'Recurring appointment series deleted successfully',
+        deleted_id: id,
+        wasRecurring: true,
+        deletedAll: true,
+        ruleApplied: 'RULE_3_RECURRING_DELETE_ALL'
+      })
+    }
+    
+    // RULE 4: RECURRING APPOINTMENT WITH cancelDate - CANCEL SINGLE OCCURRENCE
+    if (appointment.is_recurring && cancelDate) {
+      console.log('🔴 DELETE API - RULE 4: RECURRING SINGLE OCCURRENCE')
+      console.log('🔴 DELETE API - Action: ADD DATE TO CANCELLED_DATES')
+      
       // Add the date to cancelled_dates in recurring_pattern
       const currentPattern = appointment.recurring_pattern || {}
       const cancelledDates = currentPattern.cancelled_dates || []
@@ -193,12 +307,14 @@ export async function DELETE(request, { params }) {
         .eq('id', id)
       
       if (updateError) {
-        console.error('Error cancelling single occurrence:', updateError)
+        console.error('🔴 DELETE API - ERROR cancelling single occurrence:', updateError)
         return NextResponse.json(
           { error: 'Failed to cancel single occurrence', details: updateError.message },
           { status: 500 }
         )
       }
+      
+      console.log('✅ DELETE API - Successfully cancelled single occurrence for date:', cancelDate)
       
       return NextResponse.json({
         success: true,
@@ -206,34 +322,43 @@ export async function DELETE(request, { params }) {
         appointmentId: id,
         cancelledDate: cancelDate,
         wasRecurring: true,
-        deletedAll: false
-      })
-      
-    } else {
-      // Delete the entire appointment (recurring series or single)
-      const { error: deleteError } = await supabase
-        .from('bookings')
-        .delete()
-        .eq('id', id)
-      
-      if (deleteError) {
-        console.error('Error deleting booking:', deleteError)
-        return NextResponse.json(
-          { error: 'Failed to delete appointment' },
-          { status: 500 }
-        )
-      }
-      
-      return NextResponse.json({ 
-        success: true,
-        message: appointment.is_recurring && deleteAll 
-          ? 'Recurring appointment series deleted successfully' 
-          : 'Appointment deleted successfully',
-        deleted_id: id,
-        wasRecurring: appointment.is_recurring,
-        deletedAll: appointment.is_recurring ? deleteAll : false
+        deletedAll: false,
+        ruleApplied: 'RULE_4_RECURRING_SINGLE_CANCEL'
       })
     }
+    
+    // RULE 5: DEFAULT - DELETE DIRECTLY (fallback for any edge cases)
+    console.log('🔴 DELETE API - RULE 5: DEFAULT FALLBACK')
+    console.log('🔴 DELETE API - Action: DELETE DIRECTLY')
+    console.log('🔴 DELETE API - Decision Logic:', {
+      is_recurring: appointment.is_recurring,
+      has_pattern: !!appointment.recurring_pattern,
+      deleteAll: deleteAll,
+      cancelDate: cancelDate,
+      status: appointment.status
+    })
+    
+    const { error: deleteError } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', id)
+    
+    if (deleteError) {
+      console.error('🔴 DELETE API - ERROR in fallback delete:', deleteError)
+      return NextResponse.json(
+        { error: 'Failed to delete appointment', details: deleteError.message },
+        { status: 500 }
+      )
+    }
+    
+    console.log('✅ DELETE API - Successfully deleted appointment ID (fallback):', id)
+    
+    return NextResponse.json({ 
+      success: true,
+      message: 'Appointment deleted successfully',
+      deleted_id: id,
+      ruleApplied: 'RULE_5_DEFAULT_FALLBACK'
+    })
     
   } catch (error) {
     console.error('Error deleting booking:', error)

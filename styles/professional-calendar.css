@@ -41,6 +41,76 @@
   color: #374151;
 }
 
+/* Column headers - Fix date display */
+.fc-col-header-cell {
+  padding: 8px 4px !important;
+  text-align: center;
+}
+
+.fc-col-header-cell-cushion {
+  padding: 4px 2px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Resource view specific header styles */
+.fc-resource-timeline-divider,
+.fc-timeline-slot-label {
+  font-size: 0.875rem;
+}
+
+/* Ensure day headers in resource grid view are readable */
+.fc-scrollgrid-section-header .fc-col-header-cell {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* Day and date formatting in headers */
+.fc-daygrid-day-number,
+.fc-col-header-cell .fc-scrollgrid-sync-inner {
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+/* Resource Time Grid specific fixes */
+.fc-resource-timegrid .fc-col-header-cell {
+  min-width: 50px;
+}
+
+.fc-resource-timegrid .fc-daygrid-day-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+}
+
+/* Fix the date/day display in resource views */
+.fc-resource-timegrid .fc-scrollgrid-sync-inner {
+  text-align: center;
+  padding: 6px 2px;
+}
+
+/* Clean up the weekend highlighting */
+.fc-day-sat .fc-col-header-cell-cushion,
+.fc-day-sun .fc-col-header-cell-cushion {
+  color: #6b7280;
+}
+
+/* Responsive adjustments for resource columns */
+@media (max-width: 1024px) {
+  .fc-resource-area {
+    width: 100px !important;
+  }
+  
+  .fc-col-header-cell-cushion {
+    font-size: 0.75rem;
+  }
+}
+
 /* Time slots */
 .fc-timegrid-slot-label {
   color: #6b7280;

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket V2 Browser Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>WebSocket V2 Browser Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="events"></div>
+    
+    <script>
+        const { createClient } = supabase;
+        
+        const supabaseClient = createClient(
+            'https://dfhqjdoydihajmjxniee.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
+        );
+        
+        console.log('Testing WebSocket in browser...');
+        
+        const channel = supabaseClient
+            .channel('browser-test')
+            .on('postgres_changes', 
+                { event: '*', schema: 'public', table: 'bookings' }, 
+                (payload) => {
+                    console.log('Event received:', payload);
+                    document.getElementById('events').innerHTML += 
+                        `<p>Event: ${payload.eventType} at ${new Date().toISOString()}</p>`;
+                }
+            )
+            .subscribe((status) => {
+                console.log('Status:', status);
+                document.getElementById('status').innerHTML = 
+                    status === 'SUBSCRIBED' 
+                        ? '✅ Connected!' 
+                        : `Status: ${status}`;
+                
+                if (status === 'SUBSCRIBED') {
+                    window.websocketConnected = true;
+                }
+            });
+    </script>
+</body>
+</html>

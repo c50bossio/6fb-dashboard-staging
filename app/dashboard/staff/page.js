@@ -17,9 +17,9 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-import ProtectedRoute from '../../components/ProtectedRoute'
-import GlobalNavigation from '../../components/GlobalNavigation'
-import { useAuth } from '../../components/SupabaseAuthProvider'
+import ProtectedRoute from '../../../components/ProtectedRoute'
+import GlobalNavigation from '../../../components/GlobalNavigation'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 // Mock staff data
 const mockStaff = [
@@ -396,6 +396,7 @@ export default function StaffPage() {
                 </div>
               </div>
             </div>
+          </div>
             </div>
           </div>
         </div>

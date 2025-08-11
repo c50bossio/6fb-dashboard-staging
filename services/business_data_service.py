@@ -1,6 +1,7 @@
 """
 Business Data Service
 Centralized service for live business metrics used by both dashboard and AI agents
+Now with REAL data from database!
 """
 
 import asyncio
@@ -12,6 +13,20 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 import aiohttp
 from dotenv import load_dotenv
+
+# Import our new services for real data
+try:
+    from .sqlite_data_service import sqlite_data_service
+    SQLITE_AVAILABLE = True
+except ImportError:
+    SQLITE_AVAILABLE = False
+    
+try:
+    from .database_query_service import database_query_service
+except ImportError:
+    database_query_service = None
+    
+from .metrics_engine import metrics_engine
 
 # Load environment variables
 load_dotenv('.env.local')
@@ -284,74 +299,83 @@ class BusinessDataService:
                 logger.info(f"Returning cached unified metrics")
                 return cached_metrics
         
-        logger.info("Fetching fresh unified business metrics")
+        logger.info("🔄 Fetching REAL unified business metrics from database")
         
-        # Try to fetch from multiple sources in priority order
-        raw_data = None
-        data_source = "fallback"
+        # Try to get REAL data from our database
+        data_source = "real_database"
         
-        # 1. Try analytics API (what dashboard uses)
-        raw_data = await self._fetch_from_analytics_api()
-        if raw_data:
-            data_source = "analytics_api"
-        
-        # 2. Try Python backend
-        if not raw_data:
-            raw_data = await self._fetch_from_python_backend()
-            if raw_data:
-                data_source = "python_backend"
-        
-        # 3. Create unified metrics using the consistent values
-        metrics = UnifiedBusinessMetrics()
-        
-        # If we got data from APIs, try to use it, but keep our consistent baseline
-        if raw_data:
-            try:
-                # Map API data to our unified structure while maintaining consistency
-                metrics.monthly_revenue = float(raw_data.get('monthly_revenue', 12500.00))
-                metrics.daily_revenue = float(raw_data.get('daily_revenue', 450.00))
-                metrics.weekly_revenue = float(raw_data.get('weekly_revenue', 2800.00))
-                metrics.total_revenue = float(raw_data.get('total_revenue', 45000.00))
-                metrics.revenue_growth = float(raw_data.get('revenue_growth', 8.5))
-                metrics.average_service_price = float(raw_data.get('average_service_price', 68.50))
-                
-                metrics.total_appointments = int(raw_data.get('total_appointments', 287))
-                metrics.completed_appointments = int(raw_data.get('completed_appointments', 264))
-                metrics.pending_appointments = int(raw_data.get('pending_appointments', 12))
-                metrics.cancelled_appointments = int(raw_data.get('cancelled_appointments', 15))
-                metrics.no_show_appointments = int(raw_data.get('no_show_appointments', 8))
-                
-                metrics.total_customers = int(raw_data.get('total_customers', 156))
-                metrics.new_customers_this_month = int(raw_data.get('new_customers_this_month', 23))
-                metrics.customer_retention_rate = float(raw_data.get('customer_retention_rate', 85.3))
-                
-                metrics.total_barbers = int(raw_data.get('total_barbers', 4))
-                metrics.active_barbers = int(raw_data.get('active_barbers', 3))
-                metrics.occupancy_rate = float(raw_data.get('occupancy_rate', 74.5))
-                
-                # Handle complex data structures
-                if 'most_popular_services' in raw_data and isinstance(raw_data['most_popular_services'], list):
-                    metrics.most_popular_services = raw_data['most_popular_services']
-                
-                if 'peak_booking_hours' in raw_data and isinstance(raw_data['peak_booking_hours'], list):
-                    metrics.peak_booking_hours = raw_data['peak_booking_hours']
-                    
-                if 'busiest_days' in raw_data and isinstance(raw_data['busiest_days'], list):
-                    metrics.busiest_days = raw_data['busiest_days']
-                
-                logger.info(f"✅ Mapped data from {data_source}")
-                
-                # Validate mapped data for consistency
-                if not self._validate_metrics(metrics):
-                    logger.warning("Validation failed for mapped data, reverting to safe defaults")
-                    metrics = self._get_safe_default_metrics()
-                
-            except Exception as e:
-                logger.warning(f"Error mapping API data: {e}, using defaults")
+        try:
+            # Try SQLite first (development)
+            if SQLITE_AVAILABLE:
+                logger.info("🔄 Fetching from SQLite database...")
+                real_context = await sqlite_data_service.get_complete_business_context(
+                    barbershop_id or 'default_shop'
+                )
+                data_source = "sqlite_database"
+            # Then try Supabase
+            elif database_query_service:
+                logger.info("🔄 Fetching from Supabase...")
+                real_context = await database_query_service.get_complete_business_context(
+                    barbershop_id or 'default_shop'
+                )
+                data_source = "supabase_database"
+            else:
+                raise Exception("No database service available")
+            
+            # Create metrics from REAL data
+            metrics = UnifiedBusinessMetrics()
+            
+            # Map REAL database data to our unified structure
+            metrics.monthly_revenue = float(real_context.get('monthly_revenue', 0))
+            metrics.daily_revenue = float(real_context.get('daily_revenue', 0))
+            metrics.weekly_revenue = float(real_context.get('weekly_revenue', 0))
+            metrics.total_revenue = float(real_context.get('total_revenue', metrics.monthly_revenue * 12))
+            metrics.revenue_growth = float(real_context.get('revenue_growth', 0))
+            metrics.average_service_price = float(real_context.get('average_service_price', 0))
+            
+            # REAL appointment metrics
+            metrics.total_appointments = int(real_context.get('total_appointments', 0))
+            metrics.completed_appointments = int(real_context.get('completed_appointments', 0))
+            metrics.pending_appointments = int(real_context.get('pending_appointments', 0))
+            metrics.cancelled_appointments = int(real_context.get('cancelled_appointments', 0))
+            metrics.no_show_appointments = int(real_context.get('no_show_appointments', 0))
+            
+            # Customer metrics
+            metrics.total_customers = int(real_context.get('total_customers', 0))
+            metrics.new_customers_this_month = int(real_context.get('new_customers_this_month', 0))
+            metrics.returning_customers = int(real_context.get('returning_customers', 0))
+            metrics.customer_retention_rate = float(real_context.get('customer_retention_rate', 0))
+            
+            # Staff metrics
+            metrics.total_barbers = int(real_context.get('total_barbers', 0))
+            metrics.active_barbers = int(real_context.get('active_barbers', metrics.total_barbers))
+            metrics.occupancy_rate = float(real_context.get('occupancy_rate', 0))
+            
+            # Services
+            if 'most_popular_services' in real_context:
+                metrics.most_popular_services = real_context['most_popular_services']
+            
+            # Peak hours
+            if 'peak_booking_hours' in real_context:
+                metrics.peak_booking_hours = real_context['peak_booking_hours']
+            
+            # Include our platform margin
+            metrics.outstanding_payments = float(real_context.get('platform_earnings', 0))
+            
+            logger.info(f"✅ Retrieved REAL data from {data_source}: ${metrics.monthly_revenue:.2f} revenue, {metrics.total_customers} customers")
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching real data: {e}")
+            # Fallback to mock data if database fails
+            logger.warning("⚠️ Using fallback data due to database error")
+            
+            # Create fallback metrics
+            metrics = UnifiedBusinessMetrics()
+            data_source = "fallback"
         
         # Set metadata
         metrics.data_source = data_source
-        metrics.data_freshness = "live" if raw_data else "fallback"
+        metrics.data_freshness = "live" if "database" in data_source else "fallback"
         metrics.last_updated = datetime.now().isoformat()
         
         # Calculate derived metrics

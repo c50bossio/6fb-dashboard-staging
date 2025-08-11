@@ -2772,9 +2772,21 @@ async def get_live_metrics(
     barbershop_id: Optional[str] = None,
     force_refresh: bool = False,
     format: str = "json",
-    metric: Optional[str] = None
+    metric: Optional[str] = None,
+    period_type: str = "30days",
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    comparison: bool = False
 ):
-    """Get live business metrics for AI consumption"""
+    """
+    Get live business metrics for AI consumption with enhanced date range support
+    
+    Args:
+        period_type: Predefined periods (ytd, previous_year, 7days, 30days, 90days, custom)
+        start_date: Custom start date (ISO format) for period_type='custom'
+        end_date: Custom end date (ISO format) for period_type='custom'
+        comparison: Enable period comparison analysis
+    """
     try:
         if not ANALYTICS_SERVICE_AVAILABLE:
             return {
@@ -2783,34 +2795,111 @@ async def get_live_metrics(
                 "data_source": "unavailable"
             }
         
-        if format == "formatted":
-            formatted_metrics = await realtime_analytics_service.get_formatted_metrics_for_ai(
-                barbershop_id, force_refresh
+        # Parse custom date range if provided
+        parsed_start_date = None
+        parsed_end_date = None
+        if period_type == "custom" and start_date and end_date:
+            try:
+                parsed_start_date = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                parsed_end_date = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            except ValueError as e:
+                return {
+                    "success": False,
+                    "error": f"Invalid date format: {e}",
+                    "data_source": "error"
+                }
+        
+        # Handle different period types
+        if period_type in ["ytd", "previous_year"]:
+            # Use specialized methods for YTD and previous year
+            if period_type == "ytd":
+                metrics_data = await realtime_analytics_service.get_ytd_metrics(
+                    barbershop_id, force_refresh
+                )
+            else:  # previous_year
+                metrics_data = await realtime_analytics_service.get_previous_year_metrics(
+                    barbershop_id, None, force_refresh
+                )
+        elif period_type == "custom" and parsed_start_date and parsed_end_date:
+            # Use custom date range
+            business_metrics = await realtime_analytics_service.get_live_business_metrics(
+                barbershop_id=barbershop_id,
+                force_refresh=force_refresh,
+                start_date=parsed_start_date,
+                end_date=parsed_end_date
             )
-            return {
-                "success": True,
-                "formatted_metrics": formatted_metrics,
-                "data_source": "live",
-                "timestamp": datetime.now().isoformat()
-            }
+            from dataclasses import asdict
+            metrics_data = asdict(business_metrics)
+            
+            # For custom date ranges, map monthly_revenue to period_revenue for frontend consistency
+            if 'monthly_revenue' in metrics_data:
+                metrics_data['period_revenue'] = metrics_data['monthly_revenue']
+        else:
+            # Use predefined period types (7days, 30days, 90days)
+            metrics_data = await realtime_analytics_service.get_metrics_by_period_type(
+                period_type, barbershop_id, force_refresh
+            )
+        
+        if format == "formatted":
+            # For formatted responses, convert to readable string
+            if isinstance(metrics_data, dict) and 'current_ytd' in metrics_data:
+                # Handle YTD comparison format
+                formatted_text = f"""
+YEAR-TO-DATE ANALYTICS COMPARISON
+
+📊 CURRENT YTD PERFORMANCE
+• Revenue: ${metrics_data['current_ytd'].get('period_revenue', 0):,.2f}
+• Appointments: {metrics_data['current_ytd'].get('total_appointments', 0)}
+• Customers: {metrics_data['current_ytd'].get('total_customers', 0)}
+
+📊 PREVIOUS YEAR SAME PERIOD  
+• Revenue: ${metrics_data['previous_ytd'].get('period_revenue', 0):,.2f}
+• Appointments: {metrics_data['previous_ytd'].get('total_appointments', 0)}
+• Customers: {metrics_data['previous_ytd'].get('total_customers', 0)}
+
+📈 YEAR-OVER-YEAR GROWTH
+""" + '\n'.join([f"• {metric.replace('_', ' ').title()}: {data['growth_percent']:+.1f}%" 
+                for metric, data in metrics_data.get('year_over_year_growth', {}).items()])
+                
+                return {
+                    "success": True,
+                    "formatted_metrics": formatted_text.strip(),
+                    "data_source": "live",
+                    "period_type": period_type,
+                    "timestamp": datetime.now().isoformat()
+                }
+            else:
+                # Standard format for other period types
+                formatted_metrics = await realtime_analytics_service.get_formatted_metrics_for_ai(
+                    barbershop_id, force_refresh
+                )
+                return {
+                    "success": True,
+                    "formatted_metrics": formatted_metrics,
+                    "data_source": "live",
+                    "period_type": period_type,
+                    "timestamp": datetime.now().isoformat()
+                }
         
         elif format == "specific" and metric:
-            specific_value = await realtime_analytics_service.get_specific_metric(
-                metric, barbershop_id
-            )
+            # Handle specific metric requests
+            if isinstance(metrics_data, dict) and metric in metrics_data:
+                specific_value = metrics_data[metric]
+            else:
+                specific_value = await realtime_analytics_service.get_specific_metric(
+                    metric, barbershop_id
+                )
             return {
                 "success": True,
                 "metric": metric,
                 "value": specific_value,
                 "data_source": "live",
+                "period_type": period_type,
                 "timestamp": datetime.now().isoformat()
             }
         
         else:
-            # Default JSON format
-            metrics_data = await realtime_analytics_service.get_metrics_json(
-                barbershop_id, force_refresh
-            )
+            # Default JSON format - return the metrics data we already retrieved
             cache_status = realtime_analytics_service.get_cache_status()
             
             return {
@@ -2818,6 +2907,11 @@ async def get_live_metrics(
                 "data": metrics_data,
                 "cache_status": cache_status,
                 "data_source": "live",
+                "period_type": period_type,
+                "date_range": {
+                    "start_date": start_date,
+                    "end_date": end_date
+                } if start_date and end_date else None,
                 "timestamp": datetime.now().isoformat()
             }
     
