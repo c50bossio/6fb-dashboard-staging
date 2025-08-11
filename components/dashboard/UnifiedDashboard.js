@@ -97,15 +97,8 @@ export default function UnifiedDashboard({ user }) {
     // Get barbershop ID from user or use demo
     const barbershopId = user?.barbershop_id || 'demo-shop-001'
     
-    // For executive mode, check cache first (30 seconds)
-    if (currentMode === DASHBOARD_MODES.EXECUTIVE && !forceRefresh && cachedData && cacheTimestamp) {
-      const cacheAge = Date.now() - cacheTimestamp
-      if (cacheAge < 30000) { // 30 seconds cache
-        console.log('Using cached executive data')
-        setDashboardData(cachedData)
-        return
-      }
-    }
+    // CACHE DISABLED: Always fetch fresh data for consistency between Executive/Analytics modes
+    // Previously cached data was causing inconsistencies with Analytics panel
     
     setIsLoading(true)
     try {
@@ -113,22 +106,37 @@ export default function UnifiedDashboard({ user }) {
       
       // Use faster analytics API for executive mode to avoid slow AI health checks
       if (currentMode === DASHBOARD_MODES.EXECUTIVE) {
-        const response = await fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
+        const response = await fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json&force_refresh=true`)
         const result = await response.json()
         
         if (response.ok && result.success) {
-          // Transform analytics data for executive dashboard
+          // Transform analytics data for executive dashboard - FIX DATA MAPPING
+          const apiData = result.data
           const transformedData = {
+            // Executive Summary expects metrics in this format
+            metrics: {
+              revenue: apiData.total_revenue || 0,
+              customers: apiData.total_customers || 0,
+              appointments: apiData.total_appointments || 0,
+              satisfaction: 4.5 // Default satisfaction score
+            },
+            // Today's snapshot data
+            todayMetrics: {
+              revenue: apiData.daily_revenue || 0,
+              bookings: Math.round((apiData.total_appointments || 0) / 30), // Estimated daily bookings
+              capacity: Math.round((apiData.occupancy_rate || 0) * 100),
+              nextAppointment: 'No appointments'
+            },
             business_insights: {
               active_barbershops: 1,
               total_ai_recommendations: 0,
               user_satisfaction_score: 4.5
             },
             user_engagement: {
-              active_users: result.data.total_customers || 0,
-              total_users: result.data.total_customers || 0,
-              new_users: Math.round((result.data.total_customers || 0) * 0.15),
-              retention_rate: 85
+              active_users: apiData.total_customers || 0,
+              total_users: apiData.total_customers || 0,
+              new_users: apiData.new_customers_this_month || 0,
+              retention_rate: Math.round(apiData.customer_retention_rate || 0)
             },
             system_health: {
               status: 'healthy',
@@ -139,13 +147,11 @@ export default function UnifiedDashboard({ user }) {
               api_success_rate: 99.2,
               uptime_percent: 99.8
             },
-            // Include raw analytics data for the executive summary
-            analytics_data: result.data
+            // Include raw analytics data for other components
+            analytics_data: apiData
           }
           setDashboardData(transformedData)
-          // Cache the data for faster subsequent loads
-          setCachedData(transformedData)
-          setCacheTimestamp(Date.now())
+          // Cache removed for data consistency between Executive/Analytics modes
         } else {
           console.warn('Analytics API error:', result)
           setDashboardData({})

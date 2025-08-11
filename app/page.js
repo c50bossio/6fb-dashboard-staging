@@ -62,7 +62,7 @@ export default function HomePage() {
           website_enabled: true
         }
       ]
-      setBarbershops(mockBarbershops)
+      setBarbershops(Barbershops)
     } catch (err) {
       console.error('Error loading barbershops:', err)
       setError('Failed to load barbershops')

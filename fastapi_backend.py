@@ -33,6 +33,15 @@ from services.database_connection_pool import (
     db_connection_manager
 )
 
+# PHASE 3: Import Supabase API proxy for data consistency
+try:
+    from services.supabase_api_proxy import supabase_proxy, get_supabase_analytics, get_supabase_customers
+    SUPABASE_PROXY_AVAILABLE = True
+    print("✅ PHASE 3: Supabase API proxy loaded")
+except ImportError as e:
+    SUPABASE_PROXY_AVAILABLE = False
+    print(f"⚠️ PHASE 3: Supabase API proxy not available: {e}")
+
 # Import Prometheus metrics
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 from fastapi.responses import Response
@@ -195,7 +204,7 @@ def get_database_config():
             "type": "api_proxy",
             "supabase_url": supabase_url,
             "supabase_key": supabase_key,
-            "frontend_api_base": os.getenv('NEXT_PUBLIC_API_URL', 'http://localhost:9999')
+            "frontend_api_base": os.getenv('DOCKER_ENVIRONMENT') and 'http://frontend:9999' or 'http://localhost:9999'
         }
     else:
         # Fallback to SQLite for development
@@ -573,7 +582,66 @@ async def health():
     database_connections_idle.set(stats.get('idle_connections', 0))
     database_connections_max.set(stats.get('max_connections', 0))
     
-    return {"status": "healthy", "service": "6fb-ai-backend", "version": "2.0.0"}
+    # PHASE 2: Add database/API proxy status
+    database_status = "unknown"
+    if db_config["type"] == "api_proxy":
+        database_status = "supabase_via_api_proxy"
+    elif db_config["type"] == "sqlite":
+        database_status = "sqlite_local"
+    
+    return {
+        "status": "healthy", 
+        "service": "6fb-ai-backend", 
+        "version": "2.0.0",
+        "database_type": database_status,
+        "phase_2_active": db_config["type"] == "api_proxy"
+    }
+
+@app.get("/phase2-test")
+async def phase2_test():
+    """PHASE 2: Test Supabase data access via API proxy"""
+    if db_config["type"] != "api_proxy":
+        return {
+            "success": False,
+            "message": "Phase 2 not active - using SQLite fallback",
+            "database_type": db_config["type"]
+        }
+    
+    try:
+        import httpx
+        frontend_url = db_config["frontend_api_base"]
+        
+        async with httpx.AsyncClient() as client:
+            # Get data from Next.js Analytics API (which connects to Supabase)
+            response = await client.get(f"{frontend_url}/api/analytics/live-data")
+            
+            if response.status_code == 200:
+                data = response.json()
+                analytics_data = data.get('data', {})
+                
+                return {
+                    "success": True,
+                    "message": "✅ PHASE 2: FastAPI successfully accessing Supabase via Next.js API proxy",
+                    "data_source": data.get('meta', {}).get('data_source', 'unknown'),
+                    "customers": analytics_data.get('total_customers', 0),
+                    "revenue": analytics_data.get('total_revenue', 0),
+                    "appointments": analytics_data.get('total_appointments', 0),
+                    "data_freshness": analytics_data.get('data_freshness', 'unknown'),
+                    "proxy_path": f"{frontend_url}/api/analytics/live-data"
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": f"API proxy failed with status {response.status_code}",
+                    "proxy_path": f"{frontend_url}/api/analytics/live-data"
+                }
+                
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"PHASE 2 test failed: {str(e)}",
+            "database_type": db_config["type"]
+        }
 
 @app.get("/metrics")
 async def metrics():
@@ -781,7 +849,54 @@ async def chat_with_agent(
 # Dashboard endpoints
 @app.get("/api/v1/dashboard/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
-    """Get dashboard statistics"""
+    """PHASE 3: Get dashboard statistics from Supabase via API proxy"""
+    
+    # Use Supabase API proxy if available, otherwise fallback to mock data
+    if SUPABASE_PROXY_AVAILABLE and db_config["type"] == "api_proxy":
+        try:
+            # Get real analytics data from Supabase
+            analytics_result = await supabase_proxy.get_analytics_data()
+            
+            if analytics_result["success"]:
+                data = analytics_result["data"]["data"]
+                
+                # Transform Supabase data to match expected format
+                return {
+                    "revenue": {
+                        "total": data.get("total_revenue", 0),
+                        "growth": data.get("revenue_growth", 0),
+                        "monthly": data.get("monthly_revenue", 0),
+                        "chart_data": [data.get("weekly_revenue", 0)] * 4  # Simplified
+                    },
+                    "bookings": {
+                        "total": data.get("total_appointments", 0),
+                        "growth": 8.7,  # TODO: Calculate from historical data
+                        "completed": data.get("completed_appointments", 0),
+                        "chart_data": [data.get("average_appointments_per_day", 0)] * 4
+                    },
+                    "customers": {
+                        "total": data.get("total_customers", 0),
+                        "growth": 12.1,  # TODO: Calculate from historical data  
+                        "new_this_month": data.get("new_customers_this_month", 0),
+                        "retention_rate": data.get("customer_retention_rate", 0)
+                    },
+                    "ratings": {
+                        "average": 4.8,  # TODO: Get from Google Reviews integration
+                        "total_reviews": 156  # TODO: Get from Google Reviews integration
+                    },
+                    "_meta": {
+                        "data_source": "supabase_via_api_proxy",
+                        "data_freshness": data.get("data_freshness", "unknown"),
+                        "phase": "3"
+                    }
+                }
+            else:
+                print(f"⚠️ PHASE 3: Analytics API failed, using fallback: {analytics_result.get('error')}")
+                
+        except Exception as e:
+            print(f"❌ PHASE 3: Dashboard stats conversion failed: {e}")
+    
+    # Fallback to original mock data for backward compatibility
     return {
         "revenue": {
             "total": 12500,
@@ -801,12 +916,62 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         "ratings": {
             "average": 4.8,
             "total_reviews": 156
+        },
+        "_meta": {
+            "data_source": "mock_fallback",
+            "phase": "3_fallback"
         }
     }
 
 @app.get("/api/v1/dashboard/recent-bookings")
 async def get_recent_bookings(current_user: dict = Depends(get_current_user)):
-    """Get recent bookings"""
+    """PHASE 3: Get recent bookings from Supabase via API proxy"""
+    
+    # Use Supabase API proxy if available, otherwise fallback to mock data  
+    if SUPABASE_PROXY_AVAILABLE and db_config["type"] == "api_proxy":
+        try:
+            # Get recent appointments from Supabase
+            from datetime import datetime, timedelta
+            start_date = (datetime.now() - timedelta(days=7)).isoformat()
+            
+            appointments_result = await supabase_proxy.get_appointments(
+                start_date=start_date,
+                status="CONFIRMED"
+            )
+            
+            if appointments_result["success"]:
+                appointments_data = appointments_result["data"]
+                
+                # Check if we got appointments data
+                if isinstance(appointments_data, dict) and "appointments" in appointments_data:
+                    appointments = appointments_data["appointments"][:10]  # Latest 10
+                elif isinstance(appointments_data, list):
+                    appointments = appointments_data[:10]  # Latest 10
+                else:
+                    appointments = []
+                
+                # Transform to expected format
+                recent_bookings = []
+                for apt in appointments:
+                    recent_bookings.append({
+                        "id": apt.get("id", "unknown"),
+                        "customer_name": apt.get("client_name") or apt.get("customer_name", "Unknown Customer"),
+                        "service": apt.get("service", {}).get("name") if isinstance(apt.get("service"), dict) else "Unknown Service",
+                        "time": apt.get("scheduled_at", "Unknown Time"),
+                        "status": apt.get("status", "unknown").lower(),
+                        "duration_minutes": apt.get("duration_minutes", 30),
+                        "price": apt.get("service_price", 0)
+                    })
+                
+                return recent_bookings
+                
+            else:
+                print(f"⚠️ PHASE 3: Appointments API failed, using fallback: {appointments_result.get('error')}")
+                
+        except Exception as e:
+            print(f"❌ PHASE 3: Recent bookings conversion failed: {e}")
+    
+    # Fallback to original mock data for backward compatibility
     return [
         {
             "id": 1,
@@ -817,7 +982,7 @@ async def get_recent_bookings(current_user: dict = Depends(get_current_user)):
         },
         {
             "id": 2,
-            "customer_name": "Mike Smith",
+            "customer_name": "Mike Smith", 
             "service": "Haircut",
             "time": "11:30 AM",
             "status": "confirmed"
@@ -2871,11 +3036,40 @@ async def get_live_metrics(
         comparison: Enable period comparison analysis
     """
     try:
+        # PHASE 3: Use Supabase API proxy for analytics instead of dedicated service
+        if SUPABASE_PROXY_AVAILABLE and db_config["type"] == "api_proxy":
+            try:
+                # Get analytics data from Supabase via Next.js API
+                result = await supabase_proxy.get_analytics_data(
+                    barbershop_id=barbershop_id,
+                    format=format
+                )
+                
+                if result["success"]:
+                    analytics_data = result["data"]["data"]
+                    
+                    return {
+                        "success": True,
+                        "data": analytics_data,
+                        "data_source": "supabase_via_api_proxy",
+                        "barbershop_id": barbershop_id,
+                        "period_type": period_type,
+                        "force_refresh": force_refresh,
+                        "phase": "3_converted",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                else:
+                    print(f"⚠️ PHASE 3: Supabase analytics proxy failed: {result.get('error')}")
+            except Exception as proxy_error:
+                print(f"❌ PHASE 3: Analytics conversion failed: {proxy_error}")
+        
+        # Fallback to original error for unavailable service
         if not ANALYTICS_SERVICE_AVAILABLE:
             return {
                 "success": False,
-                "error": "Analytics service not available",
-                "data_source": "unavailable"
+                "error": "Analytics service not available - using Phase 3 conversion",
+                "data_source": "unavailable",
+                "phase": "3_fallback"
             }
         
         # Parse custom date range if provided
