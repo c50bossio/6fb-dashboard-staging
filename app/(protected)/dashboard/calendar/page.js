@@ -32,6 +32,8 @@ import {
 } from '../../../../lib/calendar-data'
 import { useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointments'
 import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
+import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
+import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
 
 // Professional calendar component with enhanced views and auto-population
 const ProfessionalCalendar = dynamic(
@@ -49,6 +51,7 @@ const ProfessionalCalendar = dynamic(
 
 // Import professional calendar styles
 import '../../../../styles/professional-calendar.css'
+import '../../../../styles/cancelled-appointments.css'
 
 // Import the appointment modal
 const AppointmentBookingModal = dynamic(
@@ -68,7 +71,15 @@ const BookingConfirmationModal = dynamic(
   { ssr: false }
 )
 
+// Import the cancel confirmation modal
+const CancelConfirmationModal = dynamic(
+  () => import('../../../../components/calendar/CancelConfirmationModal'),
+  { ssr: false }
+)
+
 export default function CalendarPage() {
+  console.log('🔥 CALENDAR PAGE RENDERING')
+  
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
   const [resources, setResources] = useState([])
@@ -85,10 +96,13 @@ export default function CalendarPage() {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showRescheduleModal, setShowRescheduleModal] = useState(false)
   const [showBookingConfirmation, setShowBookingConfirmation] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [pendingReschedule, setPendingReschedule] = useState(null)
   const [confirmedAppointment, setConfirmedAppointment] = useState(null)
+  const [appointmentToCancel, setAppointmentToCancel] = useState(null)
+  const [cancelling, setCancelling] = useState(false)
   const [services, setServices] = useState([])
   const [barbershopId] = useState('demo-shop-001') // For production, get from context
   
@@ -100,18 +114,47 @@ export default function CalendarPage() {
   const [filterLocation, setFilterLocation] = useState('all')
   const [showTestData, setShowTestData] = useState(true)
   
+  // Developer debug states
+  const [showDiagnostics, setShowDiagnostics] = useState(false)
+  
+  // Track appointment IDs to prevent duplicates
+  const [appointmentIds, setAppointmentIds] = useState(new Set())
+  
+  // Real-time connection state
+  const [realtimeConnected, setRealtimeConnected] = useState(false)
+  const [realtimeError, setRealtimeError] = useState(null)
+  
+  // Debug info (moved to useEffect to prevent render loop)
+  
   // Use realtime appointments hook
   const { 
     appointments: realtimeAppointments, 
     loading: realtimeLoading, 
     error: realtimeErrorMsg,
-    isConnected: realtimeConnected,
-    lastUpdate: lastRealtimeUpdate
+    isConnected: realtimeHookConnected,
+    lastUpdate,
+    connectionAttempts,
+    diagnostics
   } = useRealtimeAppointments(barbershopId)
+  
+  // Debug info moved to useEffect to prevent infinite renders
 
   // Initialize calendar with real data
   useEffect(() => {
     setMounted(true)
+    
+    // Add debug info that was causing infinite loops when in render
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('componentDebugAfter', JSON.stringify({
+        hookReturned: true,
+        hasAppointments: !!realtimeAppointments,
+        appointmentCount: realtimeAppointments?.length || 0,
+        loading: realtimeLoading,
+        error: realtimeErrorMsg,
+        isConnected: realtimeHookConnected,
+        timestamp: new Date().toISOString()
+      }))
+    }
     
     // Set up time display
     const updateTime = () => {
@@ -125,41 +168,112 @@ export default function CalendarPage() {
     setResources(DEFAULT_RESOURCES)
     setServices(DEFAULT_SERVICES)
     
-    // Always fetch real barbers and services
+    // Load initial data
     fetchRealBarbers()
     fetchServices()
+    // Real-time hook will load appointments automatically - no manual fetch needed
     
     return () => clearInterval(timeInterval)
   }, [])
   
-  // Update events when realtime appointments change
-  useEffect(() => {
-    if (realtimeAppointments && realtimeAppointments.length > 0) {
-      console.log('🔄 Realtime appointments received:', realtimeAppointments.length)
-      setEvents(realtimeAppointments)
-      setRealtimeConnected(true)
-      setLastRealtimeUpdate(new Date())
-    } else if (!realtimeLoading) {
-      // Only fetch via API if realtime isn't loading and has no data
-      console.log('📡 No realtime data, fetching via API...')
-      fetchRealAppointments()
+  // Enhanced helper function to deduplicate appointments with optimistic handling
+  const deduplicateAppointments = (appointments) => {
+    const seen = new Map()
+    const result = []
+    
+    // Sort by priority: real appointments (UUID) first, then optimistic (temp-*)
+    const prioritized = [...appointments].sort((a, b) => {
+      const aIsOptimistic = a.id?.toString().startsWith('temp-') || a.extendedProps?.isOptimistic
+      const bIsOptimistic = b.id?.toString().startsWith('temp-') || b.extendedProps?.isOptimistic
+      
+      // Real appointments have priority over optimistic ones
+      if (aIsOptimistic && !bIsOptimistic) return 1  // b comes first
+      if (!aIsOptimistic && bIsOptimistic) return -1 // a comes first
+      return 0 // same priority
+    })
+    
+    for (const apt of prioritized) {
+      if (!apt.id) continue // Skip invalid appointments
+      
+      // Create deduplication key based on time, barber, and customer
+      // This handles cases where optimistic and real appointments have different IDs
+      const dedupKey = `${apt.start}-${apt.resourceId}-${apt.title?.replace(/^❌\s*/, '')}`
+      
+      // Also track by direct ID
+      const idKey = apt.id.toString()
+      
+      if (seen.has(idKey) || seen.has(dedupKey)) {
+        console.log('🔄 DEDUP: Skipping duplicate appointment:', {
+          id: apt.id,
+          title: apt.title,
+          reason: seen.has(idKey) ? 'same ID' : 'same time/barber/customer'
+        })
+        continue
+      }
+      
+      seen.set(idKey, true)
+      seen.set(dedupKey, true)
+      result.push(apt)
     }
     
-    // Update realtime error state
-    if (realtimeErrorMsg) {
+    console.log('🔄 DEDUP: Processed', appointments.length, 'appointments, kept', result.length)
+    return result
+  }
+
+  // Use API route for initial data (properly formatted), then real-time for updates
+  useEffect(() => {
+    console.log('🔍 CRITICAL DEBUG: useEffect condition check:', {
+      realtimeAppointments: realtimeAppointments,
+      appointmentsType: typeof realtimeAppointments,
+      appointmentsLength: Array.isArray(realtimeAppointments) ? realtimeAppointments.length : 'not array',
+      isNull: realtimeAppointments === null,
+      isUndefined: realtimeAppointments === undefined,
+      conditionMet: realtimeAppointments !== null && realtimeAppointments !== undefined,
+      realtimeErrorMsg: realtimeErrorMsg,
+      realtimeHookConnected: realtimeHookConnected
+    })
+    
+    if (realtimeAppointments !== null && realtimeAppointments !== undefined) {
+      // Always prefer API route data for proper cancelled appointment formatting
+      console.log('✅ CRITICAL: Condition met - calling fetchRealAppointments()')
+      fetchRealAppointments() // Use API route which formats cancelled appointments correctly
+      setRealtimeConnected(realtimeHookConnected)
+    } else if (realtimeErrorMsg) {
+      // Real-time failed, use manual fetch as fallback
       setRealtimeError(realtimeErrorMsg)
       setRealtimeConnected(false)
+      console.log('📅 Real-time failed, using manual fetch fallback:', realtimeErrorMsg)
+      fetchRealAppointments()
+    } else {
+      console.log('❌ CRITICAL: Neither condition met - appointments won\'t load!')
     }
-  }, [realtimeAppointments, realtimeLoading, realtimeErrorMsg])
+  }, [realtimeAppointments, realtimeErrorMsg, realtimeHookConnected])
   
-  // Debug log resources when they change
+  // Timeout fallback if real-time doesn't load within 5 seconds
+  // Only trigger if we have no events AND real-time hasn't connected
   useEffect(() => {
-    console.log('📅 Calendar resources updated:', resources)
-    console.log('📅 Calendar events updated:', events)
-  }, [resources, events])
+    const timer = setTimeout(() => {
+      if (events.length === 0 && !realtimeLoading) {
+        console.log('📅 Real-time timeout - using manual fetch as fallback')
+        fetchRealAppointments()
+      }
+    }, 5000) // Increased to 5 seconds to give real-time more time
+    
+    return () => clearTimeout(timer)
+  }, [events.length, realtimeLoading, realtimeConnected])
+  
+  // Debug log resources when they change (minimal logging)
+  useEffect(() => {
+    if (resources.length > 0) {
+      console.log('📅 Calendar resources loaded:', resources.length)
+    }
+  }, [resources])
 
   // Fetch real appointments from API
   const fetchRealAppointments = async () => {
+    console.log('🚨 CRITICAL: fetchRealAppointments called at', new Date().toISOString())
+    console.log('🚨 CRITICAL: Current events count before fetch:', events.length)
+    
     try {
       const params = new URLSearchParams()
       const now = new Date()
@@ -167,30 +281,64 @@ export default function CalendarPage() {
       
       params.append('start_date', now.toISOString())
       params.append('end_date', oneWeekFromNow.toISOString())
+      // 🚨 CRITICAL FIX: Add shop_id parameter to prevent getting entire database
+      params.append('shop_id', 'demo-shop-001')
 
-      const response = await fetch(`/api/calendar/appointments?${params.toString()}`)
-      const result = await response.json()
+      const apiUrl = `/api/calendar/appointments?${params.toString()}`
+      console.log('🚨 CRITICAL: Making API request with shop filter:', apiUrl)
       
-      console.log('📅 Fetched appointments:', result)
+      const response = await fetch(apiUrl)
+      console.log('🚨 CRITICAL: Response status:', response.status, response.ok)
+      
+      const result = await response.json()
+      console.log('🚨 CRITICAL: Raw API result:', {
+        hasAppointments: !!result.appointments,
+        appointmentCount: result.appointments?.length || 0,
+        appointmentsArray: Array.isArray(result.appointments),
+        firstAppointment: result.appointments?.[0] || 'none',
+        cancelledCount: result.appointments?.filter(apt => apt.extendedProps?.status === 'cancelled').length || 0,
+        fullResult: result
+      })
       
       if (response.ok && result.appointments?.length) {
-        // Use the appointments directly as they're already formatted
-        setEvents(result.appointments)
+        // Process appointments first, outside the setEvents callback
+        const combined = [...events, ...result.appointments]
+        const uniqueAppointments = deduplicateAppointments(combined)
+        
+        console.log('🚨 CRITICAL FIX: Processing appointments:', {
+          previousCount: events.length,
+          newDataCount: result.appointments.length,
+          combinedCount: combined.length,
+          finalCount: uniqueAppointments.length,
+          cancelledCount: uniqueAppointments.filter(apt => apt.extendedProps?.status === 'cancelled').length,
+          optimisticCount: uniqueAppointments.filter(apt => apt.extendedProps?.isOptimistic).length
+        })
+        
+        // Update state with processed appointments
+        setEvents(uniqueAppointments)
+        
+        console.log('✅ CRITICAL FIX: setEvents called with', uniqueAppointments.length, 'appointments')
+        
+        // Update tracking set - now uniqueAppointments is properly scoped
+        const newIds = new Set(uniqueAppointments.map(apt => apt.id))
+        setAppointmentIds(newIds)
       } else {
-        // Use centralized mock data generation
-        const mockEvents = generateMockEvents(new Date(), resources, services)
-        const recurring = generateRecurringEvents(new Date())
-        setEvents([...mockEvents, ...recurring])
+        // No appointments found - show empty calendar
+        console.log('📅 DEBUG: No appointments found, setting empty array')
+        setEvents([])
       }
     } catch (error) {
-      console.error('Error fetching appointments:', error)
-      // Use centralized mock data generation
-      const mockEvents = generateMockEvents(new Date(), resources, services)
-      const recurring = generateRecurringEvents(new Date())
-      setEvents([...mockEvents, ...recurring])
+      console.error('❌ DEBUG: Error fetching appointments:', error)
+      // Show empty calendar on error
+      setEvents([])
     }
   }
 
+  // Auto-refresh function for the AutoRefreshComponent
+  const handleAutoRefresh = async () => {
+    console.log('🔄 Auto-refresh triggered')
+    await fetchRealAppointments()
+  }
 
   // Fetch services from API
   const fetchServices = async () => {
@@ -221,14 +369,14 @@ export default function CalendarPage() {
       
       if (response.ok && result.barbers?.length) {
         // Transform to FullCalendar resource format if needed
-        const resources = result.barbers.map(barber => ({
+        const transformedResources = result.barbers.map(barber => ({
           id: barber.id,
           title: barber.title || barber.name,
           eventColor: barber.eventColor || barber.color || '#3b82f6',
           ...barber
         }))
-        setResources(resources)
-        generateQuickLinks(resources)
+        setResources(transformedResources)
+        generateQuickLinks(transformedResources)
       } else {
         setResources(DEFAULT_RESOURCES)
         generateQuickLinks(DEFAULT_RESOURCES)
@@ -295,14 +443,47 @@ export default function CalendarPage() {
     return { locations, barbers }
   }, [quickLinks])
   
+  // Debug effect temporarily disabled to prevent infinite loops
+  
   // Filter events based on search and filter criteria
   const filteredEvents = useMemo(() => {
-    console.log('Filtering events. Total events:', events.length);
-    console.log('First few events:', events.slice(0, 3));
+    // Moved debug logs to prevent infinite loops
     return events.filter(event => {
-      // Test data filter
-      const isTestAppointment = event.id?.toString().startsWith('test-booking-')
-      if (!showTestData && isTestAppointment) return false
+      // Improved test data classification
+      // Consider something test data if:
+      // 1. ID starts with known test patterns
+      // 2. Customer name contains "Test" 
+      // 3. Generated from mock data (has specific patterns)
+      // 4. Explicitly marked as mock data
+      const isTestAppointment = (
+        event.id?.toString().startsWith('test-booking-') ||
+        event.id?.toString().startsWith('event-') ||        // Old mock data IDs
+        event.id?.toString().startsWith('mock-') ||         // New mock data IDs
+        event.id?.toString().includes('temp-') ||           // Optimistic appointment IDs
+        event.extendedProps?.customer?.toLowerCase().includes('test') ||
+        event.title?.toLowerCase().includes('test') ||
+        event.extendedProps?.notes?.toLowerCase().includes('test appointment') ||
+        event.extendedProps?.notes?.toLowerCase().includes('mock data') ||
+        event.extendedProps?.isMockData === true            // Explicit mock data flag
+      )
+      
+      // Real database appointments should never be filtered as test data
+      // UUID format indicates real data from database
+      const isRealDatabaseAppointment = (
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(event.id?.toString())
+      )
+      
+      // If it's a real database appointment, always show it regardless of showTestData
+      if (isRealDatabaseAppointment && !isTestAppointment) {
+        console.log('Real appointment detected:', event.id, event.extendedProps?.customer)
+        return true
+      }
+      
+      // For everything else, respect the showTestData filter
+      if (!showTestData && isTestAppointment) {
+        console.log('Hiding test appointment:', event.id, event.extendedProps?.customer)
+        return false
+      }
       
       // Search filter
       if (searchTerm) {
@@ -332,7 +513,8 @@ export default function CalendarPage() {
       
       // Service filter
       if (filterService !== 'all') {
-        const eventService = event.extendedProps?.service || event.title.split(' - ')[1] || ''
+        const eventService = event.extendedProps?.service || 
+                           (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : '') || ''
         if (!eventService.toLowerCase().includes(filterService.toLowerCase())) {
           return false
         }
@@ -348,13 +530,93 @@ export default function CalendarPage() {
       
       return true
     })
+    
+    // Debug log final filtered results
+    const filteredResult = events.filter(event => {
+      // Same filtering logic but for the final result logging
+      const isTestAppointment = (
+        event.id?.toString().startsWith('test-booking-') ||
+        event.id?.toString().startsWith('event-') ||
+        event.id?.toString().startsWith('mock-') ||
+        event.id?.toString().includes('temp-') ||
+        event.extendedProps?.customer?.toLowerCase().includes('test') ||
+        event.title?.toLowerCase().includes('test') ||
+        event.extendedProps?.notes?.toLowerCase().includes('test appointment') ||
+        event.extendedProps?.notes?.toLowerCase().includes('mock data') ||
+        event.extendedProps?.isMockData === true
+      )
+      
+      const isRealDatabaseAppointment = (
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(event.id?.toString())
+      )
+      
+      if (isRealDatabaseAppointment && !isTestAppointment) {
+        return true
+      }
+      
+      if (!showTestData && isTestAppointment) {
+        return false
+      }
+      
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase()
+        const matchesSearch = 
+          event.title?.toLowerCase().includes(searchLower) ||
+          event.extendedProps?.customer?.toLowerCase().includes(searchLower) ||
+          event.extendedProps?.service?.toLowerCase().includes(searchLower) ||
+          event.extendedProps?.notes?.toLowerCase().includes(searchLower)
+        if (!matchesSearch) return false
+      }
+      
+      if (filterLocation !== 'all') {
+        const barber = resources.find(r => r.id === event.resourceId)
+        const barberLocation = barber?.extendedProps?.location || 'Unknown'
+        if (barberLocation !== filterLocation) {
+          return false
+        }
+      }
+      
+      if (filterBarber !== 'all' && event.resourceId !== filterBarber) {
+        return false
+      }
+      
+      if (filterService !== 'all') {
+        const eventService = event.extendedProps?.service || 
+                           (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : '') || ''
+        if (!eventService.toLowerCase().includes(filterService.toLowerCase())) {
+          return false
+        }
+      }
+      
+      if (filterStatus !== 'all') {
+        const eventStatus = event.extendedProps?.status || 'confirmed'
+        if (eventStatus !== filterStatus) {
+          return false
+        }
+      }
+      
+      return true
+    })
+    
+    console.log('🎯 DEBUG: Final filtered result:', {
+      totalFiltered: filteredResult.length,
+      cancelledFiltered: filteredResult.filter(e => e.extendedProps?.status === 'cancelled').length,
+      redFiltered: filteredResult.filter(e => e.backgroundColor === '#ef4444').length,
+      withXFiltered: filteredResult.filter(e => e.title?.includes('❌')).length,
+      filterStatus: filterStatus,
+      showTestData: showTestData
+    })
+    
+    return filteredResult
   }, [events, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources, showTestData])
   
   // Get unique services for filter dropdown
   const uniqueServices = useMemo(() => {
     const services = new Set()
     events.forEach(event => {
-      const service = event.extendedProps?.service || event.title.split(' - ')[1]
+      // Safely extract service with null checks
+      const service = event.extendedProps?.service || 
+                     (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : null)
       if (service) services.add(service)
     })
     return Array.from(services).sort()
@@ -394,16 +656,24 @@ export default function CalendarPage() {
   }, [])
 
   const handleDateSelect = useCallback((selectInfo) => {
-    console.log('📅 Enhanced slot clicked:', selectInfo)
+    console.log('📅 Calendar slot selected:', {
+      type: selectInfo.selectionType || 'unknown',
+      start: selectInfo.start,
+      end: selectInfo.end,
+      duration: selectInfo.duration,
+      barber: selectInfo.barberName || selectInfo.resourceTitle
+    })
     
-    // Build comprehensive slot data based on view type
+    // Build comprehensive slot data based on selection type and view
     const slotData = {
       start: selectInfo.start,
       end: selectInfo.end,
-      barberId: selectInfo.resourceId || selectInfo.resource?.id,
-      barberName: selectInfo.resource?.title || resources.find(r => r.id === selectInfo.resourceId)?.title,
+      barberId: selectInfo.barberId || selectInfo.resourceId || selectInfo.resource?.id,
+      barberName: selectInfo.barberName || selectInfo.resource?.title || resources.find(r => r.id === (selectInfo.resourceId || selectInfo.barberId))?.title,
       viewType: selectInfo.viewType,
-      allDay: selectInfo.allDay
+      allDay: selectInfo.allDay,
+      duration: selectInfo.duration || 60,
+      selectionType: selectInfo.selectionType
     }
     
     // Handle different view types
@@ -485,8 +755,7 @@ export default function CalendarPage() {
           })
         }
         
-        // Refresh appointments
-        fetchRealAppointments()
+        // Real-time updates will handle the refresh automatically
       } else {
         showError(result.error || 'Failed to reschedule appointment', {
           title: 'Reschedule Failed',
@@ -506,16 +775,19 @@ export default function CalendarPage() {
   }
 
   const handleAppointmentSave = async (appointmentData) => {
-    // Handle deletion case - just refresh the calendar
+    // Handle deletion case - let real-time subscription handle the removal
     if (appointmentData?.isDeleted) {
-      console.log('Appointment deleted, refreshing calendar...')
+      console.log('Appointment deleted, waiting for real-time update...')
+      
       success('Appointment deleted successfully!', {
         title: 'Success',
         duration: 3000
       })
       setShowAppointmentModal(false)
-      // Refresh the calendar by fetching appointments again
-      fetchRealAppointments()
+      
+      // Real-time subscription will automatically remove the appointment
+      // This prevents desync between manual removal and real-time updates
+      
       return
     }
     
@@ -530,33 +802,66 @@ export default function CalendarPage() {
       setShowAppointmentModal(false)
       setShowBookingConfirmation(true)
       
-      // Refresh the calendar by fetching appointments again
-      fetchRealAppointments()
+      // Note: Removed fetchRealAppointments() - realtime will handle the update
       return
     }
     
     // Create optimistic appointment for immediate UI update
-    const startDate = new Date(appointmentData.scheduled_at)
+    let optimisticAppointment = null
+    
+    console.log('📅 Creating optimistic appointment with data:', {
+      scheduled_at: appointmentData.scheduled_at,
+      duration_minutes: appointmentData.duration_minutes,
+      client_name: appointmentData.client_name,
+      fullData: appointmentData
+    })
+    
+    // Ensure we have a valid date - check different possible field names
+    // The API returns start_time and end_time, while the modal sends scheduled_at
+    const scheduledDate = appointmentData.scheduled_at || appointmentData.start_time || appointmentData.start || appointmentData.dateTime
+    if (!scheduledDate) {
+      console.error('No valid date field found in appointment data:', appointmentData)
+      showError('Invalid appointment date', {
+        title: 'Booking Failed',
+        duration: 3000
+      })
+      return
+    }
+    
+    const startDate = new Date(scheduledDate)
+    // Always use the service duration from appointmentData.duration_minutes
+    // This comes from the service selection in the modal
     const durationMinutes = appointmentData.duration_minutes || 60
     const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
+    
+    console.log('📅 Creating appointment with service-based duration:', {
+      service: appointmentData.service_name,
+      duration: durationMinutes,
+      startTime: startDate.toLocaleTimeString(),
+      endTime: endDate.toLocaleTimeString()
+    })
     
     // Validate dates before creating optimistic appointment
     if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
       console.error('Invalid date for optimistic appointment:', {
-        scheduled_at: appointmentData.scheduled_at,
+        scheduled_at: scheduledDate,
         startDate: startDate.toString(),
-        endDate: endDate.toString()
+        endDate: endDate.toString(),
+        rawData: appointmentData
       })
       // Skip optimistic update if dates are invalid
     } else {
-      const optimisticAppointment = {
+      const barberColor = resources.find(r => r.id === appointmentData.barber_id)?.eventColor || '#3b82f6'
+      
+      optimisticAppointment = {
         id: `temp-${Date.now()}`, // Temporary ID
         title: `${appointmentData.client_name} - ${appointmentData.service_name || 'Service'}`,
         start: startDate.toISOString(),
         end: endDate.toISOString(),
         resourceId: appointmentData.barber_id,
-        backgroundColor: resources.find(r => r.id === appointmentData.barber_id)?.eventColor || '#3b82f6',
-        borderColor: resources.find(r => r.id === appointmentData.barber_id)?.eventColor || '#3b82f6',
+        backgroundColor: `${barberColor}88`, // Add transparency (88 = ~53% opacity)
+        borderColor: barberColor,
+        classNames: ['optimistic-appointment'], // Add CSS class for additional styling
         extendedProps: {
           customer_name: appointmentData.client_name,
           customer_phone: appointmentData.client_phone,
@@ -566,19 +871,17 @@ export default function CalendarPage() {
         }
       }
       
-      // Add optimistic appointment immediately to calendar
-      if (!realtimeConnected) {
-        setEvents(prev => [...prev, optimisticAppointment])
-        info('Booking appointment...', {
-          title: 'Processing',
-          duration: 2000
-        })
-      }
-    }
-    
-    // Add optimistic appointment immediately to calendar
-    if (!realtimeConnected) {
-      setEvents(prev => [...prev, optimisticAppointment])
+      // Add optimistic appointment immediately to calendar for instant feedback
+      setEvents(prev => {
+        // Check if appointment already exists (prevent duplicates)
+        const exists = prev.some(apt => apt.id === optimisticAppointment.id)
+        if (exists) {
+          console.log('📅 Appointment already exists, skipping optimistic update')
+          return prev
+        }
+        console.log('📅 Adding optimistic appointment to calendar:', optimisticAppointment.id)
+        return [...prev, optimisticAppointment]
+      })
       info('Booking appointment...', {
         title: 'Processing',
         duration: 2000
@@ -610,31 +913,49 @@ export default function CalendarPage() {
         setShowAppointmentModal(false)
         setShowBookingConfirmation(true)
         
-        // Replace optimistic appointment with real appointment data
-        if (!realtimeConnected) {
-          setEvents(prev => prev.map(event => 
-            event.id === optimisticAppointment.id 
-              ? {
-                  ...result.appointment,
-                  // Keep the visual properties from optimistic update
-                  backgroundColor: optimisticAppointment.backgroundColor,
-                  borderColor: optimisticAppointment.borderColor
-                }
-              : event
-          ))
-        }
-        
-        // Update realtime status
-        setLastRealtimeUpdate(new Date())
-        
-        // Refresh appointments from database if not using realtime (after a delay to avoid race conditions)
-        if (!realtimeConnected) {
-          setTimeout(() => fetchRealAppointments(), 1000)
+        // Strategy: Replace optimistic with real appointment immediately
+        // This works whether WebSocket is working or not
+        if (optimisticAppointment && result.appointment) {
+          setEvents(prev => {
+            // Remove the optimistic appointment and add the real one
+            const withoutOptimistic = prev.filter(event => event.id !== optimisticAppointment.id)
+            
+            // Create real appointment from API response
+            const realAppointment = {
+              id: result.appointment.id,
+              title: `${result.appointment.customer_name} - ${result.appointment.service_name}`,
+              start: result.appointment.start_time,
+              end: result.appointment.end_time,
+              resourceId: result.appointment.barber_id,
+              backgroundColor: resources.find(r => r.id === result.appointment.barber_id)?.eventColor || '#3b82f6',
+              borderColor: resources.find(r => r.id === result.appointment.barber_id)?.eventColor || '#3b82f6',
+              extendedProps: {
+                customer_name: result.appointment.customer_name,
+                customer_phone: result.appointment.customer_phone,
+                service_name: result.appointment.service_name,
+                status: result.appointment.status,
+                isOptimistic: false // Real appointment
+              }
+            }
+            
+            console.log('📅 OPTIMISTIC REPLACEMENT: Replaced optimistic with real appointment:', {
+              oldId: optimisticAppointment.id,
+              newId: realAppointment.id,
+              title: realAppointment.title
+            })
+            
+            // Add real appointment and deduplicate to prevent conflicts with AutoRefresh
+            const combined = [...withoutOptimistic, realAppointment]
+            return deduplicateAppointments(combined)
+          })
+        } else {
+          console.log('📅 No optimistic appointment to replace or no API response data')
         }
       } else {
         // Remove optimistic appointment on failure
-        if (!realtimeConnected) {
+        if (optimisticAppointment) {
           setEvents(prev => prev.filter(event => event.id !== optimisticAppointment.id))
+          console.log('📅 Removed optimistic appointment due to failure:', optimisticAppointment.id)
         }
         
         showError(result.error || 'Failed to book appointment', {
@@ -644,14 +965,63 @@ export default function CalendarPage() {
       }
     } catch (error) {
       // Remove optimistic appointment on error
-      if (!realtimeConnected) {
+      if (optimisticAppointment) {
         setEvents(prev => prev.filter(event => event.id !== optimisticAppointment.id))
+        console.log('📅 Removed optimistic appointment due to error:', optimisticAppointment.id)
       }
       
       showError('Failed to book appointment: ' + error.message, {
         title: 'Error',
         duration: 5000
       })
+    }
+  }
+
+  // Handle appointment cancellation
+  const handleCancelAppointment = async () => {
+    if (!appointmentToCancel) return
+    
+    setCancelling(true)
+    
+    try {
+      const response = await fetch('/api/calendar/appointments/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          appointmentId: appointmentToCancel.id
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok) {
+        success('Appointment cancelled successfully', {
+          title: 'Cancelled',
+          duration: 3000
+        })
+        
+        // Close the modal
+        setShowCancelModal(false)
+        setAppointmentToCancel(null)
+        
+        // The real-time UPDATE event will automatically update the calendar
+        // to show the cancelled status
+      } else {
+        showError(result.error || 'Failed to cancel appointment', {
+          title: 'Error',
+          duration: 5000
+        })
+      }
+    } catch (error) {
+      console.error('Cancel error:', error)
+      showError('Failed to cancel appointment: ' + error.message, {
+        title: 'Error',
+        duration: 5000
+      })
+    } finally {
+      setCancelling(false)
     }
   }
 
@@ -712,7 +1082,13 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 relative">
+      {/* Connection Status Overlay */}
+      <div className={`realtime-status ${realtimeConnected ? 'connected' : 'disconnected'}`}>
+        <span className="status-dot"></span>
+        <span>{realtimeConnected ? 'Live Updates' : 'Connecting...'}</span>
+      </div>
+      
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="px-6 py-4">
@@ -727,10 +1103,13 @@ export default function CalendarPage() {
             
             <div className="flex items-center space-x-3">
               {/* Realtime Status Indicator */}
-              <RealtimeIndicator 
-                isConnected={realtimeConnected}
-                lastUpdate={lastRealtimeUpdate}
-                errorMessage={realtimeErrorMsg}
+              <RealtimeStatusIndicator 
+                isConnected={realtimeHookConnected}
+                lastUpdate={lastUpdate}
+                connectionAttempts={connectionAttempts}
+                appointmentCount={events.length}
+                eventCounts={diagnostics?.eventCounts}
+                error={realtimeErrorMsg}
               />
               
               <button 
@@ -1053,6 +1432,7 @@ export default function CalendarPage() {
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
           <ProfessionalCalendar
+            key={`calendar-${filteredEvents.length}-${Date.now()}`} // Force re-render on events change
             resources={resources}
             events={filteredEvents} // Use filtered events
             onEventClick={handleEventClick}
@@ -1196,6 +1576,18 @@ export default function CalendarPage() {
         </div>
       )}
 
+      {/* Cancel Confirmation Modal */}
+      <CancelConfirmationModal
+        isOpen={showCancelModal}
+        onClose={() => {
+          setShowCancelModal(false)
+          setAppointmentToCancel(null)
+        }}
+        onConfirm={handleCancelAppointment}
+        appointment={appointmentToCancel}
+        loading={cancelling}
+      />
+
       {/* Appointment Booking Modal */}
       {showAppointmentModal && (
         <AppointmentBookingModal
@@ -1252,6 +1644,138 @@ export default function CalendarPage() {
           }
         />
       )}
+      
+      {/* Developer Diagnostics Panel */}
+      <div className={`fixed bottom-0 left-0 right-0 bg-gray-900 text-white transition-transform duration-300 ${showDiagnostics ? 'transform translate-y-0' : 'transform translate-y-full'} z-40`}>
+        <div className="px-6 py-3 border-b border-gray-700 flex items-center justify-between">
+          <h3 className="text-sm font-semibold">Real-time Diagnostics</h3>
+          <button
+            onClick={() => setShowDiagnostics(false)}
+            className="text-gray-400 hover:text-white"
+          >
+            <XMarkIcon className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="px-6 py-4 max-h-60 overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            {/* Connection Status */}
+            <div className="bg-gray-800 rounded p-3">
+              <div className="font-semibold text-blue-400 mb-2">Connection Status</div>
+              <div className={`text-${realtimeHookConnected ? 'green' : 'red'}-400 font-mono`}>
+                {diagnostics.subscriptionStatus || 'unknown'}
+              </div>
+              <div className="text-gray-400 mt-1">
+                Attempts: {connectionAttempts}
+              </div>
+              <div className="text-gray-400">
+                Channel: {diagnostics.channelStatus || 'unknown'}
+              </div>
+            </div>
+
+            {/* Event Counts */}
+            <div className="bg-gray-800 rounded p-3">
+              <div className="font-semibold text-green-400 mb-2">Event Counts</div>
+              <div className="space-y-1 font-mono">
+                <div>INSERT: {diagnostics.eventCounts?.INSERT || 0}</div>
+                <div>UPDATE: {diagnostics.eventCounts?.UPDATE || 0}</div>
+                <div>DELETE: {diagnostics.eventCounts?.DELETE || 0}</div>
+              </div>
+            </div>
+
+            {/* Timing Info */}
+            <div className="bg-gray-800 rounded p-3">
+              <div className="font-semibold text-yellow-400 mb-2">Timing</div>
+              <div className="text-gray-300 text-xs">
+                <div>Last Update:</div>
+                <div className="font-mono">
+                  {lastUpdate ? new Date(lastUpdate).toLocaleTimeString() : 'None'}
+                </div>
+                <div className="mt-1">Connection Time:</div>
+                <div className="font-mono">
+                  {diagnostics.connectionTime ? `${diagnostics.connectionTime}ms` : 'N/A'}
+                </div>
+              </div>
+            </div>
+
+            {/* Data Status */}
+            <div className="bg-gray-800 rounded p-3">
+              <div className="font-semibold text-purple-400 mb-2">Data Status</div>
+              <div className="space-y-1">
+                <div>Appointments: {realtimeAppointments?.length || 0}</div>
+                <div>Filtered: {filteredEvents?.length || 0}</div>
+                <div>Loading: {realtimeLoading ? 'Yes' : 'No'}</div>
+                <div className={`text-${realtimeErrorMsg ? 'red' : 'green'}-400`}>
+                  Status: {realtimeErrorMsg ? 'Error' : 'OK'}
+                </div>
+              </div>
+            </div>
+
+            {/* Error History */}
+            {diagnostics.errorHistory?.length > 0 && (
+              <div className="bg-gray-800 rounded p-3 md:col-span-2">
+                <div className="font-semibold text-red-400 mb-2">Recent Errors</div>
+                <div className="space-y-1 max-h-20 overflow-y-auto">
+                  {diagnostics.errorHistory.slice(-3).map((error, i) => (
+                    <div key={i} className="text-xs">
+                      <span className="text-red-400">[{error.type}]</span> {error.message}
+                      <div className="text-gray-500">{new Date(error.timestamp).toLocaleTimeString()}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Subscription History */}
+            {diagnostics.subscriptionStatusHistory?.length > 0 && (
+              <div className="bg-gray-800 rounded p-3 md:col-span-2">
+                <div className="font-semibold text-blue-400 mb-2">Status History</div>
+                <div className="space-y-1 max-h-20 overflow-y-auto">
+                  {diagnostics.subscriptionStatusHistory.slice(-3).map((status, i) => (
+                    <div key={i} className="text-xs font-mono">
+                      <span className="text-blue-300">{status.status}</span>
+                      <div className="text-gray-500">{new Date(status.timestamp).toLocaleTimeString()}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center space-x-3 mt-4 pt-3 border-t border-gray-700">
+            <button
+              onClick={() => console.log('Full diagnostics:', diagnostics)}
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs"
+            >
+              Log Full Diagnostics
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-xs"
+            >
+              Force Reload
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Auto-refresh component temporarily enabled for debugging */}
+      <AutoRefreshComponent 
+        onRefresh={handleAutoRefresh}
+        intervalMs={5000} // Check every 5 seconds for testing
+      />
+      
+      {/* Diagnostics Toggle Button */}
+      <button
+        onClick={() => setShowDiagnostics(true)}
+        className={`fixed bottom-4 right-4 bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 z-30 ${showDiagnostics ? 'hidden' : 'block'}`}
+        title="Show Real-time Diagnostics"
+      >
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      </button>
       
     </div>
   )

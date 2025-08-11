@@ -33,11 +33,26 @@ export async function GET(request) {
     const startDate = searchParams.get('start_date')
     const endDate = searchParams.get('end_date')
     const barberId = searchParams.get('barber_id')
+    const shopId = searchParams.get('shop_id')
+    
+    console.log('🚨 API CRITICAL: Received parameters:', {
+      startDate,
+      endDate,
+      barberId,
+      shopId,
+      allParams: Object.fromEntries(searchParams.entries())
+    })
     
     // Use bookings table with new recurring fields
     let query = supabase.from('bookings').select('*')
     
-    // Add filters
+    // 🚨 CRITICAL FIX: Add shop_id filter to prevent returning entire database
+    // Default to demo shop if no shop_id provided
+    const filterShopId = shopId || 'demo-shop-001'
+    query = query.eq('shop_id', filterShopId)
+    console.log('🔒 FILTERED by shop_id:', filterShopId)
+    
+    // Add other filters
     if (startDate) {
       query = query.gte('start_time', startDate)
     }
