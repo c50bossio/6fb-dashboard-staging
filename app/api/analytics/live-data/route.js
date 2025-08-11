@@ -7,23 +7,65 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request) {
   try {
+    // Optional authentication check - only validate if auth header is present
+    const authHeader = request.headers.get('authorization')
+    let authenticatedUser = null
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.replace('Bearer ', '')
+        // Import supabase client for token validation
+        const { createClient } = await import('@supabase/supabase-js')
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        )
+        
+        // Verify the token
+        const { data: { user }, error } = await supabase.auth.getUser(token)
+        
+        if (error || !user) {
+          console.warn('Invalid auth token provided:', error?.message)
+        } else {
+          authenticatedUser = user
+          console.log('✅ Authenticated request from user:', user.email)
+        }
+      } catch (authError) {
+        console.warn('Auth validation error:', authError.message)
+      }
+    } else {
+      // No auth header - proceed with development mode or fallback
+      console.log('📊 Analytics API: No auth header, proceeding with development mode')
+    }
+    
     const { searchParams } = new URL(request.url);
     const barbershopId = searchParams.get('barbershop_id');
     const forceRefresh = searchParams.get('force_refresh') === 'true';
     const format = searchParams.get('format') || 'json'; // json, formatted, specific
     const metric = searchParams.get('metric'); // for specific metric queries
+    
+    // New date range parameters
+    const periodType = searchParams.get('period_type'); // ytd, previous_year, 7days, 30days, 90days, custom
+    const startDate = searchParams.get('start_date'); // ISO date string for custom range
+    const endDate = searchParams.get('end_date'); // ISO date string for custom range
+    const comparison = searchParams.get('comparison') === 'true'; // Enable comparison mode
 
     // Import the analytics service (dynamic import for Python service integration)
     let analyticsData;
     
     try {
       // First try to call the Python analytics service
-      const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
+      // Use Docker service name when running in containers, localhost for development
+      const pythonServiceUrl = process.env.FASTAPI_BASE_URL || process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
       const params = new URLSearchParams({
         barbershop_id: barbershopId || '',
         force_refresh: forceRefresh.toString(),
         format,
-        metric: metric || ''
+        metric: metric || '',
+        period_type: periodType || '30days',
+        start_date: startDate || '',
+        end_date: endDate || '',
+        comparison: comparison.toString()
       });
       
       const response = await fetch(`${pythonServiceUrl}/analytics/live-metrics?${params}`, {
@@ -35,7 +77,22 @@ export async function GET(request) {
       });
       
       if (response.ok) {
-        analyticsData = await response.json();
+        const rawData = await response.json();
+        // Handle nested data structure from backend
+        if (rawData.success && rawData.data) {
+          analyticsData = {
+            data: rawData.data,
+            data_source: rawData.data_source || 'backend',
+            cache_status: rawData.cache_status
+          };
+          console.log('✅ Successfully fetched real data from backend:', {
+            revenue: rawData.data.monthly_revenue,
+            customers: rawData.data.total_customers,
+            freshness: rawData.data.data_freshness
+          });
+        } else {
+          analyticsData = rawData;
+        }
       } else {
         throw new Error(`Python service responded with ${response.status}`);
       }

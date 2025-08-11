@@ -39,7 +39,7 @@ export default function QuickActions({ profile }) {
     {
       title: 'View Analytics',
       description: 'Check your business performance and insights',
-      href: '/dashboard/analytics',
+      href: '/dashboard?mode=analytics',
       icon: ChartBarIcon,
       color: 'blue',
       badge: 'Live Data',

@@ -26,16 +26,18 @@ function SupabaseAuthProvider({ children }) {
   useEffect(() => {
     let isMounted = true
     
-    // Development mode bypass for testing calendar functionality
+    // Development mode bypass for testing calendar and analytics functionality
     const isDevelopment = process.env.NODE_ENV === 'development'
     const enableDevBypass = isDevelopment && (
       window.location.pathname.includes('/dashboard/calendar') ||
       window.location.pathname.includes('/calendar') ||
-      window.location.pathname.includes('/dashboard/website-settings')
+      window.location.pathname.includes('/dashboard/website-settings') ||
+      window.location.pathname.includes('/dashboard') && window.location.search.includes('mode=analytics') ||
+      window.location.pathname.includes('/analytics')
     )
     
     if (enableDevBypass) {
-      console.log('🔧 DEV MODE: Auth bypass enabled for calendar testing')
+      console.log('🔧 DEV MODE: Auth bypass enabled for calendar/analytics testing')
       const devUser = {
         id: 'dev-user-123',
         email: 'dev@localhost.com',
@@ -65,6 +67,22 @@ function SupabaseAuthProvider({ children }) {
         setLoading(false)
       }
     }, 5000) // 5 second timeout
+    
+    // Session refresh interval to prevent expiry
+    const sessionRefreshInterval = setInterval(async () => {
+      if (!isMounted || enableDevBypass) return
+      
+      try {
+        console.log('🔄 Refreshing session to prevent expiry...')
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session && isMounted) {
+          // Session is still valid, no action needed
+          console.log('✅ Session refresh successful')
+        }
+      } catch (error) {
+        console.warn('⚠️ Session refresh failed:', error.message)
+      }
+    }, 5 * 60 * 1000) // Refresh every 5 minutes
     
     // Check initial session
     const checkUser = async () => {
@@ -238,6 +256,7 @@ function SupabaseAuthProvider({ children }) {
       isMounted = false
       clearTimeout(loadingTimeout)
       clearTimeout(safetyTimeout)
+      clearInterval(sessionRefreshInterval)
       subscription.unsubscribe()
     }
   }, [router, supabase])

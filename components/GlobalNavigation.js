@@ -28,7 +28,7 @@ const navigation = [
   { name: 'Customers', href: '/customers', icon: UsersIcon },
   { name: 'Staff', href: '/staff', icon: UserCircleIcon },
   { name: 'Payments', href: '/payments', icon: BanknotesIcon },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: ChartBarIcon },
+  { name: 'Analytics', href: '/dashboard?mode=analytics', icon: ChartBarIcon },
   { name: 'AI Agents', href: '/ai-agents', icon: SparklesIcon },
   { name: 'Advanced RAG', href: '/advanced-rag', icon: AcademicCapIcon },
   { name: 'Admin: AI Knowledge', href: '/admin/knowledge', icon: CogIcon },

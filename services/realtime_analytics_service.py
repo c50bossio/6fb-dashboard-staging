@@ -176,18 +176,25 @@ class RealtimeAnalyticsService:
         last_update = self.last_cache_update[cache_key]
         return (datetime.now() - last_update).seconds < self.cache_duration
     
-    async def get_live_business_metrics(self, barbershop_id: Optional[str] = None, force_refresh: bool = False) -> BusinessMetrics:
+    async def get_live_business_metrics(self, barbershop_id: Optional[str] = None, force_refresh: bool = False, 
+                                       start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> BusinessMetrics:
         """
         Get comprehensive real-time business metrics
         
         Args:
             barbershop_id: Specific barbershop to analyze (None for all)
             force_refresh: Skip cache and get fresh data
+            start_date: Optional start date for custom range
+            end_date: Optional end date for custom range
             
         Returns:
             BusinessMetrics object with all current business data
         """
-        cache_key = f"business_metrics_{barbershop_id or 'all'}"
+        # Create cache key including date range
+        date_range_str = ""
+        if start_date and end_date:
+            date_range_str = f"_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}"
+        cache_key = f"business_metrics_{barbershop_id or 'all'}{date_range_str}"
         
         # Return cached data if valid and not forcing refresh
         if not force_refresh and await self._is_cache_valid(cache_key):
@@ -201,9 +208,9 @@ class RealtimeAnalyticsService:
         try:
             # Get data from appropriate database
             if self.pg_pool:
-                metrics = await self._get_pg_business_metrics(barbershop_id)
+                metrics = await self._get_pg_business_metrics(barbershop_id, start_date, end_date)
             else:
-                metrics = await self._get_sqlite_business_metrics(barbershop_id)
+                metrics = await self._get_sqlite_business_metrics(barbershop_id, start_date, end_date)
             
             # Update cache
             self.metrics_cache[cache_key] = metrics
@@ -216,7 +223,9 @@ class RealtimeAnalyticsService:
             # Return cached data if available, otherwise empty metrics
             return self.metrics_cache.get(cache_key, BusinessMetrics())
     
-    async def _get_pg_business_metrics(self, barbershop_id: Optional[str]) -> BusinessMetrics:
+    async def _get_pg_business_metrics(self, barbershop_id: Optional[str], 
+                                      start_date: Optional[datetime] = None, 
+                                      end_date: Optional[datetime] = None) -> BusinessMetrics:
         """Get business metrics from PostgreSQL"""
         
         # Base WHERE clause for barbershop filtering
@@ -401,7 +410,9 @@ class RealtimeAnalyticsService:
         logger.info("✅ Successfully fetched PostgreSQL business metrics")
         return metrics
     
-    async def _get_sqlite_business_metrics(self, barbershop_id: Optional[str]) -> BusinessMetrics:
+    async def _get_sqlite_business_metrics(self, barbershop_id: Optional[str], 
+                                         start_date: Optional[datetime] = None, 
+                                         end_date: Optional[datetime] = None) -> BusinessMetrics:
         """Get business metrics from SQLite (development mode)"""
         
         # For SQLite, we'll create simplified queries that work with basic schema
@@ -430,38 +441,94 @@ class RealtimeAnalyticsService:
                 if metrics.total_appointments > 0:
                     metrics.appointment_completion_rate = (metrics.completed_appointments / metrics.total_appointments) * 100
             
-            # Mock some realistic development data
-            metrics.monthly_revenue = 12500.00
-            metrics.daily_revenue = 450.00
-            metrics.weekly_revenue = 2800.00
-            metrics.total_revenue = 45000.00
-            metrics.service_revenue = 38250.00
-            metrics.tip_revenue = 6750.00
-            metrics.revenue_growth = 8.5
-            
-            metrics.total_customers = 156
-            metrics.new_customers_this_month = 23
-            metrics.returning_customers = 133
-            metrics.customer_retention_rate = 85.3
-            metrics.average_customer_lifetime_value = 288.46
-            
-            metrics.total_barbers = 4
-            metrics.active_barbers = 3
-            metrics.top_performing_barber = "Mike Johnson"
-            metrics.average_service_duration = 45.0
-            
-            metrics.peak_booking_hours = [10, 11, 14, 15, 16]
-            metrics.busiest_days = ["Friday", "Saturday", "Thursday"]
-            metrics.most_popular_services = [
-                {"name": "Classic Cut", "bookings": 89, "revenue": 5340.00},
-                {"name": "Beard Trim", "bookings": 67, "revenue": 2010.00},
-                {"name": "Full Service", "bookings": 45, "revenue": 4050.00}
-            ]
-            
-            metrics.average_service_price = 68.50
-            metrics.payment_success_rate = 96.8
-            metrics.outstanding_payments = 245.00
-            metrics.occupancy_rate = 74.5
+            # Use the enhanced sqlite_data_service for date range support
+            try:
+                from .sqlite_data_service import sqlite_data_service
+                
+                if start_date and end_date:
+                    # Use custom date range
+                    raw_data = await sqlite_data_service.get_business_metrics_by_date_range(start_date, end_date)
+                    revenue_key = 'period_revenue'
+                    logger.info(f"✅ Using custom date range: {start_date.date()} to {end_date.date()}")
+                else:
+                    # Use default 30-day period
+                    raw_data = await sqlite_data_service.get_business_metrics(30)
+                    revenue_key = 'monthly_revenue'
+                    logger.info(f"✅ Using default 30-day period")
+                
+                if raw_data and raw_data.get(revenue_key, 0) > 0:
+                    # Map the SQLite data to BusinessMetrics format
+                    metrics.monthly_revenue = float(raw_data.get(revenue_key, 0))
+                    metrics.daily_revenue = float(raw_data.get('daily_revenue', 0))
+                    metrics.weekly_revenue = float(raw_data.get('weekly_revenue', 0))
+                    metrics.total_revenue = metrics.monthly_revenue * 12
+                    metrics.service_revenue = float(raw_data.get('service_revenue', 0))
+                    metrics.tip_revenue = float(raw_data.get('tip_revenue', 0))
+                    
+                    # Customer metrics
+                    metrics.total_customers = int(raw_data.get('total_customers', 0))
+                    metrics.new_customers_this_month = int(raw_data.get('new_customers_this_period', raw_data.get('new_customers_this_month', 0)))
+                    metrics.returning_customers = int(raw_data.get('returning_customers', 0))
+                    metrics.customer_retention_rate = float(raw_data.get('customer_retention_rate', 0))
+                    
+                    # Appointment metrics
+                    metrics.total_appointments = int(raw_data.get('total_appointments', 0))
+                    metrics.completed_appointments = int(raw_data.get('completed_appointments', 0))
+                    metrics.pending_appointments = int(raw_data.get('pending_appointments', 0))
+                    metrics.confirmed_appointments = int(raw_data.get('confirmed_appointments', 0))
+                    metrics.cancelled_appointments = int(raw_data.get('cancelled_appointments', 0))
+                    metrics.no_show_appointments = int(raw_data.get('no_show_appointments', 0))
+                    metrics.appointment_completion_rate = float(raw_data.get('appointment_completion_rate', 0))
+                    
+                    # Staff metrics
+                    metrics.total_barbers = int(raw_data.get('total_barbers', 0))
+                    metrics.active_barbers = int(raw_data.get('active_barbers', 0))
+                    
+                    # Service metrics
+                    metrics.average_service_price = float(raw_data.get('average_service_price', 0))
+                    metrics.most_popular_services = raw_data.get('most_popular_services', [])
+                    
+                    # Revenue growth
+                    metrics.revenue_growth = float(raw_data.get('revenue_growth', 0))
+                    
+                    logger.info(f"✅ Using REAL SQLite data: ${metrics.monthly_revenue:.2f} revenue, {metrics.total_customers} customers")
+                else:
+                    raise Exception("No real data available from sqlite_data_service")
+                    
+            except Exception as e:
+                logger.warning(f"Could not get real SQLite data: {e}, using fallback")
+                # Fallback to mock data
+                metrics.monthly_revenue = 12500.00
+                metrics.daily_revenue = 450.00
+                metrics.weekly_revenue = 2800.00
+                metrics.total_revenue = 45000.00
+                metrics.service_revenue = 38250.00
+                metrics.tip_revenue = 6750.00
+                metrics.revenue_growth = 8.5
+                
+                metrics.total_customers = 156
+                metrics.new_customers_this_month = 23
+                metrics.returning_customers = 133
+                metrics.customer_retention_rate = 85.3
+                metrics.average_customer_lifetime_value = 288.46
+                
+                metrics.total_barbers = 4
+                metrics.active_barbers = 3
+                metrics.top_performing_barber = "Mike Johnson"
+                metrics.average_service_duration = 45.0
+                
+                metrics.peak_booking_hours = [10, 11, 14, 15, 16]
+                metrics.busiest_days = ["Friday", "Saturday", "Thursday"]
+                metrics.most_popular_services = [
+                    {"name": "Classic Cut", "bookings": 89, "revenue": 5340.00},
+                    {"name": "Beard Trim", "bookings": 67, "revenue": 2010.00},
+                    {"name": "Full Service", "bookings": 45, "revenue": 4050.00}
+                ]
+                
+                metrics.average_service_price = 68.50
+                metrics.payment_success_rate = 96.8
+                metrics.outstanding_payments = 245.00
+                metrics.occupancy_rate = 74.5
             
             metrics.last_updated = datetime.now().isoformat()
             metrics.data_freshness = "development_mock"
@@ -653,6 +720,117 @@ Data Quality: {metrics.data_freshness.upper()}
             'cache_details': cache_info,
             'database_type': 'postgresql' if self.pg_pool else 'sqlite'
         }
+    
+    async def get_ytd_metrics(self, barbershop_id: Optional[str] = None, force_refresh: bool = False) -> Dict:
+        """Get Year-to-Date business metrics with comparison to previous year"""
+        
+        cache_key = f"ytd_metrics_{barbershop_id or 'all'}"
+        
+        if not force_refresh and await self._is_cache_valid(cache_key):
+            cached_metrics = self.metrics_cache.get(cache_key)
+            if cached_metrics:
+                logger.info(f"Returning cached YTD metrics")
+                return cached_metrics
+        
+        logger.info("Fetching fresh YTD metrics")
+        
+        try:
+            from .sqlite_data_service import sqlite_data_service
+            ytd_data = await sqlite_data_service.get_ytd_metrics()
+            
+            # Update cache
+            self.metrics_cache[cache_key] = ytd_data
+            self.last_cache_update[cache_key] = datetime.now()
+            
+            return ytd_data
+            
+        except Exception as e:
+            logger.error(f"Failed to get YTD metrics: {e}")
+            return {}
+    
+    async def get_previous_year_metrics(self, barbershop_id: Optional[str] = None, 
+                                       target_year: Optional[int] = None, force_refresh: bool = False) -> Dict:
+        """Get full previous year business metrics"""
+        
+        year = target_year or (datetime.now().year - 1)
+        cache_key = f"previous_year_metrics_{barbershop_id or 'all'}_{year}"
+        
+        if not force_refresh and await self._is_cache_valid(cache_key):
+            cached_metrics = self.metrics_cache.get(cache_key)
+            if cached_metrics:
+                logger.info(f"Returning cached {year} metrics")
+                return cached_metrics
+        
+        logger.info(f"Fetching {year} metrics")
+        
+        try:
+            from .sqlite_data_service import sqlite_data_service
+            prev_year_data = await sqlite_data_service.get_previous_year_metrics(target_year)
+            
+            # Update cache
+            self.metrics_cache[cache_key] = prev_year_data
+            self.last_cache_update[cache_key] = datetime.now()
+            
+            return prev_year_data
+            
+        except Exception as e:
+            logger.error(f"Failed to get {year} metrics: {e}")
+            return {}
+    
+    async def get_comparison_metrics(self, start_date: datetime, end_date: datetime,
+                                   comparison_start: datetime, comparison_end: datetime,
+                                   barbershop_id: Optional[str] = None, force_refresh: bool = False) -> Dict:
+        """Get metrics comparison between two date periods"""
+        
+        date_str = f"{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}_vs_{comparison_start.strftime('%Y%m%d')}_{comparison_end.strftime('%Y%m%d')}"
+        cache_key = f"comparison_metrics_{barbershop_id or 'all'}_{date_str}"
+        
+        if not force_refresh and await self._is_cache_valid(cache_key):
+            cached_metrics = self.metrics_cache.get(cache_key)
+            if cached_metrics:
+                logger.info(f"Returning cached comparison metrics")
+                return cached_metrics
+        
+        logger.info("Fetching comparison metrics")
+        
+        try:
+            from .sqlite_data_service import sqlite_data_service
+            comparison_data = await sqlite_data_service.get_comparison_metrics(
+                start_date, end_date, comparison_start, comparison_end
+            )
+            
+            # Update cache
+            self.metrics_cache[cache_key] = comparison_data
+            self.last_cache_update[cache_key] = datetime.now()
+            
+            return comparison_data
+            
+        except Exception as e:
+            logger.error(f"Failed to get comparison metrics: {e}")
+            return {}
+    
+    async def get_metrics_by_period_type(self, period_type: str, barbershop_id: Optional[str] = None, 
+                                        force_refresh: bool = False) -> Dict:
+        """Get metrics by predefined period type (ytd, previous_year, 7days, 30days, etc.)"""
+        
+        if period_type == 'ytd':
+            return await self.get_ytd_metrics(barbershop_id, force_refresh)
+        elif period_type == 'previous_year':
+            return await self.get_previous_year_metrics(barbershop_id, None, force_refresh)
+        else:
+            # Use the standard method with date range calculation
+            from .sqlite_data_service import sqlite_data_service
+            start_date, end_date = sqlite_data_service._get_date_range_for_period(period_type)
+            
+            metrics = await self.get_live_business_metrics(
+                barbershop_id=barbershop_id, 
+                force_refresh=force_refresh,
+                start_date=start_date,
+                end_date=end_date
+            )
+            
+            # Convert BusinessMetrics to dict for consistency
+            return asdict(metrics)
 
 # Global instance
 realtime_analytics_service = RealtimeAnalyticsService()
