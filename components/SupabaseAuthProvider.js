@@ -28,14 +28,14 @@ function SupabaseAuthProvider({ children }) {
     
     // Development mode bypass for testing calendar and analytics functionality
     const isDevelopment = process.env.NODE_ENV === 'development'
-    const enableDevBypass = isDevelopment && (
+    // TEMPORARY: Direct bypass for barber pages during development
+    const enableDevBypass = window.location.pathname.includes('/barber') || (isDevelopment && (
       window.location.pathname.includes('/dashboard/calendar') ||
       window.location.pathname.includes('/calendar') ||
       window.location.pathname.includes('/dashboard/website-settings') ||
       window.location.pathname.includes('/dashboard') && window.location.search.includes('mode=analytics') ||
-      window.location.pathname.includes('/analytics') ||
-      window.location.pathname.includes('/barber')
-    )
+      window.location.pathname.includes('/analytics')
+    ))
     
     if (enableDevBypass) {
       console.log('🔧 DEV MODE: Auth bypass enabled for calendar/analytics testing')

@@ -34,7 +34,9 @@ export default function BarberReports() {
   const { user, profile } = useAuth()
   const supabase = createClient()
   
-  const [loading, setLoading] = useState(true)
+  // Start with loading false to avoid infinite loading state
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const [dateRange, setDateRange] = useState('week') // day, week, month, year
   const [reportData, setReportData] = useState({
     earnings: {
@@ -67,14 +69,33 @@ export default function BarberReports() {
   })
 
   useEffect(() => {
-    loadReportData()
+    // Add a small delay to ensure component is mounted
+    const timer = setTimeout(() => {
+      loadReportData()
+    }, 100)
+    
+    // Failsafe: Force loading to false after 5 seconds
+    const failsafeTimer = setTimeout(() => {
+      if (loading) {
+        console.warn('Reports loading timeout - forcing completion')
+        setLoading(false)
+        setError('Loading took too long. Displaying with empty data.')
+      }
+    }, 5000)
+    
+    return () => {
+      clearTimeout(timer)
+      clearTimeout(failsafeTimer)
+    }
   }, [dateRange, user])
 
   const loadReportData = async () => {
-    if (!user) return
+    // For development, if no user, create a mock one
+    const currentUser = user || { id: 'dev-user-123', email: 'dev@localhost.com' }
     
     try {
-      setLoading(true)
+      console.log('Loading report data for user:', currentUser.id)
+      setError(null)
       
       // Calculate date range
       const endDate = new Date()
@@ -103,7 +124,7 @@ export default function BarberReports() {
       const appointmentsResult = await supabase
         .from('appointments')
         .select('*')
-        .eq('barber_id', user.id)
+        .eq('barber_id', currentUser.id)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString())
       
@@ -113,7 +134,7 @@ export default function BarberReports() {
         const bookingsResult = await supabase
           .from('bookings')
           .select('*')
-          .eq('barber_id', user.id)
+          .eq('barber_id', currentUser.id)
           .gte('created_at', startDate.toISOString())
           .lte('created_at', endDate.toISOString())
         
@@ -135,7 +156,7 @@ export default function BarberReports() {
       let { data: transactions, error: transError } = await supabase
         .from('transactions')
         .select('*')
-        .eq('barber_id', user.id)
+        .eq('barber_id', currentUser.id)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString())
 

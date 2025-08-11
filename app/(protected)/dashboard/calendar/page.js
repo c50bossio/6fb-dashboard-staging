@@ -87,6 +87,7 @@ export default function CalendarPage() {
   const [events, setEvents] = useState([])
   const [resources, setResources] = useState([])
   const [showQRModal, setShowQRModal] = useState(false)
+  const [currentCalendarView, setCurrentCalendarView] = useState('resourceTimeGridWeek')
   const [selectedResource, setSelectedResource] = useState(null)
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [copied, setCopied] = useState({})
@@ -1503,6 +1504,8 @@ export default function CalendarPage() {
             key={`calendar-${filteredEvents.length}-${Date.now()}`} // Force re-render on events change
             resources={resources}
             events={filteredEvents} // Use filtered events
+            currentView={currentCalendarView}
+            onViewChange={setCurrentCalendarView}
             onEventClick={handleEventClick}
             onSlotClick={handleDateSelect}
             onEventDrop={(dropInfo) => {

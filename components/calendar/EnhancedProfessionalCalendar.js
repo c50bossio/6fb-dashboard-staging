@@ -15,6 +15,8 @@ import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
 export default function EnhancedProfessionalCalendar({
   resources: externalResources,
   events: externalEvents,
+  currentView: controlledView,
+  onViewChange,
   onSlotClick,
   onEventClick,
   onEventDrop,
@@ -22,7 +24,14 @@ export default function EnhancedProfessionalCalendar({
   defaultView = 'resourceTimeGridWeek'
 }) {
   const calendarRef = useRef(null)
-  const [currentView, setCurrentView] = useState(defaultView)
+  const [currentView, setCurrentView] = useState(controlledView || defaultView)
+  
+  // Update internal state when controlled view changes
+  useEffect(() => {
+    if (controlledView && controlledView !== currentView) {
+      setCurrentView(controlledView)
+    }
+  }, [controlledView])
   
   // Use external resources if provided, otherwise use defaults
   const defaultResources = [
@@ -244,9 +253,14 @@ export default function EnhancedProfessionalCalendar({
   
   // Handle view change
   const handleViewChange = useCallback((arg) => {
-    setCurrentView(arg.view.type)
-    console.log('📅 View changed to:', arg.view.type)
-  }, [])
+    const newView = arg.view.type
+    setCurrentView(newView)
+    console.log('📅 View changed to:', newView)
+    // Notify parent component if handler provided
+    if (onViewChange) {
+      onViewChange(newView)
+    }
+  }, [onViewChange])
   
   useEffect(() => {
     console.log('📅 Enhanced Calendar loaded with', events.length, 'events')
@@ -351,7 +365,7 @@ export default function EnhancedProfessionalCalendar({
         timeZone='local'
         
         // View configuration
-        initialView={defaultView}
+        initialView={controlledView || defaultView}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
@@ -365,7 +379,7 @@ export default function EnhancedProfessionalCalendar({
             buttonText: 'Week'
           },
           resourceTimeGridWeek: {
-            buttonText: 'Week (Resources)'
+            buttonText: 'Barber Week'
           },
           resourceTimelineWeek: {
             buttonText: 'Timeline',
