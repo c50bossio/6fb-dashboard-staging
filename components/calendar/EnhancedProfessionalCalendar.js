@@ -369,7 +369,7 @@ export default function EnhancedProfessionalCalendar({
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,timeGridWeek,resourceTimeGridWeek,resourceTimelineWeek,listWeek'
+          right: 'resourceTimeGridDay,timeGridWeek,resourceTimeGridWeek,dayGridMonth,listWeek'
         }}
         views={{
           dayGridMonth: {
@@ -387,7 +387,7 @@ export default function EnhancedProfessionalCalendar({
             slotLabelInterval: '01:00:00'
           },
           resourceTimeGridDay: {
-            buttonText: 'Day'
+            buttonText: 'Barber Day'
           },
           listWeek: {
             buttonText: 'Agenda'

@@ -55,17 +55,26 @@ export async function GET(request) {
     }
     
     // Transform barbers data for FullCalendar resources
-    const resources = barbers.map(barber => ({
-      id: barber.id,
-      title: barber.name,
-      eventColor: barber.color || '#3b82f6',
-      businessHours: barber.business_hours || { start: '09:00', end: '18:00' },
-      extendedProps: {
-        email: barber.email,
-        phone: barber.phone,
-        workingDays: barber.working_days || [1, 2, 3, 4, 5, 6]
+    const resources = barbers.map(barber => {
+      // Add location based on barber name (matching mock data structure)
+      let location = 'Downtown' // default
+      if (barber.name && (barber.name.includes('Sarah') || barber.name.includes('Lisa'))) {
+        location = 'Uptown'
       }
-    }))
+      
+      return {
+        id: barber.id,
+        title: barber.name,
+        eventColor: barber.color || '#3b82f6',
+        businessHours: barber.business_hours || { start: '09:00', end: '18:00' },
+        extendedProps: {
+          location: location,
+          email: barber.email,
+          phone: barber.phone,
+          workingDays: barber.working_days || [1, 2, 3, 4, 5, 6]
+        }
+      }
+    })
     
     return NextResponse.json({ 
       barbers: resources, 

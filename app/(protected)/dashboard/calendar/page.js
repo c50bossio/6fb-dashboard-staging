@@ -482,7 +482,7 @@ export default function CalendarPage() {
       uniqueCount: uniqueEvents.length
     })
     
-    return uniqueEvents.filter(event => {
+    const filteredResult = uniqueEvents.filter(event => {
       // Improved test data classification
       // Consider something test data if:
       // 1. ID starts with known test patterns
@@ -565,73 +565,6 @@ export default function CalendarPage() {
       return true
     })
     
-    // Debug log final filtered results
-    const filteredResult = events.filter(event => {
-      // Same filtering logic but for the final result logging
-      const isTestAppointment = (
-        event.id?.toString().startsWith('test-booking-') ||
-        event.id?.toString().startsWith('event-') ||
-        event.id?.toString().startsWith('mock-') ||
-        event.id?.toString().includes('temp-') ||
-        event.extendedProps?.customer?.toLowerCase().includes('test') ||
-        event.title?.toLowerCase().includes('test') ||
-        event.extendedProps?.notes?.toLowerCase().includes('test appointment') ||
-        event.extendedProps?.notes?.toLowerCase().includes('mock data') ||
-        event.extendedProps?.isMockData === true
-      )
-      
-      const isRealDatabaseAppointment = (
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(event.id?.toString())
-      )
-      
-      if (isRealDatabaseAppointment && !isTestAppointment) {
-        return true
-      }
-      
-      if (!showTestData && isTestAppointment) {
-        return false
-      }
-      
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase()
-        const matchesSearch = 
-          event.title?.toLowerCase().includes(searchLower) ||
-          event.extendedProps?.customer?.toLowerCase().includes(searchLower) ||
-          event.extendedProps?.service?.toLowerCase().includes(searchLower) ||
-          event.extendedProps?.notes?.toLowerCase().includes(searchLower)
-        if (!matchesSearch) return false
-      }
-      
-      if (filterLocation !== 'all') {
-        const barber = resources.find(r => r.id === event.resourceId)
-        const barberLocation = barber?.extendedProps?.location || 'Unknown'
-        if (barberLocation !== filterLocation) {
-          return false
-        }
-      }
-      
-      if (filterBarber !== 'all' && event.resourceId !== filterBarber) {
-        return false
-      }
-      
-      if (filterService !== 'all') {
-        const eventService = event.extendedProps?.service || 
-                           (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : '') || ''
-        if (!eventService.toLowerCase().includes(filterService.toLowerCase())) {
-          return false
-        }
-      }
-      
-      if (filterStatus !== 'all') {
-        const eventStatus = event.extendedProps?.status || 'confirmed'
-        if (eventStatus !== filterStatus) {
-          return false
-        }
-      }
-      
-      return true
-    })
-    
     console.log('🎯 DEBUG: Final filtered result:', {
       totalFiltered: filteredResult.length,
       cancelledFiltered: filteredResult.filter(e => e.extendedProps?.status === 'cancelled').length,
@@ -643,6 +576,37 @@ export default function CalendarPage() {
     
     return filteredResult
   }, [events, realtimeAppointments, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources, showTestData])
+  
+  // Filter resources (barbers) based on location AND barber filters
+  const filteredResources = useMemo(() => {
+    let filtered = resources
+    
+    // First filter by location
+    if (filterLocation !== 'all') {
+      filtered = filtered.filter(resource => {
+        const resourceLocation = resource.extendedProps?.location
+        return resourceLocation === filterLocation
+      })
+    }
+    
+    // Then filter by specific barber if selected
+    if (filterBarber !== 'all') {
+      filtered = filtered.filter(resource => resource.id === filterBarber)
+    }
+    
+    return filtered
+  }, [resources, filterLocation, filterBarber])
+  
+  // Reset barber filter when location changes
+  useEffect(() => {
+    if (filterLocation !== 'all' && filterBarber !== 'all') {
+      // Check if current selected barber is still available in filtered location
+      const isBarberInLocation = filteredResources.some(resource => resource.id === filterBarber)
+      if (!isBarberInLocation) {
+        setFilterBarber('all')
+      }
+    }
+  }, [filterLocation, filterBarber, filteredResources])
   
   // Get unique services for filter dropdown
   const uniqueServices = useMemo(() => {
@@ -1148,11 +1112,6 @@ export default function CalendarPage() {
       {/* WebSocket Debug Panel - Temporarily disabled due to logs error */}
       {/* <WebSocketDebugPanel /> */}
       
-      {/* Connection Status Overlay */}
-      <div className={`realtime-status ${realtimeConnected ? 'connected' : 'disconnected'}`}>
-        <span className="status-dot"></span>
-        <span>{realtimeConnected ? 'Live Updates' : 'Connecting...'}</span>
-      </div>
       
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
@@ -1359,7 +1318,7 @@ export default function CalendarPage() {
               className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Barbers</option>
-              {resources.map(barber => (
+              {filteredResources.map(barber => (
                 <option key={barber.id} value={barber.id}>
                   {barber.title}
                 </option>
@@ -1501,8 +1460,8 @@ export default function CalendarPage() {
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
           <ProfessionalCalendar
-            key={`calendar-${filteredEvents.length}-${Date.now()}`} // Force re-render on events change
-            resources={resources}
+            key={`calendar-${filteredEvents.length}-${filteredResources.length}-${Date.now()}`} // Force re-render on events/resources change
+            resources={filteredResources} // Use filtered resources
             events={filteredEvents} // Use filtered events
             currentView={currentCalendarView}
             onViewChange={setCurrentCalendarView}
