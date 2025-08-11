@@ -155,10 +155,19 @@ export default function AIAgentChat() {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1"></div>
-            Online
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+            apiConnected 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-yellow-100 text-yellow-800'
+          }`}>
+            <div className={`w-1.5 h-1.5 rounded-full mr-1 ${
+              apiConnected ? 'bg-green-500' : 'bg-yellow-500'
+            }`}></div>
+            {apiConnected ? 'API Connected' : 'Connecting...'}
           </span>
+          {!apiConnected && (
+            <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
+          )}
         </div>
       </div>
 
@@ -230,22 +239,32 @@ export default function AIAgentChat() {
         {/* Quick Actions */}
         <div className="mt-3 flex flex-wrap gap-2">
           <button
-            onClick={() => setMessage("How can I increase my booking rate?")}
+            onClick={() => setMessage("Show me today's bookings and revenue")}
             className="px-3 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100"
+            disabled={!apiConnected}
           >
-            Increase Bookings
+            Today's Performance
           </button>
           <button
-            onClick={() => setMessage("What's the best pricing strategy for my services?")}
+            onClick={() => setMessage("Analyze my customer booking patterns this month")}
             className="px-3 py-1 text-xs bg-purple-50 text-purple-700 rounded-full hover:bg-purple-100"
+            disabled={!apiConnected}
           >
-            Pricing Strategy
+            Customer Analytics
           </button>
           <button
-            onClick={() => setMessage("Help me optimize my daily schedule")}
+            onClick={() => setMessage("What's my most popular service and best revenue opportunities?")}
             className="px-3 py-1 text-xs bg-green-50 text-green-700 rounded-full hover:bg-green-100"
+            disabled={!apiConnected}
           >
-            Schedule Optimization
+            Revenue Insights
+          </button>
+          <button
+            onClick={() => setMessage("Show me my weekly schedule and suggest optimizations")}
+            className="px-3 py-1 text-xs bg-orange-50 text-orange-700 rounded-full hover:bg-orange-100"
+            disabled={!apiConnected}
+          >
+            Schedule Analysis
           </button>
         </div>
       </div>
