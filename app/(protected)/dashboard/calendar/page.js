@@ -26,10 +26,17 @@ import { useToast } from '../../../../components/ToastContainer'
 import { 
   DEFAULT_RESOURCES, 
   DEFAULT_SERVICES, 
-  generateMockEvents,
-  generateRecurringEvents,
   formatAppointment 
 } from '../../../../lib/calendar-data'
+// Import real database operations - NO MOCK DATA
+import {
+  getCalendarEvents,
+  getBarberResources, 
+  getServices,
+  getRecurringAppointments,
+  checkCalendarTablesExist,
+  seedCalendarData
+} from '../../../../lib/calendar-database'
 // import { useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointments' // Old broken version
 // import { useRealtimeAppointmentsV2 as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsV2' // V2 not connecting
 import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
@@ -482,97 +489,76 @@ export default function CalendarPage() {
       uniqueCount: uniqueEvents.length
     })
     
-    const filteredResult = uniqueEvents.filter(event => {
-      // Improved test data classification
-      // Consider something test data if:
-      // 1. ID starts with known test patterns
-      // 2. Customer name contains "Test" 
-      // 3. Generated from mock data (has specific patterns)
-      // 4. Explicitly marked as mock data
-      const isTestAppointment = (
-        event.id?.toString().startsWith('test-booking-') ||
-        event.id?.toString().startsWith('event-') ||        // Old mock data IDs
-        event.id?.toString().startsWith('mock-') ||         // New mock data IDs
-        event.id?.toString().includes('temp-') ||           // Optimistic appointment IDs
-        event.extendedProps?.customer?.toLowerCase().includes('test') ||
-        event.title?.toLowerCase().includes('test') ||
-        event.extendedProps?.notes?.toLowerCase().includes('test appointment') ||
-        event.extendedProps?.notes?.toLowerCase().includes('mock data') ||
-        event.extendedProps?.isMockData === true            // Explicit mock data flag
-      )
-      
-      // Real database appointments should never be filtered as test data
-      // UUID format indicates real data from database
-      const isRealDatabaseAppointment = (
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(event.id?.toString())
-      )
-      
-      // If it's a real database appointment, always show it regardless of showTestData
-      if (isRealDatabaseAppointment && !isTestAppointment) {
-        console.log('Real appointment detected:', event.id, event.extendedProps?.customer)
-        return true
-      }
-      
-      // For everything else, respect the showTestData filter
-      if (!showTestData && isTestAppointment) {
-        console.log('Hiding test appointment:', event.id, event.extendedProps?.customer)
-        return false
-      }
-      
-      // Search filter
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase()
-        const matchesSearch = 
-          event.title?.toLowerCase().includes(searchLower) ||
-          event.extendedProps?.customer?.toLowerCase().includes(searchLower) ||
-          event.extendedProps?.service?.toLowerCase().includes(searchLower) ||
-          event.extendedProps?.notes?.toLowerCase().includes(searchLower)
+    // IMPROVED FILTERING LOGIC - Sequential step-by-step filtering
+    let currentEvents = [...uniqueEvents]
+    
+    // STEP 1: Test data filter
+    if (!showTestData) {
+      currentEvents = currentEvents.filter(event => {
+        const isTestAppointment = (
+          event.id?.toString().startsWith('test-booking-') ||
+          event.id?.toString().startsWith('event-') ||
+          event.id?.toString().startsWith('mock-') ||
+          event.id?.toString().includes('temp-') ||
+          event.extendedProps?.customer?.toLowerCase().includes('test') ||
+          event.title?.toLowerCase().includes('test') ||
+          event.extendedProps?.notes?.toLowerCase().includes('test appointment') ||
+          event.extendedProps?.notes?.toLowerCase().includes('mock data') ||
+          event.extendedProps?.isMockData === true
+        )
         
-        if (!matchesSearch) return false
-      }
-      
-      // Location filter
-      if (filterLocation !== 'all') {
+        // Real database appointments (UUID format) should always show
+        const isRealDatabaseAppointment = (
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(event.id?.toString())
+        )
+        
+        return isRealDatabaseAppointment || !isTestAppointment
+      })
+    }
+    
+    // STEP 2: Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      currentEvents = currentEvents.filter(event => 
+        event.title?.toLowerCase().includes(searchLower) ||
+        event.extendedProps?.customer?.toLowerCase().includes(searchLower) ||
+        event.extendedProps?.service?.toLowerCase().includes(searchLower) ||
+        event.extendedProps?.notes?.toLowerCase().includes(searchLower)
+      )
+    }
+    
+    // STEP 3: Location filter
+    if (filterLocation !== 'all') {
+      currentEvents = currentEvents.filter(event => {
         const barber = resources.find(r => r.id === event.resourceId)
         const barberLocation = barber?.extendedProps?.location || 'Unknown'
-        if (barberLocation !== filterLocation) {
-          return false
-        }
-      }
-      
-      // Barber filter
-      if (filterBarber !== 'all' && event.resourceId !== filterBarber) {
-        return false
-      }
-      
-      // Service filter
-      if (filterService !== 'all') {
+        return barberLocation === filterLocation
+      })
+    }
+    
+    // STEP 4: Barber filter
+    if (filterBarber !== 'all') {
+      currentEvents = currentEvents.filter(event => event.resourceId === filterBarber)
+    }
+    
+    // STEP 5: Service filter
+    if (filterService !== 'all') {
+      currentEvents = currentEvents.filter(event => {
         const eventService = event.extendedProps?.service || 
                            (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : '') || ''
-        if (!eventService.toLowerCase().includes(filterService.toLowerCase())) {
-          return false
-        }
-      }
-      
-      // Status filter
-      if (filterStatus !== 'all') {
-        const eventStatus = event.extendedProps?.status || 'confirmed'
-        if (eventStatus !== filterStatus) {
-          return false
-        }
-      }
-      
-      return true
-    })
+        return eventService.toLowerCase().trim() === filterService.toLowerCase().trim()
+      })
+    }
     
-    console.log('🎯 DEBUG: Final filtered result:', {
-      totalFiltered: filteredResult.length,
-      cancelledFiltered: filteredResult.filter(e => e.extendedProps?.status === 'cancelled').length,
-      redFiltered: filteredResult.filter(e => e.backgroundColor === '#ef4444').length,
-      withXFiltered: filteredResult.filter(e => e.title?.includes('❌')).length,
-      filterStatus: filterStatus,
-      showTestData: showTestData
-    })
+    // STEP 6: Status filter
+    if (filterStatus !== 'all') {
+      currentEvents = currentEvents.filter(event => {
+        const eventStatus = event.extendedProps?.status || 'confirmed'
+        return eventStatus === filterStatus
+      })
+    }
+    
+    const filteredResult = currentEvents
     
     return filteredResult
   }, [events, realtimeAppointments, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources, showTestData])
@@ -612,10 +598,10 @@ export default function CalendarPage() {
   const uniqueServices = useMemo(() => {
     const services = new Set()
     events.forEach(event => {
-      // Safely extract service with null checks
+      // Use SAME extraction logic as filter to ensure consistency
       const service = event.extendedProps?.service || 
-                     (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : null)
-      if (service) services.add(service)
+                     (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : '') || ''
+      if (service && service.trim()) services.add(service.trim())
     })
     return Array.from(services).sort()
   }, [events])
