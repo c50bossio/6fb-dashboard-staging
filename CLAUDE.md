@@ -6,12 +6,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The 6FB AI Agent System is an enterprise-grade barbershop management platform combining traditional booking management with advanced AI capabilities for business intelligence, customer insights, and operational automation. The system features a hierarchical barber operations structure that scales from individual barbers to multi-location enterprises.
 
-**Architecture**: Full-stack application with Next.js 14 frontend (port 9999), FastAPI backend (port 8001), and dual database support (SQLite for development, PostgreSQL for production via Supabase).
+**Architecture**: Full-stack application with Next.js 14 frontend (port 9999), FastAPI backend (port 8001), and Supabase PostgreSQL database for ALL environments (no SQLite, no mock data).
 
 **Barber Operations Hierarchy**:
 - **Individual Barbers**: Personal landing pages at `barbershop.com/barber-name`, custom services, pricing, and branding
 - **Shop Owners**: Multi-barber management, financial oversight (commission/booth rent), product inventory
 - **Enterprise Owners**: Multi-location management, cross-shop analytics, franchise operations
+
+## 🚨 CRITICAL: SUPABASE PRODUCTION DATABASE RULE
+
+**MANDATORY**: This application MUST use Supabase PostgreSQL as the database for ALL features. We are building for a REAL barbershop going live soon.
+
+### Absolute Requirements:
+- **USE SUPABASE ONLY**: PostgreSQL via Supabase for all data storage
+- **NO MOCK DATA**: Never create fake data generators or fallbacks
+- **NO SQLITE**: Not for production, not for development, not for testing
+- **NO LOCAL DATABASES**: Always connect to Supabase, even during development
+- **PRODUCTION READY**: Every feature must work with real Supabase tables
+
+See `SUPABASE_PRODUCTION_RULE.md` for complete enforcement details.
 
 ## 🚨 CRITICAL: Full-Stack Development Protocol
 
@@ -25,6 +38,29 @@ The 6FB AI Agent System is an enterprise-grade barbershop management platform co
 - **ALWAYS test end-to-end functionality before marking complete**
 
 This prevents half-done features and ensures every implementation provides immediate user value.
+
+## 🚨 CRITICAL: NO MOCK DATA POLICY
+
+**MANDATORY**: This application NEVER uses mock data. All data must come from real database operations.
+
+### Absolute Rules:
+- **NO MOCK DATA GENERATORS**: Never create `generateMock*()` functions
+- **NO FALLBACK MOCK DATA**: APIs must query database, not return hardcoded data
+- **DATABASE FIRST**: If database table doesn't exist, create it with proper schema
+- **SEED TEST DATA**: Use database seed scripts to populate realistic test data
+- **REAL QUERIES ONLY**: Every API endpoint must perform actual database operations
+
+### When Database is Empty:
+- **Create the missing tables** using proper SQL schema
+- **Seed with realistic test data** using database insert operations  
+- **Never generate mock objects** as a shortcut
+
+### Enforcement:
+- **Zero tolerance**: Mock data indicates incomplete implementation
+- **Performance impact**: Mock data generation causes loading delays
+- **Data integrity**: Only real database operations ensure consistent behavior
+
+**If you need test data, create it in the database. If you need missing functionality, implement the real database operations.**
 
 ## Key Technologies & Architecture
 
@@ -286,10 +322,13 @@ GOOGLE_AI_API_KEY=
 
 ## 🎯 Important Architectural Decisions
 
-### Data Philosophy
-- **NO MOCK DATA**: System uses only real database data. Empty states when no data exists, never fake/mock data
-- **TEST DATA**: Use database seed scripts to populate test data, not hardcoded mock values
-- **FALLBACK BEHAVIOR**: Show empty states or zero values, not placeholder data
+### Data Philosophy - STRICTLY ENFORCED
+- **ZERO MOCK DATA**: System NEVER uses mock/fake data. All data comes from real database operations
+- **DATABASE OPERATIONS ONLY**: Every API call must query actual database tables
+- **CREATE MISSING TABLES**: If table doesn't exist, create proper SQL schema immediately  
+- **SEED REALISTIC DATA**: Use database INSERT statements to populate test data, never hardcoded objects
+- **EMPTY STATES**: Show loading/empty UI states when no data exists, never fake placeholder data
+- **PERFORMANCE REQUIREMENT**: Mock data generation causes 10+ second loading delays - absolutely prohibited
 
 ### Reviews System
 - **GOOGLE REVIEWS ONLY**: All reviews come from Google My Business/Google Reviews API
