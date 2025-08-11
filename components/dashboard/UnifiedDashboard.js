@@ -26,6 +26,7 @@ import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
 import ActionCenter from './ActionCenter'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 import SmartAlertsPanel from './SmartAlertsPanel'
+import ExecutiveLoadingState from './ExecutiveLoadingState'
 
 // Use API calls instead of direct database imports (client component)
 
@@ -88,15 +89,27 @@ export default function UnifiedDashboard({ user }) {
   const [aiAgents, setAiAgents] = useState({ total: 0, active: 0 })
   const [notifications, setNotifications] = useState([])
   const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [cachedData, setCachedData] = useState(null)
+  const [cacheTimestamp, setCacheTimestamp] = useState(null)
 
   // Load dashboard data based on current mode - API CALLS ONLY
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (forceRefresh = false) => {
+    // Get barbershop ID from user or use demo
+    const barbershopId = user?.barbershop_id || 'demo-shop-001'
+    
+    // For executive mode, check cache first (30 seconds)
+    if (currentMode === DASHBOARD_MODES.EXECUTIVE && !forceRefresh && cachedData && cacheTimestamp) {
+      const cacheAge = Date.now() - cacheTimestamp
+      if (cacheAge < 30000) { // 30 seconds cache
+        console.log('Using cached executive data')
+        setDashboardData(cachedData)
+        return
+      }
+    }
+    
     setIsLoading(true)
     try {
       console.log(`Loading dashboard data for mode: ${currentMode}`)
-      
-      // Get barbershop ID from user or use demo
-      const barbershopId = user?.barbershop_id || 'demo-shop-001'
       
       // Use faster analytics API for executive mode to avoid slow AI health checks
       if (currentMode === DASHBOARD_MODES.EXECUTIVE) {
@@ -130,6 +143,9 @@ export default function UnifiedDashboard({ user }) {
             analytics_data: result.data
           }
           setDashboardData(transformedData)
+          // Cache the data for faster subsequent loads
+          setCachedData(transformedData)
+          setCacheTimestamp(Date.now())
         } else {
           console.warn('Analytics API error:', result)
           setDashboardData({})
@@ -204,6 +220,22 @@ export default function UnifiedDashboard({ user }) {
     router.push(`/dashboard?mode=${mode}`)
   }
 
+  // Prefetch data when hovering over executive mode button
+  const handleExecutiveModeHover = useCallback(() => {
+    if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
+      // Prefetch analytics data for executive mode
+      const barbershopId = user?.barbershop_id || 'demo-shop-001'
+      fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            console.log('Executive data prefetched')
+          }
+        })
+        .catch(() => {}) // Ignore errors for prefetch
+    }
+  }, [currentMode, user])
+
   // Mode selector component
   const ModeSelector = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex flex-wrap gap-2">
@@ -216,6 +248,7 @@ export default function UnifiedDashboard({ user }) {
           <button
             key={key}
             onClick={() => handleModeChange(value)}
+            onMouseEnter={value === DASHBOARD_MODES.EXECUTIVE ? handleExecutiveModeHover : undefined}
             className={`
               flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
               transition-all duration-200 
@@ -233,7 +266,7 @@ export default function UnifiedDashboard({ user }) {
       
       {/* Refresh button */}
       <button
-        onClick={loadDashboardData}
+        onClick={() => loadDashboardData(true)}
         disabled={isLoading}
         className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
       >
@@ -319,11 +352,17 @@ export default function UnifiedDashboard({ user }) {
         <ModeSelector />
       </div>
 
-      {/* Unified Executive Summary - Only for Executive mode - Consolidated view */}
-      {currentMode === DASHBOARD_MODES.EXECUTIVE && dashboardData && (
+      {/* Executive Mode Content */}
+      {currentMode === DASHBOARD_MODES.EXECUTIVE && (
         <>
-          <UnifiedExecutiveSummary data={dashboardData} />
-          <SmartAlertsPanel barbershop_id={user?.barbershop_id || 'demo'} />
+          {isLoading && !dashboardData ? (
+            <ExecutiveLoadingState />
+          ) : dashboardData ? (
+            <>
+              <UnifiedExecutiveSummary data={dashboardData} />
+              <SmartAlertsPanel barbershop_id={user?.barbershop_id || 'demo'} />
+            </>
+          ) : null}
         </>
       )}
 

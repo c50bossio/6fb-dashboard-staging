@@ -6,34 +6,66 @@ import { OpenAI } from 'openai'
 
 import { anthropic as anthropicClient, DEFAULT_CLAUDE_MODEL } from '@/lib/anthropic'
 import { getGeminiModel, convertToGeminiFormat } from '@/lib/gemini'
+import { AIBusinessContextService } from '@/lib/ai-business-context'
 
 // Initialize OpenAI
 const openaiClient = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 })
 
+// Initialize AI Business Context Service
+const aiBusinessContext = new AIBusinessContextService()
+
 export const runtime = 'edge'
 
 export async function POST(request) {
   try {
-    const { messages, provider = 'openai', model, stream = true } = await request.json()
+    const { 
+      messages, 
+      provider = 'openai', 
+      model, 
+      stream = true, 
+      includeBusinessContext = false,
+      barbershopId = 'default' 
+    } = await request.json()
 
     if (!messages || messages.length === 0) {
       return NextResponse.json({ error: 'Messages are required' }, { status: 400 })
     }
 
-    // Route to appropriate provider
+    // Add business context if requested
+    let enhancedMessages = [...messages]
+    if (includeBusinessContext) {
+      try {
+        const businessPrompt = await aiBusinessContext.getAISystemPrompt(barbershopId)
+        // Update or add system message with business context
+        const systemIndex = enhancedMessages.findIndex(m => m.role === 'system')
+        if (systemIndex >= 0) {
+          enhancedMessages[systemIndex].content += '\n\n' + businessPrompt
+        } else {
+          enhancedMessages.unshift({
+            role: 'system',
+            content: businessPrompt
+          })
+        }
+      } catch (error) {
+        console.error('Failed to get business context:', error)
+        // Continue without business context
+      }
+    }
+
+    // Route to appropriate provider with enhanced messages
     switch (provider) {
       case 'openai':
-        return handleOpenAI(messages, model, stream)
+        return handleOpenAI(enhancedMessages, model, stream)
       
       case 'anthropic':
       case 'claude':
-        return handleAnthropic(messages, model, stream)
+        return handleAnthropic(enhancedMessages, model, stream)
       
       case 'gemini':
       case 'google':
-        return handleGemini(messages, model, stream)
+        return handleGemini(enhancedMessages, model, stream)
       
       default:
         return NextResponse.json({ error: `Unknown provider: ${provider}` }, { status: 400 })
