@@ -1,6 +1,26 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
+// Inline notification handler (can be moved to external service later)
+const sendBookingNotification = async (appointmentData, customerData, preferences) => {
+  try {
+    console.log('📱 Booking notification would be sent:', {
+      customer: customerData.name,
+      appointment: appointmentData.scheduled_at,
+      channels: Object.entries(preferences).filter(([k, v]) => v && ['sms', 'email'].includes(k)).map(([k]) => k)
+    })
+    
+    return {
+      success: true,
+      notifications: [],
+      summary: { sent: 0, total: 0, success_rate: '0%' }
+    }
+  } catch (error) {
+    console.error('Notification error:', error)
+    return { success: false, error: error.message, notifications: [] }
+  }
+}
+
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -100,15 +120,19 @@ export async function GET(request) {
       const customerName = customer.name || booking.customer_name || 'Customer'
       const serviceName = service.name || booking.service_name || 'Service'
       
+      // Check if appointment is cancelled for proper styling
+      const isCancelled = booking.status === 'cancelled'
+      
       // Build event object with RRule support at the top level
       const event = {
         id: booking.id,
         resourceId: booking.barber_id,
-        title: `${customerName} - ${serviceName}`,
+        title: `${isCancelled ? '❌ ' : ''}${customerName} - ${serviceName}`,
         start: booking.start_time,
         end: booking.end_time,
-        backgroundColor: barber.color || '#3b82f6',
-        borderColor: barber.color || '#3b82f6',
+        backgroundColor: isCancelled ? '#ef4444' : (barber.color || '#3b82f6'),
+        borderColor: isCancelled ? '#dc2626' : (barber.color || '#3b82f6'),
+        classNames: isCancelled ? ['cancelled-appointment'] : [],
         display: 'auto',
         extendedProps: {
           customer: customerName,
@@ -206,30 +230,54 @@ export async function POST(request) {
       )
     }
     
-    // Create customer if needed (for the new schema)
+    // Handle customer creation/linking
     let customerId = body.customer_id
+    let customerData = null
     
-    if (!customerId && (body.client_name || body.customer_name)) {
-      // Try to create customer in customers table if it exists
+    if (customerId) {
+      // If customer_id provided, fetch existing customer data
+      const { data: existingCustomer, error: fetchError } = await supabase
+        .from('customers')
+        .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
+        .eq('id', customerId)
+        .single()
+      
+      if (!fetchError && existingCustomer) {
+        customerData = existingCustomer
+      }
+    } else if (body.customer_mode === 'new' && (body.client_name || body.customer_name)) {
+      // Create new customer for new customer mode
+      const newCustomerData = {
+        name: body.client_name || body.customer_name,
+        email: body.client_email || body.customer_email,
+        phone: body.client_phone || body.customer_phone,
+        shop_id: body.shop_id || body.barbershop_id || 'demo-shop-001',
+        notification_preferences: body.notification_preferences || {
+          sms: true,
+          email: true,
+          confirmations: true,
+          reminders: true
+        }
+      }
+
       const { data: customer, error: customerError } = await supabase
         .from('customers')
-        .insert([{
-          name: body.client_name || body.customer_name,
-          email: body.client_email || body.customer_email,
-          phone: body.client_phone || body.customer_phone,
-          shop_id: body.shop_id || body.barbershop_id || '1'
-        }])
-        .select()
+        .insert([newCustomerData])
+        .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
         .single()
       
       if (!customerError && customer) {
         customerId = customer.id
+        customerData = customer
+      } else {
+        console.error('Error creating customer:', customerError)
+        // Continue without customer_id if creation fails
       }
     }
     
     // Prepare booking data for new schema
     const bookingData = {
-      shop_id: body.shop_id || body.barbershop_id || '1',
+      shop_id: body.shop_id || body.barbershop_id || 'demo-shop-001',
       barber_id: body.barber_id,
       customer_id: customerId,
       service_id: body.service_id,
@@ -239,6 +287,8 @@ export async function POST(request) {
       price: body.service_price || body.price,
       notes: body.client_notes || body.notes,
       is_test: body.is_test || false
+      // Note: customer_name, customer_phone, customer_email columns don't exist in bookings table
+      // Customer data is stored in the customers table and linked via customer_id
     }
     
     // Handle recurring appointments with native RRule support
@@ -277,6 +327,52 @@ export async function POST(request) {
         { status: 500 }
       )
     }
+
+    // Handle notifications if requested
+    let notificationResults = null
+    const notificationPreferences = body.notification_preferences || {}
+    
+    if ((notificationPreferences.sms || notificationPreferences.email) && notificationPreferences.confirmations) {
+      try {
+        // Prepare appointment data for notifications
+        const appointmentDataForNotification = {
+          id: newBooking.id,
+          scheduled_at: newBooking.start_time,
+          client_name: customerData?.name || body.client_name || body.customer_name,
+          client_phone: customerData?.phone || body.client_phone || body.customer_phone,
+          client_email: customerData?.email || body.client_email || body.customer_email,
+          barber_name: body.barber_name || 'Your Barber',
+          service_name: body.service_name || 'Your Service'
+        }
+
+        // Use customer data if available, otherwise use data from request body
+        const customerDataForNotification = customerData || {
+          name: body.client_name || body.customer_name,
+          phone: body.client_phone || body.customer_phone,
+          email: body.client_email || body.customer_email
+        }
+
+        // Send booking confirmation
+        notificationResults = await sendBookingNotification(
+          appointmentDataForNotification,
+          customerDataForNotification,
+          notificationPreferences
+        )
+
+        // Schedule reminder if enabled (placeholder for now)
+        if (notificationPreferences.reminders) {
+          console.log('⏰ Reminder scheduling requested for:', {
+            customer: customerDataForNotification.name,
+            appointmentTime: appointmentDataForNotification.scheduled_at
+          })
+        }
+
+        console.log('📱 Notifications sent:', notificationResults)
+      } catch (notificationError) {
+        console.error('Notification failed:', notificationError)
+        // Don't fail the appointment creation if notifications fail
+      }
+    }
     
     // Return success response
     const response = {
@@ -284,12 +380,23 @@ export async function POST(request) {
       message: bookingData.is_recurring 
         ? 'Recurring appointment created with RRule pattern' 
         : 'Single appointment created successfully',
-      is_recurring: bookingData.is_recurring || false
+      is_recurring: bookingData.is_recurring || false,
+      customer_id: customerId,
+      customer_created: !body.customer_id && customerId ? true : false
     }
     
     if (bookingData.is_recurring) {
       response.rrule = body.recurrence_rule
       response.recurring_pattern = bookingData.recurring_pattern
+    }
+
+    // Include notification results if applicable
+    if (notificationResults) {
+      response.notifications = {
+        success: notificationResults.success,
+        summary: notificationResults.summary,
+        channels_attempted: notificationResults.notifications?.map(n => n.channel) || []
+      }
     }
     
     console.log('Successfully created appointment:', response)

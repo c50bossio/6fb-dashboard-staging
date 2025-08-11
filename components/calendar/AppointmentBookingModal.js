@@ -2,10 +2,11 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon, TrashIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Fragment } from 'react'
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import CustomerSearchModal from './CustomerSearchModal'
 
 export default function AppointmentBookingModal({
   isOpen,
@@ -71,7 +72,20 @@ export default function AppointmentBookingModal({
   const [showConversionConfirmation, setShowConversionConfirmation] = useState(false)
   const [fieldErrors, setFieldErrors] = useState({})
   const [isValidating, setIsValidating] = useState(false)
-  const [availabilityDebounceTimer, setAvailabilityDebounceTimer] = useState(null)
+  
+  // Customer management state
+  const [customerMode, setCustomerMode] = useState('new') // 'new' or 'existing'
+  const [selectedCustomer, setSelectedCustomer] = useState(null)
+  const [showCustomerSearch, setShowCustomerSearch] = useState(false)
+  const [customerSearchLoading, setCustomerSearchLoading] = useState(false)
+  
+  // Notification preferences state
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    sms: true,
+    email: true,
+    confirmations: true,
+    reminders: true
+  })
   
   // Delete confirmation dialog state
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
@@ -156,19 +170,55 @@ export default function AppointmentBookingModal({
     }
   }, [isEditing, editingAppointment, selectedSlot])
 
+  // Calculate end time based on start time and duration
+  const calculateEndTime = useCallback(() => {
+    if (formData.scheduled_at && formData.duration_minutes) {
+      const start = new Date(formData.scheduled_at)
+      const end = new Date(start.getTime() + formData.duration_minutes * 60000)
+      return end
+    }
+    return null
+  }, [formData.scheduled_at, formData.duration_minutes])
+
+  // Format time range for display
+  const getTimeRangeDisplay = useCallback(() => {
+    if (formData.scheduled_at && formData.duration_minutes) {
+      const start = new Date(formData.scheduled_at)
+      const end = calculateEndTime()
+      if (end) {
+        const startTime = start.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        })
+        const endTime = end.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        })
+        return `${startTime} - ${endTime}`
+      }
+    }
+    return null
+  }, [formData.scheduled_at, formData.duration_minutes, calculateEndTime])
+
   // Update service details when service is selected
   useEffect(() => {
     if (formData.service_id) {
       const selectedService = services.find(s => s.id === formData.service_id)
       if (selectedService) {
-        setFormData(prev => ({
-          ...prev,
-          duration_minutes: selectedService.duration_minutes,
-          service_price: parseFloat(selectedService.price)
-        }))
+        // Only update if values are actually different to prevent infinite loop
+        if (formData.duration_minutes !== selectedService.duration_minutes ||
+            formData.service_price !== parseFloat(selectedService.price)) {
+          setFormData(prev => ({
+            ...prev,
+            duration_minutes: selectedService.duration_minutes,
+            service_price: parseFloat(selectedService.price)
+          }))
+        }
       }
     }
-  }, [formData.service_id, services])
+  }, [formData.service_id, formData.duration_minutes, formData.service_price, services])
 
   // Check availability when barber, date, or duration changes
   const checkAvailability = useCallback(async () => {
@@ -218,28 +268,29 @@ export default function AppointmentBookingModal({
     }
   }, [formData.barber_id, formData.scheduled_at, formData.duration_minutes, isEditing, editingAppointment?.id])
 
+  // Use useRef for the timer to avoid dependency issues
+  const availabilityTimerRef = useRef(null)
+
   // Debounced availability check
   const debouncedAvailabilityCheck = useCallback(() => {
     // Clear existing timer
-    if (availabilityDebounceTimer) {
-      clearTimeout(availabilityDebounceTimer)
+    if (availabilityTimerRef.current) {
+      clearTimeout(availabilityTimerRef.current)
     }
     
     // Set new timer
-    const timerId = setTimeout(() => {
+    availabilityTimerRef.current = setTimeout(() => {
       checkAvailability()
     }, 800) // Wait 800ms after user stops typing/changing
-    
-    setAvailabilityDebounceTimer(timerId)
-  }, [checkAvailability, availabilityDebounceTimer])
+  }, [checkAvailability])
 
   useEffect(() => {
     debouncedAvailabilityCheck()
     
     // Cleanup timer on unmount
     return () => {
-      if (availabilityDebounceTimer) {
-        clearTimeout(availabilityDebounceTimer)
+      if (availabilityTimerRef.current) {
+        clearTimeout(availabilityTimerRef.current)
       }
     }
   }, [debouncedAvailabilityCheck])
@@ -313,6 +364,89 @@ export default function AppointmentBookingModal({
     
     setFieldErrors(allErrors)
     return Object.keys(allErrors).length === 0
+  }
+
+  // Customer management functions
+  const handleCustomerModeChange = (mode) => {
+    setCustomerMode(mode)
+    if (mode === 'new') {
+      setSelectedCustomer(null)
+      // Clear form fields when switching to new customer
+      setFormData(prev => ({
+        ...prev,
+        client_name: '',
+        client_phone: '',
+        client_email: ''
+      }))
+    } else if (mode === 'existing') {
+      setShowCustomerSearch(true)
+    }
+  }
+
+  const handleSelectCustomer = async (customer) => {
+    setSelectedCustomer(customer)
+    setCustomerMode('existing')
+    
+    // Populate form with customer data
+    setFormData(prev => ({
+      ...prev,
+      client_name: customer.name || '',
+      client_phone: customer.phone || '',
+      client_email: customer.email || '',
+      customer_id: customer.id
+    }))
+    
+    // Load customer notification preferences
+    if (customer.notification_preferences) {
+      setNotificationPreferences(customer.notification_preferences)
+    }
+    
+    // Clear any existing field errors for customer fields
+    setFieldErrors(prev => {
+      const newErrors = { ...prev }
+      delete newErrors.client_name
+      delete newErrors.client_phone
+      delete newErrors.client_email
+      return newErrors
+    })
+  }
+
+  const handleCreateNewCustomer = () => {
+    setCustomerMode('new')
+    setSelectedCustomer(null)
+    setShowCustomerSearch(false)
+  }
+
+  // Quick customer lookup by phone/email
+  const quickCustomerLookup = async (phone, email) => {
+    if (!phone && !email) return
+
+    setCustomerSearchLoading(true)
+    try {
+      const response = await fetch('/api/customers/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          phone,
+          email,
+          barbershop_id: barbershopId
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.found && data.customer) {
+          // Auto-select found customer
+          handleSelectCustomer(data.customer)
+        }
+      }
+    } catch (error) {
+      console.error('Error in quick customer lookup:', error)
+    } finally {
+      setCustomerSearchLoading(false)
+    }
   }
 
   const handleInputChange = async (e) => {
@@ -396,14 +530,28 @@ export default function AppointmentBookingModal({
         throw new Error('Customer name is required')
       }
       
-      // Prepare appointment data
+      // Prepare appointment data with customer and notification information
       const appointmentData = {
         ...formData,
         barbershop_id: barbershopId,
         client_id: user?.id || null,
         total_amount: formData.service_price + (formData.tip_amount || 0),
         scheduled_at: new Date(formData.scheduled_at).toISOString(),
-        recurrence_rule: generateRRule()
+        recurrence_rule: generateRRule(),
+        
+        // Customer management data
+        customer_id: selectedCustomer?.id || null,
+        customer_mode: customerMode,
+        is_new_customer: customerMode === 'new',
+        
+        // Notification preferences
+        notification_preferences: notificationPreferences,
+        send_notifications: notificationPreferences.confirmations || notificationPreferences.reminders,
+        
+        // Customer data for API compatibility
+        customer_name: formData.client_name,
+        customer_phone: formData.client_phone, 
+        customer_email: formData.client_email
       }
       
       if (isEditing) {
@@ -526,11 +674,14 @@ export default function AppointmentBookingModal({
       
       console.log('Deleting appointment:', deleteUrl)
       
-      const response = await fetch(deleteUrl, {
-        method: 'DELETE',
+      const response = await fetch('/api/calendar/appointments/cancel', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+          appointmentId: editingAppointment.id
+        })
       })
       
       const data = await response.json()
@@ -684,7 +835,7 @@ export default function AppointmentBookingModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6">
+              <Dialog.Panel className="relative transform rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
@@ -696,6 +847,7 @@ export default function AppointmentBookingModal({
                   </button>
                 </div>
                 
+                <div className="px-4 pb-4 pt-5 sm:p-6">
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900 mb-6">
@@ -780,6 +932,27 @@ export default function AppointmentBookingModal({
                         )}
                       </div>
 
+                      {/* Time Slot Display - Shows when service and time are selected */}
+                      {formData.scheduled_at && formData.service_id && getTimeRangeDisplay() && (
+                        <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                          <div className="flex items-center">
+                            <ClockIcon className="h-5 w-5 text-blue-600 mr-2" />
+                            <div>
+                              <p className="text-sm font-medium text-blue-900">
+                                Appointment Time Slot
+                              </p>
+                              <p className="text-lg font-semibold text-blue-700">
+                                {getTimeRangeDisplay()}
+                              </p>
+                              <p className="text-xs text-blue-600 mt-1">
+                                Duration: {formData.duration_minutes} minutes
+                                {selectedService && ` • ${selectedService.name}`}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Date and Time */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -838,7 +1011,7 @@ export default function AppointmentBookingModal({
                             <div className="flex items-center justify-center py-4">
                               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                               <span className="ml-2 text-sm text-gray-600">
-                                {availabilityDebounceTimer ? 'Updating availability...' : 'Checking availability...'}
+                                Checking availability...
                               </span>
                             </div>
                           ) : (
@@ -866,78 +1039,190 @@ export default function AppointmentBookingModal({
                         </div>
                       )}
 
-                      {/* Customer Information */}
+                      {/* Enhanced Customer Management */}
                       <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-gray-900">Customer Information</h4>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">
-                              Name <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              id="client_name"
-                              name="client_name"
-                              value={formData.client_name}
-                              onChange={handleInputChange}
-                              className={`mt-1 block w-full rounded-md shadow-sm ${
-                                fieldErrors.client_name 
-                                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                              } ${loading ? 'bg-gray-50' : ''}`}
-                              disabled={loading}
-                              required
-                            />
-                            {fieldErrors.client_name && (
-                              <p className="mt-1 text-sm text-red-600">{fieldErrors.client_name}</p>
-                            )}
-                          </div>
-                          
-                          <div>
-                            <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">
-                              Phone
-                            </label>
-                            <input
-                              type="tel"
-                              id="client_phone"
-                              name="client_phone"
-                              value={formData.client_phone}
-                              onChange={handleInputChange}
-                              className={`mt-1 block w-full rounded-md shadow-sm ${
-                                fieldErrors.client_phone 
-                                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                              } ${loading ? 'bg-gray-50' : ''}`}
-                              disabled={loading}
-                            />
-                            {fieldErrors.client_phone && (
-                              <p className="mt-1 text-sm text-red-600">{fieldErrors.client_phone}</p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
-                            Email
-                          </label>
-                          <input
-                            type="email"
-                            id="client_email"
-                            name="client_email"
-                            value={formData.client_email}
-                            onChange={handleInputChange}
-                            className={`mt-1 block w-full rounded-md shadow-sm ${
-                              fieldErrors.client_email 
-                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                            } ${loading ? 'bg-gray-50' : ''}`}
-                            disabled={loading}
-                          />
-                          {fieldErrors.client_email && (
-                            <p className="mt-1 text-sm text-red-600">{fieldErrors.client_email}</p>
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-gray-900">Customer Information</h4>
+                          {customerSearchLoading && (
+                            <div className="flex items-center text-xs text-blue-600">
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-1"></div>
+                              Finding customer...
+                            </div>
                           )}
                         </div>
+                        
+                        {/* Customer Mode Toggle */}
+                        <div className="flex items-center space-x-4">
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              name="customer_mode"
+                              value="new"
+                              checked={customerMode === 'new'}
+                              onChange={() => handleCustomerModeChange('new')}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <span className="ml-2 text-sm text-gray-700">New Customer</span>
+                          </label>
+                          <label className="flex items-center">
+                            <input
+                              type="radio"
+                              name="customer_mode"
+                              value="existing"
+                              checked={customerMode === 'existing'}
+                              onChange={() => handleCustomerModeChange('existing')}
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                            />
+                            <span className="ml-2 text-sm text-gray-700">Existing Customer</span>
+                          </label>
+                        </div>
+
+                        {/* Existing Customer Display */}
+                        {customerMode === 'existing' && selectedCustomer && (
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <UserIcon className="h-5 w-5 text-blue-600" />
+                                  <span className="font-medium text-gray-900">{selectedCustomer.name}</span>
+                                  {selectedCustomer.vip_status && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                      VIP
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="space-y-1 text-sm text-gray-600">
+                                  {selectedCustomer.phone && (
+                                    <div className="flex items-center gap-1">
+                                      <span>📱 {selectedCustomer.phone}</span>
+                                    </div>
+                                  )}
+                                  {selectedCustomer.email && (
+                                    <div className="flex items-center gap-1">
+                                      <span>✉️ {selectedCustomer.email}</span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                                    <span>Last visit: {selectedCustomer.last_visit_display}</span>
+                                    <span>{selectedCustomer.total_visits} visit{selectedCustomer.total_visits !== 1 ? 's' : ''}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setShowCustomerSearch(true)}
+                                className="ml-3 text-sm text-blue-600 hover:text-blue-700"
+                              >
+                                Change
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Existing Customer Search Button */}
+                        {customerMode === 'existing' && !selectedCustomer && (
+                          <button
+                            type="button"
+                            onClick={() => setShowCustomerSearch(true)}
+                            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                          >
+                            <UserIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                            <span className="text-sm text-gray-600">Click to search for existing customer</span>
+                          </button>
+                        )}
+
+                        {/* New Customer Fields */}
+                        {customerMode === 'new' && (
+                          <>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">
+                                  Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  id="client_name"
+                                  name="client_name"
+                                  value={formData.client_name}
+                                  onChange={handleInputChange}
+                                  onBlur={() => {
+                                    // Quick lookup when user enters phone/email
+                                    if (formData.client_phone || formData.client_email) {
+                                      quickCustomerLookup(formData.client_phone, formData.client_email)
+                                    }
+                                  }}
+                                  className={`mt-1 block w-full rounded-md shadow-sm ${
+                                    fieldErrors.client_name 
+                                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                  } ${loading ? 'bg-gray-50' : ''}`}
+                                  disabled={loading}
+                                  required
+                                />
+                                {fieldErrors.client_name && (
+                                  <p className="mt-1 text-sm text-red-600">{fieldErrors.client_name}</p>
+                                )}
+                              </div>
+                              
+                              <div>
+                                <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">
+                                  Phone <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                  type="tel"
+                                  id="client_phone"
+                                  name="client_phone"
+                                  value={formData.client_phone}
+                                  onChange={handleInputChange}
+                                  onBlur={() => {
+                                    // Quick lookup when user enters phone
+                                    if (formData.client_phone) {
+                                      quickCustomerLookup(formData.client_phone, formData.client_email)
+                                    }
+                                  }}
+                                  className={`mt-1 block w-full rounded-md shadow-sm ${
+                                    fieldErrors.client_phone 
+                                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                  } ${loading ? 'bg-gray-50' : ''}`}
+                                  disabled={loading}
+                                  required
+                                />
+                                {fieldErrors.client_phone && (
+                                  <p className="mt-1 text-sm text-red-600">{fieldErrors.client_phone}</p>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
+                                Email
+                              </label>
+                              <input
+                                type="email"
+                                id="client_email"
+                                name="client_email"
+                                value={formData.client_email}
+                                onChange={handleInputChange}
+                                onBlur={() => {
+                                  // Quick lookup when user enters email
+                                  if (formData.client_email) {
+                                    quickCustomerLookup(formData.client_phone, formData.client_email)
+                                  }
+                                }}
+                                className={`mt-1 block w-full rounded-md shadow-sm ${
+                                  fieldErrors.client_email 
+                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                } ${loading ? 'bg-gray-50' : ''}`}
+                                disabled={loading}
+                              />
+                              {fieldErrors.client_email && (
+                                <p className="mt-1 text-sm text-red-600">{fieldErrors.client_email}</p>
+                              )}
+                            </div>
+                          </>
+                        )}
                         
                         <div>
                           <label htmlFor="client_notes" className="block text-sm font-medium text-gray-700">
@@ -953,6 +1238,70 @@ export default function AppointmentBookingModal({
                             placeholder="Any special requests or preferences..."
                           />
                         </div>
+
+                        {/* Customer Notification Preferences */}
+                        {(customerMode === 'new' || selectedCustomer) && (
+                          <div className="pt-4 border-t border-gray-200">
+                            <h5 className="text-sm font-medium text-gray-900 mb-3">Notify Customer</h5>
+                            <div className="space-y-2">
+                              <label className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={notificationPreferences.confirmations}
+                                  onChange={(e) => setNotificationPreferences(prev => ({
+                                    ...prev,
+                                    confirmations: e.target.checked
+                                  }))}
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Send booking confirmation</span>
+                              </label>
+                              
+                              <label className="flex items-center">
+                                <input
+                                  type="checkbox"
+                                  checked={notificationPreferences.reminders}
+                                  onChange={(e) => setNotificationPreferences(prev => ({
+                                    ...prev,
+                                    reminders: e.target.checked
+                                  }))}
+                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Send reminder (24h before)</span>
+                              </label>
+                              
+                              {formData.client_phone && (
+                                <label className="flex items-center ml-6">
+                                  <input
+                                    type="checkbox"
+                                    checked={notificationPreferences.sms}
+                                    onChange={(e) => setNotificationPreferences(prev => ({
+                                      ...prev,
+                                      sms: e.target.checked
+                                    }))}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <span className="ml-2 text-sm text-gray-600">📱 Text message (SMS)</span>
+                                </label>
+                              )}
+                              
+                              {formData.client_email && (
+                                <label className="flex items-center ml-6">
+                                  <input
+                                    type="checkbox"
+                                    checked={notificationPreferences.email}
+                                    onChange={(e) => setNotificationPreferences(prev => ({
+                                      ...prev,
+                                      email: e.target.checked
+                                    }))}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <span className="ml-2 text-sm text-gray-600">✉️ Email notification</span>
+                                </label>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Pricing */}
@@ -1302,8 +1651,8 @@ export default function AppointmentBookingModal({
                             onClick={() => setShowDeleteConfirmation(true)}
                             className="inline-flex items-center rounded-md bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:w-auto min-h-[44px] mt-3 sm:mt-0"
                           >
-                            <TrashIcon className="h-4 w-4 mr-2" />
-                            Delete Appointment
+                            <XMarkIcon className="h-4 w-4 mr-2" />
+                            Cancel Appointment
                           </button>
                         )}
                         
@@ -1343,6 +1692,7 @@ export default function AppointmentBookingModal({
                       </div>
                     </form>
                   </div>
+                </div>
                 </div>
               </Dialog.Panel>
             </Transition.Child>
@@ -1385,7 +1735,7 @@ export default function AppointmentBookingModal({
                   </div>
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                     <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
-                      Delete Appointment
+                      Cancel Appointment
                     </Dialog.Title>
                     <div className="mt-2">
                       {editingAppointment?.isRecurring || editingAppointment?.extendedProps?.isRecurring ? (
@@ -1440,10 +1790,10 @@ export default function AppointmentBookingModal({
                     {deletingAppointment ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Deleting...
+                        Cancelling...
                       </>
                     ) : (
-                      'Delete'
+                      'Cancel Appointment'
                     )}
                   </button>
                   <button
@@ -1466,6 +1816,15 @@ export default function AppointmentBookingModal({
       </Dialog>
     </Transition.Root>
     )}
+
+    {/* Customer Search Modal */}
+    <CustomerSearchModal
+      isOpen={showCustomerSearch}
+      onClose={() => setShowCustomerSearch(false)}
+      onSelectCustomer={handleSelectCustomer}
+      onCreateNewCustomer={handleCreateNewCustomer}
+      barbershopId={barbershopId}
+    />
     </>
   )
 }
