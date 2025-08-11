@@ -16,6 +16,58 @@ import {
   AreaChart, Area
 } from 'recharts'
 
+// Number formatting utility for professional display
+const formatMetricValue = (value, type = 'default') => {
+  if (value === null || value === undefined || value === '') return '0'
+  
+  const numValue = typeof value === 'string' ? parseFloat(value) : value
+  if (isNaN(numValue)) return '0'
+  
+  switch (type) {
+    case 'currency':
+      // Currency: 2 decimal places, with commas
+      return numValue.toLocaleString('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      })
+    
+    case 'percentage':
+      // Percentages: 1 decimal place
+      return numValue.toLocaleString('en-US', { 
+        minimumFractionDigits: 1, 
+        maximumFractionDigits: 1 
+      })
+    
+    case 'count':
+      // Counts: No decimals, with commas for large numbers
+      return Math.round(numValue).toLocaleString('en-US')
+    
+    case 'rating':
+      // Ratings: 1 decimal place
+      return numValue.toLocaleString('en-US', { 
+        minimumFractionDigits: 1, 
+        maximumFractionDigits: 1 
+      })
+    
+    case 'decimal':
+      // General decimals: 2 decimal places max
+      return numValue.toLocaleString('en-US', { 
+        minimumFractionDigits: 0, 
+        maximumFractionDigits: 2 
+      })
+    
+    default:
+      // Default: Smart formatting based on value
+      if (numValue >= 1000) {
+        return Math.round(numValue).toLocaleString('en-US')
+      } else if (numValue < 1 && numValue > 0) {
+        return numValue.toFixed(2)
+      } else {
+        return numValue.toFixed(2)
+      }
+  }
+}
+
 export default function AnalyticsPanel({ data }) {
   const [timeRange, setTimeRange] = useState('30days')
   const [loading, setLoading] = useState(false)
@@ -197,13 +249,24 @@ export default function AnalyticsPanel({ data }) {
 
   const StatCard = ({ title, value, growth, icon: Icon, prefix = '' }) => {
     const isPositive = growth > 0
+    
+    // Determine formatting type based on title and prefix
+    const getFormattingType = () => {
+      if (prefix === '$') return 'currency'
+      if (title.toLowerCase().includes('rate') || title.toLowerCase().includes('rating')) return 'rating'
+      if (title.toLowerCase().includes('bookings') || title.toLowerCase().includes('customers') || title.toLowerCase().includes('appointments')) return 'count'
+      return 'decimal'
+    }
+    
+    const formattedValue = formatMetricValue(value, getFormattingType())
+    
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">{title}</p>
             <p className="text-2xl font-semibold text-gray-900 mt-1">
-              {prefix}{value}
+              {prefix}{formattedValue}
             </p>
             <div className="flex items-center mt-2">
               {isPositive ? (
@@ -467,7 +530,7 @@ export default function AnalyticsPanel({ data }) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Revenue"
-            value={analyticsData.totalRevenue.toLocaleString()}
+            value={analyticsData.totalRevenue}
             growth={analyticsData.revenueGrowth}
             icon={CurrencyDollarIcon}
             prefix="$"
