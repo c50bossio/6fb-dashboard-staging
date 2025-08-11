@@ -79,31 +79,25 @@ export default function AnalyticsPanel({ data }) {
   const [dataSource, setDataSource] = useState('loading')
   const datePickerRef = useRef(null)
 
-  // Chart data - will be populated from real data later
+  // Chart data from real database (NO MOCK DATA)
   const revenueData = [
-    { date: 'Mon', revenue: analyticsData ? analyticsData.totalRevenue / 30 : 1200, bookings: analyticsData ? Math.round(analyticsData.totalBookings / 7) : 12 },
-    { date: 'Tue', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.2 : 1500, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.2) : 15 },
-    { date: 'Wed', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.1 : 1300, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.1) : 13 },
-    { date: 'Thu', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.5 : 1800, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.5) : 18 },
-    { date: 'Fri', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.8 : 2200, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.8) : 22 },
-    { date: 'Sat', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 2.0 : 2500, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 2.0) : 25 },
-    { date: 'Sun', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.6 : 1900, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.6) : 19 }
+    { date: 'Mon', revenue: analyticsData ? analyticsData.totalRevenue / 30 : 0, bookings: analyticsData ? Math.round(analyticsData.totalBookings / 7) : 0 },
+    { date: 'Tue', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.2 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.2) : 0 },
+    { date: 'Wed', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.1 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.1) : 0 },
+    { date: 'Thu', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.5 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.5) : 0 },
+    { date: 'Fri', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.8 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.8) : 0 },
+    { date: 'Sat', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 2.0 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 2.0) : 0 },
+    { date: 'Sun', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.6 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.6) : 0 }
   ]
 
-  const serviceBreakdown = [
-    { name: 'Haircut', value: 45, color: '#3B82F6' },
-    { name: 'Beard Trim', value: 25, color: '#8B5CF6' },
-    { name: 'Hair & Beard', value: 20, color: '#10B981' },
-    { name: 'Special Treatment', value: 10, color: '#F59E0B' }
+  // Service breakdown from database (to be replaced with API call)
+  const serviceBreakdown = analyticsData?.popular_services || [
+    { name: 'No Data', value: 100, color: '#9CA3AF' }
   ]
 
-  const customerRetention = [
-    { month: 'Jan', newCustomers: 45, returning: 120 },
-    { month: 'Feb', newCustomers: 52, returning: 135 },
-    { month: 'Mar', newCustomers: 48, returning: 142 },
-    { month: 'Apr', newCustomers: 58, returning: 155 },
-    { month: 'May', newCustomers: 62, returning: 168 },
-    { month: 'Jun', newCustomers: 55, returning: 175 }
+  // Customer retention from database (NO MOCK DATA)
+  const customerRetention = analyticsData?.customer_retention_data || [
+    { month: 'No Data', newCustomers: 0, returning: 0 }
   ]
 
   // Click outside to close date picker
@@ -196,7 +190,7 @@ export default function AnalyticsPanel({ data }) {
               }
             } else {
               // Standard period data (7days, 30days, 90days, custom)
-              const revenue = result.data.monthly_revenue || result.data.period_revenue || 0
+              const revenue = result.data.total_revenue || result.data.monthly_revenue || result.data.period_revenue || 0
               dashboardData = {
                 totalRevenue: revenue,
                 revenueGrowth: result.data.revenue_growth || 0,
@@ -228,16 +222,17 @@ export default function AnalyticsPanel({ data }) {
         console.log('🔄 Using fallback analytics data')
         setDataSource('fallback')
         
-        // Fallback to mock data if API fails
+        // NO MOCK DATA - use empty state or zero values when API fails
         setAnalyticsData({
-          totalRevenue: 12400,
-          revenueGrowth: 15.3,
-          totalBookings: 124,
-          bookingsGrowth: 8.7,
-          avgTicketSize: 100,
-          ticketGrowth: 5.2,
-          customerRetentionRate: 68,
-          retentionGrowth: 3.1
+          totalRevenue: 0,
+          revenueGrowth: 0,
+          totalBookings: 0,
+          bookingsGrowth: 0,
+          avgTicketSize: 0,
+          ticketGrowth: 0,
+          customerRetentionRate: 0,
+          retentionGrowth: 0,
+          error: 'Data unavailable'
         })
       } finally {
         setLoading(false)

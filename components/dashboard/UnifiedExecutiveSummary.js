@@ -17,20 +17,20 @@ export default function UnifiedExecutiveSummary({ data }) {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [greeting, setGreeting] = useState('')
   
-  // Default metrics with fallback values
+  // Use actual metrics from data, no fake fallbacks
   const metrics = data?.metrics || {
-    revenue: 145000,
-    customers: 1210,
-    appointments: 324,
-    satisfaction: 4.65
+    revenue: 0,
+    customers: 0,
+    appointments: 0,
+    satisfaction: 0
   }
 
-  // Calculate today's metrics (demo data for now)
-  const todayMetrics = {
-    revenue: 450 + Math.floor(Math.random() * 100),
-    bookings: 8 + Math.floor(Math.random() * 3),
-    capacity: 85 + Math.floor(Math.random() * 10),
-    nextAppointment: '5:16 PM'
+  // Use real today's metrics from data
+  const todayMetrics = data?.todayMetrics || {
+    revenue: data?.dailyRevenue || 0,
+    bookings: data?.todayBookings || 0,
+    capacity: data?.capacityUtilization || 0,
+    nextAppointment: data?.nextAppointment || 'No appointments'
   }
 
   // Calculate health score based on metrics
@@ -127,7 +127,7 @@ export default function UnifiedExecutiveSummary({ data }) {
                   {formatChange(12.5)}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
-                  ${(metrics.revenue / 1000).toFixed(0)}k
+                  ${metrics.revenue >= 1000 ? `${(metrics.revenue / 1000).toFixed(1)}k` : metrics.revenue.toFixed(0)}
                 </div>
                 <div className="text-sm text-gray-600">Revenue</div>
               </div>
