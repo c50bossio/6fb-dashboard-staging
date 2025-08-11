@@ -87,7 +87,7 @@ export default function AIAgentChat() {
           model: 'gpt-4o-mini',
           stream: false,
           includeBusinessContext: true,
-          barbershopId: 'default'
+          barbershopId: 'demo-shop-001'
         }),
       })
 

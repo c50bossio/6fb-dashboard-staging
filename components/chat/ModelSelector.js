@@ -5,13 +5,15 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { Fragment } from 'react'
 
 const models = [
+  // Recommended Model (Cost-Effective + High Performance)
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', description: '🏆 RECOMMENDED: Best cost-performance balance for business operations', recommended: true },
+  
   // OpenAI Models (Latest 2 Generations)
   { id: 'o3', name: 'OpenAI o3', provider: 'openai', description: 'Smartest reasoning model - pushes frontier in coding, math, science (Jan 2025)' },
   { id: 'o4-mini', name: 'OpenAI o4-mini', provider: 'openai', description: 'Fast, cost-efficient reasoning model - best on AIME 2024/2025' },
   { id: 'gpt-4.1', name: 'GPT-4.1', provider: 'openai', description: 'Specialized model that excels at coding tasks (2025)' },
   { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', provider: 'openai', description: 'Fast, capable model - significant improvements over GPT-4o mini' },
   { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', description: 'Latest multimodal GPT-4 (Dec 2024)' },
-  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', description: 'Fast and affordable GPT-4o' },
   
   // Anthropic Models (Latest 2 Generations)
   { id: 'claude-opus-4', name: 'Claude Opus 4', provider: 'anthropic', description: 'Most advanced Claude model with superior reasoning and analysis (May 2025)' },
@@ -32,7 +34,9 @@ function classNames(...classes) {
 }
 
 export default function ModelSelector({ selectedModel, onModelChange }) {
-  const selected = models.find(m => m.id === selectedModel) || models[0]
+  // Default to the recommended model if none selected
+  const defaultModel = models.find(m => m.recommended) || models[0]
+  const selected = models.find(m => m.id === selectedModel) || defaultModel
 
   const handleChange = (model) => {
     onModelChange({
@@ -55,7 +59,10 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                   selected.provider === 'anthropic' ? 'bg-purple-400' : 
                   selected.provider === 'google' ? 'bg-blue-400' : 'bg-gray-400'
                 )} />
-                <span className="ml-3 block truncate">{selected.name}</span>
+                <span className="ml-3 block truncate">
+                  {selected.name}
+                  {selected.recommended && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full">RECOMMENDED</span>}
+                </span>
               </div>
               <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                 <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -90,8 +97,13 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                             model.provider === 'anthropic' ? 'bg-purple-400' : 
                             model.provider === 'google' ? 'bg-blue-400' : 'bg-gray-400'
                           )} />
-                          <span className={classNames(selected ? 'font-semibold' : 'font-normal', 'ml-3 block truncate')}>
+                          <span className={classNames(
+                            selected ? 'font-semibold' : 'font-normal', 
+                            model.recommended ? 'text-yellow-600' : '',
+                            'ml-3 block truncate'
+                          )}>
                             {model.name}
+                            {model.recommended && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">RECOMMENDED</span>}
                           </span>
                         </div>
                         <span className={classNames(active ? 'text-indigo-200' : 'text-gray-500', 'ml-5 text-xs')}>
