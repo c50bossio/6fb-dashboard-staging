@@ -33,7 +33,8 @@ function SupabaseAuthProvider({ children }) {
       window.location.pathname.includes('/calendar') ||
       window.location.pathname.includes('/dashboard/website-settings') ||
       window.location.pathname.includes('/dashboard') && window.location.search.includes('mode=analytics') ||
-      window.location.pathname.includes('/analytics')
+      window.location.pathname.includes('/analytics') ||
+      window.location.pathname.includes('/barber')
     )
     
     if (enableDevBypass) {

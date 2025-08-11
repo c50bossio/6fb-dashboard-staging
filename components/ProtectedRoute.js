@@ -19,11 +19,12 @@ export default function ProtectedRoute({ children }) {
     const isCalendarPage = window.location.pathname.includes('/calendar')
     const isAnalyticsPage = window.location.pathname.includes('/analytics')
     const isShopPage = window.location.pathname.includes('/shop')
+    const isBarberPage = window.location.pathname.includes('/barber')
     
     // Check for dev session or development mode bypass
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
-    const enableDevBypass = isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage)
+    const enableDevBypass = isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage || isBarberPage)
     
     if (devAuth || devSession || enableDevBypass) {
       console.log('🔓 Dev session active - bypassing auth check')
@@ -54,7 +55,8 @@ export default function ProtectedRoute({ children }) {
   const isCalendarPage = window.location.pathname.includes('/calendar')
   const isAnalyticsPage = window.location.pathname.includes('/analytics')
   const isShopPage = window.location.pathname.includes('/shop')
-  const enableDevBypass = isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage)
+  const isBarberPage = window.location.pathname.includes('/barber')
+  const enableDevBypass = isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage || isBarberPage)
 
   // Check for dev session or development bypass
   const devAuth = document.cookie.includes('dev_auth=true')

@@ -648,6 +648,20 @@ export default function EnhancedProfessionalCalendar({
           { day: '2-digit' } :  // For resource views: just "10", "11", "12"
           { weekday: 'short', month: 'numeric', day: 'numeric' }  // For other views: "Mon 8/10"
         }
+        dayHeaderContent={currentView.includes('resource') ? (arg) => {
+          // Custom day names with "Th" for Thursday to avoid confusion with Tuesday
+          const dayNames = ['S', 'M', 'T', 'W', 'Th', 'F', 'S']
+          const dayOfWeek = arg.date.getDay()
+          const dayNum = arg.date.getDate()
+          
+          // Return HTML structure with different sizes
+          return {
+            html: `<div style="text-align: center; line-height: 1.2;">
+              <span style="font-size: 0.7rem; color: #6b7280;">${dayNames[dayOfWeek]}</span><br/>
+              <span style="font-size: 0.9rem; font-weight: 600;">${dayNum}</span>
+            </div>`
+          }
+        } : undefined}
         
         // Performance
         lazyFetching={true}

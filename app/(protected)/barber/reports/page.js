@@ -6,8 +6,8 @@ import {
   CurrencyDollarIcon,
   UserGroupIcon,
   CalendarDaysIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   ClockIcon,
   ScissorsIcon,
   ArrowDownTrayIcon
@@ -364,7 +364,7 @@ export default function BarberReports() {
                 <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
               </div>
               <span className="text-sm font-medium text-green-600 flex items-center">
-                <TrendingUpIcon className="h-4 w-4 mr-1" />
+                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
                 12%
               </span>
             </div>
