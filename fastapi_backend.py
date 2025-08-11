@@ -29,7 +29,8 @@ from services.database_connection_pool import (
     get_db_connection, 
     execute_cached_query,
     get_pool_stats,
-    PoolStrategy
+    PoolStrategy,
+    db_connection_manager
 )
 
 # Import Prometheus metrics
@@ -178,17 +179,53 @@ JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7
 # Database setup with connection pooling for 4x capacity increase
 DATABASE_PATH = "data/agent_system.db"
 
-# Initialize connection pool for massive performance improvement
-os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)
-db_pool = initialize_connection_pool(
-    database_type="sqlite",
-    database_path=DATABASE_PATH,
-    min_connections=5,      # Pre-create 5 connections
-    max_connections=50,     # Scale up to 50 connections (4x improvement)
-    strategy=PoolStrategy.ADAPTIVE     # Use adaptive pooling for optimal performance
-)
+# PHASE 2: Configure database to use Supabase data via API proxy pattern
+def get_database_config():
+    """Get database configuration based on environment"""
+    # Check for Supabase configuration
+    supabase_url = os.getenv('NEXT_PUBLIC_SUPABASE_URL')
+    supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+    
+    if supabase_url and supabase_key:
+        print(f"🔄 PHASE 2: Configuring FastAPI to use Supabase data via API proxy")
+        print(f"🔗 Supabase URL: {supabase_url}")
+        print(f"📡 Strategy: FastAPI → Next.js API → Supabase (proven working path)")
+        
+        return {
+            "type": "api_proxy",
+            "supabase_url": supabase_url,
+            "supabase_key": supabase_key,
+            "frontend_api_base": os.getenv('NEXT_PUBLIC_API_URL', 'http://localhost:9999')
+        }
+    else:
+        # Fallback to SQLite for development
+        print("⚠️ Supabase credentials not found, using SQLite fallback")
+        return {
+            "type": "sqlite", 
+            "path": DATABASE_PATH
+        }
 
-print("✅ Database connection pool initialized for 4x capacity increase")
+# Get database configuration
+db_config = get_database_config()
+
+# Initialize connection pool based on configuration
+os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)  # Ensure directory exists for SQLite fallback
+
+if db_config["type"] == "api_proxy":
+    # Use API proxy pattern: FastAPI calls Next.js APIs that connect to Supabase
+    db_pool = None  # Use HTTP client for API calls instead of database pool
+    print("✅ API proxy configuration loaded - will use Next.js → Supabase path")
+    print("📡 FastAPI will call Next.js APIs for consistent data access")
+else:
+    # Use SQLite for development fallback
+    db_pool = initialize_connection_pool(
+        database_type="sqlite",
+        database_path=db_config["path"],
+        min_connections=5,      # Pre-create 5 connections
+        max_connections=50,     # Scale up to 50 connections (4x improvement)
+        strategy=PoolStrategy.ADAPTIVE     # Use adaptive pooling for optimal performance
+    )
+    print("✅ SQLite database connection pool initialized for development")
 
 # Initialize Prometheus metrics
 http_requests_total = Counter(
@@ -459,8 +496,54 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 @app.on_event("startup")
 async def startup_event():
     """Initialize database on startup"""
-    init_db()
-    print("✅ Database initialized")
+    global db_pool
+    
+    # PHASE 2: Configure API proxy or database connection
+    if db_config["type"] == "api_proxy":
+        try:
+            print("🔄 PHASE 2: Testing Next.js API connectivity for Supabase proxy...")
+            
+            # Test connection to Next.js APIs that connect to Supabase
+            import httpx
+            frontend_url = db_config["frontend_api_base"]
+            
+            async with httpx.AsyncClient() as client:
+                # Test the analytics API (we know this works from Phase 1)
+                response = await client.get(f"{frontend_url}/api/analytics/live-data")
+                if response.status_code == 200:
+                    data = response.json()
+                    customers = data.get('data', {}).get('total_customers', 0)
+                    revenue = data.get('data', {}).get('total_revenue', 0)
+                    
+                    print(f"✅ PHASE 2: Next.js → Supabase connection verified!")
+                    print(f"📊 Test query: {customers} customers, ${revenue} revenue")
+                    print(f"🔗 FastAPI will proxy through: {frontend_url}/api/*")
+                else:
+                    raise Exception(f"API test failed with status {response.status_code}")
+            
+        except Exception as e:
+            print(f"❌ PHASE 2: API proxy test failed: {e}")
+            print("🔄 Falling back to SQLite for this session...")
+            
+            # Fallback to SQLite if API proxy fails
+            db_pool = initialize_connection_pool(
+                database_type="sqlite",
+                database_path=DATABASE_PATH,
+                min_connections=5,
+                max_connections=50,
+                strategy=PoolStrategy.ADAPTIVE
+            )
+            print("✅ SQLite fallback connection pool initialized")
+            
+            # Update config to reflect fallback
+            db_config["type"] = "sqlite"
+    
+    # Initialize database schema (only for SQLite)
+    if db_config["type"] == "sqlite":
+        init_db()  # Only for SQLite - Supabase handles schema via migrations
+        print("✅ SQLite database schema initialized")
+    else:
+        print("✅ Using existing Supabase data via Next.js API proxy")
     
     # Start notification queue processing
     asyncio.create_task(notification_queue.start_processing())

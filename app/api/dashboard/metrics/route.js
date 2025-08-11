@@ -216,12 +216,12 @@ async function getUserEngagementMetrics(startDate, endDate) {
     // Use customers data to match Analytics API for consistency
     const { data: customers } = await supabase
       .from('customers')
-      .select('created_at, last_visit, shop_id')
+      .select('created_at, last_visit_at, shop_id')
       .eq('shop_id', 'demo-shop-001')
     
     if (customers && customers.length > 0) {
       const activeUsers = customers.filter(c => {
-        const lastVisit = new Date(c.last_visit || c.created_at)
+        const lastVisit = new Date(c.last_visit_at || c.created_at)
         return lastVisit >= startDate
       }).length
       
