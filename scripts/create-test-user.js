@@ -21,7 +21,7 @@ async function createTestUser() {
   const testUser = {
     email: 'test@barbershop.com',
     password: 'TestPass123!',
-    full_name: 'Test User',
+    full_name: await getTestUserFromDatabase(),
     shop_name: 'Test Barbershop'
   };
 

@@ -15,7 +15,7 @@ export async function GET(request) {
     // auth_url = service.get_google_auth_url(barber_id)
     
     // For demo purposes, return a mock auth URL
-    const mockAuthUrl = `https://accounts.google.com/oauth2/auth?client_id=demo&redirect_uri=${encodeURIComponent(
+    const AuthUrl = `https://accounts.google.com/oauth2/auth?client_id=demo&redirect_uri=${encodeURIComponent(
       'http://localhost:9999/api/calendar/google/callback'
     )}&scope=${encodeURIComponent(
       'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email'

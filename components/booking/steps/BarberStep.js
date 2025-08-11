@@ -17,7 +17,7 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
   const loadBarbers = async () => {
     try {
       // In production, fetch barbers for specific location
-      const mockBarbers = [
+      const Barbers = [
         {
           id: 'barber_1',
           name: 'Marcus Johnson',

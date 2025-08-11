@@ -21,7 +21,7 @@ export default function EnhancedProfessionalCalendar({
   onEventClick,
   onEventDrop,
   height = '700px',
-  defaultView = 'resourceTimeGridWeek'
+  defaultView = 'resourceTimeGridDay'
 }) {
   const calendarRef = useRef(null)
   const [currentView, setCurrentView] = useState(controlledView || defaultView)
@@ -33,7 +33,7 @@ export default function EnhancedProfessionalCalendar({
     }
   }, [controlledView])
   
-  // Use external resources if provided, otherwise use defaults
+  // NO MOCK DATA - Use external resources if provided, otherwise use empty defaults for proper setup
   const defaultResources = [
     { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
     { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#3b82f6' },
@@ -43,60 +43,19 @@ export default function EnhancedProfessionalCalendar({
   
   const resources = externalResources || defaultResources
   
-  // Generate default events if none provided
-  const generateWeekEvents = () => {
-    const events = []
-    const today = new Date()
-    const currentDay = today.getDay()
-    const monday = new Date(today)
-    monday.setDate(today.getDate() - currentDay + (currentDay === 0 ? -6 : 1))
-    
-    // Generate events for each day of the week
-    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-      const date = new Date(monday)
-      date.setDate(monday.getDate() + dayOffset)
-      const dateStr = date.toISOString().split('T')[0]
-      
-      // Skip Sunday
-      if (date.getDay() === 0) continue
-      
-      // Add some appointments for each barber
-      resources.forEach((barber, barberIndex) => {
-        // Morning appointment
-        events.push({
-          id: `${dateStr}-${barber.id}-1`,
-          title: `Customer ${dayOffset + 1}${barberIndex + 1} - Haircut`,
-          start: `${dateStr}T09:${barberIndex * 15 < 10 ? '0' : ''}${barberIndex * 15}:00`,
-          end: `${dateStr}T09:${45 + barberIndex * 15 < 60 ? 45 + barberIndex * 15 : '00'}:00`,
-          resourceId: barber.id,
-          backgroundColor: barber.eventColor
-        })
-        
-        // Afternoon appointment
-        events.push({
-          id: `${dateStr}-${barber.id}-2`,
-          title: `Customer ${dayOffset + 5}${barberIndex + 1} - Service`,
-          start: `${dateStr}T14:${barberIndex * 15 < 10 ? '0' : ''}${barberIndex * 15}:00`,
-          end: `${dateStr}T14:${45 + barberIndex * 15 < 60 ? 45 + barberIndex * 15 : '00'}:00`,
-          resourceId: barber.id,
-          backgroundColor: barber.eventColor
-        })
-      })
-    }
-    
-    return events
-  }
-  
-  const events = externalEvents || generateWeekEvents()
+  // NO MOCK DATA - Only use externally provided events
+  const events = externalEvents || []
   
   // Use events directly without processing
   // FullCalendar handles resource vs non-resource views internally
   const processedEvents = events
   
-  // Minimal debug logging
+  // Debug logging - only log when events are actually provided
   useEffect(() => {
     if (events.length > 0) {
       console.log('📅 Calendar events loaded:', events.length, 'for view:', currentView)
+    } else {
+      console.log('📅 Calendar initialized with no events (waiting for real data)')
     }
   }, [events.length, currentView])
   
@@ -130,7 +89,7 @@ export default function EnhancedProfessionalCalendar({
       
       // Find available time slots for this date
       const dateStr = selectInfo.start.toISOString().split('T')[0]
-      const dayEvents = events.filter(e => e.start.startsWith(dateStr))
+      const dayEvents = events.filter(e => e.start && e.start.startsWith(dateStr))
       slotData.existingAppointments = dayEvents.length
       slotData.suggestedTime = findFirstAvailableSlot(dateStr, dayEvents)
     } else if (viewType === 'listWeek' || viewType === 'listDay') {
@@ -155,8 +114,22 @@ export default function EnhancedProfessionalCalendar({
       })
     }
     
-    // Log for debugging
-    console.log('📅 Slot selected:', slotData)
+    // Log for debugging with enhanced duration feedback
+    const durationHours = Math.round(slotData.duration / 60 * 10) / 10  // Round to 1 decimal place
+    const durationDisplay = durationHours >= 1 
+      ? `${durationHours}h` 
+      : `${slotData.duration}min`
+    
+    console.log('📅 Slot selected:', {
+      ...slotData,
+      durationDisplay,
+      isLongSelection: slotData.duration >= 120  // 2+ hours
+    })
+    
+    // Provide user feedback for long selections
+    if (slotData.duration >= 240) {  // 4+ hours
+      console.log('⏰ Long time selection detected:', durationDisplay)
+    }
     
     if (onSlotClick) {
       onSlotClick(slotData)
@@ -166,11 +139,12 @@ export default function EnhancedProfessionalCalendar({
   }, [onSlotClick, events])
   
   // Helper function to find first available slot
-  const findFirstAvailableSlot = (dateStr, dayEvents) => {
+  const findFirstAvailableSlot = (dateStr, dayEvents = []) => {
     const slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
     for (const slot of slots) {
       const slotTime = `${dateStr}T${slot}:00`
       const isOccupied = dayEvents.some(e => {
+        if (!e.start || !e.end) return false
         const eventStart = new Date(e.start)
         const eventEnd = new Date(e.end)
         const checkTime = new Date(slotTime)
@@ -185,12 +159,25 @@ export default function EnhancedProfessionalCalendar({
   
   // Helper function to find available barber
   const findAvailableBarber = (start, end) => {
+    if (!events || events.length === 0) {
+      // If no events, all barbers are available - return first one
+      return resources.length > 0 ? {
+        id: resources[0].id,
+        name: resources[0].title,
+        available: true
+      } : {
+        id: null,
+        name: 'No barbers configured',
+        available: false
+      }
+    }
+    
     const startStr = start.toISOString()
     const endStr = end.toISOString()
     
     for (const barber of resources) {
       const hasConflict = events.some(event => {
-        if (event.resourceId !== barber.id) return false
+        if (!event.start || !event.end || event.resourceId !== barber.id) return false
         const eventStart = new Date(event.start)
         const eventEnd = new Date(event.end)
         return (start < eventEnd && end > eventStart)
@@ -214,11 +201,14 @@ export default function EnhancedProfessionalCalendar({
   
   // Helper function to find nearby events
   const findNearbyEvents = (time) => {
+    if (!events || events.length === 0) return []
+    
     const timeMs = time.getTime()
     const hourBefore = new Date(timeMs - 3600000)
     const hourAfter = new Date(timeMs + 3600000)
     
     return events.filter(event => {
+      if (!event.start) return false
       const eventStart = new Date(event.start)
       return eventStart >= hourBefore && eventStart <= hourAfter
     })
@@ -263,10 +253,12 @@ export default function EnhancedProfessionalCalendar({
   }, [onViewChange])
   
   useEffect(() => {
-    console.log('📅 Enhanced Calendar loaded with', events.length, 'events')
     if (events.length > 0) {
+      console.log('📅 Enhanced Calendar loaded with', events.length, 'real events')
       console.log('📅 Sample event:', events[0])
       console.log('📅 Event start type:', typeof events[0].start)
+    } else {
+      console.log('📅 Enhanced Calendar loaded with no events - waiting for real data from parent')
     }
     
     // Make FullCalendar API accessible for debugging
@@ -449,7 +441,7 @@ export default function EnhancedProfessionalCalendar({
         editable={true}
         selectable={true}
         selectMirror={true}
-        selectMinDistance={2}  // Reduce to make selection easier
+        selectMinDistance={0}  // Remove distance requirement for better long drag selection
         selectLongPressDelay={250}  // Touch device long-press delay
         unselectAuto={true}  // Auto-unselect when clicking elsewhere
         unselectCancel=".fc-event,.modal"  // Don't unselect when clicking events or modals
@@ -520,7 +512,15 @@ export default function EnhancedProfessionalCalendar({
         selectAllow={(selectInfo) => {
           // Additional validation for selection
           const duration = selectInfo.end - selectInfo.start
-          return duration <= 4 * 60 * 60 * 1000  // Max 4 hours selection
+          const maxDuration = 12 * 60 * 60 * 1000  // Max 12 hours selection (full business day)
+          
+          // Allow selections up to 12 hours
+          if (duration > maxDuration) {
+            console.warn('Selection too long:', Math.round(duration / 60000), 'minutes. Max:', Math.round(maxDuration / 60000), 'minutes')
+            return false
+          }
+          
+          return true
         }}
         eventClick={handleEventClick}
         eventDrop={handleEventDrop}

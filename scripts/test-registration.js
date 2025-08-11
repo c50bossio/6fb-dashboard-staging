@@ -31,7 +31,7 @@ async function testRegistration() {
       password: testPassword,
       options: {
         data: {
-          full_name: 'Test User',
+          full_name: await getTestUserFromDatabase(),
           shop_name: 'Test Shop'
         }
       }

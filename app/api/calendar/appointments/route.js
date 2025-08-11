@@ -133,21 +133,32 @@ export async function GET(request) {
       
       // Build title with actual names
       const customerName = customer.name || booking.customer_name || 'Customer'
-      const serviceName = service.name || booking.service_name || 'Service'
+      const serviceName = service.name || booking.service_name || 'Unknown Service'
       
-      // Check if appointment is cancelled for proper styling
+      // Check if appointment is cancelled or blocked for proper styling
       const isCancelled = booking.status === 'cancelled'
+      const isBlocked = booking.status === 'blocked' || booking.customer_id === null
+      
+      // Build title based on appointment type
+      let title = ''
+      if (isBlocked) {
+        title = `🚫 ${booking.notes || 'Blocked'}`
+      } else if (isCancelled) {
+        title = `❌ ${customerName} - ${serviceName}`
+      } else {
+        title = `${customerName} - ${serviceName}`
+      }
       
       // Build event object with RRule support at the top level
       const event = {
         id: booking.id,
         resourceId: booking.barber_id,
-        title: `${isCancelled ? '❌ ' : ''}${customerName} - ${serviceName}`,
+        title: title,
         start: booking.start_time,
         end: booking.end_time,
-        backgroundColor: isCancelled ? '#ef4444' : (barber.color || '#3b82f6'),
-        borderColor: isCancelled ? '#dc2626' : (barber.color || '#3b82f6'),
-        classNames: isCancelled ? ['cancelled-appointment'] : [],
+        backgroundColor: isBlocked ? '#9ca3af' : (isCancelled ? '#ef4444' : (barber.color || '#3b82f6')),
+        borderColor: isBlocked ? '#6b7280' : (isCancelled ? '#dc2626' : (barber.color || '#3b82f6')),
+        classNames: isBlocked ? ['blocked-slot'] : (isCancelled ? ['cancelled-appointment'] : []),
         display: 'auto',
         extendedProps: {
           customer: customerName,
@@ -162,6 +173,7 @@ export async function GET(request) {
           notes: booking.notes,
           isRecurring: booking.is_recurring,
           isTest: booking.is_test,
+          isBlocked: isBlocked,
           recurring_pattern: booking.recurring_pattern
         }
       }
@@ -218,6 +230,9 @@ export async function POST(request) {
     
     console.log('Creating new appointment:', body)
     
+    // Check if this is a blocked time slot
+    const isBlockedTime = body.status === 'blocked' || body.is_blocked_time || body.customer_id === 'BLOCKED'
+    
     // Calculate end_time from scheduled_at and duration_minutes if not provided
     if (!body.end_time && body.scheduled_at && body.duration_minutes) {
       const startDate = new Date(body.scheduled_at)
@@ -226,7 +241,7 @@ export async function POST(request) {
       body.start_time = body.scheduled_at
     }
     
-    // Validate required fields
+    // Validate required fields (relaxed for blocked time)
     if (!body.barber_id || (!body.start_time && !body.scheduled_at) || (!body.end_time && !body.duration_minutes)) {
       return NextResponse.json(
         { error: 'Missing required fields: barber_id, start_time/scheduled_at, end_time/duration_minutes' },
@@ -249,7 +264,11 @@ export async function POST(request) {
     let customerId = body.customer_id
     let customerData = null
     
-    if (customerId) {
+    // Skip customer handling for blocked time slots
+    if (isBlockedTime) {
+      customerId = null  // Set to null instead of 'BLOCKED' to avoid foreign key constraint
+      customerData = { name: 'BLOCKED', email: '', phone: '' }
+    } else if (customerId) {
       // If customer_id provided, fetch existing customer data
       const { data: existingCustomer, error: fetchError } = await supabase
         .from('customers')
@@ -295,12 +314,12 @@ export async function POST(request) {
       shop_id: body.shop_id || body.barbershop_id || 'demo-shop-001',
       barber_id: body.barber_id,
       customer_id: customerId,
-      service_id: body.service_id,
+      service_id: isBlockedTime ? null : body.service_id,
       start_time: startTime.toISOString(),
       end_time: endTime.toISOString(),
-      status: body.status || 'confirmed',
-      price: body.service_price || body.price,
-      notes: body.client_notes || body.notes,
+      status: isBlockedTime ? 'blocked' : (body.status || 'confirmed'),
+      price: isBlockedTime ? 0 : (body.service_price || body.price),
+      notes: isBlockedTime ? (body.notes || 'Time blocked') : (body.client_notes || body.notes),
       is_test: body.is_test || false
       // Note: customer_name, customer_phone, customer_email columns don't exist in bookings table
       // Customer data is stored in the customers table and linked via customer_id

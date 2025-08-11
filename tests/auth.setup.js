@@ -17,7 +17,7 @@ setup('authenticate', async ({ page }) => {
     document.cookie = 'dev_auth=true; path=/; max-age=86400'
     
     // Set up mock Supabase session for testing
-    const mockSession = {
+    const Session = {
       access_token: 'test_token_' + Date.now(),
       user: {
         id: 'test-user-playwright',

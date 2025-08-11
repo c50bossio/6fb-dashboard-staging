@@ -57,7 +57,7 @@ const TenantProvider = ({ children }) => {
         // Create a default tenant for new users
         // In production, this would create a record in Supabase
         if (!storedTenant) {
-          const mockTenant = {
+          const Tenant = {
             id: 'barbershop_demo_001',
             name: 'Demo Barbershop',
             owner_id: user.id,

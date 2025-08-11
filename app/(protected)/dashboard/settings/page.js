@@ -1605,7 +1605,7 @@ export default function SettingsPage() {
                           </label>
                           <input
                             type="text"
-                            placeholder="John Doe"
+                            placeholder="Enter cardholder name"
                             className="input-field"
                           />
                         </div>

@@ -28,15 +28,8 @@ import {
   DEFAULT_SERVICES, 
   formatAppointment 
 } from '../../../../lib/calendar-data'
-// Import real database operations - NO MOCK DATA
-import {
-  getCalendarEvents,
-  getBarberResources, 
-  getServices,
-  getRecurringAppointments,
-  checkCalendarTablesExist,
-  seedCalendarData
-} from '../../../../lib/calendar-database'
+// Removed server-side imports that were causing the error
+// These functions are now called via API routes instead
 // import { useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointments' // Old broken version
 // import { useRealtimeAppointmentsV2 as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsV2' // V2 not connecting
 import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
@@ -94,7 +87,13 @@ export default function CalendarPage() {
   const [events, setEvents] = useState([])
   const [resources, setResources] = useState([])
   const [showQRModal, setShowQRModal] = useState(false)
-  const [currentCalendarView, setCurrentCalendarView] = useState('resourceTimeGridWeek')
+  // Initialize with saved view from localStorage, fallback to 'resourceTimeGridDay'
+  const [currentCalendarView, setCurrentCalendarView] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('calendarView') || 'resourceTimeGridDay'
+    }
+    return 'resourceTimeGridDay'
+  })
   const [selectedResource, setSelectedResource] = useState(null)
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [copied, setCopied] = useState({})
@@ -128,8 +127,8 @@ export default function CalendarPage() {
   // Developer debug states
   const [showDiagnostics, setShowDiagnostics] = useState(false)
   
-  // Track appointment IDs to prevent duplicates
-  const [appointmentIds, setAppointmentIds] = useState(new Set())
+  // Track appointment IDs to prevent duplicates (memoized to prevent new Set on every render)
+  const [appointmentIds, setAppointmentIds] = useState(() => new Set())
   
   // Real-time connection state
   const [realtimeConnected, setRealtimeConnected] = useState(false)
@@ -164,6 +163,16 @@ export default function CalendarPage() {
   const connectionAttempts = 1 // V2 always connects on first attempt
   
   // Debug info moved to useEffect to prevent infinite renders
+
+  // Handle calendar view changes with localStorage persistence
+  const handleViewChange = useCallback((newView) => {
+    console.log('📅 View changed to:', newView)
+    setCurrentCalendarView(newView)
+    // Save to localStorage to remember on refresh
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('calendarView', newView)
+    }
+  }, [])
 
   // Initialize calendar with real data
   useEffect(() => {
@@ -277,7 +286,7 @@ export default function CalendarPage() {
       console.log('📅 CALENDAR PAGE: WebSocket has no data, fetching from API as fallback')
       fetchRealAppointments()
     }
-  }, [realtimeAppointments, realtimeHookConnected, lastUpdate, realtimeAppointments?.length])
+  }, [realtimeAppointments, realtimeHookConnected, lastUpdate]) // Removed .length to prevent infinite loops
   
   // Timeout fallback if real-time doesn't load within 5 seconds
   // Only trigger if we have no events AND real-time hasn't connected
@@ -421,7 +430,7 @@ export default function CalendarPage() {
   // Generate quick links for QR code sharing
   const generateQuickLinks = (barberResources) => {
     const baseUrl = typeof window !== 'undefined' && window.location ? window.location.origin : 'https://6fb-ai.com'
-    const mockQuickLinks = [
+    const QuickLinks = [
       {
         id: 'main-location',
         type: 'location',
@@ -451,7 +460,7 @@ export default function CalendarPage() {
       }))
     ]
     
-    setQuickLinks(mockQuickLinks)
+    setQuickLinks(QuickLinks)
   }
 
 
@@ -479,7 +488,10 @@ export default function CalendarPage() {
   const filteredEvents = useMemo(() => {
     // 🚨 CRITICAL FIX: Merge both events and appointments arrays
     // events = optimistic appointments, realtimeAppointments = real WebSocket appointments
-    const combinedEvents = [...events, ...realtimeAppointments]
+    // Ensure both arrays exist before spreading to prevent runtime errors
+    const safeEvents = Array.isArray(events) ? events : []
+    const safeRealtimeAppointments = Array.isArray(realtimeAppointments) ? realtimeAppointments : []
+    const combinedEvents = [...safeEvents, ...safeRealtimeAppointments]
     const uniqueEvents = deduplicateAppointments(combinedEvents)
     
     console.log('🔄 MERGE DEBUG:', {
@@ -597,7 +609,8 @@ export default function CalendarPage() {
   // Get unique services for filter dropdown
   const uniqueServices = useMemo(() => {
     const services = new Set()
-    events.forEach(event => {
+    const safeEvents = Array.isArray(events) ? events : []
+    safeEvents.forEach(event => {
       // Use SAME extraction logic as filter to ensure consistency
       const service = event.extendedProps?.service || 
                      (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : '') || ''
@@ -867,7 +880,7 @@ export default function CalendarPage() {
       
       optimisticAppointment = {
         id: `temp-${Date.now()}`, // Temporary ID
-        title: `${appointmentData.client_name} - ${appointmentData.service_name || 'Service'}`,
+        title: `${appointmentData.client_name} - ${appointmentData.service_name || 'Unknown Service'}`,
         start: startDate.toISOString(),
         end: endDate.toISOString(),
         resourceId: appointmentData.barber_id,
@@ -877,7 +890,7 @@ export default function CalendarPage() {
         extendedProps: {
           customer_name: appointmentData.client_name,
           customer_phone: appointmentData.client_phone,
-          service_name: appointmentData.service_name || 'Service',
+          service_name: appointmentData.service_name || 'Unknown Service',
           status: 'booking', // Special status for optimistic update
           isOptimistic: true // Flag to identify optimistic appointments
         }
@@ -1450,7 +1463,7 @@ export default function CalendarPage() {
             resources={filteredResources} // Use filtered resources
             events={filteredEvents} // Use filtered events
             currentView={currentCalendarView}
-            onViewChange={setCurrentCalendarView}
+            onViewChange={handleViewChange}
             onEventClick={handleEventClick}
             onSlotClick={handleDateSelect}
             onEventDrop={(dropInfo) => {
@@ -1656,7 +1669,7 @@ export default function CalendarPage() {
           serviceName={
             services.find(s => 
               s.id === confirmedAppointment.service_id
-            )?.name || confirmedAppointment.service_name || 'Service'
+            )?.name || confirmedAppointment.service_name || 'Unknown Service'
           }
         />
       )}

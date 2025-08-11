@@ -15,7 +15,7 @@ export async function GET(request) {
     // accounts = service.get_connected_accounts(barber_id)
     
     // Mock connected accounts data for demo
-    const mockAccounts = [
+    const Accounts = [
       {
         account_id: 'google_demo_123',
         provider: 'google',

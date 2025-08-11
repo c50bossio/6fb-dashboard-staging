@@ -38,7 +38,7 @@ const test = async () => {
 
       // Test 3: Check for mock data
       console.log("\n3. Checking for mock appointment data...");
-      const mockDataChecks = [
+      const DataChecks = [
         { name: "Marcus Johnson (barber)", pattern: /Marcus Johnson/i },
         { name: "David Wilson (barber)", pattern: /David Wilson/i },
         { name: "Sophia Martinez (barber)", pattern: /Sophia Martinez/i },

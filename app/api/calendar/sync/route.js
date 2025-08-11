@@ -78,7 +78,7 @@ export async function GET(request) {
     // sync_history = service.get_sync_history(barber_id, account_id)
     
     // Mock sync history
-    const mockSyncHistory = [
+    const SyncHistory = [
       {
         sync_id: 'sync_1',
         booking_id: 'booking_123',

@@ -72,7 +72,7 @@ export default function SystemMonitoringDashboard() {
     try {
       // In a real implementation, this would fetch from your analytics API
       // For now, we'll simulate the data
-      const mockMetrics = {
+      const Metrics = {
         uptime: Math.floor(Math.random() * 99.9 + 99.1),
         responseTime: Math.floor(Math.random() * 200 + 100),
         errorRate: Math.random() * 2,

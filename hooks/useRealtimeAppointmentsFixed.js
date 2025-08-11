@@ -77,7 +77,7 @@ export function useRealtimeAppointments(barbershopId) {
           return {
             id: booking.id,
             resourceId: booking.barber_id,
-            title: `${isCancelled ? '❌ ' : ''}${booking.customers?.name || booking.customer_name || 'Customer'} - ${booking.services?.name || booking.service_name || 'Service'}`,
+            title: `${isCancelled ? '❌ ' : ''}${booking.customers?.name || booking.customer_name || 'Customer'} - ${booking.services?.name || booking.service_name || "Unknown Service"}`,
             start: booking.start_time,
             end: booking.end_time,
             backgroundColor: isCancelled ? '#ef4444' : (booking.barbers?.color || '#3b82f6'),
@@ -151,7 +151,7 @@ export function useRealtimeAppointments(barbershopId) {
           const newEvent = {
             id: newBooking.id,
             resourceId: newBooking.barber_id,
-            title: `${isCancelled ? '❌ ' : ''}${newBooking.customers?.name || newBooking.customer_name || 'Customer'} - ${newBooking.services?.name || newBooking.service_name || 'Service'}`,
+            title: `${isCancelled ? '❌ ' : ''}${newBooking.customers?.name || newBooking.customer_name || 'Customer'} - ${newBooking.services?.name || newBooking.service_name || "Unknown Service"}`,
             start: newBooking.start_time,
             end: newBooking.end_time,
             backgroundColor: isCancelled ? '#ef4444' : (newBooking.barbers?.color || '#3b82f6'),
@@ -201,7 +201,7 @@ export function useRealtimeAppointments(barbershopId) {
           const updatedEvent = {
             id: updatedBooking.id,
             resourceId: updatedBooking.barber_id,
-            title: `${isCancelled ? '❌ ' : ''}${updatedBooking.customers?.name || 'Customer'} - ${updatedBooking.services?.name || 'Service'}`,
+            title: `${isCancelled ? '❌ ' : ''}${updatedBooking.customers?.name || 'Customer'} - ${updatedBooking.services?.name || "Unknown Service"}`,
             start: updatedBooking.start_time,
             end: updatedBooking.end_time,
             backgroundColor: isCancelled ? '#ef4444' : (updatedBooking.barbers?.color || '#3b82f6'),

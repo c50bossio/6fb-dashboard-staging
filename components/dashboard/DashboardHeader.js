@@ -33,14 +33,18 @@ const DashboardHeader = React.memo(function DashboardHeader({
   }
 
   const getLastLoginTime = () => {
-    // Mock implementation - in real app, this would come from user data
-    const lastLogin = new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000)
-    return lastLogin.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    })
+    // Use actual user profile data if available
+    if (profile?.last_login_at) {
+      const lastLogin = new Date(profile.last_login_at)
+      return lastLogin.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      })
+    }
+    // Return 'First login' if no previous login data
+    return 'First login'
   }
 
   return (
@@ -102,7 +106,7 @@ const DashboardHeader = React.memo(function DashboardHeader({
                   <SparklesIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm sm:text-lg font-bold text-white">{dashboardStats?.activeAgents || 6}</div>
+                  <div className="text-sm sm:text-lg font-bold text-white">{dashboardStats?.activeAgents || 0}</div>
                   <div className="text-xs text-blue-200 hidden sm:block">AI agents active</div>
                   <div className="text-xs text-blue-200 sm:hidden">agents</div>
                 </div>
@@ -112,7 +116,7 @@ const DashboardHeader = React.memo(function DashboardHeader({
                   <ChartBarIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-sm sm:text-lg font-bold text-white">{dashboardStats?.totalConversations || 847}</div>
+                  <div className="text-sm sm:text-lg font-bold text-white">{dashboardStats?.totalConversations || 0}</div>
                   <div className="text-xs text-blue-200 hidden sm:block">conversations today</div>
                   <div className="text-xs text-blue-200 sm:hidden">today</div>
                 </div>

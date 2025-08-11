@@ -92,6 +92,10 @@ export default function AppointmentBookingModal({
   const [deleteOption, setDeleteOption] = useState('single') // 'single' or 'all' for recurring
   const [deletingAppointment, setDeletingAppointment] = useState(false)
   const [actionType, setActionType] = useState('cancel') // 'cancel' or 'delete'
+  
+  // Quick block mode state
+  const [isBlockMode, setIsBlockMode] = useState(false)
+  const [blockReason, setBlockReason] = useState('')
 
   // Populate form when modal opens with selectedSlot or when editing
   useEffect(() => {
@@ -171,7 +175,8 @@ export default function AppointmentBookingModal({
       setFormData(prev => ({
         ...prev,
         barber_id: selectedSlot.barberId || '',
-        scheduled_at: dateTime
+        scheduled_at: dateTime,
+        duration_minutes: selectedSlot.duration || 60  // Use dragged duration or default to 60
       }))
     }
   }, [isEditing, editingAppointment, selectedSlot])
@@ -739,6 +744,72 @@ export default function AppointmentBookingModal({
     }
   }
 
+  // Handle quick block time functionality
+  const handleQuickBlock = async () => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      // Calculate end time based on start time and duration
+      const startDate = new Date(formData.scheduled_at || selectedSlot?.start)
+      const endDate = new Date(startDate.getTime() + (formData.duration_minutes || 60) * 60000)
+      
+      // Prepare minimal booking data for blocked time
+      const blockData = {
+        barber_id: formData.barber_id || selectedSlot?.barberId || barbers?.[0]?.id,
+        service_id: null, // No service for blocked time
+        customer_id: null, // Null for blocked slots to avoid foreign key constraint
+        start_time: startDate.toISOString(),
+        end_time: endDate.toISOString(),
+        scheduled_at: startDate.toISOString(),
+        duration_minutes: formData.duration_minutes || 60,
+        status: 'blocked',
+        notes: blockReason || 'Time blocked',
+        client_name: 'BLOCKED',
+        client_phone: '',
+        client_email: '',
+        service_price: 0,
+        tip_amount: 0,
+        shop_id: barbershopId || 'demo-shop-001',
+        is_blocked_time: true // Special flag for UI handling
+      }
+      
+      console.log('Creating blocked time slot:', blockData)
+      
+      const response = await fetch('/api/calendar/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(blockData)
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to block time slot')
+      }
+      
+      console.log('Time blocked successfully:', data)
+      
+      // Reset form and close modal
+      setIsBlockMode(false)
+      setBlockReason('')
+      onClose()
+      
+      // Refresh calendar
+      if (onBookingComplete) {
+        await onBookingComplete({ isBlocked: true })
+      }
+      
+    } catch (error) {
+      console.error('Error blocking time:', error)
+      setError('Failed to block time: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Handle appointment deletion (hard delete - completely removes from calendar and history)
   const handleDelete = async () => {
     if (!editingAppointment || !editingAppointment.id) {
@@ -977,7 +1048,7 @@ export default function AppointmentBookingModal({
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900 mb-6">
-                      {isEditing ? 'Edit Appointment' : 'Book New Appointment'}
+                      {isBlockMode ? 'Block Time Slots' : isEditing ? 'Edit Appointment' : 'Book New Appointment'}
                       {isEditing && editingAppointment?.recurrence_rule && (
                         <div className="mt-2 text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-3">
                           🔄 This is a recurring appointment. Changes will only apply to this specific occurrence.
@@ -985,7 +1056,7 @@ export default function AppointmentBookingModal({
                       )}
                     </Dialog.Title>
                     
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={isBlockMode ? (e) => { e.preventDefault(); handleQuickBlock(); } : handleSubmit} className="space-y-6">
                       {/* Error Display */}
                       {error && (
                         <div className="rounded-md bg-red-50 p-4">
@@ -993,6 +1064,98 @@ export default function AppointmentBookingModal({
                         </div>
                       )}
                       
+                      {/* Block Mode Form */}
+                      {isBlockMode ? (
+                        <>
+                          {/* Time and Duration for Block Mode */}
+                          <div className="space-y-4">
+                            <div className="bg-gray-50 rounded-lg p-4">
+                              <div className="flex items-center space-x-4 mb-3">
+                                <CalendarIcon className="h-5 w-5 text-gray-500" />
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {selectedSlot && new Date(selectedSlot.start).toLocaleDateString('en-US', {
+                                      weekday: 'long',
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric'
+                                    })}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    {selectedSlot && new Date(selectedSlot.start).toLocaleTimeString('en-US', {
+                                      hour: 'numeric',
+                                      minute: '2-digit'
+                                    })}
+                                    {' - '}
+                                    {selectedSlot && new Date(new Date(selectedSlot.start).getTime() + (formData.duration_minutes || 60) * 60000).toLocaleTimeString('en-US', {
+                                      hour: 'numeric',
+                                      minute: '2-digit'
+                                    })}
+                                    {' '}({
+                                      formData.duration_minutes >= 60 
+                                        ? `${Math.floor(formData.duration_minutes / 60)}h ${formData.duration_minutes % 60 > 0 ? `${formData.duration_minutes % 60}min` : ''}`
+                                        : `${formData.duration_minutes || 60} min`
+                                    })
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              {/* Duration Selector */}
+                              <div>
+                                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+                                  Duration
+                                </label>
+                                <select
+                                  id="duration"
+                                  value={formData.duration_minutes}
+                                  onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
+                                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                >
+                                  <option value="15">15 minutes</option>
+                                  <option value="30">30 minutes</option>
+                                  <option value="45">45 minutes</option>
+                                  <option value="60">1 hour</option>
+                                  <option value="90">1.5 hours</option>
+                                  <option value="120">2 hours</option>
+                                  <option value="180">3 hours</option>
+                                  <option value="240">4 hours</option>
+                                  <option value="300">5 hours</option>
+                                  <option value="360">6 hours</option>
+                                  <option value="420">7 hours</option>
+                                  <option value="480">8 hours</option>
+                                  <option value="540">9 hours</option>
+                                  <option value="600">10 hours</option>
+                                  <option value="660">11 hours</option>
+                                  <option value="720">12 hours (Full day)</option>
+                                </select>
+                              </div>
+                            </div>
+                            
+                            {/* Reason for Blocking */}
+                            <div>
+                              <label htmlFor="blockReason" className="block text-sm font-medium text-gray-700 mb-2">
+                                Reason (optional)
+                              </label>
+                              <input
+                                type="text"
+                                id="blockReason"
+                                value={blockReason}
+                                onChange={(e) => setBlockReason(e.target.value)}
+                                placeholder="e.g., Lunch break, Meeting, Personal time"
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              />
+                            </div>
+                            
+                            <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                              <p className="text-sm text-amber-800">
+                                🚫 This time will be blocked and unavailable for customer bookings.
+                              </p>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                      {/* Regular Booking Form Fields */}
                       {/* Barber Selection */}
                       <div>
                         <label htmlFor="barber_id" className="block text-sm font-medium text-gray-700">
@@ -1767,6 +1930,9 @@ export default function AppointmentBookingModal({
                           </select>
                         </div>
                       </div>
+                      </>
+                      )}
+                      {/* End of conditional block mode vs regular form */}
 
                       {/* Actions */}
                       <div className="mt-6 flex flex-col sm:flex-row sm:justify-between gap-3">
@@ -1819,35 +1985,63 @@ export default function AppointmentBookingModal({
                         
                         {/* Right side buttons */}
                         <div className="flex flex-col sm:flex-row gap-2">
+                          {/* Show Block Time button when not in block mode and not editing */}
+                          {!isBlockMode && !isEditing && (
+                            <button
+                              type="button"
+                              onClick={() => setIsBlockMode(true)}
+                              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                            >
+                              🚫 Block Time
+                            </button>
+                          )}
+                          
                           <button
                             type="button"
-                            onClick={onClose}
+                            onClick={() => {
+                              if (isBlockMode) {
+                                setIsBlockMode(false);
+                                setBlockReason('');
+                              }
+                              onClose();
+                            }}
                             className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                           >
                             Cancel
                           </button>
+                          
                           <button
                             type="submit"
-                          disabled={loading || checkingAvailability || (conflicts && conflicts.has_conflicts && conflictResolution === 'cancel')}
-                          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {loading ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              {isEditing ? 'Updating...' : 'Booking...'}
-                            </>
-                          ) : (
-                            <>
-                              {showConversionConfirmation && formData.is_recurring && isEditing && (
-                                <svg className="h-4 w-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {isEditing ? (
-                                showConversionConfirmation && formData.is_recurring ? 'Convert to Recurring' : 'Update Appointment'
-                              ) : 'Book Appointment'}
-                            </>
-                          )}
+                            disabled={loading || (!isBlockMode && (checkingAvailability || (conflicts && conflicts.has_conflicts && conflictResolution === 'cancel')))}
+                            className={`inline-flex items-center justify-center rounded-lg px-5 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              isBlockMode 
+                                ? 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500' 
+                                : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                            }`}
+                          >
+                            {loading ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                {isBlockMode ? 'Blocking...' : isEditing ? 'Updating...' : 'Booking...'}
+                              </>
+                            ) : (
+                              <>
+                                {isBlockMode ? (
+                                  <>🚫 Block Time</>
+                                ) : (
+                                  <>
+                                    {showConversionConfirmation && formData.is_recurring && isEditing && (
+                                      <svg className="h-4 w-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                      </svg>
+                                    )}
+                                    {isEditing ? (
+                                      showConversionConfirmation && formData.is_recurring ? 'Convert to Recurring' : 'Update Appointment'
+                                    ) : 'Book Appointment'}
+                                  </>
+                                )}
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>

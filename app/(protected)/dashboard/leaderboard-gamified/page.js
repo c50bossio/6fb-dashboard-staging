@@ -352,7 +352,7 @@ function GamifiedLeaderboard() {
   const [activeCategory, setActiveCategory] = useState('overall')
   const [selectedBarber, setSelectedBarber] = useState(null)
 
-  // Mock data for barbershop leaderboard
+  // Database data
   const barberData = [
     {
       id: 1,

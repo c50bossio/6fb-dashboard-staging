@@ -186,7 +186,7 @@ async function setupTestData() {
       {
         id: 1,
         email: 'test@example.com',
-        name: 'Test User',
+        name: await getTestUserFromDatabase(),
         role: 'admin',
         password: 'testpassword' // In real app, this would be hashed
       }

@@ -180,7 +180,7 @@ async function createTestData() {
     const services = []
     
     for (const barbershop of barbershops) {
-      const numServices = Math.floor(Math.random() * 4) + 6 // 6-9 services per shop
+      const numServices = Math.floor(await getRandomFromDatabase(4)s per shop
       const selectedServices = [...SERVICE_TEMPLATES]
         .sort(() => 0.5 - Math.random())
         .slice(0, numServices)

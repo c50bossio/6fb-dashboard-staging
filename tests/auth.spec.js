@@ -8,7 +8,7 @@ test.describe('Authentication Flow', () => {
     await page.goto('/register')
     
     // Fill registration form
-    await page.fill('[data-testid="name-input"]', 'Test User')
+    await page.fill('[data-testid="name-input"]', await getTestUserFromDatabase())
     await page.fill('[data-testid="email-input"]', 'newuser@example.com')
     await page.fill('[data-testid="password-input"]', 'securepassword123')
     await page.fill('[data-testid="confirm-password-input"]', 'securepassword123')
@@ -63,7 +63,7 @@ test.describe('Authentication Flow', () => {
     await page.goto('/register')
     
     // Fill registration form with weak password
-    await page.fill('[data-testid="name-input"]', 'Test User')
+    await page.fill('[data-testid="name-input"]', await getTestUserFromDatabase())
     await page.fill('[data-testid="email-input"]', 'test@example.com')
     await page.fill('[data-testid="password-input"]', '123')
     await page.fill('[data-testid="confirm-password-input"]', '123')
@@ -80,7 +80,7 @@ test.describe('Authentication Flow', () => {
     await page.goto('/register')
     
     // Fill registration form with mismatched passwords
-    await page.fill('[data-testid="name-input"]', 'Test User')
+    await page.fill('[data-testid="name-input"]', await getTestUserFromDatabase())
     await page.fill('[data-testid="email-input"]', 'test@example.com')
     await page.fill('[data-testid="password-input"]', 'securepassword123')
     await page.fill('[data-testid="confirm-password-input"]', 'differentpassword')

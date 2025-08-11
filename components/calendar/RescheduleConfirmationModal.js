@@ -78,7 +78,7 @@ export default function RescheduleConfirmationModal({
                       'Customer'
   const serviceName = appointmentDetails.extendedProps?.service || 
                      (appointmentDetails.title && appointmentDetails.title.includes(' - ') ? appointmentDetails.title.split(' - ')[1] : null) || 
-                     'Service'
+                     'Unknown Service'
   
   return (
     <Transition.Root show={isOpen} as={Fragment}>

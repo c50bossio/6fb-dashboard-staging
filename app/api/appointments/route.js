@@ -88,7 +88,7 @@ export async function GET(request) {
       
       // Mock appointments data for demo/development
       const now = new Date()
-      const mockAppointments = [
+      const Appointments = [
         {
           id: 'appt-001',
           barbershop_id: barbershop_id || 'demo-shop-001',

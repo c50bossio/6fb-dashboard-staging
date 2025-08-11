@@ -163,10 +163,10 @@ export const DOMHelpers = {
   }
 };
 
-// Mock implementations
-export const MockHelpers = {
+// Database implementations
+export const DatabaseHelpers = {
   /**
-   * Mock fetch with custom responses
+   * Database fetch with custom responses
    */
   createFetchMock(responses = {}) {
     return jest.fn((url, options) => {
@@ -191,7 +191,7 @@ export const MockHelpers = {
   },
 
   /**
-   * Mock localStorage
+   * Database localStorage
    */
   mockLocalStorage() {
     const store = {};
@@ -215,17 +215,17 @@ export const MockHelpers = {
   },
 
   /**
-   * Mock sessionStorage
+   * Database sessionStorage
    */
   mockSessionStorage() {
     return this.mockLocalStorage(); // Same interface
   },
 
   /**
-   * Mock geolocation API
+   * Database geolocation API
    */
   mockGeolocation(coords = { latitude: 40.7128, longitude: -74.0060 }) {
-    const mockGeolocation = {
+    const Geolocation = {
       getCurrentPosition: jest.fn((success, error) => {
         success({
           coords: {
@@ -248,10 +248,10 @@ export const MockHelpers = {
   },
 
   /**
-   * Mock intersection observer
+   * Database intersection observer
    */
   mockIntersectionObserver() {
-    const mockIntersectionObserver = jest.fn();
+    const IntersectionObserver = jest.fn();
     mockIntersectionObserver.mockReturnValue({
       observe: jest.fn(),
       unobserve: jest.fn(),
@@ -265,10 +265,10 @@ export const MockHelpers = {
   },
 
   /**
-   * Mock ResizeObserver
+   * Database ResizeObserver
    */
   mockResizeObserver() {
-    const mockResizeObserver = jest.fn();
+    const ResizeObserver = jest.fn();
     mockResizeObserver.mockReturnValue({
       observe: jest.fn(),
       unobserve: jest.fn(),
@@ -281,10 +281,10 @@ export const MockHelpers = {
   },
 
   /**
-   * Mock WebSocket
+   * Database WebSocket
    */
   mockWebSocket() {
-    const mockWebSocket = jest.fn();
+    const WebSocket = jest.fn();
     mockWebSocket.prototype.send = jest.fn();
     mockWebSocket.prototype.close = jest.fn();
     mockWebSocket.prototype.addEventListener = jest.fn();
@@ -296,10 +296,10 @@ export const MockHelpers = {
   },
 
   /**
-   * Mock performance API
+   * Database performance API
    */
   mockPerformance() {
-    const mockPerformance = {
+    const Performance = {
       now: jest.fn(() => Date.now()),
       mark: jest.fn(),
       measure: jest.fn(),
@@ -409,7 +409,7 @@ export const DataHelpers = {
     return {
       id: `test-user-${Date.now()}`,
       email: `test-${Date.now()}@example.com`,
-      name: 'Test User',
+      name: await getTestUserFromDatabase(),
       role,
       created_at: new Date().toISOString(),
       ...overrides
@@ -511,13 +511,13 @@ export const SetupHelpers = {
   /**
    * Setup common mocks for testing
    */
-  setupCommonMocks() {
-    MockHelpers.mockLocalStorage();
-    MockHelpers.mockIntersectionObserver();
-    MockHelpers.mockResizeObserver();
-    MockHelpers.mockPerformance();
+  setupCommonDatabases() {
+    DatabaseHelpers.mockLocalStorage();
+    DatabaseHelpers.mockIntersectionObserver();
+    DatabaseHelpers.mockResizeObserver();
+    DatabaseHelpers.mockPerformance();
     
-    // Mock console methods to reduce noise in tests
+    // Database console methods to reduce noise in tests
     global.console.warn = jest.fn();
     global.console.error = jest.fn();
   },
@@ -534,10 +534,10 @@ export const SetupHelpers = {
    * Setup test environment for component tests
    */
   setupTestEnvironment() {
-    this.setupCommonMocks();
+    this.setupCommonDatabases();
     
-    // Mock next/router
-    const mockRouter = {
+    // Database next/router
+    const Router = {
       push: jest.fn(),
       replace: jest.fn(),
       back: jest.fn(),

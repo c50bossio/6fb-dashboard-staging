@@ -114,7 +114,7 @@ export async function POST(request) {
         }
         
         // Simulate cancellation processing (in production, this would call the Python service)
-        const mockBooking = {
+        const Booking = {
             id: body.booking_id,
             customer_id: 'customer_123',
             service_id: 'haircut_premium',

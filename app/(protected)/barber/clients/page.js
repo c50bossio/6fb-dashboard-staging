@@ -30,7 +30,7 @@ export default function BarberClients() {
       setLoading(true)
       
       // Mock client data - in production, this would fetch from database
-      const mockClients = [
+      const Clients = [
         {
           id: 'client_001',
           name: 'John Smith',

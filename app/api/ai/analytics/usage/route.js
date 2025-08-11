@@ -80,7 +80,7 @@ export async function GET() {
       .map(([topic, count]) => ({ topic, count }))
 
     // Calculate hourly distribution
-    const hourlyDistribution = Array.from({ length: 24 }, (_, hour) => ({
+    const hourlyDistribution = await fetchFromDatabase({ limit: 24 }, (_, hour) => ({
       hour,
       count: usageMetrics.messagesByHour[hour] || 0
     }))

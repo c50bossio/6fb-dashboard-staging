@@ -45,11 +45,11 @@ export default function SystemHealthMonitor({
 
   const loadHealthData = async () => {
     try {
-      // In production, this would call actual health endpoints
+      // Call real health API endpoint
       const healthResponse = await fetch('/api/health')
       const healthData = healthResponse.ok 
         ? await healthResponse.json()
-        : generateMockHealthData()
+        : getEmptyHealthState()
 
       // Process and validate health data
       const processedData = processHealthData(healthData)
@@ -75,81 +75,83 @@ export default function SystemHealthMonitor({
       
     } catch (error) {
       console.error('Failed to load health data:', error)
-      // Use mock data on error
-      const mockData = generateMockHealthData()
-      setHealthData(mockData)
+      // NO MOCK DATA - show error state when API fails
+      const errorData = getEmptyHealthState()
+      errorData.status = 'error'
+      errorData.error = 'Health data unavailable'
+      setHealthData(errorData)
       setIsLoading(false)
     }
   }
 
-  const generateMockHealthData = () => {
-    // Simulate realistic health metrics
+  const getEmptyHealthState = () => {
+    // NO MOCK DATA - return empty state structure
     const baseTime = Date.now()
     return {
-      status: 'healthy',
+      status: 'unknown',
       timestamp: baseTime,
       services: {
         frontend: {
-          status: 'healthy',
-          responseTime: 120 + Math.random() * 50,
-          uptime: 99.8,
+          status: 'unknown',
+          responseTime: 0,
+          uptime: 0,
           lastCheck: baseTime
         },
         backend: {
-          status: 'healthy',
-          responseTime: 250 + Math.random() * 100,
-          uptime: 99.9,
+          status: 'unknown',
+          responseTime: 0,
+          uptime: 0,
           lastCheck: baseTime
         },
         database: {
-          status: 'healthy',
-          responseTime: 15 + Math.random() * 10,
-          uptime: 99.95,
+          status: 'unknown',
+          responseTime: 0,
+          uptime: 0,
           lastCheck: baseTime,
-          connections: 12 + Math.floor(Math.random() * 8),
-          poolSize: 20
+          connections: 0,
+          poolSize: 0
         },
         cache: {
-          status: 'healthy',
-          responseTime: 5 + Math.random() * 5,
-          uptime: 99.7,
-          hitRate: 85 + Math.random() * 10,
-          memoryUsage: 60 + Math.random() * 20
+          status: 'unknown',
+          responseTime: 0,
+          uptime: 0,
+          hitRate: 0,
+          memoryUsage: 0
         },
         websocket: {
-          status: 'healthy',
-          connections: 3 + Math.floor(Math.random() * 7),
-          messageRate: 15 + Math.random() * 10,
-          latency: 50 + Math.random() * 30
+          status: 'unknown',
+          connections: 0,
+          messageRate: 0,
+          latency: 0
         }
       },
       resources: {
         cpu: {
-          usage: 20 + Math.random() * 30,
-          cores: 4,
-          loadAverage: [0.5, 0.3, 0.2]
+          usage: 0,
+          cores: 0,
+          loadAverage: [0, 0, 0]
         },
         memory: {
-          usage: 60 + Math.random() * 25,
-          total: 8192,
-          free: 2048 + Math.random() * 1024
+          usage: 0,
+          total: 0,
+          free: 0
         },
         disk: {
-          usage: 45 + Math.random() * 15,
-          total: 100000,
-          free: 55000 + Math.random() * 5000
+          usage: 0,
+          total: 0,
+          free: 0
         },
         network: {
-          bytesIn: Math.floor(Math.random() * 1000000),
-          bytesOut: Math.floor(Math.random() * 500000),
-          connectionsActive: 25 + Math.floor(Math.random() * 10)
+          bytesIn: 0,
+          bytesOut: 0,
+          connectionsActive: 0
         }
       },
       performance: {
-        requestsPerSecond: 5 + Math.random() * 15,
-        averageResponseTime: 180 + Math.random() * 120,
-        errorRate: Math.random() * 2,
-        throughput: 1000 + Math.random() * 500
+        requestsPerSecond: 0,
+        averageResponseTime: 0,
+        errorRate: 0,
+        throughput: 0
       }
     }
   }

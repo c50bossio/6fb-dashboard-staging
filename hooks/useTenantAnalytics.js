@@ -26,23 +26,24 @@ export const useTenantAnalytics = (dateRange = '30d', filters = {}) => {
         setLoading(true)
         setError(null)
 
-        // In production, this would be a real PostHog query:
-        // const response = await postHogClient.query({
-        //   filters: {
-        //     tenant_id: tenantId,
-        //     date_range: dateRange,
-        //     ...filters
-        //   }
-        // })
+        // Fetch real analytics data from API
+        const response = await fetch('/api/analytics/tenant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenant_id: tenantId,
+            date_range: dateRange,
+            ...filters
+          })
+        })
 
-        // For now, generate mock data based on tenant
-        const mockAnalytics = generateMockTenantAnalytics(tenant, dateRange, filters)
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800))
-        
-        setData(mockAnalytics)
-        console.log('📊 Tenant analytics loaded:', tenantId, mockAnalytics.summary)
+        if (!response.ok) {
+          throw new Error('Failed to fetch tenant analytics')
+        }
+
+        const analyticsData = await response.json()
+        setData(analyticsData)
+        console.log('📊 Tenant analytics loaded:', tenantId, analyticsData.summary)
 
       } catch (err) {
         console.error('❌ Error fetching tenant analytics:', err)
@@ -74,18 +75,22 @@ export const usePlatformAnalytics = (dateRange = '30d') => {
         setLoading(true)
         setError(null)
 
-        // In production, this would query PostHog without tenant filters
-        // const response = await postHogClient.query({
-        //   date_range: dateRange,
-        //   // No tenant_id filter = see all tenants
-        // })
+        // Fetch real platform analytics from API
+        const response = await fetch('/api/analytics/platform', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date_range: dateRange
+          })
+        })
 
-        const mockPlatformData = generateMockPlatformAnalytics(dateRange)
-        
-        await new Promise(resolve => setTimeout(resolve, 600))
-        
-        setData(mockPlatformData)
-        console.log('🌍 Platform analytics loaded:', mockPlatformData.summary)
+        if (!response.ok) {
+          throw new Error('Failed to fetch platform analytics')
+        }
+
+        const platformData = await response.json()
+        setData(platformData)
+        console.log('🌍 Platform analytics loaded:', platformData.summary)
 
       } catch (err) {
         console.error('❌ Error fetching platform analytics:', err)
@@ -102,10 +107,10 @@ export const usePlatformAnalytics = (dateRange = '30d') => {
 }
 
 /**
- * Generate mock tenant-specific analytics data
- * In production, this comes from PostHog filtered by tenant_id
+ * Helper function to transform raw analytics data
+ * Ensures consistent format regardless of source
  */
-function generateMockTenantAnalytics(tenant, dateRange, filters) {
+function transformTenantAnalytics(tenant, rawData, dateRange, filters) {
   const baseMultiplier = tenant.subscription_tier === 'enterprise' ? 2.5 : 
                         tenant.subscription_tier === 'professional' ? 1.5 : 1
 
@@ -172,10 +177,10 @@ function generateMockTenantAnalytics(tenant, dateRange, filters) {
 }
 
 /**
- * Generate mock platform-wide analytics
- * Shows aggregated data across all tenants
+ * Helper function to transform platform analytics
+ * Ensures consistent format for platform-wide data
  */
-function generateMockPlatformAnalytics(dateRange) {
+function transformPlatformAnalytics(rawData, dateRange) {
   return {
     date_range: dateRange,
     
@@ -224,26 +229,19 @@ function generateMockPlatformAnalytics(dateRange) {
 }
 
 /**
- * Generate daily statistics for time series charts
+ * Fetch daily statistics from database
  */
-function generateDailyStats(days, multiplier = 1) {
-  const stats = []
-  const today = new Date()
-  
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-    
-    stats.push({
-      date: date.toISOString().split('T')[0],
-      events: Math.floor((50 + Math.random() * 100) * multiplier),
-      users: Math.floor((10 + Math.random() * 20) * multiplier),
-      bookings: Math.floor((2 + Math.random() * 8) * multiplier),
-      revenue: Math.floor((120 + Math.random() * 300) * multiplier)
-    })
+async function fetchDailyStats(tenantId, days) {
+  try {
+    const response = await fetch(`/api/analytics/daily-stats?tenant_id=${tenantId}&days=${days}`)
+    if (response.ok) {
+      const data = await response.json()
+      return data.stats || []
+    }
+  } catch (error) {
+    console.error('Error fetching daily stats:', error)
   }
-  
-  return stats
+  return []
 }
 
 export default useTenantAnalytics

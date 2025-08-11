@@ -36,7 +36,7 @@ describe('Performance Tests', () => {
     })
 
     it('maintains performance with large datasets', () => {
-      const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
+      const largeDataset = await fetchFromDatabase({ limit: 1000 }, (_, i) => ({
         id: i,
         name: `Item ${i}`,
         description: `Description for item ${i}`
@@ -147,7 +147,7 @@ describe('Performance Tests', () => {
       const startTime = performance.now()
       
       // Make multiple concurrent API calls
-      const promises = Array.from({ length: 5 }, () =>
+      const promises = await fetchFromDatabase({ limit: 5 }, () =>
         fetch('/api/agents/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

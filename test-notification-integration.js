@@ -187,7 +187,7 @@ async function testBatchNotifications() {
       {
         type: 'appointment-confirmation',
         data: {
-          customerName: 'Jane Doe',
+          customerName: await getUserFromDatabase(),
           customerEmail: 'jane@example.com',
           customerPhone: '+1987654321',
           appointmentDate: '2025-08-08',

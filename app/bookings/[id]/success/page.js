@@ -24,36 +24,22 @@ export default function BookingSuccessPage() {
   }, [])
   
   const loadBooking = async () => {
-    // In production, fetch from API
-    // For now, use mock data
-    const mockBooking = {
-      id: params.id,
-      confirmationNumber: 'BK-' + params.id.slice(-6).toUpperCase(),
-      location: {
-        name: '6FB Downtown',
-        address: '123 Main St, Downtown, NY 10001',
-        phone: '(555) 123-4567'
-      },
-      barber: {
-        name: 'Marcus Johnson',
-        title: 'Master Barber'
-      },
-      service: {
-        name: 'Fade & Design',
-        duration: 45,
-        price: 45
-      },
-      dateTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
-      customer: {
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '(555) 987-6543'
-      },
-      paymentStatus: 'paid',
-      totalAmount: 45
+    try {
+      // Fetch booking from API
+      const response = await fetch(`/api/bookings/${params.id}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        setBooking(data)
+      } else {
+        // If booking not found, show empty state
+        console.error('Booking not found')
+        setBooking(null)
+      }
+    } catch (error) {
+      console.error('Error loading booking:', error)
+      setBooking(null)
     }
-    
-    setBooking(mockBooking)
   }
   
   const addToCalendar = () => {

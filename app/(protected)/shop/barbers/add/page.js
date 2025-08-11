@@ -254,7 +254,7 @@ export default function AddBarber() {
                       value={barberData.fullName}
                       onChange={(e) => setBarberData({...barberData, fullName: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="John Doe"
+                      placeholder="Enter barber's full name"
                     />
                   </div>
                   

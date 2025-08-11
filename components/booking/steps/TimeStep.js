@@ -77,7 +77,7 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
           // Check if slot is in the future (for today)
           if (!isToday || currentSlot > now) {
             // Mock availability (in production, check against existing bookings)
-            const mockBooked = Math.random() > 0.7 // 30% chance of being booked
+            const Booked = Math.random() > 0.7 // 30% chance of being booked
             
             slots.push({
               time: currentSlot.toTimeString().slice(0, 5),

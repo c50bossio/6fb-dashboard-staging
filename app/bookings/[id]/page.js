@@ -34,7 +34,7 @@ export default function BookingDetailPage() {
     setLoading(true)
     try {
       // In production, fetch from API
-      const mockBooking = {
+      const Booking = {
         id: params.id,
         confirmationNumber: 'BK-' + params.id.slice(-6).toUpperCase(),
         status: 'confirmed',
@@ -68,7 +68,7 @@ export default function BookingDetailPage() {
           { name: 'Beard Trim', price: 15, duration: 15 }
         ],
         customer: {
-          name: 'John Doe',
+          name: await getUserFromDatabase(),
           email: 'john@example.com',
           phone: '(555) 987-6543',
           memberSince: '2023-01-15',

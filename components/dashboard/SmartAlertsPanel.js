@@ -31,18 +31,18 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
       const data = await response.json()
       
       if (data.success) {
-        setAlerts(data.data.alerts || generateMockAlerts())
-        setPriorityActions(data.data.priority_actions || generateMockPriorityActions())
+        setAlerts(data.data.alerts || [])
+        setPriorityActions(data.data.priority_actions || [])
       } else {
-        // Use mock data as fallback
-        setAlerts(generateMockAlerts())
-        setPriorityActions(generateMockPriorityActions())
+        // NO MOCK DATA - show empty states
+        setAlerts([])
+        setPriorityActions([])
       }
     } catch (error) {
       console.error('Failed to load alerts:', error)
-      // Use mock data as fallback
-      setAlerts(generateMockAlerts())
-      setPriorityActions(generateMockPriorityActions())
+      // NO MOCK DATA - show empty states when API fails
+      setAlerts([])
+      setPriorityActions([])
     } finally {
       setLoading(false)
     }
@@ -210,41 +210,4 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
   )
 }
 
-// Mock data generators
-function generateMockAlerts() {
-  return [
-    {
-      id: 'alert_1',
-      type: 'warning',
-      title: 'Low Tuesday Bookings',
-      message: 'Bookings for Tuesday are 50% below average',
-      recommendation: 'Consider offering a Tuesday special promotion',
-      action_required: true,
-      action_text: 'Create Promotion'
-    },
-    {
-      id: 'alert_2',
-      type: 'info',
-      title: 'Premium Services Trending',
-      message: 'Premium services bookings increased by 40% this week',
-      recommendation: 'Stock up on premium products'
-    }
-  ]
-}
-
-function generateMockPriorityActions() {
-  return [
-    {
-      priority: 'high',
-      title: 'Follow up with VIP customers',
-      description: '5 VIP customers haven\'t booked in 30+ days',
-      deadline: 'Today'
-    },
-    {
-      priority: 'medium',
-      title: 'Review weekend staffing',
-      description: 'High demand expected this weekend',
-      deadline: 'Tomorrow'
-    }
-  ]
-}
+// NO MOCK DATA - All data comes from real API calls

@@ -27,6 +27,8 @@ import ActionCenter from './ActionCenter'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 import SmartAlertsPanel from './SmartAlertsPanel'
 
+// Use API calls instead of direct database imports (client component)
+
 // Dashboard modes for different user needs
 const DASHBOARD_MODES = {
   EXECUTIVE: 'executive',
@@ -87,67 +89,44 @@ export default function UnifiedDashboard({ user }) {
   const [notifications, setNotifications] = useState([])
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
-  // Load dashboard data based on current mode
+  // Load dashboard data based on current mode - API CALLS ONLY
   const loadDashboardData = useCallback(async () => {
     setIsLoading(true)
     try {
-      // Fetch data based on current mode
-      const endpoints = {
-        [DASHBOARD_MODES.EXECUTIVE]: ['/api/dashboard/metrics', '/api/ai/insights'],
-        [DASHBOARD_MODES.AI_INSIGHTS]: ['/api/ai/agents/status', '/api/ai/insights', '/api/business-recommendations'],
-        [DASHBOARD_MODES.ANALYTICS]: ['/api/analytics/live-data', '/api/analytics/predictive', '/api/franchise/performance'],
-        [DASHBOARD_MODES.OPERATIONS]: ['/api/appointments', '/api/alerts/active', '/api/realtime/metrics']
-      }
-
-      const responses = await Promise.all(
-        endpoints[currentMode].map(endpoint => 
-          fetch(endpoint).then(res => res.ok ? res.json() : null).catch(() => null)
-        )
-      )
-
-      // Process responses based on mode
-      let processedData = {}
+      console.log(`Loading dashboard data for mode: ${currentMode}`)
       
-      if (currentMode === DASHBOARD_MODES.EXECUTIVE) {
-        processedData = {
-          metrics: responses[0]?.data || generateMockMetrics(),
-          insights: responses[1]?.insights || generateMockInsights()
-        }
-      } else if (currentMode === DASHBOARD_MODES.AI_INSIGHTS) {
-        const agentStatus = responses[0]
+      // Get barbershop ID from user or use demo
+      const barbershopId = user?.barbershop_id || 'demo-shop-001'
+      
+      // Fetch real data from API endpoints
+      const response = await fetch(`/api/dashboard/metrics?mode=${currentMode}&barbershop_id=${barbershopId}`)
+      const processedData = await response.json()
+      
+      if (!response.ok) {
+        console.warn('Dashboard API error:', processedData)
+        setDashboardData({})
+        return
+      }
+      
+      // Update AI agent counts for AI_INSIGHTS mode
+      if (currentMode === DASHBOARD_MODES.AI_INSIGHTS && processedData.agents) {
         setAiAgents({
-          total: agentStatus?.total_agents || 7,
-          active: agentStatus?.active_agents || 3
+          total: processedData.agents.length,
+          active: processedData.agents.filter(agent => agent.status === 'active').length
         })
-        processedData = {
-          agents: agentStatus?.agents || generateMockAgents(),
-          insights: responses[1]?.insights || generateMockInsights(),
-          recommendations: responses[2]?.recommendations || generateMockRecommendations()
-        }
-      } else if (currentMode === DASHBOARD_MODES.ANALYTICS) {
-        processedData = {
-          liveData: responses[0]?.data || generateMockAnalytics(),
-          predictive: responses[1]?.predictions || generateMockPredictions(),
-          performance: responses[2]?.locations || generateMockLocationPerformance()
-        }
-      } else if (currentMode === DASHBOARD_MODES.OPERATIONS) {
-        processedData = {
-          appointments: responses[0]?.data || [],
-          alerts: responses[1]?.alerts || [],
-          realtime: responses[2]?.metrics || generateMockRealtimeMetrics()
-        }
       }
 
       setDashboardData(processedData)
       setLastRefresh(new Date())
+      
     } catch (error) {
       console.error('Failed to load dashboard data:', error)
-      // Use mock data on error
-      setDashboardData(generateMockDataForMode(currentMode))
+      // Show empty state instead of mock data
+      setDashboardData({})
     } finally {
       setIsLoading(false)
     }
-  }, [currentMode])
+  }, [currentMode, user])
 
   // Handle URL parameter for mode
   useEffect(() => {
@@ -309,172 +288,5 @@ export default function UnifiedDashboard({ user }) {
   )
 }
 
-// Mock data generators
-const generateMockMetrics = () => ({
-  revenue: 145000,
-  customers: 1210,
-  appointments: 324,
-  satisfaction: 4.65
-})
-
-const generateMockInsights = () => ([
-  { type: 'opportunity', message: 'Weekend bookings up 25% - consider premium pricing', priority: 'high' },
-  { type: 'alert', message: 'Tuesday bookings consistently slow - promotional opportunity', priority: 'medium' },
-  { type: 'success', message: 'Customer retention improved by 15% this month', priority: 'low' }
-])
-
-const generateMockAgents = () => ([
-  { name: 'Financial Coach', status: 'active', lastInsight: 'Optimize pricing for peak hours' },
-  { name: 'Marketing Expert', status: 'active', lastInsight: 'Social media engagement up 40%' },
-  { name: 'Operations Manager', status: 'idle', lastInsight: 'Staff utilization at optimal levels' }
-])
-
-const generateMockRecommendations = () => ([
-  { title: 'Implement Dynamic Pricing', impact: 'high', revenue: '+$12,000/month', confidence: 0.89 },
-  { title: 'Add Express Services', impact: 'medium', revenue: '+$5,000/month', confidence: 0.76 },
-  { title: 'Expand Tuesday Promotions', impact: 'medium', revenue: '+$3,000/month', confidence: 0.82 }
-])
-
-const generateMockAnalytics = () => ({
-  revenue_by_location: [
-    { location: 'Downtown', revenue: 45000, customers: 380 },
-    { location: 'Midtown', revenue: 38000, customers: 315 },
-    { location: 'Westside', revenue: 33000, customers: 275 },
-    { location: 'Eastside', revenue: 29000, customers: 240 }
-  ],
-  trending_services: [
-    { service: 'Premium Cut', bookings: 145, growth: 23 },
-    { service: 'Beard Trim', bookings: 98, growth: 15 },
-    { service: 'Full Service', bookings: 76, growth: -5 }
-  ]
-})
-
-const generateMockPredictions = () => ({
-  next_week_revenue: 32000,
-  next_week_bookings: 280,
-  busy_periods: ['Monday 10-12', 'Friday 2-5', 'Saturday 9-1']
-})
-
-const generateMockPredictiveData = () => ({
-  id: `demo_forecast_${Date.now()}`,
-  type: 'comprehensive',
-  timeHorizon: 'weekly',
-  generated_at: new Date().toISOString(),
-  overallConfidence: 0.84,
-  revenueForecast: {
-    currentRevenue: 1350,
-    predictions: {
-      '1_day': { value: 1280, confidence: 0.91, trend: 'stable' },
-      '1_week': { value: 8950, confidence: 0.86, trend: 'increasing' },
-      '1_month': { value: 39200, confidence: 0.79, trend: 'increasing' }
-    },
-    factors: [
-      'Holiday season demand increase (+18%)',
-      'Customer retention improvement (+12%)',
-      'Premium service uptake (+8%)'
-    ],
-    recommendations: [
-      'Extend holiday hours to capture peak demand',
-      'Promote premium services to loyal customers',
-      'Implement holiday booking incentives'
-    ]
-  },
-  customerBehavior: {
-    segments: [
-      {
-        name: 'VIP Customers',
-        size: 92,
-        retentionRate: 0.94,
-        predictedGrowth: 0.06,
-        avgMonthlyValue: 195,
-        recommendations: [
-          'Offer exclusive holiday packages',
-          'Provide VIP scheduling priority'
-        ]
-      }
-    ],
-    churnPrediction: {
-      highRisk: 15,
-      mediumRisk: 32,
-      lowRisk: 388,
-      interventionRecommendations: [
-        'Priority outreach to high-risk customers',
-        'Satisfaction surveys for medium-risk segment'
-      ]
-    }
-  },
-  demandForecast: {
-    peakHours: ['10:00-12:00', '14:00-16:00', '17:00-19:00'],
-    peakDays: ['Friday', 'Saturday', 'Sunday'],
-    servicePopularity: [
-      { service: 'Classic Haircut', demandTrend: 'stable', growth: 0.03 },
-      { service: 'Beard Styling', demandTrend: 'increasing', growth: 0.18 }
-    ],
-    capacityUtilization: {
-      current: 0.76,
-      predicted: 0.84,
-      peakUtilization: 0.97,
-      optimizationOpportunity: 0.13
-    }
-  },
-  pricingOptimization: {
-    services: [
-      {
-        name: 'Classic Haircut',
-        currentPrice: 30,
-        optimalPrice: 34,
-        revenueImpact: '+11%',
-        recommendation: 'Gradual price increase over 6 weeks'
-      }
-    ],
-    dynamicPricingOpportunities: [
-      'Weekend premium pricing (+18%)',
-      'Peak hour surge pricing (+15%)'
-    ]
-  }
-})
-
-const generateMockLocationPerformance = () => ([
-  { name: 'Downtown Elite', efficiency: 92, rating: 4.8, revenue: 45000 },
-  { name: 'Midtown Barber Co', efficiency: 87, rating: 4.6, revenue: 38000 },
-  { name: 'Westside Style', efficiency: 85, rating: 4.7, revenue: 33000 },
-  { name: 'Eastside Cuts', efficiency: 79, rating: 4.5, revenue: 29000 }
-])
-
-const generateMockRealtimeMetrics = () => ({
-  active_appointments: 3,
-  waiting_customers: 2,
-  available_barbers: 4,
-  next_available: '11:30 AM'
-})
-
-const generateMockDataForMode = (mode) => {
-  switch (mode) {
-    case DASHBOARD_MODES.EXECUTIVE:
-      return { metrics: generateMockMetrics(), insights: generateMockInsights() }
-    case DASHBOARD_MODES.AI_INSIGHTS:
-      return { 
-        agents: generateMockAgents(), 
-        insights: generateMockInsights(), 
-        recommendations: generateMockRecommendations() 
-      }
-    case DASHBOARD_MODES.ANALYTICS:
-      return { 
-        liveData: generateMockAnalytics(), 
-        predictive: generateMockPredictions(), 
-        performance: generateMockLocationPerformance() 
-      }
-    case DASHBOARD_MODES.PREDICTIVE:
-      return {
-        predictions: generateMockPredictiveData()
-      }
-    case DASHBOARD_MODES.OPERATIONS:
-      return { 
-        appointments: [], 
-        alerts: [], 
-        realtime: generateMockRealtimeMetrics() 
-      }
-    default:
-      return {}
-  }
-}
+// ALL MOCK DATA GENERATORS REMOVED - USING REAL DATABASE OPERATIONS ONLY
+// See /lib/dashboard-data.js for actual database queries

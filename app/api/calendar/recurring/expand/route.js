@@ -107,7 +107,7 @@ export async function POST(request) {
           expandedEvents.push({
             id: `${appointment.id}_${occurrence.date.getTime()}`, // Unique ID for each occurrence
             groupId: appointment.id, // Group ID for the series
-            title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Service'}`,
+            title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Unknown Service'}`,
             start: occurrence.isoString,
             end: occurrenceEnd,
             backgroundColor: appointment.barbers?.color || '#3b82f6',
@@ -172,7 +172,7 @@ export async function POST(request) {
         // Format single appointments
         singleEvents = (singleAppointments || []).map(appointment => ({
           id: appointment.id,
-          title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Service'}`,
+          title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Unknown Service'}`,
           start: appointment.start_time,
           end: appointment.end_time,
           backgroundColor: appointment.barbers?.color || '#3b82f6',

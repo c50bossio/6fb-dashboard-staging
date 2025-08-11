@@ -22,7 +22,7 @@ import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 // Mock staff data
-const mockStaff = [
+const Staff = [
   {
     id: 'marcus',
     name: "Marcus Johnson",

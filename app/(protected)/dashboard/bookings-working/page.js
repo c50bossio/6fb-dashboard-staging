@@ -5,8 +5,8 @@ import dynamic from 'next/dynamic'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 // Dynamic import to avoid SSR issues
-const FullCalendarWrapper = dynamic(
-  () => import('@/components/calendar/FullCalendarWrapper'),
+const EnhancedProfessionalCalendar = dynamic(
+  () => import('@/components/calendar/EnhancedProfessionalCalendar'),
   { 
     ssr: false,
     loading: () => (
@@ -24,122 +24,62 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // Mock data for testing
-  const mockEvents = [
-    {
-      id: 'event-001',
-      title: 'John Doe - Haircut',
-      start: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-      end: new Date(Date.now() + 2.5 * 60 * 60 * 1000).toISOString(),
-      resourceId: 'barber-001',
-      backgroundColor: '#4CAF50',
-      extendedProps: {
-        client_name: 'John Doe',
-        service: 'Classic Haircut',
-        price: 35,
-        status: 'confirmed'
-      }
-    },
-    {
-      id: 'event-002',
-      title: 'Jane Smith - Fade Cut',
-      start: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-      end: new Date(Date.now() + 4.75 * 60 * 60 * 1000).toISOString(),
-      resourceId: 'barber-002',
-      backgroundColor: '#2196F3',
-      extendedProps: {
-        client_name: 'Jane Smith',
-        service: 'Fade Cut',
-        price: 45,
-        status: 'confirmed'
-      }
-    },
-    {
-      id: 'event-003',
-      title: 'Bob Wilson - Beard Trim',
-      start: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      end: new Date(Date.now() + 24.33 * 60 * 60 * 1000).toISOString(),
-      resourceId: 'barber-003',
-      backgroundColor: '#FF9800',
-      extendedProps: {
-        client_name: 'Bob Wilson',
-        service: 'Beard Trim',
-        price: 25,
-        status: 'pending'
-      }
-    }
-  ]
-
-  const mockResources = [
-    {
-      id: 'barber-001',
-      title: 'John Smith',
-      eventColor: '#4CAF50'
-    },
-    {
-      id: 'barber-002', 
-      title: 'Mike Johnson',
-      eventColor: '#2196F3'
-    },
-    {
-      id: 'barber-003',
-      title: 'Sarah Williams',
-      eventColor: '#FF9800'
-    }
-  ]
+  // ALL MOCK DATA REMOVED - USING REAL DATABASE OPERATIONS ONLY
 
   useEffect(() => {
-    // Set mock data immediately
-    setEvents(mockEvents)
-    setResources(mockResources)
-    
-    // Try to fetch real data in background
-    fetchData()
-  }, [])
+    // Load real data from database - NO MOCK DATA
+    fetchRealData()
+  }, [user])
 
-  const fetchData = async () => {
+  const fetchRealData = async () => {
+    if (!user) return
+    
     try {
       setLoading(true)
+      setError(null)
       
-      // Fetch appointments
-      const appointmentsRes = await fetch('/api/appointments?barbershop_id=demo-shop-001')
-      if (appointmentsRes.ok) {
-        const data = await appointmentsRes.json()
-        const formattedEvents = (data.appointments || []).map(apt => ({
-          id: apt.id,
-          title: `${apt.client_name || 'Guest'} - ${apt.service?.name || 'Service'}`,
-          start: apt.scheduled_at,
-          end: new Date(new Date(apt.scheduled_at).getTime() + apt.duration_minutes * 60000).toISOString(),
-          resourceId: apt.barber_id,
-          backgroundColor: apt.status === 'CONFIRMED' ? '#4CAF50' : '#FF9800',
-          extendedProps: {
-            ...apt,
-            client_name: apt.client_name,
-            service: apt.service?.name,
-            price: apt.service_price
-          }
-        }))
-        if (formattedEvents.length > 0) {
-          setEvents(formattedEvents)
+      const barbershopId = user.barbershop_id || 'demo-shop-001'
+      
+      // Load real appointments and barbers via API calls
+      const today = new Date()
+      const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+      
+      const [appointmentsResponse, barbersResponse] = await Promise.all([
+        fetch(`/api/calendar/appointments?shop_id=${barbershopId}&start_date=${today.toISOString()}&end_date=${nextWeek.toISOString()}`).then(r => r.json()),
+        fetch(`/api/barbers?shop_id=${barbershopId}`).then(r => r.json())
+      ])
+      
+      // Transform barber data to resource format
+      const resources = (barbersResponse.barbers || []).map((barber, index) => ({
+        id: barber.id,
+        title: barber.name,
+        eventColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'][index % 6],
+        extendedProps: {
+          email: barber.email,
+          phone: barber.phone,
+          specialization: barber.specialization || 'General Services',
+          isRealData: true
         }
+      }))
+      
+      const events = appointmentsResponse.appointments || []
+      
+      console.log(`📅 Loaded ${events.length} real appointments`)
+      console.log(`👥 Loaded ${resources.length} real barber resources`)
+      
+      setEvents(events)
+      setResources(resources)
+      
+      if (events.length === 0 && resources.length === 0) {
+        setError('No bookings or barbers found. Database may need seeding.')
       }
-
-      // Fetch barbers as resources
-      const barbersRes = await fetch('/api/barbers?barbershop_id=demo-shop-001')
-      if (barbersRes.ok) {
-        const data = await barbersRes.json()
-        const formattedResources = (data.barbers || []).map(barber => ({
-          id: barber.id,
-          title: barber.name,
-          eventColor: '#' + Math.floor(Math.random()*16777215).toString(16)
-        }))
-        if (formattedResources.length > 0) {
-          setResources(formattedResources)
-        }
-      }
+      
     } catch (err) {
-      console.error('Error fetching data:', err)
-      setError('Using demo data')
+      console.error('Error fetching real data:', err)
+      setError(`API error: ${err.message}`)
+      // Show empty state instead of mock data
+      setEvents([])
+      setResources([])
     } finally {
       setLoading(false)
     }
@@ -182,18 +122,14 @@ export default function BookingsPage() {
       </div>
 
       <div className="bg-white rounded-lg shadow-lg p-6" style={{ minHeight: '700px' }}>
-        <FullCalendarWrapper
-          events={events}
-          resources={resources}
+        <EnhancedProfessionalCalendar
+          initialEvents={events}
+          initialResources={resources}
           onEventClick={handleEventClick}
           onEventDrop={handleEventDrop}
           onDateSelect={handleDateSelect}
-          view="resourceTimeGridDay"
-          showResources={true}
+          initialView="resourceTimeGridDay"
           height="650px"
-          slotMinTime="08:00:00"
-          slotMaxTime="20:00:00"
-          slotDuration="00:15:00"
         />
       </div>
 

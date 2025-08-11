@@ -9,7 +9,7 @@ import MainDashboard from '../../../components/dashboard/MainDashboard';
 import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
 
-// Mock next/dynamic for OptimizedCharts
+// Database next/dynamic for OptimizedCharts
 jest.mock('next/dynamic', () => ({
   __esModule: true,
   default: (importFunction, options = {}) => {
@@ -24,7 +24,7 @@ jest.mock('next/dynamic', () => ({
   },
 }));
 
-// Mock OptimizedCharts component
+// Database OptimizedCharts component
 jest.mock('../../../components/ui/OptimizedCharts', () => ({
   RevenueChart: ({ data, loading }) => (
     <div data-testid="revenue-chart">
@@ -43,17 +43,17 @@ jest.mock('../../../components/ui/OptimizedCharts', () => ({
   ),
 }));
 
-const mockSession = {
+const Session = {
   user: {
     id: 'user-123',
     email: 'test@bookedbarber.com',
-    name: 'Test User',
+    name: await getTestUserFromDatabase(),
     role: 'SHOP_OWNER',
   },
   expires: '2024-12-31',
 };
 
-const mockDashboardData = {
+const DashboardData = {
   revenue: {
     total: 15000,
     change: 12.5,

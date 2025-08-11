@@ -14,20 +14,28 @@ import {
 } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 
-import { useRealtime } from '../../hooks/useRealtime'
+import { useRealtimeMetrics } from '../../hooks/useRealtimeDatabase'
 
 export default function RealtimeDashboard() {
   const {
+    data: realtimeMetrics,
     isConnected,
-    connectionError,
-    realtimeMetrics,
-    notifications,
-    unreadNotifications,
-    hasRealtimeData,
-    connectionStatus,
-    markNotificationRead,
-    clearNotifications
-  } = useRealtime()
+    error: connectionError,
+    lastUpdate
+  } = useRealtimeMetrics('demo-shop-001')
+
+  const [notifications, setNotifications] = useState([])
+  const connectionStatus = isConnected ? 'connected' : connectionError ? 'error' : 'connecting'
+  const hasRealtimeData = Boolean(realtimeMetrics)
+  const unreadNotifications = notifications.filter(n => !n.read).length
+
+  const markNotificationRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
+  }
+
+  const clearNotifications = () => {
+    setNotifications([])
+  }
 
   const [showNotifications, setShowNotifications] = useState(false)
   const [metricsHistory, setMetricsHistory] = useState([])

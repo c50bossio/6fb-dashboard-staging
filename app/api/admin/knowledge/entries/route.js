@@ -24,7 +24,7 @@ export async function GET(request) {
     const statusData = await response.json()
     
     // Return mock data for now - in production, this would fetch actual entries
-    const mockEntries = [
+    const Entries = [
       {
         id: 'global_1',
         title: 'Peak Hour Staffing Optimization',

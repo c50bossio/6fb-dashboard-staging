@@ -4,7 +4,7 @@ import { BellIcon, ChatBubbleLeftRightIcon, ChartBarIcon } from '@heroicons/reac
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 
-import { useRealtimeNotifications } from '@/hooks/usePusher'
+import { useRealtimeNotifications } from '@/hooks/useRealtimeDatabase'
 
 
 // Dynamically import components to avoid SSR issues
@@ -20,7 +20,12 @@ const RealtimeChat = dynamic(
 
 export default function RealtimePage() {
   const [activeTab, setActiveTab] = useState('dashboard')
-  const { notifications, clearNotifications } = useRealtimeNotifications()
+  const { data: notifications = [], refresh } = useRealtimeNotifications('demo-shop-001')
+  
+  const clearNotifications = () => {
+    // In real implementation, this would clear notifications in database
+    refresh()
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

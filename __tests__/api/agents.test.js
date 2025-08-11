@@ -15,7 +15,7 @@ describe('/api/agents/chat', () => {
 
   describe('POST /api/agents/chat', () => {
     it('handles valid agent chat request successfully', async () => {
-      const mockFastApiResponse = {
+      const FastApiResponse = {
         session_id: 'test-session-123',
         agent_id: 'financial',
         agent_name: '💰 Financial Agent',
@@ -184,7 +184,7 @@ describe('/api/agents/chat', () => {
     })
 
     it('uses default values for missing optional fields', async () => {
-      const mockFastApiResponse = {
+      const FastApiResponse = {
         session_id: 'test-session-456',
         agent_id: 'operations',
         response: 'Operations response',
@@ -228,7 +228,7 @@ describe('/api/agents/chat', () => {
     })
 
     it('includes business context in requests', async () => {
-      const mockFastApiResponse = {
+      const FastApiResponse = {
         session_id: 'test-session-789',
         agent_id: 'client_acquisition',
         response: 'Client acquisition response'
@@ -316,7 +316,7 @@ describe('/api/agents/chat', () => {
     })
 
     it('transforms FastAPI response correctly', async () => {
-      const mockFastApiResponse = {
+      const FastApiResponse = {
         session_id: 'fastapi-session-123',
         agent_id: 'brand',
         agent_name: 'Custom Brand Agent',

@@ -153,7 +153,7 @@ export async function POST(request) {
     const response = {
       appointment: {
         id: data.id,
-        title: `${data.customers?.name || 'Customer'} - ${data.services?.name || 'Service'}`,
+        title: `${data.customers?.name || 'Customer'} - ${data.services?.name || 'Unknown Service'}`,
         start: data.start_time,
         end: data.end_time,
         rrule: fullCalendarFormat.rrule,

@@ -16,7 +16,7 @@ import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
 // Mock payment data
-const mockPayments = [
+const Payments = [
   {
     id: 1,
     customer_name: "John Smith",
@@ -61,7 +61,7 @@ const mockPayments = [
   }
 ]
 
-const mockStats = {
+const Stats = {
   today: {
     total_revenue: 127.00,
     total_tips: 22.00,

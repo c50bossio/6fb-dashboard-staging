@@ -220,7 +220,7 @@ export const processCalendarEvents = (appointments, timezone = 'America/New_York
  */
 export const createCalendarEvent = (formData, timezone = 'America/New_York') => {
   const event = {
-    title: `${formData.client_name} - ${formData.service_name || 'Service'}`,
+    title: `${formData.client_name} - ${formData.service_name || 'Unknown Service'}`,
     backgroundColor: formData.barber_color || '#3b82f6',
     borderColor: formData.barber_color || '#3b82f6',
     extendedProps: {

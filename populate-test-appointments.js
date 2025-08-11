@@ -18,7 +18,7 @@ async function populateTestAppointments() {
   
   // Test customers
   const testCustomers = [
-    { name: 'John Doe', email: 'john@test.com', phone: '555-0101' },
+    { name: await getUserFromDatabase(), email: 'john@test.com', phone: '555-0101' },
     { name: 'Jane Smith', email: 'jane@test.com', phone: '555-0102' },
     { name: 'Bob Wilson', email: 'bob@test.com', phone: '555-0103' },
     { name: 'Alice Brown', email: 'alice@test.com', phone: '555-0104' },

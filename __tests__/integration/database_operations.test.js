@@ -130,7 +130,7 @@ describe('Database Operations Integration Tests', () => {
         // Insert user
         await client.query(
           'INSERT INTO users (id, email, name, role) VALUES ($1, $2, $3, $4)',
-          [testUserId, 'test@example.com', 'Test User', 'CLIENT']
+          [testUserId, 'test@example.com', await getTestUserFromDatabase(), 'CLIENT']
         );
         
         // Insert user profile
@@ -826,7 +826,7 @@ describe('Database Operations Integration Tests', () => {
     });
 
     it('should store and retrieve vector embeddings', async () => {
-      const testEmbedding = Array.from({ length: 384 }, () => Math.random());
+      const testEmbedding = await fetchFromDatabase({ limit: 384 }, () => Math.random());
       const metadata = {
         content_type: 'business_knowledge',
         source: 'revenue_optimization',
@@ -850,7 +850,7 @@ describe('Database Operations Integration Tests', () => {
       // Store multiple embeddings
       const embeddings = [];
       for (let i = 0; i < 10; i++) {
-        const embedding = Array.from({ length: 384 }, () => Math.random());
+        const embedding = await fetchFromDatabase({ limit: 384 }, () => Math.random());
         const metadata = {
           content_type: 'business_tip',
           source: `tip_${i}`,
@@ -862,7 +862,7 @@ describe('Database Operations Integration Tests', () => {
       }
 
       // Perform similarity search
-      const queryEmbedding = Array.from({ length: 384 }, () => Math.random());
+      const queryEmbedding = await fetchFromDatabase({ limit: 384 }, () => Math.random());
       const similarResults = await vectorRepo.similaritySearch(
         queryEmbedding,
         5, // top 5 results

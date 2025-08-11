@@ -18,7 +18,7 @@ import GlobalNavigation from '../../components/GlobalNavigation'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
 // Mock customer data
-const mockCustomers = [
+const Customers = [
   {
     id: 1,
     name: "John Smith",

@@ -21,7 +21,7 @@ export async function GET(request) {
     }
     
     // Mock real-time optimization data
-    const mockOptimization = {
+    const Optimization = {
       success: true,
       barbershop_id: barbershopId,
       optimization_type: optimizationType,
@@ -120,7 +120,7 @@ export async function POST(request) {
     }
     
     // Mock optimization application
-    const mockApplication = {
+    const Application = {
       success: true,
       barbershop_id: barbershop_id,
       applied_optimizations: optimization_ids.map(id => ({
@@ -170,7 +170,7 @@ export async function PUT(request) {
     }
     
     // Mock preferences update
-    const mockPreferencesUpdate = {
+    const PreferencesUpdate = {
       success: true,
       barbershop_id: barbershop_id,
       updated_preferences: {

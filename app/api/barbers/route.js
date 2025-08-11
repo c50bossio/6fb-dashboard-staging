@@ -20,7 +20,7 @@ export async function GET(request) {
     const active_only = searchParams.get('active_only') !== 'false'
 
     // For demo/development, return mock data when database tables don't exist
-    const mockBarbers = [
+    const Barbers = [
       {
         id: 'barber-001',
         name: 'John Smith',

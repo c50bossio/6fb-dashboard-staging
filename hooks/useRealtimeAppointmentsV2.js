@@ -79,7 +79,7 @@ export function useRealtimeAppointmentsV2(shopId) {
     return {
       id: booking.id,
       resourceId: booking.barber_id,
-      title: `${isCancelled ? '❌ ' : ''}${booking.customer_name || 'Customer'} - ${booking.service_name || 'Service'}`,
+      title: `${isCancelled ? '❌ ' : ''}${booking.customer_name || 'Customer'} - ${booking.service_name || "Unknown Service"}`,
       start: booking.start_time,
       end: booking.end_time,
       backgroundColor: isCancelled ? '#ef4444' : '#3b82f6',

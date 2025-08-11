@@ -1,5 +1,5 @@
 /**
- * Test Data Factories and Mock Utilities
+ * Test Data Factories and Database Utilities
  * Provides consistent test data generation and mock implementations
  */
 

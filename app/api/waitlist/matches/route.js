@@ -92,7 +92,7 @@ export async function GET(request) {
                     {
                         waitlist_id: 'wl_12345678',
                         customer_id: 'customer_456',
-                        customer_name: 'John Doe',
+                        customer_name: await getUserFromDatabase(),
                         priority: 'high',
                         position: 1,
                         service_id: 'haircut_premium',

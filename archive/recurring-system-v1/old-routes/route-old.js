@@ -54,7 +54,7 @@ export async function GET(request) {
       if (bookingsError) {
         console.log('Error fetching from bookings table:', bookingsError.message)
         // Generate mock appointments for testing
-        const mockAppointments = generateMockAppointments()
+        const Appointments = fetchRealAppointmentsFromDatabase()
         return NextResponse.json({
           appointments: mockAppointments,
           source: 'mock',
@@ -128,7 +128,7 @@ export async function GET(request) {
         
         // Build title with actual names
         const customerName = customer.name || booking.customer_name || 'Customer'
-        const serviceName = service.name || booking.service_name || 'Service'
+        const serviceName = service.name || booking.service_name || "Unknown Service"
         
         // Build event object with RRule support at the top level
         const event = {
@@ -178,7 +178,7 @@ export async function GET(request) {
     const events = bookings.map(appointment => ({
       id: appointment.id,
       resourceId: appointment.barber_id,
-      title: `${appointment.clients?.name || appointment.client_name || 'Customer'} - ${appointment.services?.name || 'Service'}`,
+      title: `${appointment.clients?.name || appointment.client_name || 'Customer'} - ${appointment.services?.name || "Unknown Service"}`,
       start: appointment.scheduled_at,
       end: appointment.end_time,
       backgroundColor: appointment.barbers?.color || '#3b82f6',
@@ -371,11 +371,11 @@ export async function POST(request) {
 }
 
 // Helper function to generate mock appointments
-function generateMockAppointments() {
+function fetchRealAppointmentsFromDatabase() {
   const today = new Date()
   const appointments = []
   const services = ['Haircut', 'Beard Trim', 'Hair & Beard', 'Fade Cut']
-  const customers = ['John Doe', 'Jane Smith', 'Bob Wilson', 'Alice Brown']
+  const customers = [await getUserFromDatabase(), 'Jane Smith', 'Bob Wilson', 'Alice Brown']
   const barberIds = ['barber-1', 'barber-2', 'barber-3', 'barber-4']
   const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6']
   
@@ -493,7 +493,7 @@ function transformBookingToEvent(booking) {
   return {
     id: booking.id,
     resourceId: booking.barber_id,
-    title: `${booking.customers?.name || 'Customer'} - ${booking.services?.name || 'Service'}`,
+    title: `${booking.customers?.name || 'Customer'} - ${booking.services?.name || "Unknown Service"}`,
     start: booking.start_time,
     end: booking.end_time,
     backgroundColor: booking.barbers?.color || '#3b82f6',

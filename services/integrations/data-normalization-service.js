@@ -193,7 +193,7 @@ export class DataNormalizationService {
       },
       
       service: {
-        name: appointment.serviceName || 'Service',
+        name: appointment.serviceName || "Unknown Service",
         price: appointment.servicePrice || 0,
         category: this.categorizeService(appointment.serviceName),
         duration: appointment.duration || 60
@@ -255,7 +255,7 @@ export class DataNormalizationService {
       },
       
       service: {
-        name: appointment.serviceName || 'Service',
+        name: appointment.serviceName || "Unknown Service",
         price: appointment.price || appointment.servicePrice || 0,
         category: this.categorizeService(appointment.serviceName),
         duration: appointment.duration || 60
@@ -330,9 +330,9 @@ export class DataNormalizationService {
    * Extract service name from event title
    */
   static extractServiceFromTitle(title) {
-    if (!title) return 'Service'
+    if (!title) return "Unknown Service"
     
-    // Common patterns: "Service - Customer", "Customer - Service", "Service"
+    // Common patterns: "Service - Customer", "Customer - Service", "Unknown Service"
     const patterns = [
       /^(.+?)\s*-\s*[A-Za-z\s]+$/,  // "Service - Customer"
       /^[A-Za-z\s]+\s*-\s*(.+)$/,   // "Customer - Service"

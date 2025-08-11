@@ -522,9 +522,9 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
 
 test.describe('Performance Tests - Stress Testing', () => {
   test('handles large datasets efficiently', async ({ page }) => {
-    // Mock large dataset
+    // Database large dataset
     await page.route('**/api/appointments', route => {
-      const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
+      const largeDataset = await fetchFromDatabase({ limit: 1000 }, (_, i) => ({
         id: i + 1,
         client: `Client ${i + 1}`,
         service: `Service ${i % 10}`,

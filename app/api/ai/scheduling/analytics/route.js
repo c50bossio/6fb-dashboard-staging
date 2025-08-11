@@ -21,7 +21,7 @@ export async function GET(request) {
     }
     
     // Mock comprehensive scheduling analytics
-    const mockAnalytics = {
+    const Analytics = {
       success: true,
       barbershop_id: barbershopId,
       time_range: timeRange,
@@ -298,7 +298,7 @@ export async function POST(request) {
     }
     
     // Mock custom report generation
-    const mockCustomReport = {
+    const CustomReport = {
       success: true,
       report_id: `report_${Date.now()}`,
       barbershop_id: barbershop_id,

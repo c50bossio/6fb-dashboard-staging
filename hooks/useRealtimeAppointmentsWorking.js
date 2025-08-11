@@ -116,7 +116,7 @@ export function useRealtimeAppointments(barbershopId) {
                   return {
                     ...appointment,
                     title: isCancelled 
-                      ? `❌ ${appointment.extendedProps?.customer || 'Customer'} - ${appointment.extendedProps?.service || 'Service'}`
+                      ? `❌ ${appointment.extendedProps?.customer || 'Customer'} - ${appointment.extendedProps?.service || "Unknown Service"}`
                       : appointment.title.replace('❌ ', ''),
                     backgroundColor: isCancelled ? '#ef4444' : appointment.backgroundColor,
                     borderColor: isCancelled ? '#dc2626' : appointment.borderColor,

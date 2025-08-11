@@ -176,17 +176,60 @@ function AIAnalyticsInsights({ level, levelData }) {
 
 // Enterprise Level Analytics
 function EnterpriseAnalytics({ onDrillDown }) {
-  const enterpriseData = {
-    locations: [
-      { id: 1, name: 'Downtown Elite Cuts', revenue: 45000, customers: 380, barbers: 4, rating: 4.8 },
-      { id: 2, name: 'Midtown Barber Co', revenue: 38000, customers: 315, barbers: 3, rating: 4.6 },
-      { id: 3, name: 'Westside Style Shop', revenue: 33000, customers: 275, barbers: 3, rating: 4.7 },
-      { id: 4, name: 'Eastside Cuts', revenue: 29000, customers: 240, barbers: 2, rating: 4.5 }
-    ],
-    totalRevenue: 145000,
-    totalCustomers: 1210,
-    totalBarbers: 12,
-    avgRating: 4.65
+  const [enterpriseData, setEnterpriseData] = useState({
+    locations: [],
+    totalRevenue: 0,
+    totalCustomers: 0,
+    totalBarbers: 0,
+    avgRating: 0
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchEnterpriseData = async () => {
+      try {
+        // Fetch location performance data from real database
+        const response = await fetch('/api/analytics/live-data?format=json')
+        const result = await response.json()
+        
+        if (result.success && result.data) {
+          // Process real data into enterprise format
+          setEnterpriseData({
+            locations: result.data.locations || [],
+            totalRevenue: result.data.total_revenue || 0,
+            totalCustomers: result.data.total_customers || 0,
+            totalBarbers: result.data.total_barbers || 0,
+            avgRating: result.data.average_rating || 0
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch enterprise data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchEnterpriseData()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchEnterpriseData, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i}>
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   const revenueByLocation = enterpriseData.locations.map(loc => ({
@@ -347,19 +390,43 @@ function EnterpriseAnalytics({ onDrillDown }) {
 
 // Location Level Analytics
 function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
-  const barberData = [
-    { id: 1, name: 'Marcus Johnson', revenue: 15000, customers: 125, rating: 4.9, bookings: 89, efficiency: 95 },
-    { id: 2, name: 'David Chen', revenue: 14200, customers: 118, rating: 4.8, bookings: 84, efficiency: 92 },
-    { id: 3, name: 'Alex Rodriguez', revenue: 12800, customers: 106, rating: 4.7, bookings: 78, efficiency: 88 },
-    { id: 4, name: 'Sarah Williams', revenue: 3000, customers: 31, rating: 4.6, bookings: 23, efficiency: 85 }
-  ].slice(0, locationData.barbers)
+  const [barberData, setBarberData] = useState([])
+  const [weeklyTrends, setWeeklyTrends] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const weeklyTrends = [
-    { week: 'Week 1', revenue: 11200, customers: 89, bookings: 76 },
-    { week: 'Week 2', revenue: 11800, customers: 94, bookings: 81 },
-    { week: 'Week 3', revenue: 10900, customers: 86, bookings: 74 },
-    { week: 'Week 4', revenue: 11100, customers: 91, bookings: 79 }
-  ]
+  useEffect(() => {
+    const fetchLocationData = async () => {
+      try {
+        // Fetch barber performance data from real database
+        const response = await fetch(`/api/analytics/live-data?barbershop_id=${locationData.id}&format=json`)
+        const result = await response.json()
+        
+        if (result.success && result.data) {
+          setBarberData(result.data.barbers || [])
+          setWeeklyTrends(result.data.weekly_trends || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch location data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchLocationData()
+  }, [locationData])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -528,22 +595,43 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
 
 // Individual Barber Analytics
 function BarberAnalytics({ barberData, onNavigateUp }) {
-  const performanceData = [
-    { day: 'Mon', revenue: 520, customers: 8, hours: 8 },
-    { day: 'Tue', revenue: 680, customers: 10, hours: 9 },
-    { day: 'Wed', revenue: 750, customers: 12, hours: 9 },
-    { day: 'Thu', revenue: 580, customers: 9, hours: 8 },
-    { day: 'Fri', revenue: 820, customers: 13, hours: 10 },
-    { day: 'Sat', revenue: 950, customers: 15, hours: 10 },
-    { day: 'Sun', revenue: 480, customers: 7, hours: 6 }
-  ]
+  const [performanceData, setPerformanceData] = useState([])
+  const [serviceBreakdown, setServiceBreakdown] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const serviceBreakdown = [
-    { name: 'Haircuts', value: 60, color: '#10B981' },
-    { name: 'Beard Trims', value: 25, color: '#3B82F6' },
-    { name: 'Styling', value: 10, color: '#8B5CF6' },
-    { name: 'Wash & Style', value: 5, color: '#F59E0B' }
-  ]
+  useEffect(() => {
+    const fetchBarberData = async () => {
+      try {
+        // Fetch individual barber performance from real database
+        const response = await fetch(`/api/analytics/live-data?barber_id=${barberData.id}&format=json`)
+        const result = await response.json()
+        
+        if (result.success && result.data) {
+          setPerformanceData(result.data.daily_performance || [])
+          setServiceBreakdown(result.data.service_breakdown || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch barber data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchBarberData()
+  }, [barberData])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

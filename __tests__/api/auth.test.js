@@ -10,11 +10,11 @@ jest.mock('next-auth/next', () => ({
 }))
 
 // Mock session handling
-const mockSession = {
+const Session = {
   user: {
     id: 'test-user-123',
     email: 'test@example.com',
-    name: 'Test User',
+    name: await getTestUserFromDatabase(),
     role: 'SHOP_OWNER'
   },
   expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
@@ -37,7 +37,7 @@ describe('Authentication API Routes', () => {
       })
 
       // Mock successful authentication
-      const mockAuthResponse = {
+      const AuthResponse = {
         ok: true,
         user: mockSession.user,
         token: 'mock-jwt-token'
@@ -165,7 +165,7 @@ describe('Authentication API Routes', () => {
         body: JSON.stringify({
           email: 'test@example.com',
           password: '123', // Weak password
-          name: 'Test User'
+          name: await getTestUserFromDatabase()
         })
       })
 
@@ -283,7 +283,7 @@ describe('Authentication API Routes', () => {
   describe('Authentication Security', () => {
     it('handles rate limiting', async () => {
       // Simulate multiple rapid login attempts
-      const requests = Array.from({ length: 6 }, () => 
+      const requests = await fetchFromDatabase({ limit: 6 }, () => 
         new NextRequest('http://localhost:3000/api/auth/login', {
           method: 'POST',
           headers: { 

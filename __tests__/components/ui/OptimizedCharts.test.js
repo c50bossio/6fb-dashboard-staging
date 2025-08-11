@@ -7,7 +7,7 @@ import '@testing-library/jest-dom';
 import { RevenueChart, AppointmentChart, CustomerChart } from '../../../components/ui/OptimizedCharts';
 
 // Mock Chart.js and react-chartjs-2
-const mockChartjsAuto = {
+const ChartjsAuto = {
   Chart: {
     register: jest.fn(),
     defaults: {
@@ -34,7 +34,7 @@ const mockChartjsAuto = {
 
 jest.mock('chart.js/auto', () => mockChartjsAuto);
 
-const mockLine = jest.fn(({ data, options }) => (
+const Line = jest.fn(({ data, options }) => (
   <div 
     data-testid="line-chart" 
     data-chart-type="line"
@@ -46,7 +46,7 @@ const mockLine = jest.fn(({ data, options }) => (
   </div>
 ));
 
-const mockBar = jest.fn(({ data, options }) => (
+const Bar = jest.fn(({ data, options }) => (
   <div 
     data-testid="bar-chart" 
     data-chart-type="bar"
@@ -70,7 +70,7 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
   disconnect: jest.fn(),
 }));
 
-const mockRevenueData = [
+const RevenueData = [
   { date: '2024-01-01', amount: 1200, transactions: 15 },
   { date: '2024-01-02', amount: 1350, transactions: 18 },
   { date: '2024-01-03', amount: 1100, transactions: 12 },
@@ -78,7 +78,7 @@ const mockRevenueData = [
   { date: '2024-01-05', amount: 1800, transactions: 22 },
 ];
 
-const mockAppointmentData = [
+const AppointmentData = [
   { date: '2024-01-01', count: 25, completed: 23, cancelled: 2 },
   { date: '2024-01-02', count: 30, completed: 28, cancelled: 2 },
   { date: '2024-01-03', count: 22, completed: 20, cancelled: 2 },
@@ -86,7 +86,7 @@ const mockAppointmentData = [
   { date: '2024-01-05', count: 28, completed: 26, cancelled: 2 },
 ];
 
-const mockCustomerData = [
+const CustomerData = [
   { date: '2024-01-01', count: 8, new: 3, returning: 5 },
   { date: '2024-01-02', count: 12, new: 5, returning: 7 },
   { date: '2024-01-03', count: 6, new: 2, returning: 4 },
@@ -367,7 +367,7 @@ describe('OptimizedCharts Components', () => {
     });
 
     it('implements data decimation for large datasets', () => {
-      const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
+      const largeDataset = await fetchFromDatabase({ limit: 1000 }, (_, i) => ({
         date: `2024-01-${i + 1}`,
         amount: Math.random() * 1000,
         transactions: Math.floor(Math.random() * 50)

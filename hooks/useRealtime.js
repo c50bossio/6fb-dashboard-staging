@@ -1,137 +1,121 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-// Mock Pusher client for development
-const createMockPusher = (key, options) => {
+// Fallback Pusher client for when real Pusher is not available
+// This uses real database data via API polling instead of mock data
+const createFallbackPusher = (key, options) => {
+  let pollingIntervals = []
+  
   return {
     subscribe: (channelName) => ({
       bind: (eventName, callback) => {
-        // Store callback for mock events
-        if (!window.mockPusherCallbacks) {
-          window.mockPusherCallbacks = {}
+        // Store callback for real data events
+        if (!window.pusherCallbacks) {
+          window.pusherCallbacks = {}
         }
         
         const callbackKey = `${channelName}-${eventName}`
-        window.mockPusherCallbacks[callbackKey] = callback
+        window.pusherCallbacks[callbackKey] = callback
         
-        // Start mock data streaming for development
+        // Start real data polling from database
         if (eventName === 'metrics-update') {
-          startMockMetricsStream(callback)
+          startMetricsPolling(callback)
         } else if (eventName === 'notification') {
-          startMockNotificationStream(callback)
+          startNotificationPolling(callback)
         }
       },
       unbind: (eventName) => {
         const callbackKey = `${channelName}-${eventName}`
-        if (window.mockPusherCallbacks) {
-          delete window.mockPusherCallbacks[callbackKey]
+        if (window.pusherCallbacks) {
+          delete window.pusherCallbacks[callbackKey]
         }
       }
     }),
     unsubscribe: (channelName) => {
-      // Clean up mock callbacks
-      if (window.mockPusherCallbacks) {
-        Object.keys(window.mockPusherCallbacks).forEach(key => {
+      // Clean up callbacks
+      if (window.pusherCallbacks) {
+        Object.keys(window.pusherCallbacks).forEach(key => {
           if (key.startsWith(channelName)) {
-            delete window.mockPusherCallbacks[key]
+            delete window.pusherCallbacks[key]
           }
         })
       }
     },
     disconnect: () => {
-      // Clean up all mock callbacks
-      window.mockPusherCallbacks = {}
+      // Clean up all callbacks and intervals
+      window.pusherCallbacks = {}
+      pollingIntervals.forEach(interval => clearInterval(interval))
+      pollingIntervals = []
     }
   }
 }
 
-const startMockMetricsStream = (callback) => {
-  const interval = setInterval(() => {
-    const mockData = generateMockMetrics()
-    callback({
-      metrics: mockData,
-      timestamp: new Date().toISOString(),
-      session_id: 'mock-session'
-    })
-  }, 5000) // Update every 5 seconds
+// Poll real metrics from database
+const startMetricsPolling = async (callback) => {
+  const fetchMetrics = async () => {
+    try {
+      const response = await fetch('/api/analytics/realtime-metrics')
+      if (response.ok) {
+        const data = await response.json()
+        callback({
+          metrics: data.metrics || data,
+          timestamp: new Date().toISOString(),
+          session_id: data.session_id || 'realtime'
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch real-time metrics:', error)
+    }
+  }
+  
+  // Initial fetch
+  fetchMetrics()
+  
+  // Poll every 5 seconds
+  const interval = setInterval(fetchMetrics, 5000)
   
   // Store interval for cleanup
-  if (!window.mockPusherIntervals) {
-    window.mockPusherIntervals = []
+  if (!window.pollingIntervals) {
+    window.pollingIntervals = []
   }
-  window.mockPusherIntervals.push(interval)
+  window.pollingIntervals.push(interval)
 }
 
-const startMockNotificationStream = (callback) => {
-  const interval = setInterval(() => {
-    // Only send notifications occasionally (20% chance)
-    if (Math.random() > 0.8) {
-      const mockNotification = generateMockNotification()
-      callback({
-        notification: mockNotification,
-        timestamp: new Date().toISOString(),
-        session_id: 'mock-session'
-      })
+// Poll real notifications from database
+const startNotificationPolling = async (callback) => {
+  let lastNotificationId = null
+  
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('/api/notifications/unread')
+      if (response.ok) {
+        const data = await response.json()
+        const notifications = data.notifications || []
+        
+        // Only send new notifications
+        if (notifications.length > 0) {
+          const latestNotification = notifications[0]
+          if (latestNotification.id !== lastNotificationId) {
+            lastNotificationId = latestNotification.id
+            callback({
+              notification: latestNotification,
+              timestamp: new Date().toISOString(),
+              session_id: 'realtime'
+            })
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error)
     }
-  }, 15000) // Check every 15 seconds
-  
-  if (!window.mockPusherIntervals) {
-    window.mockPusherIntervals = []
   }
-  window.mockPusherIntervals.push(interval)
-}
-
-const generateMockMetrics = () => {
-  const currentHour = new Date().getHours()
-  const isPeakHour = (10 <= currentHour <= 14) || (17 <= currentHour <= 19)
-  const peakMultiplier = isPeakHour ? 1.5 : 0.7
   
-  return {
-    total_revenue: Math.round((450 * peakMultiplier + Math.random() * 100 - 50) * 100) / 100,
-    daily_bookings: Math.floor(12 * peakMultiplier + Math.random() * 5 - 2),
-    active_customers: Math.floor(Math.random() * 30) + 15,
-    satisfaction_rating: Math.round((4.1 + Math.random() * 0.7) * 10) / 10,
-    utilization_rate: Math.round((0.65 + Math.random() * 0.3) * 100) / 100,
-    average_wait_time: Math.floor(Math.random() * 20) + 5,
-    peak_hour_indicator: isPeakHour,
-    current_hour: currentHour
-  }
-}
-
-const generateMockNotification = () => {
-  const notifications = [
-    {
-      type: 'booking_milestone',
-      title: 'Booking Milestone',
-      message: `${Math.floor(Math.random() * 50) + 50} bookings this week!`,
-      priority: 'success'
-    },
-    {
-      type: 'customer_feedback',
-      title: 'New 5-Star Review',
-      message: 'Amazing service and great attention to detail!',
-      priority: 'info'
-    },
-    {
-      type: 'revenue_alert',
-      title: 'Revenue Goal Met',
-      message: `Daily target exceeded: $${Math.floor(Math.random() * 200) + 400}`,
-      priority: 'success'
-    },
-    {
-      type: 'ai_insight',
-      title: 'AI Insight',
-      message: `Peak efficiency detected - ${Math.floor(Math.random() * 20) + 80}% utilization`,
-      priority: 'info'
-    }
-  ]
+  // Poll every 15 seconds
+  const interval = setInterval(fetchNotifications, 15000)
   
-  const notification = notifications[Math.floor(Math.random() * notifications.length)]
-  return {
-    ...notification,
-    id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    timestamp: new Date().toISOString(),
-    read: false
+  if (!window.pollingIntervals) {
+    window.pollingIntervals = []
   }
+  window.pollingIntervals.push(interval)
 }
 
 export const useRealtime = () => {
@@ -171,8 +155,13 @@ export const useRealtime = () => {
         setSessionId(data.sessionId)
         setChannelName(data.channelName)
         
-        // Initialize Pusher (or mock for development)
-        const pusher = createMockPusher(data.pusherConfig.key, {
+        // Initialize Pusher (or fallback for development)
+        const pusher = window.Pusher 
+          ? new window.Pusher(data.pusherConfig.key, {
+              cluster: data.pusherConfig.cluster,
+              forceTLS: data.pusherConfig.forceTLS
+            })
+          : createFallbackPusher(data.pusherConfig.key, {
           cluster: data.pusherConfig.cluster,
           forceTLS: data.pusherConfig.forceTLS
         })
@@ -243,10 +232,10 @@ export const useRealtime = () => {
         pusherClient.disconnect()
       }
       
-      // Clean up mock intervals
-      if (window.mockPusherIntervals) {
-        window.mockPusherIntervals.forEach(interval => clearInterval(interval))
-        window.mockPusherIntervals = []
+      // Clean up polling intervals
+      if (window.pollingIntervals) {
+        window.pollingIntervals.forEach(interval => clearInterval(interval))
+        window.pollingIntervals = []
       }
       
       // Reset states

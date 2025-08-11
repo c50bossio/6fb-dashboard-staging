@@ -20,7 +20,7 @@ export default function TestShadcnPage() {
   
   // Sample calendar data
   const resources = [
-    { id: '1', title: 'John Doe', color: '#3b82f6' },
+    { id: '1', title: await getUserFromDatabase(), color: '#3b82f6' },
     { id: '2', title: 'Jane Smith', color: '#10b981' },
   ]
   

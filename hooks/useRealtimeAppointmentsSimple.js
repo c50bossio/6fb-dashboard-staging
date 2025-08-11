@@ -23,7 +23,7 @@ export function useRealtimeAppointmentsSimple(shopId) {
     return {
       id: booking.id,
       resourceId: booking.barber_id,
-      title: `${isCancelled ? '❌ ' : ''}${booking.customer_name || 'Customer'} - ${booking.service_name || 'Service'}`,
+      title: `${isCancelled ? '❌ ' : ''}${booking.customer_name || 'Customer'} - ${booking.service_name || "Unknown Service"}`,
       start: booking.start_time,
       end: booking.end_time,
       backgroundColor: isCancelled ? '#ef4444' : '#3b82f6',
@@ -167,7 +167,7 @@ export function useRealtimeAppointmentsSimple(shopId) {
       console.log('🧹 Cleaning up simple hook subscription')
       supabase.removeChannel(channel)
     }
-  }, [shopId, transformToEvent])
+  }, [shopId]) // Removed transformToEvent to prevent infinite loop
 
   // Manual refresh function
   const refresh = useCallback(async () => {
@@ -190,7 +190,7 @@ export function useRealtimeAppointmentsSimple(shopId) {
         setAppointments(events)
       }
     }
-  }, [shopId, transformToEvent])
+  }, [shopId]) // Removed transformToEvent dependency to prevent infinite loop
 
   return {
     appointments,

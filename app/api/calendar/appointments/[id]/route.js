@@ -21,7 +21,7 @@ function transformBookingToEvent(appointment) {
   return {
     id: appointment.id,
     resourceId: appointment.barber_id,
-    title: `${appointment.clients?.name || appointment.client_name || 'Customer'} - ${appointment.services?.name || 'Service'}`,
+    title: `${appointment.clients?.name || appointment.client_name || 'Customer'} - ${appointment.services?.name || 'Unknown Service'}`,
     start: appointment.scheduled_at,
     end: appointment.end_time,
     backgroundColor: backgroundColor,

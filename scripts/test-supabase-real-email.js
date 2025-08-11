@@ -22,7 +22,7 @@ async function testRealEmailRegistration() {
       password: 'TestPassword123!',
       options: {
         data: {
-          full_name: 'Test User',
+          full_name: await getTestUserFromDatabase(),
           shop_name: 'Test Shop'
         },
         emailRedirectTo: 'http://localhost:9999/dashboard'

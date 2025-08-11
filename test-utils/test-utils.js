@@ -28,15 +28,15 @@ function customRender(ui, options = {}) {
 }
 
 // Create mock data generators
-export const mockUser = {
+export const User = {
   id: 'test-user-id',
   email: 'test@example.com',
-  name: 'Test User',
+  name: await getTestUserFromDatabase(),
   role: 'SHOP_OWNER',
   barbershopId: 'test-barbershop-id'
 }
 
-export const mockBarbershop = {
+export const Barbershop = {
   id: 'test-barbershop-id',
   name: 'Test Barbershop',
   address: '123 Test Street',
@@ -49,7 +49,7 @@ export const mockBarbershop = {
   }
 }
 
-export const mockAppointment = {
+export const Appointment = {
   id: 'test-appointment-id',
   customerId: 'test-customer-id',
   barberId: 'test-barber-id',
@@ -61,7 +61,7 @@ export const mockAppointment = {
   notes: 'Test appointment'
 }
 
-export const mockService = {
+export const Service = {
   id: 'test-service-id',
   name: 'Haircut',
   description: 'Standard haircut',
@@ -70,14 +70,14 @@ export const mockService = {
   category: 'hair'
 }
 
-export const mockAgent = {
+export const Agent = {
   id: 'financial',
   name: '💰 Financial Agent',
   description: 'Revenue optimization and financial planning',
   isActive: true
 }
 
-export const mockAgentResponse = {
+export const AgentResponse = {
   sessionId: 'test-session-id',
   agentId: 'financial',
   agentName: '💰 Financial Agent',
@@ -103,7 +103,7 @@ export const mockAgentResponse = {
 }
 
 // Mock API responses
-export const mockApiResponse = (data, status = 200) => ({
+export const ApiResponse = (data, status = 200) => ({
   ok: status >= 200 && status < 300,
   status,
   json: async () => data,
@@ -111,7 +111,7 @@ export const mockApiResponse = (data, status = 200) => ({
 })
 
 // Mock fetch implementation
-export const mockFetch = (responses = {}) => {
+export const Fetch = (responses = {}) => {
   return jest.fn().mockImplementation((url, options) => {
     const method = options?.method || 'GET'
     const key = `${method} ${url}`
@@ -126,7 +126,7 @@ export const mockFetch = (responses = {}) => {
 }
 
 // Authentication mock helpers
-export const mockAuthSession = (user = mockUser) => {
+export const AuthSession = (user = mockUser) => {
   return {
     user,
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
@@ -134,7 +134,7 @@ export const mockAuthSession = (user = mockUser) => {
 }
 
 // Trafft integration mock data
-export const mockTrafftData = {
+export const TrafftData = {
   appointments: [
     {
       id: 1,

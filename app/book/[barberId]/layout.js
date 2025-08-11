@@ -3,7 +3,7 @@ import { generateBarberMetadata, generateStructuredData } from '../../../lib/seo
 export async function generateMetadata({ params, searchParams }) {
   try {
     // In production, fetch real barber data from API
-    const mockBarber = {
+    const Barber = {
       id: params.barberId,
       name: 'Marcus Johnson',
       title: 'Master Barber',

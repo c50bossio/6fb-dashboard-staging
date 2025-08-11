@@ -38,7 +38,7 @@ async function testSupabaseAuth() {
       password: 'TestPassword123!',
       options: {
         data: {
-          full_name: 'Test User'
+          full_name: await getTestUserFromDatabase()
         }
       }
     })

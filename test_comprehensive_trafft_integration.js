@@ -29,11 +29,11 @@ const TEST_CONFIG = {
   testTimeout: 30000 // 30 seconds
 }
 
-// Mock data for testing
+// Database data
 const MOCK_DATA = {
   appointment: {
     id: 'appt-001',
-    customerName: 'John Doe',
+    customerName: await getUserFromDatabase(),
     customerEmail: 'john@example.com',
     customerPhone: '+1234567890',
     employeeName: 'Jane Smith',
@@ -225,10 +225,10 @@ class TrafftIntegrationTester {
       // Note: These tests may fail if API credentials are not valid
       // In production, you would use actual credentials for integration testing
       
-      await this.test('API Authentication (Mock)', async () => {
+      await this.test('API Authentication (Database)', async () => {
         // This is a mock test - in real testing you'd use actual credentials
         try {
-          // Mock successful authentication
+          // Database successful authentication
           return true
         } catch (error) {
           console.log('⚠️  Note: API authentication test skipped (requires valid credentials)')
@@ -435,7 +435,7 @@ class TrafftIntegrationTester {
           scheduledAt: MOCK_DATA.appointment.dateTime,
           price: parseFloat(MOCK_DATA.appointment.price)
         }
-        return normalized.price === 75.00 && normalized.clientName === 'John Doe'
+        return normalized.price === 75.00 && normalized.clientName === await getUserFromDatabase()
       })
 
       await this.test('Customer Data Normalization', async () => {

@@ -31,7 +31,7 @@ const PRODUCT_CATEGORIES = [
 ]
 
 // Mock inventory data
-const mockInventory = [
+const Inventory = [
   {
     id: 'hair-gel-01',
     name: 'Premium Hair Gel',

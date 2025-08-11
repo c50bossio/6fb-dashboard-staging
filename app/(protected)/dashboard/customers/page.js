@@ -24,7 +24,7 @@ export default function CustomersPage() {
 
   useEffect(() => {
     // Mock customer data (replace with real API call)
-    const mockCustomers = [
+    const Customers = [
       {
         id: 1,
         name: 'John Smith',

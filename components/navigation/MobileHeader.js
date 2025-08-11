@@ -19,7 +19,7 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
   const breadcrumbs = getBreadcrumbs(pathname)
   const [showNotifications, setShowNotifications] = useState(false)
 
-  const mockNotifications = [
+  const Notifications = [
     {
       id: 1,
       type: 'appointment',

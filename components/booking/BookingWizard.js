@@ -66,7 +66,7 @@ export default function BookingWizard({
     try {
       // In production, fetch from database
       // For now, use mock settings
-      const mockSettings = {
+      const Settings = {
         acceptOnlinePayment: true,
         acceptInPersonPayment: true,
         requireOnlinePayment: false,
@@ -95,7 +95,7 @@ export default function BookingWizard({
   const steps = [
     { number: 1, title: 'Location', component: LocationStep },
     { number: 2, title: 'Barber', component: BarberStep },
-    { number: 3, title: 'Service', component: ServiceStep },
+    { number: 3, title: "Unknown Service", component: ServiceStep },
     { number: 4, title: 'Time', component: TimeStep },
     { number: 5, title: 'Payment', component: PaymentStep },
     { number: 6, title: 'Confirmation', component: ConfirmationStep }

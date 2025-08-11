@@ -38,7 +38,7 @@ export default function HomePage() {
       setLoading(true)
       // For now, we'll create a mock list of barbershops
       // Later this could be an API call to get all public barbershops
-      const mockBarbershops = [
+      const Barbershops = [
         {
           id: 'demo-barbershop',
           name: '6FB Elite Barbershop',
@@ -306,7 +306,7 @@ export default function HomePage() {
                       {shop.rating && (
                         <div className="flex items-center mb-4">
                           <div className="flex items-center">
-                            {Array.from({ length: 5 }).map((_, i) => (
+                            {[...Array(5)].map((_, i) => (
                               <StarIconSolid
                                 key={i}
                                 className={`h-4 w-4 ${i < Math.floor(shop.rating) ? 'text-yellow-400' : 'text-gray-300'}`}

@@ -9,6 +9,35 @@ Every feature MUST be implemented as a complete, functional full-stack solution 
 
 ---
 
+## 🚨 CRITICAL: NO MOCK DATA POLICY
+
+**ABSOLUTE RULE**: This application NEVER uses mock data. All data must come from real database operations.
+
+### Prohibited Practices
+- ❌ `generateMock*()` functions
+- ❌ Hardcoded fallback data objects
+- ❌ Mock data generators in any form
+- ❌ Fake placeholder data
+
+### Required Practices  
+- ✅ Real database table creation
+- ✅ SQL INSERT statements for test data
+- ✅ Database queries in all API endpoints
+- ✅ Empty states when no data exists
+- ✅ Loading indicators during database operations
+
+### Performance Impact
+Mock data generation causes **10+ second loading delays**. Real database operations are **significantly faster** and ensure data consistency.
+
+### Implementation Requirements
+1. **Create missing database tables** with proper SQL schema
+2. **Seed realistic test data** using database operations
+3. **Query real data** in all API endpoints
+4. **Handle empty states** gracefully in UI
+5. **Never generate mock objects** as shortcuts
+
+---
+
 ## Pre-Development Checklist
 
 Before starting ANY feature development, Claude MUST:
@@ -17,6 +46,7 @@ Before starting ANY feature development, Claude MUST:
 - [ ] **Backend API endpoints** - What endpoints need to be created/modified?
 - [ ] **Frontend components** - What UI components are needed?
 - [ ] **Database schema** - What data structures are required?
+- [ ] **Real database operations** - NO MOCK DATA allowed, all data from database queries
 - [ ] **Integration points** - How do frontend and backend connect?
 - [ ] **UI/UX representation** - Where and how will users interact with this feature?
 
@@ -36,11 +66,12 @@ Create a TodoWrite list that includes:
 ## Development Workflow
 
 ### Phase 1: Backend Foundation
-1. **Database schema** (if needed)
-2. **API endpoints** with proper validation
-3. **Business logic** implementation
-4. **Error handling** and response formatting
-5. **API testing** (Postman/curl verification)
+1. **Database schema** - Create real tables with proper SQL schema
+2. **Database seed data** - Insert realistic test data using SQL operations
+3. **API endpoints** with actual database queries (NO MOCK DATA)
+4. **Business logic** implementation using real data
+5. **Error handling** and response formatting
+6. **API testing** with real database operations (Postman/curl verification)
 
 ### Phase 2: Frontend Implementation
 1. **UI components** with proper state management

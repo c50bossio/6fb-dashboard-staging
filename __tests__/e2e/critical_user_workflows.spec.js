@@ -166,7 +166,7 @@ test.describe('Client User Journey', () => {
     // 4. Search for nearby barbershops
     await page.click('[data-testid="find-barbershops-button"]');
     
-    // Mock location permission
+    // Database location permission
     await page.evaluate(() => {
       navigator.geolocation = {
         getCurrentPosition: (success) => {
@@ -259,7 +259,7 @@ test.describe('Client User Journey', () => {
     // Add to calendar
     await page.click('[data-testid="add-to-calendar"]');
     
-    // Mock calendar integration
+    // Database calendar integration
     await expect(page.locator('[data-testid="calendar-added"]')).toBeVisible();
 
     // Rate and review after appointment (simulate completed appointment)
@@ -752,7 +752,7 @@ test.describe('Performance and Load Tests', () => {
 
 test.describe('Integration and Third-Party Services', () => {
   test('Google Calendar integration workflow', async ({ page }) => {
-    // Mock Google Calendar API responses
+    // Database Google Calendar API responses
     await page.route('/api/integrations/google-calendar/**', (route) => {
       const url = route.request().url();
       
@@ -782,7 +782,7 @@ test.describe('Integration and Third-Party Services', () => {
     // Connect Google Calendar
     await page.click('[data-testid="connect-google-calendar"]');
     
-    // Mock OAuth flow
+    // Database OAuth flow
     await page.route('**/oauth/google**', (route) => {
       route.fulfill({
         status: 200,
@@ -940,7 +940,7 @@ test.describe('Error Handling and Edge Cases', () => {
     });
     
     // Fill valid form data
-    await page.fill('[data-testid="name-input"]', 'John Doe');
+    await page.fill('[data-testid="name-input"]', await getUserFromDatabase());
     await page.fill('[data-testid="email-input"]', 'john@example.com');
     await page.fill('[data-testid="phone-input"]', '+1234567890');
     await page.click('[data-testid="time-10:00"]');

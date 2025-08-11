@@ -119,7 +119,7 @@ export function useRealtimeAppointments(barbershopId) {
           return {
             id: booking.id,
             resourceId: booking.barber_id,
-            title: `${isCancelled ? '❌ ' : ''}${booking.customers?.name || booking.customer_name || 'Customer'} - ${booking.services?.name || booking.service_name || 'Service'}`,
+            title: `${isCancelled ? '❌ ' : ''}${booking.customers?.name || booking.customer_name || 'Customer'} - ${booking.services?.name || booking.service_name || "Unknown Service"}`,
             start: booking.start_time,
             end: booking.end_time,
             backgroundColor: isCancelled ? '#ef4444' : (booking.barbers?.color || '#3b82f6'),
@@ -250,7 +250,7 @@ export function useRealtimeAppointments(barbershopId) {
               const fallbackEvent = {
                 id: payload.new.id,
                 resourceId: payload.new.barber_id,
-                title: `${payload.new.customer_name || 'Customer'} - ${payload.new.service_name || 'Service'}`,
+                title: `${payload.new.customer_name || 'Customer'} - ${payload.new.service_name || "Unknown Service"}`,
                 start: payload.new.start_time,
                 end: payload.new.end_time,
                 backgroundColor: '#3b82f6',
@@ -280,7 +280,7 @@ export function useRealtimeAppointments(barbershopId) {
             const newEvent = {
               id: newBooking.id,
               resourceId: newBooking.barber_id,
-              title: `${isCancelled ? '❌ ' : ''}${newBooking.customers?.name || newBooking.customer_name || 'Customer'} - ${newBooking.services?.name || newBooking.service_name || 'Service'}`,
+              title: `${isCancelled ? '❌ ' : ''}${newBooking.customers?.name || newBooking.customer_name || 'Customer'} - ${newBooking.services?.name || newBooking.service_name || "Unknown Service"}`,
               start: newBooking.start_time,
               end: newBooking.end_time,
               backgroundColor: isCancelled ? '#ef4444' : (newBooking.barbers?.color || '#3b82f6'),
@@ -381,7 +381,7 @@ export function useRealtimeAppointments(barbershopId) {
               const updatedAppointment = {
                 ...appointment,
                 title: isCancelled 
-                  ? `❌ ${appointment.extendedProps?.customer || 'Customer'} - ${appointment.extendedProps?.service || 'Service'}`
+                  ? `❌ ${appointment.extendedProps?.customer || 'Customer'} - ${appointment.extendedProps?.service || "Unknown Service"}`
                   : appointment.title.replace('❌ ', ''),
                 backgroundColor: isCancelled ? '#ef4444' : appointment.backgroundColor,
                 borderColor: isCancelled ? '#dc2626' : appointment.borderColor,

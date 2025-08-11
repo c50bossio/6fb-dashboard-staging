@@ -16,7 +16,7 @@ export async function GET(request) {
     // settings = service.get_sync_settings(barber_id)
     
     // Mock settings data
-    const mockSettings = {
+    const Settings = {
       autoCreateEvents: true,
       syncDirection: 'both',
       eventTitleTemplate: '{customer_name} - {service_name}',

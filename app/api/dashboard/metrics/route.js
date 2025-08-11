@@ -7,6 +7,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const timeRange = searchParams.get('range') || '7d' // 1d, 7d, 30d, 90d
     const detailed = searchParams.get('detailed') === 'true'
+    const type = searchParams.get('type') // trending_services, metrics, etc.
     
     const supabase = createClient()
     
@@ -19,6 +20,11 @@ export async function GET(request) {
       '90d': new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
     }
     const startDate = ranges[timeRange] || ranges['7d']
+    
+    // Handle specific metric types
+    if (type === 'trending_services') {
+      return getTrendingServices(supabase, startDate, now)
+    }
     
     // Initialize metrics object
     const metrics = {
@@ -49,13 +55,16 @@ export async function GET(request) {
   } catch (error) {
     console.error('Dashboard metrics error:', error)
     
-    // Return fallback metrics if database is unavailable
+    // Return empty metrics instead of mock data - follow NO MOCK DATA policy
     return NextResponse.json({
       error: 'Metrics temporarily unavailable',
-      fallback: true,
       timestamp: new Date().toISOString(),
-      ...getFallbackMetrics()
-    }, { status: 206 }) // Partial content
+      system_health: { status: 'unavailable' },
+      ai_activity: { total_conversations: 0, unique_sessions: 0, avg_confidence: 0, active_agents: 0 },
+      business_insights: { active_barbershops: 0, total_ai_recommendations: 0, user_satisfaction_score: 0 },
+      user_engagement: { active_users: 0, total_users: 0, new_users: 0, retention_rate: 0 },
+      performance: { avg_response_time_ms: 0, api_success_rate: 0, uptime_percent: 0 }
+    }, { status: 503 }) // Service unavailable
   }
 }
 
@@ -298,24 +307,47 @@ async function getUserSessionStats(startDate, endDate) {
   }
 }
 
-function getFallbackMetrics() {
-  return {
-    system_health: {
-      status: 'healthy',
-      ai_providers: { healthy: 1, total: 3 },
-      database: { healthy: true, response_time_ms: 45 }
-    },
-    ai_activity: {
-      total_conversations: 42,
-      unique_sessions: 15,
-      avg_confidence: 0.87,
-      active_agents: 3
-    },
-    business_insights: {
-      active_barbershops: 1,
-      total_ai_recommendations: 23,
-      user_satisfaction_score: 4.7,
-      efficiency_improvement_percent: 34
+// FALLBACK MOCK DATA REMOVED - USING REAL DATABASE OPERATIONS ONLY
+// All metrics now come from actual database queries with empty states for unavailable data
+
+async function getTrendingServices(supabase, startDate, endDate) {
+  try {
+    // Try to fetch from trending_services table if it exists
+    const { data: services, error } = await supabase
+      .from('trending_services')
+      .select('*')
+      .gte('date', startDate.toISOString().split('T')[0])
+      .lte('date', endDate.toISOString().split('T')[0])
+      .order('popularity_rank', { ascending: true })
+      .limit(10)
+    
+    if (!error && services && services.length > 0) {
+      // Return real data from database
+      return NextResponse.json({
+        success: true,
+        services: services,
+        data_source: 'database',
+        timestamp: new Date().toISOString()
+      })
     }
+    
+    // If table doesn't exist or is empty, return empty state
+    console.log('Trending services table not available or empty')
+    return NextResponse.json({
+      success: true,
+      services: [],
+      data_source: 'empty',
+      message: 'No trending services data available. Run seed:analytics to populate test data.',
+      timestamp: new Date().toISOString()
+    })
+    
+  } catch (error) {
+    console.error('Trending services fetch error:', error)
+    return NextResponse.json({
+      success: false,
+      services: [],
+      error: 'Failed to fetch trending services',
+      timestamp: new Date().toISOString()
+    }, { status: 500 })
   }
 }

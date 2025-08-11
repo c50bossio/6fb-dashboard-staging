@@ -287,8 +287,8 @@ export function DashboardProvider({ children }) {
       console.error('❌ Error loading dashboard data:', err);
       setError(err.message);
       
-      // Keep existing fallback data if API fails
-      console.log('🔄 Using fallback dashboard data');
+      // Show error state instead of fallback data - follow NO MOCK DATA policy
+      console.log('❌ Dashboard data unavailable - showing error state');
     } finally {
       setLoading(false);
     }

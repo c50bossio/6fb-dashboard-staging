@@ -105,7 +105,7 @@ function Settings() {
   
   // Profile Settings State
   const [profile, setProfile] = useState({
-    name: user?.user_metadata?.full_name || 'John Doe',
+    name: user?.user_metadata?.full_name || 'Unknown User',
     email: user?.email || 'john@example.com',
     phone: '+1 (555) 123-4567',
     role: 'Shop Owner',

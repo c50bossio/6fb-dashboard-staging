@@ -111,23 +111,23 @@ export default function SubscriptionDashboard() {
     )
   }
 
-  // Mock data for demonstration
-  const mockSubscription = subscription || {
-    status: 'active',
+  // NO MOCK DATA - Use actual subscription or empty state
+  const displaySubscription = subscription || {
+    status: 'inactive',
     plan: {
-      name: 'Professional',
-      price: 4900,
+      name: 'No Plan',
+      price: 0,
       interval: 'month'
     },
-    current_period_end: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000),
+    current_period_end: null,
     trial_end: null
   }
 
-  const mockUsage = usage.bookings_per_month !== undefined ? usage : {
-    bookings_per_month: { current: 387, limit: 2000 },
-    ai_chats_per_month: { current: 1250, limit: 5000 },
-    staff_accounts: { current: 3, limit: 15 },
-    locations: { current: 1, limit: 3 }
+  const displayUsage = usage.bookings_per_month !== undefined ? usage : {
+    bookings_per_month: { current: 0, limit: 0 },
+    ai_chats_per_month: { current: 0, limit: 0 },
+    staff_accounts: { current: 0, limit: 0 },
+    locations: { current: 0, limit: 0 }
   }
 
   return (
@@ -142,23 +142,23 @@ export default function SubscriptionDashboard() {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Current Plan</h2>
-          <Badge className={getStatusColor(mockSubscription.status)}>
-            {mockSubscription.status?.toUpperCase() || 'FREE'}
+          <Badge className={getStatusColor(displaySubscription.status)}>
+            {displaySubscription.status?.toUpperCase() || 'FREE'}
           </Badge>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {mockSubscription.plan?.name || 'Free Plan'}
+              {displaySubscription.plan?.name || 'Free Plan'}
             </h3>
             <p className="text-2xl font-bold text-gray-900 mb-1">
-              ${(mockSubscription.plan?.price || 0) / 100}/month
+              ${(displaySubscription.plan?.price || 0) / 100}/month
             </p>
             <p className="text-sm text-gray-600">
-              {mockSubscription.trial_end 
-                ? `Trial ends ${new Date(mockSubscription.trial_end).toLocaleDateString()}`
-                : `Next billing: ${new Date(mockSubscription.current_period_end).toLocaleDateString()}`
+              {displaySubscription.trial_end 
+                ? `Trial ends ${new Date(displaySubscription.trial_end).toLocaleDateString()}`
+                : `Next billing: ${new Date(displaySubscription.current_period_end).toLocaleDateString()}`
               }
             </p>
           </div>
@@ -182,26 +182,26 @@ export default function SubscriptionDashboard() {
           <div className="space-y-6">
             <UsageBar 
               label="Bookings" 
-              current={mockUsage.bookings_per_month.current} 
-              limit={mockUsage.bookings_per_month.limit}
+              current={displayUsage.bookings_per_month.current} 
+              limit={displayUsage.bookings_per_month.limit}
             />
             <UsageBar 
               label="AI Interactions" 
-              current={mockUsage.ai_chats_per_month.current} 
-              limit={mockUsage.ai_chats_per_month.limit}
+              current={displayUsage.ai_chats_per_month.current} 
+              limit={displayUsage.ai_chats_per_month.limit}
             />
           </div>
           
           <div className="space-y-6">
             <UsageBar 
               label="Staff Accounts" 
-              current={mockUsage.staff_accounts.current} 
-              limit={mockUsage.staff_accounts.limit}
+              current={displayUsage.staff_accounts.current} 
+              limit={displayUsage.staff_accounts.limit}
             />
             <UsageBar 
               label="Locations" 
-              current={mockUsage.locations.current} 
-              limit={mockUsage.locations.limit}
+              current={displayUsage.locations.current} 
+              limit={displayUsage.locations.limit}
             />
           </div>
         </div>

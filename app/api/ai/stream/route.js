@@ -18,7 +18,7 @@ export async function POST(request) {
   }
 
   try {
-    const { message, sessionId, agentId, context, stream = true } = await request.json()
+    const { message, sessionId, agentId, context, streamEnabled = true } = await request.json()
 
     if (!message?.trim()) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })

@@ -35,7 +35,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
   const [previewUrl, setPreviewUrl] = useState('')
 
   // Mock services - in production this would come from API
-  const mockServices = [
+  const Services = [
     { id: 1, name: 'Classic Cut', duration: 30, price: 35, category: 'Haircuts' },
     { id: 2, name: 'Fade Cut', duration: 45, price: 45, category: 'Haircuts' },
     { id: 3, name: 'Buzz Cut', duration: 15, price: 25, category: 'Haircuts' },

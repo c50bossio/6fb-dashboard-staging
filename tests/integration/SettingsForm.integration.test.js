@@ -20,7 +20,7 @@ jest.mock('next/dynamic', () => {
 })
 
 // Mock localStorage
-const mockLocalStorage = {
+const LocalStorage = {
   getItem: jest.fn(() => 'mock-token'),
   setItem: jest.fn(),
   removeItem: jest.fn()

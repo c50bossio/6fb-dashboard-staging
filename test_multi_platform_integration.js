@@ -102,13 +102,13 @@ class MultiPlatformIntegrationTester {
     
     try {
       // Test normalization with mock data
-      const mockGoogleEvent = {
+      const GoogleEvent = {
         id: 'google-event-123',
         summary: 'Haircut with John Doe',
         description: 'Regular haircut\nPhone: 555-0123\nPrice: $35',
         start: { dateTime: '2024-01-15T10:00:00-05:00', timeZone: 'America/New_York' },
         end: { dateTime: '2024-01-15T10:30:00-05:00', timeZone: 'America/New_York' },
-        attendees: [{ email: 'john.doe@email.com', displayName: 'John Doe' }],
+        attendees: [{ email: 'john.doe@email.com', displayName: await getUserFromDatabase() }],
         organizer: { email: 'barber@shop.com', displayName: 'Mike the Barber' },
         location: '123 Main St, Anytown, USA',
         status: 'confirmed',
@@ -121,7 +121,7 @@ class MultiPlatformIntegrationTester {
       // Validate normalized data structure
       this.assert(normalized.id === 'google-event-123', 'ID mapping')
       this.assert(normalized.platformId === 'google', 'Platform ID')
-      this.assert(normalized.client.name === 'John Doe', 'Client name extraction')
+      this.assert(normalized.client.name === await getUserFromDatabase(), 'Client name extraction')
       this.assert(normalized.client.email === 'john.doe@email.com', 'Client email extraction')
       this.assert(normalized.client.phone === '5550123', 'Phone number extraction')
       this.assert(normalized.service.name === 'Haircut', 'Service name extraction')
@@ -145,7 +145,7 @@ class MultiPlatformIntegrationTester {
     
     try {
       // Test normalization with mock Acuity appointment
-      const mockAcuityAppointment = {
+      const AcuityAppointment = {
         id: 12345,
         firstName: 'Jane',
         lastName: 'Smith',
@@ -200,7 +200,7 @@ class MultiPlatformIntegrationTester {
     
     try {
       // Test normalization with mock Square booking
-      const mockSquareBooking = {
+      const SquareBooking = {
         id: 'BOOKING_123',
         location_id: 'LOCATION_456',
         start_at: '2024-01-17T11:00:00Z',
@@ -329,7 +329,7 @@ class MultiPlatformIntegrationTester {
     
     try {
       // Create mock appointments in database
-      await this.createMockAppointments()
+      await this.createRealAppointments()
       
       // Test orchestration (would normally call external APIs)
       // For testing, we'll check the database setup and logic
@@ -353,14 +353,14 @@ class MultiPlatformIntegrationTester {
   /**
    * Create mock appointments for testing
    */
-  async createMockAppointments() {
-    const mockAppointments = [
+  async createRealAppointments() {
+    const Appointments = [
       {
         external_id: 'google-123',
         platform_id: 'google',
         client_data: JSON.stringify({
           id: 'client-1',
-          name: 'John Doe',
+          name: await getUserFromDatabase(),
           email: 'john@email.com',
           phone: '555-0001'
         }),
@@ -402,7 +402,7 @@ class MultiPlatformIntegrationTester {
         platform_id: 'trafft',
         client_data: JSON.stringify({
           id: 'client-1',
-          name: 'John Doe',
+          name: await getUserFromDatabase(),
           email: 'john@email.com',
           phone: '555-0001'
         }),

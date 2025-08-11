@@ -109,8 +109,8 @@ function BookingPageContent() {
     try {
       setLoading(true)
       
-      // Mock data - in production this would fetch from API
-      const mockBarber = {
+      // Database data
+      const Barber = {
         id: params.barberId,
         name: 'Marcus Johnson',
         title: 'Master Barber',
@@ -135,7 +135,7 @@ function BookingPageContent() {
         }
       }
 
-      const mockServices = [
+      const Services = [
         { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' },
         { id: 2, name: 'Fade Cut', duration: 45, price: 45, description: 'Modern fade with scissor work on top', category: 'Haircuts' },
         { id: 3, name: 'Buzz Cut', duration: 15, price: 25, description: 'Clean, uniform length all around', category: 'Haircuts' },

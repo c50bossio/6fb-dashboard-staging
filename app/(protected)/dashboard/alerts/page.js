@@ -22,7 +22,7 @@ const AlertsDashboardPage = () => {
   
   // Mock user data - in production, this would come from authentication
   useEffect(() => {
-    const mockUser = {
+    const User = {
       id: 'user_001',
       barbershop_id: 'demo_shop_001',
       name: 'Demo User',
@@ -50,7 +50,7 @@ const AlertsDashboardPage = () => {
   const fetchIntegrationStatus = async () => {
     try {
       // This would call the alert integration service health endpoint
-      const mockIntegrationStatus = {
+      const IntegrationStatus = {
         service_integrations: {
           realtime_service: true,
           predictive_analytics: true,

@@ -160,3 +160,49 @@
   border-color: #ef4444;
   border-width: 2px;
 }
+
+/* Blocked time slots */
+.fc-event.blocked-slot {
+  background: repeating-linear-gradient(
+    45deg,
+    #e5e7eb,
+    #e5e7eb 10px,
+    #d1d5db 10px,
+    #d1d5db 20px
+  );
+  border-color: #6b7280;
+  opacity: 0.8;
+}
+
+.fc-event.blocked-slot .fc-event-title {
+  color: #374151;
+  font-weight: 500;
+}
+
+.fc-event.blocked-slot:hover {
+  opacity: 0.9;
+  cursor: not-allowed;
+}
+
+/* Blocked slot in month view */
+.fc-daygrid-event.blocked-slot {
+  background: repeating-linear-gradient(
+    45deg,
+    #e5e7eb,
+    #e5e7eb 5px,
+    #d1d5db 5px,
+    #d1d5db 10px
+  );
+  border-left: 3px solid #6b7280;
+}
+
+/* Blocked slot in list view */
+.fc-list-event.blocked-slot .fc-list-event-dot {
+  background-color: #6b7280;
+  border-color: #6b7280;
+}
+
+.fc-list-event.blocked-slot .fc-list-event-title {
+  color: #6b7280;
+  text-decoration: none;
+}

@@ -4,7 +4,7 @@ import { POST as TrafftWebhookPOST } from '@/app/api/integrations/trafft/webhook
 import { GET as IntegrationsListGET } from '@/app/api/integrations/list/route'
 import { NextRequest } from 'next/server'
 
-// Mock database operations
+// Database data
 jest.mock('@/lib/database', () => ({
   query: jest.fn(),
   transaction: jest.fn()
@@ -173,7 +173,7 @@ describe('Integration API Routes', () => {
     it('returns sync history for barbershop', async () => {
       const request = new NextRequest('http://localhost:3000/api/integrations/trafft/sync?barbershopId=test-shop-123&limit=5')
 
-      const mockSyncHistory = [
+      const SyncHistory = [
         {
           id: 'sync-1',
           barbershopId: 'test-shop-123',

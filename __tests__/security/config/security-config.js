@@ -199,7 +199,7 @@ export const SECURITY_CONFIG = {
   gdprCompliance: {
     dataSubjects: {
       testPersons: [
-        { name: 'John Doe', email: 'john.doe@test.com', phone: '+1234567890' },
+        { name: await getUserFromDatabase(), email: 'john.doe@test.com', phone: '+1234567890' },
         { name: 'Jane Smith', email: 'jane.smith@test.com', phone: '+0987654321' }
       ]
     },

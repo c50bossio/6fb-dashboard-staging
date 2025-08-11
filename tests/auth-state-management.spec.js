@@ -30,13 +30,13 @@ test.describe('Authentication State Management', () => {
       document.cookie = 'dev_auth=true; path=/';
       
       // Simulate Supabase session
-      const mockSession = {
+      const Session = {
         access_token: 'mock_token_' + Date.now(),
         user: {
           id: 'test-user-id',
           email: 'test@example.com',
           user_metadata: {
-            full_name: 'Test User'
+            full_name: await getTestUserFromDatabase()
           }
         },
         expires_at: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
@@ -153,7 +153,7 @@ test.describe('Authentication State Management', () => {
       document.cookie = 'dev_auth=true; path=/';
       
       // Simulate successful authentication
-      const mockSession = {
+      const Session = {
         access_token: 'mock_token_' + Date.now(),
         user: {
           id: 'test-user-id',

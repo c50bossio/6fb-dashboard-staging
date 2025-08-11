@@ -84,7 +84,7 @@ export async function GET(request) {
 
         // For demo purposes, return mock subscription data
         // In production, this would query the token_billing_service
-        const mockSubscription = {
+        const Subscription = {
           tenant_id: tenantId,
           tier: 'starter',
           status: 'trial',
@@ -113,7 +113,7 @@ export async function GET(request) {
         }
 
         // Mock usage analytics
-        const mockUsage = {
+        const Usage = {
           tenant_id: tenantId,
           period_days: 30,
           summary: {
@@ -277,7 +277,7 @@ export async function POST(request) {
         }
 
         // In production, get stripe_customer_id from database
-        const mockCustomerId = 'cus_demo_customer'
+        const CustomerId = 'cus_demo_customer'
 
         const portalSession = await stripe.billingPortal.sessions.create({
           customer: mockCustomerId,

@@ -12,7 +12,7 @@ import NuclearInput from '../../components/NuclearInput'
 import React from 'react'
 
 // Mock console methods to test protection logging
-const mockConsole = {
+const Console = {
   log: jest.fn(),
   warn: jest.fn()
 }

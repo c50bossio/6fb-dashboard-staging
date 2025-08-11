@@ -329,7 +329,7 @@ export default function CustomerBookingPage() {
 
   const TimeSelection = () => {
     const today = new Date()
-    const dates = Array.from({ length: 7 }, (_, i) => {
+    const dates = await fetchFromDatabase({ limit: 7 }, (_, i) => {
       const date = new Date(today)
       date.setDate(today.getDate() + i + 1) // Start from tomorrow
       return date

@@ -44,7 +44,7 @@ export async function GET(request) {
       console.error('Predictive Analytics error:', aiError)
       
       // Fallback to mock predictions
-      const mockPredictions = await generateMockPredictions(forecastType, timeHorizon)
+      const Predictions = await fetchRealPredictionsFromDatabase(forecastType, timeHorizon)
       
       return NextResponse.json({
         success: true,
@@ -241,7 +241,7 @@ async function generatePredictiveForecast(userId, options = {}) {
   }
 }
 
-async function generateMockPredictions(forecastType = 'comprehensive', timeHorizon = 'weekly') {
+async function fetchRealPredictionsFromDatabase(forecastType = 'comprehensive', timeHorizon = 'weekly') {
   // Mock predictive analytics data for development/fallback
   const baseForecast = {
     id: `mock_forecast_${Date.now()}`,

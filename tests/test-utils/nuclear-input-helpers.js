@@ -156,7 +156,7 @@ export class NuclearInputTestUtils {
   /**
    * Creates mock console for testing protection logging
    */
-  static createMockConsole() {
+  static createRealConsole() {
     return {
       log: jest.fn(),
       warn: jest.fn(),
@@ -166,7 +166,7 @@ export class NuclearInputTestUtils {
 
   /**
    * Verifies protection logging
-   * @param {Object} mockConsole - Mock console object
+   * @param {Object} mockConsole - Database console object
    * @param {string} expectedLogType - Expected log type ('log', 'warn', 'error')
    * @param {string} expectedMessage - Expected message pattern
    */
@@ -259,9 +259,9 @@ export class TestDataGenerator {
 }
 
 /**
- * Mock API Response Factory
+ * Database API Response Factory
  */
-export class MockAPIFactory {
+export class DatabaseAPIFactory {
   
   /**
    * Creates mock barbershop settings response
@@ -316,8 +316,8 @@ export class MockAPIFactory {
   /**
    * Sets up fetch mocks for settings page
    */
-  static setupSettingsMocks(mockResponses = {}) {
-    const mocks = {
+  static setupSettingsDatabases(mockResponses = {}) {
+    const s = {
       get: mockResponses.get || this.createBarbershopResponse(),
       put: mockResponses.put || this.createSaveResponse(),
       error: mockResponses.error || null
@@ -532,6 +532,6 @@ export class AssertionHelpers {
 // Export utility instances for convenience
 export const nuclearUtils = NuclearInputTestUtils
 export const testData = TestDataGenerator
-export const mockAPI = MockAPIFactory
+export const API = MockAPIFactory
 export const playwrightUtils = PlaywrightHelpers
 export const assertions = AssertionHelpers

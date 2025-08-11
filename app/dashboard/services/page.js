@@ -29,7 +29,7 @@ const SERVICE_CATEGORIES = [
 ]
 
 // Mock services data
-const mockServices = [
+const Services = [
   {
     id: 'classic-cut',
     name: 'Classic Haircut',

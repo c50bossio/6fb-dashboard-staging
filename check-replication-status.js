@@ -55,7 +55,7 @@ async function checkReplicationStatus() {
         service_id: 'cc438e84-fc35-49ec-903d-4ba4e7e2bc65',
         customer_id: 'e91dd39c-21e6-41ea-8ac3-c908e6fb88f2',
         customer_name: 'Replication Test',
-        customer_email: 'test@test.com',
+        customer_email: process.env.TEST_EMAIL || "dev@barbershop.com",
         customer_phone: '555-TEST',
         start_time: new Date(Date.now() + 86400000).toISOString(),
         end_time: new Date(Date.now() + 88200000).toISOString(),

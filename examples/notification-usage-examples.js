@@ -190,7 +190,7 @@ export function ReminderSchedulingExample() {
               },
               {
                 id: 'cust_test',
-                name: 'Jane Doe',
+                name: await getUserFromDatabase(),
                 email: 'jane@example.com',
                 phone: '+1987654321'
               },

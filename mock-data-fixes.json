@@ -1,0 +1,631 @@
+{
+  "timestamp": "2025-08-11T17:53:22.460Z",
+  "summary": {
+    "fixed": 51,
+    "failed": 0,
+    "skipped": 52901
+  },
+  "results": [
+    {
+      "success": true,
+      "filePath": "tests/test-utils/nuclear-input-helpers.js",
+      "replacements": [
+        {
+          "description": "Update mock data JSDoc comments",
+          "count": 1
+        }
+      ],
+      "backupPath": "tests/test-utils/nuclear-input-helpers.js.backup-1754934802270"
+    },
+    {
+      "success": true,
+      "filePath": "app/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        },
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/page.js.backup-1754934802369"
+    },
+    {
+      "success": true,
+      "filePath": "app/test-shadcn/page.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/test-shadcn/page.js.backup-1754934802370"
+    },
+    {
+      "success": true,
+      "filePath": "app/payments/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 2
+        }
+      ],
+      "backupPath": "app/payments/page.js.backup-1754934802371"
+    },
+    {
+      "success": true,
+      "filePath": "app/dashboard/staff/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/dashboard/staff/page.js.backup-1754934802373"
+    },
+    {
+      "success": true,
+      "filePath": "app/dashboard/services/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/dashboard/services/page.js.backup-1754934802373"
+    },
+    {
+      "success": true,
+      "filePath": "app/dashboard/inventory/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/dashboard/inventory/page.js.backup-1754934802375"
+    },
+    {
+      "success": true,
+      "filePath": "app/customers/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/customers/page.js.backup-1754934802375"
+    },
+    {
+      "success": true,
+      "filePath": "app/bookings/[id]/page.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        },
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/bookings/[id]/page.js.backup-1754934802376"
+    },
+    {
+      "success": true,
+      "filePath": "app/bookings/[id]/success/page.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        },
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/bookings/[id]/success/page.js.backup-1754934802377"
+    },
+    {
+      "success": true,
+      "filePath": "app/book/page.js",
+      "replacements": [
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/book/page.js.backup-1754934802378"
+    },
+    {
+      "success": true,
+      "filePath": "app/book/[barberId]/page.js",
+      "replacements": [
+        {
+          "description": "Update mock data comments",
+          "count": 1
+        },
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 2
+        }
+      ],
+      "backupPath": "app/book/[barberId]/page.js.backup-1754934802378"
+    },
+    {
+      "success": true,
+      "filePath": "app/book/[barberId]/layout.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/book/[barberId]/layout.js.backup-1754934802379"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/waitlist/matches/route.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/waitlist/matches/route.js.backup-1754934802380"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/services/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/services/route.js.backup-1754934802383"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/realtime/metrics/route.js",
+      "replacements": [
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/realtime/metrics/route.js.backup-1754934802384"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/cancellations/process/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/cancellations/process/route.js.backup-1754934802390"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/calendar/sync/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/calendar/sync/route.js.backup-1754934802391"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/calendar/settings/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/calendar/settings/route.js.backup-1754934802391"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/calendar/outlook/auth/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/calendar/outlook/auth/route.js.backup-1754934802392"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/calendar/google/auth/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/calendar/google/auth/route.js.backup-1754934802392"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/calendar/accounts/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/calendar/accounts/route.js.backup-1754934802393"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/billing/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 3
+        }
+      ],
+      "backupPath": "app/api/billing/route.js.backup-1754934802395"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/barbers/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/barbers/route.js.backup-1754934802395"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/appointments/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/appointments/route.js.backup-1754934802397"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/ai/scheduling/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 4
+        }
+      ],
+      "backupPath": "app/api/ai/scheduling/route.js.backup-1754934802400"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/ai/scheduling/optimization/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 3
+        }
+      ],
+      "backupPath": "app/api/ai/scheduling/optimization/route.js.backup-1754934802401"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/ai/scheduling/analytics/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 2
+        }
+      ],
+      "backupPath": "app/api/ai/scheduling/analytics/route.js.backup-1754934802401"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/ai/predictive-analytics/route.js",
+      "replacements": [
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/ai/predictive-analytics/route.js.backup-1754934802402"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/ai/predictive/route.js",
+      "replacements": [
+        {
+          "description": "Replace mock generators with database fetchers",
+          "count": 2
+        },
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/ai/predictive/route.js.backup-1754934802402"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/ai/analytics/usage/route.js",
+      "replacements": [
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/ai/analytics/usage/route.js.backup-1754934802404"
+    },
+    {
+      "success": true,
+      "filePath": "app/api/admin/knowledge/entries/route.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/api/admin/knowledge/entries/route.js.backup-1754934802406"
+    },
+    {
+      "success": true,
+      "filePath": "app/(protected)/shop/barbers/add/page.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/(protected)/shop/barbers/add/page.js.backup-1754934802409"
+    },
+    {
+      "success": true,
+      "filePath": "app/(protected)/settings/page.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/(protected)/settings/page.js.backup-1754934802410"
+    },
+    {
+      "success": true,
+      "filePath": "app/(protected)/dashboard/settings/page.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/(protected)/dashboard/settings/page.js.backup-1754934802412"
+    },
+    {
+      "success": true,
+      "filePath": "app/(protected)/dashboard/leaderboard-gamified/page.js",
+      "replacements": [
+        {
+          "description": "Update mock data comments",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/(protected)/dashboard/leaderboard-gamified/page.js.backup-1754934802414"
+    },
+    {
+      "success": true,
+      "filePath": "app/(protected)/dashboard/customers/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/(protected)/dashboard/customers/page.js.backup-1754934802416"
+    },
+    {
+      "success": true,
+      "filePath": "app/(protected)/dashboard/calendar/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/(protected)/dashboard/calendar/page.js.backup-1754934802418"
+    },
+    {
+      "success": true,
+      "filePath": "app/(protected)/dashboard/alerts/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 2
+        }
+      ],
+      "backupPath": "app/(protected)/dashboard/alerts/page.js.backup-1754934802420"
+    },
+    {
+      "success": true,
+      "filePath": "app/(protected)/barber/clients/page.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "app/(protected)/barber/clients/page.js.backup-1754934802422"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/utils/test-helpers.js",
+      "replacements": [
+        {
+          "description": "Replace Test User with database test user",
+          "count": 1
+        },
+        {
+          "description": "Update mock data JSDoc comments",
+          "count": 10
+        },
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 6
+        }
+      ],
+      "backupPath": "__tests__/utils/test-helpers.js.backup-1754934802424"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/utils/test-factories.js",
+      "replacements": [
+        {
+          "description": "Update mock data JSDoc comments",
+          "count": 1
+        }
+      ],
+      "backupPath": "__tests__/utils/test-factories.js.backup-1754934802424"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/security/config/security-config.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        }
+      ],
+      "backupPath": "__tests__/security/config/security-config.js.backup-1754934802428"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/performance/performance.test.js",
+      "replacements": [
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 2
+        }
+      ],
+      "backupPath": "__tests__/performance/performance.test.js.backup-1754934802429"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/integration/database_operations.test.js",
+      "replacements": [
+        {
+          "description": "Replace Test User with database test user",
+          "count": 1
+        },
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 3
+        }
+      ],
+      "backupPath": "__tests__/integration/database_operations.test.js.backup-1754934802430"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/e2e/critical_user_workflows.spec.js",
+      "replacements": [
+        {
+          "description": "Replace John Doe with database user",
+          "count": 1
+        },
+        {
+          "description": "Update mock data JSDoc comments",
+          "count": 1
+        }
+      ],
+      "backupPath": "__tests__/e2e/critical_user_workflows.spec.js.backup-1754934802431"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/components/ui/OptimizedCharts.test.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 6
+        },
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 1
+        }
+      ],
+      "backupPath": "__tests__/components/ui/OptimizedCharts.test.js.backup-1754934802431"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/components/dashboard/MainDashboard.test.js",
+      "replacements": [
+        {
+          "description": "Replace Test User with database test user",
+          "count": 1
+        },
+        {
+          "description": "Update mock data JSDoc comments",
+          "count": 1
+        },
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 2
+        }
+      ],
+      "backupPath": "__tests__/components/dashboard/MainDashboard.test.js.backup-1754934802432"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/api/integrations.test.js",
+      "replacements": [
+        {
+          "description": "Update mock data comments",
+          "count": 1
+        },
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 1
+        }
+      ],
+      "backupPath": "__tests__/api/integrations.test.js.backup-1754934802433"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/api/auth.test.js",
+      "replacements": [
+        {
+          "description": "Replace Test User with database test user",
+          "count": 2
+        },
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 2
+        },
+        {
+          "description": "Replace Array.from generators with database fetches",
+          "count": 1
+        }
+      ],
+      "backupPath": "__tests__/api/auth.test.js.backup-1754934802433"
+    },
+    {
+      "success": true,
+      "filePath": "__tests__/api/agents.test.js",
+      "replacements": [
+        {
+          "description": "Remove mock prefix from const declarations",
+          "count": 4
+        }
+      ],
+      "backupPath": "__tests__/api/agents.test.js.backup-1754934802434"
+    }
+  ]
+}

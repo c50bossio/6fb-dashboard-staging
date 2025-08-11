@@ -260,7 +260,7 @@ function transformBookingToEvent(booking) {
   const event = {
     id: booking.id,
     resourceId: booking.barber_id,
-    title: `${booking.customer_name || 'Customer'} - ${booking.service_type || 'Service'}`,
+    title: `${booking.customer_name || 'Customer'} - ${booking.service_type || 'Unknown Service'}`,
     start: booking.start_time,
     end: booking.end_time,
     backgroundColor: '#3b82f6',

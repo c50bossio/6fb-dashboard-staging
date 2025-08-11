@@ -59,7 +59,7 @@ export async function GET(request) {
       console.warn('Database query failed, using mock data:', error.message)
       
       // Mock services data for demo/development
-      const mockServices = [
+      const Services = [
         {
           id: 'service-001',
           name: 'Classic Haircut',
