@@ -4,13 +4,18 @@ import {
   SparklesIcon, 
   XMarkIcon, 
   PaperAirplaneIcon,
-  ChatBubbleLeftRightIcon 
+  ChatBubbleLeftRightIcon,
+  ArrowsPointingOutIcon
 } from '@heroicons/react/24/outline'
 import { useState, useRef, useEffect } from 'react'
 
 export default function FloatingAIChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState('')
+  const [position, setPosition] = useState('bottom-right') // bottom-right, bottom-left, top-right, top-left
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const widgetRef = useRef(null)
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -24,14 +29,20 @@ export default function FloatingAIChat() {
   const [sessionId, setSessionId] = useState(null)
   const messagesEndRef = useRef(null)
 
-  // Initialize persistent session ID (same as main chat)
+  // Initialize persistent session ID and position
   useEffect(() => {
     let existingSession = null
+    let savedPosition = 'bottom-right'
+    
     try {
       existingSession = localStorage.getItem('ai_chat_session_id')
+      savedPosition = localStorage.getItem('ai_chat_widget_position') || 'bottom-right'
     } catch (e) {
       console.warn('LocalStorage not available')
     }
+    
+    // Set saved position
+    setPosition(savedPosition)
     
     if (existingSession) {
       setSessionId(existingSession)
@@ -53,6 +64,106 @@ export default function FloatingAIChat() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // Position utilities
+  const getPositionClasses = (pos) => {
+    switch(pos) {
+      case 'top-left':
+        return 'top-6 left-6'
+      case 'top-right':
+        return 'top-6 right-6'
+      case 'bottom-left':
+        return 'bottom-6 left-6'
+      case 'bottom-right':
+      default:
+        return 'bottom-6 right-6'
+    }
+  }
+
+  const savePosition = (newPosition) => {
+    setPosition(newPosition)
+    try {
+      localStorage.setItem('ai_chat_widget_position', newPosition)
+    } catch (e) {
+      console.warn('Could not save widget position to localStorage')
+    }
+  }
+
+  // Drag handling
+  const handleMouseDown = (e) => {
+    if (e.target.closest('.drag-handle')) {
+      setIsDragging(true)
+      const rect = widgetRef.current?.getBoundingClientRect()
+      if (rect) {
+        setDragOffset({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        })
+      }
+      e.preventDefault()
+    }
+  }
+
+  const handleMouseMove = (e) => {
+    if (isDragging && widgetRef.current) {
+      const x = e.clientX - dragOffset.x
+      const y = e.clientY - dragOffset.y
+      
+      widgetRef.current.style.left = `${x}px`
+      widgetRef.current.style.top = `${y}px`
+      widgetRef.current.style.right = 'auto'
+      widgetRef.current.style.bottom = 'auto'
+    }
+  }
+
+  const handleMouseUp = (e) => {
+    if (isDragging) {
+      setIsDragging(false)
+      
+      // Snap to nearest corner
+      const windowWidth = window.innerWidth
+      const windowHeight = window.innerHeight
+      const rect = widgetRef.current?.getBoundingClientRect()
+      
+      if (rect) {
+        const centerX = rect.left + rect.width / 2
+        const centerY = rect.top + rect.height / 2
+        
+        let newPosition = 'bottom-right'
+        
+        if (centerX < windowWidth / 2 && centerY < windowHeight / 2) {
+          newPosition = 'top-left'
+        } else if (centerX >= windowWidth / 2 && centerY < windowHeight / 2) {
+          newPosition = 'top-right'
+        } else if (centerX < windowWidth / 2 && centerY >= windowHeight / 2) {
+          newPosition = 'bottom-left'
+        } else {
+          newPosition = 'bottom-right'
+        }
+        
+        savePosition(newPosition)
+        
+        // Reset inline styles to use CSS classes
+        widgetRef.current.style.left = ''
+        widgetRef.current.style.top = ''
+        widgetRef.current.style.right = ''
+        widgetRef.current.style.bottom = ''
+      }
+    }
+  }
+
+  // Add event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+  }, [isDragging, dragOffset])
 
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading || !sessionId) return
@@ -189,14 +300,29 @@ export default function FloatingAIChat() {
       {/* Floating Chat Button */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-amber-600 hover:bg-amber-700 text-white rounded-full p-4 shadow-lg transition-all duration-200 z-40 group"
+          ref={widgetRef}
+          onMouseDown={handleMouseDown}
+          onClick={(e) => {
+            if (!isDragging) setIsOpen(true)
+          }}
+          className={`fixed ${getPositionClasses(position)} bg-amber-600 hover:bg-amber-700 text-white rounded-full p-4 shadow-lg transition-all duration-200 z-40 group ${isDragging ? 'cursor-move' : 'cursor-pointer'}`}
         >
           <SparklesIcon className="h-6 w-6" />
           <div className="absolute -top-2 -left-2 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-pulse">
             AI
           </div>
-          <div className="absolute right-16 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+          
+          {/* Drag handle indicator */}
+          <div className="drag-handle absolute -top-1 -right-1 bg-gray-300 hover:bg-gray-400 text-gray-600 rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-move">
+            <ArrowsPointingOutIcon className="h-2 w-2" />
+          </div>
+          
+          {/* Tooltip - position based on corner */}
+          <div className={`absolute bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none ${
+            position.includes('right') ? 'right-16' : 'left-16'
+          } ${
+            position.includes('top') ? 'top-1/2 transform -translate-y-1/2' : 'top-1/2 transform -translate-y-1/2'
+          }`}>
             Chat with AI Assistant
           </div>
         </button>
@@ -204,7 +330,7 @@ export default function FloatingAIChat() {
 
       {/* Chat Widget */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-80 h-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 flex flex-col">
+        <div className={`fixed ${getPositionClasses(position)} w-80 h-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 flex flex-col`}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-t-xl">
             <div className="flex items-center space-x-2">
@@ -309,11 +435,11 @@ export default function FloatingAIChat() {
             </div>
             <div className="mt-2 text-center">
               <button 
-                onClick={() => window.location.href = '/ai-agents'}
+                onClick={() => window.location.href = '/dashboard/ai-command-center'}
                 className="text-xs text-amber-600 hover:text-amber-700 flex items-center justify-center space-x-1"
               >
                 <ChatBubbleLeftRightIcon className="h-3 w-3" />
-                <span>Open Full AI Chat</span>
+                <span>Open AI Command Center</span>
               </button>
             </div>
           </div>

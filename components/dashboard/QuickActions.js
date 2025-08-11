@@ -28,9 +28,9 @@ const FallbackIcon = ({ className }) => (
 export default function QuickActions({ profile }) {
   const primaryActions = [
     {
-      title: 'AI Chat Assistant',
+      title: 'AI Command Center',
       description: 'Start a conversation with your AI business coach',
-      href: '/dashboard/chat',
+      href: '/dashboard/ai-command-center',
       icon: ChatBubbleLeftRightIcon,
       color: 'purple',
       badge: 'Most Popular',
