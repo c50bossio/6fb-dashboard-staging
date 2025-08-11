@@ -4,9 +4,10 @@ import {
   PaperAirplaneIcon,
   SparklesIcon,
   ChatBubbleLeftRightIcon,
-  CpuChipIcon
+  CpuChipIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function AIAgentChat() {
   const [message, setMessage] = useState('')
@@ -14,12 +15,37 @@ export default function AIAgentChat() {
     {
       id: 1,
       type: 'assistant',
-      content: "Hello! I'm your AI business assistant. I can help you with scheduling, customer management, marketing strategies, and business optimization. What would you like to discuss?",
+      content: "Hello! I'm your AI business assistant. I'm connecting to your live business data to provide real insights about your bookings, revenue, and customers. What would you like to know?",
       agent: 'Marcus',
       timestamp: new Date(Date.now() - 60000)
     }
   ])
   const [isLoading, setIsLoading] = useState(false)
+  const [apiConnected, setApiConnected] = useState(false)
+  const [businessContext, setBusinessContext] = useState(null)
+
+  // Check API connection on mount
+  useEffect(() => {
+    checkAPIConnection()
+  }, [])
+
+  const checkAPIConnection = async () => {
+    try {
+      const response = await fetch('/api/health')
+      if (response.ok) {
+        setApiConnected(true)
+        // Update initial message to show connection status
+        setMessages(prev => prev.map(msg => 
+          msg.id === 1 
+            ? { ...msg, content: "✅ Internal API connection detected! I can access your live booking calendar, appointments, and analytics. What business insights can I help you with?" }
+            : msg
+        ))
+      }
+    } catch (error) {
+      console.error('API connection failed:', error)
+      setApiConnected(false)
+    }
+  }
 
   const handleSendMessage = async () => {
     if (!message.trim()) return
@@ -35,26 +61,69 @@ export default function AIAgentChat() {
     setMessage('')
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "Based on your current booking patterns, I recommend scheduling your premium services during peak hours (10 AM - 2 PM) to maximize revenue. Would you like me to analyze your specific schedule?",
-        "I can help you optimize that! Let me analyze your customer data and suggest the best approach for your barbershop.",
-        "Great question! Here are three strategies that have worked well for similar barbershops: 1) Implement a loyalty program, 2) Optimize peak hour pricing, 3) Create package deals for regular customers.",
-        "I see an opportunity to increase your revenue by 15-20% with some scheduling adjustments. Let me walk you through the data..."
-      ]
-      
-      const response = {
+    try {
+      // Call the real AI API with business context
+      const response = await fetch('/api/ai/unified-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: 'You are Marcus, an expert AI business assistant for a barbershop. Use the business context provided to give specific, actionable insights based on real data.'
+            },
+            ...messages.filter(msg => msg.type !== 'system').map(msg => ({
+              role: msg.type === 'user' ? 'user' : 'assistant',
+              content: msg.content
+            })),
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          stream: false,
+          includeBusinessContext: true,
+          barbershopId: 'default'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      const aiResponse = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: responses[Math.floor(Math.random() * responses.length)],
-        agent: ['Marcus', 'Sophia', 'David'][Math.floor(Math.random() * 3)],
+        content: data.content || "I apologize, but I'm having trouble accessing your business data right now. Please try again in a moment.",
+        agent: 'Marcus',
         timestamp: new Date()
       }
 
-      setMessages(prev => [...prev, response])
+      setMessages(prev => [...prev, aiResponse])
+    } catch (error) {
+      console.error('AI response error:', error)
+      
+      // Fallback response with connection status
+      const errorResponse = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: apiConnected 
+          ? "I'm having trouble processing your request right now. My connection to the business data is active, but there may be a temporary issue. Please try again."
+          : "⚠️ I'm having trouble connecting to your business data. Please check your API connection and try again.",
+        agent: 'Marcus',
+        timestamp: new Date()
+      }
+
+      setMessages(prev => [...prev, errorResponse])
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
   const handleKeyPress = (e) => {

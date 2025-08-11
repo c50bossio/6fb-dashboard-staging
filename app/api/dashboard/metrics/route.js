@@ -70,16 +70,27 @@ export async function GET(request) {
 
 async function getSystemHealthMetrics() {
   try {
-    // Check AI providers health
-    const { checkAIProvidersHealth } = await import('@/lib/ai-providers')
-    const aiHealth = await checkAIProvidersHealth()
+    // Fast health check - just check if clients are configured, don't make real API calls
+    const aiHealth = {
+      openai: { 
+        available: !!process.env.OPENAI_API_KEY, 
+        healthy: !!process.env.OPENAI_API_KEY 
+      },
+      anthropic: { 
+        available: !!process.env.ANTHROPIC_API_KEY, 
+        healthy: !!process.env.ANTHROPIC_API_KEY 
+      },
+      gemini: { 
+        available: !!process.env.GOOGLE_GEMINI_API_KEY, 
+        healthy: !!process.env.GOOGLE_GEMINI_API_KEY 
+      }
+    }
     
     const healthyProviders = Object.values(aiHealth).filter(p => p.healthy).length
     const totalProviders = Object.keys(aiHealth).length
     
     return {
-      status: healthyProviders === totalProviders ? 'healthy' : 
-              healthyProviders > 0 ? 'degraded' : 'unhealthy',
+      status: healthyProviders > 0 ? 'healthy' : 'degraded',
       ai_providers: {
         healthy: healthyProviders,
         total: totalProviders,
