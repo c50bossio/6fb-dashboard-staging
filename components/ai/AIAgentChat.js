@@ -84,7 +84,7 @@ export default function AIAgentChat() {
             }
           ],
           provider: 'openai',
-          model: 'gpt-4o-mini',
+          model: 'gpt-4o',
           stream: false,
           includeBusinessContext: true,
           barbershopId: 'demo-shop-001'

@@ -578,7 +578,7 @@ function AICommandCenter() {
   const [retryCount, setRetryCount] = useState(0)
   const [lastFailedMessage, setLastFailedMessage] = useState(null)
   const [modelConfig, setModelConfig] = useState({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     provider: 'openai'
   })
   const messagesEndRef = useRef(null)

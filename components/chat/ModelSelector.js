@@ -5,15 +5,15 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { Fragment } from 'react'
 
 const models = [
-  // Recommended Model (Cost-Effective + High Performance)
-  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', description: '🏆 RECOMMENDED: Best cost-performance balance for business operations', recommended: true },
+  // Recommended Model (High Performance + Reasonable Cost)
+  { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', description: '🏆 RECOMMENDED: Premium performance with multimodal capabilities', recommended: true },
   
   // OpenAI Models (Latest 2 Generations)
   { id: 'o3', name: 'OpenAI o3', provider: 'openai', description: 'Smartest reasoning model - pushes frontier in coding, math, science (Jan 2025)' },
   { id: 'o4-mini', name: 'OpenAI o4-mini', provider: 'openai', description: 'Fast, cost-efficient reasoning model - best on AIME 2024/2025' },
   { id: 'gpt-4.1', name: 'GPT-4.1', provider: 'openai', description: 'Specialized model that excels at coding tasks (2025)' },
   { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', provider: 'openai', description: 'Fast, capable model - significant improvements over GPT-4o mini' },
-  { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', description: 'Latest multimodal GPT-4 (Dec 2024)' },
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', description: 'Budget-friendly option for simple tasks' },
   
   // Anthropic Models (Latest 2 Generations)
   { id: 'claude-opus-4', name: 'Claude Opus 4', provider: 'anthropic', description: 'Most advanced Claude model with superior reasoning and analysis (May 2025)' },
