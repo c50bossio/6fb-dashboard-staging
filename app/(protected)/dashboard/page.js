@@ -22,11 +22,11 @@ export default function BarbershopDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Good {timeOfDay}, {user?.user_metadata?.full_name || 'Demo User'}!</h1>
-              <p className="text-amber-100 text-lg">6FB Barbershop Intelligence Platform</p>
+              <h1 className="text-xl font-bold">Good {timeOfDay}, {user?.user_metadata?.full_name || 'Demo User'}!</h1>
+              <p className="text-amber-100 text-sm">6FB Barbershop Intelligence Platform</p>
             </div>
           </div>
         </div>
