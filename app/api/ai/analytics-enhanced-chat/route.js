@@ -318,27 +318,27 @@ function generateContextAwareResponse(messageType, message, analyticsData, conve
   
   const responses = {
     financial: analyticsData 
-      ? `Based on your current business metrics:\n\n${analyticsData}\n\n**PRICING STRATEGY RECOMMENDATIONS:**\n\n💰 **Premium Service Pricing:**\n• Position premium services 40-60% above standard cuts\n• Current average: $68.5 - Consider premium tiers at $95-120\n• Bundle premium cuts with additional services (hot towel, beard trim, styling)\n\n🎯 **Value-Based Pricing:**\n• Highlight expertise and experience in premium pricing\n• Create service tiers: Classic ($50-65), Premium ($75-95), VIP ($100-140)\n• Add exclusive amenities for higher tiers\n\n📈 **Revenue Optimization:**\n• Implement dynamic pricing for peak hours (Friday/Saturday +15%)\n• Package deals encourage higher spending\n• Member pricing creates loyalty and predictable revenue\n\nWhat specific pricing challenge would you like to address?`
+      ? `Based on your current business metrics:\n\n${typeof analyticsData === 'object' ? JSON.stringify(analyticsData, null, 2) : analyticsData}\n\n**PRICING STRATEGY RECOMMENDATIONS:**\n\n💰 **Premium Service Pricing:**\n• Position premium services 40-60% above standard cuts\n• Current average: $68.5 - Consider premium tiers at $95-120\n• Bundle premium cuts with additional services (hot towel, beard trim, styling)\n\n🎯 **Value-Based Pricing:**\n• Highlight expertise and experience in premium pricing\n• Create service tiers: Classic ($50-65), Premium ($75-95), VIP ($100-140)\n• Add exclusive amenities for higher tiers\n\n📈 **Revenue Optimization:**\n• Implement dynamic pricing for peak hours (Friday/Saturday +15%)\n• Package deals encourage higher spending\n• Member pricing creates loyalty and predictable revenue\n\nWhat specific pricing challenge would you like to address?`
       : "For premium service pricing, I recommend:\n\n**PRICING STRATEGY FRAMEWORK:**\n\n💰 **Tiered Service Menu:**\n• Classic Cut: Base price\n• Premium Cut: +40-50% (includes consultation, premium products)\n• VIP Experience: +80-100% (includes all premium services + exclusive amenities)\n\n🎯 **Value Justification:**\n• Highlight your expertise and years of experience\n• Use premium products and tools\n• Provide exceptional service experience\n• Create exclusive atmosphere for premium clients\n\n📈 **Implementation Tips:**\n• Start with 20% price increase, monitor customer response\n• Bundle services to increase perceived value\n• Offer member/loyalty discounts to retain customers\n• Use peak-hour pricing for busy times\n\nWhat specific pricing challenge are you facing?",
     
     scheduling: analyticsData
-      ? `Looking at your booking patterns:\n\n${analyticsData}\n\nI can help you optimize your scheduling system. What scheduling challenge would you like to address?`
+      ? `Looking at your booking patterns:\n\n${typeof analyticsData === 'object' ? JSON.stringify(analyticsData, null, 2) : analyticsData}\n\nI can help you optimize your scheduling system. What scheduling challenge would you like to address?`
       : "For scheduling optimization, consider implementing online booking, analyzing peak hours, and setting up automated reminders to reduce no-shows.",
     
     customer_service: analyticsData
-      ? `Here's what your customer data shows:\n\n${analyticsData}\n\nThere are several opportunities to improve customer satisfaction and retention. What area interests you most?`
+      ? `Here's what your customer data shows:\n\n${typeof analyticsData === 'object' ? JSON.stringify(analyticsData, null, 2) : analyticsData}\n\nThere are several opportunities to improve customer satisfaction and retention. What area interests you most?`
       : "Focus on customer retention by implementing a loyalty program, collecting feedback after each service, and personalizing the experience based on customer preferences.",
     
     business_analysis: analyticsData
-      ? `Here are your current business metrics:\n\n${analyticsData}\n\nWhat specific area would you like to analyze further or improve?`
+      ? `Here are your current business metrics:\n\n${typeof analyticsData === 'object' ? JSON.stringify(analyticsData, null, 2) : analyticsData}\n\nWhat specific area would you like to analyze further or improve?`
       : "I can help analyze your business performance across multiple dimensions. What specific metrics or areas would you like to examine?",
     
     marketing: analyticsData
-      ? `Based on your business performance:\n\n${analyticsData}\n\nI can suggest targeted marketing strategies to drive growth. What marketing goals do you have?`
+      ? `Based on your business performance:\n\n${typeof analyticsData === 'object' ? JSON.stringify(analyticsData, null, 2) : analyticsData}\n\nI can suggest targeted marketing strategies to drive growth. What marketing goals do you have?`
       : "For marketing success, focus on social media engagement, local SEO, customer reviews, and referral programs. What marketing challenge can I help with?",
     
     general: analyticsData
-      ? `Here's an overview of your business:\n\n${analyticsData}\n\nI'm here to help you optimize any aspect of your operations. What would you like to work on?`
+      ? `Here's an overview of your business:\n\n${typeof analyticsData === 'object' ? JSON.stringify(analyticsData, null, 2) : analyticsData}\n\nI'm here to help you optimize any aspect of your operations. What would you like to work on?`
       : "I'm your AI business coach, ready to help optimize your barbershop operations. What specific challenge or opportunity would you like to discuss?"
   };
   
