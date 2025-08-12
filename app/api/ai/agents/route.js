@@ -218,7 +218,7 @@ INSTRUCTIONS:
 Respond as ${agent.name} with data-driven insights that reference the actual analytics and conversation history. Be specific about numbers, percentages, and financial impact. Match your ${agent.personality} while being analytical and precise.`
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-5',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: options.message }
@@ -293,7 +293,7 @@ Business Context: ${JSON.stringify(options.businessContext)}
 Respond as ${agent.name} with specific advice, recommendations, and action items.`
 
       const response = await anthropic.messages.create({
-        model: 'claude-3-sonnet-20240229',
+        model: 'claude-opus-4-1-20250805',
         max_tokens: 1000,
         messages: [
           { role: 'user', content: `${systemPrompt}\n\nUser Question: ${options.message}` }
@@ -392,7 +392,7 @@ Be data-driven and reference specific analytics. Keep your response focused and 
 Include 1-2 specific recommendations with estimated impact.`
 
       const response = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-5',
         messages: [{ role: 'user', content: agentPrompt }],
         temperature: 0.7,
         max_tokens: 600
@@ -442,7 +442,7 @@ INSTRUCTIONS:
 Respond as the Master Coach coordinating this expert team consultation with full awareness of past interactions.`
 
     const masterResponse = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-5',
       messages: [{ role: 'user', content: masterPrompt }],
       temperature: 0.6,
       max_tokens: 1000
@@ -561,7 +561,7 @@ INSTRUCTIONS:
 Respond as ${agent.name} with data-driven insights that reference the actual analytics. Be specific about numbers, percentages, and financial impact. Match your ${agent.personality} while being analytical and precise.`
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4',
+    model: 'gpt-5',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: options.message }

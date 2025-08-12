@@ -24,6 +24,32 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from services.notification_service import notification_service
 from services.notification_queue import notification_queue
+
+# AI Model Configuration - Updated August 2025
+AI_MODELS = {
+    "openai": {
+        "default": "gpt-5",
+        "models": {
+            "gpt-5": {"name": "GPT-5", "description": "Most capable model", "cost": "premium"},
+            "gpt-5-mini": {"name": "GPT-5 Mini", "description": "Faster, cheaper", "cost": "standard"},
+            "gpt-5-nano": {"name": "GPT-5 Nano", "description": "Lightweight", "cost": "budget"}
+        }
+    },
+    "anthropic": {
+        "default": "claude-opus-4-1-20250805",
+        "models": {
+            "claude-opus-4-1-20250805": {"name": "Claude Opus 4.1", "description": "Best for coding", "cost": "premium"}
+        }
+    },
+    "google": {
+        "default": "gemini-2.0-flash-exp",
+        "models": {
+            "gemini-2.0-flash-exp": {"name": "Gemini 2.0 Flash", "description": "Cost-effective", "cost": "budget"}
+        }
+    }
+}
+
+DEFAULT_AI_MODEL = "gpt-5"  # Default to GPT-5 as recommended model
 from services.database_connection_pool import (
     initialize_connection_pool, 
     get_db_connection, 
@@ -1005,6 +1031,35 @@ async def health_check():
         "rag_engine": "active",
         "database": {"healthy": True, "type": "sqlite"},
         "learning_enabled": True,
+        "timestamp": datetime.now().isoformat()
+    }
+
+# AI Model Management Endpoints
+@app.get("/api/v1/ai/models")
+async def get_available_models():
+    """Get all available AI models with their configurations"""
+    return {
+        "models": AI_MODELS,
+        "default_model": DEFAULT_AI_MODEL,
+        "recommendations": {
+            "general": "gpt-5",
+            "coding": "claude-opus-4-1-20250805",
+            "fast": "gpt-5-mini",
+            "budget": "gemini-2.0-flash-exp"
+        },
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/api/v1/ai/models/{provider}")
+async def get_provider_models(provider: str):
+    """Get models for a specific AI provider"""
+    if provider not in AI_MODELS:
+        raise HTTPException(status_code=404, detail=f"Provider {provider} not found")
+    
+    return {
+        "provider": provider,
+        "models": AI_MODELS[provider]["models"],
+        "default": AI_MODELS[provider]["default"],
         "timestamp": datetime.now().isoformat()
     }
 

@@ -237,7 +237,7 @@ class AIBookingIntelligence:
         try:
             response = await asyncio.to_thread(
                 self.anthropic_client.messages.create,
-                model="claude-3-sonnet-20240229",
+                model="claude-opus-4-1-20250805",
                 max_tokens=1000,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -257,7 +257,7 @@ class AIBookingIntelligence:
                     reasoning=rec_data.get('reasoning', ''),
                     confidence_score=rec_data.get('confidence_score', 0.7),
                     suggested_actions=rec_data.get('suggested_actions', []),
-                    ai_model_used="claude-3-sonnet",
+                    ai_model_used="claude-opus-4.1",
                     generated_at=datetime.now().isoformat()
                 )
                 recommendations.append(rec)
@@ -298,7 +298,7 @@ class AIBookingIntelligence:
         try:
             response = await asyncio.to_thread(
                 self.openai_client.ChatCompletion.create,
-                model="gpt-4",
+                model="gpt-5",
                 messages=[
                     {"role": "system", "content": "You are an expert AI booking intelligence system specializing in personalized barbershop recommendations."},
                     {"role": "user", "content": prompt}
@@ -322,7 +322,7 @@ class AIBookingIntelligence:
                     reasoning=rec_data.get('reasoning', ''),
                     confidence_score=rec_data.get('confidence_score', 0.7),
                     suggested_actions=rec_data.get('suggested_actions', []),
-                    ai_model_used="gpt-4",
+                    ai_model_used="gpt-5",
                     generated_at=datetime.now().isoformat()
                 )
                 recommendations.append(rec)
@@ -365,7 +365,7 @@ class AIBookingIntelligence:
         try:
             response = await asyncio.to_thread(
                 self.anthropic_client.messages.create,
-                model="claude-3-sonnet-20240229",
+                model="claude-opus-4-1-20250805",
                 max_tokens=800,
                 messages=[{"role": "user", "content": prompt}]
             )
@@ -383,7 +383,7 @@ class AIBookingIntelligence:
                     actionable_recommendations=insight_data.get('actionable_recommendations', []),
                     confidence_score=insight_data.get('confidence_score', 0.7),
                     supporting_data=insight_data.get('supporting_data', {}),
-                    ai_model_used="claude-3-sonnet",
+                    ai_model_used="claude-opus-4.1",
                     generated_at=datetime.now().isoformat()
                 )
                 insights.append(insight)

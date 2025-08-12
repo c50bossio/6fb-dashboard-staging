@@ -76,7 +76,7 @@ This prevents half-done features and ensures every implementation provides immed
 - **API**: Next.js API Routes + FastAPI Python backend
 - **Database**: Supabase (PostgreSQL) for production, SQLite for development
 - **Authentication**: Supabase Auth with OAuth provider support
-- **AI Integration**: OpenAI GPT-4, Anthropic Claude, Google Gemini
+- **AI Integration**: OpenAI GPT-5 (Default), Anthropic Claude Opus 4.1, Google Gemini 2.0
 - **Payment Processing**: Stripe with subscription management
 - **Notifications**: Internal notification system
 - **Reviews**: Google My Business API integration (no internal review storage)
@@ -99,6 +99,34 @@ This prevents half-done features and ensures every implementation provides immed
 - **Tools**: 19+ database management and query tools
 
 **Claude Code**: Direct database access via `lib/supabase-query.js` utility (bypasses MCP tool limitations)
+
+## AI Model Configuration (Updated August 2025)
+
+### Available Models
+- **GPT-5** (OpenAI) - Default & Recommended
+  - Most capable model with advanced reasoning
+  - Best for complex business analysis and general queries
+  - Variants: GPT-5, GPT-5-mini (faster), GPT-5-nano (lightweight)
+  
+- **Claude Opus 4.1** (Anthropic) - Released August 5, 2025
+  - Superior for coding, technical analysis, and detailed research
+  - 74.5% on SWE-bench Verified (state-of-the-art coding performance)
+  - Best for software engineering and data analysis tasks
+  
+- **Gemini 2.0 Flash** (Google)
+  - Most cost-effective option
+  - Good balance of performance and price
+  - Suitable for high-volume, simple queries
+
+### Model Selection
+Users can select their preferred AI model through:
+1. Model selector dropdown in the AI chat interface
+2. API endpoint: `GET /api/v1/ai/models` (list all available models)
+3. Default model: GPT-5 (automatically selected for new sessions)
+
+### API Endpoints
+- `GET /api/v1/ai/models` - Get all available AI models
+- `GET /api/v1/ai/models/{provider}` - Get models for specific provider
 
 ## Common Development Commands
 

@@ -8,6 +8,7 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import ModelSelector from './ModelSelector'
 
 export default function AIAgentChat() {
   const [message, setMessage] = useState('')
@@ -23,6 +24,7 @@ export default function AIAgentChat() {
   const [isLoading, setIsLoading] = useState(false)
   const [apiConnected, setApiConnected] = useState(false)
   const [businessContext, setBusinessContext] = useState(null)
+  const [selectedModel, setSelectedModel] = useState('gpt-5')
 
   // Check API connection on mount
   useEffect(() => {
@@ -83,8 +85,8 @@ export default function AIAgentChat() {
               content: message
             }
           ],
-          provider: 'openai',
-          model: 'gpt-4o',
+          provider: selectedModel.startsWith('gpt') ? 'openai' : selectedModel.startsWith('claude') ? 'anthropic' : 'google',
+          model: selectedModel,
           stream: false,
           includeBusinessContext: true,
           barbershopId: 'demo-shop-001'
@@ -214,6 +216,15 @@ export default function AIAgentChat() {
 
       {/* Input */}
       <div className="p-4 border-t border-gray-200">
+        <div className="mb-3 flex justify-between items-center">
+          <ModelSelector 
+            selectedModel={selectedModel} 
+            onModelChange={setSelectedModel} 
+          />
+          <span className="text-xs text-gray-500">
+            {apiConnected ? '🟢 Connected' : '🔴 Offline'}
+          </span>
+        </div>
         <div className="flex space-x-3">
           <div className="flex-1">
             <textarea
