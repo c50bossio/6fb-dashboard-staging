@@ -11,7 +11,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { sendGridService } from './sendgrid-service.js';
+const { sendGridService } = require('./sendgrid-service.js');
 import { supabase } from '../../../lib/supabase';
 
 /**
