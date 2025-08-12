@@ -70,7 +70,62 @@ export async function GET(request) {
     }
     
     if (!shops || shops.length === 0) {
-      return NextResponse.json({ barbers: [] })
+      // Return mock barber data for development/demo
+      const mockBarbers = [
+        {
+          id: 'barber-alex-123',
+          user_id: 'barber-alex-123',
+          role: 'BARBER',
+          is_active: true,
+          commission_rate: 65.00,
+          bookings_today: 4,
+          revenue_today: 280,
+          rating: 4.9,
+          total_clients: 87,
+          users: {
+            id: 'barber-alex-123',
+            email: 'alex@elitecuts.com',
+            full_name: 'Alex Rodriguez',
+            avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'
+          }
+        },
+        {
+          id: 'barber-jamie-123',
+          user_id: 'barber-jamie-123',
+          role: 'BARBER',
+          is_active: true,
+          commission_rate: 68.00,
+          bookings_today: 3,
+          revenue_today: 225,
+          rating: 4.8,
+          total_clients: 64,
+          users: {
+            id: 'barber-jamie-123',
+            email: 'jamie@elitecuts.com',
+            full_name: 'Jamie Chen',
+            avatar_url: 'https://images.unsplash.com/photo-1494790108755-2616b332-111?w=150'
+          }
+        },
+        {
+          id: 'barber-mike-123',
+          user_id: 'barber-mike-123',
+          role: 'BARBER',
+          is_active: true,
+          commission_rate: 70.00,
+          bookings_today: 5,
+          revenue_today: 350,
+          rating: 4.9,
+          total_clients: 102,
+          users: {
+            id: 'barber-mike-123',
+            email: 'mike@elitecuts.com',
+            full_name: 'Mike Thompson',
+            avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
+          }
+        }
+      ]
+      
+      return NextResponse.json({ barbers: mockBarbers })
     }
     
     // Get all barbers from the user's shops

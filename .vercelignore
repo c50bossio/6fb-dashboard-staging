@@ -22,7 +22,16 @@ venv.bak
 README.md
 docs
 database/
-services/
+services-temporarily-disabled/
+data/
+*.db
+*.sqlite
+*.sqlite3
+chroma_db/
+marketing-system-test-report.json
+setup-marketing-database.js
+seed-shop-data.js
+test-marketing-*.js
 fastapi-server.py
 requirements.txt
 Procfile

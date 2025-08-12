@@ -66,17 +66,84 @@ export async function GET(request) {
       .single()
     
     if (!shop) {
-      // Return default metrics if no shop exists
+      // Return realistic mock metrics for development/demo
+      const today = new Date()
+      const currentHour = today.getHours()
+      const isBusinessHours = currentHour >= 9 && currentHour <= 19
+      const baseBookings = isBusinessHours ? Math.floor(currentHour / 2) : 6
+      
       return NextResponse.json({
-        totalRevenue: 0,
-        monthlyRevenue: 0,
-        totalBookings: 0,
-        todayBookings: 0,
-        activeBarbers: 0,
-        totalClients: 0,
-        avgRating: 0,
-        revenueChange: 0,
-        bookingsChange: 0
+        // Revenue metrics
+        totalRevenue: 145680,
+        monthlyRevenue: 18750,
+        todayRevenue: 1240,
+        weeklyRevenue: 4680,
+        revenueChange: 12.5,
+        
+        // Booking metrics
+        totalBookings: 892,
+        todayBookings: baseBookings,
+        weeklyBookings: 47,
+        monthlyBookings: 156,
+        bookingsChange: 8.3,
+        
+        // Staff metrics
+        activeBarbers: 3,
+        totalStaff: 4,
+        barbersWorking: isBusinessHours ? 2 : 0,
+        
+        // Customer metrics
+        totalClients: 247,
+        newClientsThisMonth: 23,
+        returningClients: 134,
+        clientRetentionRate: 78.5,
+        
+        // Rating & Reviews
+        avgRating: 4.8,
+        totalReviews: 89,
+        newReviewsThisWeek: 4,
+        ratingTrend: 0.2,
+        
+        // Today's schedule
+        appointmentsCompleted: Math.max(0, baseBookings - 2),
+        appointmentsUpcoming: isBusinessHours ? 3 : 0,
+        appointmentsCancelled: 1,
+        
+        // Financial breakdown
+        serviceRevenue: 16200,
+        productRevenue: 2550,
+        tipRevenue: 2840,
+        
+        // Commission breakdown
+        totalCommissions: 10150,
+        pendingPayouts: 2400,
+        completedPayouts: 18500,
+        
+        // Performance indicators
+        averageServiceTime: 42,
+        chairUtilization: 72.5,
+        averageTicketValue: 85.50,
+        
+        // Trends
+        trends: {
+          revenue: { value: 12.5, direction: 'up' },
+          bookings: { value: 8.3, direction: 'up' },
+          newClients: { value: 15.7, direction: 'up' },
+          rating: { value: 2.1, direction: 'up' }
+        },
+        
+        // Alerts
+        alerts: [
+          ...(currentHour === 9 ? [{ type: 'info', message: 'Shop opening time - 3 appointments scheduled' }] : []),
+          ...(baseBookings > 5 ? [{ type: 'success', message: 'Busy day - above average bookings!' }] : []),
+          ...(Math.random() > 0.7 ? [{ type: 'warning', message: 'Low inventory alert: Hair styling gel running low' }] : [])
+        ],
+        
+        // Real-time data
+        currentTime: today.toISOString(),
+        isOpen: isBusinessHours,
+        nextAppointment: isBusinessHours ? '2:30 PM - John Smith - Fade Cut' : 'Tomorrow 9:00 AM - Mike Johnson',
+        lastUpdate: today.toISOString()
       })
     }
     

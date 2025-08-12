@@ -84,27 +84,41 @@ export async function GET(request) {
     if (shopError) {
       console.error('Error fetching shop:', shopError)
       
-      // Return a default shop structure if no shop exists yet
+      // Return realistic mock shop data for development/demo
       return NextResponse.json({
-        id: null,
-        name: 'My Barbershop',
-        address: '',
-        city: '',
-        state: '',
-        zip_code: '',
-        phone: '',
-        email: user?.email || 'shop@example.com',
-        description: '',
+        id: 'elite-cuts-shop-123',
+        name: 'Elite Cuts Barbershop',
+        slug: 'elite-cuts',
+        address: '2547 Broadway Street',
+        city: 'San Francisco',
+        state: 'CA',
+        zip_code: '94115',
+        phone: '(415) 555-2847',
+        email: 'info@elitecuts.com',
+        website: 'https://elitecuts.com',
+        description: 'Premium barbershop experience with master barbers specializing in classic and modern cuts.',
+        logo_url: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=200',
+        cover_image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800',
         opening_hours: {
-          monday: { open: '9:00 AM', close: '6:00 PM' },
-          tuesday: { open: '9:00 AM', close: '6:00 PM' },
-          wednesday: { open: '9:00 AM', close: '6:00 PM' },
-          thursday: { open: '9:00 AM', close: '6:00 PM' },
-          friday: { open: '9:00 AM', close: '6:00 PM' },
-          saturday: { open: '9:00 AM', close: '4:00 PM' },
-          sunday: { open: 'Closed', close: 'Closed' }
+          monday: { open: '9:00 AM', close: '7:00 PM' },
+          tuesday: { open: '9:00 AM', close: '7:00 PM' },
+          wednesday: { open: '9:00 AM', close: '7:00 PM' },
+          thursday: { open: '9:00 AM', close: '8:00 PM' },
+          friday: { open: '9:00 AM', close: '8:00 PM' },
+          saturday: { open: '8:00 AM', close: '6:00 PM' },
+          sunday: { open: '10:00 AM', close: '5:00 PM' }
         },
-        is_active: true
+        social_links: {
+          instagram: '@elitecutssf',
+          facebook: 'elitecutssf',
+          twitter: '@elitecuts'
+        },
+        is_active: true,
+        total_clients: 247,
+        monthly_revenue: 18750,
+        rating: 4.8,
+        total_reviews: 89,
+        created_at: '2024-03-15T10:00:00Z'
       })
     }
     
