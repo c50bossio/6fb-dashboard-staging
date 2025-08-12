@@ -15,7 +15,7 @@
  */
 
 const sgMail = require('@sendgrid/mail');
-const { supabase } = require('../../../../lib/supabase');
+const { supabase } = require('../../../lib/supabase');
 const crypto = require('crypto');
 
 class SendGridEmailService {

@@ -320,18 +320,38 @@ export default function CampaignsPage() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Campaign Management</h1>
               <p className="text-gray-600">Create and manage your SMS and email marketing campaigns</p>
+              {marketingAccounts.length === 0 && (
+                <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <div className="flex items-center">
+                    <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+                    <span className="text-sm text-yellow-800">
+                      You need to set up a billing account before creating campaigns.
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex space-x-3">
               <button
                 onClick={() => handleCreateCampaign('email')}
-                className="btn-primary flex items-center space-x-2"
+                disabled={marketingAccounts.length === 0}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium ${
+                  marketingAccounts.length === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
                 <EnvelopeIcon className="h-4 w-4" />
                 <span>Email Campaign</span>
               </button>
               <button
                 onClick={() => handleCreateCampaign('sms')}
-                className="btn-primary flex items-center space-x-2"
+                disabled={marketingAccounts.length === 0}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium ${
+                  marketingAccounts.length === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
               >
                 <PhoneIcon className="h-4 w-4" />
                 <span>SMS Campaign</span>
@@ -339,49 +359,50 @@ export default function CampaignsPage() {
             </div>
           </div>
         </div>
+
         {/* Campaign Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="card">
+          <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center">
               <ChartBarIcon className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Campaigns</p>
-                <p className="text-2xl font-bold text-gray-900">{campaigns.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{campaignStats.totalCampaigns}</p>
               </div>
             </div>
           </div>
           
-          <div className="card">
+          <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center">
               <UserGroupIcon className="h-8 w-8 text-green-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Reach</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {campaigns.reduce((sum, c) => sum + (c.sentTo || 0), 0).toLocaleString()}
+                  {campaignStats.totalReach.toLocaleString()}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="card">
+          <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center">
               <EnvelopeIcon className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Email Campaigns</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {campaigns.filter(c => c.type === 'email').length}
+                  {campaignStats.emailCampaigns}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="card">
+          <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center">
               <PhoneIcon className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">SMS Campaigns</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {campaigns.filter(c => c.type === 'sms').length}
+                  {campaignStats.smsCampaigns}
                 </p>
               </div>
             </div>
@@ -389,159 +410,327 @@ export default function CampaignsPage() {
         </div>
 
         {/* Campaigns List */}
-        <div className="card">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Campaigns</h3>
-            <button onClick={handleExportReport} className="btn-secondary">
-              Export Report
-            </button>
-          </div>
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Recent Campaigns</h3>
+              <button 
+                onClick={handleExportReport}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Export Report
+              </button>
+            </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Campaign
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Sent To
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Performance
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {campaigns.map((campaign) => (
-                  <tr key={campaign.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{campaign.name}</div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">{campaign.message}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {campaign.type === 'email' ? (
-                          <EnvelopeIcon className="h-4 w-4 text-blue-600 mr-2" />
-                        ) : (
-                          <PhoneIcon className="h-4 w-4 text-green-600 mr-2" />
-                        )}
-                        <span className="text-sm text-gray-900 capitalize">{campaign.type}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        campaign.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        campaign.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {campaign.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {campaign.sentTo || 0}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {campaign.deliveryRate ? (
-                        <div>
-                          <div>Delivery: {campaign.deliveryRate}%</div>
-                          {campaign.openRate && <div>Open: {campaign.openRate}%</div>}
-                          {campaign.responseRate && <div>Response: {campaign.responseRate}%</div>}
-                        </div>
-                      ) : (
-                        'Pending'
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(campaign.createdAt || campaign.scheduledFor).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button 
-                        onClick={() => handleViewCampaign(campaign.id)}
-                        className="text-blue-600 hover:text-blue-900 flex items-center"
-                      >
-                        <EyeIcon className="h-4 w-4 mr-1" />
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {campaigns.length === 0 ? (
+              <div className="text-center py-12">
+                <EnvelopeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-sm font-medium text-gray-900 mb-2">No campaigns yet</h3>
+                <p className="text-sm text-gray-500">Get started by creating your first email or SMS campaign.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Campaign
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Audience
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Performance
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cost
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {campaigns.map((campaign) => (
+                      <tr key={campaign.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{campaign.name}</div>
+                            <div className="text-sm text-gray-500 truncate max-w-xs">
+                              {campaign.subject || campaign.message}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {campaign.type === 'email' ? (
+                              <EnvelopeIcon className="h-4 w-4 text-blue-600 mr-2" />
+                            ) : (
+                              <PhoneIcon className="h-4 w-4 text-green-600 mr-2" />
+                            )}
+                            <span className="text-sm text-gray-900 capitalize">{campaign.type}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(campaign.status)}`}>
+                            {campaign.status?.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div>
+                            <div>Count: {campaign.analytics?.total_sent || campaign.audience_count || 0}</div>
+                            <div className="text-xs text-gray-500">
+                              {campaign.audience_filters?.segment || 'all'} customers
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {campaign.analytics ? (
+                            <div>
+                              <div>Delivery: {campaign.analytics.delivery_rate || 0}%</div>
+                              {campaign.analytics.open_rate && (
+                                <div>Open: {campaign.analytics.open_rate}%</div>
+                              )}
+                              {campaign.analytics.click_rate && (
+                                <div>Click: {campaign.analytics.click_rate}%</div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-500">No data</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {campaign.estimated_cost ? formatCurrency(campaign.estimated_cost) : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(campaign.created_at || campaign.scheduled_at)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button 
+                            onClick={() => handleViewCampaign(campaign)}
+                            className="text-blue-600 hover:text-blue-900 flex items-center"
+                          >
+                            <EyeIcon className="h-4 w-4 mr-1" />
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Create Campaign Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
-              Create {selectedCampaignType.toUpperCase()} Campaign
-            </h3>
-            
-            <form onSubmit={(e) => {
-              e.preventDefault()
-              const formData = new FormData(e.target)
-              executeCampaign(
-                selectedCampaignType,
-                formData.get('message'),
-                formData.get('segment')
-              )
-            }}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Audience
-                </label>
-                <select name="segment" className="input-field" required>
-                  <option value="all">All Customers</option>
-                  <option value="vip">VIP Customers</option>
-                  <option value="regular">Regular Customers</option>
-                  <option value="new">New Customers</option>
-                  <option value="lapsed">Lapsed Customers</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message
-                </label>
-                <textarea
-                  name="message"
-                  rows="4"
-                  className="input-field"
-                  placeholder={`Enter your ${selectedCampaignType} message...`}
-                  required
-                />
-              </div>
-
-              <div className="flex justify-end space-x-3">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Create {selectedCampaignType.toUpperCase()} Campaign
+                </h3>
                 <button
-                  type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="btn-secondary"
+                  className="text-gray-400 hover:text-gray-600"
                 >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Launching...' : 'Launch Campaign'}
+                  <span className="sr-only">Close</span>
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
-            </form>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.target)
+                executeCampaign(formData)
+              }}>
+                {/* Billing Account Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <CreditCardIcon className="h-4 w-4 inline mr-1" />
+                    Billing Account *
+                  </label>
+                  <select 
+                    name="billing_account" 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Select billing account</option>
+                    {marketingAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.account_name} ({account.owner_type})
+                        {account.payment_methods?.[0] && ` - ****${account.payment_methods[0].card_last4}`}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Platform costs will be charged to the selected account with markup applied.
+                  </p>
+                </div>
+
+                {/* Campaign Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Campaign Name
+                    </label>
+                    <input
+                      type="text"
+                      name="campaign_name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={`${selectedCampaignType} Campaign - ${new Date().toLocaleDateString()}`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Target Audience *
+                    </label>
+                    <select 
+                      name="segment" 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      onChange={(e) => {
+                        // Update estimated cost when audience changes
+                        const estimatedCost = calculateEstimatedCost(e.target.value)
+                        const costElement = document.getElementById('estimated-cost')
+                        if (costElement) {
+                          costElement.textContent = formatCurrency(estimatedCost)
+                        }
+                      }}
+                    >
+                      <option value="all">All Customers (~500)</option>
+                      <option value="vip">VIP Customers (~50)</option>
+                      <option value="regular">Regular Customers (~200)</option>
+                      <option value="new">New Customers (~100)</option>
+                      <option value="lapsed">Lapsed Customers (~150)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Email-specific fields */}
+                {selectedCampaignType === 'email' && (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Subject Line *
+                    </label>
+                    <input
+                      type="text"
+                      name="subject"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter email subject line..."
+                      required
+                    />
+                  </div>
+                )}
+
+                {/* Message */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {selectedCampaignType === 'email' ? 'Email Content' : 'SMS Message'} *
+                  </label>
+                  <textarea
+                    name="message"
+                    rows={selectedCampaignType === 'email' ? '8' : '4'}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder={
+                      selectedCampaignType === 'email' 
+                        ? 'Enter your email content here. You can use HTML formatting...'
+                        : 'Enter your SMS message here (160 characters recommended)...'
+                    }
+                    required
+                  />
+                  {selectedCampaignType === 'sms' && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Keep SMS messages under 160 characters to avoid additional charges.
+                    </p>
+                  )}
+                </div>
+
+                {/* Scheduling */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <CalendarIcon className="h-4 w-4 inline mr-1" />
+                    Schedule (Optional)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    name="schedule_date"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    min={new Date().toISOString().slice(0, 16)}
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Leave blank to send immediately, or schedule for a future date/time.
+                  </p>
+                </div>
+
+                {/* Cost Estimate */}
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-medium text-blue-900">Estimated Campaign Cost</h4>
+                      <p className="text-xs text-blue-700">
+                        Platform cost + markup for {selectedCampaignType} delivery
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-blue-900" id="estimated-cost">
+                        {formatCurrency(calculateEstimatedCost('all'))}
+                      </div>
+                      <div className="text-xs text-blue-700">
+                        {selectedCampaignType === 'email' ? 'per email' : 'per SMS'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    className={`px-6 py-2 text-sm font-medium text-white rounded-md ${
+                      loading
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Creating...
+                      </>
+                    ) : (
+                      'Create Campaign'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

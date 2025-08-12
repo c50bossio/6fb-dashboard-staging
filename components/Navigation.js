@@ -27,7 +27,10 @@ import {
   BuildingStorefrontIcon,
   ScissorsIcon,
   ShoppingBagIcon,
-  DocumentChartBarIcon
+  DocumentChartBarIcon,
+  MegaphoneIcon,
+  RocketLaunchIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -152,6 +155,27 @@ const shopManagement = [
   // - Staff Management (manage all barbers)
   // - Point of Sale (process sales)
   // - Advanced Reports (detailed analytics)
+]
+
+const marketingOperations = [
+  { 
+    name: 'Campaigns', 
+    href: '/dashboard/campaigns', 
+    icon: RocketLaunchIcon,
+    description: 'Create and manage marketing campaigns'
+  },
+  { 
+    name: 'Billing Accounts', 
+    href: '/dashboard/campaigns/billing', 
+    icon: BanknotesIcon,
+    description: 'Manage marketing billing and payment accounts'
+  },
+  { 
+    name: 'Analytics', 
+    href: '/dashboard/campaigns/analytics', 
+    icon: DocumentChartBarIcon,
+    description: 'Campaign performance and marketing analytics'
+  }
 ]
 
 // Enterprise operations - Coming Soon
@@ -402,6 +426,70 @@ export default function Navigation() {
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
                             ${isActive 
                               ? 'bg-green-100 text-green-700' 
+                              : 'bg-gray-100 text-gray-600'
+                            }
+                          `}>
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                      {item.description && (
+                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                          {item.description}
+                        </p>
+                      )}
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+
+      {/* Marketing Operations - Available to all authenticated users */}
+      <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+        {!collapsed && (
+          <div className="mb-4">
+            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              MARKETING
+            </h2>
+          </div>
+        )}
+        
+        <ul className="space-y-2">
+          {marketingOperations.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href)
+            
+            return (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  onClick={onItemClick}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 shadow-md' : 'hover:bg-gray-50'}`}
+                >
+                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
+                    <item.icon
+                      className={`
+                        ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
+                        ${isActive ? 'text-pink-600' : 'text-gray-400 group-hover:text-gray-600'}
+                      `}
+                      title={collapsed ? item.name : undefined}
+                    />
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p className={`text-sm font-medium truncate ${
+                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                        }`}>
+                          {item.name}
+                        </p>
+                        {item.badge && (
+                          <span className={`
+                            ml-2 px-2 py-1 text-xs font-medium rounded-full
+                            ${isActive 
+                              ? 'bg-pink-100 text-pink-700' 
                               : 'bg-gray-100 text-gray-600'
                             }
                           `}>
