@@ -49,7 +49,9 @@ class SendGridEmailService {
             this.testMode = false;
         }
         
-        sgMail.setApiKey(this.apiKey);
+        if (!this.testMode) {
+            sgMail.setApiKey(this.apiKey);
+        }
         
         // SendGrid rate limits and costs
         this.BATCH_SIZE = 1000; // SendGrid limit for batch sending
@@ -164,7 +166,164 @@ class SendGridEmailService {
     }
 
     /**
-     * Send marketing email campaign with comprehensive tracking
+     * Send white-label marketing campaign using platform master account
+     * @param {Object} campaign - Campaign from database
+     * @param {Object} barbershop - Barbershop details for branding
+     * @param {Array} recipients - Email recipients
+     * @returns {Object} Campaign results and analytics
+     */
+    async sendWhiteLabelCampaign(campaign, barbershop, recipients) {
+        if (this.testMode) {
+            console.log('🧪 TEST MODE: Email campaign simulation');
+            return this.simulateCampaignSend(campaign, recipients);
+        }
+
+        const startTime = Date.now();
+        
+        try {
+            // Calculate platform costs and markup
+            const billing = this.calculatePlatformBilling(
+                recipients.length, 
+                barbershop.account_type || 'shop'
+            );
+            
+            // Prepare white-label email configuration
+            const emailConfig = {
+                from: {
+                    email: this.platformFromEmail,  // Platform's verified domain
+                    name: barbershop.name           // Barbershop's name appears as sender
+                },
+                replyTo: barbershop.email || this.platformFromEmail,
+                subject: campaign.subject,
+                content: [{
+                    type: 'text/html', 
+                    value: this.buildWhiteLabelEmailContent(campaign, barbershop)
+                }],
+                personalizations: this.buildPersonalizations(recipients),
+                trackingSettings: {
+                    clickTracking: { enable: true },
+                    openTracking: { enable: true },
+                    subscriptionTracking: { enable: false } // We handle unsubscribes
+                },
+                mailSettings: {
+                    footerSettings: {
+                        enable: true,
+                        text: this.buildComplianceFooter(barbershop)
+                    }
+                }
+            };
+            
+            // Send via SendGrid in batches
+            const sendResults = await this.sendBatchedEmails(emailConfig, recipients);
+            
+            // Store campaign analytics
+            const analytics = {
+                campaignId: campaign.id,
+                totalRecipients: recipients.length,
+                totalSent: sendResults.sent,
+                totalFailed: sendResults.failed,
+                billing: billing,
+                duration: Date.now() - startTime
+            };
+            
+            await this.storeCampaignAnalytics(analytics);
+            
+            return {
+                success: true,
+                campaignId: campaign.id,
+                metrics: analytics,
+                message: `Campaign sent to ${sendResults.sent} recipients via platform infrastructure`
+            };
+            
+        } catch (error) {
+            console.error('White-label campaign send error:', error);
+            throw new Error(`Campaign send failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Calculate platform billing with markup
+     */
+    calculatePlatformBilling(recipientCount, accountType) {
+        const serviceCost = recipientCount * this.baseCost;
+        const markupRate = this.markupRates[accountType] || this.markupRates.shop;
+        const platformFee = serviceCost * markupRate;
+        const totalCharge = serviceCost + platformFee;
+        
+        return {
+            recipientCount,
+            serviceCost: Number(serviceCost.toFixed(4)),
+            platformFee: Number(platformFee.toFixed(4)), 
+            totalCharge: Number(totalCharge.toFixed(4)),
+            markupRate: markupRate,
+            profitMargin: Number(((platformFee / totalCharge) * 100).toFixed(2))
+        };
+    }
+
+    /**
+     * Build white-label email content with barbershop branding
+     */
+    buildWhiteLabelEmailContent(campaign, barbershop) {
+        const baseContent = campaign.message || campaign.html_content;
+        
+        return `
+            ${baseContent}
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-top: 1px solid #e9ecef;">
+                <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                    <strong>Sent by ${barbershop.name}</strong><br>
+                    ${barbershop.address || ''}<br>
+                    ${barbershop.phone || ''} | ${barbershop.email || ''}
+                </p>
+                <p style="margin: 10px 0 0 0; color: #6c757d; font-size: 12px;">
+                    <a href="${this.platformDomain}/unsubscribe?token=UNSUBSCRIBE_TOKEN&shop=${barbershop.id}" 
+                       style="color: #6c757d;">Unsubscribe</a> | 
+                    <a href="${this.platformDomain}/privacy" style="color: #6c757d;">Privacy Policy</a>
+                </p>
+            </div>
+        `;
+    }
+
+    /**
+     * Build compliance footer for CAN-SPAM
+     */
+    buildComplianceFooter(barbershop) {
+        return `
+Sent by ${barbershop.name}
+${barbershop.address || 'Business Address'}
+Unsubscribe: ${this.platformDomain}/unsubscribe
+        `.trim();
+    }
+
+    /**
+     * Simulate campaign send for testing
+     */
+    simulateCampaignSend(campaign, recipients) {
+        console.log(`📧 Simulating email campaign: ${campaign.name}`);
+        console.log(`   Recipients: ${recipients.length}`);
+        console.log(`   Subject: ${campaign.subject}`);
+        console.log(`   Type: White-label platform send`);
+        
+        // Simulate some delivery metrics
+        const sent = Math.floor(recipients.length * 0.98); // 98% delivery rate
+        const failed = recipients.length - sent;
+        
+        return {
+            success: true,
+            campaignId: campaign.id,
+            metrics: {
+                totalRecipients: recipients.length,
+                totalSent: sent,
+                totalFailed: failed,
+                billing: this.calculatePlatformBilling(recipients.length, 'shop'),
+                testMode: true
+            },
+            message: `TEST: Campaign simulated for ${sent} recipients`
+        };
+    }
+
+    /**
+     * Send marketing email campaign with comprehensive tracking (legacy)
      * @param {Object} campaignConfig - Campaign configuration
      * @returns {Object} Campaign results and analytics
      */
@@ -810,3 +969,7 @@ if (require.main === module) {
     // Uncomment to test
     // testCampaign();
 }
+
+// Export for use in other modules
+const sendGridService = new SendGridEmailService();
+module.exports = { sendGridService, SendGridEmailService };

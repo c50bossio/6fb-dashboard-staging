@@ -21,19 +21,29 @@ const supabase = createClient(
 
 class TwilioSMSService {
     constructor() {
+        // Platform master account configuration
+        this.accountSid = process.env.TWILIO_ACCOUNT_SID;
+        this.authToken = process.env.TWILIO_AUTH_TOKEN;
+        this.platformPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
         this.client = null;
-        this.phoneNumber = process.env.TWILIO_PHONE_NUMBER;
-        this.platformMarkupPercent = 150; // 150% markup (2.5x cost)
+        
+        // Business model configuration - Platform markup percentages
+        this.markupRates = {
+            barber: 2.5,      // 250% markup for individual barbers
+            shop: 2.0,        // 200% markup for shop owners  
+            enterprise: 1.5   // 150% markup for enterprise accounts
+        };
+        
         this.rateLimitDelay = 1000; // 1 second between messages per carrier requirements
         this.maxRetries = 3;
         this.isInitialized = false;
         
-        // SMS cost estimates (in cents) - updated based on Twilio pricing
+        // Base Twilio SMS costs (in dollars)
         this.smsCosts = {
-            'US': 0.75,    // $0.0075 per SMS
-            'CA': 0.75,    // $0.0075 per SMS
-            'GB': 4.0,     // $0.04 per SMS
-            'DEFAULT': 1.5  // $0.015 per SMS
+            'US': 0.0075,    // $0.0075 per SMS
+            'CA': 0.0075,    // $0.0075 per SMS
+            'GB': 0.04,      // $0.04 per SMS
+            'DEFAULT': 0.015  // $0.015 per SMS
         };
         
         // MMS cost estimates (in cents)
