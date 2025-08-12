@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
+import { isDevBypassEnabled, getTestBillingData, TEST_USER_UUID } from '@/lib/auth/dev-bypass'
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -28,6 +29,16 @@ export async function GET(request) {
 
     // Extract user ID from account ID (format: billing-{userId})
     const userId = accountId.replace('billing-', '').replace('demo-', '')
+
+    // Check for dev bypass mode with test user
+    if (isDevBypassEnabled() && (userId === TEST_USER_UUID || accountId.includes(TEST_USER_UUID))) {
+      const testData = getTestBillingData()
+      return NextResponse.json({
+        success: true,
+        paymentMethods: testData.paymentMethods,
+        timestamp: new Date().toISOString()
+      })
+    }
 
     // Get user profile to check if they have Stripe info
     const { data: profile } = await supabase

@@ -4,6 +4,12 @@ import { useRouter } from 'next/navigation'
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 
 import { createClient } from '../lib/supabase/client'
+import { 
+  isDevBypassEnabled, 
+  getTestUser, 
+  getTestSession, 
+  getTestProfile 
+} from '../lib/auth/dev-bypass'
 
 const AuthContext = createContext({})
 
@@ -35,6 +41,21 @@ function SupabaseAuthProvider({ children }) {
 
   useEffect(() => {
     let isMounted = true
+    
+    // Check for complete dev bypass first
+    if (isDevBypassEnabled()) {
+      console.log('🔐 DEV BYPASS: Using test user for all pages')
+      const testUser = getTestUser()
+      const testProfile = getTestProfile()
+      
+      if (isMounted && testUser && testProfile) {
+        setUser(testUser)
+        setProfile(testProfile)
+        setLoading(false)
+        console.log('✅ Test user loaded:', testUser.email)
+      }
+      return () => { isMounted = false }
+    }
     
     // Development mode bypass for testing calendar and analytics functionality
     const isDevelopment = process.env.NODE_ENV === 'development'

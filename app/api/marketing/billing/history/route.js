@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isDevBypassEnabled, getTestBillingData, TEST_USER_UUID } from '@/lib/auth/dev-bypass'
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -20,6 +21,30 @@ export async function GET(request) {
         { error: 'User ID is required' },
         { status: 400 }
       )
+    }
+
+    // Check for dev bypass mode with test user
+    if (isDevBypassEnabled() && userId === TEST_USER_UUID) {
+      const testData = getTestBillingData()
+      const paginatedHistory = testData.history.slice(offset, offset + limit)
+      
+      return NextResponse.json({
+        success: true,
+        transactions: paginatedHistory,
+        total: testData.history.length,
+        stats: {
+          totalAmount: testData.history.reduce((sum, t) => sum + t.amount_charged, 0),
+          totalPlatformFees: testData.history.reduce((sum, t) => sum + t.platform_fee, 0),
+          totalServiceCost: testData.history.reduce((sum, t) => sum + t.service_cost, 0),
+          totalRecipients: testData.history.reduce((sum, t) => sum + t.recipients_count, 0)
+        },
+        pagination: {
+          limit,
+          offset,
+          hasMore: testData.history.length > offset + limit
+        },
+        timestamp: new Date().toISOString()
+      })
     }
 
     // Get existing transactions and transform them into marketing billing records

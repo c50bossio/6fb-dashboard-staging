@@ -115,16 +115,20 @@ export default function RegisterPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target
+    const fieldValue = type === 'checkbox' ? checked : value
+    
+    console.log('Form field changed:', name, '=', fieldValue)
+    setFormData(prev => ({ ...prev, [name]: fieldValue }))
     
     // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }))
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }))
     }
     
     // Mark field as touched
-    setTouched(prev => ({ ...prev, [field]: true }))
+    setTouched(prev => ({ ...prev, [name]: true }))
   }
 
   const handleBlur = (field) => {
@@ -196,36 +200,20 @@ export default function RegisterPage() {
     }
   ]
 
-  const handleChange = (e) => {
-    console.log('Form field changed:', e.target.name, '=', e.target.value)
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-    // Clear specific field error when user types
-    if (errors[e.target.name]) {
-      setErrors({
-        ...errors,
-        [e.target.name]: ''
-      })
-    }
-  }
 
   // Separate handler for plan selection to prevent form submission
-  const handlePlanSelection = (planValue, e) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handlePlanSelection = (planValue) => {
     console.log('Plan selected:', planValue)
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       selectedPlan: planValue
-    })
+    }))
     // Clear plan selection error if any
     if (errors.selectedPlan) {
-      setErrors({
-        ...errors,
+      setErrors(prev => ({
+        ...prev,
         selectedPlan: ''
-      })
+      }))
     }
   }
 
@@ -373,7 +361,7 @@ export default function RegisterPage() {
               type="text"
               required
               value={formData.firstName}
-              onChange={handleChange}
+              onChange={handleInputChange}
               className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                 errors.firstName ? 'border-red-300' : 'border-gray-300'
               }`}
@@ -394,7 +382,7 @@ export default function RegisterPage() {
               type="text"
               required
               value={formData.lastName}
-              onChange={handleChange}
+              onChange={handleInputChange}
               className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                 errors.lastName ? 'border-red-300' : 'border-gray-300'
               }`}
@@ -420,7 +408,7 @@ export default function RegisterPage() {
             autoComplete="email"
             required
             value={formData.email}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
               errors.email ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -444,7 +432,7 @@ export default function RegisterPage() {
             type="tel"
             required
             value={formData.phone}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
               errors.phone ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -462,7 +450,7 @@ export default function RegisterPage() {
             name="smsConsent"
             type="checkbox"
             checked={formData.smsConsent}
-            onChange={(e) => setFormData({ ...formData, smsConsent: e.target.checked })}
+            onChange={handleInputChange}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
           />
           <label htmlFor="smsConsent" className="ml-2 text-sm text-gray-600">
@@ -497,7 +485,7 @@ export default function RegisterPage() {
             type={showPassword ? 'text' : 'password'}
             required
             value={formData.password}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className={`appearance-none block w-full pl-10 pr-10 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
               errors.password ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -534,7 +522,7 @@ export default function RegisterPage() {
             type={showConfirmPassword ? 'text' : 'password'}
             required
             value={formData.confirmPassword}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className={`appearance-none block w-full pl-10 pr-10 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
               errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -575,7 +563,7 @@ export default function RegisterPage() {
             type="text"
             required
             value={formData.businessName}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
               errors.businessName ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -596,7 +584,7 @@ export default function RegisterPage() {
             rows={3}
             required
             value={formData.businessAddress}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
               errors.businessAddress ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -620,7 +608,7 @@ export default function RegisterPage() {
             type="tel"
             required
             value={formData.businessPhone}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
               errors.businessPhone ? 'border-red-300' : 'border-gray-300'
             }`}
@@ -639,7 +627,7 @@ export default function RegisterPage() {
             id="businessType"
             name="businessType"
             value={formData.businessType}
-            onChange={handleChange}
+            onChange={handleInputChange}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           >
             <option value="barbershop">Barbershop</option>
@@ -663,7 +651,11 @@ export default function RegisterPage() {
         {plans.map((plan) => (
           <div 
             key={plan.value} 
-            onClick={(e) => handlePlanSelection(plan.value, e)}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handlePlanSelection(plan.value)
+            }}
             className={`relative rounded-lg border-2 p-6 cursor-pointer transition-all ${
             formData.selectedPlan === plan.value 
               ? 'border-blue-500 bg-blue-50' 
@@ -674,11 +666,7 @@ export default function RegisterPage() {
               name="selectedPlan"
               value={plan.value}
               checked={formData.selectedPlan === plan.value}
-              onChange={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                console.log('Radio input changed - preventing default')
-              }}
+              onChange={() => {}}
               className="sr-only"
             />
             

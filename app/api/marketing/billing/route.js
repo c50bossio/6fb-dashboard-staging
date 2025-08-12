@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isDevBypassEnabled, getTestBillingData, TEST_USER_UUID } from '@/lib/auth/dev-bypass'
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -19,6 +20,17 @@ export async function GET(request) {
         { error: 'User ID is required' },
         { status: 400 }
       )
+    }
+
+    // Check for dev bypass mode with test user
+    if (isDevBypassEnabled() && userId === TEST_USER_UUID) {
+      const testData = getTestBillingData()
+      return NextResponse.json({
+        success: true,
+        accounts: [testData.account],
+        billingHistory: [],
+        timestamp: new Date().toISOString()
+      })
     }
 
     // Get user profile to determine billing capabilities
