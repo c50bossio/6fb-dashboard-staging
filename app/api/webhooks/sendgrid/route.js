@@ -11,7 +11,7 @@
 
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { sendGridService } from '../../../../services/sendgrid-service.js';
+import { sendGridService } from './sendgrid-service.js';
 
 // Webhook event types we track
 const TRACKED_EVENTS = [

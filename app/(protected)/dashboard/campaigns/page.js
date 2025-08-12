@@ -7,132 +7,297 @@ import {
   EyeIcon,
   CalendarIcon,
   UserGroupIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  CreditCardIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function CampaignsPage() {
+  const { user, profile, loading: authLoading } = useAuth()
   const [campaigns, setCampaigns] = useState([])
+  const [marketingAccounts, setMarketingAccounts] = useState([])
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [selectedCampaignType, setSelectedCampaignType] = useState('')
   const [notification, setNotification] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
+  const [campaignStats, setCampaignStats] = useState({
+    totalCampaigns: 0,
+    totalReach: 0,
+    emailCampaigns: 0,
+    smsCampaigns: 0
+  })
 
+  // Load campaigns and marketing accounts on mount
   useEffect(() => {
-    // Mock campaign data (replace with real API call)
-    setCampaigns([
-      {
-        id: 'email_20250730_214603',
-        name: 'VIP Customer Exclusive Offers',
-        type: 'email',
-        status: 'completed',
-        sentTo: 47,
-        deliveryRate: 98.5,
-        openRate: 34.2,
-        clickRate: 8.7,
-        createdAt: '2025-07-30T21:46:03Z',
-        message: 'Exclusive AI automation system launch for VIP customers'
-      },
-      {
-        id: 'sms_20250730_213939',
-        name: 'Weekend Special Promotion',
-        type: 'sms',
-        status: 'completed', 
-        sentTo: 156,
-        deliveryRate: 94.2,
-        responseRate: 12.3,
-        createdAt: '2025-07-30T21:39:39Z',
-        message: 'Weekend special: 20% off all services this Saturday!'
-      },
-      {
-        id: 'email_20250729_142030',
-        name: 'Monthly Newsletter',
-        type: 'email',
-        status: 'scheduled',
-        sentTo: 0,
-        scheduledFor: '2025-08-01T09:00:00Z',
-        message: 'Monthly barbershop updates and tips'
+    if (!authLoading && user?.id) {
+      Promise.all([
+        loadCampaigns(),
+        loadMarketingAccounts()
+      ]).finally(() => {
+        setInitialLoading(false)
+      })
+    }
+  }, [authLoading, user?.id])
+
+  const loadCampaigns = async () => {
+    if (!user?.id) return
+
+    try {
+      const response = await fetch(
+        `/api/marketing/campaigns?user_id=${user.id}&limit=50`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        setCampaigns(data.campaigns || [])
+        
+        // Calculate stats
+        const stats = (data.campaigns || []).reduce((acc, campaign) => {
+          acc.totalCampaigns++
+          acc.totalReach += campaign.analytics?.total_sent || campaign.audience_count || 0
+          if (campaign.type === 'email') acc.emailCampaigns++
+          if (campaign.type === 'sms') acc.smsCampaigns++
+          return acc
+        }, { totalCampaigns: 0, totalReach: 0, emailCampaigns: 0, smsCampaigns: 0 })
+        
+        setCampaignStats(stats)
+      } else {
+        console.error('Failed to load campaigns:', response.statusText)
+        showNotification('error', 'Failed to load campaigns')
       }
-    ])
-  }, [])
+    } catch (error) {
+      console.error('Error loading campaigns:', error)
+      showNotification('error', 'Error loading campaigns')
+    }
+  }
+
+  const loadMarketingAccounts = async () => {
+    if (!user?.id) return
+
+    try {
+      const response = await fetch(
+        `/api/marketing/accounts?user_id=${user.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        setMarketingAccounts(data.accounts || [])
+      } else {
+        console.error('Failed to load marketing accounts:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error loading marketing accounts:', error)
+    }
+  }
 
   const handleCreateCampaign = async (type) => {
     setSelectedCampaignType(type)
     setShowCreateModal(true)
   }
 
-  const executeCampaign = async (type, message, segment) => {
+  const executeCampaign = async (formData) => {
+    if (!user?.id) {
+      showNotification('error', 'You must be logged in to create campaigns')
+      return
+    }
+
     setLoading(true)
     try {
-      const response = await fetch('/api/chat/unified', {
+      const campaignData = {
+        user_id: user.id,
+        billing_account_id: formData.get('billing_account'),
+        name: formData.get('campaign_name') || `${selectedCampaignType} Campaign - ${new Date().toLocaleDateString()}`,
+        type: selectedCampaignType,
+        audience_type: formData.get('audience_type') || 'segment',
+        audience_filters: {
+          segment: formData.get('segment'),
+          shop_id: profile?.barbershop_id
+        },
+        subject: formData.get('subject'),
+        message: formData.get('message'),
+        scheduled_at: formData.get('schedule_date') ? new Date(formData.get('schedule_date')).toISOString() : null,
+        estimated_cost: calculateEstimatedCost(formData.get('segment'))
+      }
+
+      // Create campaign in database
+      const response = await fetch('/api/marketing/campaigns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         },
-        body: JSON.stringify({
-          message: `${type} blast to ${segment} customers: ${message}`,
-          context: { barbershop_name: 'Demo Barbershop' }
-        })
+        body: JSON.stringify(campaignData)
       })
 
-      const result = await response.json()
-      
-      if (result.success) {
-        setNotification({
-          type: 'success',
-          message: `${type.toUpperCase()} campaign launched successfully!`
-        })
+      if (response.ok) {
+        const result = await response.json()
+        
+        // If not scheduled, launch immediately
+        if (!campaignData.scheduled_at) {
+          await launchCampaign(result.campaign.id, campaignData)
+        }
+        
+        showNotification('success', result.message || 'Campaign created successfully!')
         setShowCreateModal(false)
-        // Refresh campaigns list properly
-        await refreshCampaigns()
+        await loadCampaigns()
       } else {
-        setNotification({
-          type: 'error',
-          message: `Campaign failed: ${result.message}`
-        })
+        const errorData = await response.json()
+        showNotification('error', errorData.error || 'Failed to create campaign')
       }
     } catch (error) {
-      setNotification({
-        type: 'error',
-        message: `Error launching campaign: ${error.message}`
-      })
+      console.error('Error creating campaign:', error)
+      showNotification('error', `Error creating campaign: ${error.message}`)
     } finally {
       setLoading(false)
-      // Clear notification after 5 seconds
-      setTimeout(() => setNotification(null), 5000)
     }
   }
 
-  const refreshCampaigns = async () => {
-    // In a real app, this would fetch from API
-    // For now, we'll simulate adding a new campaign
-    const newCampaign = {
-      id: `${selectedCampaignType}_${Date.now()}`,
-      name: `New ${selectedCampaignType} Campaign`,
-      type: selectedCampaignType,
-      status: 'completed',
-      sentTo: Math.floor(Math.random() * 100) + 10,
-      deliveryRate: 95 + Math.random() * 5,
-      createdAt: new Date().toISOString()
+  const launchCampaign = async (campaignId, campaignData) => {
+    try {
+      // Call the appropriate service based on campaign type
+      const serviceEndpoint = campaignData.type === 'email' 
+        ? '/api/services/sendgrid/send-campaign'
+        : '/api/services/twilio/send-campaign'
+
+      const serviceResponse = await fetch(serviceEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          campaign_id: campaignId,
+          user_id: user.id,
+          message: campaignData.message,
+          subject: campaignData.subject,
+          audience_filters: campaignData.audience_filters
+        })
+      })
+
+      if (!serviceResponse.ok) {
+        const errorData = await serviceResponse.json()
+        throw new Error(errorData.error || `Failed to send ${campaignData.type} campaign`)
+      }
+
+      console.log(`${campaignData.type} campaign launched successfully`)
+    } catch (error) {
+      console.error(`Error launching ${campaignData.type} campaign:`, error)
+      // Update campaign status to failed
+      await fetch('/api/marketing/campaigns', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: campaignId,
+          user_id: user.id,
+          status: 'failed',
+          error_message: error.message
+        })
+      })
+      throw error
     }
-    setCampaigns(prev => [newCampaign, ...prev])
+  }
+
+  const calculateEstimatedCost = (segment) => {
+    // Rough estimates based on segment size
+    const segmentSizes = {
+      'all': 500,
+      'vip': 50,
+      'regular': 200,
+      'new': 100,
+      'lapsed': 150
+    }
+    
+    const estimatedRecipients = segmentSizes[segment] || 100
+    const costPerMessage = selectedCampaignType === 'email' ? 0.002 : 0.01 // $0.002 for email, $0.01 for SMS
+    
+    return estimatedRecipients * costPerMessage
+  }
+
+  const showNotification = (type, message) => {
+    setNotification({ type, message })
+    setTimeout(() => setNotification(null), 5000)
   }
 
   const handleExportReport = () => {
-    setNotification({
-      type: 'success',
-      message: 'Campaign report export started. You\'ll receive an email with the CSV file.'
-    })
-    setTimeout(() => setNotification(null), 5000)
+    showNotification('success', 'Campaign report export started. You\'ll receive an email with the CSV file.')
   }
 
-  const handleViewCampaign = (campaignId) => {
-    setNotification({
-      type: 'info',
-      message: 'Campaign detail view is being developed. Full analytics coming soon.'
+  const handleViewCampaign = (campaign) => {
+    // TODO: Implement detailed campaign view
+    showNotification('info', `Viewing details for campaign: ${campaign.name}`)
+  }
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount)
+  }
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     })
-    setTimeout(() => setNotification(null), 5000)
+  }
+
+  const getStatusBadgeColor = (status) => {
+    switch (status) {
+      case 'completed':
+      case 'active':
+        return 'bg-green-100 text-green-800'
+      case 'scheduled':
+      case 'pending_approval':
+        return 'bg-blue-100 text-blue-800'
+      case 'draft':
+        return 'bg-gray-100 text-gray-800'
+      case 'failed':
+      case 'cancelled':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-yellow-100 text-yellow-800'
+    }
+  }
+
+  if (authLoading || initialLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading campaigns...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <ExclamationTriangleIcon className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
+          <p className="text-gray-600">You must be logged in to access campaigns.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
