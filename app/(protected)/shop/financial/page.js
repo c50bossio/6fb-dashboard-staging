@@ -11,13 +11,15 @@ import {
   ChartBarIcon,
   BanknotesIcon,
   ClockIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 
 export default function FinancialArrangements() {
   const [arrangements, setArrangements] = useState([])
   const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [showArrangementModal, setShowArrangementModal] = useState(false)
   const [editingArrangement, setEditingArrangement] = useState(null)
   const [metrics, setMetrics] = useState({
@@ -54,6 +56,7 @@ export default function FinancialArrangements() {
       }
     } catch (error) {
       console.error('Error loading financial data:', error)
+      setError('Failed to load financial data. Please refresh the page.')
     } finally {
       setLoading(false)
     }
@@ -79,9 +82,13 @@ export default function FinancialArrangements() {
         loadFinancialData()
         setShowArrangementModal(false)
         setEditingArrangement(null)
+        alert('Financial arrangement saved successfully!')
+      } else {
+        alert('Failed to save arrangement. Please try again.')
       }
     } catch (error) {
       console.error('Error saving arrangement:', error)
+      alert('An error occurred while saving. Please try again.')
     }
   }
 
@@ -89,6 +96,30 @@ export default function FinancialArrangements() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <div className="text-red-600 mb-2">
+            <ExclamationTriangleIcon className="h-12 w-12 mx-auto" />
+          </div>
+          <h3 className="text-lg font-medium text-red-900 mb-2">Error Loading Data</h3>
+          <p className="text-red-700 mb-4">{error}</p>
+          <button
+            onClick={() => {
+              setError(null)
+              setLoading(true)
+              loadFinancialData()
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     )
   }

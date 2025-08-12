@@ -108,7 +108,7 @@ const Staff = [
 
 export default function StaffPage() {
   const { user, profile } = useAuth()
-  const [staff, setStaff] = useState(mockStaff)
+  const [staff, setStaff] = useState(Staff)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedStaff, setSelectedStaff] = useState(null)

@@ -83,8 +83,8 @@ const Stats = {
 
 export default function PaymentsPage() {
   const { user, profile } = useAuth()
-  const [payments, setPayments] = useState(mockPayments)
-  const [stats, setStats] = useState(mockStats)
+  const [payments, setPayments] = useState(Payments)
+  const [stats, setStats] = useState(Stats)
   const [filter, setFilter] = useState('all')
   const [dateRange, setDateRange] = useState('today')
 

@@ -264,16 +264,13 @@ export default function ShopDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link
-          href="/shop/bookings"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
-        >
-          <CalendarDaysIcon className="h-8 w-8 text-indigo-600" />
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center space-x-3 opacity-60">
+          <CalendarDaysIcon className="h-8 w-8 text-gray-400" />
           <div>
-            <p className="font-medium text-gray-900">Manage Bookings</p>
-            <p className="text-sm text-gray-600">View and manage appointments</p>
+            <p className="font-medium text-gray-500">Manage Bookings</p>
+            <p className="text-sm text-gray-400">Coming Soon</p>
           </div>
-        </Link>
+        </div>
 
         <Link
           href="/shop/financial"
@@ -286,27 +283,21 @@ export default function ShopDashboard() {
           </div>
         </Link>
 
-        <Link
-          href="/shop/services"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
-        >
-          <ScissorsIcon className="h-8 w-8 text-purple-600" />
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center space-x-3 opacity-60">
+          <ScissorsIcon className="h-8 w-8 text-gray-400" />
           <div>
-            <p className="font-medium text-gray-900">Services & Pricing</p>
-            <p className="text-sm text-gray-600">Manage shop services</p>
+            <p className="font-medium text-gray-500">Services & Pricing</p>
+            <p className="text-sm text-gray-400">Coming Soon</p>
           </div>
-        </Link>
+        </div>
 
-        <Link
-          href="/shop/analytics"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
-        >
-          <ChartBarIcon className="h-8 w-8 text-orange-600" />
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center space-x-3 opacity-60">
+          <ChartBarIcon className="h-8 w-8 text-gray-400" />
           <div>
-            <p className="font-medium text-gray-900">Analytics</p>
-            <p className="text-sm text-gray-600">View detailed insights</p>
+            <p className="font-medium text-gray-500">Analytics</p>
+            <p className="text-sm text-gray-400">Coming Soon</p>
           </div>
-        </Link>
+        </div>
       </div>
     </div>
   )

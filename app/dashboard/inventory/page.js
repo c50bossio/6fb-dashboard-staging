@@ -188,7 +188,7 @@ const Inventory = [
 
 export default function InventoryPage() {
   const { user, profile } = useAuth()
-  const [inventory, setInventory] = useState(mockInventory)
+  const [inventory, setInventory] = useState(Inventory)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
