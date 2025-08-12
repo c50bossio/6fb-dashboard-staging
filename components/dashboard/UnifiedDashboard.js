@@ -27,6 +27,8 @@ import ActionCenter from './ActionCenter'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import ExecutiveLoadingState from './ExecutiveLoadingState'
+import PerformanceIndicator from './PerformanceIndicator'
+import RealtimeIndicator from './RealtimeIndicator'
 
 // Use API calls instead of direct database imports (client component)
 
@@ -349,13 +351,21 @@ export default function UnifiedDashboard({ user }) {
 
   return (
     <div className="space-y-6">
-      {/* Mode Selector */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Main Dashboard</h2>
-          <p className="text-gray-600 mt-1">{modeConfigs[currentMode].description}</p>
+      {/* Header with Mode Selector and Performance Indicator */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Main Dashboard</h2>
+            <p className="text-gray-600 mt-1">{modeConfigs[currentMode].description}</p>
+          </div>
+          <ModeSelector />
         </div>
-        <ModeSelector />
+        
+        {/* Real-time Performance and Connection Indicators */}
+        <div className="flex flex-col lg:flex-row gap-4 lg:items-center ml-auto">
+          <RealtimeIndicator barbershopId={user?.barbershop_id || 'demo-shop-001'} />
+          <PerformanceIndicator className="lg:max-w-md" />
+        </div>
       </div>
 
       {/* Executive Mode Content */}

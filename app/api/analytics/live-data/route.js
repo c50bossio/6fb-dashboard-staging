@@ -1,9 +1,11 @@
 /**
  * Live Analytics Data API Endpoint
  * Provides real-time business metrics for AI agent consumption
+ * Enhanced with intelligent caching for optimal performance
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/analytics-cache.js';
 
 export async function GET(request) {
   try {
@@ -50,42 +52,41 @@ export async function GET(request) {
     const endDate = searchParams.get('end_date'); // ISO date string for custom range
     const comparison = searchParams.get('comparison') === 'true'; // Enable comparison mode
 
-    // Import the analytics service (dynamic import for Python service integration)
+    // Enhanced with intelligent caching for performance optimization
+    const cacheType = 'live-analytics';
+    const cacheParams = { 
+      barbershopId: barbershopId || 'demo-shop-001', 
+      format, 
+      metric, 
+      periodType,
+      forceRefresh 
+    };
+
     let analyticsData;
     
     try {
-      // PHASE 1 FIX: Skip FastAPI backend to ensure data consistency with Dashboard Metrics API
-      // Force fallback to Supabase to eliminate dual-database inconsistencies
-      console.log('🔄 PHASE 1 FIX: Forcing Supabase fallback for data consistency');
-      throw new Error('Intentionally skipping FastAPI backend for data consistency');
-      
-    } catch (pythonError) {
-      console.warn('Python analytics service unavailable, trying unified business service:', pythonError.message);
-      
-      // Try to use unified business data service for consistent data
-      try {
-        const unifiedServiceResponse = await fetch(`${pythonServiceUrl}/api/business-data/metrics?barbershop_id=${barbershopId || ''}&format=${format}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          timeout: 5000,
+      // Use intelligent caching unless force refresh is requested
+      if (!forceRefresh) {
+        analyticsData = await cacheQuery(cacheType, cacheParams, async () => {
+          return await getSupabaseAnalyticsData(barbershopId, format, metric);
         });
-        
-        if (unifiedServiceResponse.ok) {
-          const unifiedData = await unifiedServiceResponse.json();
-          analyticsData = unifiedData;
-          console.log('✅ Using unified business data service for consistent metrics');
-        } else {
-          throw new Error('Unified service unavailable');
-        }
-        
-      } catch (unifiedError) {
-        console.warn('Unified business service also unavailable, using enhanced fallback:', unifiedError.message);
-        
-        // PHASE 1 FIX: Use same Supabase approach as Dashboard Metrics API for consistency
+      } else {
+        // Force refresh - invalidate cache and fetch fresh data
+        invalidateCache(cacheType);
+        console.log('🔄 Force refresh requested - cache invalidated');
         analyticsData = await getSupabaseAnalyticsData(barbershopId, format, metric);
       }
+      
+    } catch (error) {
+      console.error('❌ Analytics data fetch error:', error);
+      // Return error response with cache stats for debugging
+      const cacheStats = getCacheStats();
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to fetch analytics data',
+        cacheStats,
+        timestamp: new Date().toISOString(),
+      }, { status: 500 });
     }
 
     // Handle different response formats
@@ -113,16 +114,28 @@ export async function GET(request) {
       });
     }
     
-    // Default JSON format
+    // Default JSON format with enhanced metadata
+    const cacheStats = getCacheStats();
+    
     return NextResponse.json({
       success: true,
       data: analyticsData.data || analyticsData,
       meta: {
         barbershop_id: barbershopId,
         force_refresh: forceRefresh,
-        data_source: analyticsData.data_source || 'fallback',
-        cache_status: analyticsData.cache_status,
+        data_source: analyticsData.data_source || 'supabase',
+        cache_info: analyticsData._cache || { hit: false },
+        cache_stats: {
+          hitRate: cacheStats.hitRate,
+          size: cacheStats.size,
+          maxSize: cacheStats.maxSize
+        },
         timestamp: new Date().toISOString(),
+        performance: {
+          cached: analyticsData._cache?.hit || false,
+          queryTime: analyticsData._cache?.queryTime || null,
+          age: analyticsData._cache?.age || null
+        }
       }
     });
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/analytics-cache.js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -18,38 +19,57 @@ export async function GET(request) {
     const timeHorizon = searchParams.get('horizon') || 'weekly'
     const barbershopId = searchParams.get('shopId') || 'default'
 
+    // Enhanced with intelligent caching for AI predictions
+    const cacheType = 'predictive-analytics';
+    const cacheParams = { forecastType, timeHorizon, barbershopId };
+
     try {
-      // Call Python Predictive Analytics Service
-      const predictions = await getPredictiveAnalytics('demo-user', { 
-        forecastType, 
-        timeHorizon, 
-        barbershopId 
-      })
+      // Use intelligent caching for expensive AI predictions
+      const predictions = await cacheQuery(cacheType, cacheParams, async () => {
+        // Try Python service first, fallback to Supabase
+        try {
+          return await getPredictiveAnalytics('demo-user', { 
+            forecastType, 
+            timeHorizon, 
+            barbershopId 
+          });
+        } catch (aiError) {
+          console.log('Python service unavailable, using Supabase fallback');
+          return await fetchRealPredictionsFromSupabase(supabase, 'demo-user', forecastType, timeHorizon);
+        }
+      });
+
+      const cacheStats = getCacheStats();
       
       return NextResponse.json({
         success: true,
-        predictions,
+        predictions: predictions.data || predictions,
+        dataSource: predictions.dataSource || 'supabase',
         timestamp: new Date().toISOString(),
         metadata: {
           forecastType,
           timeHorizon,
           barbershopId,
           confidence: predictions.overallConfidence || 0.75
+        },
+        _cache: predictions._cache || { hit: false },
+        _cacheStats: {
+          hitRate: cacheStats.hitRate,
+          size: cacheStats.size
         }
       })
 
-    } catch (aiError) {
-      console.error('Predictive Analytics error:', aiError)
+    } catch (error) {
+      console.error('Predictive Analytics error:', error)
       
-      // Fallback to real data from Supabase
-      const predictions = await fetchRealPredictionsFromSupabase(supabase, 'demo-user', forecastType, timeHorizon)
-      
+      // Return error with cache stats
+      const cacheStats = getCacheStats();
       return NextResponse.json({
-        success: true,
-        predictions: predictions,
-        dataSource: 'supabase',
+        success: false,
+        error: 'Predictive analytics service failed',
+        cacheStats,
         timestamp: new Date().toISOString()
-      })
+      }, { status: 500 })
     }
 
   } catch (error) {
