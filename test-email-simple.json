@@ -1,0 +1,18 @@
+{
+  "type": "email",
+  "campaign": {
+    "id": "test-001",
+    "name": "Test Campaign",
+    "subject": "Welcome to Elite Cuts!",
+    "message": "Thank you for choosing us!"
+  },
+  "shop": {
+    "id": "shop-001",
+    "name": "Elite Cuts",
+    "email": "info@elitecuts.com",
+    "account_type": "shop"
+  },
+  "recipients": [
+    {"email": "test@example.com", "name": "Test User"}
+  ]
+}

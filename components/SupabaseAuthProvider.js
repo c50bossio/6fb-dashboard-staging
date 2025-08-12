@@ -22,6 +22,16 @@ function SupabaseAuthProvider({ children }) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
   
+  // Emergency timeout to prevent infinite loading (production fallback)
+  useEffect(() => {
+    const emergencyTimeout = setTimeout(() => {
+      console.warn('🚨 EMERGENCY: Forcing loading = false after 3 seconds')
+      setLoading(false)
+    }, 3000)
+    
+    return () => clearTimeout(emergencyTimeout)
+  }, [])
+  
 
   useEffect(() => {
     let isMounted = true

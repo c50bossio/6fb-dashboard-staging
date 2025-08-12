@@ -11,7 +11,7 @@ class BarberPermissionSystemTester {
     this.page = null;
     this.testResults = [];
     this.screenshots = [];
-    this.baseUrl = 'http://localhost:9999';
+    this.baseUrl = 'http://localhost:3000';
   }
 
   async initialize() {
