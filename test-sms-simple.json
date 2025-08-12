@@ -1,0 +1,20 @@
+{
+  "type": "sms",
+  "campaign": {
+    "id": "sms-001",
+    "name": "Promotion SMS Campaign", 
+    "subject": "25% Off This Week!",
+    "message": "Get 25% off all haircuts this week at Elite Cuts! Book now and save. Text STOP to opt out."
+  },
+  "shop": {
+    "id": "shop-001",
+    "name": "Elite Cuts",
+    "email": "info@elitecuts.com",
+    "phone": "+1-555-123-4567",
+    "account_type": "shop"
+  },
+  "recipients": [
+    {"phone": "+1-555-999-0001", "name": "John Doe"},
+    {"phone": "+1-555-999-0002", "name": "Jane Smith"}
+  ]
+}

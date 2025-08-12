@@ -125,9 +125,9 @@ export async function POST(request) {
         // Calculate billing if successful
         let billing = null;
         if (result.success) {
-            if (type === 'email' && sendGridService) {
+            if (type === 'email') {
                 billing = sendGridService.calculatePlatformBilling(recipients.length, shop.account_type);
-            } else if (type === 'sms' && twilioService) {
+            } else if (type === 'sms') {
                 billing = twilioService.calculateSMSBilling(recipients.length, shop.account_type);
             }
         }
