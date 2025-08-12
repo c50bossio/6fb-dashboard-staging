@@ -89,8 +89,8 @@ const TenantProvider = ({ children }) => {
             updated_at: new Date().toISOString()
           }
 
-          setTenant(mockTenant)
-          console.log('🏢 Tenant loaded:', mockTenant.name, `(${mockTenant.id})`)
+          setTenant(Tenant)
+          console.log('🏢 Tenant loaded:', Tenant.name, `(${Tenant.id})`)
         }
 
       } catch (err) {

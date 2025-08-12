@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from './SupabaseAuthProvider'
-import { createClient } from '../lib/supabase'
+import { createClient } from '../lib/supabase/client'
 
 export default function FloatingAIChat() {
   const { user } = useAuth()
@@ -103,10 +103,10 @@ export default function FloatingAIChat() {
             .eq('shop_id', profileData.shop_id)
           
           const { data: appointments } = await supabase
-            .from('appointments')
+            .from('bookings')
             .select('price, status')
             .eq('shop_id', profileData.shop_id)
-            .gte('appointment_time', new Date().toISOString().split('T')[0])
+            .gte('start_time', new Date().toISOString().split('T')[0])
           
           const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
           const totalCustomers = customers?.length || 0
