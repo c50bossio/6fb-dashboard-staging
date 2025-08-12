@@ -929,6 +929,22 @@ Unsubscribe: ${this.platformDomain}/unsubscribe
             }
         };
     }
+
+    /**
+     * Build personalization settings for SendGrid
+     */
+    buildPersonalizations(recipients) {
+        return recipients.map(recipient => ({
+            to: [{
+                email: recipient.email,
+                name: recipient.name || recipient.first_name || 'Customer'
+            }],
+            customArgs: {
+                recipient_id: recipient.id || 'unknown',
+                recipient_type: 'customer'
+            }
+        }));
+    }
 }
 
 module.exports = SendGridEmailService;
