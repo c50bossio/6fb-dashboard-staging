@@ -18,22 +18,18 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 
 export default function HomePage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
+  // Start with false for production to avoid hydration mismatch
+  const [loading, setLoading] = useState(false)
   const [barbershops, setBarbershops] = useState([])
   const [error, setError] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // Mark as mounted to handle client-side only logic
+    setMounted(true)
     checkAuth()
     loadBarbershops()
-    
-    // Emergency timeout for homepage loading
-    const loadingTimeout = setTimeout(() => {
-      console.warn('🚨 Homepage loading timeout - forcing loading = false')
-      setLoading(false)
-    }, 2000)
-    
-    return () => clearTimeout(loadingTimeout)
   }, [])
 
   const checkAuth = () => {
@@ -44,7 +40,7 @@ export default function HomePage() {
   const loadBarbershops = async () => {
     try {
       console.log('🏪 Loading barbershops...')
-      setLoading(true)
+      // Don't set loading to true in production to avoid flicker
       // For now, we'll create a mock list of barbershops
       // Later this could be an API call to get all public barbershops
       const Barbershops = [
@@ -76,9 +72,6 @@ export default function HomePage() {
     } catch (err) {
       console.error('❌ Error loading barbershops:', err)
       setError('Failed to load barbershops')
-    } finally {
-      console.log('🏁 Setting loading = false')
-      setLoading(false)
     }
   }
 
@@ -92,7 +85,8 @@ export default function HomePage() {
 
   // Homepage should stay on main domain - removed auto-redirect logic that was causing infinite loops
 
-  if (loading) {
+  // Show loading only if explicitly loading (for future API calls)
+  if (loading && mounted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
