@@ -146,7 +146,7 @@ const Services = [
 
 export default function ServicesPage() {
   const { user, profile } = useAuth()
-  const [services, setServices] = useState(mockServices)
+  const [services, setServices] = useState(Services)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
