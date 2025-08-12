@@ -5,22 +5,57 @@ import {
   XMarkIcon, 
   PaperAirplaneIcon,
   ChatBubbleLeftRightIcon,
-  ArrowsPointingOutIcon
+  ArrowsPointingOutIcon,
+  MicrophoneIcon
 } from '@heroicons/react/24/outline'
 import { useState, useRef, useEffect } from 'react'
+import { useAuth } from './SupabaseAuthProvider'
+import { createClient } from '../lib/supabase'
 
 export default function FloatingAIChat() {
+  const { user } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [position, setPosition] = useState('bottom-right') // bottom-right, bottom-left, top-right, top-left
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const widgetRef = useRef(null)
+  const [shopData, setShopData] = useState(null)
+  const [realTimeMetrics, setRealTimeMetrics] = useState(null)
+  const getProactiveGreeting = () => {
+    const hour = new Date().getHours()
+    const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' })
+    
+    let greeting = ''
+    if (hour < 12) {
+      greeting = '☀️ Good morning!'
+    } else if (hour < 17) {
+      greeting = '👋 Good afternoon!'
+    } else {
+      greeting = '🌙 Good evening!'
+    }
+    
+    let proactiveSuggestion = ''
+    if (dayOfWeek === 'Monday') {
+      proactiveSuggestion = "It's Monday - would you like to see last week's performance summary?"
+    } else if (dayOfWeek === 'Friday') {
+      proactiveSuggestion = "Happy Friday! Want to check your weekend appointment schedule?"
+    } else if (hour < 10) {
+      proactiveSuggestion = "Ready to check today's appointments?"
+    } else if (hour > 16) {
+      proactiveSuggestion = "Want to see today's revenue summary?"
+    } else {
+      proactiveSuggestion = "How can I help optimize your business today?"
+    }
+    
+    return `${greeting} ${proactiveSuggestion}`
+  }
+  
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'assistant',
-      content: "Hi! I'm your AI business assistant. Ask me about your barbershop's performance, bookings, or how to improve your business!",
+      content: getProactiveGreeting(),
       timestamp: new Date()
     }
   ])
@@ -28,6 +63,76 @@ export default function FloatingAIChat() {
   const [showRating, setShowRating] = useState(null)
   const [sessionId, setSessionId] = useState(null)
   const messagesEndRef = useRef(null)
+  const [quickActions] = useState([
+    { icon: '💰', text: "Today's Revenue", query: "How much revenue have I made today?" },
+    { icon: '📅', text: 'Next Appointments', query: "Show me my next appointments" },
+    { icon: '👥', text: 'Customer Insights', query: "Tell me about my customer trends" },
+    { icon: '📈', text: 'Growth Tips', query: "How can I grow my business?" },
+    { icon: '🎯', text: 'Marketing Ideas', query: "Give me marketing suggestions for this week" }
+  ])
+  const [isVoiceListening, setIsVoiceListening] = useState(false)
+  const recognitionRef = useRef(null)
+
+  // Fetch real shop data from Supabase
+  useEffect(() => {
+    const fetchShopData = async () => {
+      if (!user) return
+      
+      const supabase = createClient()
+      
+      try {
+        // Get user's shop data
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('shop_id, role, barbershop_name')
+          .eq('id', user.id)
+          .single()
+        
+        if (profileData?.shop_id) {
+          // Get shop details
+          const { data: shopInfo } = await supabase
+            .from('barbershops')
+            .select('*')
+            .eq('id', profileData.shop_id)
+            .single()
+          
+          // Get real-time metrics
+          const { data: customers } = await supabase
+            .from('customers')
+            .select('total_spent, total_visits')
+            .eq('shop_id', profileData.shop_id)
+          
+          const { data: appointments } = await supabase
+            .from('appointments')
+            .select('price, status')
+            .eq('shop_id', profileData.shop_id)
+            .gte('appointment_time', new Date().toISOString().split('T')[0])
+          
+          const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
+          const totalCustomers = customers?.length || 0
+          const todayAppointments = appointments?.filter(a => a.status === 'confirmed').length || 0
+          
+          setShopData({
+            ...shopInfo,
+            shop_name: shopInfo?.name || profileData.barbershop_name,
+            shop_id: profileData.shop_id,
+            user_role: profileData.role
+          })
+          
+          setRealTimeMetrics({
+            total_revenue: totalRevenue,
+            total_customers: totalCustomers,
+            today_appointments: todayAppointments,
+            monthly_revenue: Math.round(totalRevenue / 12) // Approximate
+          })
+        }
+      } catch (error) {
+        console.error('Error fetching shop data:', error)
+      }
+    }
+    
+    fetchShopData()
+  }, [user])
 
   // Initialize persistent session ID and position
   useEffect(() => {
@@ -193,25 +298,47 @@ export default function FloatingAIChat() {
           message: currentMessage,
           session_id: sessionId,
           business_context: {
-            shop_name: 'Demo Barbershop',
-            customer_count: 150,
-            monthly_revenue: 5000,
-            location: 'Downtown',
-            staff_count: 3,
-            barbershop_id: 'demo'
+            shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
+            customer_count: realTimeMetrics?.total_customers || 0,
+            monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
+            location: shopData?.location || shopData?.address || 'Main Location',
+            staff_count: shopData?.staff_count || 1,
+            barbershop_id: shopData?.shop_id || user?.id,
+            user_role: shopData?.user_role || 'owner',
+            today_appointments: realTimeMetrics?.today_appointments || 0,
+            total_revenue: realTimeMetrics?.total_revenue || 0
           },
-          barbershop_id: 'demo'
+          barbershop_id: shopData?.shop_id || user?.id
         })
       })
 
       const data = await response.json()
       const responseTime = (Date.now() - startTime) / 1000 // Convert to seconds
       
+      // Parse response for smart actions
+      const responseText = data.response || data.message || "I'm here to help! What would you like to know about your business?"
+      const smartActions = []
+      
+      // Detect mentions of specific features and add action buttons
+      if (responseText.toLowerCase().includes('appointment') || responseText.toLowerCase().includes('booking')) {
+        smartActions.push({ text: 'Open Calendar', link: '/dashboard/calendar', icon: '📅' })
+      }
+      if (responseText.toLowerCase().includes('revenue') || responseText.toLowerCase().includes('money') || responseText.toLowerCase().includes('earnings')) {
+        smartActions.push({ text: 'View Analytics', link: '/dashboard/analytics-enhanced', icon: '📊' })
+      }
+      if (responseText.toLowerCase().includes('customer') || responseText.toLowerCase().includes('client')) {
+        smartActions.push({ text: 'Customer List', link: '/dashboard/customers', icon: '👥' })
+      }
+      if (responseText.toLowerCase().includes('marketing') || responseText.toLowerCase().includes('promotion')) {
+        smartActions.push({ text: 'Marketing Tools', link: '/dashboard/campaigns', icon: '🎯' })
+      }
+      
       const aiMessage = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: data.response || data.message || "I'm here to help! What would you like to know about your business?",
-        timestamp: new Date()
+        content: responseText,
+        timestamp: new Date(),
+        actions: smartActions
       }
 
       setMessages(prev => [...prev, aiMessage])
@@ -264,6 +391,54 @@ export default function FloatingAIChat() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
+    }
+  }
+
+  const handleQuickAction = (query) => {
+    setMessage(query)
+    handleSendMessage()
+  }
+
+  const startVoiceRecognition = () => {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      alert('Voice recognition is not supported in your browser')
+      return
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.lang = 'en-US'
+    
+    recognition.onstart = () => {
+      setIsVoiceListening(true)
+    }
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript
+      setMessage(transcript)
+      setIsVoiceListening(false)
+    }
+    
+    recognition.onerror = (event) => {
+      console.error('Voice recognition error:', event.error)
+      setIsVoiceListening(false)
+    }
+    
+    recognition.onend = () => {
+      setIsVoiceListening(false)
+    }
+    
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  const stopVoiceRecognition = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      setIsVoiceListening(false)
     }
   }
 
@@ -363,6 +538,25 @@ export default function FloatingAIChat() {
                   }`}
                 >
                   {msg.content}
+                  
+                  {/* Smart Actions */}
+                  {msg.actions && msg.actions.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <div className="flex flex-wrap gap-1">
+                        {msg.actions.map((action, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => window.location.href = action.link}
+                            className="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded-full transition-colors flex items-center space-x-1"
+                          >
+                            <span>{action.icon}</span>
+                            <span>{action.text}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   {msg.type === 'assistant' && msg.id > 1 && !msg.rated && showRating !== msg.id && (
                     <div className="mt-2 pt-2 border-t border-gray-200">
                       <button
@@ -413,6 +607,26 @@ export default function FloatingAIChat() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Quick Actions */}
+          {messages.length === 1 && (
+            <div className="px-3 pb-2">
+              <p className="text-xs text-gray-500 mb-2">Quick Actions:</p>
+              <div className="flex flex-wrap gap-1">
+                {quickActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleQuickAction(action.query)}
+                    className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full transition-colors flex items-center space-x-1"
+                    disabled={isLoading}
+                  >
+                    <span>{action.icon}</span>
+                    <span>{action.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Input */}
           <div className="p-3 border-t border-gray-200">
             <div className="flex space-x-2">
@@ -423,8 +637,19 @@ export default function FloatingAIChat() {
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about your business..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                disabled={isLoading}
+                disabled={isLoading || isVoiceListening}
               />
+              <button
+                onClick={isVoiceListening ? stopVoiceRecognition : startVoiceRecognition}
+                className={`${
+                  isVoiceListening 
+                    ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
+                    : 'bg-gray-500 hover:bg-gray-600'
+                } text-white rounded-lg p-2 transition-colors`}
+                title={isVoiceListening ? "Stop listening" : "Voice input"}
+              >
+                <MicrophoneIcon className="h-4 w-4" />
+              </button>
               <button
                 onClick={handleSendMessage}
                 disabled={!message.trim() || isLoading}
