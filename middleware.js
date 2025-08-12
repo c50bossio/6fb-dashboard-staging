@@ -5,10 +5,12 @@ import { NextResponse } from 'next/server'
 function addSecurityHeaders(response) {
   const isDevelopment = process.env.NODE_ENV === 'development'
   
-  // Content Security Policy - Strict but functional
+  // Content Security Policy - Allow Next.js inline scripts for hydration
+  // In production, we need 'unsafe-inline' for Next.js to work properly
+  // This is a known requirement for Next.js App Router
   const csp = [
     "default-src 'self'",
-    `script-src 'self' ${isDevelopment ? "'unsafe-inline' 'unsafe-eval'" : "'nonce-${generateNonce()}'"} https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com https://vercel.live`,
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com https://vercel.live`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
     "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net",
     "img-src 'self' data: https: blob:",
@@ -47,10 +49,8 @@ function addSecurityHeaders(response) {
   return response
 }
 
-// Generate CSP nonce for inline scripts
-function generateNonce() {
-  return Buffer.from(crypto.randomUUID()).toString('base64')
-}
+// Note: Nonces are not used as Next.js App Router requires 'unsafe-inline'
+// for proper hydration and streaming SSR functionality
 
 // Generate unique request ID for tracking
 function generateRequestId() {

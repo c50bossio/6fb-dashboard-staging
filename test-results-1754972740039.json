@@ -1,0 +1,170 @@
+{
+  "passed": 17,
+  "failed": 11,
+  "warnings": 0,
+  "tests": [
+    {
+      "name": "Database: marketing_campaigns",
+      "passed": true,
+      "details": "Table accessible",
+      "timestamp": 1754972738617
+    },
+    {
+      "name": "Database: campaign_recipients",
+      "passed": true,
+      "details": "Table accessible",
+      "timestamp": 1754972738712
+    },
+    {
+      "name": "Database: marketing_billing_records",
+      "passed": true,
+      "details": "Table accessible",
+      "timestamp": 1754972738796
+    },
+    {
+      "name": "Database: customer_segments",
+      "passed": true,
+      "details": "Table accessible",
+      "timestamp": 1754972738885
+    },
+    {
+      "name": "Database: email_unsubscribes",
+      "passed": true,
+      "details": "Table accessible",
+      "timestamp": 1754972738976
+    },
+    {
+      "name": "Database: sms_opt_outs",
+      "passed": true,
+      "details": "Table accessible",
+      "timestamp": 1754972739075
+    },
+    {
+      "name": "Database: campaign_queue",
+      "passed": true,
+      "details": "Table accessible",
+      "timestamp": 1754972739160
+    },
+    {
+      "name": "Database: webhook_events",
+      "passed": true,
+      "details": "Table accessible",
+      "timestamp": 1754972739242
+    },
+    {
+      "name": "Database: Insert test",
+      "passed": false,
+      "timestamp": 1754972739329
+    },
+    {
+      "name": "Queue Service",
+      "passed": false,
+      "details": "queueService.initialize is not a function",
+      "timestamp": 1754972739329
+    },
+    {
+      "name": "Email: Health check",
+      "passed": false,
+      "details": "Unauthorized",
+      "timestamp": 1754972739611
+    },
+    {
+      "name": "Email: Cost calculation",
+      "passed": true,
+      "details": "100 emails = $0.38 (73.68% profit)",
+      "timestamp": 1754972739612
+    },
+    {
+      "name": "Email: Batch creation",
+      "passed": true,
+      "details": "250 recipients → 3 batches",
+      "timestamp": 1754972739612
+    },
+    {
+      "name": "Campaign: Creation",
+      "passed": false,
+      "timestamp": 1754972739674
+    },
+    {
+      "name": "Batch Processing",
+      "passed": false,
+      "details": "queueService.batchQueueRecipients is not a function",
+      "timestamp": 1754972739674
+    },
+    {
+      "name": "Rate Limit: Configuration",
+      "passed": true,
+      "details": "undefined per second",
+      "timestamp": 1754972739674
+    },
+    {
+      "name": "Rate Limit: Enforcement",
+      "passed": false,
+      "details": "No rate limiting detected",
+      "timestamp": 1754972739674
+    },
+    {
+      "name": "Error: Invalid data handling",
+      "passed": true,
+      "details": "Constraint violation caught",
+      "timestamp": 1754972739745
+    },
+    {
+      "name": "Error: Invalid queue",
+      "passed": true,
+      "details": "Error properly thrown",
+      "timestamp": 1754972739745
+    },
+    {
+      "name": "Error Handling",
+      "passed": false,
+      "details": "queueService.queueEmailCampaign is not a function",
+      "timestamp": 1754972739745
+    },
+    {
+      "name": "Compliance: Unsubscribe record",
+      "passed": false,
+      "timestamp": 1754972739804
+    },
+    {
+      "name": "Compliance: SMS opt-out",
+      "passed": false,
+      "timestamp": 1754972739858
+    },
+    {
+      "name": "Compliance: CAN-SPAM footer",
+      "passed": true,
+      "details": "Footer includes required elements",
+      "timestamp": 1754972739858
+    },
+    {
+      "name": "Webhook: Event storage",
+      "passed": false,
+      "timestamp": 1754972739945
+    },
+    {
+      "name": "Webhook: Signature verification",
+      "passed": true,
+      "details": "Verification logic exists",
+      "timestamp": 1754972739946
+    },
+    {
+      "name": "Performance: DB query",
+      "passed": true,
+      "details": "91ms for 100 records",
+      "timestamp": 1754972740037
+    },
+    {
+      "name": "Performance: Batch creation",
+      "passed": true,
+      "details": "1ms for 10,000 recipients",
+      "timestamp": 1754972740038
+    },
+    {
+      "name": "Performance",
+      "passed": false,
+      "details": "queueService.queueEmailCampaign is not a function",
+      "timestamp": 1754972740038
+    }
+  ]
+}

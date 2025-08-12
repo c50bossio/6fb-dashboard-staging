@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useState, Suspense } from 'react'
 
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 function RegisterConfirmContent() {
   const searchParams = useSearchParams()

@@ -3580,6 +3580,16 @@ if ALERT_SERVICE_AVAILABLE:
     app.mount("/", alert_app)
     print("✅ Intelligent Alert System mounted at /intelligent-alerts/*")
 
+# Import and setup AI Performance Monitoring System
+try:
+    from services.ai_performance_endpoints import setup_performance_routes
+    app = setup_performance_routes(app)
+    print("✅ AI Performance Monitoring System integrated at /ai/performance/*")
+    AI_PERFORMANCE_MONITORING_AVAILABLE = True
+except ImportError as e:
+    AI_PERFORMANCE_MONITORING_AVAILABLE = False
+    print(f"⚠️ AI Performance Monitoring system not available: {e}")
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))

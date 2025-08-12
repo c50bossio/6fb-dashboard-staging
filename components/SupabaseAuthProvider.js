@@ -39,12 +39,15 @@ function SupabaseAuthProvider({ children }) {
     // Development mode bypass for testing calendar and analytics functionality
     const isDevelopment = process.env.NODE_ENV === 'development'
     // TEMPORARY: Direct bypass for barber pages during development
-    const enableDevBypass = window.location.pathname.includes('/barber') || (isDevelopment && (
-      window.location.pathname.includes('/dashboard/calendar') ||
-      window.location.pathname.includes('/calendar') ||
-      window.location.pathname.includes('/dashboard/website-settings') ||
-      window.location.pathname.includes('/dashboard') && window.location.search.includes('mode=analytics') ||
-      window.location.pathname.includes('/analytics')
+    // Safe window access for SSR compatibility
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+    const currentSearch = typeof window !== 'undefined' ? window.location.search : ''
+    const enableDevBypass = currentPath.includes('/barber') || (isDevelopment && (
+      currentPath.includes('/dashboard/calendar') ||
+      currentPath.includes('/calendar') ||
+      currentPath.includes('/dashboard/website-settings') ||
+      currentPath.includes('/dashboard') && currentSearch.includes('mode=analytics') ||
+      currentPath.includes('/analytics')
     ))
     
     if (enableDevBypass) {
@@ -220,7 +223,7 @@ function SupabaseAuthProvider({ children }) {
         // Handle successful sign-in redirect
         if (event === 'SIGNED_IN') {
           console.log('🎉 SIGNED_IN event detected!')
-          const currentPath = window.location.pathname
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
           console.log('📍 Current path:', currentPath)
           
           if (currentPath === '/login' || currentPath === '/register') {
@@ -232,7 +235,7 @@ function SupabaseAuthProvider({ children }) {
               
               // Fallback: use window.location if router doesn't work
               setTimeout(() => {
-                if (window.location.pathname === '/login') {
+                if (typeof window !== 'undefined' && window.location.pathname === '/login') {
                   console.log('⚠️ Router.push didn\'t work, using window.location')
                   window.location.href = '/dashboard'
                 }
@@ -240,7 +243,9 @@ function SupabaseAuthProvider({ children }) {
             } catch (err) {
               console.error('❌ Router error:', err)
               // Direct navigation fallback
-              window.location.href = '/dashboard'
+              if (typeof window !== 'undefined') {
+                window.location.href = '/dashboard'
+              }
             }
           }
         }
@@ -253,7 +258,7 @@ function SupabaseAuthProvider({ children }) {
         // Handle sign-out redirect
         if (event === 'SIGNED_OUT') {
           console.log('👋 User signed out')
-          const currentPath = window.location.pathname
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
           const publicPaths = ['/login', '/register', '/forgot-password', '/reset-password', '/']
           if (!publicPaths.includes(currentPath)) {
             console.log('➡️ Redirecting to login...')
@@ -273,12 +278,13 @@ function SupabaseAuthProvider({ children }) {
   }, [router, supabase])
 
   const signUp = async ({ email, password, metadata }) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9999'
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: `${window.location.origin}/dashboard`
+        emailRedirectTo: `${origin}/dashboard`
       },
     })
     
@@ -351,7 +357,7 @@ function SupabaseAuthProvider({ children }) {
         
         // Manually trigger navigation after state update
         setTimeout(() => {
-          const currentPath = window.location.pathname
+          const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
           if (currentPath === '/login') {
             console.log('🚀 Manual redirect to dashboard after successful login')
             router.push('/dashboard')
@@ -378,8 +384,9 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const resetPassword = async (email) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9999'
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${origin}/reset-password`,
     })
     
     if (error) throw error
@@ -412,10 +419,11 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const signInWithGoogle = async () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9999'
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${origin}/dashboard`,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

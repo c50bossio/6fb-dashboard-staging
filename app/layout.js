@@ -1,8 +1,5 @@
 import './globals.css'
-import ErrorBoundary from '../components/ErrorBoundary'
-import { SupabaseAuthProvider } from '../components/SupabaseAuthProvider'
-import { ToastProvider } from '../components/ToastContainer'
-import { AccessibilityProvider, SkipToContent } from '../components/ui/AccessibilityProvider'
+import ClientWrapper from '../components/ClientWrapper'
 
 export const metadata = {
   title: '6FB AI Agent System - Barbershop Dashboard',
@@ -22,16 +19,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="bg-gray-50 antialiased">
-        <SkipToContent />
-        <ErrorBoundary>
-          <AccessibilityProvider>
-            <ToastProvider>
-              <SupabaseAuthProvider>
-                {children}
-              </SupabaseAuthProvider>
-            </ToastProvider>
-          </AccessibilityProvider>
-        </ErrorBoundary>
+        <ClientWrapper>
+          {children}
+        </ClientWrapper>
       </body>
     </html>
   )

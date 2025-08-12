@@ -1,0 +1,317 @@
+{
+  "edge_case_scenarios": {
+    "version": "1.0",
+    "created": "2025-08-12",
+    "description": "Edge cases, crisis scenarios, and stress tests for barbershop AI system",
+    "categories": {
+      "crisis_management": [
+        {
+          "id": "crisis_001",
+          "scenario": "Main barber suddenly quits, 50 appointments booked this week",
+          "type": "staff_emergency",
+          "input_data": {
+            "barber_quit": "Mike (Senior)",
+            "appointments_affected": 50,
+            "days_until_weekend": 3,
+            "other_barbers": ["John (Junior)", "Sarah (Mid-level)"],
+            "average_appointment_duration": 30,
+            "shop_hours": "9am-7pm"
+          },
+          "expected_response": {
+            "immediate_actions": [
+              "Contact affected customers within 2 hours",
+              "Offer rescheduling with other barbers",
+              "Provide 20% discount for inconvenience",
+              "Extend operating hours temporarily"
+            ],
+            "staff_reallocation": "Redistribute appointments between John and Sarah",
+            "customer_communication": "Personalized apology with alternative options",
+            "long_term_solution": "Begin immediate recruitment, consider temp contractor"
+          },
+          "evaluation_criteria": ["response_speed", "customer_retention_focus", "practical_solutions"]
+        },
+        {
+          "id": "crisis_002",
+          "scenario": "Power outage on busiest day (Saturday), no electricity for 4 hours",
+          "type": "infrastructure_failure",
+          "input_data": {
+            "outage_duration": "4 hours",
+            "day": "Saturday",
+            "appointments_during_outage": 25,
+            "backup_power": false,
+            "nearby_competition": 3
+          },
+          "expected_response": {
+            "immediate_actions": [
+              "Move to manual operations if possible",
+              "Contact all affected customers immediately",
+              "Offer mobile services for VIP customers",
+              "Partner with nearby business for temporary space"
+            ],
+            "customer_retention": "Free service voucher for affected customers",
+            "communication_strategy": "Transparent updates every 30 minutes",
+            "preparation": "Invest in backup generator for future"
+          }
+        },
+        {
+          "id": "crisis_003",
+          "scenario": "Viral negative review claims unsanitary conditions",
+          "type": "reputation_crisis",
+          "input_data": {
+            "review_platform": "Google Reviews",
+            "views": 5000,
+            "shares": 150,
+            "existing_rating": 4.2,
+            "claim": "Dirty tools and no sanitization",
+            "evidence": false
+          },
+          "expected_response": {
+            "immediate_response": [
+              "Professional public response within 1 hour",
+              "Invite reviewer for resolution",
+              "Post sanitization protocol video",
+              "Request loyal customers to share experiences"
+            ],
+            "damage_control": "Offer free safety inspection by health department",
+            "long_term": "Implement visible sanitization station",
+            "legal_consideration": "Document false claims for potential action"
+          }
+        }
+      ],
+      "holiday_rush_scenarios": [
+        {
+          "id": "holiday_001",
+          "scenario": "Christmas week - 300% increase in booking requests",
+          "type": "demand_spike",
+          "input_data": {
+            "normal_weekly_bookings": 150,
+            "requested_bookings": 450,
+            "available_slots": 200,
+            "days_until_christmas": 7,
+            "staff_count": 3
+          },
+          "expected_response": {
+            "capacity_optimization": [
+              "Reduce service time for simple cuts",
+              "Extend hours 7am-9pm",
+              "Hire temporary barber",
+              "Implement express service lane"
+            ],
+            "pricing_strategy": "25% premium for prime slots",
+            "customer_management": "Waitlist with automatic notifications",
+            "staff_incentives": "Holiday bonus for overtime"
+          }
+        },
+        {
+          "id": "holiday_002",
+          "scenario": "Thanksgiving week - half staff wants time off",
+          "type": "staff_shortage",
+          "input_data": {
+            "total_staff": 4,
+            "staff_requesting_off": 2,
+            "expected_customers": 180,
+            "competition_status": "Also short-staffed"
+          },
+          "expected_response": {
+            "scheduling_solution": "Rotating shifts with guaranteed time off",
+            "incentive_program": "Double pay for working barbers",
+            "customer_communication": "Advance notice of limited availability",
+            "strategic_approach": "Focus on high-value services only"
+          }
+        }
+      ],
+      "extreme_weather_events": [
+        {
+          "id": "weather_001",
+          "scenario": "Severe snowstorm warning, city likely shut down for 2 days",
+          "type": "weather_emergency",
+          "input_data": {
+            "storm_severity": "12-18 inches snow",
+            "warning_advance_time": "24 hours",
+            "appointments_next_48h": 60,
+            "staff_transportation": "50% rely on public transit"
+          },
+          "expected_response": {
+            "proactive_measures": [
+              "Contact all customers 24h in advance",
+              "Offer virtual consultations for product sales",
+              "Reschedule to following week",
+              "Provide weather updates via SMS"
+            ],
+            "staff_safety": "Close shop, ensure staff safety",
+            "business_continuity": "Process online product orders",
+            "recovery_plan": "Extended hours post-storm to accommodate backlog"
+          }
+        }
+      ],
+      "competitive_threats": [
+        {
+          "id": "competition_001",
+          "scenario": "Major chain opens next door with 50% lower prices",
+          "type": "aggressive_competition",
+          "input_data": {
+            "competitor": "SuperCuts",
+            "their_price": "$12",
+            "your_price": "$25",
+            "distance": "Next door",
+            "their_marketing_budget": "$50,000",
+            "your_marketing_budget": "$2,000"
+          },
+          "expected_response": {
+            "differentiation_strategy": [
+              "Emphasize premium experience",
+              "Showcase expertise and awards",
+              "Create loyalty program immediately",
+              "Partner with local businesses"
+            ],
+            "retention_tactics": "Lock in regulars with subscriptions",
+            "unique_value": "Offer services chain can't (straight razor, designs)",
+            "community_focus": "Become THE local barbershop"
+          }
+        }
+      ],
+      "regulatory_compliance": [
+        {
+          "id": "regulatory_001",
+          "scenario": "Health inspector finds violations, threatens closure",
+          "type": "compliance_crisis",
+          "input_data": {
+            "violations": ["Improper sanitization", "Expired licenses", "Missing documentation"],
+            "deadline_to_fix": "48 hours",
+            "potential_fine": "$5,000",
+            "risk_of_closure": true
+          },
+          "expected_response": {
+            "immediate_actions": [
+              "Address all violations within 24 hours",
+              "Hire compliance consultant",
+              "Document all corrections with photos",
+              "Request reinspection immediately"
+            ],
+            "communication": "Transparent update to customers about improvements",
+            "prevention": "Implement daily compliance checklist",
+            "training": "Mandatory compliance training for all staff"
+          }
+        }
+      ],
+      "technology_failures": [
+        {
+          "id": "tech_001",
+          "scenario": "Booking system crashes, all appointment data lost",
+          "type": "data_loss",
+          "input_data": {
+            "appointments_lost": "2 weeks worth",
+            "backup_available": false,
+            "customer_contacts": "Partial (60%)",
+            "paper_records": "None"
+          },
+          "expected_response": {
+            "recovery_actions": [
+              "Immediately switch to manual booking",
+              "Contact all known customers",
+              "Honor any claimed appointments",
+              "Offer compensation for confusion"
+            ],
+            "reconstruction": "Use payment records to rebuild schedule",
+            "prevention": "Implement hourly backups going forward",
+            "vendor_action": "Demand explanation and compensation from provider"
+          }
+        }
+      ],
+      "financial_crisis": [
+        {
+          "id": "financial_001",
+          "scenario": "Rent increased 40%, threatens profitability",
+          "type": "cost_crisis",
+          "input_data": {
+            "current_rent": "$3,000",
+            "new_rent": "$4,200",
+            "monthly_revenue": "$15,000",
+            "monthly_profit": "$2,500",
+            "lease_term_remaining": "6 months"
+          },
+          "expected_response": {
+            "negotiation_strategy": "Counter with 20% increase max",
+            "alternative_locations": "Research 3 backup locations",
+            "revenue_increase": [
+              "Raise prices 10%",
+              "Add high-margin services",
+              "Increase customer volume 15%",
+              "Sublease unused space/time"
+            ],
+            "cost_reduction": "Renegotiate all vendor contracts"
+          }
+        }
+      ],
+      "multi_shop_enterprise": [
+        {
+          "id": "enterprise_001",
+          "scenario": "Managing 5 locations during economic downturn",
+          "type": "enterprise_crisis",
+          "input_data": {
+            "locations": 5,
+            "revenue_decline": "25% across all shops",
+            "shops_profitable": 3,
+            "shops_losing": 2,
+            "total_employees": 25
+          },
+          "expected_response": {
+            "triage_approach": [
+              "Consolidate struggling locations",
+              "Shift best performers to profitable shops",
+              "Reduce hours at underperforming locations",
+              "Centralize purchasing for cost savings"
+            ],
+            "resource_sharing": "Rotate staff between locations",
+            "marketing_focus": "Concentrate budget on profitable locations",
+            "exit_strategy": "Plan orderly closure of 1 location if needed"
+          }
+        }
+      ],
+      "seasonal_extremes": [
+        {
+          "id": "seasonal_001",
+          "scenario": "Summer vacation - 70% customer drop for 8 weeks",
+          "type": "seasonal_crisis",
+          "input_data": {
+            "normal_weekly_customers": 200,
+            "summer_weekly_customers": 60,
+            "duration": "8 weeks",
+            "fixed_costs_monthly": "$8,000",
+            "location": "College town"
+          },
+          "expected_response": {
+            "survival_strategy": [
+              "Reduce operating hours",
+              "Focus on tourist market",
+              "Offer summer specials for locals",
+              "Launch mobile barbering service"
+            ],
+            "cost_management": "Negotiate temporary rent reduction",
+            "staff_management": "Voluntary unpaid leave with job guarantee",
+            "preparation": "Build reserve fund during peak season"
+          }
+        }
+      ]
+    },
+    "evaluation_metrics": {
+      "response_time": {
+        "immediate": 2.0,
+        "urgent": 5.0,
+        "standard": 10.0
+      },
+      "solution_quality": {
+        "practicality": 0.9,
+        "completeness": 0.85,
+        "customer_focus": 0.9,
+        "financial_wisdom": 0.85
+      },
+      "crisis_management": {
+        "speed_of_response": 0.95,
+        "damage_mitigation": 0.9,
+        "long_term_thinking": 0.85,
+        "stakeholder_consideration": 0.9
+      }
+    }
+  }
+}

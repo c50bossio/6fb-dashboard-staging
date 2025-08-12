@@ -10,7 +10,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
-import { useAuth } from '../../../components/SupabaseAuthProvider'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 
 
 export default function LoginPage() {
