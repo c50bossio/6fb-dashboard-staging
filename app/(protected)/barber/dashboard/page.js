@@ -9,7 +9,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ChartBarIcon,
-  BellIcon
+  BellIcon,
+  ScissorsIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import Link from 'next/link'
@@ -194,9 +195,9 @@ export default function BarberDashboard() {
               <ChartBarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-green-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">View Reports</p>
             </Link>
-            <Link href="/barber/schedule#availability" className="p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors text-center">
-              <ClockIcon className="h-5 sm:h-6 w-5 sm:w-6 text-purple-600 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900">Set Availability</p>
+            <Link href="/barber/services" className="p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors text-center">
+              <ScissorsIcon className="h-5 sm:h-6 w-5 sm:w-6 text-purple-600 mx-auto mb-1 sm:mb-2" />
+              <p className="text-xs sm:text-sm font-medium text-gray-900">My Services</p>
             </Link>
           </div>
         </div>

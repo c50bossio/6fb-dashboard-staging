@@ -1,0 +1,22 @@
+{
+  "type": "sms",
+  "campaign": {
+    "id": "campaign-sms-promo-001",
+    "name": "Monthly Promotion SMS",
+    "subject": "25% Off Special",
+    "message": "Hi {first_name}! Get 25% off all services this week at Elite Cuts. Book now!"
+  },
+  "shop": {
+    "id": "elite-cuts-001",
+    "name": "Elite Cuts",
+    "email": "info@elitecuts.com",
+    "phone": "(555) 123-4567",
+    "account_type": "shop",
+    "country": "US"
+  },
+  "recipients": [
+    {"phone": "+15551234567", "name": "John Doe", "first_name": "John"},
+    {"phone": "+15559876543", "name": "Jane Smith", "first_name": "Jane"},
+    {"phone": "+15555555555", "name": "Bob Johnson", "first_name": "Bob"}
+  ]
+}

@@ -15,7 +15,8 @@ import {
   XCircleIcon,
   PencilIcon,
   CalendarDaysIcon,
-  BellIcon
+  BellIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline'
 
 export default function ShopSettings() {
@@ -233,6 +234,7 @@ export default function ShopSettings() {
               { id: 'hours', label: 'Business Hours', icon: ClockIcon },
               { id: 'payment', label: 'Payment & Commission', icon: CreditCardIcon },
               { id: 'booking', label: 'Booking Settings', icon: CalendarDaysIcon },
+              { id: 'staff', label: 'Staff Permissions', icon: UserGroupIcon },
               { id: 'notifications', label: 'Notifications', icon: BellIcon }
             ].map(tab => (
               <button
@@ -718,6 +720,85 @@ export default function ShopSettings() {
                   />
                   <span className="text-sm text-gray-700">Allow walk-in appointments</span>
                 </label>
+              </div>
+            </div>
+          )}
+
+          {/* Staff Permissions Tab */}
+          {activeTab === 'staff' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Staff Permissions</h2>
+                  <p className="text-gray-600">Manage barber access and service permissions</p>
+                </div>
+                <a
+                  href="/shop/settings/staff"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center"
+                >
+                  <UserGroupIcon className="h-5 w-5 mr-2" />
+                  Manage Permissions
+                </a>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                      <UserGroupIcon className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-blue-900">Basic Level</p>
+                      <p className="text-xs text-blue-700">View schedule, set availability</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                      <UserGroupIcon className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-green-900">Intermediate Level</p>
+                      <p className="text-xs text-green-700">Service management, limited pricing</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <UserGroupIcon className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-purple-900">Advanced Level</p>
+                      <p className="text-xs text-purple-700">Full service control, analytics</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-sm font-medium text-gray-900 mb-2">Quick Actions</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Default new barber permissions:</span>
+                    <span className="font-medium text-gray-900">Basic Level</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Pricing variance allowed:</span>
+                    <span className="font-medium text-gray-900">±10%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Service creation permission:</span>
+                    <span className="font-medium text-gray-900">Intermediate+</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Analytics access:</span>
+                    <span className="font-medium text-gray-900">Advanced+</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}

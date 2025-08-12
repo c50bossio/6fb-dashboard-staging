@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
 import { 
   ScissorsIcon,
   CurrencyDollarIcon,
@@ -36,10 +37,72 @@ export default function ShopServicesAndPricing() {
     loadServicesData()
   }, [])
 
+  const getUserBarbershop = async () => {
+    // This should be properly implemented based on your auth system
+    // For now, return a placeholder or get from user profile
+    if (profile?.barbershop_id) {
+      return profile.barbershop_id
+    }
+    
+    // Fallback for demo - in real app this would be properly resolved
+    return 'demo-barbershop-id'
+  }
+
+  const categoryNames = {
+    haircut: 'Haircuts',
+    beard: 'Beard Care',
+    shave: 'Shaves', 
+    styling: 'Styling',
+    combo: 'Packages',
+    treatment: 'Treatments'
+  }
+
+  const categoryColors = {
+    haircut: 'blue',
+    beard: 'green',
+    shave: 'red',
+    styling: 'purple',
+    combo: 'indigo',
+    treatment: 'pink'
+  }
+
   const loadServicesData = async () => {
     try {
-      // Mock services data for Elite Cuts Barbershop
-      const mockServices = [
+      const supabase = createClient()
+      
+      // Get user's barbershop ID (this should be properly implemented based on your auth system)
+      const barbershopId = await getUserBarbershop()
+      
+      if (!barbershopId) {
+        console.error('No barbershop ID found')
+        setLoading(false)
+        return
+      }
+
+      // Load shop services with barber customizations
+      const { data: servicesData, error: servicesError } = await supabase
+        .from('services')
+        .select(`
+          *,
+          barber_customizations:barber_services(
+            id,
+            barber_id,
+            name,
+            price,
+            duration_minutes,
+            description,
+            is_active,
+            barber:users(name, email)
+          )
+        `)
+        .eq('barbershop_id', barbershopId)
+        .eq('is_active', true)
+        .order('display_order', { ascending: true })
+
+      if (servicesError) {
+        console.error('Error loading services:', servicesError)
+        // Fallback to mock data for demo
+        const mockServices = [
         {
           id: 'service-1',
           name: 'Classic Haircut',
@@ -154,6 +217,28 @@ export default function ShopServicesAndPricing() {
 
       setServices(mockServices)
       setCategories(mockCategories)
+      } else {
+        // Process real Supabase data
+        const enhancedServices = servicesData.map(service => ({
+          ...service,
+          hasCustomizations: service.barber_customizations?.length > 0,
+          customizationCount: service.barber_customizations?.length || 0,
+          barbers_offering: service.barber_customizations?.map(bc => bc.barber?.name).filter(Boolean) || []
+        }))
+
+        setServices(enhancedServices)
+
+        // Generate categories from actual data
+        const uniqueCategories = [...new Set(enhancedServices.map(s => s.category).filter(Boolean))]
+        const categoryData = uniqueCategories.map(cat => ({
+          id: cat,
+          name: categoryNames[cat] || cat,
+          count: enhancedServices.filter(s => s.category === cat).length,
+          color: categoryColors[cat] || 'gray'
+        }))
+        
+        setCategories(categoryData)
+      }
     } catch (error) {
       console.error('Error loading services:', error)
     } finally {

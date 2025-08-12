@@ -42,15 +42,20 @@ class SendGridEmailService {
         // Base SendGrid costs (per email)
         this.baseCost = 0.001; // $0.001 per email
         
-        if (!this.apiKey) {
-            console.warn('SENDGRID_API_KEY not configured - running in test mode');
+        // Enhanced error handling and retry configuration
+        this.retryAttempts = 3;
+        this.retryDelay = 1000; // 1 second base delay
+        this.sendGridApiBase = 'https://api.sendgrid.com/v3';
+        
+        // Determine test mode with better validation
+        if (!this.apiKey || this.apiKey.includes('placeholder') || this.apiKey.length < 50) {
+            console.warn('⚠️  SENDGRID_API_KEY not configured properly - running in test mode');
             this.testMode = true;
+            this.validationStatus = 'API_KEY_INVALID';
         } else {
             this.testMode = false;
-        }
-        
-        if (!this.testMode) {
             sgMail.setApiKey(this.apiKey);
+            this.validateApiKeyAsync(); // Async validation
         }
         
         // SendGrid rate limits and costs
@@ -68,6 +73,121 @@ class SendGridEmailService {
         
         // Initialize database schema
         this.initializeCampaignTables();
+    }
+
+    /**
+     * Asynchronously validate API key (non-blocking)
+     */
+    async validateApiKeyAsync() {
+        try {
+            const axios = require('axios');
+            const headers = {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json'
+            };
+
+            const response = await axios.get(`${this.sendGridApiBase}/user/account`, { headers });
+            this.validationStatus = 'VALIDATED';
+            this.accountInfo = response.data;
+            console.log('✅ SendGrid API key validated successfully');
+        } catch (error) {
+            this.validationStatus = 'VALIDATION_FAILED';
+            this.validationError = error.message;
+            console.warn('⚠️  SendGrid API key validation failed:', error.message);
+            this.testMode = true; // Fall back to test mode
+        }
+    }
+
+    /**
+     * Enhanced error handling for email sending
+     */
+    async sendEmailWithRetry(msg) {
+        for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
+            try {
+                const response = await sgMail.send(msg);
+                return {
+                    success: true,
+                    messageId: response[0].headers['x-message-id'],
+                    statusCode: response[0].statusCode,
+                    attempt: attempt
+                };
+            } catch (error) {
+                console.warn(`📧 Email send attempt ${attempt}/${this.retryAttempts} failed:`, error.message);
+                
+                if (attempt === this.retryAttempts || !this.shouldRetryError(error)) {
+                    return {
+                        success: false,
+                        error: this.parseEmailError(error),
+                        finalAttempt: attempt
+                    };
+                }
+                
+                // Wait before retry with exponential backoff
+                await this.delay(this.retryDelay * Math.pow(2, attempt - 1));
+            }
+        }
+    }
+
+    /**
+     * Parse email sending errors for better diagnostics
+     */
+    parseEmailError(error) {
+        const errorDetails = {
+            code: error.code,
+            message: error.message,
+            type: 'UNKNOWN_ERROR'
+        };
+
+        if (error.response) {
+            errorDetails.httpStatus = error.response.status;
+            errorDetails.httpBody = error.response.body;
+
+            switch (error.response.status) {
+                case 400: errorDetails.type = 'BAD_REQUEST'; break;
+                case 401: errorDetails.type = 'UNAUTHORIZED'; break;
+                case 403: errorDetails.type = 'FORBIDDEN'; break;
+                case 413: errorDetails.type = 'PAYLOAD_TOO_LARGE'; break;
+                case 429: errorDetails.type = 'RATE_LIMITED'; break;
+                case 500: errorDetails.type = 'SERVER_ERROR'; break;
+            }
+
+            if (error.response.body && error.response.body.errors) {
+                errorDetails.sendgridErrors = error.response.body.errors;
+            }
+        }
+
+        return errorDetails;
+    }
+
+    /**
+     * Determine if error should trigger retry
+     */
+    shouldRetryError(error) {
+        if (!error.response) return true; // Network errors should retry
+        
+        const status = error.response.status;
+        // Don't retry client errors (4xx) except rate limiting
+        if (status >= 400 && status < 500 && status !== 429) return false;
+        // Retry server errors (5xx) and rate limiting (429)
+        return status >= 500 || status === 429;
+    }
+
+    /**
+     * Get service status for diagnostics
+     */
+    getServiceStatus() {
+        return {
+            initialized: true,
+            testMode: this.testMode,
+            validationStatus: this.validationStatus,
+            validationError: this.validationError,
+            apiKeyConfigured: !!this.apiKey && !this.apiKey.includes('placeholder'),
+            fromEmail: this.platformFromEmail,
+            fromName: this.platformFromName,
+            accountInfo: this.accountInfo || null,
+            retryAttempts: this.retryAttempts,
+            version: '2.1.0'
+        };
     }
 
     /**
