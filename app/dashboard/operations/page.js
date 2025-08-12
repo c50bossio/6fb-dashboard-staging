@@ -44,11 +44,11 @@ const QUICK_ACTIONS = [
     href: '/dashboard/staff'
   },
   { 
-    name: 'Inventory Check', 
-    icon: ScissorsIcon, 
-    color: 'bg-purple-500 hover:bg-purple-600',
-    description: 'Review stock levels',
-    href: '/dashboard/inventory'
+    name: 'Capacity Planning', 
+    icon: LightBulbIcon, 
+    color: 'bg-indigo-500 hover:bg-indigo-600',
+    description: 'AI-powered capacity optimization',
+    href: '/dashboard/capacity-planning'
   },
   { 
     name: 'Daily Report', 

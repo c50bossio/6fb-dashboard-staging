@@ -1,14 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+import { createClient } from '../../../../lib/supabase/client'
 
 export async function GET(request) {
   try {
+    const supabase = createClient()
+    
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || '7'
     const customerId = searchParams.get('customerId')
@@ -22,11 +24,11 @@ export async function GET(request) {
     let bookingsQuery = supabase
       .from('bookings')
       .select('*', { count: 'exact' })
-      .gte('start_time', startDate.toISOString())
-      .lte('start_time', endDate.toISOString())
+      .gte('scheduled_at', startDate.toISOString())
+      .lte('scheduled_at', endDate.toISOString())
     
     if (customerId) {
-      bookingsQuery = bookingsQuery.eq('customer_id', customerId)
+      bookingsQuery = bookingsQuery.eq('client_id', customerId)
     }
     
     const { data: bookings, count: totalBookings, error: bookingsError } = await bookingsQuery
@@ -35,17 +37,17 @@ export async function GET(request) {
     
     // Calculate revenue
     const revenue = bookings
-      .filter(b => b.status === 'completed')
-      .reduce((sum, b) => sum + (b.price || 0), 0)
+      .filter(b => b.status === 'COMPLETED')
+      .reduce((sum, b) => sum + (b.service_price || 0), 0)
     
     // Service breakdown
     const serviceBreakdown = bookings.reduce((acc, booking) => {
-      const service = booking.service_type
+      const service = booking.service_name || 'Unknown Service'
       if (!acc[service]) {
         acc[service] = { count: 0, revenue: 0 }
       }
       acc[service].count++
-      acc[service].revenue += booking.price || 0
+      acc[service].revenue += booking.service_price || 0
       return acc
     }, {})
     
@@ -56,9 +58,9 @@ export async function GET(request) {
         acc[barberId] = { bookings: 0, revenue: 0, ratings: [] }
       }
       acc[barberId].bookings++
-      acc[barberId].revenue += booking.price || 0
-      if (booking.ai_score) {
-        acc[barberId].ratings.push(booking.ai_score)
+      acc[barberId].revenue += booking.service_price || 0
+      if (booking.rating) {
+        acc[barberId].ratings.push(booking.rating)
       }
       return acc
     }, {})
@@ -74,7 +76,7 @@ export async function GET(request) {
     // Peak hours analysis
     const hourCounts = {}
     bookings.forEach(booking => {
-      const hour = new Date(booking.start_time).getHours()
+      const hour = new Date(booking.scheduled_at).getHours()
       hourCounts[hour] = (hourCounts[hour] || 0) + 1
     })
     
@@ -165,7 +167,7 @@ export async function GET(request) {
     // Day preference pattern
     const dayOfWeekCounts = {}
     bookings.forEach(booking => {
-      const day = new Date(booking.start_time).getDay()
+      const day = new Date(booking.scheduled_at).getDay()
       dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1
     })
     
@@ -219,7 +221,16 @@ export async function GET(request) {
 // POST endpoint to track new bookings
 export async function POST(request) {
   try {
+    const supabase = createClient()
+    
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const bookingData = await request.json()
+    console.log('📊 Syncing booking data:', bookingData)
     
     // Insert booking into database
     const { data, error } = await supabase
@@ -227,19 +238,23 @@ export async function POST(request) {
       .insert([{
         ...bookingData,
         created_at: new Date().toISOString(),
-        ai_score: Math.floor(Math.random() * 20) + 80 // Simulate AI score
+        updated_at: new Date().toISOString(),
+        rating: Math.floor(Math.random() * 20) + 80 // Simulate rating
       }])
       .select()
       .single()
     
-    if (error) throw error
+    if (error) {
+      console.error('Error inserting booking:', error)
+      throw error
+    }
     
-    // Update customer stats if customer_id provided
-    if (bookingData.customer_id) {
+    // Update customer stats if client_id provided
+    if (bookingData.client_id) {
       const { data: customer } = await supabase
         .from('customers')
         .select('total_visits, total_spent, last_visit')
-        .eq('id', bookingData.customer_id)
+        .eq('id', bookingData.client_id)
         .single()
       
       if (customer) {
@@ -247,17 +262,17 @@ export async function POST(request) {
           .from('customers')
           .update({
             total_visits: (customer.total_visits || 0) + 1,
-            total_spent: (customer.total_spent || 0) + (bookingData.price || 0),
-            last_visit: bookingData.start_time
+            total_spent: (customer.total_spent || 0) + (bookingData.service_price || 0),
+            last_visit: bookingData.scheduled_at
           })
-          .eq('id', bookingData.customer_id)
+          .eq('id', bookingData.client_id)
       }
     }
     
     // Generate AI insights for the booking
     const insights = []
     
-    const bookingHour = new Date(bookingData.start_time).getHours()
+    const bookingHour = new Date(bookingData.scheduled_at).getHours()
     if (bookingHour >= 17) {
       insights.push({
         type: 'timing',

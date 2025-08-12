@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Billing System Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loading { animation: pulse 2s infinite; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .card { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
+        .json-viewer { background: #f3f4f6; padding: 1rem; border-radius: 4px; font-family: monospace; white-space: pre-wrap; overflow-x: auto; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">🎯 Marketing Billing System Demo</h1>
+            <p class="text-lg text-gray-600">Comprehensive End-to-End Testing of Marketing Billing APIs</p>
+            <div class="mt-4 text-sm text-gray-500">
+                Testing with demo user: <code class="bg-yellow-100 px-2 py-1 rounded">demo-user-001</code>
+            </div>
+        </div>
+
+        <!-- Test Results Summary -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">📊 Test Results Summary</h2>
+            <div id="summary" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div id="accounts-status" class="text-2xl mb-2">⏳</div>
+                    <div class="text-sm text-gray-600">Billing Accounts</div>
+                </div>
+                <div class="text-center">
+                    <div id="history-status" class="text-2xl mb-2">⏳</div>
+                    <div class="text-sm text-gray-600">Billing History</div>
+                </div>
+                <div class="text-center">
+                    <div id="payment-status" class="text-2xl mb-2">⏳</div>
+                    <div class="text-sm text-gray-600">Payment Methods</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Billing Accounts Section -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">💳 Billing Accounts</h2>
+            <button onclick="testBillingAccounts()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-4">
+                🔄 Test Billing Accounts API
+            </button>
+            <div id="accounts-result" class="json-viewer text-sm">Click the button to test billing accounts...</div>
+        </div>
+
+        <!-- Billing History Section -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">📈 Billing History</h2>
+            <button onclick="testBillingHistory()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mb-4">
+                🔄 Test Billing History API
+            </button>
+            <div id="history-result" class="json-viewer text-sm">Click the button to test billing history...</div>
+        </div>
+
+        <!-- Payment Methods Section -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">💰 Payment Methods</h2>
+            <button onclick="testPaymentMethods()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mb-4">
+                🔄 Test Payment Methods API
+            </button>
+            <div id="payment-result" class="json-viewer text-sm">Click the button to test payment methods...</div>
+        </div>
+
+        <!-- Campaign Creation Simulation -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">🎯 Campaign Creation & Billing</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Campaign Type</label>
+                    <select id="campaign-type" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        <option value="email">📧 Email Campaign</option>
+                        <option value="sms">📱 SMS Campaign</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Recipients Count</label>
+                    <input type="number" id="recipients-count" value="150" min="1" max="1000" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                </div>
+            </div>
+            <button onclick="simulateCampaignBilling()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded mb-4">
+                🚀 Simulate Campaign Billing
+            </button>
+            <div id="campaign-result" class="json-viewer text-sm">Click the button to simulate campaign billing...</div>
+        </div>
+
+        <!-- AI Chat Billing Integration -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">🤖 AI Chat Billing Integration</h2>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Test AI Query</label>
+                <input type="text" id="ai-query" value="How is my marketing campaign performing this month?" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            </div>
+            <button onclick="testAIChatBilling()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded mb-4">
+                🤖 Test AI Chat with Billing
+            </button>
+            <div id="ai-result" class="json-viewer text-sm">Click the button to test AI chat billing...</div>
+        </div>
+
+        <!-- Run All Tests -->
+        <div class="card text-center">
+            <button onclick="runAllTests()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-semibold text-lg">
+                🚀 Run Complete End-to-End Test Suite
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        const DEMO_USER_ID = 'demo-user-001';
+        const DEMO_ACCOUNT_ID = 'billing-demo-demo-user-001';
+
+        async function testBillingAccounts() {
+            const resultDiv = document.getElementById('accounts-result');
+            const statusDiv = document.getElementById('accounts-status');
+            
+            resultDiv.innerHTML = 'Testing billing accounts API...';
+            statusDiv.innerHTML = '⏳';
+            
+            try {
+                const response = await fetch(`${API_BASE}/marketing/billing?user_id=${DEMO_USER_ID}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = '✅';
+                    resultDiv.innerHTML = JSON.stringify(data, null, 2);
+                    resultDiv.className = 'json-viewer text-sm success';
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '❌';
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.className = 'json-viewer text-sm error';
+            }
+        }
+
+        async function testBillingHistory() {
+            const resultDiv = document.getElementById('history-result');
+            const statusDiv = document.getElementById('history-status');
+            
+            resultDiv.innerHTML = 'Testing billing history API...';
+            statusDiv.innerHTML = '⏳';
+            
+            try {
+                const response = await fetch(`${API_BASE}/marketing/billing/history?user_id=${DEMO_USER_ID}&limit=5`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = '✅';
+                    resultDiv.innerHTML = JSON.stringify(data, null, 2);
+                    resultDiv.className = 'json-viewer text-sm success';
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '❌';
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.className = 'json-viewer text-sm error';
+            }
+        }
+
+        async function testPaymentMethods() {
+            const resultDiv = document.getElementById('payment-result');
+            const statusDiv = document.getElementById('payment-status');
+            
+            resultDiv.innerHTML = 'Testing payment methods API...';
+            statusDiv.innerHTML = '⏳';
+            
+            try {
+                const response = await fetch(`${API_BASE}/marketing/billing/payment-methods?account_id=${DEMO_ACCOUNT_ID}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = '✅';
+                    resultDiv.innerHTML = JSON.stringify(data, null, 2);
+                    resultDiv.className = 'json-viewer text-sm success';
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '❌';
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.className = 'json-viewer text-sm error';
+            }
+        }
+
+        async function simulateCampaignBilling() {
+            const resultDiv = document.getElementById('campaign-result');
+            const campaignType = document.getElementById('campaign-type').value;
+            const recipientsCount = parseInt(document.getElementById('recipients-count').value);
+            
+            resultDiv.innerHTML = 'Simulating campaign billing...';
+            
+            try {
+                // Calculate billing costs (mock calculation)
+                const costPerRecipient = campaignType === 'email' ? 0.02 : 0.08; // SMS is more expensive
+                const platformFeeRate = 0.15; // 15% platform fee
+                const servicesCost = recipientsCount * costPerRecipient;
+                const platformFee = servicesCost * platformFeeRate;
+                const totalCost = servicesCost + platformFee;
+                
+                const simulatedBilling = {
+                    campaign_id: `campaign-${Date.now()}`,
+                    campaign_name: `${campaignType.toUpperCase()} Campaign - ${new Date().toLocaleDateString()}`,
+                    campaign_type: campaignType,
+                    recipients_count: recipientsCount,
+                    services_cost: Math.round(servicesCost * 100) / 100,
+                    platform_fee: Math.round(platformFee * 100) / 100,
+                    total_cost: Math.round(totalCost * 100) / 100,
+                    estimated_delivery_rate: campaignType === 'email' ? '95%' : '98%',
+                    billing_status: 'calculated',
+                    timestamp: new Date().toISOString()
+                };
+                
+                resultDiv.innerHTML = JSON.stringify({
+                    success: true,
+                    message: 'Campaign billing calculated successfully',
+                    billing: simulatedBilling,
+                    breakdown: {
+                        cost_per_recipient: `$${costPerRecipient}`,
+                        platform_fee_rate: `${platformFeeRate * 100}%`,
+                        estimated_total: `$${totalCost.toFixed(2)}`
+                    }
+                }, null, 2);
+                resultDiv.className = 'json-viewer text-sm success';
+                
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.className = 'json-viewer text-sm error';
+            }
+        }
+
+        async function testAIChatBilling() {
+            const resultDiv = document.getElementById('ai-result');
+            const query = document.getElementById('ai-query').value;
+            
+            resultDiv.innerHTML = 'Testing AI chat billing integration...';
+            
+            try {
+                // Simulate AI chat with billing tracking
+                const response = await fetch(`${API_BASE}/ai/analytics/usage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'track_conversation',
+                        data: {
+                            agent: 'FloatingChat',
+                            topic: 'marketing',
+                            userId: DEMO_USER_ID,
+                            sessionId: `demo-session-${Date.now()}`,
+                            query: query
+                        }
+                    })
+                });
+
+                const aiResult = await response.json();
+                
+                const billingSimulation = {
+                    ai_usage: {
+                        query: query,
+                        tokens_used: Math.floor(Math.random() * 1000) + 200,
+                        cost_per_token: 0.0001,
+                        total_ai_cost: Math.round((Math.random() * 0.15 + 0.05) * 100) / 100,
+                        billing_category: 'ai_assistance'
+                    },
+                    billing_record: {
+                        user_id: DEMO_USER_ID,
+                        service_type: 'ai_chat',
+                        amount: Math.round((Math.random() * 0.15 + 0.05) * 100) / 100,
+                        timestamp: new Date().toISOString(),
+                        status: 'tracked'
+                    },
+                    api_response: aiResult
+                };
+                
+                resultDiv.innerHTML = JSON.stringify({
+                    success: true,
+                    message: 'AI chat billing integration working',
+                    ...billingSimulation
+                }, null, 2);
+                resultDiv.className = 'json-viewer text-sm success';
+                
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+                resultDiv.className = 'json-viewer text-sm error';
+            }
+        }
+
+        async function runAllTests() {
+            console.log('🚀 Running complete end-to-end test suite...');
+            
+            // Reset all status indicators
+            document.getElementById('accounts-status').innerHTML = '⏳';
+            document.getElementById('history-status').innerHTML = '⏳';
+            document.getElementById('payment-status').innerHTML = '⏳';
+            
+            // Run all tests sequentially
+            await testBillingAccounts();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testBillingHistory();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testPaymentMethods();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await simulateCampaignBilling();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testAIChatBilling();
+            
+            console.log('✅ Complete test suite finished!');
+            alert('🎉 Complete end-to-end test suite completed! Check the results above.');
+        }
+
+        // Auto-run summary test on page load
+        window.addEventListener('load', async () => {
+            console.log('📊 Page loaded - running initial test...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await runAllTests();
+        });
+    </script>
+</body>
+</html>

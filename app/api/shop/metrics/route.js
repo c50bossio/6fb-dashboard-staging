@@ -166,7 +166,7 @@ export async function GET(request) {
     
     // Get today's bookings count
     const { count: todayBookings } = await supabase
-      .from('appointments')
+      .from('bookings')
       .select('*', { count: 'exact', head: true })
       .eq('barbershop_id', shop.id)
       .gte('start_time', todayISO)
@@ -178,7 +178,7 @@ export async function GET(request) {
     const firstDayOfMonthISO = firstDayOfMonth.toISOString()
     
     const { count: monthlyBookings } = await supabase
-      .from('appointments')
+      .from('bookings')
       .select('*', { count: 'exact', head: true })
       .eq('barbershop_id', shop.id)
       .gte('start_time', firstDayOfMonthISO)

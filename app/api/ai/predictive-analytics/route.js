@@ -403,7 +403,7 @@ async function generatePredictiveDashboard(barbershop_id) {
     const historicalData = await getHistoricalRevenue(barbershop_id)
     
     // Import dashboard data functions for real metrics
-    const { getBusinessMetrics } = await import('../../../lib/dashboard-data')
+    const { getBusinessMetrics } = await import('../../../../lib/dashboard-data')
     const currentMetrics = await getBusinessMetrics(barbershop_id)
     
     // Generate forecasts based on real data
@@ -586,19 +586,19 @@ async function getHistoricalRevenue(barbershop_id) {
   // Fetch real historical data from database
   try {
     // Import the dashboard data functions to access real database
-    const { getBusinessMetrics, getPredictiveData } = await import('../../../lib/dashboard-data')
+    const { getBusinessMetrics, getPredictiveData } = await import('../../../../lib/dashboard-data')
     
     // Get actual business metrics from database
     const metrics = await getBusinessMetrics(barbershop_id, '90d')
     
     // Also try to get appointments and payments data for more detailed history
-    const { createClient } = await import('../../../lib/supabase/server')
+    const { createClient } = await import('../../../../lib/supabase/server')
     const supabase = createClient()
     
-    // Get last 90 days of appointments
+    // Get last 90 days of bookings (consolidated table with more comprehensive data)
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-    const { data: appointments } = await supabase
-      .from('appointments')
+    const { data: bookings } = await supabase
+      .from('bookings')
       .select('*')
       .gte('created_at', ninetyDaysAgo.toISOString())
       .order('created_at', { ascending: false })
@@ -614,14 +614,18 @@ async function getHistoricalRevenue(barbershop_id) {
     // Group data by day for historical analysis
     const dailyData = {}
     
-    // Process appointments by day
-    if (appointments && appointments.length > 0) {
-      appointments.forEach(apt => {
-        const date = apt.created_at.split('T')[0]
+    // Process bookings by day
+    if (bookings && bookings.length > 0) {
+      bookings.forEach(booking => {
+        const date = booking.created_at.split('T')[0]
         if (!dailyData[date]) {
           dailyData[date] = { date, revenue: 0, bookings: 0 }
         }
         dailyData[date].bookings++
+        // Add revenue from booking if available
+        if (booking.price) {
+          dailyData[date].revenue += parseFloat(booking.price)
+        }
       })
     }
     

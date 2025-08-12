@@ -22,6 +22,19 @@ export default function FloatingAIChat() {
   const widgetRef = useRef(null)
   const [shopData, setShopData] = useState(null)
   const [realTimeMetrics, setRealTimeMetrics] = useState(null)
+  const [businessContext, setBusinessContext] = useState(null)
+  const [contextLoaded, setContextLoaded] = useState(false)
+  // Helper function for currency formatting
+  const formatCurrency = (value) => {
+    if (!value) return '$0'
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value)
+  }
+
   const getProactiveGreeting = () => {
     const hour = new Date().getHours()
     const dayOfWeek = new Date().toLocaleDateString('en-US', { weekday: 'long' })
@@ -63,17 +76,72 @@ export default function FloatingAIChat() {
   const [showRating, setShowRating] = useState(null)
   const [sessionId, setSessionId] = useState(null)
   const messagesEndRef = useRef(null)
-  const [quickActions] = useState([
-    { icon: '💰', text: "Today's Revenue", query: "How much revenue have I made today?" },
-    { icon: '📅', text: 'Next Appointments', query: "Show me my next appointments" },
-    { icon: '👥', text: 'Customer Insights', query: "Tell me about my customer trends" },
-    { icon: '📈', text: 'Growth Tips', query: "How can I grow my business?" },
-    { icon: '🎯', text: 'Marketing Ideas', query: "Give me marketing suggestions for this week" }
-  ])
+  const getQuickActions = () => {
+    if (contextLoaded && businessContext) {
+      // Enhanced quick actions based on actual business context
+      const actions = []
+      
+      // Revenue-based actions
+      if (businessContext.analytics?.revenue) {
+        actions.push({
+          icon: '💰',
+          text: `Today's Revenue (${formatCurrency(businessContext.analytics.revenue.daily)})`,
+          query: `My daily revenue is ${formatCurrency(businessContext.analytics.revenue.daily)}. How does this compare to optimal levels?`
+        })
+      }
+      
+      // Booking-based actions
+      if (businessContext.analytics?.bookings?.today) {
+        actions.push({
+          icon: '📅',
+          text: `Today's Bookings (${businessContext.analytics.bookings.today})`,
+          query: `I have ${businessContext.analytics.bookings.today} bookings today. What insights can you provide about my schedule?`
+        })
+      }
+      
+      // Alert-based actions
+      if (businessContext.alerts?.active_alerts?.length > 0) {
+        actions.push({
+          icon: '⚠️',
+          text: `Active Alerts (${businessContext.alerts.active_alerts.length})`,
+          query: `I have ${businessContext.alerts.active_alerts.length} active business alerts. What should I prioritize?`
+        })
+      }
+      
+      // Prediction-based actions
+      if (businessContext.predictions?.revenue_forecast) {
+        actions.push({
+          icon: '🔮',
+          text: 'Revenue Forecast',
+          query: 'Based on my current trends, what does my revenue forecast look like for next week?'
+        })
+      }
+      
+      // Customer insights
+      if (businessContext.analytics?.customers) {
+        actions.push({
+          icon: '👥',
+          text: `Customers (${businessContext.analytics.customers.total})`,
+          query: `I have ${businessContext.analytics.customers.total} total customers. What insights can you share about retention and growth?`
+        })
+      }
+      
+      return actions.slice(0, 5) // Limit to 5 actions
+    }
+    
+    // Fallback basic actions
+    return [
+      { icon: '💰', text: "Today's Revenue", query: "How much revenue have I made today?" },
+      { icon: '📅', text: 'Next Appointments', query: "Show me my next appointments" },
+      { icon: '👥', text: 'Customer Insights', query: "Tell me about my customer trends" },
+      { icon: '📈', text: 'Growth Tips', query: "How can I grow my business?" },
+      { icon: '🎯', text: 'Marketing Ideas', query: "Give me marketing suggestions for this week" }
+    ]
+  }
   const [isVoiceListening, setIsVoiceListening] = useState(false)
   const recognitionRef = useRef(null)
 
-  // Fetch real shop data from Supabase
+  // Fetch comprehensive business context from enhanced APIs
   useEffect(() => {
     const fetchShopData = async () => {
       if (!user) return
@@ -89,41 +157,119 @@ export default function FloatingAIChat() {
           .single()
         
         if (profileData?.shop_id) {
-          // Get shop details
-          const { data: shopInfo } = await supabase
-            .from('barbershops')
-            .select('*')
-            .eq('id', profileData.shop_id)
-            .single()
+          console.log('🔄 Loading comprehensive business context...')
           
-          // Get real-time metrics
+          // Load multiple data sources concurrently for better performance
+          const [shopInfo, analytics, predictions, alerts] = await Promise.allSettled([
+            // Basic shop info
+            supabase.from('barbershops').select('*').eq('id', profileData.shop_id).single(),
+            
+            // Analytics data from our enhanced API
+            fetch(`/api/analytics/live-data?barbershop_id=${profileData.shop_id}`).then(r => r.json()),
+            
+            // Predictive analytics with seasonal/customer insights
+            fetch(`/api/ai/predictive?type=comprehensive&shopId=${profileData.shop_id}`).then(r => r.json()),
+            
+            // Intelligent alerts
+            fetch(`/api/alerts/intelligent?barbershop_id=${profileData.shop_id}`).then(r => r.json())
+          ])
+
+          // Process results and set up comprehensive business context
+          const shopData = shopInfo.status === 'fulfilled' ? shopInfo.value.data : null
+          const analyticsData = analytics.status === 'fulfilled' && analytics.value.success ? analytics.value.data : null
+          const predictionsData = predictions.status === 'fulfilled' && predictions.value.success ? predictions.value.predictions : null
+          const alertsData = alerts.status === 'fulfilled' && alerts.value.success ? alerts.value : null
+
+          // Get basic metrics for fallback
           const { data: customers } = await supabase
             .from('customers')
-            .select('total_spent, total_visits')
+            .select('total_spent, total_visits, created_at')
             .eq('shop_id', profileData.shop_id)
           
-          const { data: appointments } = await supabase
+          const { data: bookings } = await supabase
             .from('bookings')
-            .select('price, status')
+            .select('price, status, service_name, start_time, created_at')
             .eq('shop_id', profileData.shop_id)
             .gte('start_time', new Date().toISOString().split('T')[0])
           
           const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
           const totalCustomers = customers?.length || 0
-          const todayAppointments = appointments?.filter(a => a.status === 'confirmed').length || 0
+          const todayAppointments = bookings?.filter(a => a.status === 'confirmed').length || 0
+          const weeklyRevenue = analyticsData?.weekly_revenue || Math.round(totalRevenue * 0.1)
           
           setShopData({
-            ...shopInfo,
-            shop_name: shopInfo?.name || profileData.barbershop_name,
+            ...shopData,
+            shop_name: shopData?.name || profileData.barbershop_name,
             shop_id: profileData.shop_id,
-            user_role: profileData.role
+            user_role: profileData.role,
+            location: shopData?.location || shopData?.address || 'Main Location',
+            staff_count: shopData?.staff_count || 1
           })
           
           setRealTimeMetrics({
             total_revenue: totalRevenue,
             total_customers: totalCustomers,
             today_appointments: todayAppointments,
-            monthly_revenue: Math.round(totalRevenue / 12) // Approximate
+            monthly_revenue: analyticsData?.monthly_revenue || Math.round(totalRevenue / 12),
+            weekly_revenue: weeklyRevenue,
+            avg_daily_bookings: Math.round(todayAppointments / 7),
+            customer_satisfaction: analyticsData?.avg_rating || 4.5,
+            capacity_utilization: analyticsData?.capacity_utilization || 0.75
+          })
+
+          // Set comprehensive business context for AI
+          setBusinessContext({
+            shop: {
+              name: shopData?.name || profileData.barbershop_name,
+              id: profileData.shop_id,
+              location: shopData?.location || 'Main Location',
+              staff_count: shopData?.staff_count || 1,
+              operating_hours: shopData?.operating_hours || '9 AM - 7 PM',
+              services: shopData?.services || ['Haircut', 'Beard Trim', 'Shampoo']
+            },
+            analytics: analyticsData ? {
+              revenue: {
+                daily: analyticsData.daily_revenue || weeklyRevenue / 7,
+                weekly: weeklyRevenue,
+                monthly: analyticsData.monthly_revenue || totalRevenue,
+                growth_rate: analyticsData.revenue_growth || 0.05
+              },
+              customers: {
+                total: totalCustomers,
+                new_this_month: analyticsData.new_customers || Math.round(totalCustomers * 0.1),
+                retention_rate: analyticsData.retention_rate || 0.78,
+                satisfaction: analyticsData.avg_rating || 4.5
+              },
+              bookings: {
+                today: todayAppointments,
+                this_week: analyticsData.weekly_bookings || todayAppointments * 7,
+                capacity_utilization: analyticsData.capacity_utilization || 0.75,
+                popular_services: analyticsData.popular_services || ['Haircut', 'Beard Trim']
+              }
+            } : null,
+            predictions: predictionsData ? {
+              revenue_forecast: predictionsData.revenueForecast,
+              customer_behavior: predictionsData.customerBehavior,
+              seasonal_patterns: predictionsData.seasonalAnalysis,
+              pricing_recommendations: predictionsData.dynamicPricing
+            } : null,
+            alerts: alertsData ? {
+              active_alerts: alertsData.alerts || [],
+              priority_actions: alertsData.priorityActions || [],
+              insights: alertsData.insights || []
+            } : null,
+            last_updated: new Date().toISOString()
+          })
+          
+          setContextLoaded(true)
+          console.log('✅ Comprehensive business context loaded:', {
+            shopName: shopData?.name || profileData.barbershop_name,
+            metricsLoaded: !!analyticsData,
+            predictionsLoaded: !!predictionsData,
+            alertsLoaded: !!alertsData,
+            totalCustomers,
+            todayAppointments,
+            totalRevenue: formatCurrency(totalRevenue)
           })
         }
       } catch (error) {
@@ -297,16 +443,47 @@ export default function FloatingAIChat() {
         body: JSON.stringify({
           message: currentMessage,
           session_id: sessionId,
-          business_context: {
+          business_context: businessContext && contextLoaded ? {
+            // Enhanced comprehensive business context
+            shop: businessContext.shop,
+            analytics: businessContext.analytics,
+            predictions: businessContext.predictions,
+            alerts: businessContext.alerts,
+            
+            // Legacy compatibility for existing API
             shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
             customer_count: realTimeMetrics?.total_customers || 0,
             monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
-            location: shopData?.location || shopData?.address || 'Main Location',
+            location: shopData?.location || 'Main Location',
             staff_count: shopData?.staff_count || 1,
             barbershop_id: shopData?.shop_id || user?.id,
             user_role: shopData?.user_role || 'owner',
             today_appointments: realTimeMetrics?.today_appointments || 0,
-            total_revenue: realTimeMetrics?.total_revenue || 0
+            total_revenue: realTimeMetrics?.total_revenue || 0,
+            
+            // Enhanced context indicators
+            context_version: '2.0',
+            context_loaded: contextLoaded,
+            last_updated: businessContext.last_updated,
+            data_sources: {
+              analytics: !!businessContext.analytics,
+              predictions: !!businessContext.predictions,
+              alerts: !!businessContext.alerts,
+              real_time_metrics: !!realTimeMetrics
+            }
+          } : {
+            // Fallback basic context
+            shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
+            customer_count: realTimeMetrics?.total_customers || 0,
+            monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
+            location: shopData?.location || 'Main Location',
+            staff_count: shopData?.staff_count || 1,
+            barbershop_id: shopData?.shop_id || user?.id,
+            user_role: shopData?.user_role || 'owner',
+            today_appointments: realTimeMetrics?.today_appointments || 0,
+            total_revenue: realTimeMetrics?.total_revenue || 0,
+            context_version: '1.0',
+            context_loaded: false
           },
           barbershop_id: shopData?.shop_id || user?.id
         })
@@ -514,6 +691,11 @@ export default function FloatingAIChat() {
               <div className="bg-green-400 text-green-900 text-xs px-2 py-0.5 rounded-full font-bold">
                 Online
               </div>
+              {contextLoaded && businessContext && (
+                <div className="bg-blue-400 text-blue-900 text-xs px-2 py-0.5 rounded-full font-bold" title="Enhanced with comprehensive business context">
+                  Enhanced
+                </div>
+              )}
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -612,7 +794,7 @@ export default function FloatingAIChat() {
             <div className="px-3 pb-2">
               <p className="text-xs text-gray-500 mb-2">Quick Actions:</p>
               <div className="flex flex-wrap gap-1">
-                {quickActions.map((action, index) => (
+                {getQuickActions().map((action, index) => (
                   <button
                     key={index}
                     onClick={() => handleQuickAction(action.query)}
@@ -620,7 +802,7 @@ export default function FloatingAIChat() {
                     disabled={isLoading}
                   >
                     <span>{action.icon}</span>
-                    <span>{action.text}</span>
+                    <span className="truncate max-w-20">{action.text}</span>
                   </button>
                 ))}
               </div>

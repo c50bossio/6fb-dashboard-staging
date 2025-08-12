@@ -120,9 +120,9 @@ export default function BarberReports() {
       let appointments = null
       let apptError = null
       
-      // Try appointments table first
+      // Try bookings table first  
       const appointmentsResult = await supabase
-        .from('appointments')
+        .from('bookings')
         .select('*')
         .eq('barber_id', currentUser.id)
         .gte('created_at', startDate.toISOString())

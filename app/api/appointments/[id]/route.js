@@ -32,7 +32,7 @@ export async function GET(request, { params }) {
     }
 
     const { data: appointment, error } = await supabase
-      .from('appointments')
+      .from('bookings')
       .select(`
         *,
         client:users!appointments_client_id_fkey(id, name, email, phone),
@@ -88,7 +88,7 @@ export async function PATCH(request, { params }) {
     if (updateData.scheduled_at || updateData.duration_minutes) {
       // Get current appointment details
       const { data: currentAppointment, error: fetchError } = await supabase
-        .from('appointments')
+        .from('bookings')
         .select('barber_id, scheduled_at, duration_minutes')
         .eq('id', id)
         .single()
@@ -102,7 +102,7 @@ export async function PATCH(request, { params }) {
 
       // Check for conflicts
       const conflictCheck = await supabase
-        .from('appointments')
+        .from('bookings')
         .select('id, scheduled_at, duration_minutes')
         .eq('barber_id', currentAppointment.barber_id)
         .eq('status', 'CONFIRMED')
@@ -131,7 +131,7 @@ export async function PATCH(request, { params }) {
     // Recalculate total if price or tip changes
     if (updateData.service_price !== undefined || updateData.tip_amount !== undefined) {
       const { data: current, error: currentError } = await supabase
-        .from('appointments')
+        .from('bookings')
         .select('service_price, tip_amount')
         .eq('id', id)
         .single()
@@ -145,7 +145,7 @@ export async function PATCH(request, { params }) {
 
     // Update appointment
     const { data: appointment, error } = await supabase
-      .from('appointments')
+      .from('bookings')
       .update({
         ...updateData,
         updated_at: new Date().toISOString()
@@ -194,7 +194,7 @@ export async function DELETE(request, { params }) {
     if (hardDelete) {
       // Permanently delete appointment
       const { error } = await supabase
-        .from('appointments')
+        .from('bookings')
         .delete()
         .eq('id', id)
 
@@ -209,7 +209,7 @@ export async function DELETE(request, { params }) {
     } else {
       // Soft delete by marking as cancelled
       const { data: appointment, error } = await supabase
-        .from('appointments')
+        .from('bookings')
         .update({
           status: 'CANCELLED',
           updated_at: new Date().toISOString()

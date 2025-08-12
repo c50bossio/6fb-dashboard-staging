@@ -50,7 +50,7 @@ export async function GET(request) {
 
     // Build query
     let query = supabase
-      .from('appointments')
+      .from('bookings')
       .select(`
         *,
         client:users!appointments_client_id_fkey(id, name, email, phone),
@@ -165,7 +165,7 @@ export async function GET(request) {
 
     // Get total count for pagination
     let countQuery = supabase
-      .from('appointments')
+      .from('bookings')
       .select('*', { count: 'exact', head: true })
 
     // Apply same filters for count
@@ -227,7 +227,7 @@ export async function POST(request) {
 
     // Check for time conflicts
     const conflictCheck = await supabase
-      .from('appointments')
+      .from('bookings')
       .select('id, scheduled_at, duration_minutes')
       .eq('barber_id', appointmentData.barber_id)
       .eq('status', 'CONFIRMED')
@@ -258,7 +258,7 @@ export async function POST(request) {
 
     // Create appointment
     const { data: appointment, error } = await supabase
-      .from('appointments')
+      .from('bookings')
       .insert({
         ...appointmentData,
         total_amount,

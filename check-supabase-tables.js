@@ -1,126 +1,103 @@
-#!/usr/bin/env node
+const { createClient } = require('@supabase/supabase-js');
 
-/**
- * Check what tables already exist in Supabase to avoid duplicates
- */
+const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c';
 
-const { createClient } = require('@supabase/supabase-js')
-require('dotenv').config({ path: '.env.local' })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkExistingTables() {
-  console.log('🔍 Checking existing tables in Supabase...\n')
+  console.log('🔍 Checking existing tables in Supabase...\n');
   
-  const coreTables = [
-    'appointments',
-    'customers', 
-    'payments',
+  // List of potential tables to check
+  const tablesToCheck = [
+    'profiles',
+    'appointments', 
+    'transactions',
     'services',
     'barbers',
     'barbershops',
-    'business_metrics',
-    'ai_insights',
-    'ai_agents',
-    'chat_history'
-  ]
+    'barbershop_staff',
+    'customers',
+    'bookings',
+    'payments',
+    'users',
+    'campaigns',
+    'campaign_recipients',
+    'campaign_analytics',
+    'notifications',
+    'agents',
+    'tenants',
+    'subscriptions',
+    'reviews',
+    'availability',
+    'barber_availability',
+    'service_categories',
+    'products',
+    'inventory'
+  ];
   
-  const results = {
-    existing: [],
-    missing: [],
-    errors: []
-  }
+  console.log('Checking for existing tables:');
+  console.log('================================');
   
-  for (const tableName of coreTables) {
+  const existingTables = [];
+  const missingTables = [];
+  
+  for (const table of tablesToCheck) {
     try {
-      // Try to query the table to see if it exists
       const { count, error } = await supabase
-        .from(tableName)
-        .select('*', { count: 'exact', head: true })
+        .from(table)
+        .select('*', { count: 'exact', head: true });
       
-      if (error) {
-        if (error.message.includes('does not exist') || error.code === 'PGRST116') {
-          console.log(`❌ Table missing: ${tableName}`)
-          results.missing.push(tableName)
-        } else {
-          console.log(`⚠️  Table "${tableName}" error:`, error.message)
-          results.errors.push({ table: tableName, error: error.message })
-        }
+      if (!error) {
+        existingTables.push({ name: table, count: count || 0 });
+        console.log('✅', table.padEnd(25), '- EXISTS (', count || 0, 'records)');
+      } else if (error.message && error.message.includes('does not exist')) {
+        missingTables.push(table);
+        console.log('❌', table.padEnd(25), '- Does not exist');
       } else {
-        console.log(`✅ Table exists: ${tableName} (${count || 0} rows)`)
-        results.existing.push({ table: tableName, count })
+        console.log('⚠️', table.padEnd(25), '- Access error');
       }
-    } catch (err) {
-      console.log(`❌ Failed to check ${tableName}:`, err.message)
-      results.errors.push({ table: tableName, error: err.message })
+    } catch (e) {
+      console.log('⚠️', table.padEnd(25), '- Error:', e.message);
     }
   }
   
-  console.log('\n📊 Summary:')
-  console.log('='.repeat(50))
-  console.log(`✅ Existing tables: ${results.existing.length}`)
-  console.log(`❌ Missing tables: ${results.missing.length}`) 
-  console.log(`⚠️  Errors: ${results.errors.length}`)
+  // Summary
+  console.log('\n📊 Summary:');
+  console.log('================================');
+  console.log('Total tables found:', existingTables.length);
+  console.log('Tables with data:', existingTables.filter(t => t.count > 0).length);
+  console.log('Empty tables:', existingTables.filter(t => t.count === 0).length);
+  console.log('Missing tables:', missingTables.length);
   
-  if (results.existing.length > 0) {
-    console.log('\n📋 Tables that already exist:')
-    results.existing.forEach(({ table, count }) => {
-      console.log(`   - ${table} (${count || 0} rows)`)
-    })
+  // Show tables with data
+  console.log('\n📈 Tables with data:');
+  console.log('================================');
+  const tablesWithData = existingTables.filter(t => t.count > 0).sort((a, b) => b.count - a.count);
+  for (const table of tablesWithData) {
+    console.log(`${table.name}:`.padEnd(25), table.count, 'records');
   }
   
-  if (results.missing.length > 0) {
-    console.log('\n🔧 Tables we need to create:')
-    results.missing.forEach(table => {
-      console.log(`   - ${table}`)
-    })
-  }
-  
-  if (results.errors.length > 0) {
-    console.log('\n⚠️  Tables with errors:')
-    results.errors.forEach(({ table, error }) => {
-      console.log(`   - ${table}: ${error}`)
-    })
-  }
-  
-  // Check if we have data to migrate
-  if (results.existing.length > 0) {
-    console.log('\n⚠️  WARNING: Some tables already exist!')
-    console.log('   Before running migration scripts:')
-    console.log('   1. Check if existing data should be preserved')
-    console.log('   2. Consider backup before any changes')
-    console.log('   3. Use INSERT ... ON CONFLICT to avoid duplicates')
-  }
-  
-  return results
-}
-
-// Additional check for auth.users table
-async function checkAuthUsers() {
-  try {
-    const { count, error } = await supabase
-      .from('auth.users')
-      .select('*', { count: 'exact', head: true })
-    
-    if (!error) {
-      console.log(`\n👥 Users in auth.users: ${count || 0}`)
+  // Show what we need for predictive analytics
+  console.log('\n🎯 For Predictive Analytics, we need:');
+  console.log('================================');
+  const requiredTables = ['appointments', 'transactions'];
+  for (const table of requiredTables) {
+    const exists = existingTables.find(t => t.name === table);
+    if (exists) {
+      console.log(`✅ ${table}:`.padEnd(25), exists.count, 'records');
+    } else {
+      console.log(`❌ ${table}:`.padEnd(25), 'MISSING - needs to be created');
     }
-  } catch (err) {
-    // auth.users might not be accessible via API
-    console.log('\n👥 Users table: Not accessible via API (normal)')
+  }
+  
+  // Check if we have bookings table as alternative to appointments
+  const hasBookings = existingTables.find(t => t.name === 'bookings');
+  if (hasBookings && hasBookings.count > 0) {
+    console.log('\n💡 Alternative found:');
+    console.log(`   'bookings' table has ${hasBookings.count} records`);
+    console.log('   Could be used instead of appointments table');
   }
 }
 
-async function main() {
-  try {
-    await checkExistingTables()
-    await checkAuthUsers()
-  } catch (error) {
-    console.error('Failed to check Supabase tables:', error.message)
-  }
-}
-
-main()
+checkExistingTables();

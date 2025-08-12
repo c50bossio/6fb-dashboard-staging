@@ -19,10 +19,13 @@ export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState([])
   const [marketingAccounts, setMarketingAccounts] = useState([])
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showBillingSection, setShowBillingSection] = useState(false)
   const [selectedCampaignType, setSelectedCampaignType] = useState('')
   const [notification, setNotification] = useState(null)
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
+  const [billingHistory, setBillingHistory] = useState([])
+  const [paymentMethods, setPaymentMethods] = useState([])
   const [campaignStats, setCampaignStats] = useState({
     totalCampaigns: 0,
     totalReach: 0,
@@ -85,7 +88,7 @@ export default function CampaignsPage() {
 
     try {
       const response = await fetch(
-        `/api/marketing/accounts?user_id=${user.id}`,
+        `/api/marketing/billing?user_id=${user.id}`,
         {
           method: 'GET',
           headers: {
@@ -277,6 +280,45 @@ export default function CampaignsPage() {
     }
   }
 
+  // Billing functions
+  const loadBillingHistory = async () => {
+    if (!user?.id) return
+    
+    try {
+      const response = await fetch(`/api/marketing/billing/history?user_id=${user.id}&limit=20`)
+      if (response.ok) {
+        const data = await response.json()
+        setBillingHistory(data.transactions || [])
+      }
+    } catch (error) {
+      console.error('Error loading billing history:', error)
+    }
+  }
+
+  const loadPaymentMethods = async (accountId) => {
+    if (!accountId) return
+    
+    try {
+      const response = await fetch(`/api/marketing/billing/payment-methods?account_id=${accountId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setPaymentMethods(data.paymentMethods || [])
+      }
+    } catch (error) {
+      console.error('Error loading payment methods:', error)
+    }
+  }
+
+  // Load billing data when billing section is shown
+  useEffect(() => {
+    if (showBillingSection && user?.id) {
+      loadBillingHistory()
+      if (marketingAccounts.length > 0) {
+        loadPaymentMethods(marketingAccounts[0].id)
+      }
+    }
+  }, [showBillingSection, user?.id, marketingAccounts])
+
   if (authLoading || initialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -332,6 +374,13 @@ export default function CampaignsPage() {
               )}
             </div>
             <div className="flex space-x-3">
+              <button
+                onClick={() => setShowBillingSection(!showBillingSection)}
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm font-medium"
+              >
+                <CreditCardIcon className="h-4 w-4" />
+                <span>Billing</span>
+              </button>
               <button
                 onClick={() => handleCreateCampaign('email')}
                 disabled={marketingAccounts.length === 0}
@@ -532,6 +581,152 @@ export default function CampaignsPage() {
           </div>
         </div>
       </div>
+
+      {/* Billing Section */}
+      {showBillingSection && (
+        <div className="mt-8 bg-white rounded-lg shadow">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Billing & Payment Methods</h3>
+              <button
+                onClick={() => setShowBillingSection(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <span className="sr-only">Close</span>
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Billing Accounts & Payment Methods */}
+              <div>
+                <h4 className="text-md font-medium text-gray-900 mb-4">Billing Accounts</h4>
+                {marketingAccounts.length === 0 ? (
+                  <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg">
+                    <CreditCardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-sm text-gray-500">No billing accounts configured</p>
+                    <p className="text-xs text-gray-400 mt-1">Set up a billing account to start sending campaigns</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {marketingAccounts.map((account) => (
+                      <div key={account.id} className="p-4 border border-gray-200 rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h5 className="font-medium text-gray-900">{account.account_name}</h5>
+                            <p className="text-sm text-gray-500 mt-1">{account.description}</p>
+                            <div className="mt-2 flex items-center space-x-4">
+                              <span className="text-xs text-gray-600">
+                                Limit: {formatCurrency(account.monthly_spend_limit)}/month
+                              </span>
+                              <span className="text-xs text-gray-600">
+                                Spent: {formatCurrency(account.total_spent || 0)}
+                              </span>
+                            </div>
+                          </div>
+                          {account.is_verified ? (
+                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
+                              Verified
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">
+                              Pending
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Payment Methods */}
+                <div className="mt-6">
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Payment Methods</h4>
+                  {paymentMethods.length === 0 ? (
+                    <div className="text-center py-6 border border-dashed border-gray-300 rounded-lg">
+                      <CreditCardIcon className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-sm text-gray-500">No payment methods</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {paymentMethods.map((method) => (
+                        <div key={method.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                          <div className="flex items-center">
+                            <CreditCardIcon className="h-5 w-5 text-gray-400 mr-3" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {method.card_brand} •••• {method.card_last4}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Expires {method.card_exp_month}/{method.card_exp_year}
+                              </p>
+                            </div>
+                          </div>
+                          {method.is_default && (
+                            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                              Default
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Billing History */}
+              <div>
+                <h4 className="text-md font-medium text-gray-900 mb-4">Recent Billing History</h4>
+                {billingHistory.length === 0 ? (
+                  <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg">
+                    <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-sm text-gray-500">No billing history</p>
+                    <p className="text-xs text-gray-400 mt-1">Campaign charges will appear here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {billingHistory.slice(0, 10).map((transaction) => (
+                      <div key={transaction.id} className="p-3 border border-gray-200 rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {transaction.campaign_name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {transaction.campaign_type} • {transaction.recipients_count} recipients
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {formatDate(transaction.created_at)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-900">
+                              {formatCurrency(transaction.amount_charged)}
+                            </p>
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(transaction.payment_status)}`}>
+                              {transaction.payment_status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {billingHistory.length > 10 && (
+                  <div className="mt-4 text-center">
+                    <p className="text-xs text-gray-500">
+                      Showing 10 of {billingHistory.length} transactions
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create Campaign Modal */}
       {showCreateModal && (

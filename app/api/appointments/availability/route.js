@@ -81,7 +81,7 @@ export async function GET(request) {
     // If bookings fails, try appointments table
     if (appointmentsResult.error) {
       appointmentsResult = await supabase
-        .from('appointments')
+        .from('bookings')
         .select('id, scheduled_at, duration_minutes, status')
         .eq('barber_id', validBarberId)
         .gte('scheduled_at', `${validDate}T00:00:00`)
@@ -210,7 +210,7 @@ export async function POST(request) {
 
     // Check for conflicts
     let conflictQuery = supabase
-      .from('appointments')
+      .from('bookings')
       .select('id, scheduled_at, duration_minutes, status')
       .eq('barber_id', barber_id)
       .in('status', ['PENDING', 'CONFIRMED'])

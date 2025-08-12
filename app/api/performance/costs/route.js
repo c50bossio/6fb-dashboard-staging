@@ -3,9 +3,11 @@ import { NextResponse } from 'next/server'
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8001'
 
 export async function GET(request) {
+  let timeWindow = '24'
+  
   try {
     const { searchParams } = new URL(request.url)
-    const timeWindow = searchParams.get('timeWindow') || '24'
+    timeWindow = searchParams.get('timeWindow') || '24'
     
     const response = await fetch(`${BACKEND_URL}/ai/performance/costs?time_window_hours=${timeWindow}`, {
       method: 'GET',

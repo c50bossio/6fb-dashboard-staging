@@ -27,20 +27,34 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
 
   const loadAlerts = async () => {
     try {
-      const response = await fetch(`/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
+      // Use the new intelligent alerts system
+      const response = await fetch(`/api/alerts/intelligent?barbershop_id=${barbershop_id}`)
       const data = await response.json()
       
       if (data.success) {
-        setAlerts(data.data.alerts || [])
-        setPriorityActions(data.data.priority_actions || [])
+        setAlerts(data.alerts || [])
+        setPriorityActions(data.priorityActions || [])
+        console.log('📊 Intelligent alerts loaded:', {
+          alertsCount: data.alerts?.length || 0,
+          actionsCount: data.priorityActions?.length || 0,
+          insights: data.insights?.length || 0
+        })
       } else {
-        // NO MOCK DATA - show empty states
-        setAlerts([])
-        setPriorityActions([])
+        console.warn('Intelligent alerts API failed:', data.error)
+        // Fall back to business monitor API
+        const fallbackResponse = await fetch(`/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
+        const fallbackData = await fallbackResponse.json()
+        
+        if (fallbackData.success) {
+          setAlerts(fallbackData.data.alerts || [])
+          setPriorityActions(fallbackData.data.priority_actions || [])
+        } else {
+          setAlerts([])
+          setPriorityActions([])
+        }
       }
     } catch (error) {
       console.error('Failed to load alerts:', error)
-      // NO MOCK DATA - show empty states when API fails
       setAlerts([])
       setPriorityActions([])
     } finally {
@@ -50,19 +64,40 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
 
   const dismissAlert = async (alertId) => {
     try {
-      await fetch('/api/ai/business-monitor', {
+      // Use the new intelligent alerts management
+      await fetch('/api/alerts/intelligent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'dismiss_alert',
-          alert_id: alertId,
-          barbershop_id
+          alertId: alertId,
+          barbershopId: barbershop_id
         })
       })
       
       setAlerts(prev => prev.filter(alert => alert.id !== alertId))
+      console.log('✅ Alert dismissed:', alertId)
     } catch (error) {
       console.error('Failed to dismiss alert:', error)
+    }
+  }
+
+  const snoozeAlert = async (alertId) => {
+    try {
+      await fetch('/api/alerts/intelligent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'snooze_alert',
+          alertId: alertId,
+          barbershopId: barbershop_id
+        })
+      })
+      
+      setAlerts(prev => prev.filter(alert => alert.id !== alertId))
+      console.log('⏰ Alert snoozed:', alertId)
+    } catch (error) {
+      console.error('Failed to snooze alert:', error)
     }
   }
 
