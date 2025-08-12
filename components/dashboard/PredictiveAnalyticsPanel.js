@@ -29,7 +29,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
   const loadPredictions = async () => {
     try {
       setError(null)
-      const response = await fetch(`/api/ai/predictive-analytics?barbershop_id=demo`)
+      const response = await fetch(`/api/ai/predictive?barbershop_id=demo`)
       const data = await response.json()
 
       if (data.success) {
@@ -60,7 +60,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
         service_utilization: 0.7 + Math.random() * 0.2
       }
 
-      const response = await fetch('/api/ai/predictive-analytics', {
+      const response = await fetch('/api/ai/predictive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

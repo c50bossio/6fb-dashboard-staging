@@ -30,11 +30,11 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
       setLoading(true)
       
       // Load main dashboard
-      const dashboardResponse = await fetch(`/api/ai/predictive-analytics?barbershop_id=${barbershop_id}`)
+      const dashboardResponse = await fetch(`/api/ai/predictive?barbershop_id=${barbershop_id}`)
       const dashboardData = await dashboardResponse.json()
       
       // Load revenue forecast
-      const forecastResponse = await fetch('/api/ai/predictive-analytics', {
+      const forecastResponse = await fetch('/api/ai/predictive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -46,7 +46,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
       const forecastData = await forecastResponse.json()
       
       // Load demand patterns
-      const demandResponse = await fetch('/api/ai/predictive-analytics', {
+      const demandResponse = await fetch('/api/ai/predictive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

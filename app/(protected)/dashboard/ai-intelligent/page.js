@@ -30,7 +30,7 @@ function StrategicPricingWidget({ onRefresh, loading }) {
   const fetchPricingInsights = useCallback(async () => {
     try {
       setWidgetLoading(true)
-      const response = await fetch('/api/ai/predictive-analytics', {
+      const response = await fetch('/api/ai/predictive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
