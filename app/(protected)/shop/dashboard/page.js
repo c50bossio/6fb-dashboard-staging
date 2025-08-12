@@ -41,25 +41,35 @@ export default function ShopDashboard() {
 
   const loadShopData = async () => {
     try {
-      // Load shop information
-      const shopResponse = await fetch('/api/shop/info')
-      if (shopResponse.ok) {
-        const shop = await shopResponse.json()
-        setShopData(shop)
-      }
+      // Load comprehensive demo data
+      const demoResponse = await fetch('/api/shop/demo-data')
+      if (demoResponse.ok) {
+        const demoData = await demoResponse.json()
+        setShopData(demoData.shopInfo)
+        setBarbers(demoData.barbers)
+        setMetrics(demoData.metrics)
+      } else {
+        // Fallback to individual API calls
+        // Load shop information
+        const shopResponse = await fetch('/api/shop/info')
+        if (shopResponse.ok) {
+          const shop = await shopResponse.json()
+          setShopData(shop)
+        }
 
-      // Load barbers
-      const barbersResponse = await fetch('/api/shop/barbers')
-      if (barbersResponse.ok) {
-        const { barbers } = await barbersResponse.json()
-        setBarbers(barbers)
-      }
+        // Load barbers
+        const barbersResponse = await fetch('/api/shop/barbers')
+        if (barbersResponse.ok) {
+          const { barbers } = await barbersResponse.json()
+          setBarbers(barbers)
+        }
 
-      // Load metrics
-      const metricsResponse = await fetch('/api/shop/metrics')
-      if (metricsResponse.ok) {
-        const metricsData = await metricsResponse.json()
-        setMetrics(metricsData)
+        // Load metrics
+        const metricsResponse = await fetch('/api/shop/metrics')
+        if (metricsResponse.ok) {
+          const metricsData = await metricsResponse.json()
+          setMetrics(metricsData)
+        }
       }
     } catch (error) {
       console.error('Error loading shop data:', error)
@@ -264,13 +274,16 @@ export default function ShopDashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center space-x-3 opacity-60">
-          <CalendarDaysIcon className="h-8 w-8 text-gray-400" />
+        <Link
+          href="/shop/bookings"
+          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+        >
+          <CalendarDaysIcon className="h-8 w-8 text-blue-600" />
           <div>
-            <p className="font-medium text-gray-500">Manage Bookings</p>
-            <p className="text-sm text-gray-400">Coming Soon</p>
+            <p className="font-medium text-gray-900">Manage Bookings</p>
+            <p className="text-sm text-gray-600">View all appointments & schedule</p>
           </div>
-        </div>
+        </Link>
 
         <Link
           href="/shop/financial"
@@ -283,21 +296,27 @@ export default function ShopDashboard() {
           </div>
         </Link>
 
-        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center space-x-3 opacity-60">
-          <ScissorsIcon className="h-8 w-8 text-gray-400" />
+        <Link
+          href="/shop/services"
+          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+        >
+          <ScissorsIcon className="h-8 w-8 text-purple-600" />
           <div>
-            <p className="font-medium text-gray-500">Services & Pricing</p>
-            <p className="text-sm text-gray-400">Coming Soon</p>
+            <p className="font-medium text-gray-900">Services & Pricing</p>
+            <p className="text-sm text-gray-600">Manage service catalog & pricing</p>
           </div>
-        </div>
+        </Link>
 
-        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center space-x-3 opacity-60">
-          <ChartBarIcon className="h-8 w-8 text-gray-400" />
+        <Link
+          href="/shop/analytics"
+          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+        >
+          <ChartBarIcon className="h-8 w-8 text-indigo-600" />
           <div>
-            <p className="font-medium text-gray-500">Analytics</p>
-            <p className="text-sm text-gray-400">Coming Soon</p>
+            <p className="font-medium text-gray-900">Analytics</p>
+            <p className="text-sm text-gray-600">Performance insights & reports</p>
           </div>
-        </div>
+        </Link>
       </div>
     </div>
   )

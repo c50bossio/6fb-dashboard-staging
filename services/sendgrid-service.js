@@ -1035,6 +1035,18 @@ Unsubscribe: ${this.platformDomain}/unsubscribe
         To unsubscribe, click here: {{unsubscribe}}
         `;
     }
+
+    /**
+     * Store campaign analytics
+     */
+    async storeCampaignAnalytics(analytics) {
+        try {
+            // Log analytics for now - could store in database
+            console.log('📊 Email Campaign Analytics:', analytics);
+        } catch (error) {
+            console.error('Failed to store campaign analytics:', error);
+        }
+    }
 }
 
 module.exports = SendGridEmailService;
