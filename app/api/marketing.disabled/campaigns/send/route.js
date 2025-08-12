@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
 // Import marketing services
-const { sendGridService } = require('./sendgrid-service')
-// const { twilioSMSService } = require('./twilio-service') // Disabled for now
+const { sendGridService } = require('../../../../../services/sendgrid-service')
+const { twilioSMSService } = require('../../../../../services/twilio-service')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

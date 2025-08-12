@@ -15,14 +15,38 @@
  */
 
 const sgMail = require('@sendgrid/mail');
-const { supabase } = require('../lib/supabase');
+const { createClient } = require('@supabase/supabase-js');
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 const crypto = require('crypto');
 
 class SendGridEmailService {
     constructor() {
+        // Platform master account configuration
         this.apiKey = process.env.SENDGRID_API_KEY;
+        this.platformFromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@bookedbarber.com';
+        this.platformFromName = process.env.SENDGRID_FROM_NAME || 'BookedBarber';
+        this.platformDomain = process.env.PLATFORM_DOMAIN || 'bookedbarber.com';
+        
+        // Business model configuration - Platform markup percentages
+        this.markupRates = {
+            barber: 3.95,      // 395% markup for individual barbers
+            shop: 2.80,        // 280% markup for shop owners  
+            enterprise: 1.50   // 150% markup for enterprise accounts
+        };
+        
+        // Base SendGrid costs (per email)
+        this.baseCost = 0.001; // $0.001 per email
+        
         if (!this.apiKey) {
-            throw new Error('SENDGRID_API_KEY environment variable is required');
+            console.warn('SENDGRID_API_KEY not configured - running in test mode');
+            this.testMode = true;
+        } else {
+            this.testMode = false;
         }
         
         sgMail.setApiKey(this.apiKey);
