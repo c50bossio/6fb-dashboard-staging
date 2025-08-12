@@ -10,7 +10,8 @@ import {
   CalendarIcon,
   StarIcon,
   PencilSquareIcon,
-  TrashIcon
+  TrashIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
@@ -21,66 +22,74 @@ export default function CustomersPage() {
   const [selectedSegment, setSelectedSegment] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [notification, setNotification] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Calculate customer segment based on visit data
+  const calculateSegment = (customer) => {
+    const daysSinceLastVisit = customer.last_visit_at 
+      ? Math.floor((Date.now() - new Date(customer.last_visit_at).getTime()) / (1000 * 60 * 60 * 24))
+      : null
+    
+    if (customer.vip_status || customer.total_visits >= 10) return 'vip'
+    if (daysSinceLastVisit && daysSinceLastVisit > 60) return 'lapsed'
+    if (customer.total_visits === 0 || customer.total_visits === 1) return 'new'
+    return 'regular'
+  }
+
+  // Format customer data from API response
+  const formatCustomerData = (apiCustomers) => {
+    return apiCustomers.map(customer => ({
+      id: customer.id,
+      name: customer.name || 'Unknown',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      segment: calculateSegment(customer),
+      totalVisits: customer.total_visits || 0,
+      lastVisit: customer.last_visit_at ? new Date(customer.last_visit_at).toLocaleDateString() : 'Never',
+      totalSpent: customer.total_spent || 0,
+      preferredContact: customer.notification_preferences?.preferred_method || 'email',
+      joinDate: customer.created_at ? new Date(customer.created_at).toLocaleDateString() : '',
+      notes: customer.notes || '',
+      isVip: customer.vip_status || false,
+      isActive: customer.is_active !== false
+    }))
+  }
+
+  // Fetch customers from API
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await fetch('/api/customers?limit=100')
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch customers: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      
+      if (data.error) {
+        throw new Error(data.error)
+      }
+      
+      const formattedCustomers = formatCustomerData(data.customers || [])
+      setCustomers(formattedCustomers)
+      setFilteredCustomers(formattedCustomers)
+      
+    } catch (err) {
+      console.error('Error fetching customers:', err)
+      setError(err.message)
+      setCustomers([])
+      setFilteredCustomers([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    // Mock customer data (replace with real API call)
-    const Customers = [
-      {
-        id: 1,
-        name: 'John Smith',
-        email: 'john@example.com',
-        phone: '+1234567890',
-        segment: 'vip',
-        totalVisits: 12,
-        lastVisit: '2025-07-25',
-        totalSpent: 480,
-        preferredContact: 'email',
-        joinDate: '2024-03-15',
-        notes: 'Prefers morning appointments'
-      },
-      {
-        id: 2,
-        name: 'Sarah Johnson',
-        email: 'sarah@example.com', 
-        phone: '+1234567891',
-        segment: 'regular',
-        totalVisits: 6,
-        lastVisit: '2025-07-20',
-        totalSpent: 240,
-        preferredContact: 'sms',
-        joinDate: '2024-06-10',
-        notes: 'Allergic to certain hair products'
-      },
-      {
-        id: 3,
-        name: 'Mike Wilson',
-        email: 'mike@example.com',
-        phone: '+1234567892',
-        segment: 'lapsed',
-        totalVisits: 3,
-        lastVisit: '2025-05-15',
-        totalSpent: 120,
-        preferredContact: 'phone',
-        joinDate: '2024-01-20',
-        notes: 'Travels frequently for work'
-      },
-      {
-        id: 4,
-        name: 'Emily Chen',
-        email: 'emily@example.com',
-        phone: '+1234567893', 
-        segment: 'new',
-        totalVisits: 1,
-        lastVisit: '2025-07-28',
-        totalSpent: 45,
-        preferredContact: 'email',
-        joinDate: '2025-07-28',
-        notes: 'First-time customer, very satisfied'
-      }
-    ]
-    
-    setCustomers(mockCustomers)
-    setFilteredCustomers(mockCustomers)
+    fetchCustomers()
   }, [])
 
   useEffect(() => {
@@ -117,43 +126,143 @@ export default function CustomersPage() {
   }
 
   const addCustomer = async (customerData) => {
-    // Mock add customer (replace with real API call)
-    const newCustomer = {
-      id: customers.length + 1,
-      ...customerData,
-      segment: 'new',
-      totalVisits: 0,
-      totalSpent: 0,
-      joinDate: new Date().toISOString().split('T')[0]
-    }
-    
-    setCustomers([...customers, newCustomer])
-    setShowAddModal(false)
-    setNotification({
-      type: 'success',
-      message: 'Customer added successfully!'
-    })
-    setTimeout(() => setNotification(null), 3000)
-  }
+    try {
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          barbershop_id: 'demo-shop-001',
+          name: customerData.name,
+          email: customerData.email,
+          phone: customerData.phone,
+          notes: customerData.notes,
+          notification_preferences: {
+            preferred_method: customerData.preferredContact,
+            sms: customerData.preferredContact === 'sms',
+            email: customerData.preferredContact === 'email',
+            reminders: true,
+            confirmations: true
+          }
+        })
+      })
 
-  const handleEditCustomer = (customerId) => {
-    setNotification({
-      type: 'info',
-      message: 'Customer editing feature is being developed. Contact support for changes.'
-    })
-    setTimeout(() => setNotification(null), 3000)
-  }
+      const data = await response.json()
 
-  const handleDeleteCustomer = (customerId) => {
-    const customerName = customers.find(c => c.id === customerId)?.name
-    // For production, this should be a proper modal confirmation
-    if (window.confirm(`Are you sure you want to delete ${customerName}? This action cannot be undone.`)) {
-      setCustomers(customers.filter(c => c.id !== customerId))
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add customer')
+      }
+
+      // Refresh customer list
+      await fetchCustomers()
+      
+      setShowAddModal(false)
       setNotification({
         type: 'success',
-        message: `${customerName} has been removed from your customer database.`
+        message: 'Customer added successfully!'
       })
       setTimeout(() => setNotification(null), 3000)
+      
+    } catch (err) {
+      console.error('Error adding customer:', err)
+      setNotification({
+        type: 'error',
+        message: err.message || 'Failed to add customer. Please try again.'
+      })
+      setTimeout(() => setNotification(null), 5000)
+    }
+  }
+
+  const handleEditCustomer = async (customerId) => {
+    const customer = customers.find(c => c.id === customerId)
+    if (!customer) return
+
+    // For now, show edit modal with customer data
+    // TODO: Implement full edit modal UI
+    const newName = prompt('Edit customer name:', customer.name)
+    if (!newName || newName === customer.name) return
+
+    try {
+      const response = await fetch('/api/customers', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: customerId,
+          name: newName
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update customer')
+      }
+
+      // Refresh customer list
+      await fetchCustomers()
+      
+      setNotification({
+        type: 'success',
+        message: 'Customer updated successfully!'
+      })
+      setTimeout(() => setNotification(null), 3000)
+      
+    } catch (err) {
+      console.error('Error updating customer:', err)
+      setNotification({
+        type: 'error',
+        message: err.message || 'Failed to update customer. Please try again.'
+      })
+      setTimeout(() => setNotification(null), 5000)
+    }
+  }
+
+  const handleDeleteCustomer = async (customerId) => {
+    const customer = customers.find(c => c.id === customerId)
+    if (!customer) return
+    
+    if (!window.confirm(`Are you sure you want to delete ${customer.name}? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      // Soft delete by marking as inactive
+      const response = await fetch('/api/customers', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: customerId,
+          is_active: false
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete customer')
+      }
+
+      // Refresh customer list
+      await fetchCustomers()
+      
+      setNotification({
+        type: 'success',
+        message: `${customer.name} has been removed from your customer database.`
+      })
+      setTimeout(() => setNotification(null), 3000)
+      
+    } catch (err) {
+      console.error('Error deleting customer:', err)
+      setNotification({
+        type: 'error',
+        message: err.message || 'Failed to delete customer. Please try again.'
+      })
+      setTimeout(() => setNotification(null), 5000)
     }
   }
 
@@ -178,15 +287,40 @@ export default function CustomersPage() {
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Customer Management</h1>
               <p className="text-gray-600">Manage your customer database and contact preferences</p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="btn-primary flex items-center space-x-2"
-            >
-              <PlusIcon className="h-4 w-4" />
-              <span>Add Customer</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={fetchCustomers}
+                className="btn-secondary flex items-center space-x-2"
+                disabled={loading}
+              >
+                <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="btn-primary flex items-center space-x-2"
+              >
+                <PlusIcon className="h-4 w-4" />
+                <span>Add Customer</span>
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+            <p className="font-medium">Error loading customers</p>
+            <p className="text-sm mt-1">{error}</p>
+            <button 
+              onClick={fetchCustomers}
+              className="text-sm underline mt-2 hover:no-underline"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
         {/* Customer Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card">
@@ -194,7 +328,11 @@ export default function CustomersPage() {
               <UserIcon className="h-8 w-8 text-blue-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                <p className="text-2xl font-bold text-gray-900">{customers.length}</p>
+                {loading ? (
+                  <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">{customers.length}</p>
+                )}
               </div>
             </div>
           </div>
@@ -204,9 +342,13 @@ export default function CustomersPage() {
               <StarIcon className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">VIP Customers</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {customers.filter(c => c.segment === 'vip').length}
-                </p>
+                {loading ? (
+                  <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">
+                    {customers.filter(c => c.segment === 'vip').length}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -215,10 +357,14 @@ export default function CustomersPage() {
             <div className="flex items-center">
               <CalendarIcon className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">New This Month</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {customers.filter(c => c.segment === 'new').length}
-                </p>
+                <p className="text-sm font-medium text-gray-600">New Customers</p>
+                {loading ? (
+                  <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">
+                    {customers.filter(c => c.segment === 'new').length}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -230,9 +376,13 @@ export default function CustomersPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Lapsed</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {customers.filter(c => c.segment === 'lapsed').length}
-                </p>
+                {loading ? (
+                  <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  <p className="text-2xl font-bold text-gray-900">
+                    {customers.filter(c => c.segment === 'lapsed').length}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -273,34 +423,52 @@ export default function CustomersPage() {
         {/* Customers Table */}
         <div className="card">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Segment
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Visits
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Visit
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total Spent
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCustomers.map((customer) => (
+            {loading ? (
+              <div className="p-8 text-center">
+                <div className="inline-flex items-center space-x-2">
+                  <ArrowPathIcon className="h-5 w-5 animate-spin text-gray-500" />
+                  <span className="text-gray-500">Loading customers...</span>
+                </div>
+              </div>
+            ) : filteredCustomers.length === 0 ? (
+              <div className="p-8 text-center">
+                <UserIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500 font-medium">No customers found</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  {searchTerm || selectedSegment !== 'all' 
+                    ? 'Try adjusting your search or filters' 
+                    : 'Start by adding your first customer'}
+                </p>
+              </div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Segment
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Visits
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Last Visit
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Total Spent
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredCustomers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -355,9 +523,10 @@ export default function CustomersPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>
