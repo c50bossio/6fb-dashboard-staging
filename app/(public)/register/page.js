@@ -28,6 +28,7 @@ export default function RegisterPage() {
     phone: '',
     password: '',
     confirmPassword: '',
+    smsConsent: false,
     
     // Business Info
     businessName: '',
@@ -272,7 +273,8 @@ export default function RegisterPage() {
           full_name: `${formData.firstName} ${formData.lastName}`.trim(),
           shop_name: formData.businessName || undefined,
           phone: formData.phone || undefined,
-          selected_plan: formData.selectedPlan
+          selected_plan: formData.selectedPlan,
+          sms_consent: formData.smsConsent
         }
       })
       
@@ -450,6 +452,35 @@ export default function RegisterPage() {
           />
         </div>
         {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+      </div>
+
+      {/* SMS Consent Checkbox */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="flex items-start">
+          <input
+            id="smsConsent"
+            name="smsConsent"
+            type="checkbox"
+            checked={formData.smsConsent}
+            onChange={(e) => setFormData({ ...formData, smsConsent: e.target.checked })}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+          />
+          <label htmlFor="smsConsent" className="ml-2 text-sm text-gray-600">
+            <span className="font-medium text-gray-900">Opt in to SMS messages</span> (optional)<br />
+            <span className="text-xs leading-5">
+              I agree to receive SMS appointment reminders and promotional offers from BookedBarber. 
+              Message frequency varies. Message and data rates may apply. 
+              Reply STOP to unsubscribe, HELP for help. View our{' '}
+              <Link href="/sms-policy" target="_blank" className="text-blue-600 hover:underline">
+                SMS Policy
+              </Link>
+              {' '}and{' '}
+              <Link href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                Terms
+              </Link>.
+            </span>
+          </label>
+        </div>
       </div>
 
       <div>

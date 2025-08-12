@@ -425,19 +425,106 @@ export default function HomePage() {
         {/* Footer */}
         <footer className="bg-black text-white py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <div className="h-12 w-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-xl">6FB</span>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+              {/* Brand */}
+              <div>
+                <div className="flex items-center mb-4">
+                  <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">6FB</span>
+                  </div>
+                  <span className="ml-3 text-xl font-bold">BookedBarber</span>
+                </div>
+                <p className="text-gray-400 text-sm">
+                  The premier platform for barbershop booking and management.
+                </p>
+                <div className="mt-4 text-sm text-gray-400">
+                  <p className="font-semibold text-white mb-2">SMS Opt-In</p>
+                  <p>Text START to subscribe</p>
+                  <p>Text STOP to unsubscribe</p>
+                  <p>Text HELP for assistance</p>
+                </div>
               </div>
-              <h5 className="text-xl font-bold mb-2">6FB Barbershops</h5>
-              <p className="text-gray-400 mb-6">Professional Barbering Directory</p>
-              
-              <div className="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-8 text-sm text-gray-400">
-                <p>© 2024 6FB Barbershops. All rights reserved.</p>
-                <div className="flex space-x-4">
-                  <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
-                  <Link href="/terms" className="hover:text-white">Terms of Service</Link>
-                  <Link href="/contact" className="hover:text-white">Contact</Link>
+
+              {/* Legal Links */}
+              <div>
+                <h4 className="font-semibold mb-4">Legal</h4>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
+                      Terms of Service
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
+                      Privacy Policy
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/sms-policy" className="text-gray-400 hover:text-white transition-colors">
+                      SMS Messaging Policy
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Support */}
+              <div>
+                <h4 className="font-semibold mb-4">Support</h4>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                      Contact Us
+                    </Link>
+                  </li>
+                  <li>
+                    <a href="https://support.bookedbarber.com" className="text-gray-400 hover:text-white transition-colors">
+                      Help Center
+                    </a>
+                  </li>
+                  <li>
+                    <a href="mailto:support@bookedbarber.com" className="text-gray-400 hover:text-white transition-colors">
+                      Email Support
+                    </a>
+                  </li>
+                  <li className="text-gray-400">
+                    SMS Issues: Text HELP
+                  </li>
+                </ul>
+              </div>
+
+              {/* Contact Info */}
+              <div>
+                <h4 className="font-semibold mb-4">Contact</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li>1-800-BOOKED-1</li>
+                  <li>(1-800-266-5331)</li>
+                  <li>support@bookedbarber.com</li>
+                  <li className="mt-3">
+                    123 Barber Lane, Suite 100<br />
+                    San Francisco, CA 94102
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-800 pt-8">
+              <div className="flex flex-col md:flex-row justify-between items-center">
+                <p className="text-gray-400 text-sm mb-4 md:mb-0">
+                  © 2025 BookedBarber. All rights reserved. Message and data rates may apply.
+                </p>
+                <div className="flex space-x-6 text-sm">
+                  <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
+                    Terms
+                  </Link>
+                  <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
+                    Privacy
+                  </Link>
+                  <Link href="/sms-policy" className="text-gray-400 hover:text-white transition-colors">
+                    SMS Policy
+                  </Link>
+                  <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                    Contact
+                  </Link>
                 </div>
               </div>
             </div>

@@ -36,7 +36,8 @@ function BookingPageContent() {
     name: '',
     email: '',
     phone: '',
-    notes: ''
+    notes: '',
+    smsConsent: false
   })
 
   // Parse URL parameters
@@ -234,7 +235,8 @@ function BookingPageContent() {
         totalDuration: calculateTotalDuration(),
         totalPrice: calculateTotalPrice(),
         source: 'booking_link',
-        linkId: searchParams?.get('linkId') // Include link ID for attribution
+        linkId: searchParams?.get('linkId'), // Include link ID for attribution
+        smsConsent: customerInfo.smsConsent // Include SMS consent preference
       }
 
       // In production, this would call the booking API
@@ -629,6 +631,35 @@ function BookingPageContent() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Any special instructions or requests..."
                 />
+              </div>
+
+              {/* SMS Consent Checkbox */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-start">
+                  <input
+                    id="smsConsent"
+                    name="smsConsent"
+                    type="checkbox"
+                    checked={customerInfo.smsConsent}
+                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, smsConsent: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+                  />
+                  <label htmlFor="smsConsent" className="ml-2 text-sm text-gray-600">
+                    <span className="font-medium text-gray-900">Opt in to SMS appointment reminders</span> (optional)<br />
+                    <span className="text-xs leading-5">
+                      I agree to receive SMS appointment reminders from BookedBarber. 
+                      Message frequency varies. Message and data rates may apply. 
+                      Reply STOP to unsubscribe, HELP for help. View our{' '}
+                      <a href="/sms-policy" target="_blank" className="text-blue-600 hover:underline">
+                        SMS Policy
+                      </a>
+                      {' '}and{' '}
+                      <a href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                        Terms
+                      </a>.
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
 
