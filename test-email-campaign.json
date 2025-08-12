@@ -1,0 +1,35 @@
+{
+  "type": "email",
+  "campaign": {
+    "id": "test-campaign-001",
+    "name": "Welcome Email Campaign Test",
+    "subject": "Welcome to Elite Cuts Barbershop\!",
+    "message": "Thank you for choosing Elite Cuts. We're excited to provide you with the best grooming experience. Book your appointment today and enjoy our premium services."
+  },
+  "shop": {
+    "id": "shop-001", 
+    "name": "Elite Cuts Barbershop",
+    "email": "info@elitecuts.com",
+    "phone": "555-123-4567",
+    "address": "123 Main St, Downtown",
+    "account_type": "shop"
+  },
+  "recipients": [
+    {
+      "email": "test1@example.com",
+      "name": "John Doe",
+      "id": "customer-001"
+    },
+    {
+      "email": "test2@example.com", 
+      "name": "Jane Smith",
+      "id": "customer-002"
+    },
+    {
+      "email": "test3@example.com",
+      "name": "Mike Johnson", 
+      "id": "customer-003"
+    }
+  ]
+}
+EOF < /dev/null

@@ -61,13 +61,13 @@ function SupabaseAuthProvider({ children }) {
       return () => { isMounted = false }
     }
     
-    // Add timeout to prevent hanging
+    // Add timeout to prevent hanging (reduced for production)
     const loadingTimeout = setTimeout(() => {
       if (isMounted && loading) {
         console.warn('⚠️ Auth loading timeout - forcing loading = false')
         setLoading(false)
       }
-    }, 5000) // 5 second timeout
+    }, 2000) // 2 second timeout for faster loading
     
     // Session refresh interval to prevent expiry
     const sessionRefreshInterval = setInterval(async () => {
@@ -149,11 +149,11 @@ function SupabaseAuthProvider({ children }) {
     
     // Safety net: ensure loading is false after max wait time
     const safetyTimeout = setTimeout(() => {
-      if (loading) {
+      if (loading && isMounted) {
         console.warn('⚠️ Safety timeout reached - forcing loading = false')
         setLoading(false)
       }
-    }, 3000)
+    }, 1500) // Faster safety timeout for production
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {

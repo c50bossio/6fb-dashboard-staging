@@ -79,15 +79,7 @@ export default function HomePage() {
     router.push(`/book/${barbershopId}`)
   }
 
-  // If only one barbershop exists and user is not authenticated, redirect to that barbershop
-  useEffect(() => {
-    if (!loading && !isAuthenticated && barbershops.length === 1) {
-      const mainShop = barbershops[0]
-      if (mainShop.website_enabled && mainShop.slug) {
-        router.push(`/${mainShop.slug}`)
-      }
-    }
-  }, [loading, isAuthenticated, barbershops, router])
+  // Homepage should stay on main domain - removed auto-redirect logic that was causing infinite loops
 
   if (loading) {
     return (
