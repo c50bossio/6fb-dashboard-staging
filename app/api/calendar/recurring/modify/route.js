@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-const RRuleService = require('../../../../../services/rrule.service');
+const RRuleService = require('../rrule.service');
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
