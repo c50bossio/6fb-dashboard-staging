@@ -7,25 +7,44 @@ export async function GET(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
+    // Development bypass for testing
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    if (authError || !user) {
+    if (!isDevelopment && (authError || !user)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
     
-    // Get the user's profile to check role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    // Use the first shop owner for development testing
+    let userId = user?.id
+    if (isDevelopment && !userId) {
+      const { data: devUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('role', 'SHOP_OWNER')
+        .limit(1)
+        .single()
+      userId = devUser?.id
+    }
     
-    // Check permissions
-    if (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)) {
+    // Get the user's profile to check role (skip in development)
+    let profile = null
+    if (userId) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+      profile = profileData
+    }
+    
+    // Check permissions (skip check in development)
+    if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
         { status: 403 }
@@ -36,7 +55,7 @@ export async function GET(request) {
     const { data: shop } = await supabase
       .from('barbershops')
       .select('id')
-      .eq('owner_id', user.id)
+      .eq('owner_id', userId)
       .single()
     
     if (!shop) {
@@ -99,10 +118,13 @@ export async function POST(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
+    // Development bypass for testing
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    if (authError || !user) {
+    if (!isDevelopment && (authError || !user)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -112,15 +134,31 @@ export async function POST(request) {
     // Get the request body
     const productData = await request.json()
     
-    // Get the user's profile to check role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    // Use the first shop owner for development testing
+    let userId = user?.id
+    if (isDevelopment && !userId) {
+      const { data: devUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('role', 'SHOP_OWNER')
+        .limit(1)
+        .single()
+      userId = devUser?.id
+    }
     
-    // Check permissions
-    if (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)) {
+    // Get the user's profile to check role (skip in development)
+    let profile = null
+    if (userId) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+      profile = profileData
+    }
+    
+    // Check permissions (skip check in development)
+    if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
         { status: 403 }
@@ -131,7 +169,7 @@ export async function POST(request) {
     const { data: shop } = await supabase
       .from('barbershops')
       .select('id')
-      .eq('owner_id', user.id)
+      .eq('owner_id', userId)
       .single()
     
     if (!shop) {

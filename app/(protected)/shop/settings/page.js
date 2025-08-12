@@ -13,7 +13,9 @@ import {
   PhotoIcon,
   CheckCircleIcon,
   XCircleIcon,
-  PencilIcon
+  PencilIcon,
+  CalendarDaysIcon,
+  BellIcon
 } from '@heroicons/react/24/outline'
 
 export default function ShopSettings() {
@@ -821,6 +823,3 @@ export default function ShopSettings() {
     </div>
   )
 }
-
-// Add missing imports
-import { CalendarDaysIcon, BellIcon } from '@heroicons/react/24/outline'

@@ -88,7 +88,198 @@ class TwilioSMSService {
     }
 
     /**
-     * Send marketing SMS to customer segments
+     * Send white-label marketing SMS campaign using platform master account
+     * @param {Object} campaign - Campaign from database
+     * @param {Object} barbershop - Barbershop details for branding
+     * @param {Array} recipients - SMS recipients
+     * @returns {Object} Campaign results and analytics
+     */
+    async sendWhiteLabelSMSCampaign(campaign, barbershop, recipients) {
+        if (!this.accountSid || !this.authToken) {
+            console.log('🧪 TEST MODE: SMS campaign simulation (no Twilio credentials)');
+            return this.simulateSMSCampaign(campaign, recipients);
+        }
+
+        if (!this.isInitialized) {
+            await this.initializeTwilio();
+        }
+
+        const startTime = Date.now();
+        
+        try {
+            // Calculate platform costs and markup
+            const billing = this.calculateSMSBilling(
+                recipients.length, 
+                barbershop.account_type || 'shop',
+                barbershop.country || 'US'
+            );
+            
+            // Build white-label SMS message with barbershop branding
+            const smsMessage = this.buildWhiteLabelSMSMessage(campaign, barbershop);
+            
+            // Send SMS messages with throttling
+            const sendResults = await this.sendBatchedSMS({
+                recipients,
+                message: smsMessage,
+                fromNumber: this.platformPhoneNumber,
+                mediaUrls: campaign.media_urls || []
+            });
+            
+            // Store campaign analytics
+            const analytics = {
+                campaignId: campaign.id,
+                totalRecipients: recipients.length,
+                totalSent: sendResults.sent,
+                totalFailed: sendResults.failed,
+                billing: billing,
+                duration: Date.now() - startTime
+            };
+            
+            await this.storeSMSCampaignAnalytics(analytics);
+            
+            return {
+                success: true,
+                campaignId: campaign.id,
+                metrics: analytics,
+                message: `SMS campaign sent to ${sendResults.sent} recipients via platform infrastructure`
+            };
+            
+        } catch (error) {
+            console.error('White-label SMS campaign error:', error);
+            throw new Error(`SMS campaign failed: ${error.message}`);
+        }
+    }
+
+    /**
+     * Calculate SMS billing with platform markup
+     */
+    calculateSMSBilling(recipientCount, accountType, country = 'US') {
+        const baseCost = this.smsCosts[country] || this.smsCosts.DEFAULT;
+        const serviceCost = recipientCount * baseCost;
+        const markupRate = this.markupRates[accountType] || this.markupRates.shop;
+        const platformFee = serviceCost * markupRate;
+        const totalCharge = serviceCost + platformFee;
+        
+        return {
+            recipientCount,
+            serviceCost: Number(serviceCost.toFixed(4)),
+            platformFee: Number(platformFee.toFixed(4)), 
+            totalCharge: Number(totalCharge.toFixed(4)),
+            markupRate: markupRate,
+            profitMargin: Number(((platformFee / totalCharge) * 100).toFixed(2)),
+            costPerSMS: Number(baseCost.toFixed(4))
+        };
+    }
+
+    /**
+     * Build white-label SMS message with barbershop branding
+     */
+    buildWhiteLabelSMSMessage(campaign, barbershop) {
+        const baseMessage = campaign.message;
+        
+        // Add barbershop branding and compliance footer
+        return `${baseMessage}
+
+- ${barbershop.name}
+${barbershop.phone || ''}
+Reply STOP to opt out`;
+    }
+
+    /**
+     * Send batched SMS with carrier-compliant throttling
+     */
+    async sendBatchedSMS({ recipients, message, fromNumber, mediaUrls = [] }) {
+        const results = { sent: 0, failed: 0, errors: [] };
+        
+        for (const recipient of recipients) {
+            try {
+                const messageData = {
+                    body: this.personalizeMessage(message, recipient),
+                    from: fromNumber,
+                    to: recipient.phone
+                };
+                
+                // Add media URLs for MMS if provided
+                if (mediaUrls.length > 0) {
+                    messageData.mediaUrl = mediaUrls;
+                }
+                
+                const result = await this.client.messages.create(messageData);
+                
+                if (result.sid) {
+                    results.sent++;
+                    
+                    // Store delivery tracking
+                    await this.storeSMSDeliveryTracking({
+                        recipient: recipient,
+                        messageSid: result.sid,
+                        status: 'sent'
+                    });
+                } else {
+                    results.failed++;
+                    results.errors.push(`Failed to send to ${recipient.phone}`);
+                }
+                
+            } catch (error) {
+                results.failed++;
+                results.errors.push(`Error sending to ${recipient.phone}: ${error.message}`);
+                
+                // Store failed delivery
+                await this.storeSMSDeliveryTracking({
+                    recipient: recipient,
+                    status: 'failed',
+                    error: error.message
+                });
+            }
+            
+            // Carrier-compliant throttling (1 SMS per second)
+            if (recipients.indexOf(recipient) < recipients.length - 1) {
+                await this.delay(this.rateLimitDelay);
+            }
+        }
+        
+        return results;
+    }
+
+    /**
+     * Personalize SMS message with recipient data
+     */
+    personalizeMessage(message, recipient) {
+        return message
+            .replace(/\{first_name\}/g, recipient.first_name || recipient.name || 'Customer')
+            .replace(/\{last_name\}/g, recipient.last_name || '')
+            .replace(/\{name\}/g, recipient.name || recipient.first_name || 'Customer');
+    }
+
+    /**
+     * Simulate SMS campaign for testing
+     */
+    simulateSMSCampaign(campaign, recipients) {
+        console.log(`📱 Simulating SMS campaign: ${campaign.name}`);
+        console.log(`   Recipients: ${recipients.length}`);
+        console.log(`   Message: ${campaign.message.substring(0, 50)}...`);
+        console.log(`   Type: White-label platform send`);
+        
+        // Simulate delivery metrics (SMS has higher delivery rates than email)
+        const sent = Math.floor(recipients.length * 0.99); // 99% delivery rate
+        const failed = recipients.length - sent;
+        
+        return {
+            success: true,
+            campaignId: campaign.id,
+            metrics: {
+                totalRecipients: recipients.length,
+                totalSent: sent,
+                totalFailed: failed,
+                billing: this.calculateSMSBilling(recipients.length, 'shop'),
+                testMode: true
+            },
+            message: `TEST: SMS campaign simulated for ${sent} recipients`
+        };
+    }
+
+    /**
+     * Send marketing SMS to customer segments (legacy method)
      */
     async sendMarketingCampaign({
         campaignId,

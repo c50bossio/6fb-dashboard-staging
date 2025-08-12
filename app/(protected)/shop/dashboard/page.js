@@ -187,12 +187,9 @@ export default function ShopDashboard() {
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Your Barbers</h2>
-            <Link
-              href="/shop/barbers"
-              className="text-sm text-indigo-600 hover:text-indigo-700"
-            >
-              View All
-            </Link>
+            <span className="text-sm text-gray-400">
+              View All (Coming Soon)
+            </span>
           </div>
         </div>
         
@@ -234,12 +231,12 @@ export default function ShopDashboard() {
                   </div>
                   
                   <div className="mt-3 flex space-x-2">
-                    <Link
-                      href={`/shop/barbers/${barber.id}`}
-                      className="flex-1 text-center py-1.5 text-sm text-indigo-600 bg-indigo-50 rounded hover:bg-indigo-100"
+                    <button
+                      className="flex-1 text-center py-1.5 text-sm text-gray-400 bg-gray-100 rounded cursor-not-allowed"
+                      disabled
                     >
                       View Details
-                    </Link>
+                    </button>
                     <button
                       className="flex-1 text-center py-1.5 text-sm text-gray-600 bg-gray-50 rounded hover:bg-gray-100"
                     >
