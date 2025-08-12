@@ -1,4 +1,3 @@
-#\!/usr/bin/env node
 /**
  * Comprehensive Marketing Campaign System Test
  * Tests the complete agent-driven marketing workflow
@@ -231,7 +230,7 @@ async function runComprehensiveTest() {
         
         testResults.summary.totalTests = allTests.length;
         testResults.summary.passed = allTests.filter(t => t.passed).length;
-        testResults.summary.failed = allTests.filter(t => \!t.passed).length;
+        testResults.summary.failed = allTests.filter(t => !t.passed).length;
         
         console.log('📊 FINAL TEST SUMMARY');
         console.log('=' .repeat(50));
@@ -241,7 +240,7 @@ async function runComprehensiveTest() {
         console.log(`🕒 Completed: ${testResults.timestamp}`);
         
         if (testResults.summary.failed === 0) {
-            console.log('\n🎉 ALL TESTS PASSED\! Marketing system is production ready.');
+            console.log('\n🎉 ALL TESTS PASSED! Marketing system is production ready.');
         } else {
             console.log('\n⚠️  Some tests failed. Review results above.');
         }
@@ -258,7 +257,7 @@ async function runComprehensiveTest() {
 if (require.main === module) {
     runComprehensiveTest()
         .then(results => {
-            console.log('\n✅ Test suite completed successfully\!');
+            console.log('\n✅ Test suite completed successfully!');
             process.exit(results.summary.failed === 0 ? 0 : 1);
         })
         .catch(error => {
@@ -272,4 +271,3 @@ module.exports = {
     performanceTest,
     bulkRecipientTest
 };
-EOF < /dev/null
