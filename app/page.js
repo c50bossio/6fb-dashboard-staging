@@ -225,9 +225,10 @@ export default function HomePage() {
                 </p>
                 <div className="mt-4 text-sm text-gray-400">
                   <p className="font-semibold text-white mb-2">SMS Opt-In</p>
-                  <p>Text START to subscribe</p>
-                  <p>Text STOP to unsubscribe</p>
-                  <p>Text HELP for assistance</p>
+                  <p>Text START to <span className="text-white font-medium">813-548-3884</span> to subscribe</p>
+                  <p>Text STOP to <span className="text-white font-medium">813-548-3884</span> to unsubscribe</p>
+                  <p>Text HELP to <span className="text-white font-medium">813-548-3884</span> for assistance</p>
+                  <p className="text-xs mt-2 text-gray-500">A2P Compliant Messaging Service</p>
                 </div>
               </div>
 
@@ -273,7 +274,7 @@ export default function HomePage() {
                     </a>
                   </li>
                   <li className="text-gray-400">
-                    SMS Issues: Text HELP
+                    SMS Issues: Text HELP to 813-548-3884
                   </li>
                 </ul>
               </div>
@@ -282,12 +283,20 @@ export default function HomePage() {
               <div>
                 <h4 className="font-semibold mb-4">Contact</h4>
                 <ul className="space-y-2 text-sm text-gray-400">
-                  <li>1-800-BOOKED-1</li>
-                  <li>(1-800-266-5331)</li>
-                  <li>support@bookedbarber.com</li>
+                  <li>
+                    <span className="text-gray-500">Voice:</span> 
+                    <span className="text-white font-medium"> 1-866-621-5809</span>
+                    <span className="text-xs ml-1">(Toll-Free)</span>
+                  </li>
+                  <li>
+                    <span className="text-gray-500">SMS/Text:</span> 
+                    <span className="text-white font-medium"> 1-813-548-3884</span>
+                    <span className="text-xs ml-1">(A2P Compliant)</span>
+                  </li>
+                  <li className="mt-3">support@bookedbarber.com</li>
                   <li className="mt-3">
-                    123 Barber Lane, Suite 100<br />
-                    San Francisco, CA 94102
+                    6FB Headquarters<br />
+                    Tampa, FL
                   </li>
                 </ul>
               </div>
