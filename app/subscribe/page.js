@@ -79,7 +79,7 @@ const PRICING_TIERS = [
       'SLA guarantee'
     ],
     limitations: [],
-    cta: 'Start Enterprise',
+    cta: 'Start as Enterprise',
     recommended: false
   }
 ]
@@ -90,12 +90,14 @@ export default function SubscribePage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
   useEffect(() => {
-    // Check if user already has an active subscription
-    checkExistingSubscription()
-  }, [user])
+    // Only check subscription after auth has loaded
+    if (!authLoading && user) {
+      checkExistingSubscription()
+    }
+  }, [user, authLoading])
 
   const checkExistingSubscription = async () => {
     if (!user) return
@@ -114,6 +116,13 @@ export default function SubscribePage() {
   }
 
   const handleSelectPlan = async (tierId) => {
+    // Don't do anything while auth is still loading
+    if (authLoading) {
+      console.log('Auth still loading, please wait...')
+      return
+    }
+
+    // If auth has loaded and no user, redirect to login
     if (!user) {
       router.push('/login?redirect=/subscribe')
       return
@@ -172,6 +181,13 @@ export default function SubscribePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {/* Auth Loading Message */}
+        {authLoading && (
+          <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+            <p className="text-blue-700">Verifying your account status...</p>
+          </div>
+        )}
+        
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -263,16 +279,24 @@ export default function SubscribePage() {
 
               <button
                 onClick={() => handleSelectPlan(tier.id)}
-                disabled={loading}
+                disabled={authLoading || loading}
                 className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
-                  loading && selectedTier === tier.id
+                  (authLoading || (loading && selectedTier === tier.id))
                     ? 'bg-gray-400 text-white cursor-not-allowed'
                     : tier.recommended
                     ? 'bg-green-600 text-white hover:bg-green-700'
                     : 'bg-gray-900 text-white hover:bg-gray-800'
                 }`}
               >
-                {loading && selectedTier === tier.id ? (
+                {authLoading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Verifying...
+                  </span>
+                ) : loading && selectedTier === tier.id ? (
                   <span className="flex items-center justify-center">
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
