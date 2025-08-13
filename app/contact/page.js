@@ -83,8 +83,12 @@ export default function ContactUs() {
                   <PhoneIcon className="h-5 w-5 text-olive-600 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Phone</p>
-                    <p className="text-gray-600">1-800-BOOKED-1</p>
-                    <p className="text-sm text-gray-500">(1-800-266-5331)</p>
+                    <p className="text-gray-600">
+                      <a href="tel:+18135483884" className="hover:text-olive-600 transition-colors">
+                        +1 813 548 3884
+                      </a>
+                    </p>
+                    <p className="text-sm text-gray-500">(Business Line)</p>
                   </div>
                 </div>
 
@@ -108,10 +112,10 @@ export default function ContactUs() {
                 <div className="flex items-start">
                   <MapPinIcon className="h-5 w-5 text-olive-600 mt-1 mr-3" />
                   <div>
-                    <p className="font-medium text-gray-900">Mailing Address</p>
+                    <p className="font-medium text-gray-900">Business Address</p>
                     <p className="text-gray-600">
-                      123 Barber Lane, Suite 100<br />
-                      San Francisco, CA 94102
+                      5909 Johns Rd.<br />
+                      Tampa, FL 33634
                     </p>
                   </div>
                 </div>
