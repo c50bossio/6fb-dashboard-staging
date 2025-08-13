@@ -17,6 +17,12 @@ export const metadata = {
   formatDetection: {
     telephone: false,
   },
+  other: {
+    'cache-bust': Date.now().toString(),
+    'pragma': 'no-cache',
+    'cache-control': 'no-cache, no-store, must-revalidate',
+    'expires': '0',
+  },
 }
 
 export const viewport = {

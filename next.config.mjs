@@ -325,7 +325,11 @@ const nextConfig = {
   // Disable static optimization for API routes to prevent Dynamic Server Usage errors
   trailingSlash: false,
   generateBuildId: async () => {
-    return 'build-' + Date.now()
+    // Force completely new build ID to break cache
+    const crypto = require('crypto');
+    const timestamp = Date.now();
+    const random = crypto.randomBytes(8).toString('hex');
+    return `cache-bust-${timestamp}-${random}`;
   },
   
   // Force dynamic rendering for all API routes
