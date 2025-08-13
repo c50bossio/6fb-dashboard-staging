@@ -581,7 +581,7 @@ async def startup_event():
         print("✅ Using existing Supabase data via Next.js API proxy")
     
     # Start notification queue processing
-    asyncio.create_task(notification_queue.start_processing())
+    asyncio.create_task(notification_queue.start_worker())
     print("✅ Notification queue processor started")
 
 @app.get("/")
