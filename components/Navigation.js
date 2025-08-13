@@ -37,6 +37,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useNavigation } from '../contexts/NavigationContext'
+import Logo, { LogoHeader } from './ui/Logo'
 
 const navigation = [
   { 
@@ -291,18 +292,11 @@ export default function Navigation() {
 
   // Mobile Header Component
   const MobileHeader = () => (
-    <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
-      <div className="flex items-center">
-        <div className="h-8 w-8 bg-gradient-to-br from-olive-600 to-gold-600 rounded-lg flex items-center justify-center">
-          <SparklesIcon className="h-5 w-5 text-white" />
-        </div>
-        <div className="ml-3">
-          <h1 className="text-lg font-bold text-gray-900">6FB AI</h1>
-        </div>
-      </div>
+    <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
+      <LogoHeader size="small" showText={false} />
       <button
         onClick={() => setIsMobileMenuOpen(true)}
-        className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+        className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"
         aria-label="Open navigation menu"
       >
         <Bars3Icon className="h-6 w-6" />
@@ -791,21 +785,13 @@ export default function Navigation() {
           />
           
           {/* Slide-out Menu */}
-          <div className="mobile-navigation absolute inset-y-0 left-0 w-80 max-w-full bg-white shadow-xl transform transition-transform ease-in-out duration-300">
+          <div className="mobile-navigation absolute inset-y-0 left-0 w-80 max-w-full bg-card shadow-2xl transform transition-transform ease-in-out duration-300 border-r border-border">
             {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center">
-                  <SparklesIcon className="h-6 w-6 text-white" />
-                </div>
-                <div className="ml-3">
-                  <h1 className="text-lg font-bold text-gray-900">6FB AI System</h1>
-                  <p className="text-xs text-gray-500">Business Intelligence Platform</p>
-                </div>
-              </div>
+            <div className="p-6 border-b border-border flex items-center justify-between bg-background/95 backdrop-blur-sm">
+              <Logo size="medium" showText priority />
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"
                 aria-label="Close navigation menu"
               >
                 <XMarkIcon className="h-6 w-6" />
@@ -817,24 +803,24 @@ export default function Navigation() {
               <NavigationItems onItemClick={() => setIsMobileMenuOpen(false)} />
               
               {/* Settings Section */}
-              <div className="border-t border-gray-100 p-3 sticky bottom-0 bg-white">
+              <div className="border-t border-border p-3 sticky bottom-0 bg-card backdrop-blur-sm">
                 <Link
                   href="/dashboard/settings"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`
-                    group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
+                    group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200
                     ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                      ? 'bg-slate-100 text-slate-900' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-secondary/20 text-secondary-foreground shadow-md' 
+                      : 'text-muted-foreground hover:bg-secondary/10 hover:text-foreground'
                     }
                   `}
                 >
                   <Cog6ToothIcon
                     className={`
-                      mr-2 h-4 w-4 flex-shrink-0
+                      mr-3 h-5 w-5 flex-shrink-0
                       ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                        ? 'text-slate-600' 
-                        : 'text-gray-400 group-hover:text-gray-600'
+                        ? 'text-secondary' 
+                        : 'text-muted-foreground group-hover:text-foreground'
                       }
                     `}
                   />
@@ -848,30 +834,24 @@ export default function Navigation() {
 
       {/* Desktop Navigation - Only render after client hydration to prevent mismatch */}
       {isClient && (
-        <nav className={`hidden lg:flex bg-white shadow-sm border-r border-gray-200 fixed h-full flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-80'}`}>
+        <nav className={`hidden lg:flex bg-card shadow-sm border-r border-border fixed h-full flex-col transition-all duration-300 backdrop-blur-md ${isCollapsed ? 'w-16' : 'w-80'}`}>
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
             {/* Header */}
-            <div className="p-6 border-b border-gray-100">
+            <div className="p-6 border-b border-border bg-background/95 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className={`flex items-center ${isCollapsed ? 'hidden' : ''}`}>
-                  <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center">
-                    <SparklesIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="ml-3">
-                    <h1 className="text-lg font-bold text-gray-900">6FB AI System</h1>
-                    <p className="text-xs text-gray-500">Business Intelligence Platform</p>
-                  </div>
+                  <Logo size="medium" showText priority />
                 </div>
                 <button
                   onClick={() => setIsCollapsed(!isCollapsed)}
-                  className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${isCollapsed ? 'mx-auto' : ''}`}
+                  className={`p-2 rounded-xl hover:bg-secondary/10 transition-all duration-200 ${isCollapsed ? 'mx-auto' : ''}`}
                   title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 >
                   {isCollapsed ? (
-                    <ChevronDoubleRightIcon className="h-5 w-5 text-gray-600" />
+                    <ChevronDoubleRightIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
                   ) : (
-                    <ChevronDoubleLeftIcon className="h-5 w-5 text-gray-600" />
+                    <ChevronDoubleLeftIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
                   )}
                 </button>
               </div>
@@ -881,24 +861,24 @@ export default function Navigation() {
           </div>
 
           {/* Settings - Fixed at Bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+          <div className="absolute bottom-0 left-0 right-0 bg-card border-t border-border z-50 backdrop-blur-sm">
             <div className="p-3">
               <Link
                 href="/dashboard/settings"
                 className={`
-                  group flex items-center ${isCollapsed ? 'justify-center' : ''} px-3 py-2 text-sm font-medium rounded-lg transition-colors
+                  group flex items-center ${isCollapsed ? 'justify-center' : ''} px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200
                   ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                    ? 'bg-slate-100 text-slate-900' 
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-secondary/20 text-secondary-foreground shadow-md' 
+                    : 'text-muted-foreground hover:bg-secondary/10 hover:text-foreground'
                   }
                 `}
               >
                 <Cog6ToothIcon
                   className={`
-                    ${isCollapsed ? '' : 'mr-2'} h-4 w-4 flex-shrink-0
+                    ${isCollapsed ? '' : 'mr-3'} h-5 w-5 flex-shrink-0
                     ${pathname === '/dashboard/settings' || pathname.startsWith('/dashboard/settings')
-                      ? 'text-slate-600' 
-                      : 'text-gray-400 group-hover:text-gray-600'
+                      ? 'text-secondary' 
+                      : 'text-muted-foreground group-hover:text-foreground'
                     }
                   `}
                   title={isCollapsed ? 'Settings' : undefined}

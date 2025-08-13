@@ -22,6 +22,15 @@ const nextConfig = {
   // Bundle optimization
   experimental: {
     optimizeCss: true,
+    turbo: {
+      rules: {
+        // Ultra-aggressive tree shaking
+        '*.js': {
+          sideEffects: false
+        }
+      }
+    },
+    serverMinification: true,
     optimizePackageImports: [
       '@heroicons/react',
       'date-fns',
@@ -114,14 +123,14 @@ const nextConfig = {
           cacheGroups: {
             default: false,
             vendors: false,
-            // Framework chunk (smaller)
+            // Framework chunk (ultra-small)
             framework: {
               name: 'framework',
               chunks: 'all',
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
               priority: 50,
               enforce: true,
-              maxSize: 5242880, // 5MB limit
+              maxSize: 2097152, // 2MB limit (reduced from 5MB)
             },
             // Calendar libraries (heavy)
             calendar: {
@@ -179,19 +188,28 @@ const nextConfig = {
               maxSize: 262144, // 256KB limit
             },
           },
-          maxAsyncRequests: 100,
-          maxInitialRequests: 30,
-          minSize: 10000,
-          maxSize: 262144, // Global max size 256KB
+          maxAsyncRequests: 200,
+          maxInitialRequests: 50,
+          minSize: 5000,
+          maxSize: 131072, // Global max size 128KB (ultra-aggressive)
         },
       }
       
-      // Aggressive dead code elimination
+      // Ultra-aggressive dead code elimination
       config.resolve.alias = {
         ...config.resolve.alias,
         // Remove unused imports
         '@sentry/react': false,
         '@sentry/nextjs': false,
+        // Remove heavy AI SDKs from client bundles
+        '@anthropic-ai/sdk': false,
+        'openai': false,
+        '@google/generative-ai': false,
+        // Remove server-only packages
+        'nodemailer': false,
+        'bull': false,
+        'ioredis': false,
+        'twilio': false,
       }
       
       // Remove development-only modules in production

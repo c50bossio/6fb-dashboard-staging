@@ -6,50 +6,73 @@
 
 @layer base {
   :root {
-    /* Light Mode - Deep Olive & Gold Theme */
-    --background: 32 21% 92%; /* Light Sand #EAE3D2 */
-    --foreground: 120 7% 14%; /* Gunmetal #1F2320 */
-    --card: 32 21% 92%; /* Light Sand */
-    --card-foreground: 120 7% 14%; /* Gunmetal */
-    --popover: 32 21% 95%; /* Lighter Sand */
-    --popover-foreground: 120 7% 14%; /* Gunmetal */
-    --primary: 130 11% 27%; /* Deep Olive #3C4A3E */
-    --primary-foreground: 32 21% 92%; /* Light Sand */
-    --secondary: 42 38% 56%; /* Rich Gold #C5A35B */
-    --secondary-foreground: 120 7% 14%; /* Gunmetal */
-    --muted: 39 15% 85%; /* Light Warm Gray */
-    --muted-foreground: 120 7% 35%; /* Darker Gunmetal */
-    --accent: 42 38% 56%; /* Rich Gold */
-    --accent-foreground: 120 7% 14%; /* Gunmetal */
-    --destructive: 2 49% 57%; /* Soft Red #D9534F */
-    --destructive-foreground: 32 21% 92%; /* Light Sand */
-    --border: 39 15% 85%; /* Light Warm Gray border */
-    --input: 39 15% 85%; /* Light Warm Gray input */
-    --ring: 130 11% 27%; /* Deep Olive focus ring */
-    --radius: 0.5rem;
+    /* BOOKEDBARBER BRAND-MATCHED DESIGN TOKENS */
+    /* Exact color matches from logo analysis for professional consistency */
+    
+    /* Brand Colors - Exact Logo Matches */
+    --brand-olive-primary: 130 11% 24%; /* #3C4A3E - Exact logo Deep Olive */
+    --brand-gold-secondary: 42 38% 56%; /* #C5A35B - Exact logo Rich Gold */
+    --brand-charcoal: 120 7% 18%; /* #2C322D - Logo charcoal variant */
+    --brand-gunmetal: 120 7% 12%; /* #1F2320 - Logo text color */
+    
+    /* Light Mode Theme */
+    --background: 32 21% 96%; /* Ultra Light Sand for clean professional look */
+    --foreground: 120 7% 12%; /* Brand Gunmetal for text */
+    --card: 0 0% 100%; /* Pure white cards for professional contrast */
+    --card-foreground: 120 7% 12%; /* Brand Gunmetal */
+    --popover: 0 0% 100%; /* Pure white popovers */
+    --popover-foreground: 120 7% 12%; /* Brand Gunmetal */
+    --primary: 130 11% 24%; /* Brand Olive Primary */
+    --primary-foreground: 0 0% 100%; /* Pure white on olive */
+    --secondary: 42 38% 56%; /* Brand Gold Secondary */
+    --secondary-foreground: 120 7% 12%; /* Brand Gunmetal */
+    --muted: 32 21% 94%; /* Light Sand muted */
+    --muted-foreground: 120 7% 45%; /* Medium Gunmetal */
+    --accent: 42 38% 56%; /* Brand Gold accent */
+    --accent-foreground: 0 0% 100%; /* Pure white on gold */
+    --destructive: 2 49% 57%; /* Professional error red */
+    --destructive-foreground: 0 0% 100%; /* White on error */
+    --border: 32 21% 88%; /* Subtle Sand border */
+    --input: 0 0% 100%; /* White input backgrounds */
+    --ring: 130 11% 24%; /* Brand Olive focus ring */
+    --radius: 0.75rem; /* Slightly more rounded for modern feel */
+    
+    /* Logo-Informed Spacing */
+    --logo-space-xs: 0.5rem;
+    --logo-space-sm: 1rem;
+    --logo-space-md: 1.5rem;
+    --logo-space-lg: 3rem;
   }
 
   .dark {
-    /* Dark Mode - Deep Olive & Gold Theme */
-    --background: 132 6% 18%; /* Charcoal Olive #2C322D */
-    --foreground: 39 15% 75%; /* Warm Gray #BEB7A7 */
-    --card: 132 6% 20%; /* Slightly lighter Charcoal */
-    --card-foreground: 39 15% 75%; /* Warm Gray */
-    --popover: 132 6% 22%; /* Lighter Charcoal */
-    --popover-foreground: 39 15% 75%; /* Warm Gray */
-    --primary: 130 11% 35%; /* Lighter Deep Olive for visibility */
-    --primary-foreground: 39 15% 85%; /* Light Warm Gray */
-    --secondary: 42 38% 56%; /* Rich Gold #C5A35B */
-    --secondary-foreground: 132 6% 18%; /* Charcoal Olive */
-    --muted: 132 6% 25%; /* Muted Charcoal */
-    --muted-foreground: 39 15% 60%; /* Muted Warm Gray */
-    --accent: 42 38% 66%; /* Light Gold */
-    --accent-foreground: 132 6% 18%; /* Charcoal Olive */
-    --destructive: 2 49% 47%; /* Darker Soft Red */
-    --destructive-foreground: 39 15% 85%; /* Light Warm Gray */
-    --border: 132 6% 28%; /* Charcoal border */
-    --input: 132 6% 28%; /* Charcoal input */
-    --ring: 42 38% 56%; /* Gold focus ring in dark mode */
+    /* Dark Mode - Brand-Matched Professional Theme */
+    /* Logo charcoal variant optimized for dark mode elegance */
+    
+    --background: 120 7% 18%; /* Brand Charcoal base */
+    --foreground: 32 21% 90%; /* Light Sand text */
+    --card: 120 7% 22%; /* Elevated charcoal cards */
+    --card-foreground: 32 21% 90%; /* Light Sand text */
+    --popover: 120 7% 20%; /* Charcoal popovers */
+    --popover-foreground: 32 21% 90%; /* Light Sand text */
+    --primary: 42 38% 60%; /* Enhanced Gold for dark mode visibility */
+    --primary-foreground: 120 7% 12%; /* Dark text on gold */
+    --secondary: 130 11% 35%; /* Lighter Olive for secondary actions */
+    --secondary-foreground: 32 21% 90%; /* Light Sand text */
+    --muted: 120 7% 25%; /* Muted charcoal */
+    --muted-foreground: 32 21% 70%; /* Muted light text */
+    --accent: 42 38% 60%; /* Enhanced Gold accent */
+    --accent-foreground: 120 7% 12%; /* Dark text on gold */
+    --destructive: 2 49% 60%; /* Visible error red for dark mode */
+    --destructive-foreground: 0 0% 100%; /* White on error */
+    --border: 120 7% 32%; /* Visible charcoal border */
+    --input: 120 7% 25%; /* Input field charcoal */
+    --ring: 42 38% 60%; /* Gold focus ring in dark mode */
+    
+    /* Enhanced dark mode spacing */
+    --logo-space-xs: 0.5rem;
+    --logo-space-sm: 1rem;
+    --logo-space-md: 1.5rem;
+    --logo-space-lg: 3rem;
   }
 
   * {
@@ -66,36 +89,81 @@
 }
 
 @layer components {
+  /* BRAND-ALIGNED COMPONENT SYSTEM */
+  /* Professional components that harmonize with BookedBarber logo aesthetics */
+  
   .btn-primary {
-    @apply bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg;
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold 
+           hover:bg-primary/90 transition-all duration-200 
+           shadow-md hover:shadow-xl border border-primary/20
+           focus:ring-2 focus:ring-primary/20 focus:outline-none;
   }
   
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground px-4 py-2 rounded-lg font-medium hover:bg-secondary/90 transition-all duration-200 transform hover:scale-105;
+    @apply bg-secondary text-secondary-foreground px-6 py-3 rounded-xl font-semibold 
+           hover:bg-secondary/90 transition-all duration-200
+           shadow-md hover:shadow-lg border border-secondary/20
+           focus:ring-2 focus:ring-secondary/20 focus:outline-none;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-primary text-primary bg-transparent px-6 py-3 rounded-xl font-semibold
+           hover:bg-primary hover:text-primary-foreground transition-all duration-200
+           focus:ring-2 focus:ring-primary/20 focus:outline-none;
   }
   
   .btn-cta {
-    @apply bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-lg font-semibold hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+    @apply bg-gradient-to-r from-primary via-secondary to-primary 
+           text-white px-8 py-4 rounded-xl font-bold text-lg
+           hover:from-primary/90 hover:via-secondary/90 hover:to-primary/90 
+           transition-all duration-300 transform hover:scale-[1.02]
+           shadow-lg hover:shadow-2xl border border-white/10
+           focus:ring-2 focus:ring-secondary/30 focus:outline-none;
   }
   
   .card {
-    @apply bg-card rounded-xl shadow-sm border border-border p-6 transition-all duration-300 hover:shadow-lg hover:border-secondary/50;
+    @apply bg-card rounded-2xl shadow-sm border border-border p-6 
+           transition-all duration-300 hover:shadow-lg hover:border-secondary/30
+           backdrop-blur-sm;
+  }
+  
+  .card-elevated {
+    @apply bg-card rounded-2xl shadow-lg border border-border p-8 
+           transition-all duration-300 hover:shadow-xl hover:border-secondary/40
+           backdrop-blur-sm hover:-translate-y-1;
   }
   
   .feature-card {
-    @apply bg-card p-8 rounded-xl border border-border hover:shadow-xl hover:border-secondary/60 transition-all duration-300 transform hover:-translate-y-2;
+    @apply bg-card/90 p-8 rounded-2xl border border-border 
+           hover:shadow-2xl hover:border-secondary/50 
+           transition-all duration-300 transform hover:-translate-y-2
+           backdrop-blur-md;
   }
   
   .input-field {
-    @apply w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-3 border border-border rounded-xl bg-input
+           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent 
+           transition-all duration-200 placeholder:text-muted-foreground
+           shadow-sm hover:shadow-md;
   }
   
   .gradient-text {
-    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-secondary to-primary 
+           bg-clip-text text-transparent font-bold;
   }
   
   .hero-gradient {
-    @apply bg-gradient-to-br from-primary via-secondary to-primary/80;
+    @apply bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10;
+  }
+  
+  /* Brand-specific utility classes */
+  .logo-container {
+    @apply flex items-center space-x-3 p-2 rounded-xl
+           hover:bg-secondary/5 transition-all duration-200;
+  }
+  
+  .brand-shadow {
+    @apply shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-secondary/20;
   }
   
   .section-padding {

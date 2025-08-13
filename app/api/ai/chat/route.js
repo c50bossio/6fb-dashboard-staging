@@ -1,6 +1,9 @@
 import { streamText } from 'ai'
 import { NextResponse } from 'next/server'
 
+// Ultra-aggressive bundle optimization: Use edge runtime
+export const runtime = 'edge'
+
 /**
  * Streaming Chat API endpoint for real-time AI conversations
  * Supports multiple AI providers with intelligent fallback

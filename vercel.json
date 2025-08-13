@@ -7,7 +7,10 @@
       "NODE_OPTIONS": "--max-old-space-size=8192",
       "GENERATE_SOURCEMAP": "false",
       "DISABLE_ESLINT_PLUGIN": "true",
-      "NEXT_BUNDLE_ANALYZE": "false"
+      "NEXT_BUNDLE_ANALYZE": "false",
+      "NEXT_PRIVATE_STANDALONE": "true",
+      "SKIP_ENV_VALIDATION": "true",
+      "CI": "true"
     }
   },
   "functions": {
