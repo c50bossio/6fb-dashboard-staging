@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+// Remove edge runtime to use Node.js APIs
+// export const runtime = 'edge'
 
 export async function GET(request) {
   try {
@@ -98,15 +99,15 @@ async function getSystemHealthMetrics() {
         details: aiHealth
       },
       database: await checkDatabaseHealth(),
-      uptime_hours: Math.floor(process.uptime() / 3600),
-      memory_usage_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      uptime_hours: Math.floor(Date.now() / 1000 / 3600 % 24), // Edge Runtime compatible
+      memory_usage_mb: 0, // Not available in Edge Runtime
     }
   } catch (error) {
     return {
       status: 'error',
       error: error.message,
-      uptime_hours: Math.floor(process.uptime() / 3600),
-      memory_usage_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      uptime_hours: Math.floor(Date.now() / 1000 / 3600 % 24), // Edge Runtime compatible
+      memory_usage_mb: 0, // Not available in Edge Runtime
     }
   }
 }
@@ -266,7 +267,7 @@ async function getPerformanceMetrics() {
     avg_response_time_ms: 127,
     api_success_rate: 99.2,
     uptime_percent: 99.8,
-    memory_usage_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+    memory_usage_mb: 0, // Not available in Edge Runtime
     cpu_usage_percent: Math.round(Math.random() * 15 + 5), // Simulated CPU usage
   }
 }

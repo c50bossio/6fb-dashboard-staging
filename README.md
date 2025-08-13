@@ -1,6 +1,6 @@
-# 6FB AI Agent System
+# BookedBarber Platform
 
-An enterprise-grade barbershop management system powered by AI agents and modern web technologies.
+An enterprise-grade barbershop management platform powered by AI agents and modern web technologies.
 
 \![Next.js](https://img.shields.io/badge/Next.js-14.0-black)
 \![Supabase](https://img.shields.io/badge/Supabase-Database-green)
@@ -187,4 +187,4 @@ This project is proprietary software. All rights reserved.
 ---
 
 Built with ❤️ by the 6FB team
-EOF < /dev/null
+EOF < /dev/null## Production Deployment Active - Wed Aug 13 18:26:05 EDT 2025

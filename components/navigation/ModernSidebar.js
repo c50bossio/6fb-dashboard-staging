@@ -12,6 +12,7 @@ import {
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import Logo from '../ui/Logo'
 
 import { useAuth } from '../SupabaseAuthProvider'
 
@@ -66,24 +67,16 @@ export default function ModernSidebar() {
       {/* Desktop Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-40 ${sidebarWidth} bg-white border-r border-gray-200 transition-all duration-300 ease-in-out hidden lg:flex lg:flex-col`}>
         {/* Logo and Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
           {!collapsed && (
-            <Link href="/dashboard" className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-2">
-                <ScissorsIcon className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <span className="text-lg font-bold text-gray-900">6FB</span>
-                <div className="text-xs text-gray-500">Barbershop AI</div>
-              </div>
+            <Link href="/dashboard" className="flex items-center">
+              <Logo size="small" showText={false} />
             </Link>
           )}
           
           {collapsed && (
             <Link href="/dashboard" className="flex justify-center">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-2">
-                <ScissorsIcon className="h-6 w-6 text-white" />
-              </div>
+              <Logo size="small" showText={false} />
             </Link>
           )}
 
@@ -254,15 +247,9 @@ export default function ModernSidebar() {
           <div className="fixed inset-y-0 left-0 flex w-full max-w-sm">
             <div className="flex flex-col w-full bg-white">
               {/* Mobile Header */}
-              <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-                <Link href="/dashboard" className="flex items-center space-x-3" onClick={() => setMobileMenuOpen(false)}>
-                  <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-2">
-                    <ScissorsIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <span className="text-lg font-bold text-gray-900">6FB</span>
-                    <div className="text-xs text-gray-500">Barbershop AI</div>
-                  </div>
+              <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
+                <Link href="/dashboard" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
+                  <Logo size="small" showText={false} />
                 </Link>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

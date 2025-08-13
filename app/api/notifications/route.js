@@ -8,7 +8,7 @@ import NotificationService from '../../../lib/notifications/notification-service
 export async function GET(request) {
   return Response.json({ 
     status: 'OK', 
-    service: '6FB Internal Notification System',
+    service: 'BookedBarber Notification System',
     timestamp: new Date().toISOString()
   });
 }

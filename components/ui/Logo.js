@@ -50,10 +50,10 @@ const Logo = ({
     const isDarkMode = resolvedTheme === 'dark';
     
     if (isDarkMode) {
-      // Use transparent logo for dark backgrounds
+      // Use gold logo with transparent background for dark mode
       return 'bookedbarber-logo-transparent.png';
     }
-    // Use green logo for light backgrounds
+    // Use green logo with transparent background for light mode
     return 'bookedbarber-logo-green.png';
   };
 

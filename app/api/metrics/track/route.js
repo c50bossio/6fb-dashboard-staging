@@ -86,10 +86,10 @@ export async function POST(request) {
     if (consent.analytics && false) { // posthog temporarily disabled
       try {
         // posthogResult = await posthog.capture({
-          distinctId: userId || sessionId,
-          event: event,
-          properties: enhancedProperties
-        })
+        //   distinctId: userId || sessionId,
+        //   event: event,
+        //   properties: enhancedProperties
+        // })
       } catch (posthogError) {
         console.error('PostHog tracking error:', posthogError)
         // Don't fail the request if PostHog fails
@@ -117,15 +117,15 @@ export async function POST(request) {
     try {
       if (false) { // posthog temporarily disabled
         // await posthog.capture({
-          distinctId: 'system',
-          event: 'metrics_tracking_error',
-          properties: {
-            error_type: error.name,
-            error_message: error.message,
-            timestamp: new Date().toISOString(),
-            endpoint: '/api/metrics/track'
-          }
-        })
+        //   distinctId: 'system',
+        //   event: 'metrics_tracking_error',
+        //   properties: {
+        //     error_type: error.name,
+        //     error_message: error.message,
+        //     timestamp: new Date().toISOString(),
+        //     endpoint: '/api/metrics/track'
+        //   }
+        // })
       }
     } catch (errorTrackingError) {
       console.error('Error tracking error:', errorTrackingError)

@@ -1,8 +1,8 @@
 {
-  "name": "6fb-ai-agent-dashboard",
+  "name": "bookedbarber-dashboard",
   "version": "1.0.0",
   "private": true,
-  "description": "AI-powered barbershop management dashboard",
+  "description": "BookedBarber - AI-powered barbershop management platform",
   "scripts": {
     "dev": "next dev -p 9999",
     "build": "next build",
