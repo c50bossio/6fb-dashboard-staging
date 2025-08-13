@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-08-13T23:27:12.882Z",
+  "url": "https://bookedbarber.com/subscribe",
+  "tests": [
+    {
+      "name": "Page Accessibility",
+      "status": "PASS",
+      "details": "Subscription page loads successfully",
+      "expected": "200 OK",
+      "actual": "200 OK",
+      "timestamp": "2025-08-13T23:27:13.031Z"
+    },
+    {
+      "name": "Pricing Tiers Visibility",
+      "status": "FAIL",
+      "details": "Missing pricing information",
+      "expected": "Individual Barber $35, Barbershop $99, Multi-Location $249",
+      "actual": "Found 0/3 prices and 3/3 tiers",
+      "timestamp": "2025-08-13T23:27:13.031Z"
+    },
+    {
+      "name": "Billing Toggle Presence",
+      "status": "PASS",
+      "details": "Monthly/Yearly billing options found",
+      "expected": "Both monthly and yearly options visible",
+      "actual": "Monthly: true, Yearly: true, Savings: true",
+      "timestamp": "2025-08-13T23:27:13.032Z"
+    },
+    {
+      "name": "Subscription Buttons Presence",
+      "status": "PASS",
+      "details": "Subscription buttons found",
+      "expected": "Subscription/action buttons visible",
+      "actual": "Action buttons detected in content",
+      "timestamp": "2025-08-13T23:27:13.033Z"
+    },
+    {
+      "name": "Stripe Security Messaging",
+      "status": "PASS",
+      "details": "Stripe security messaging found",
+      "expected": "Stripe security and payment messaging visible",
+      "actual": "Stripe: true, Secure: true, Payment: true",
+      "timestamp": "2025-08-13T23:27:13.033Z"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "passed": 4,
+    "failed": 1
+  }
+}
