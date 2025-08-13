@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
-export default function SubscribeSuccessPage() {
+function SubscribeSuccessContent() {
   const [verifying, setVerifying] = useState(true)
   const [error, setError] = useState('')
   const [subscriptionDetails, setSubscriptionDetails] = useState(null)
@@ -193,5 +193,26 @@ export default function SubscribeSuccessPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Loading fallback for Suspense boundary
+function SubscribeSuccessLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+        <h2 className="text-xl font-semibold text-gray-900">Loading subscription details...</h2>
+      </div>
+    </div>
+  )
+}
+
+// Main page component with Suspense wrapper
+export default function SubscribeSuccessPage() {
+  return (
+    <Suspense fallback={<SubscribeSuccessLoading />}>
+      <SubscribeSuccessContent />
+    </Suspense>
   )
 }

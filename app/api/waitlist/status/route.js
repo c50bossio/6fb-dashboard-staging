@@ -67,9 +67,9 @@ import { NextResponse } from 'next/server';
  *       500:
  *         description: Internal server error
  */
-export async function GET(request) {
+export async function GET(request, { params }) {
     try {
-        const { searchParams } = new URL(request.url);
+        const { searchParams } = request.nextUrl;
         const customer_id = searchParams.get('customer_id');
         const barbershop_id = searchParams.get('barbershop_id');
         

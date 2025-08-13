@@ -11,8 +11,16 @@
 
 const Stripe = require('stripe');
 
-// Use test key for initial setup, replace with live key for production
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_YOUR_TEST_KEY_HERE', {
+// Load environment variables
+require('dotenv').config({ path: '.env.local' });
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error('❌ STRIPE_SECRET_KEY not found in environment variables');
+  console.log('Please make sure your .env.local file contains STRIPE_SECRET_KEY');
+  process.exit(1);
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 });
 
