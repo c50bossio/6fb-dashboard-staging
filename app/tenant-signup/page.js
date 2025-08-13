@@ -473,7 +473,7 @@ export default function TenantSignup() {
 
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <div className="flex items-start">
-          <SparklesIcon className="h-5 w-5 text-yellow-600 mt-0.5 mr-2" />
+          <SparklesIcon className="h-5 w-5 text-amber-800 mt-0.5 mr-2" />
           <div className="text-sm text-yellow-800">
             <strong>14-day free trial included!</strong> No credit card required. 
             You can upgrade, downgrade, or cancel anytime.

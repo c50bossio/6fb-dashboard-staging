@@ -59,7 +59,7 @@ export default function ExecutiveSummary({ data }) {
       {/* Strategic Insights */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <LightBulbIcon className="h-6 w-6 text-amber-500" />
+          <LightBulbIcon className="h-6 w-6 text-amber-700" />
           Strategic Insights
         </h3>
         
@@ -154,8 +154,8 @@ const InsightCard = ({ insight }) => {
           <p className="text-sm font-medium">{insight.message}</p>
           <div className="mt-2 flex items-center gap-2">
             <span className={`text-xs px-2 py-1 rounded-full ${
-              insight.priority === 'high' ? 'bg-red-100 text-red-700' :
-              insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+              insight.priority === 'high' ? 'bg-softred-100 text-softred-800' :
+              insight.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
               'bg-gray-100 text-gray-700'
             }`}>
               {insight.priority} priority

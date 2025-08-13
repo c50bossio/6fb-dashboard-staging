@@ -350,7 +350,7 @@ export default function MarketingLinksTab() {
                   <h3 className="text-lg font-semibold text-gray-900">{link.name}</h3>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     link.active 
-                      ? 'bg-green-100 text-green-800' 
+                      ? 'bg-moss-100 text-moss-900' 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     {link.active ? 'Active' : 'Inactive'}
@@ -500,9 +500,9 @@ export default function MarketingLinksTab() {
       {/* Toast Notification */}
       {showToast && (
         <div className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-bounce z-60 ${
-          toastType === 'success' ? 'bg-green-600 text-white' :
+          toastType === 'success' ? 'bg-moss-600 text-white' :
           toastType === 'error' ? 'bg-red-600 text-white' :
-          'bg-yellow-600 text-white'
+          'bg-amber-700 text-white'
         }`}>
           {toastType === 'success' ? (
             <CheckCircleIcon className="h-5 w-5" />

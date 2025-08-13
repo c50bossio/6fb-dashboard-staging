@@ -29,7 +29,7 @@ export const MobileButton = ({ children, variant = 'primary', size = 'medium', f
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2'
   
   const variants = {
-    primary: 'bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-500',
+    primary: 'bg-amber-700 text-white hover:bg-amber-700 focus:ring-amber-500',
     secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500',
     outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
@@ -240,9 +240,9 @@ export const MobileBadge = ({ children, variant = 'default', size = 'medium', cl
   const variants = {
     default: 'bg-gray-100 text-gray-800',
     primary: 'bg-amber-100 text-amber-800',
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-yellow-100 text-yellow-800',
-    danger: 'bg-red-100 text-red-800',
+    success: 'bg-moss-100 text-moss-900',
+    warning: 'bg-amber-100 text-amber-900',
+    danger: 'bg-softred-100 text-softred-900',
     info: 'bg-olive-100 text-olive-800'
   }
   

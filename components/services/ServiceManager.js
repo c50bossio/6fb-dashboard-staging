@@ -208,7 +208,7 @@ export default function ServiceManager({
     }
     
     return (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
         <CheckCircleIcon className="h-3 w-3 mr-1" />
         Customized
       </span>
@@ -252,8 +252,8 @@ export default function ServiceManager({
   const getCategoryColor = (category) => {
     const colors = {
       haircut: 'bg-olive-100 text-olive-800',
-      beard: 'bg-green-100 text-green-800',
-      shave: 'bg-red-100 text-red-800',
+      beard: 'bg-moss-100 text-moss-900',
+      shave: 'bg-softred-100 text-softred-900',
       styling: 'bg-gold-100 text-gold-800',
       combo: 'bg-indigo-100 text-indigo-800',
       treatment: 'bg-pink-100 text-pink-800'
@@ -391,7 +391,7 @@ export default function ServiceManager({
               
               {service.is_featured && (
                 <div className="absolute top-3 right-3">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900">
                     <StarIcon className="h-3 w-3 mr-1" />
                     Featured
                   </span>

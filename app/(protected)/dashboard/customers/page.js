@@ -110,8 +110,8 @@ export default function CustomersPage() {
     switch (segment) {
       case 'vip': return 'bg-gold-100 text-gold-800'
       case 'regular': return 'bg-olive-100 text-olive-800'
-      case 'new': return 'bg-green-100 text-green-800'
-      case 'lapsed': return 'bg-red-100 text-red-800'
+      case 'new': return 'bg-moss-100 text-moss-900'
+      case 'lapsed': return 'bg-softred-100 text-softred-900'
       default: return 'bg-gray-100 text-gray-800'
     }
   }

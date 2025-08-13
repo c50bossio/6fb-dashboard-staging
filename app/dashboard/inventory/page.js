@@ -213,9 +213,9 @@ export default function InventoryPage() {
 
   const getStatusColor = (status) => {
     switch(status) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200'
+      case 'critical': return 'bg-softred-100 text-softred-900 border-red-200'
       case 'low': return 'bg-amber-100 text-amber-800 border-amber-200'
-      case 'good': return 'bg-green-100 text-green-800 border-green-200'
+      case 'good': return 'bg-moss-100 text-moss-900 border-green-200'
       default: return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
@@ -302,7 +302,7 @@ export default function InventoryPage() {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+                      <ExclamationTriangleIcon className="h-6 w-6 text-amber-700" />
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">Low Stock</p>
@@ -522,14 +522,14 @@ export default function InventoryPage() {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">Low Stock Alert</h3>
-                    <ExclamationTriangleIcon className="h-5 w-5 text-amber-500" />
+                    <ExclamationTriangleIcon className="h-5 w-5 text-amber-700" />
                   </div>
                   <div className="space-y-2">
                     {inventory.filter(i => i.status === 'low' || i.status === 'critical').slice(0, 4).map(item => (
                       <div key={item.id} className="flex items-center justify-between py-1">
                         <span className="text-sm text-gray-700 truncate">{item.name}</span>
                         <span className={`text-xs font-medium ${
-                          item.status === 'critical' ? 'text-red-600' : 'text-amber-600'
+                          item.status === 'critical' ? 'text-red-600' : 'text-amber-700'
                         }`}>
                           {item.current_stock} left
                         </span>

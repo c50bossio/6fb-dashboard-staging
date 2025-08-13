@@ -273,7 +273,7 @@ export default function SystemHealthMonitor({
   const getStatusColor = (status) => {
     switch (status) {
       case 'healthy': return 'text-green-600 bg-green-50'
-      case 'degraded': return 'text-yellow-600 bg-yellow-50' 
+      case 'degraded': return 'text-amber-800 bg-yellow-50' 
       case 'unhealthy': return 'text-red-600 bg-red-50'
       default: return 'text-gray-600 bg-gray-50'
     }
@@ -282,7 +282,7 @@ export default function SystemHealthMonitor({
   const getStatusIcon = (status) => {
     switch (status) {
       case 'healthy': return <CheckCircleIcon className="h-5 w-5 text-green-500" />
-      case 'degraded': return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+      case 'degraded': return <ExclamationTriangleIcon className="h-5 w-5 text-amber-800" />
       case 'unhealthy': return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
       default: return <ClockIcon className="h-5 w-5 text-gray-500" />
     }

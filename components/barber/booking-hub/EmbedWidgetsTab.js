@@ -103,7 +103,7 @@ export default function EmbedWidgetsTab() {
       case 'iframe':
         return 'bg-olive-100 text-olive-800'
       case 'button':
-        return 'bg-green-100 text-green-800'
+        return 'bg-moss-100 text-moss-900'
       case 'javascript':
         return 'bg-gold-100 text-gold-800'
       case 'link':

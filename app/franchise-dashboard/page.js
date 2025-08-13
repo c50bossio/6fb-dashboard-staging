@@ -320,7 +320,7 @@ export default function FranchiseDashboard() {
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Average Rating</span>
                         <div className="flex items-center">
-                          <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                          <Star className="h-4 w-4 text-amber-800 mr-1" />
                           <span className="text-sm font-medium">{location.average_rating?.toFixed(1) || '0.0'}</span>
                         </div>
                       </div>
@@ -368,7 +368,7 @@ export default function FranchiseDashboard() {
                         <div className="text-right">
                           <p className="font-medium text-gray-900">${location.total_revenue?.toLocaleString() || '0'}</p>
                           <div className="flex items-center">
-                            <Star className="h-3 w-3 text-yellow-500 mr-1" />
+                            <Star className="h-3 w-3 text-amber-800 mr-1" />
                             <span className="text-sm text-gray-600">{location.customer_satisfaction_score?.toFixed(1) || '0.0'}</span>
                           </div>
                         </div>

@@ -20,7 +20,7 @@ export default function RealtimeIndicator({ barbershopId, className = '' }) {
   const getStatusColor = () => {
     if (error) return 'text-red-600 bg-red-50 border-red-200';
     if (connected) return 'text-green-600 bg-green-50 border-green-200';
-    return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    return 'text-amber-800 bg-yellow-50 border-yellow-200';
   };
 
   const getStatusIcon = () => {

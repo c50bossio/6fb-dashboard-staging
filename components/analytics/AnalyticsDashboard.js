@@ -118,7 +118,7 @@ export default function AnalyticsDashboard() {
           {showAdvancedAnalytics && (
             <button
               onClick={handleScheduleReport}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
               Schedule Report
             </button>
@@ -200,7 +200,7 @@ export default function AnalyticsDashboard() {
                       <p className="font-semibold text-green-600">{activity.amount}</p>
                     )}
                     {activity.rating && (
-                      <p className="text-yellow-500">{'⭐'.repeat(activity.rating)}</p>
+                      <p className="text-amber-800">{'⭐'.repeat(activity.rating)}</p>
                     )}
                   </div>
                 </div>
@@ -339,9 +339,9 @@ function AIInsights({ analytics }) {
             <div className="flex items-center justify-between mb-1">
               <h4 className="font-medium">{insight.title}</h4>
               <span className={`px-2 py-1 text-xs rounded-full ${
-                insight.impact_level === 'high' ? 'bg-red-100 text-red-800' :
-                insight.impact_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-green-100 text-green-800'
+                insight.impact_level === 'high' ? 'bg-softred-100 text-softred-900' :
+                insight.impact_level === 'medium' ? 'bg-amber-100 text-amber-900' :
+                'bg-moss-100 text-moss-900'
               }`}>
                 {insight.impact_level} impact
               </span>

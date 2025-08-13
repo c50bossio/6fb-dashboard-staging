@@ -239,13 +239,13 @@ export default function MFASetup({ onComplete, onCancel }) {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">MFA Enabled Successfully!</h3>
-                <Badge className="mt-1 bg-green-100 text-green-800">Secure</Badge>
+                <Badge className="mt-1 bg-moss-100 text-moss-900">Secure</Badge>
               </div>
             </div>
 
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start space-x-2">
-                <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-amber-800 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L5.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                 </svg>
                 <div className="text-left">
@@ -299,7 +299,7 @@ export default function MFASetup({ onComplete, onCancel }) {
 
             <button
               onClick={handleComplete}
-              className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
+              className="w-full bg-moss-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 font-medium"
             >
               Complete Setup
             </button>

@@ -64,7 +64,7 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
               </div>
               <div className={`text-sm font-bold ${
                 collaboration_score > 0.8 ? 'text-green-600' : 
-                collaboration_score > 0.6 ? 'text-yellow-600' : 'text-gray-600'
+                collaboration_score > 0.6 ? 'text-amber-800' : 'text-gray-600'
               }`}>
                 {collaboration_score > 0 ? (collaboration_score * 100).toFixed(0) : 'N/A'}%
               </div>

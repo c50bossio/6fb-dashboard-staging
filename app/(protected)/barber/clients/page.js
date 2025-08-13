@@ -167,7 +167,7 @@ export default function BarberClients() {
           <div className="p-6">
             <div className="flex items-center space-x-4 mb-6">
               <div className="h-16 w-16 rounded-full bg-amber-100 flex items-center justify-center">
-                <UserGroupIcon className="h-8 w-8 text-amber-600" />
+                <UserGroupIcon className="h-8 w-8 text-amber-700" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">{client.name}</h3>
@@ -218,7 +218,7 @@ export default function BarberClients() {
             </div>
             
             <div className="flex space-x-3">
-              <button className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
+              <button className="flex-1 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
                 Book Appointment
               </button>
               <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
@@ -252,7 +252,7 @@ export default function BarberClients() {
               <h1 className="text-2xl font-bold text-gray-900">My Clients</h1>
               <p className="text-sm text-gray-600">Manage your client relationships</p>
             </div>
-            <button className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
+            <button className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
               Add New Client
             </button>
           </div>
@@ -278,7 +278,7 @@ export default function BarberClients() {
                 onClick={() => setFilterType('all')}
                 className={`px-4 py-2 rounded-lg ${
                   filterType === 'all' 
-                    ? 'bg-amber-600 text-white' 
+                    ? 'bg-amber-700 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -288,7 +288,7 @@ export default function BarberClients() {
                 onClick={() => setFilterType('regular')}
                 className={`px-4 py-2 rounded-lg ${
                   filterType === 'regular' 
-                    ? 'bg-amber-600 text-white' 
+                    ? 'bg-amber-700 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -298,7 +298,7 @@ export default function BarberClients() {
                 onClick={() => setFilterType('vip')}
                 className={`px-4 py-2 rounded-lg ${
                   filterType === 'vip' 
-                    ? 'bg-amber-600 text-white' 
+                    ? 'bg-amber-700 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -308,7 +308,7 @@ export default function BarberClients() {
                 onClick={() => setFilterType('new')}
                 className={`px-4 py-2 rounded-lg ${
                   filterType === 'new' 
-                    ? 'bg-amber-600 text-white' 
+                    ? 'bg-amber-700 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -329,7 +329,7 @@ export default function BarberClients() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-                    <UserGroupIcon className="h-5 w-5 text-amber-600" />
+                    <UserGroupIcon className="h-5 w-5 text-amber-700" />
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">{client.name}</p>

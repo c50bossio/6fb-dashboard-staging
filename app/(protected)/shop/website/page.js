@@ -245,8 +245,8 @@ export default function ShopWebsiteCustomization() {
               </h1>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 settings.is_published 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-yellow-100 text-yellow-700'
+                  ? 'bg-moss-100 text-moss-800' 
+                  : 'bg-amber-100 text-amber-900'
               }`}>
                 {settings.is_published ? 'Published' : 'Draft'}
               </span>
@@ -991,8 +991,8 @@ export default function ShopWebsiteCustomization() {
                             onClick={() => handleBarberApproval(barber.id, !barber.approved)}
                             className={`px-3 py-1 text-sm font-medium rounded-lg ${
                               barber.approved
-                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                                ? 'bg-moss-100 text-moss-800 hover:bg-green-200'
+                                : 'bg-amber-100 text-amber-900 hover:bg-yellow-200'
                             }`}
                           >
                             {barber.approved ? 'Approved' : 'Pending'}

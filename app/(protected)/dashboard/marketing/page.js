@@ -64,7 +64,7 @@ export default function MarketingDashboard() {
 
   const getStatusColor = (status) => {
     switch(status) {
-      case 'active': return 'bg-green-100 text-green-800'
+      case 'active': return 'bg-moss-100 text-moss-900'
       case 'completed': return 'bg-olive-100 text-olive-800'
       case 'draft': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
@@ -148,7 +148,7 @@ export default function MarketingDashboard() {
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <ChartBarIcon className="h-8 w-8 text-yellow-600" />
+                <ChartBarIcon className="h-8 w-8 text-amber-800" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Open Rate</p>
                   <p className="text-2xl font-semibold text-gray-900">{metrics.avgOpenRate}%</p>

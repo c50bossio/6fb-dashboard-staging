@@ -436,7 +436,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       {paymentMethod === 'in-person' && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex">
-            <CurrencyDollarIcon className="h-5 w-5 text-yellow-600 mt-0.5" />
+            <CurrencyDollarIcon className="h-5 w-5 text-amber-800 mt-0.5" />
             <div className="ml-3">
               <h4 className="font-medium text-yellow-900">Payment at Shop</h4>
               <p className="text-sm text-yellow-700 mt-1">

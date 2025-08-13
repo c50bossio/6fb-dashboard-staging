@@ -153,7 +153,7 @@ export default function ActionCenter({ data }) {
       {alerts.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <BellAlertIcon className="h-6 w-6 text-amber-500" />
+            <BellAlertIcon className="h-6 w-6 text-amber-700" />
             Active Alerts
           </h3>
           
@@ -263,7 +263,7 @@ const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
                 {task.estimatedTime}
               </span>
               <span className={`px-2 py-0.5 rounded-full font-medium ${
-                task.priority === 'high' ? 'bg-red-100 text-red-700' :
+                task.priority === 'high' ? 'bg-softred-100 text-softred-800' :
                 task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
                 'bg-olive-100 text-olive-700'
               }`}>

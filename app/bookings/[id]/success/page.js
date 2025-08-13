@@ -187,7 +187,7 @@ END:VCALENDAR`
                   <p className="text-2xl font-bold text-gray-900">${booking.totalAmount}</p>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-moss-100 text-moss-900">
                     ✓ {booking.paymentStatus === 'paid' ? 'Paid' : 'Pay at Shop'}
                   </span>
                 </div>
@@ -208,7 +208,7 @@ END:VCALENDAR`
                 disabled={addedToCalendar}
                 className={`flex items-center justify-center px-4 py-3 rounded-lg font-medium transition-all ${
                   addedToCalendar
-                    ? 'bg-green-100 text-green-800 cursor-default'
+                    ? 'bg-moss-100 text-moss-900 cursor-default'
                     : 'bg-olive-600 text-white hover:bg-olive-700'
                 }`}
               >

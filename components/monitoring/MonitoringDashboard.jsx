@@ -151,7 +151,7 @@ export default function MonitoringDashboard() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'healthy': return 'text-green-500'
-      case 'degraded': return 'text-yellow-500'
+      case 'degraded': return 'text-amber-800'
       case 'critical': return 'text-red-500'
       default: return 'text-gray-500'
     }
@@ -193,7 +193,7 @@ export default function MonitoringDashboard() {
             onClick={() => setAutoRefresh(!autoRefresh)}
             className={`px-4 py-2 text-sm rounded-md transition-colors ${
               autoRefresh
-                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                ? 'bg-moss-100 text-moss-800 hover:bg-green-200'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -370,7 +370,7 @@ export default function MonitoringDashboard() {
             ].map((error, index) => (
               <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
                 <span className={`mt-1 ${
-                  error.level === 'error' ? 'text-red-500' : 'text-yellow-500'
+                  error.level === 'error' ? 'text-red-500' : 'text-amber-800'
                 }`}>
                   <ExclamationTriangleIcon className="h-5 w-5" />
                 </span>

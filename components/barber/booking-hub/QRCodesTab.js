@@ -138,7 +138,7 @@ export default function QRCodesTab() {
                 <h3 className="font-semibold text-gray-900">{qr.name}</h3>
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
                   qr.type === 'booking' ? 'bg-olive-100 text-olive-800' :
-                  qr.type === 'social' ? 'bg-green-100 text-green-800' :
+                  qr.type === 'social' ? 'bg-moss-100 text-moss-900' :
                   'bg-gold-100 text-gold-800'
                 }`}>
                   {qr.type}

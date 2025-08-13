@@ -126,7 +126,7 @@ export default function AICoachPanel({ data }) {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <LightBulbIcon className="h-6 w-6 text-amber-500" />
+            <LightBulbIcon className="h-6 w-6 text-amber-700" />
             AI Business Recommendations
           </h3>
           <span className="text-sm text-gray-500">
@@ -206,7 +206,7 @@ export default function AICoachPanel({ data }) {
 const CoachCard = ({ coach, onInteract, isSelected, isLoading }) => {
   const Icon = coach.icon
   const statusColors = {
-    active: 'bg-green-100 text-green-800',
+    active: 'bg-moss-100 text-moss-900',
     idle: 'bg-gray-100 text-gray-600',
     busy: 'bg-amber-100 text-amber-800'
   }

@@ -84,7 +84,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                     </div>
                     <div className="flex justify-between">
                         <span>Conversion:</span>
-                        <span className={service.conversion_rate >= 70 ? 'text-green-600' : service.conversion_rate >= 50 ? 'text-yellow-600' : 'text-red-600'}>
+                        <span className={service.conversion_rate >= 70 ? 'text-green-600' : service.conversion_rate >= 50 ? 'text-amber-800' : 'text-red-600'}>
                             {service.conversion_rate.toFixed(1)}%
                         </span>
                     </div>
@@ -206,7 +206,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                     value={`${analytics?.waitlist_stats?.average_wait_time_hours || 0}h`}
                     subtitle="Average time in queue"
                     icon="⏱️"
-                    color="text-yellow-600"
+                    color="text-amber-800"
                 />
                 
                 <MetricCard
@@ -245,7 +245,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                     value={analytics?.performance_insights?.customer_satisfaction_score || 0}
                     subtitle="Out of 5 stars"
                     icon="⭐"
-                    color="text-yellow-500"
+                    color="text-amber-800"
                     trend={analytics?.trends?.monthly_growth && {
                         positive: analytics.trends.monthly_growth.customer_satisfaction_trend === 'improving',
                         text: analytics.trends.monthly_growth.customer_satisfaction_trend || 'stable'
@@ -350,8 +350,8 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                                     <div className="flex items-center justify-between mb-2">
                                         <h4 className="font-semibold">{rec.title}</h4>
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                            rec.priority === 'high' ? 'bg-red-100 text-red-800' :
-                                            rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                            rec.priority === 'high' ? 'bg-softred-100 text-softred-900' :
+                                            rec.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
                                             'bg-gray-100 text-gray-800'
                                         }`}>
                                             {rec.priority} priority

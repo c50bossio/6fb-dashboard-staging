@@ -186,7 +186,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
                           {item.domain}
                         </span>
                         {item.recommended && (
-                          <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                          <span className="ml-2 px-2 py-0.5 bg-moss-100 text-moss-800 text-xs rounded-full">
                             Recommended
                           </span>
                         )}
@@ -281,7 +281,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
           <button 
             onClick={() => onDomainSelect({ type: 'existing', domain: customDomain })}
             disabled={!customDomain}
-            className="w-full py-3 bg-gold-600 text-white rounded-lg font-medium hover:bg-gold-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-gold-700 text-white rounded-lg font-medium hover:bg-gold-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Continue with My Domain →
           </button>

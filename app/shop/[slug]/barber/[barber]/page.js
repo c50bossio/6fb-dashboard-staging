@@ -448,7 +448,7 @@ John believes that a great haircut is more than just a service – it's an exper
               {/* Awards & Recognition */}
               <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 mb-8">
                 <h3 className="text-xl font-semibold mb-6 text-gray-900 flex items-center gap-2">
-                  <TrophyIcon className="h-6 w-6 text-yellow-600" />
+                  <TrophyIcon className="h-6 w-6 text-amber-800" />
                   Awards & Recognition
                 </h3>
                 <div className="space-y-4">
@@ -456,7 +456,7 @@ John believes that a great haircut is more than just a service – it's an exper
                     <div key={award.title} className="border-l-4 border-yellow-400 pl-4">
                       <div className="font-semibold text-gray-900">{award.title}</div>
                       <div className="text-sm text-gray-600">{award.organization}</div>
-                      <div className="text-sm text-yellow-600 font-medium">{award.year}</div>
+                      <div className="text-sm text-amber-800 font-medium">{award.year}</div>
                     </div>
                   ))}
                 </div>
@@ -503,7 +503,7 @@ John believes that a great haircut is more than just a service – it's an exper
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-xl font-semibold text-gray-900">{service.name}</h3>
                     {service.featured && (
-                      <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                      <span className="px-3 py-1 bg-moss-100 text-moss-800 text-xs font-medium rounded-full">
                         Popular
                       </span>
                     )}
@@ -645,7 +645,7 @@ John believes that a great haircut is more than just a service – it's an exper
                       ))}
                     </div>
                     {review.verified && (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">
+                      <span className="px-2 py-1 bg-moss-100 text-moss-800 text-xs font-medium rounded">
                         Verified
                       </span>
                     )}

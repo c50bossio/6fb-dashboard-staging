@@ -1,0 +1,45 @@
+
+/* Semantic Status Colors with Proper Contrast */
+/* Add these to your globals.css file */
+
+@layer utilities {
+  /* Success States - Using Moss Green */
+  .status-success {
+    @apply bg-moss-100 text-moss-900 dark:bg-moss-900/30 dark:text-moss-300;
+  }
+  .status-success-solid {
+    @apply bg-moss-700 text-white hover:bg-moss-800;
+  }
+  
+  /* Warning States - Using Amber */
+  .status-warning {
+    @apply bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-300;
+  }
+  .status-warning-solid {
+    @apply bg-amber-700 text-white hover:bg-amber-800;
+  }
+  
+  /* Error States - Using Soft Red */
+  .status-error {
+    @apply bg-softred-100 text-softred-900 dark:bg-softred-900/30 dark:text-softred-300;
+  }
+  .status-error-solid {
+    @apply bg-softred-600 text-white hover:bg-softred-700;
+  }
+  
+  /* Info States - Using Olive */
+  .status-info {
+    @apply bg-olive-100 text-olive-900 dark:bg-olive-900/30 dark:text-olive-300;
+  }
+  .status-info-solid {
+    @apply bg-olive-600 text-white hover:bg-olive-700;
+  }
+  
+  /* Gold/Secondary Buttons with Proper Contrast */
+  .btn-gold {
+    @apply bg-gold-600 text-charcoal-800 hover:bg-gold-700 font-medium;
+  }
+  .btn-gold-outline {
+    @apply border-2 border-gold-600 text-gold-700 hover:bg-gold-50 dark:text-gold-400 dark:hover:bg-gold-900/20;
+  }
+}

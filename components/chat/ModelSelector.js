@@ -61,7 +61,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                 )} />
                 <span className="ml-3 block truncate">
                   {selected.name}
-                  {selected.recommended && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full">RECOMMENDED</span>}
+                  {selected.recommended && <span className="ml-2 text-xs bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded-full">RECOMMENDED</span>}
                 </span>
               </div>
               <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -99,11 +99,11 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                           )} />
                           <span className={classNames(
                             selected ? 'font-semibold' : 'font-normal', 
-                            model.recommended ? 'text-yellow-600' : '',
+                            model.recommended ? 'text-amber-800' : '',
                             'ml-3 block truncate'
                           )}>
                             {model.name}
-                            {model.recommended && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">RECOMMENDED</span>}
+                            {model.recommended && <span className="ml-2 text-xs bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full">RECOMMENDED</span>}
                           </span>
                         </div>
                         <span className={classNames(active ? 'text-indigo-200' : 'text-gray-500', 'ml-5 text-xs')}>

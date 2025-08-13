@@ -342,7 +342,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                     <div className={`text-xs mt-1 font-medium ${
                       data.demand_level === 'Peak' || data.demand_level === 'Very High' ? 'text-red-600' :
                       data.demand_level === 'High' ? 'text-orange-600' :
-                      data.demand_level === 'Medium' ? 'text-yellow-600' :
+                      data.demand_level === 'Medium' ? 'text-amber-800' :
                       'text-green-600'
                     }`}>
                       {data.capacity_utilization}

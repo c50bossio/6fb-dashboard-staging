@@ -84,7 +84,7 @@ function SubscribeSuccessContent() {
             <p className="text-gray-600 mb-6">{error}</p>
             <button
               onClick={() => router.push('/subscribe')}
-              className="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold"
+              className="w-full py-3 px-4 bg-moss-600 text-white rounded-lg hover:bg-green-700 font-semibold"
             >
               Try Again
             </button>
@@ -174,7 +174,7 @@ function SubscribeSuccessContent() {
           <div className="space-y-3">
             <button
               onClick={() => router.push('/dashboard')}
-              className="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors"
+              className="w-full py-3 px-4 bg-moss-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors"
             >
               Go to Dashboard
             </button>

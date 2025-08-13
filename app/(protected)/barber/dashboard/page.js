@@ -167,7 +167,7 @@ export default function BarberDashboard() {
             icon={CurrencyDollarIcon}
             title="Today's Earnings"
             value={`$${stats.todayEarnings}`}
-            color="text-amber-600"
+            color="text-amber-700"
             subtitle="Before commission"
           />
           <StatCard
@@ -184,7 +184,7 @@ export default function BarberDashboard() {
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Link href="/barber/schedule" className="p-3 sm:p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors text-center">
-              <CalendarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-amber-600 mx-auto mb-1 sm:mb-2" />
+              <CalendarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-amber-700 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">View Schedule</p>
             </Link>
             <Link href="/barber/clients" className="p-3 sm:p-4 bg-olive-50 rounded-lg hover:bg-olive-100 transition-colors text-center">

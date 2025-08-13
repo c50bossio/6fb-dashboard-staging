@@ -199,7 +199,7 @@ export default function CacheStatsModal({ isOpen, onClose }) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Fallback Rate</span>
-                    <span className="text-sm font-medium text-yellow-600">
+                    <span className="text-sm font-medium text-amber-800">
                       {streamStats?.fallbackRate || '0%'}
                     </span>
                   </div>

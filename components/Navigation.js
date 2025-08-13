@@ -449,7 +449,7 @@ export default function Navigation() {
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
                             ${isActive 
-                              ? 'bg-green-100 text-green-700' 
+                              ? 'bg-moss-100 text-moss-800' 
                               : 'bg-gray-100 text-gray-600'
                             }
                           `}>
@@ -562,7 +562,7 @@ export default function Navigation() {
                     <item.icon
                       className={`
                         ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
-                        ${isActive ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-600'}
+                        ${isActive ? 'text-amber-700' : 'text-gray-400 group-hover:text-gray-600'}
                       `}
                       title={collapsed ? item.name : undefined}
                     />

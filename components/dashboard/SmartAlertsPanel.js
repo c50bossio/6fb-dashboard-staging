@@ -104,7 +104,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
   const getAlertIcon = (type) => {
     switch (type) {
       case 'critical': return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
-      case 'warning': return <ExclamationTriangleIcon className="h-5 w-5 text-amber-500" />
+      case 'warning': return <ExclamationTriangleIcon className="h-5 w-5 text-amber-700" />
       case 'info': return <InformationCircleIcon className="h-5 w-5 text-olive-500" />
       case 'success': return <CheckCircleIcon className="h-5 w-5 text-green-500" />
       default: return <BellIcon className="h-5 w-5 text-gray-500" />
@@ -124,7 +124,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'text-red-600 bg-red-100'
-      case 'medium': return 'text-amber-600 bg-amber-100'
+      case 'medium': return 'text-amber-700 bg-amber-100'
       case 'low': return 'text-green-600 bg-green-100'
       default: return 'text-gray-600 bg-gray-100'
     }
@@ -146,7 +146,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
         <div className="bg-white rounded-lg shadow-sm border">
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center space-x-2">
-              <BellIcon className="h-5 w-5 text-amber-500" />
+              <BellIcon className="h-5 w-5 text-amber-700" />
               <h3 className="font-semibold">Smart Alerts</h3>
               <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
                 {alerts.length}
@@ -172,7 +172,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
                       
                       {alert.recommendation && (
                         <div className="mt-3 flex items-start space-x-2">
-                          <LightBulbIcon className="h-4 w-4 text-amber-500 mt-0.5" />
+                          <LightBulbIcon className="h-4 w-4 text-amber-700 mt-0.5" />
                           <div>
                             <p className="text-sm font-medium text-gray-700">Recommendation:</p>
                             <p className="text-sm text-gray-600">{alert.recommendation}</p>

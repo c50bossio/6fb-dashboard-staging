@@ -285,7 +285,7 @@ export default function CalendarSettings() {
                         <div className="font-medium text-gray-900 flex items-center">
                           {account.display_name}
                           {account.is_primary && (
-                            <span className="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                            <span className="ml-2 bg-moss-100 text-moss-900 text-xs font-medium px-2 py-1 rounded-full">
                               Primary
                             </span>
                           )}
@@ -295,7 +295,7 @@ export default function CalendarSettings() {
                           <span>{account.sync_stats.total_syncs} syncs</span>
                           <span className={`flex items-center ${
                             account.sync_stats.success_rate >= 95 ? 'text-green-600' : 
-                            account.sync_stats.success_rate >= 80 ? 'text-yellow-600' : 'text-red-600'
+                            account.sync_stats.success_rate >= 80 ? 'text-amber-800' : 'text-red-600'
                           }`}>
                             {account.sync_stats.success_rate >= 95 ? (
                               <CheckCircleIcon className="h-3 w-3 mr-1" />

@@ -55,7 +55,7 @@ function QuickActions({ onQuickAction, isLoading }) {
       id: 'revenue_analysis',
       label: 'Analyze Revenue',
       icon: ChartBarIcon,
-      color: 'bg-green-100 text-green-700 hover:bg-green-200',
+      color: 'bg-moss-100 text-moss-800 hover:bg-green-200',
       prompt: 'Analyze my current revenue performance and provide recommendations to increase monthly revenue'
     },
     {
@@ -83,14 +83,14 @@ function QuickActions({ onQuickAction, isLoading }) {
       id: 'pricing_strategy',
       label: 'Strategic Pricing',
       icon: BanknotesIcon,
-      color: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
+      color: 'bg-amber-100 text-amber-900 hover:bg-yellow-200',
       prompt: 'Review my pricing strategy and recommend optimizations for maximum profitability'
     },
     {
       id: 'social_media',
       label: 'Social Media',
       icon: MegaphoneIcon,
-      color: 'bg-red-100 text-red-700 hover:bg-red-200',
+      color: 'bg-softred-100 text-softred-800 hover:bg-red-200',
       prompt: 'Create a social media strategy to increase online presence and attract customers'
     }
   ]
@@ -181,9 +181,9 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
                     </span>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       agent.confidence >= 0.8 
-                        ? 'bg-green-100 text-green-700' 
+                        ? 'bg-moss-100 text-moss-800' 
                         : agent.confidence >= 0.6 
-                          ? 'bg-yellow-100 text-yellow-700'
+                          ? 'bg-amber-100 text-amber-900'
                           : 'bg-gray-100 text-gray-600'
                     }`}>
                       {agent.confidence ? `${(agent.confidence * 100).toFixed(0)}% confident` : 'AI Response'}

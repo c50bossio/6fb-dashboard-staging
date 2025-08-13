@@ -225,8 +225,8 @@ export default function EnterpriseWebsiteManagement() {
               </h1>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 settings.is_published 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-yellow-100 text-yellow-700'
+                  ? 'bg-moss-100 text-moss-800' 
+                  : 'bg-amber-100 text-amber-900'
               }`}>
                 {settings.is_published ? 'Live' : 'Draft'}
               </span>
@@ -340,7 +340,7 @@ export default function EnterpriseWebsiteManagement() {
                       {analytics.revenue_change}%
                     </p>
                   </div>
-                  <CurrencyDollarIcon className="h-8 w-8 text-yellow-600" />
+                  <CurrencyDollarIcon className="h-8 w-8 text-amber-800" />
                 </div>
               </div>
 
@@ -505,8 +505,8 @@ export default function EnterpriseWebsiteManagement() {
                               onClick={() => toggleLocationStatus(location.id)}
                               className={`px-3 py-1 text-xs font-medium rounded-full ${
                                 location.website_status === 'published'
-                                  ? 'bg-green-100 text-green-700'
-                                  : 'bg-yellow-100 text-yellow-700'
+                                  ? 'bg-moss-100 text-moss-800'
+                                  : 'bg-amber-100 text-amber-900'
                               }`}
                             >
                               {location.website_status === 'published' ? 'Published' : 'Draft'}

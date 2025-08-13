@@ -249,7 +249,7 @@ export function SwipeCard({ children, onSwipeLeft, onSwipeRight, leftAction, rig
         </div>
       )}
       {rightAction && (
-        <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 bg-green-500 text-white">
+        <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 bg-moss-600 text-white">
           {rightAction}
         </div>
       )}

@@ -366,14 +366,14 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
   const getUtilizationColor = (utilization) => {
     if (utilization > 0.85) return 'text-red-600 bg-red-100'
     if (utilization > 0.70) return 'text-green-600 bg-green-100'
-    if (utilization > 0.50) return 'text-yellow-600 bg-yellow-100'
+    if (utilization > 0.50) return 'text-amber-800 bg-yellow-100'
     return 'text-gray-600 bg-gray-100'
   }
 
   const getPriorityIcon = (priority) => {
     switch (priority) {
       case 'high': return <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
-      case 'medium': return <ClockIcon className="h-4 w-4 text-yellow-500" />
+      case 'medium': return <ClockIcon className="h-4 w-4 text-amber-800" />
       case 'low': return <CheckCircleIcon className="h-4 w-4 text-green-500" />
       default: return <LightBulbIcon className="h-4 w-4 text-olive-500" />
     }
@@ -475,9 +475,9 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">Seasonal Impact</h3>
-              <ArrowTrendingUpIcon className="h-5 w-5 text-amber-500" />
+              <ArrowTrendingUpIcon className="h-5 w-5 text-amber-700" />
             </div>
-            <div className={`text-2xl font-bold ${capacityData.current.seasonal_impact > 1 ? 'text-amber-600' : 'text-olive-600'}`}>
+            <div className={`text-2xl font-bold ${capacityData.current.seasonal_impact > 1 ? 'text-amber-700' : 'text-olive-600'}`}>
               {capacityData.current.seasonal_impact > 1 ? '+' : ''}{Math.round((capacityData.current.seasonal_impact - 1) * 100)}%
             </div>
             <p className="text-xs text-gray-600 mt-1">vs. baseline</p>
@@ -501,7 +501,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
         <div className="bg-white rounded-lg shadow-sm border">
           <div className="p-4 border-b">
             <h3 className="text-lg font-semibold flex items-center gap-2">
-              <LightBulbIcon className="h-5 w-5 text-amber-500" />
+              <LightBulbIcon className="h-5 w-5 text-amber-700" />
               AI-Powered Recommendations
             </h3>
           </div>
@@ -515,9 +515,9 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-semibold text-gray-900">{rec.title}</h4>
                         <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                          rec.priority === 'high' ? 'bg-red-100 text-red-800' :
-                          rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
+                          rec.priority === 'high' ? 'bg-softred-100 text-softred-900' :
+                          rec.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
+                          'bg-moss-100 text-moss-900'
                         }`}>
                           {rec.priority}
                         </span>

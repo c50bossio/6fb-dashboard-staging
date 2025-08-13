@@ -165,8 +165,8 @@ export default function LocationStep({ bookingData, onNext }) {
                     <div className="text-right">
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                         location.hours.status === 'Open' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-moss-100 text-moss-900' 
+                          : 'bg-softred-100 text-softred-900'
                       }`}>
                         {location.hours.status}
                       </span>

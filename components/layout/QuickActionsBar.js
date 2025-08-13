@@ -56,7 +56,7 @@ const QUICK_ACTIONS = [
 const getColorClasses = (color, variant = 'default') => {
   const colors = {
     purple: {
-      default: 'bg-gold-600 hover:bg-gold-700 text-white',
+      default: 'bg-gold-600 hover:bg-gold-800 text-white',
       light: 'bg-gold-50 text-gold-700 hover:bg-gold-100',
       border: 'border-gold-200'
     },

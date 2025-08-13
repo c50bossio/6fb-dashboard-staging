@@ -121,7 +121,7 @@ export default function BarberServices() {
       {permissions && !permissions.is_active && (
         <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <div className="flex items-start">
-            <InformationCircleIcon className="h-6 w-6 text-yellow-600 mt-1 mr-3" />
+            <InformationCircleIcon className="h-6 w-6 text-amber-800 mt-1 mr-3" />
             <div>
               <h3 className="text-lg font-semibold text-yellow-900">Limited Access</h3>
               <p className="text-yellow-800 mb-3">

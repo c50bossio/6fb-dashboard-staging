@@ -660,7 +660,7 @@ export default function FloatingAIChat() {
           className={`fixed ${getPositionClasses(position)} bg-amber-600 hover:bg-amber-700 text-white rounded-full p-4 shadow-lg transition-all duration-200 z-40 group ${isDragging ? 'cursor-move' : 'cursor-pointer'}`}
         >
           <SparklesIcon className="h-6 w-6" />
-          <div className="absolute -top-2 -left-2 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-pulse">
+          <div className="absolute -top-2 -left-2 bg-moss-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-pulse">
             AI
           </div>
           
@@ -715,7 +715,7 @@ export default function FloatingAIChat() {
                 <div
                   className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
                     msg.type === 'user'
-                      ? 'bg-amber-600 text-white rounded-br-sm'
+                      ? 'bg-amber-700 text-white rounded-br-sm'
                       : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                   }`}
                 >
@@ -757,7 +757,7 @@ export default function FloatingAIChat() {
                           <button
                             key={rating}
                             onClick={() => handleRating(msg.id, rating)}
-                            className="text-lg hover:text-yellow-500 transition-colors"
+                            className="text-lg hover:text-amber-800 transition-colors"
                           >
                             ⭐
                           </button>
@@ -843,7 +843,7 @@ export default function FloatingAIChat() {
             <div className="mt-2 text-center">
               <button 
                 onClick={() => window.location.href = '/dashboard/ai-command-center'}
-                className="text-xs text-amber-600 hover:text-amber-700 flex items-center justify-center space-x-1"
+                className="text-xs text-amber-700 hover:text-amber-700 flex items-center justify-center space-x-1"
               >
                 <ChatBubbleLeftRightIcon className="h-3 w-3" />
                 <span>Open AI Command Center</span>

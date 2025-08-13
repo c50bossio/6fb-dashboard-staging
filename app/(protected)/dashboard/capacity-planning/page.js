@@ -48,7 +48,7 @@ export default function CapacityPlanningPage() {
                   </div>
                   <div className="mt-4 flex items-center space-x-4 md:mt-0">
                     <div className="flex items-center gap-2">
-                      <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="bg-moss-100 text-moss-900 px-3 py-1 rounded-full text-sm font-medium">
                         AI Enhanced
                       </div>
                       <div className="bg-olive-100 text-olive-800 px-3 py-1 rounded-full text-sm font-medium">

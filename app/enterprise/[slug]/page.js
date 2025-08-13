@@ -426,7 +426,7 @@ export default function EnterprisePortalPage() {
                         <span className="font-semibold">{location.rating}</span>
                       </div>
                     </div>
-                    <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <div className="absolute top-4 left-4 bg-moss-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                       {location.next_available}
                     </div>
                   </div>
@@ -504,7 +504,7 @@ export default function EnterprisePortalPage() {
               {/* Awards */}
               <div>
                 <h3 className="text-lg font-semibold mb-4 text-gray-900 flex items-center">
-                  <TrophyIcon className="h-5 w-5 mr-2 text-yellow-500" />
+                  <TrophyIcon className="h-5 w-5 mr-2 text-amber-800" />
                   Awards & Recognition
                 </h3>
                 <div className="space-y-2">

@@ -60,7 +60,7 @@ export default function AdminHeader({ title, user, onRefresh, refreshing }) {
                 onClick={() => router.push(item.href)}
                 className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                   item.current
-                    ? 'bg-red-100 text-red-700'
+                    ? 'bg-softred-100 text-softred-800'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
@@ -178,7 +178,7 @@ export default function AdminHeader({ title, user, onRefresh, refreshing }) {
               onClick={() => router.push(item.href)}
               className={`flex-shrink-0 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 item.current
-                  ? 'bg-red-100 text-red-700'
+                  ? 'bg-softred-100 text-softred-800'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >

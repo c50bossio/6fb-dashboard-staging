@@ -194,7 +194,7 @@ export default function OnboardingChecklist({
                   </div>
                 </div>
                 {progressPercentage === 100 && (
-                  <TrophyIcon className="w-6 h-6 text-yellow-500" />
+                  <TrophyIcon className="w-6 h-6 text-amber-800" />
                 )}
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function OnboardingChecklist({
                           </h4>
                           <span className={`text-xs font-medium px-2 py-0.5 rounded ${
                             isCompleted 
-                              ? 'bg-green-100 text-green-700' 
+                              ? 'bg-moss-100 text-moss-800' 
                               : 'bg-gray-100 text-gray-600'
                           }`}>
                             +{item.points} pts

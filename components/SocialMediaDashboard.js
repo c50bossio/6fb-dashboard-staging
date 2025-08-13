@@ -265,11 +265,11 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
               <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 border border-amber-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-amber-600">Automation</div>
+                    <div className="text-sm font-medium text-amber-700">Automation</div>
                     <div className="text-2xl font-bold text-amber-900">
                       {dashboard.automation_settings.auto_posting_enabled ? 'ON' : 'OFF'}
                     </div>
-                    <div className="text-xs text-amber-600">{dashboard.automation_settings.post_frequency}</div>
+                    <div className="text-xs text-amber-700">{dashboard.automation_settings.post_frequency}</div>
                   </div>
                   <CheckCircleIcon className="h-8 w-8 text-amber-400" />
                 </div>
@@ -361,9 +361,9 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${{
-                            promotional: 'bg-red-100 text-red-800',
+                            promotional: 'bg-softred-100 text-softred-900',
                             behind_the_scenes: 'bg-gold-100 text-gold-800',
-                            customer_showcase: 'bg-green-100 text-green-800',
+                            customer_showcase: 'bg-moss-100 text-moss-900',
                             educational: 'bg-olive-100 text-olive-800'
                           }[suggestion.type] || 'bg-gray-100 text-gray-800'}`}>
                             {suggestion.type.replace('_', ' ')}
@@ -429,7 +429,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
                             {post.type}
                           </span>
                           <span className={`text-xs px-2 py-1 rounded-full ${
-                            post.performance === 'excellent' ? 'bg-green-100 text-green-800' :
+                            post.performance === 'excellent' ? 'bg-moss-100 text-moss-900' :
                             post.performance === 'good' ? 'bg-olive-100 text-olive-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>

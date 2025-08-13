@@ -93,7 +93,7 @@ export default function PaymentsPage() {
       case 'completed':
         return <CheckCircleIcon className="h-5 w-5 text-green-500" />
       case 'pending':
-        return <ClockIcon className="h-5 w-5 text-yellow-500" />
+        return <ClockIcon className="h-5 w-5 text-amber-800" />
       case 'failed':
         return <XCircleIcon className="h-5 w-5 text-red-500" />
       default:
@@ -216,7 +216,7 @@ export default function PaymentsPage() {
                   </p>
                 </div>
                 <div className="p-3 bg-yellow-100 rounded-full">
-                  <CalendarIcon className="h-6 w-6 text-yellow-600" />
+                  <CalendarIcon className="h-6 w-6 text-amber-800" />
                 </div>
               </div>
             </div>

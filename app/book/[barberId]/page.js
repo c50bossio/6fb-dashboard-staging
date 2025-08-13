@@ -759,7 +759,7 @@ function BookingPageContent() {
                 disabled={!canCompleteBooking() || loading}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
                   canCompleteBooking() && !loading
-                    ? 'bg-green-600 text-white hover:bg-green-700'
+                    ? 'bg-moss-600 text-white hover:bg-green-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >

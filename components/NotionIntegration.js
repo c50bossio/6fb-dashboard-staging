@@ -264,7 +264,7 @@ export default function NotionIntegration() {
           <Button
             onClick={extractKnowledge}
             disabled={connectionStatus !== 'connected' || isExtracting}
-            className="w-full bg-gold-600 text-white hover:bg-gold-700 px-4 py-2 rounded flex items-center justify-center gap-2"
+            className="w-full bg-gold-700 text-white hover:bg-gold-700 px-4 py-2 rounded flex items-center justify-center gap-2"
           >
             {isExtracting ? (
               <>
@@ -309,7 +309,7 @@ export default function NotionIntegration() {
                     <p className="text-sm text-gold-700">Avg Confidence</p>
                   </div>
                   <div className="bg-yellow-50 p-4 rounded-lg text-center">
-                    <Zap className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+                    <Zap className="h-8 w-8 text-amber-800 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-yellow-900">Immediate</p>
                     <p className="text-sm text-yellow-700">AI Improvement</p>
                   </div>
@@ -368,7 +368,7 @@ export default function NotionIntegration() {
                       <Badge className="px-2 py-1 text-xs bg-olive-100 text-olive-800 rounded">
                         {sample.detected_domain.replace('_', ' ')}
                       </Badge>
-                      <Badge className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+                      <Badge className="px-2 py-1 text-xs bg-moss-100 text-moss-900 rounded">
                         {Math.round(sample.confidence_score * 100)}% confidence
                       </Badge>
                     </div>

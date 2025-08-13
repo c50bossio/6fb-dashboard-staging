@@ -161,7 +161,7 @@ export default function FinancialArrangements() {
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div className="p-2 bg-yellow-100 rounded-lg">
-              <ClockIcon className="h-6 w-6 text-yellow-600" />
+              <ClockIcon className="h-6 w-6 text-amber-800" />
             </div>
             <span className="text-2xl font-bold text-gray-900">
               ${metrics.pendingPayouts.toLocaleString()}
@@ -189,7 +189,7 @@ export default function FinancialArrangements() {
           <h2 className="text-lg font-semibold text-gray-900">Active Arrangements</h2>
           <button
             onClick={() => setShowArrangementModal(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center"
+            className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 flex items-center"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             New Arrangement
@@ -243,7 +243,7 @@ export default function FinancialArrangements() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                     arrangement.type === 'commission' 
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-moss-100 text-moss-900'
                       : arrangement.type === 'booth_rent'
                       ? 'bg-olive-100 text-olive-800'
                       : 'bg-gold-100 text-gold-800'
@@ -278,7 +278,7 @@ export default function FinancialArrangements() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                     arrangement.is_active 
-                      ? 'bg-green-100 text-green-800'
+                      ? 'bg-moss-100 text-moss-900'
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     {arrangement.is_active ? 'Active' : 'Inactive'}
@@ -306,7 +306,7 @@ export default function FinancialArrangements() {
             <p className="text-gray-600 mb-4">No financial arrangements set up yet</p>
             <button
               onClick={() => setShowArrangementModal(true)}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="inline-flex items-center px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Create First Arrangement
@@ -542,7 +542,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="px-6 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700"
               >
                 {arrangement ? 'Update Arrangement' : 'Create Arrangement'}
               </button>

@@ -214,7 +214,7 @@ export default function OnboardingPage() {
                   <div className={`
                     w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors
                     ${isActive ? 'bg-olive-600 text-white' : ''}
-                    ${isCompleted ? 'bg-green-600 text-white' : ''}
+                    ${isCompleted ? 'bg-moss-600 text-white' : ''}
                     ${!isActive && !isCompleted ? 'bg-gray-200 text-gray-500' : ''}
                   `}>
                     <StepIcon className="w-6 h-6" />
@@ -668,7 +668,7 @@ function CompleteStep({ data, onComplete, onPrevious }) {
         <button
           type="button"
           onClick={onComplete}
-          className="inline-flex items-center px-8 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+          className="inline-flex items-center px-8 py-3 bg-moss-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
         >
           Complete Setup
           <SparklesIcon className="w-5 h-5 ml-2" />

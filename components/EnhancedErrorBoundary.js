@@ -142,13 +142,13 @@ class EnhancedErrorBoundary extends React.Component {
                     <div className="grid grid-cols-2 gap-2">
                       <a
                         href="/dashboard"
-                        className="text-xs text-amber-600 hover:text-amber-500 text-center py-2 px-3 border border-amber-200 rounded hover:bg-amber-50"
+                        className="text-xs text-amber-700 hover:text-amber-700 text-center py-2 px-3 border border-amber-200 rounded hover:bg-amber-50"
                       >
                         Dashboard
                       </a>
                       <a
                         href="/ai-agents"
-                        className="text-xs text-amber-600 hover:text-amber-500 text-center py-2 px-3 border border-amber-200 rounded hover:bg-amber-50"
+                        className="text-xs text-amber-700 hover:text-amber-700 text-center py-2 px-3 border border-amber-200 rounded hover:bg-amber-50"
                       >
                         AI Agents
                       </a>

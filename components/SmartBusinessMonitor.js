@@ -82,7 +82,7 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
     switch (status) {
       case 'excellent': return 'text-green-600 bg-green-50 border-green-200'
       case 'good': return 'text-olive-600 bg-olive-50 border-olive-200'
-      case 'warning': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      case 'warning': return 'text-amber-800 bg-yellow-50 border-yellow-200'
       case 'critical': return 'text-red-600 bg-red-50 border-red-200'
       default: return 'text-gray-600 bg-gray-50 border-gray-200'
     }
@@ -101,7 +101,7 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
   const getAlertIcon = (type) => {
     switch (type) {
       case 'critical': return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
-      case 'warning': return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+      case 'warning': return <ExclamationTriangleIcon className="h-5 w-5 text-amber-800" />
       case 'opportunity': return <LightBulbIcon className="h-5 w-5 text-olive-500" />
       default: return <BellIcon className="h-5 w-5 text-gray-500" />
     }
@@ -212,7 +212,7 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
         <div className="bg-white rounded-lg shadow-md border">
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center space-x-2">
-              <BellIcon className="h-5 w-5 text-amber-500" />
+              <BellIcon className="h-5 w-5 text-amber-700" />
               <h3 className="font-semibold">Smart Alerts</h3>
               <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
                 {alerts.length}
@@ -253,9 +253,9 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
                   <div className="flex items-center space-x-2">
                     {alert.impact && (
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        alert.impact === 'high' ? 'bg-red-100 text-red-800' :
-                        alert.impact === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
+                        alert.impact === 'high' ? 'bg-softred-100 text-softred-900' :
+                        alert.impact === 'medium' ? 'bg-amber-100 text-amber-900' :
+                        'bg-moss-100 text-moss-900'
                       }`}>
                         {alert.impact} impact
                       </span>
@@ -292,9 +292,9 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className={`text-xs px-2 py-1 rounded-full ${
-                    action.urgency === 'high' ? 'bg-red-100 text-red-800' :
-                    action.urgency === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
+                    action.urgency === 'high' ? 'bg-softred-100 text-softred-900' :
+                    action.urgency === 'medium' ? 'bg-amber-100 text-amber-900' :
+                    'bg-moss-100 text-moss-900'
                   }`}>
                     {action.urgency}
                   </span>

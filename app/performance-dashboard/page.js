@@ -243,7 +243,7 @@ export default function PerformanceDashboard() {
                     <p className="text-sm font-medium text-gray-600">Active Alerts</p>
                     <p className="text-2xl font-bold">{dashboardData.active_alerts?.length || 0}</p>
                   </div>
-                  <AlertTriangle className="w-8 h-8 text-yellow-500" />
+                  <AlertTriangle className="w-8 h-8 text-amber-800" />
                 </div>
               </CardContent>
             </Card>

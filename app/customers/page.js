@@ -86,7 +86,7 @@ export default function CustomersPage() {
       case 'vip':
         return 'bg-gold-100 text-gold-800'
       case 'active':
-        return 'bg-green-100 text-green-800'
+        return 'bg-moss-100 text-moss-900'
       case 'inactive':
         return 'bg-gray-100 text-gray-800'
       default:
@@ -173,7 +173,7 @@ export default function CustomersPage() {
                               <span>Spent: {customer.total_spent}</span>
                               <span>Last visit: {customer.last_visit}</span>
                               <span className="flex items-center">
-                                <StarIcon className="h-4 w-4 mr-1 text-yellow-500" />
+                                <StarIcon className="h-4 w-4 mr-1 text-amber-800" />
                                 {customer.loyalty_points} points
                               </span>
                             </div>

@@ -379,7 +379,7 @@ export default function SettingsPage() {
       case 'failed':
         return <XCircleIcon className="h-5 w-5 text-red-500" />
       case 'pending':
-        return <ClockIcon className="h-5 w-5 text-yellow-500" />
+        return <ClockIcon className="h-5 w-5 text-amber-800" />
       default:
         return <ExclamationCircleIcon className="h-5 w-5 text-gray-500" />
     }
@@ -930,7 +930,7 @@ export default function SettingsPage() {
                             </label>
                           ) : (
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              config.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                              config.enabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
                             }`}>
                               {config.enabled ? 'Open' : 'Closed'}
                             </span>
@@ -1140,7 +1140,7 @@ export default function SettingsPage() {
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.emailEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.emailEnabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {settings.notifications.emailEnabled ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1167,7 +1167,7 @@ export default function SettingsPage() {
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.smsEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.smsEnabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {settings.notifications.smsEnabled ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1191,7 +1191,7 @@ export default function SettingsPage() {
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.campaignAlerts ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.campaignAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {settings.notifications.campaignAlerts ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1215,7 +1215,7 @@ export default function SettingsPage() {
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.bookingAlerts ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.bookingAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {settings.notifications.bookingAlerts ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1239,7 +1239,7 @@ export default function SettingsPage() {
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.systemAlerts ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.systemAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {settings.notifications.systemAlerts ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1487,7 +1487,7 @@ export default function SettingsPage() {
                         <div className="font-medium text-gray-900">Password Requirements</div>
                         <div className="text-sm text-gray-600">Enforce strong password policies</div>
                       </div>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                         Enabled
                       </span>
                     </div>
@@ -1787,7 +1787,7 @@ export default function SettingsPage() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600">Status</span>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                               {billingData.subscription.status}
                             </span>
                           </div>

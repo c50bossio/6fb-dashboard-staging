@@ -396,8 +396,8 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
         {result && (
           <div className={`flex items-center space-x-2 px-3 py-2 rounded-md ${
             result.success 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
+              ? 'bg-moss-100 text-moss-900' 
+              : 'bg-softred-100 text-softred-900'
           }`}>
             {result.success ? (
               <CheckCircleIcon className="h-5 w-5" />

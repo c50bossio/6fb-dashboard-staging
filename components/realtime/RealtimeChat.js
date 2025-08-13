@@ -272,7 +272,7 @@ export default function RealtimeChat({ className = '' }) {
         </form>
         
         {!isConnected && (
-          <div className="mt-2 text-xs text-amber-600 text-center">
+          <div className="mt-2 text-xs text-amber-700 text-center">
             Real-time features limited - connection offline
           </div>
         )}

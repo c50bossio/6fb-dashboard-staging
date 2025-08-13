@@ -71,7 +71,7 @@ export default function ExecutiveLoadingState() {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-pulse">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
-              <ChartBarIcon className="h-6 w-6 text-yellow-600" />
+              <ChartBarIcon className="h-6 w-6 text-amber-800" />
             </div>
             <div className="ml-4 flex-1">
               <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>

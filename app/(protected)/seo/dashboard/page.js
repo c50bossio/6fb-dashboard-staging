@@ -113,9 +113,9 @@ function GMBIntegrationTab() {
 
   const getConfidenceBadge = (confidence) => {
     const colors = {
-      high: 'bg-green-100 text-green-800',
-      medium: 'bg-yellow-100 text-yellow-800', 
-      low: 'bg-red-100 text-red-800'
+      high: 'bg-moss-100 text-moss-900',
+      medium: 'bg-amber-100 text-amber-900', 
+      low: 'bg-softred-100 text-softred-900'
     }
     return colors[confidence] || 'bg-gray-100 text-gray-800'
   }
@@ -135,8 +135,8 @@ function GMBIntegrationTab() {
           <div className="flex items-center gap-3">
             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
               gmbStatus === 'connected' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
+                ? 'bg-moss-100 text-moss-900' 
+                : 'bg-softred-100 text-softred-900'
             }`}>
               {gmbStatus === 'connected' ? '✅ Connected' : '❌ Not Connected'}
             </span>
@@ -290,7 +290,7 @@ function GMBIntegrationTab() {
                 <p className="text-sm text-gray-600">Junior Barber</p>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-yellow-600">4.5</div>
+                <div className="text-2xl font-bold text-amber-800">4.5</div>
                 <div className="text-sm text-gray-500">5 reviews</div>
               </div>
             </div>
@@ -404,7 +404,7 @@ export default function SEODashboard() {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'text-red-600 bg-red-50 border border-red-200'
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border border-yellow-200'
+      case 'medium': return 'text-amber-800 bg-yellow-50 border border-yellow-200'
       case 'low': return 'text-green-600 bg-green-50 border border-green-200'
       default: return 'text-gray-600 bg-gray-50 border border-gray-200'
     }
@@ -625,9 +625,9 @@ export default function SEODashboard() {
                     </div>
                     <div className="text-right">
                       <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                        keyword.position <= 3 ? 'bg-green-100 text-green-800' :
-                        keyword.position <= 10 ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
+                        keyword.position <= 3 ? 'bg-moss-100 text-moss-900' :
+                        keyword.position <= 10 ? 'bg-amber-100 text-amber-900' :
+                        'bg-softred-100 text-softred-900'
                       }`}>
                         #{keyword.position}
                       </div>
@@ -691,7 +691,7 @@ export default function SEODashboard() {
                       <h4 className="font-medium text-red-900">Target "wedding haircuts"</h4>
                       <p className="text-red-700 text-sm">Seasonal opportunity with low competition</p>
                     </div>
-                    <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">High Priority</span>
+                    <span className="px-2 py-1 bg-softred-100 text-softred-900 text-xs rounded-full">High Priority</span>
                   </div>
                 </div>
                 
@@ -701,7 +701,7 @@ export default function SEODashboard() {
                       <h4 className="font-medium text-yellow-900">Create beard care content series</h4>
                       <p className="text-yellow-700 text-sm">Competitors lack comprehensive beard content</p>
                     </div>
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Medium Priority</span>
+                    <span className="px-2 py-1 bg-amber-100 text-amber-900 text-xs rounded-full">Medium Priority</span>
                   </div>
                 </div>
                 
@@ -711,7 +711,7 @@ export default function SEODashboard() {
                       <h4 className="font-medium text-green-900">Add schema markup</h4>
                       <p className="text-green-700 text-sm">Improve search result appearance with structured data</p>
                     </div>
-                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Quick Win</span>
+                    <span className="px-2 py-1 bg-moss-100 text-moss-900 text-xs rounded-full">Quick Win</span>
                   </div>
                 </div>
               </div>

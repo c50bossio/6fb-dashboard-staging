@@ -34,10 +34,10 @@ export default function SubscriptionTable({
 
   const getStatusBadge = (status) => {
     const colors = {
-      active: 'bg-green-100 text-green-800',
+      active: 'bg-moss-100 text-moss-900',
       trialing: 'bg-olive-100 text-olive-800',
-      past_due: 'bg-yellow-100 text-yellow-800',
-      canceled: 'bg-red-100 text-red-800',
+      past_due: 'bg-amber-100 text-amber-900',
+      canceled: 'bg-softred-100 text-softred-900',
       inactive: 'bg-gray-100 text-gray-800'
     }
 
@@ -52,7 +52,7 @@ export default function SubscriptionTable({
 
   const getTierBadge = (tier) => {
     const colors = {
-      barber: 'bg-green-100 text-green-800',
+      barber: 'bg-moss-100 text-moss-900',
       shop: 'bg-olive-100 text-olive-800',
       enterprise: 'bg-gold-100 text-gold-800'
     }
@@ -195,7 +195,7 @@ export default function SubscriptionTable({
             {/* Export Button */}
             <button
               onClick={onExportCSV}
-              className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="px-4 py-2 bg-moss-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               Export CSV
             </button>

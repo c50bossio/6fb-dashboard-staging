@@ -119,7 +119,7 @@ export default function ModernSidebar() {
                         }`}
                       >
                         <Icon className={`h-5 w-5 flex-shrink-0 ${
-                          isActive ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive ? 'text-amber-700' : 'text-gray-400 group-hover:text-gray-500'
                         }`} />
                         
                         {!collapsed && (
@@ -146,7 +146,7 @@ export default function ModernSidebar() {
                         }`}
                       >
                         <Icon className={`h-5 w-5 flex-shrink-0 ${
-                          isActive ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive ? 'text-amber-700' : 'text-gray-400 group-hover:text-gray-500'
                         }`} />
                         
                         {!collapsed && (
@@ -181,12 +181,12 @@ export default function ModernSidebar() {
                             }`}
                           >
                             <ChildIcon className={`h-4 w-4 flex-shrink-0 ${
-                              childActive ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-500'
+                              childActive ? 'text-amber-700' : 'text-gray-400 group-hover:text-gray-500'
                             }`} />
                             <span className="ml-2 flex-1">{child.name}</span>
                             {child.badge && (
                               <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                child.badge === 'Live' ? 'bg-green-100 text-green-700' :
+                                child.badge === 'Live' ? 'bg-moss-100 text-moss-800' :
                                 child.badge === 'AI' ? 'bg-gold-100 text-gold-700' :
                                 child.badge === 'New' ? 'bg-olive-100 text-olive-700' :
                                 'bg-gray-100 text-gray-700'
@@ -344,7 +344,7 @@ export default function ModernSidebar() {
                                   <span className="ml-2 flex-1">{child.name}</span>
                                   {child.badge && (
                                     <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                      child.badge === 'Live' ? 'bg-green-100 text-green-700' :
+                                      child.badge === 'Live' ? 'bg-moss-100 text-moss-800' :
                                       child.badge === 'AI' ? 'bg-gold-100 text-gold-700' :
                                       child.badge === 'New' ? 'bg-olive-100 text-olive-700' :
                                       'bg-gray-100 text-gray-700'

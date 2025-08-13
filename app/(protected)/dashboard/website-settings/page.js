@@ -894,7 +894,7 @@ export default function WebsiteSettingsPage() {
                         </button>
                       </div>
                       {!settings.shop_slug && (
-                        <p className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                        <p className="text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded">
                           💡 Tip: Generate a URL slug in the General tab to create your preview link
                         </p>
                       )}

@@ -114,7 +114,7 @@ export default function QuickActions({ profile }) {
       pink: 'text-pink-600 bg-pink-50 hover:bg-pink-100',
       indigo: 'text-olive-600 bg-indigo-50 hover:bg-indigo-100',
       emerald: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100',
-      amber: 'text-amber-600 bg-amber-50 hover:bg-amber-100'
+      amber: 'text-amber-700 bg-amber-50 hover:bg-amber-100'
     }
     return colorMap[color] || colorMap.blue
   }

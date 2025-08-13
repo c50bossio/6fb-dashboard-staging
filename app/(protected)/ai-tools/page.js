@@ -48,7 +48,7 @@ const AIDashboard = () => (
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Status</span>
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
               Active
             </span>
           </div>
@@ -76,7 +76,7 @@ const AIDashboard = () => (
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Status</span>
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
               Active
             </span>
           </div>
@@ -104,7 +104,7 @@ const AIDashboard = () => (
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Status</span>
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
               Active
             </span>
           </div>
@@ -200,7 +200,7 @@ const AIPerformance = () => {
       <div className="bg-gradient-to-r from-green-50 to-olive-50 border border-green-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">🚀 Optimization Results</h3>
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
             Live Data
           </span>
         </div>
@@ -409,7 +409,7 @@ const KnowledgeBase = () => (
         <div className="border border-gray-200 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-medium text-gray-900">Customer Retention Tactics</h4>
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
               Marketing
             </span>
           </div>
@@ -490,7 +490,7 @@ const AITestCenter = () => {
       <div className="bg-gradient-to-r from-olive-50 to-green-50 border border-olive-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">🧪 Automated Testing Pipeline</h3>
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
             {stats.test_success_rate || '88.9'}% Success Rate
           </span>
         </div>
@@ -547,13 +547,13 @@ const AITestCenter = () => {
             
             <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
               <div className="flex items-center">
-                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500 mr-3" />
+                <ExclamationTriangleIcon className="h-5 w-5 text-amber-800 mr-3" />
                 <div>
                   <div className="font-medium text-gray-900">AI Integration Tests</div>
                   <div className="text-sm text-gray-500">19/20 tests passed</div>
                 </div>
               </div>
-              <div className="text-yellow-600 font-bold">95%</div>
+              <div className="text-amber-800 font-bold">95%</div>
             </div>
             
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
@@ -569,13 +569,13 @@ const AITestCenter = () => {
             
             <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
               <div className="flex items-center">
-                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500 mr-3" />
+                <ExclamationTriangleIcon className="h-5 w-5 text-amber-800 mr-3" />
                 <div>
                   <div className="font-medium text-gray-900">E2E Tests</div>
                   <div className="text-sm text-gray-500">6/7 tests passed</div>
                 </div>
               </div>
-              <div className="text-yellow-600 font-bold">85.7%</div>
+              <div className="text-amber-800 font-bold">85.7%</div>
             </div>
           </div>
         </div>
@@ -620,7 +620,7 @@ const AITestCenter = () => {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">CI/CD Pipeline</span>
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                   Active
                 </span>
               </div>

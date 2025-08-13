@@ -131,7 +131,7 @@ Original RRule: ${event.extendedProps?.rrule || 'None'}`)
         </button>
         <button
           onClick={() => calendarRef.current?.getApi().gotoDate('2025-08-18')}
-          className="px-3 py-1 bg-green-500 text-white rounded"
+          className="px-3 py-1 bg-moss-600 text-white rounded"
         >
           Aug 18 (Recurring)
         </button>
@@ -143,7 +143,7 @@ Original RRule: ${event.extendedProps?.rrule || 'None'}`)
         </button>
         <button
           onClick={() => calendarRef.current?.getApi().gotoDate('2025-09-01')}
-          className="px-3 py-1 bg-gold-500 text-white rounded"
+          className="px-3 py-1 bg-gold-700 text-white rounded"
         >
           Sep 1 (Recurring)
         </button>

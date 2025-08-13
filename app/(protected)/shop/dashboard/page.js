@@ -184,7 +184,7 @@ export default function ShopDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-yellow-100 rounded-lg">
-              <StarIcon className="h-6 w-6 text-yellow-600" />
+              <StarIcon className="h-6 w-6 text-amber-800" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">{metrics.avgRating.toFixed(1)}</p>

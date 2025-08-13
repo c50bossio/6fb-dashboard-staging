@@ -197,7 +197,7 @@ export default function BillingDemoPage() {
           <h2 className="text-xl font-semibold mb-4">💰 Payment Methods</h2>
           <button 
             onClick={testPaymentMethods} 
-            className="bg-gold-600 hover:bg-gold-700 text-white px-4 py-2 rounded mb-4"
+            className="bg-gold-600 hover:bg-gold-800 text-charcoal-800 px-4 py-2 rounded mb-4"
           >
             🔄 Test Payment Methods API
           </button>

@@ -71,7 +71,7 @@ export default function RealtimeDashboard() {
     switch (connectionStatus) {
       case 'connected': return 'text-green-500'
       case 'error': return 'text-red-500'
-      default: return 'text-yellow-500'
+      default: return 'text-amber-800'
     }
   }
 
@@ -305,8 +305,8 @@ export default function RealtimeDashboard() {
                 <span className="text-gray-600">Status:</span>
                 <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
                   realtimeMetrics.peak_hour_indicator 
-                    ? 'bg-red-100 text-red-800' 
-                    : 'bg-green-100 text-green-800'
+                    ? 'bg-softred-100 text-softred-900' 
+                    : 'bg-moss-100 text-moss-900'
                 }`}>
                   {realtimeMetrics.peak_hour_indicator ? 'Peak Hour' : 'Normal'}
                 </span>

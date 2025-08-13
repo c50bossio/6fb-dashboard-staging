@@ -171,7 +171,7 @@ function KnowledgeSearchResults({ results, onViewDetails }) {
           <ul className="space-y-1">
             {results.knowledge_gaps.map((gap, idx) => (
               <li key={idx} className="flex items-start gap-2 text-sm text-yellow-800">
-                <span className="text-yellow-600">⚠️</span>
+                <span className="text-amber-800">⚠️</span>
                 <span>{gap}</span>
               </li>
             ))}
@@ -395,7 +395,7 @@ function KnowledgeBaseContent() {
           <button
             onClick={fetchKnowledgeStatus}
             disabled={loading}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="flex items-center px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
           >
             <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh Status

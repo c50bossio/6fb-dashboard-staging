@@ -107,7 +107,7 @@ export default function GrowthChart({ data, period }) {
             onClick={() => setChartType('new')}
             className={`px-3 py-2 text-sm font-medium border-l border-gray-300 ${
               chartType === 'new' 
-                ? 'bg-green-600 text-white' 
+                ? 'bg-moss-600 text-white' 
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >

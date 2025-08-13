@@ -162,7 +162,7 @@ export default function SystemMonitoringDashboard() {
             onClick={() => setAutoRefresh(!autoRefresh)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               autoRefresh 
-                ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                ? 'bg-moss-100 text-moss-800 hover:bg-green-200' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -271,8 +271,8 @@ function StatusIndicator({ status }) {
   const colors = {
     healthy: 'text-green-500',
     ok: 'text-green-500',
-    degraded: 'text-yellow-500',
-    partial: 'text-yellow-500',
+    degraded: 'text-amber-800',
+    partial: 'text-amber-800',
     unhealthy: 'text-red-500',
     error: 'text-red-500',
     loading: 'text-gray-500',
@@ -299,7 +299,7 @@ function StatusIndicator({ status }) {
 function MetricCard({ title, value, status = 'healthy', icon }) {
   const statusColors = {
     healthy: 'text-green-600',
-    warning: 'text-yellow-600',
+    warning: 'text-amber-800',
     error: 'text-red-600',
   }
 
@@ -319,10 +319,10 @@ function MetricCard({ title, value, status = 'healthy', icon }) {
 // Service Card Component
 function ServiceCard({ name, service }) {
   const statusColors = {
-    healthy: 'bg-green-100 text-green-800',
+    healthy: 'bg-moss-100 text-moss-900',
     configured: 'bg-olive-100 text-olive-800',
     not_configured: 'bg-gray-100 text-gray-800',
-    error: 'bg-red-100 text-red-800',
+    error: 'bg-softred-100 text-softred-900',
   }
 
   const statusIcons = {

@@ -133,7 +133,7 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
     <div className="bg-white rounded-lg shadow-md border">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-2">
-          <BoltIcon className="h-5 w-5 text-amber-500" />
+          <BoltIcon className="h-5 w-5 text-amber-700" />
           <h3 className="font-semibold text-gray-900">Workflow Automation</h3>
           <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
             {dashboard.active_workflows} active
@@ -143,7 +143,7 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
         <button
           onClick={loadDashboard}
           disabled={loading}
-          className="text-amber-600 hover:text-amber-700 text-sm font-medium flex items-center space-x-1"
+          className="text-amber-700 hover:text-amber-700 text-sm font-medium flex items-center space-x-1"
         >
           <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           <span>Refresh</span>
@@ -164,7 +164,7 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                   activeTab === tab.id
-                    ? 'border-amber-500 text-amber-600'
+                    ? 'border-amber-500 text-amber-700'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -185,11 +185,11 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
               <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg p-4 border border-amber-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-amber-600">Active Workflows</div>
+                    <div className="text-sm font-medium text-amber-700">Active Workflows</div>
                     <div className="text-2xl font-bold text-amber-900">
                       {dashboard.active_workflows}
                     </div>
-                    <div className="text-xs text-amber-600">of {dashboard.total_automations} total</div>
+                    <div className="text-xs text-amber-700">of {dashboard.total_automations} total</div>
                   </div>
                   <BoltIcon className="h-8 w-8 text-amber-400" />
                 </div>
@@ -252,8 +252,8 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
                           <span className="font-medium text-gray-900">{automation.type}</span>
                           <span className={`text-xs px-2 py-1 rounded-full ${
                             automation.success 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
+                              ? 'bg-moss-100 text-moss-900' 
+                              : 'bg-softred-100 text-softred-900'
                           }`}>
                             {automation.success ? 'Success' : 'Failed'}
                           </span>
@@ -377,7 +377,7 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
                     </div>
                     <button
                       onClick={() => createAutomation(suggestion)}
-                      className="ml-4 bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-colors"
+                      className="ml-4 bg-moss-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 transition-colors"
                     >
                       <PlusIcon className="h-4 w-4" />
                       <span>Create</span>

@@ -156,7 +156,7 @@ export default function UnifiedExecutiveSummary({ data }) {
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <StarIcon className="h-5 w-5 text-yellow-500" />
+                  <StarIcon className="h-5 w-5 text-amber-800" />
                   {formatChange(0.2, '+')}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -215,10 +215,10 @@ export default function UnifiedExecutiveSummary({ data }) {
                 <div className="flex items-center gap-3">
                   <div className="text-3xl font-bold text-gray-900">{healthScore}/100</div>
                   <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    healthColor === 'green' ? 'bg-green-100 text-green-800' :
+                    healthColor === 'green' ? 'bg-moss-100 text-moss-900' :
                     healthColor === 'blue' ? 'bg-olive-100 text-olive-800' :
-                    healthColor === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
+                    healthColor === 'yellow' ? 'bg-amber-100 text-amber-900' :
+                    'bg-softred-100 text-softred-900'
                   }`}>
                     {healthStatus}
                   </div>

@@ -192,7 +192,7 @@ export default function SEODashboard() {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high': return 'text-red-600 bg-red-50 border-red-200'
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      case 'medium': return 'text-amber-800 bg-yellow-50 border-yellow-200'
       case 'low': return 'text-green-600 bg-green-50 border-green-200'
       default: return 'text-gray-600 bg-gray-50 border-gray-200'
     }
@@ -202,7 +202,7 @@ export default function SEODashboard() {
     switch (performance) {
       case 'excellent': return <TrendingUpIcon className="h-4 w-4 text-green-500" />
       case 'good': return <CheckCircleIcon className="h-4 w-4 text-olive-500" />
-      case 'pending': return <ClockIcon className="h-4 w-4 text-yellow-500" />
+      case 'pending': return <ClockIcon className="h-4 w-4 text-amber-800" />
       default: return <ExclamationTriangleIcon className="h-4 w-4 text-gray-400" />
     }
   }
@@ -317,7 +317,7 @@ export default function SEODashboard() {
                   <StarIconSolid className="h-5 w-5 text-yellow-400" />
                 </p>
               </div>
-              <UserGroupIcon className="h-8 w-8 text-yellow-500" />
+              <UserGroupIcon className="h-8 w-8 text-amber-800" />
             </div>
           </div>
         </div>
@@ -355,7 +355,7 @@ export default function SEODashboard() {
             <div className="bg-white rounded-xl p-6 shadow-sm border">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <StarIcon className="h-5 w-5 text-yellow-500" />
+                  <StarIcon className="h-5 w-5 text-amber-800" />
                   AI Recommendations
                 </h3>
                 <button className="text-olive-600 hover:text-olive-700 text-sm font-medium">
@@ -444,9 +444,9 @@ export default function SEODashboard() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          keyword.position <= 3 ? 'bg-green-100 text-green-800' :
-                          keyword.position <= 10 ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
+                          keyword.position <= 3 ? 'bg-moss-100 text-moss-900' :
+                          keyword.position <= 10 ? 'bg-amber-100 text-amber-900' :
+                          'bg-softred-100 text-softred-900'
                         }`}>
                           #{keyword.position}
                         </span>
@@ -504,8 +504,8 @@ export default function SEODashboard() {
                       
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          content.status === 'published' ? 'bg-green-100 text-green-800' :
-                          content.status === 'scheduled' ? 'bg-yellow-100 text-yellow-800' :
+                          content.status === 'published' ? 'bg-moss-100 text-moss-900' :
+                          content.status === 'scheduled' ? 'bg-amber-100 text-amber-900' :
                           'bg-gray-100 text-gray-800'
                         }`}>
                           {content.status}

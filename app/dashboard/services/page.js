@@ -181,7 +181,7 @@ export default function ServicesPage() {
     const category = getCategoryDetails(categoryId)
     const colors = {
       blue: 'bg-olive-100 text-olive-800 border-olive-200',
-      green: 'bg-green-100 text-green-800 border-green-200',
+      green: 'bg-moss-100 text-moss-900 border-green-200',
       purple: 'bg-gold-100 text-gold-800 border-gold-200',
       amber: 'bg-amber-100 text-amber-800 border-amber-200',
       pink: 'bg-pink-100 text-pink-800 border-pink-200',
@@ -358,7 +358,7 @@ export default function ServicesPage() {
                                 </div>
                               </div>
                               {service.popular && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-900">
                                   Popular
                                 </span>
                               )}

@@ -156,7 +156,7 @@ export default function ProductInventory() {
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div className="p-2 bg-yellow-100 rounded-lg">
-              <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />
+              <ExclamationTriangleIcon className="h-6 w-6 text-amber-800" />
             </div>
             <span className="text-2xl font-bold text-gray-900">{metrics.lowStock}</span>
           </div>
@@ -256,13 +256,13 @@ export default function ProductInventory() {
                   <div className="flex items-center">
                     <span className={`text-sm font-medium ${
                       product.current_stock === 0 ? 'text-red-600' :
-                      product.current_stock <= product.min_stock_level ? 'text-yellow-600' :
+                      product.current_stock <= product.min_stock_level ? 'text-amber-800' :
                       'text-gray-900'
                     }`}>
                       {product.current_stock}
                     </span>
                     {product.current_stock <= product.min_stock_level && product.current_stock > 0 && (
-                      <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500 ml-2" />
+                      <ExclamationTriangleIcon className="h-4 w-4 text-amber-800 ml-2" />
                     )}
                   </div>
                 </td>
@@ -275,10 +275,10 @@ export default function ProductInventory() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                     product.current_stock === 0 
-                      ? 'bg-red-100 text-red-800'
+                      ? 'bg-softred-100 text-softred-900'
                       : product.current_stock <= product.min_stock_level
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-green-100 text-green-800'
+                      ? 'bg-amber-100 text-amber-900'
+                      : 'bg-moss-100 text-moss-900'
                   }`}>
                     {product.current_stock === 0 ? 'Out of Stock' :
                      product.current_stock <= product.min_stock_level ? 'Low Stock' :

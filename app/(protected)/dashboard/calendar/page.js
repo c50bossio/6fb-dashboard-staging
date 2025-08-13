@@ -1415,7 +1415,7 @@ export default function CalendarPage() {
                   setShowAppointmentModal(true)
                 }
               }}
-              className="px-3 py-1.5 text-sm bg-gold-600 text-white rounded-lg hover:bg-gold-700"
+              className="px-3 py-1.5 text-sm bg-gold-700 text-white rounded-lg hover:bg-gold-700"
             >
               Test Edit
             </button>
@@ -1555,7 +1555,7 @@ export default function CalendarPage() {
                   <div className="flex space-x-3">
                     <button
                       onClick={downloadQRCode}
-                      className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
+                      className="flex-1 px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center space-x-2"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -1565,7 +1565,7 @@ export default function CalendarPage() {
                     
                     <button
                       onClick={() => window.open(selectedResource.url, '_blank')}
-                      className="flex-1 px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700 flex items-center justify-center space-x-2"
+                      className="flex-1 px-4 py-2 bg-gold-700 text-white rounded-lg hover:bg-gold-700 flex items-center justify-center space-x-2"
                     >
                       <ShareIcon className="h-4 w-4" />
                       <span>Test Link</span>

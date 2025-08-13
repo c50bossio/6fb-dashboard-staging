@@ -57,7 +57,7 @@ export default function PredictiveAnalyticsDashboard({ className = '' }) {
 
   const getConfidenceColor = (confidence) => {
     if (confidence >= 0.8) return 'text-green-600 bg-green-50'
-    if (confidence >= 0.6) return 'text-yellow-600 bg-yellow-50'
+    if (confidence >= 0.6) return 'text-amber-800 bg-yellow-50'
     return 'text-red-600 bg-red-50'
   }
 
@@ -258,7 +258,7 @@ export default function PredictiveAnalyticsDashboard({ className = '' }) {
         {/* AI Insights */}
         <div className="mb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <LightBulbIcon className="h-5 w-5 text-yellow-600 mr-2" />
+            <LightBulbIcon className="h-5 w-5 text-amber-800 mr-2" />
             AI-Generated Business Insights
           </h3>
           
@@ -270,8 +270,8 @@ export default function PredictiveAnalyticsDashboard({ className = '' }) {
                     <div className="flex items-center space-x-2 mb-2">
                       <h4 className="font-medium text-gray-900">{insight.title}</h4>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        insight.priority === 'high' ? 'bg-red-100 text-red-800' :
-                        insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        insight.priority === 'high' ? 'bg-softred-100 text-softred-900' :
+                        insight.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
                         'bg-olive-100 text-olive-800'
                       }`}>
                         {insight.priority}
@@ -293,7 +293,7 @@ export default function PredictiveAnalyticsDashboard({ className = '' }) {
                       {(insight.confidence * 100).toFixed(0)}% confidence
                     </span>
                     <div className="flex items-center">
-                      <StarIcon className="h-4 w-4 text-yellow-500 mr-1" />
+                      <StarIcon className="h-4 w-4 text-amber-800 mr-1" />
                       <span className="text-sm text-gray-600">
                         Impact Score: {(insight.impact_score * 100).toFixed(0)}%
                       </span>

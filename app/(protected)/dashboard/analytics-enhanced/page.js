@@ -291,13 +291,13 @@ function EnterpriseAnalytics({ onDrillDown }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Avg Rating</p>
-              <p className="text-2xl font-bold text-yellow-600">{enterpriseData.avgRating}</p>
-              <p className="text-xs text-yellow-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-amber-800">{enterpriseData.avgRating}</p>
+              <p className="text-xs text-amber-800 flex items-center mt-1">
                 <StarIcon className="h-3 w-3 mr-1" />
                 Excellent performance
               </p>
             </div>
-            <StarIcon className="h-8 w-8 text-yellow-600" />
+            <StarIcon className="h-8 w-8 text-amber-800" />
           </div>
         </Card>
       </div>
@@ -480,13 +480,13 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Customer Rating</p>
-              <p className="text-2xl font-bold text-yellow-600">{locationData.rating}</p>
-              <p className="text-xs text-yellow-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-amber-800">{locationData.rating}</p>
+              <p className="text-xs text-amber-800 flex items-center mt-1">
                 <StarIcon className="h-3 w-3 mr-1" />
                 {locationData.rating >= 4.7 ? 'Excellent' : locationData.rating >= 4.5 ? 'Great' : 'Good'} service
               </p>
             </div>
-            <StarIcon className="h-8 w-8 text-yellow-600" />
+            <StarIcon className="h-8 w-8 text-amber-800" />
           </div>
         </Card>
       </div>
@@ -568,9 +568,9 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs rounded-full ${
-                      barber.efficiency >= 90 ? 'bg-green-100 text-green-800' :
-                      barber.efficiency >= 85 ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
+                      barber.efficiency >= 90 ? 'bg-moss-100 text-moss-900' :
+                      barber.efficiency >= 85 ? 'bg-amber-100 text-amber-900' :
+                      'bg-softred-100 text-softred-900'
                     }`}>
                       {barber.efficiency}%
                     </span>
@@ -578,7 +578,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => onDrillDown('barber', barber)}
-                      className="bg-gold-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-gold-700 transition-colors"
+                      className="bg-gold-700 text-white px-3 py-1 rounded-lg text-sm hover:bg-gold-700 transition-colors"
                     >
                       Analyze Barber
                     </button>
@@ -671,13 +671,13 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Customer Rating</p>
-              <p className="text-2xl font-bold text-yellow-600">{barberData.rating}</p>
-              <p className="text-xs text-yellow-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-amber-800">{barberData.rating}</p>
+              <p className="text-xs text-amber-800 flex items-center mt-1">
                 <StarIcon className="h-3 w-3 mr-1" />
                 Based on {Math.round(barberData.customers * 0.6)} reviews
               </p>
             </div>
-            <StarIcon className="h-8 w-8 text-yellow-600" />
+            <StarIcon className="h-8 w-8 text-amber-800" />
           </div>
         </Card>
 

@@ -224,7 +224,7 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">{barber.name}</h3>
                   <p className="text-sm text-gray-600 mt-1">{barber.title}</p>
-                  <div className="mt-4 inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                  <div className="mt-4 inline-flex items-center px-3 py-1 bg-moss-100 text-moss-900 rounded-full text-sm font-medium">
                     <ClockIcon className="h-4 w-4 mr-1" />
                     Next: {barber.nextAvailable}
                   </div>
@@ -274,8 +274,8 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
                       <div className="mt-2 flex items-center text-sm">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           barber.availability === 'Available today'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
+                            ? 'bg-moss-100 text-moss-900'
+                            : 'bg-amber-100 text-amber-900'
                         }`}>
                           <ClockIcon className="h-3 w-3 mr-1" />
                           {barber.nextAvailable}

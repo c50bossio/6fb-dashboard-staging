@@ -86,7 +86,7 @@ export default function WorkingLoginPage() {
         
         {message && (
           <div className={`mt-4 p-3 rounded text-center ${
-            message.includes('successful') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            message.includes('successful') ? 'bg-moss-100 text-moss-800' : 'bg-softred-100 text-softred-800'
           }`}>
             {message}
           </div>

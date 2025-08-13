@@ -366,7 +366,7 @@ export default function BarberReports() {
               </select>
               <button
                 onClick={downloadReport}
-                className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
+                className="flex items-center space-x-2 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700"
               >
                 <ArrowDownTrayIcon className="h-4 w-4" />
                 <span>Export</span>
@@ -398,7 +398,7 @@ export default function BarberReports() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-amber-100 rounded-lg">
-                <CalendarDaysIcon className="h-6 w-6 text-amber-600" />
+                <CalendarDaysIcon className="h-6 w-6 text-amber-700" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">{reportData.appointments.total}</p>

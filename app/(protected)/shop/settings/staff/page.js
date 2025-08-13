@@ -177,7 +177,7 @@ export default function StaffPermissions() {
                   <h3 className="font-semibold text-gray-900">{template.name}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     template.template_level === 'basic' ? 'bg-olive-100 text-olive-800' :
-                    template.template_level === 'intermediate' ? 'bg-green-100 text-green-800' :
+                    template.template_level === 'intermediate' ? 'bg-moss-100 text-moss-900' :
                     template.template_level === 'advanced' ? 'bg-gold-100 text-gold-800' :
                     'bg-indigo-100 text-indigo-800'
                   }`}>
@@ -255,7 +255,7 @@ export default function StaffPermissions() {
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             permissionSummary.level === 'none' ? 'bg-gray-100 text-gray-800' :
                             permissionSummary.color === 'blue' ? 'bg-olive-100 text-olive-800' :
-                            permissionSummary.color === 'green' ? 'bg-green-100 text-green-800' :
+                            permissionSummary.color === 'green' ? 'bg-moss-100 text-moss-900' :
                             permissionSummary.color === 'purple' ? 'bg-gold-100 text-gold-800' :
                             'bg-indigo-100 text-indigo-800'
                           }`}>

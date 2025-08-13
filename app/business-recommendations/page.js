@@ -50,10 +50,10 @@ function RecommendationCard({ recommendation, onImplement }) {
             <h3 className="text-lg font-semibold text-gray-900">{recommendation.title}</h3>
             <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                recommendation.priority === 'critical' ? 'bg-red-100 text-red-800' :
+                recommendation.priority === 'critical' ? 'bg-softred-100 text-softred-900' :
                 recommendation.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                recommendation.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-green-100 text-green-800'
+                recommendation.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
+                'bg-moss-100 text-moss-900'
               }`}>
                 {recommendation.priority.toUpperCase()}
               </span>
@@ -267,7 +267,7 @@ function BusinessRecommendationsContent() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <LightBulbIcon className="h-8 w-8 mr-3 text-yellow-600" />
+              <LightBulbIcon className="h-8 w-8 mr-3 text-amber-800" />
               Business Recommendations Engine
             </h1>
             <p className="text-gray-600 mt-2">

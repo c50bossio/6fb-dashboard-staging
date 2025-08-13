@@ -87,7 +87,7 @@ export default function TabbedPageLayout({
                   </span>
                 )}
                 {tab.isNew && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                     New
                   </span>
                 )}

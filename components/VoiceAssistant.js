@@ -245,7 +245,7 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
           <SpeakerWaveIcon className="h-5 w-5 text-olive-500" />
           <h3 className="font-semibold text-gray-900">Voice Assistant</h3>
           {isListening && (
-            <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full animate-pulse">
+            <span className="bg-softred-100 text-softred-900 text-xs px-2 py-1 rounded-full animate-pulse">
               Listening...
             </span>
           )}

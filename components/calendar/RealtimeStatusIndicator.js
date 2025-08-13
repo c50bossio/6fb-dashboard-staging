@@ -36,7 +36,7 @@ export default function RealtimeStatusIndicator({
     
     if (connectionAttempts > 0) {
       return {
-        color: 'text-yellow-500',
+        color: 'text-amber-800',
         bgColor: 'bg-yellow-50',
         borderColor: 'border-yellow-200',
         icon: ArrowPathIcon,

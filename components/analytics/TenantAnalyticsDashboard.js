@@ -296,7 +296,7 @@ export default function TenantAnalyticsDashboard() {
       {/* Benchmarking Section */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <div className="flex items-center mb-6">
-          <TrophyIcon className="h-6 w-6 text-yellow-600 mr-3" />
+          <TrophyIcon className="h-6 w-6 text-amber-800 mr-3" />
           <h3 className="text-lg font-semibold text-gray-900">Industry Benchmarking</h3>
         </div>
         
@@ -375,7 +375,7 @@ export default function TenantAnalyticsDashboard() {
             
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <p className="text-sm text-yellow-700 mb-2">SMS Sent</p>
-              <p className="text-xl font-bold text-yellow-600">
+              <p className="text-xl font-bold text-amber-800">
                 {analytics.integrations.sms_sent}
               </p>
             </div>

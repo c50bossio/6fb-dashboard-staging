@@ -266,7 +266,7 @@ export default function CampaignsPage() {
     switch (status) {
       case 'completed':
       case 'active':
-        return 'bg-green-100 text-green-800'
+        return 'bg-moss-100 text-moss-900'
       case 'scheduled':
       case 'pending_approval':
         return 'bg-olive-100 text-olive-800'
@@ -274,9 +274,9 @@ export default function CampaignsPage() {
         return 'bg-gray-100 text-gray-800'
       case 'failed':
       case 'cancelled':
-        return 'bg-red-100 text-red-800'
+        return 'bg-softred-100 text-softred-900'
       default:
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-amber-100 text-amber-900'
     }
   }
 
@@ -334,7 +334,7 @@ export default function CampaignsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <ExclamationTriangleIcon className="h-12 w-12 text-yellow-600 mx-auto mb-4" />
+          <ExclamationTriangleIcon className="h-12 w-12 text-amber-800 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
           <p className="text-gray-600">You must be logged in to access campaigns.</p>
         </div>
@@ -365,7 +365,7 @@ export default function CampaignsPage() {
               {marketingAccounts.length === 0 && (
                 <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                   <div className="flex items-center">
-                    <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+                    <ExclamationTriangleIcon className="h-5 w-5 text-amber-800 mr-2" />
                     <span className="text-sm text-yellow-800">
                       You need to set up a billing account before creating campaigns.
                     </span>
@@ -399,7 +399,7 @@ export default function CampaignsPage() {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium ${
                   marketingAccounts.length === 0
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-green-600 text-white hover:bg-green-700'
+                    : 'bg-moss-600 text-white hover:bg-green-700'
                 }`}
               >
                 <PhoneIcon className="h-4 w-4" />
@@ -627,11 +627,11 @@ export default function CampaignsPage() {
                             </div>
                           </div>
                           {account.is_verified ? (
-                            <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-moss-100 text-moss-900 rounded">
                               Verified
                             </span>
                           ) : (
-                            <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-amber-100 text-amber-900 rounded">
                               Pending
                             </span>
                           )}

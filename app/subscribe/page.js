@@ -250,7 +250,7 @@ export default function SubscribePage() {
             </button>
             <span className={`text-lg ${billingPeriod === 'yearly' ? 'text-gray-900 font-semibold' : 'text-gray-500'}`}>
               Yearly
-              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-moss-100 text-moss-900">
                 Save 20%
               </span>
             </span>
@@ -287,7 +287,7 @@ export default function SubscribePage() {
             >
               {tier.recommended && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-green-500 text-white">
+                  <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-moss-600 text-white">
                     Most Popular
                   </span>
                 </div>
@@ -328,7 +328,7 @@ export default function SubscribePage() {
                   (authLoading || (loading && selectedTier === tier.id))
                     ? 'bg-gray-400 text-white cursor-not-allowed'
                     : tier.recommended
-                    ? 'bg-green-600 text-white hover:bg-green-700'
+                    ? 'bg-moss-600 text-white hover:bg-green-700'
                     : 'bg-gray-900 text-white hover:bg-gray-800'
                 }`}
                 data-cta={`select-plan-${tier.id}`}

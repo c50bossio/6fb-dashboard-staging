@@ -273,7 +273,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
                         <div className="flex items-center">
                           <h4 className="text-lg font-semibold text-gray-900">{service.name}</h4>
                           {service.popular && (
-                            <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                            <span className="ml-2 px-2 py-0.5 bg-amber-100 text-amber-900 text-xs font-medium rounded-full">
                               Popular
                             </span>
                           )}

@@ -133,7 +133,7 @@ export default function AppointmentsPage() {
                 <div className="text-xs text-gray-500">Total This Week</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-semibold text-yellow-600">{stats.pending}</div>
+                <div className="text-2xl font-semibold text-amber-800">{stats.pending}</div>
                 <div className="text-xs text-gray-500">Pending</div>
               </div>
               <div className="text-center">

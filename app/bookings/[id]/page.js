@@ -195,9 +195,9 @@ export default function BookingDetailPage() {
 
   const getStatusColor = (status) => {
     const colors = {
-      confirmed: 'bg-green-100 text-green-800 border-green-200',
-      pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      cancelled: 'bg-red-100 text-red-800 border-red-200',
+      confirmed: 'bg-moss-100 text-moss-900 border-green-200',
+      pending: 'bg-amber-100 text-amber-900 border-yellow-200',
+      cancelled: 'bg-softred-100 text-softred-900 border-red-200',
       completed: 'bg-olive-100 text-olive-800 border-olive-200'
     }
     return colors[status] || colors.pending
@@ -593,7 +593,7 @@ export default function BookingDetailPage() {
                         </div>
                       </div>
                       
-                      <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
+                      <span className="px-3 py-1 bg-moss-100 text-moss-900 text-sm rounded-full">
                         {booking.payment.status === 'paid' ? 'Paid' : 'Pending'}
                       </span>
                     </div>

@@ -99,7 +99,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
 
   const getConfidenceColor = (confidence) => {
     if (confidence >= 0.8) return 'text-green-600'
-    if (confidence >= 0.7) return 'text-yellow-600'
+    if (confidence >= 0.7) return 'text-amber-800'
     return 'text-red-600'
   }
 
@@ -161,7 +161,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
             <button
               onClick={generateNewPredictions}
               disabled={generating}
-              className="px-3 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700 disabled:bg-gray-300 flex items-center gap-2 text-sm"
+              className="px-3 py-2 bg-gold-700 text-white rounded-lg hover:bg-gold-700 disabled:bg-gray-300 flex items-center gap-2 text-sm"
             >
               {generating ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -320,7 +320,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
                       <div className="text-xs text-gray-600">High Risk</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xl font-bold text-yellow-600">
+                      <div className="text-xl font-bold text-amber-800">
                         {predictions.customerBehavior.churnPrediction.mediumRisk}
                       </div>
                       <div className="text-xs text-gray-600">Medium Risk</div>
@@ -337,7 +337,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
                     <ul className="text-xs space-y-1">
                       {predictions.customerBehavior.churnPrediction.interventionRecommendations?.map((rec, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <span className="text-yellow-600">⚡</span>
+                          <span className="text-amber-800">⚡</span>
                           <span>{rec}</span>
                         </li>
                       ))}
@@ -354,7 +354,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
           <button
             onClick={generateNewPredictions}
             disabled={generating}
-            className="px-6 py-3 bg-gold-600 text-white rounded-lg hover:bg-gold-700 disabled:bg-gray-300"
+            className="px-6 py-3 bg-gold-700 text-white rounded-lg hover:bg-gold-700 disabled:bg-gray-300"
           >
             Generate Predictions
           </button>

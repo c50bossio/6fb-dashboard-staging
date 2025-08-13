@@ -95,7 +95,7 @@ export default function ConversationRecoveryModal({ onRecover, onDismiss }) {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <div className="h-10 w-10 bg-yellow-100 rounded-full flex items-center justify-center">
-              <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />
+              <ExclamationTriangleIcon className="h-6 w-6 text-amber-800" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Conversation Recovery</h3>
@@ -115,7 +115,7 @@ export default function ConversationRecoveryModal({ onRecover, onDismiss }) {
         <div className="mb-6">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex items-start space-x-3">
-              <ChatBubbleLeftRightIcon className="h-5 w-5 text-yellow-600 mt-0.5" />
+              <ChatBubbleLeftRightIcon className="h-5 w-5 text-amber-800 mt-0.5" />
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-yellow-800 mb-2">
                   Conversation Details

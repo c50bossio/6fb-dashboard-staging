@@ -663,7 +663,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
 
       {/* Toast Notification */}
       {showToast && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-bounce z-60">
+        <div className="fixed bottom-4 right-4 bg-moss-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-bounce z-60">
           <CheckCircleIcon className="h-5 w-5" />
           <span className="font-medium">{toastMessage}</span>
         </div>

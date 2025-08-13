@@ -394,7 +394,7 @@ function MessageBubble({ message }) {
             <ul className="text-xs text-yellow-700 space-y-1">
               {message.suggestions.slice(0, 3).map((suggestion, index) => (
                 <li key={index} className="flex items-start space-x-1">
-                  <span className="text-yellow-500">•</span>
+                  <span className="text-amber-800">•</span>
                   <span>{suggestion}</span>
                 </li>
               ))}

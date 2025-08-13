@@ -172,7 +172,7 @@ export default function OperationsPage() {
 
   const getAlertColor = (type) => {
     switch(type) {
-      case 'warning': return 'text-amber-600 bg-amber-50'
+      case 'warning': return 'text-amber-700 bg-amber-50'
       case 'success': return 'text-green-600 bg-green-50'
       default: return 'text-olive-600 bg-olive-50'
     }
@@ -236,8 +236,8 @@ export default function OperationsPage() {
                     </div>
                     <div className={`px-4 py-2 rounded-lg ${
                       operationalData?.shopStatus === 'open' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-moss-100 text-moss-900' 
+                        : 'bg-softred-100 text-softred-900'
                     }`}>
                       <p className="text-sm font-medium">Shop Status</p>
                       <p className="text-lg font-bold uppercase">{operationalData?.shopStatus || 'Unknown'}</p>
@@ -319,7 +319,7 @@ export default function OperationsPage() {
 
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <BuildingStorefrontIcon className="h-8 w-8 text-amber-600" />
+                    <BuildingStorefrontIcon className="h-8 w-8 text-amber-700" />
                     <span className="text-sm font-medium text-gray-500">
                       {operationalData?.chairUtilization}%
                     </span>
@@ -407,10 +407,10 @@ export default function OperationsPage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <ScissorsIcon className="h-5 w-5 text-amber-600" />
+                          <ScissorsIcon className="h-5 w-5 text-amber-700" />
                           <span className="text-sm text-gray-700">Low Stock Items</span>
                         </div>
-                        <span className="text-sm font-medium text-amber-600">{operationalData?.lowStockItems}</span>
+                        <span className="text-sm font-medium text-amber-700">{operationalData?.lowStockItems}</span>
                       </div>
                     </div>
                   </div>

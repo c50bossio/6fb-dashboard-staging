@@ -40,10 +40,10 @@ export default function SubscriptionDashboard() {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case 'active': return 'bg-green-100 text-green-800'
+      case 'active': return 'bg-moss-100 text-moss-900'
       case 'trialing': return 'bg-olive-100 text-olive-800'  
-      case 'past_due': return 'bg-yellow-100 text-yellow-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
+      case 'past_due': return 'bg-amber-100 text-amber-900'
+      case 'cancelled': return 'bg-softred-100 text-softred-900'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -296,7 +296,7 @@ export default function SubscriptionDashboard() {
                 <td className="py-3 text-gray-600">Professional Plan</td>
                 <td className="py-3 font-medium">$49.00</td>
                 <td className="py-3">
-                  <Badge className="bg-green-100 text-green-800">Paid</Badge>
+                  <Badge className="bg-moss-100 text-moss-900">Paid</Badge>
                 </td>
               </tr>
               <tr>
@@ -304,7 +304,7 @@ export default function SubscriptionDashboard() {
                 <td className="py-3 text-gray-600">Professional Plan</td>
                 <td className="py-3 font-medium">$49.00</td>
                 <td className="py-3">
-                  <Badge className="bg-green-100 text-green-800">Paid</Badge>
+                  <Badge className="bg-moss-100 text-moss-900">Paid</Badge>
                 </td>
               </tr>
             </tbody>

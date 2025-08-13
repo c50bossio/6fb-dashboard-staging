@@ -159,8 +159,8 @@ export default function AIAgentChat() {
         <div className="flex items-center space-x-2">
           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
             apiConnected 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-yellow-100 text-yellow-800'
+              ? 'bg-moss-100 text-moss-900' 
+              : 'bg-amber-100 text-amber-900'
           }`}>
             <div className={`w-1.5 h-1.5 rounded-full mr-1 ${
               apiConnected ? 'bg-green-500' : 'bg-yellow-500'
@@ -168,7 +168,7 @@ export default function AIAgentChat() {
             {apiConnected ? 'API Connected' : 'Connecting...'}
           </span>
           {!apiConnected && (
-            <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
+            <ExclamationTriangleIcon className="h-4 w-4 text-amber-800" />
           )}
         </div>
       </div>

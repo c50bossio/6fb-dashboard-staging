@@ -200,7 +200,7 @@ export default function BookingsPage() {
                   <div className="space-y-2">
                     <button
                       onClick={() => openPaymentModal(booking, 'full_payment')}
-                      className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      className="w-full flex items-center justify-center px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                     >
                       <CreditCardIcon className="h-4 w-4 mr-2" />
                       Pay Now
@@ -222,7 +222,7 @@ export default function BookingsPage() {
                 {booking.payment_status === 'deposit_paid' && (
                   <button
                     onClick={() => openPaymentModal(booking, 'remaining_balance')}
-                    className="w-full flex items-center justify-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                    className="w-full flex items-center justify-center px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700 transition-colors"
                   >
                     <CreditCardIcon className="h-4 w-4 mr-2" />
                     Pay Remaining Balance

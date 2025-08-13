@@ -69,7 +69,7 @@ export default function WebSocketDebugPanel() {
       <h3 className="font-bold text-sm mb-2">WebSocket Debug Panel</h3>
       <div className="text-xs space-y-1">
         <div>
-          Status: <span className={status === 'SUBSCRIBED' ? 'text-green-600' : 'text-yellow-600'}>
+          Status: <span className={status === 'SUBSCRIBED' ? 'text-green-600' : 'text-amber-800'}>
             {status}
           </span>
         </div>

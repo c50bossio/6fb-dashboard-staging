@@ -148,9 +148,9 @@ export default function StaffPage() {
       case 'senior barber':
         return 'bg-olive-100 text-olive-800 border-olive-200'
       case 'barber':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return 'bg-moss-100 text-moss-900 border-green-200'
       case 'apprentice':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+        return 'bg-amber-100 text-amber-900 border-yellow-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -230,7 +230,7 @@ export default function StaffPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <StarIcon className="h-6 w-6 text-yellow-600" />
+                  <StarIcon className="h-6 w-6 text-amber-800" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Avg Rating</p>

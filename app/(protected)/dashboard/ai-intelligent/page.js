@@ -325,9 +325,9 @@ function MarketingInsightsWidget({ onRefresh, loading }) {
               {insights.agent_details?.action_items?.slice(0, 3).map((action, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-xs">
                   <span className={`px-2 py-1 rounded text-xs ${
-                    action.priority === 'high' ? 'bg-red-100 text-red-800' :
-                    action.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
+                    action.priority === 'high' ? 'bg-softred-100 text-softred-900' :
+                    action.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
+                    'bg-moss-100 text-moss-900'
                   }`}>
                     {action.priority}
                   </span>
@@ -489,7 +489,7 @@ function BusinessRecommendationsWidget({ onRefresh, loading }) {
     <Card className="h-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <LightBulbIcon className="h-5 w-5 mr-2 text-yellow-600" />
+          <LightBulbIcon className="h-5 w-5 mr-2 text-amber-800" />
           AI Business Recommendations
         </h3>
         <button
@@ -511,7 +511,7 @@ function BusinessRecommendationsWidget({ onRefresh, loading }) {
         <div className="space-y-4">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
             <div className="flex items-center mb-2">
-              <LightBulbIcon className="h-4 w-4 text-yellow-600 mr-2" />
+              <LightBulbIcon className="h-4 w-4 text-amber-800 mr-2" />
               <span className="text-sm font-medium text-yellow-800">
                 {recommendations.agent_details?.primary_agent || 'AI Business Coach'}
               </span>
@@ -523,7 +523,7 @@ function BusinessRecommendationsWidget({ onRefresh, loading }) {
               <h4 className="text-xs font-medium text-gray-800">Priority Actions:</h4>
               {recommendations.agent_details?.recommendations?.slice(0, 4).map((rec, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-xs">
-                  <span className="flex-shrink-0 w-4 h-4 bg-yellow-600 text-white rounded-full flex items-center justify-center text-xs">
+                  <span className="flex-shrink-0 w-4 h-4 bg-amber-700 text-white rounded-full flex items-center justify-center text-xs">
                     {idx + 1}
                   </span>
                   <span className="text-gray-600">{rec}</span>

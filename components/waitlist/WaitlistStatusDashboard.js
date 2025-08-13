@@ -91,8 +91,8 @@ const WaitlistStatusDashboard = ({ customerId }) => {
     };
     
     const getPriorityBadge = (position) => {
-        if (position === 1) return { text: 'Next', color: 'bg-green-100 text-green-800' };
-        if (position <= 3) return { text: 'Soon', color: 'bg-yellow-100 text-yellow-800' };
+        if (position === 1) return { text: 'Next', color: 'bg-moss-100 text-moss-900' };
+        if (position <= 3) return { text: 'Soon', color: 'bg-amber-100 text-amber-900' };
         if (position <= 5) return { text: 'Queue', color: 'bg-olive-100 text-olive-800' };
         return { text: 'Waiting', color: 'bg-gray-100 text-gray-800' };
     };

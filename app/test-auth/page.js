@@ -132,7 +132,7 @@ export default function TestAuthPage() {
               </button>
               <button
                 onClick={() => router.push('/dashboard')}
-                className="bg-green-600 text-white px-4 py-2 rounded ml-2"
+                className="bg-moss-600 text-white px-4 py-2 rounded ml-2"
               >
                 Go to Dashboard
               </button>
@@ -155,9 +155,9 @@ export default function TestAuthPage() {
               <div
                 key={index}
                 className={`text-sm font-mono p-2 rounded ${
-                  log.type === 'error' ? 'bg-red-100 text-red-800' :
-                  log.type === 'success' ? 'bg-green-100 text-green-800' :
-                  log.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
+                  log.type === 'error' ? 'bg-softred-100 text-softred-900' :
+                  log.type === 'success' ? 'bg-moss-100 text-moss-900' :
+                  log.type === 'warning' ? 'bg-amber-100 text-amber-900' :
                   'bg-gray-100 text-gray-800'
                 }`}
               >

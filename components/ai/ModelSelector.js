@@ -59,7 +59,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
             </span>
           )}
           {currentModel.recommended && (
-            <span className="px-1.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">
+            <span className="px-1.5 py-0.5 text-xs font-semibold bg-moss-100 text-moss-900 dark:bg-green-900 dark:text-green-200 rounded">
               RECOMMENDED
             </span>
           )}
@@ -95,7 +95,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                         </span>
                       )}
                       {model.recommended && (
-                        <span className="px-1.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded">
+                        <span className="px-1.5 py-0.5 text-xs font-semibold bg-moss-100 text-moss-900 dark:bg-green-900 dark:text-green-200 rounded">
                           RECOMMENDED
                         </span>
                       )}

@@ -154,7 +154,7 @@ export default function BarberProfilePage() {
           <h1 className="text-2xl font-bold text-gray-900">Barber Profile Management</h1>
           <p className="text-gray-600 mt-2">
             Customize your professional profile and landing page. Your page will be available at:
-            <span className="font-mono text-amber-600 ml-2">
+            <span className="font-mono text-amber-700 ml-2">
               barbershop.com/{profile.custom_path || 'your-name'}
             </span>
           </p>
@@ -187,7 +187,7 @@ export default function BarberProfilePage() {
                   className={`
                     flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm
                     ${activeTab === tab.id
-                      ? 'border-amber-500 text-amber-600'
+                      ? 'border-amber-500 text-amber-700'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }
                   `}
@@ -417,7 +417,7 @@ export default function BarberProfilePage() {
               <div className="space-y-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Your Services</h3>
-                  <button className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
+                  <button className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
                     Add Service
                   </button>
                 </div>
@@ -440,7 +440,7 @@ export default function BarberProfilePage() {
                               <span className="text-sm text-gray-500">
                                 Duration: {service.duration_minutes} min
                               </span>
-                              <span className="text-sm font-medium text-amber-600">
+                              <span className="text-sm font-medium text-amber-700">
                                 ${service.price}
                               </span>
                             </div>
@@ -494,7 +494,7 @@ export default function BarberProfilePage() {
                       type="checkbox"
                       checked={profile.accepts_walk_ins}
                       onChange={(e) => handleInputChange('accepts_walk_ins', e.target.checked)}
-                      className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-amber-700 focus:ring-amber-500 border-gray-300 rounded"
                     />
                     <span className="text-sm font-medium text-gray-700">Accept Walk-ins</span>
                   </label>
@@ -519,7 +519,7 @@ export default function BarberProfilePage() {
                       type="checkbox"
                       checked={profile.deposit_required}
                       onChange={(e) => handleInputChange('deposit_required', e.target.checked)}
-                      className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-amber-700 focus:ring-amber-500 border-gray-300 rounded"
                     />
                     <span className="text-sm font-medium text-gray-700">Require Deposit</span>
                   </label>
@@ -550,7 +550,7 @@ export default function BarberProfilePage() {
                 <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                   <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
                   <p className="mt-2 text-sm text-gray-600">Upload your best work</p>
-                  <button className="mt-4 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
+                  <button className="mt-4 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
                     Upload Images
                   </button>
                 </div>
@@ -666,7 +666,7 @@ export default function BarberProfilePage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
+            className="px-6 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Profile'}
           </button>

@@ -318,9 +318,9 @@ export default function AnalyticsPanel({ data }) {
           {dataSource !== 'loading' && (
             <div className="text-xs text-gray-500">
               <span className={`px-2 py-1 rounded ${
-                dataSource === 'live' ? 'bg-green-100 text-green-700' :
+                dataSource === 'live' ? 'bg-moss-100 text-moss-800' :
                 dataSource === 'api' ? 'bg-olive-100 text-olive-700' :
-                dataSource === 'fallback' ? 'bg-yellow-100 text-yellow-700' :
+                dataSource === 'fallback' ? 'bg-amber-100 text-amber-900' :
                 'bg-gray-100 text-gray-700'
               }`}>
                 {dataSource === 'live' ? 'Live Database' :
@@ -506,7 +506,7 @@ export default function AnalyticsPanel({ data }) {
               onClick={() => setComparisonMode(!comparisonMode)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
                 comparisonMode
-                  ? 'bg-green-600 text-white shadow-md'
+                  ? 'bg-moss-600 text-white shadow-md'
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm'
               }`}
               title="Enable period comparison"
@@ -645,7 +645,7 @@ export default function AnalyticsPanel({ data }) {
       <div className="bg-gradient-to-r from-olive-50 to-gold-50 rounded-lg p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           AI-Powered Insights 
-          {analyticsData && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded ml-2">LIVE DATA</span>}
+          {analyticsData && <span className="text-xs bg-moss-100 text-moss-900 px-2 py-1 rounded ml-2">LIVE DATA</span>}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white bg-opacity-70 rounded-lg p-4">

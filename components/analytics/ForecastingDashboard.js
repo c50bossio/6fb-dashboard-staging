@@ -400,9 +400,9 @@ function RevenueTab({ data, chartData }) {
               <div key={index} className="flex items-center justify-between">
                 <span className="text-gray-600">{risk.factor}</span>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  risk.impact === 'high' ? 'bg-red-100 text-red-800' :
-                  risk.impact === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-green-100 text-green-800'
+                  risk.impact === 'high' ? 'bg-softred-100 text-softred-900' :
+                  risk.impact === 'medium' ? 'bg-amber-100 text-amber-900' :
+                  'bg-moss-100 text-moss-900'
                 }`}>
                   {risk.impact}
                 </span>
@@ -514,7 +514,7 @@ function BookingsTab({ data, chartData }) {
               <p className="text-sm text-yellow-700 mt-1">
                 Underutilized: {period.hours.join(', ')}
               </p>
-              <p className="text-xs text-yellow-600 mt-2">
+              <p className="text-xs text-amber-800 mt-2">
                 Consider promotional pricing
               </p>
             </div>
@@ -607,7 +607,7 @@ function TrendsTab({ data, chartData }) {
                     Next: {new Date(season.nextOccurrence).toLocaleDateString()}
                   </p>
                 </div>
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                <span className="px-2 py-1 bg-moss-100 text-moss-900 rounded-full text-sm font-medium">
                   +{Math.round((season.multiplier - 1) * 100)}%
                 </span>
               </div>
@@ -663,9 +663,9 @@ function InsightsTab({ data }) {
                   {rec.category.replace('_', ' ')}
                 </h4>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  rec.priority === 'high' ? 'bg-red-100 text-red-800' :
-                  rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-green-100 text-green-800'
+                  rec.priority === 'high' ? 'bg-softred-100 text-softred-900' :
+                  rec.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
+                  'bg-moss-100 text-moss-900'
                 }`}>
                   {rec.priority}
                 </span>
@@ -758,9 +758,9 @@ function InsightCard({ title, insight, color }) {
           )}
           {insight.priority && (
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              insight.priority === 'high' ? 'bg-red-100 text-red-800' :
-              insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-green-100 text-green-800'
+              insight.priority === 'high' ? 'bg-softred-100 text-softred-900' :
+              insight.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
+              'bg-moss-100 text-moss-900'
             }`}>
               {insight.priority}
             </span>
@@ -815,9 +815,9 @@ function ProjectionCard({ title, data, confidence }) {
 
 // Helper Functions
 function getConfidenceColor(confidence) {
-  if (confidence >= 0.8) return 'bg-green-100 text-green-800'
-  if (confidence >= 0.6) return 'bg-yellow-100 text-yellow-800'
-  return 'bg-red-100 text-red-800'
+  if (confidence >= 0.8) return 'bg-moss-100 text-moss-900'
+  if (confidence >= 0.6) return 'bg-amber-100 text-amber-900'
+  return 'bg-softred-100 text-softred-900'
 }
 
 function getInsightColor(type) {

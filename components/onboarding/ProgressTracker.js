@@ -57,7 +57,7 @@ export default function ProgressTracker({
                 <div
                   className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                     isCompleted
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-moss-600 text-white'
                       : isCurrent
                       ? 'bg-olive-600 text-white ring-4 ring-olive-100'
                       : 'bg-white border-2 border-gray-300 text-gray-400'

@@ -117,7 +117,7 @@ export default function BookingsPage() {
         <h1 className="text-3xl font-bold text-gray-900">Booking Calendar</h1>
         <p className="text-gray-600 mt-2">
           Manage your appointments and schedule
-          {error && <span className="ml-2 text-sm text-amber-600">({error})</span>}
+          {error && <span className="ml-2 text-sm text-amber-700">({error})</span>}
         </p>
       </div>
 

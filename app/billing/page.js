@@ -90,7 +90,7 @@ export default function BillingPage() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'text-green-600 bg-green-100'
-      case 'past_due': return 'text-yellow-600 bg-yellow-100'
+      case 'past_due': return 'text-amber-800 bg-yellow-100'
       case 'canceled': return 'text-red-600 bg-red-100'
       case 'canceling': return 'text-orange-600 bg-orange-100'
       default: return 'text-gray-600 bg-gray-100'

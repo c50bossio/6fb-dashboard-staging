@@ -197,7 +197,7 @@ export default function RealtimePage() {
                   })
                 })
               }}
-              className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+              className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-yellow-700"
             >
               Trigger Alert
             </button>
@@ -218,7 +218,7 @@ export default function RealtimePage() {
                   })
                 })
               }}
-              className="px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700"
+              className="px-4 py-2 bg-gold-700 text-charcoal-800 rounded-lg hover:bg-gold-800 hover:text-white"
             >
               Agent Progress
             </button>
@@ -239,7 +239,7 @@ export default function RealtimePage() {
                   })
                 })
               }}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700"
             >
               Booking Update
             </button>

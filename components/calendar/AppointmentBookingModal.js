@@ -1050,7 +1050,7 @@ export default function AppointmentBookingModal({
                     <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900 mb-6">
                       {isBlockMode ? 'Block Time Slots' : isEditing ? 'Edit Appointment' : 'Book New Appointment'}
                       {isEditing && editingAppointment?.recurrence_rule && (
-                        <div className="mt-2 text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-3">
+                        <div className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
                           🔄 This is a recurring appointment. Changes will only apply to this specific occurrence.
                         </div>
                       )}
@@ -1375,7 +1375,7 @@ export default function AppointmentBookingModal({
                                   <UserIcon className="h-5 w-5 text-olive-600" />
                                   <span className="font-medium text-gray-900">{selectedCustomer.name}</span>
                                   {selectedCustomer.vip_status && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-900">
                                       VIP
                                     </span>
                                   )}
@@ -1702,12 +1702,12 @@ export default function AppointmentBookingModal({
                                           minute: '2-digit'
                                         })}
                                         {conflict.conflicting_appointments[0] && (
-                                          <span className="text-amber-600"> - {conflict.conflicting_appointments[0].customer_name}</span>
+                                          <span className="text-amber-700"> - {conflict.conflicting_appointments[0].customer_name}</span>
                                         )}
                                       </div>
                                     ))}
                                     {conflicts.conflicts.length > 5 && (
-                                      <div className="text-xs text-amber-600 italic">
+                                      <div className="text-xs text-amber-700 italic">
                                         ... and {conflicts.conflicts.length - 5} more
                                       </div>
                                     )}

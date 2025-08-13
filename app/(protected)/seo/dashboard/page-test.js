@@ -24,7 +24,7 @@ export default function SEODashboardTest() {
           <div className="bg-white rounded-xl p-6 shadow-sm border">
             <h3 className="text-lg font-semibold mb-2">Review Score</h3>
             <p className="text-3xl font-bold text-olive-600">4.8</p>
-            <p className="text-yellow-500">⭐⭐⭐⭐⭐</p>
+            <p className="text-amber-800">⭐⭐⭐⭐⭐</p>
           </div>
         </div>
         

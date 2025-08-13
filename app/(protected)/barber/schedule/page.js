@@ -183,7 +183,7 @@ export default function BarberSchedule() {
                 <option value="week">Week View</option>
                 <option value="month">Month View</option>
               </select>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
+              <button className="flex items-center space-x-2 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
                 <PlusIcon className="h-4 w-4" />
                 <span>Block Time</span>
               </button>
@@ -265,7 +265,7 @@ export default function BarberSchedule() {
                         type="checkbox"
                         checked={settings.enabled}
                         onChange={(e) => handleAvailabilityUpdate(day, 'enabled', e.target.checked)}
-                        className="h-4 w-4 text-amber-600 rounded"
+                        className="h-4 w-4 text-amber-700 rounded"
                       />
                     </div>
                     {settings.enabled && (
@@ -288,7 +288,7 @@ export default function BarberSchedule() {
                   </div>
                 ))}
               </div>
-              <button className="w-full mt-4 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
+              <button className="w-full mt-4 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
                 Save Availability
               </button>
             </div>

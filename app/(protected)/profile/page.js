@@ -78,7 +78,7 @@ export default function ProfilePage() {
   const recentActivity = [
     { id: 1, type: 'booking', message: 'Completed appointment with John Doe', time: '2 hours ago', icon: CheckCircleIcon, color: 'text-green-600' },
     { id: 2, type: 'update', message: 'Updated business hours', time: '1 day ago', icon: ClockIcon, color: 'text-olive-600' },
-    { id: 3, type: 'review', message: 'Received 5-star review from Sarah M.', time: '3 days ago', icon: ChartBarIcon, color: 'text-amber-600' },
+    { id: 3, type: 'review', message: 'Received 5-star review from Sarah M.', time: '3 days ago', icon: ChartBarIcon, color: 'text-amber-700' },
   ]
 
   // Mock stats data

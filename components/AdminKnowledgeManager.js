@@ -292,7 +292,7 @@ export default function AdminKnowledgeManager() {
         <div className="flex items-center gap-2 mb-2">
           <Shield className="h-6 w-6 text-olive-600" />
           <h1 className="text-2xl font-bold text-gray-900">Global AI Knowledge Management</h1>
-          <Badge className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Admin Only</Badge>
+          <Badge className="bg-softred-100 text-softred-900 px-2 py-1 rounded text-xs">Admin Only</Badge>
         </div>
         <p className="text-gray-600">
           Manage the global AI knowledge base that benefits all barbershop customers. 
@@ -401,7 +401,7 @@ export default function AdminKnowledgeManager() {
                     <p className="text-3xl font-bold">Ready</p>
                     <p className="text-xs text-gray-500 mt-1">System status</p>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-yellow-600" />
+                  <TrendingUp className="h-8 w-8 text-amber-800" />
                 </div>
               </CardContent>
             </Card>

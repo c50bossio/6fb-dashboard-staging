@@ -60,9 +60,9 @@ function AchievementBadge({ achievement, earned = false, size = 'medium' }) {
 function LeaderboardRank({ rank, barber, category, showDetails = false }) {
   const getRankIcon = (position) => {
     switch (position) {
-      case 1: return <TrophyIcon className="h-6 w-6 text-yellow-500" />
+      case 1: return <TrophyIcon className="h-6 w-6 text-amber-800" />
       case 2: return <TrophySolidIcon className="h-6 w-6 text-gray-400" />
-      case 3: return <TrophySolidIcon className="h-6 w-6 text-amber-600" />
+      case 3: return <TrophySolidIcon className="h-6 w-6 text-amber-700" />
       default: return <span className="text-lg font-bold text-gray-500">#{position}</span>
     }
   }
@@ -471,7 +471,7 @@ function GamifiedLeaderboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-          <TrophyIcon className="h-8 w-8 mr-3 text-yellow-600" />
+          <TrophyIcon className="h-8 w-8 mr-3 text-amber-800" />
           Gamified Leaderboards & Coaching
         </h1>
         <p className="text-gray-600 mt-2">
@@ -489,7 +489,7 @@ function GamifiedLeaderboard() {
               onClick={() => setActiveCategory(category.id)}
               className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 ${
                 activeCategory === category.id
-                  ? 'bg-gold-600 text-white shadow-lg transform scale-105'
+                  ? 'bg-gold-700 text-charcoal-800 shadow-lg transform scale-105'
                   : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
               }`}
             >
@@ -554,7 +554,7 @@ function GamifiedLeaderboard() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Average Rating</span>
-                <span className="font-semibold text-yellow-600">
+                <span className="font-semibold text-amber-800">
                   {(barberData.reduce((sum, b) => sum + b.rating, 0) / barberData.length).toFixed(1)} ⭐
                 </span>
               </div>
@@ -583,13 +583,13 @@ function GamifiedLeaderboard() {
               <button className="w-full bg-indigo-50 hover:bg-indigo-100 text-olive-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
                 🎯 Launch team coaching session
               </button>
-              <button className="w-full bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
+              <button className="w-full bg-green-50 hover:bg-moss-100 text-moss-800 px-3 py-2 rounded-lg text-sm text-left transition-colors">
                 📊 Generate performance report
               </button>
               <button className="w-full bg-gold-50 hover:bg-gold-100 text-gold-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
                 🏆 Create achievement challenge
               </button>
-              <button className="w-full bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
+              <button className="w-full bg-yellow-50 hover:bg-amber-100 text-amber-900 px-3 py-2 rounded-lg text-sm text-left transition-colors">
                 💡 AI improvement recommendations
               </button>
             </div>

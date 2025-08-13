@@ -248,7 +248,7 @@ export default function ShopAnalytics() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-yellow-100 rounded-lg">
-              <StarIcon className="h-6 w-6 text-yellow-600" />
+              <StarIcon className="h-6 w-6 text-amber-800" />
             </div>
             <span className={`text-sm font-medium flex items-center ${
               overview.ratingChange >= 0 ? 'text-green-600' : 'text-red-600'
@@ -304,7 +304,7 @@ export default function ShopAnalytics() {
               <div key={barber.id} className="relative">
                 {index === 0 && (
                   <div className="absolute -top-2 -right-2">
-                    <TrophyIcon className="h-6 w-6 text-yellow-500" />
+                    <TrophyIcon className="h-6 w-6 text-amber-800" />
                   </div>
                 )}
                 <div className="text-center">

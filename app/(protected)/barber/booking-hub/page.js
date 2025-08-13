@@ -154,7 +154,7 @@ export default function BookingHub() {
                   <Icon className="h-5 w-5" />
                   <span>{tab.name}</span>
                   {tab.id === 'marketing-links' && (
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">3</span>
+                    <span className="bg-moss-100 text-moss-900 text-xs px-2 py-1 rounded-full">3</span>
                   )}
                   {tab.id === 'qr-codes' && (
                     <span className="bg-gold-100 text-gold-800 text-xs px-2 py-1 rounded-full">6</span>

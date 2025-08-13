@@ -323,7 +323,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
                 <button
                   onClick={shareQR}
                   disabled={!qrDataUrl}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   <ShareIcon className="h-4 w-4" />
                   Share

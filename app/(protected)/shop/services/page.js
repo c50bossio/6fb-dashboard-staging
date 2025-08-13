@@ -249,8 +249,8 @@ export default function ShopServicesAndPricing() {
   const getCategoryColor = (category) => {
     const colors = {
       haircut: 'bg-olive-100 text-olive-800',
-      beard: 'bg-green-100 text-green-800',
-      shave: 'bg-red-100 text-red-800',
+      beard: 'bg-moss-100 text-moss-900',
+      shave: 'bg-softred-100 text-softred-900',
       styling: 'bg-gold-100 text-gold-800',
       combo: 'bg-indigo-100 text-indigo-800'
     }
@@ -330,7 +330,7 @@ export default function ShopServicesAndPricing() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-yellow-100 rounded-lg">
-              <ChartBarIcon className="h-6 w-6 text-yellow-600" />
+              <ChartBarIcon className="h-6 w-6 text-amber-800" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">{totalBookings}</p>
@@ -433,7 +433,7 @@ export default function ShopServicesAndPricing() {
               
               {service.is_featured && (
                 <div className="absolute top-3 left-3">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-900">
                     <StarIcon className="h-3 w-3 mr-1" />
                     Featured
                   </span>
@@ -442,7 +442,7 @@ export default function ShopServicesAndPricing() {
               
               <div className="absolute top-3 right-3">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  service.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  service.is_active ? 'bg-moss-100 text-moss-900' : 'bg-softred-100 text-softred-900'
                 }`}>
                   {service.is_active ? 'Active' : 'Inactive'}
                 </span>

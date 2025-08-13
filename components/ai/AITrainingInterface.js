@@ -106,8 +106,8 @@ export default function AITrainingInterface() {
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-500">Confidence: {agent.confidence}%</span>
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  agent.status === 'active' ? 'bg-green-100 text-green-800' :
-                  agent.status === 'training' ? 'bg-yellow-100 text-yellow-800' :
+                  agent.status === 'active' ? 'bg-moss-100 text-moss-900' :
+                  agent.status === 'training' ? 'bg-amber-100 text-amber-900' :
                   'bg-gray-100 text-gray-800'
                 }`}>
                   {agent.status}

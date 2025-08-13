@@ -162,22 +162,22 @@ export default function SEOOptimizer() {
       {seoMetrics ? (
         <div className="space-y-2">
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className={`p-1 rounded ${seoMetrics.hasTitle ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`p-1 rounded ${seoMetrics.hasTitle ? 'bg-moss-100 text-moss-900' : 'bg-softred-100 text-softred-900'}`}>
               Title: {seoMetrics.hasTitle ? '✓' : '✗'}
             </div>
-            <div className={`p-1 rounded ${seoMetrics.hasMetaDescription ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`p-1 rounded ${seoMetrics.hasMetaDescription ? 'bg-moss-100 text-moss-900' : 'bg-softred-100 text-softred-900'}`}>
               Meta: {seoMetrics.hasMetaDescription ? '✓' : '✗'}
             </div>
-            <div className={`p-1 rounded ${seoMetrics.hasH1 && seoMetrics.h1Count === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`p-1 rounded ${seoMetrics.hasH1 && seoMetrics.h1Count === 1 ? 'bg-moss-100 text-moss-900' : 'bg-softred-100 text-softred-900'}`}>
               H1: {seoMetrics.hasH1 ? (seoMetrics.h1Count === 1 ? '✓' : seoMetrics.h1Count) : '✗'}
             </div>
-            <div className={`p-1 rounded ${seoMetrics.hasStructuredData ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`p-1 rounded ${seoMetrics.hasStructuredData ? 'bg-moss-100 text-moss-900' : 'bg-softred-100 text-softred-900'}`}>
               Schema: {seoMetrics.hasStructuredData ? '✓' : '✗'}
             </div>
-            <div className={`p-1 rounded ${seoMetrics.hasOpenGraph ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`p-1 rounded ${seoMetrics.hasOpenGraph ? 'bg-moss-100 text-moss-900' : 'bg-softred-100 text-softred-900'}`}>
               OG: {seoMetrics.hasOpenGraph ? '✓' : '✗'}
             </div>
-            <div className={`p-1 rounded ${seoMetrics.imagesWithoutAlt === 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <div className={`p-1 rounded ${seoMetrics.imagesWithoutAlt === 0 ? 'bg-moss-100 text-moss-900' : 'bg-softred-100 text-softred-900'}`}>
               Alt: {seoMetrics.imagesWithoutAlt === 0 ? '✓' : seoMetrics.imagesWithoutAlt}
             </div>
           </div>

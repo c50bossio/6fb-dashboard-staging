@@ -248,7 +248,7 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
           className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center ${
             !agreedToTerms || isLoading
               ? 'bg-gray-400 text-white cursor-not-allowed'
-              : 'bg-green-600 text-white hover:bg-green-700'
+              : 'bg-moss-600 text-white hover:bg-green-700'
           }`}
         >
           {isLoading ? (

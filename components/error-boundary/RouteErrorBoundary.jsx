@@ -96,7 +96,7 @@ class RouteErrorBoundary extends React.Component {
         return (
           <>
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 h-12 w-12 text-yellow-500">
+              <div className="mx-auto mb-4 h-12 w-12 text-amber-800">
                 <AlertCircle className="h-full w-full" />
               </div>
               <CardTitle className="text-2xl">Access Denied</CardTitle>

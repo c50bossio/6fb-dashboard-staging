@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import semantic color classes for proper contrast */
+@import "../styles/semantic-colors.css";
+
 @layer base {
   :root {
     /* Light Mode - Deep Olive & Gold Theme */

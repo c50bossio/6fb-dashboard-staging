@@ -96,7 +96,7 @@ export default function NotificationsPage() {
       case 'failed':
         return <XCircleIcon className="h-5 w-5 text-red-500" />
       case 'pending':
-        return <ClockIcon className="h-5 w-5 text-yellow-500" />
+        return <ClockIcon className="h-5 w-5 text-amber-800" />
       default:
         return <ExclamationCircleIcon className="h-5 w-5 text-gray-500" />
     }
