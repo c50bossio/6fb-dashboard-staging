@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+// Remove edge runtime to use Node.js APIs
+// export const runtime = 'edge'
 
 export async function GET(request) {
   try {
