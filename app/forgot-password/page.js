@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState } from 'react'
-
+import Logo from '../../components/ui/Logo'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
 
@@ -77,7 +77,7 @@ export default function ForgotPasswordPage() {
                 </p>
                 <ol className="text-left space-y-2 list-decimal list-inside">
                   <li>Check your email inbox (and spam folder)</li>
-                  <li>Look for an email from noreply@6fbmentorship.com</li>
+                  <li>Look for an email from noreply@bookedbarber.com</li>
                   <li>Click the "Reset Password" link in the email</li>
                   <li>Create your new password</li>
                   <li>Return to the login page</li>
@@ -120,9 +120,7 @@ export default function ForgotPasswordPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <div className="flex justify-center">
-          <div className="h-12 w-12 bg-olive-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">6FB</span>
-          </div>
+          <Logo size="medium" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
           Reset your password

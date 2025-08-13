@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 // TODO: These are Python services, need JavaScript implementations
 // import { FranchiseManagementService } from '../../../../../services/franchise_management_service'
 // import { MultiTenantAuthService } from '../../../../../services/multi_tenant_authentication'

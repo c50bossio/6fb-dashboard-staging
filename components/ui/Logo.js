@@ -35,45 +35,24 @@ const Logo = ({
     setMounted(true);
   }, []);
 
-  // Size configurations for responsive design
+  // Size configurations for responsive design - optimized for new logo
   const sizeConfig = {
-    small: { width: 32, height: 32, textClass: 'text-sm' },
-    medium: { width: 48, height: 48, textClass: 'text-base' },
-    large: { width: 64, height: 64, textClass: 'text-lg' },
-    xlarge: { width: 96, height: 96, textClass: 'text-xl' },
-    hero: { width: 128, height: 128, textClass: 'text-2xl' }
+    small: { width: 120, height: 40, textClass: 'text-sm' },
+    medium: { width: 180, height: 60, textClass: 'text-base' },
+    large: { width: 240, height: 80, textClass: 'text-lg' },
+    xlarge: { width: 300, height: 100, textClass: 'text-xl' },
+    hero: { width: 360, height: 120, textClass: 'text-2xl' }
   };
 
   // Logo variant mapping based on theme and preferences
   const getLogoVariant = () => {
-    if (!mounted) return 'bookedbarber-olive-primary'; // Default for SSR
-    
-    if (variant !== 'auto') {
-      const variantMap = {
-        'primary': 'bookedbarber-olive-primary',
-        'secondary': 'bookedbarber-gold-secondary', 
-        'outline': 'bookedbarber-outline-minimal',
-        'dark': 'bookedbarber-dark-charcoal',
-        'olive': 'bookedbarber-olive-primary',
-        'gold': 'bookedbarber-gold-secondary',
-        'minimal': 'bookedbarber-outline-minimal',
-        'charcoal': 'bookedbarber-dark-charcoal'
-      };
-      return variantMap[variant] || 'bookedbarber-olive-primary';
-    }
-
-    // Auto theme detection
-    const currentTheme = resolvedTheme || theme;
-    
-    if (currentTheme === 'dark') {
-      return 'bookedbarber-gold-secondary'; // Gold on dark backgrounds
-    } else {
-      return 'bookedbarber-olive-primary'; // Olive on light backgrounds  
-    }
+    // Use the new professional olive green logo
+    // This logo works well on both light and dark backgrounds
+    return 'bookedbarber-logo-new.png';
   };
 
   const config = sizeConfig[size] || sizeConfig.medium;
-  const logoSrc = `/assets/logos/${getLogoVariant()}.png`;
+  const logoSrc = `/assets/logos/${getLogoVariant()}`;
 
   // Loading fallback component
   const LoadingLogo = () => (
@@ -90,7 +69,7 @@ const Logo = ({
     </div>
   );
 
-  // Error fallback component
+  // Error fallback component with barber pole design
   const ErrorLogo = () => (
     <div 
       className={`
@@ -99,9 +78,17 @@ const Logo = ({
         flex items-center justify-center text-white font-bold
         ${config.textClass} ${className}
       `}
-      style={{ width: config.width, height: config.height }}
+      style={{ width: showText === false || size === 'small' ? 40 : 180, height: showText === false || size === 'small' ? 40 : 60 }}
     >
-      BB
+      {showText === false || size === 'small' ? (
+        // Icon only - show barber pole stripes
+        <div className="w-6 h-8 bg-white/20 rounded relative overflow-hidden">
+          <div className="absolute inset-0 bg-repeating-linear-gradient(45deg, #C5A35B 0px, #C5A35B 4px, white 4px, white 8px)"></div>
+        </div>
+      ) : (
+        // Full text fallback
+        <span>BookedBarber</span>
+      )}
     </div>
   );
 
@@ -118,9 +105,8 @@ const Logo = ({
   return (
     <div 
       className={`
-        flex items-center space-x-3 cursor-pointer group
-        ${onClick ? 'hover:opacity-80 transition-opacity duration-200' : ''}
-        ${animated ? 'hover:scale-105 transition-transform duration-200' : ''}
+        flex items-center space-x-3
+        ${onClick ? 'cursor-pointer' : ''}
         ${className}
       `}
       onClick={onClick}
@@ -133,36 +119,14 @@ const Logo = ({
           width={config.width}
           height={config.height}
           priority={priority}
-          className={`
-            object-contain
-            ${animated ? 'group-hover:rotate-1 transition-transform duration-300' : ''}
-          `}
+          className="object-contain"
           onError={() => setImageError(true)}
           onLoadingComplete={() => setImageError(false)}
         />
         
-        {/* Subtle glow effect for premium feel */}
-        <div className="absolute inset-0 bg-gradient-to-br from-olive-500/20 to-gold-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
       </div>
 
-      {/* Brand Text */}
-      {showText && (
-        <div className="flex flex-col">
-          <span className={`
-            font-bold tracking-tight text-foreground
-            ${config.textClass}
-            group-hover:text-olive-600 dark:group-hover:text-gold-400
-            transition-colors duration-200
-          `}>
-            BookedBarber
-          </span>
-          {(size === 'large' || size === 'xlarge' || size === 'hero') && (
-            <span className="text-xs text-muted-foreground font-medium">
-              Professional SaaS Platform
-            </span>
-          )}
-        </div>
-      )}
+      {/* Logo already contains text, no need for additional text */}
     </div>
   );
 };

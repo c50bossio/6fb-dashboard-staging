@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { config, getServiceStatus } from '@/services/production-config';
 import { errorMonitor, performanceMonitor } from '@/services/error-monitoring';
+export const runtime = 'edge'
 
 // Initialize Supabase client
 const supabase = createClient(

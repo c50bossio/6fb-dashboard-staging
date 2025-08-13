@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'edge'
 
 // Use service loader to get appropriate services (mock in dev, real in prod)
 let sendGridService, twilioSMSService, stripeService;

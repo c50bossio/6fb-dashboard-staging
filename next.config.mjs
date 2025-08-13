@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Force Edge Runtime for all API routes
+  experimental: {
+    runtime: 'edge',
+  },
   reactStrictMode: true,
   swcMinify: true,
   

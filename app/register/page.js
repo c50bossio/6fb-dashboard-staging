@@ -15,6 +15,7 @@ import { useState, useEffect } from 'react'
 
 import { useAuth } from '../../components/SupabaseAuthProvider'
 import ConversionTracker, { useRegistrationTracking } from '@/components/analytics/ConversionTracker'
+import Logo from '../../components/ui/Logo'
 
 
 export default function RegisterPage() {
@@ -403,12 +404,12 @@ export default function RegisterPage() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-2">
             First name
           </label>
           <div className="mt-1 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <UserIcon className="h-5 w-5 text-gray-400" />
+              <UserIcon className="h-5 w-5 text-muted-foreground" />
             </div>
             <input
               id="firstName"
@@ -417,8 +418,8 @@ export default function RegisterPage() {
               required
               value={formData.firstName}
               onChange={handleInputChange}
-              className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
-                errors.firstName ? 'border-red-300' : 'border-gray-300'
+              className={`input-field pl-10 pr-3 focus:ring-primary focus:border-primary ${
+                errors.firstName ? 'border-destructive' : ''
               }`}
               placeholder="John"
             />
@@ -777,20 +778,18 @@ export default function RegisterPage() {
         form_completion_rate: Math.round((Object.keys(formData).filter(key => formData[key] && formData[key] !== '').length / 10) * 100)
       }}
     >
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-background hero-gradient flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
         {/* Logo */}
-        <div className="flex justify-center">
-          <div className="h-12 w-12 bg-olive-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">6FB</span>
-          </div>
+        <div className="flex justify-center mb-4">
+          <Logo size="medium" priority />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+        <h2 className="text-center text-3xl font-bold text-foreground gradient-text">
           Create your barbershop account
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-olive-600 hover:text-olive-500">
+          <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors duration-200">
             Sign in here
           </Link>
         </p>
@@ -802,34 +801,34 @@ export default function RegisterPage() {
               <div key={step} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   step <= currentStep 
-                    ? 'bg-olive-600 text-white' 
-                    : 'bg-gray-200 text-gray-600'
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted text-muted-foreground'
                 }`}>
                   {step}
                 </div>
                 {step < 2 && (
                   <div className={`w-12 h-1 mx-2 ${
-                    step < currentStep ? 'bg-olive-600' : 'bg-gray-200'
+                    step < currentStep ? 'bg-primary' : 'bg-muted'
                   }`} />
                 )}
               </div>
             ))}
           </div>
           <div className="flex justify-center space-x-12 mt-2">
-            <span className="text-xs text-gray-600">Personal Info</span>
-            <span className="text-xs text-gray-600">Business Info</span>
+            <span className="text-xs text-muted-foreground">Personal Info</span>
+            <span className="text-xs text-muted-foreground">Business Info</span>
           </div>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="card-elevated backdrop-blur-sm">
           <form onSubmit={handleSubmit} data-track-form="registration-form" data-track-view="registration-form">
             {errors.submit && (
-              <div className={`mb-6 px-4 py-3 rounded-md text-sm ${
+              <div className={`mb-6 px-4 py-3 rounded-xl text-sm font-medium border ${
                 errors.isSuccess 
-                  ? 'bg-green-50 border border-green-200 text-green-600' 
-                  : 'bg-red-50 border border-red-200 text-red-600'
+                  ? 'status-success border-moss-200' 
+                  : 'status-error border-destructive/20'
               }`}>
                 {errors.submit}
               </div>
@@ -862,12 +861,12 @@ export default function RegisterPage() {
                   <button
                     type="submit"
                     disabled={isLoading || authLoading}
-                    className={`btn-primary ${(isLoading || authLoading) ? 'opacity-75 cursor-not-allowed bg-gray-400' : ''}`}
+                    className={`btn-primary ${(isLoading || authLoading) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl hover:-translate-y-0.5'}`}
                   >
                     {isLoading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Creating account...
+                      <div className="flex items-center justify-center space-x-2">
+                        <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                        <span>Creating account...</span>
                       </div>
                     ) : (
                       'Create account'
@@ -882,10 +881,10 @@ export default function RegisterPage() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or sign up with</span>
+                <span className="px-2 bg-card text-muted-foreground">Or sign up with</span>
               </div>
             </div>
 
@@ -893,10 +892,10 @@ export default function RegisterPage() {
               <button
                 type="button"
                 disabled={isLoading || authLoading}
-                className={`w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium ${
+                className={`btn-outline w-full transition-all duration-200 ${
                   (isLoading || authLoading)
-                    ? 'text-gray-400 cursor-not-allowed' 
-                    : 'text-gray-500 hover:bg-gray-50'
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:shadow-lg hover:-translate-y-0.5'
                 }`}
                 onClick={handleGoogleSignUp}
                 data-track-click="oauth-google-signup"
@@ -904,7 +903,7 @@ export default function RegisterPage() {
               >
                 {(isLoading || authLoading) ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400 mr-2"></div>
+                    <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full mr-2"></div>
                     Signing up...
                   </div>
                 ) : (
@@ -926,8 +925,14 @@ export default function RegisterPage() {
 
         {/* Back to home link */}
         <div className="mt-8 text-center">
-          <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
-            ← Back to home page
+          <Link 
+            href="/" 
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to home page
           </Link>
         </div>
       </div>

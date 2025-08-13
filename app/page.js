@@ -14,11 +14,14 @@ import {
   ChartBarIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import Logo, { LogoHeader } from '../components/ui/Logo'
 import BrandOwnershipSection from '../components/landing/BrandOwnershipSection'
 import AIAgentsShowcase from '../components/landing/AIAgentsShowcase'
 import AnalyticsPreview from '../components/landing/AnalyticsPreview'
 import BarberSuccessStories from '../components/landing/BarberSuccessStories'
 import PricingCalculator from '../components/landing/PricingCalculator'
+import PricingSection from '../components/landing/PricingSection'
+import FeaturesSection from '../components/landing/FeaturesSection'
 
 export default function HomePage() {
   const router = useRouter()
@@ -39,10 +42,10 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>6FB | Build Your Barbershop Empire, Not Someone Else's</title>
+        <title>BookedBarber | Build Your Barbershop Empire, Not Someone Else's</title>
         <meta name="description" content="The AI-powered platform where barbers own their brand, automate their business, and grow with real data. No marketplace fees, 100% your business." />
         <meta name="keywords" content="barber business platform, barbershop management, AI automation, brand ownership, barber software" />
-        <meta property="og:title" content="6FB - Own Your Barbershop Brand" />
+        <meta property="og:title" content="BookedBarber - Own Your Barbershop Brand" />
         <meta property="og:description" content="Stop paying marketplace fees. Start building your own barbershop empire with AI automation and real analytics." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="/" />
@@ -52,15 +55,9 @@ export default function HomePage() {
         {/* Header */}
         <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">6FB</span>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">6FB Platform</h1>
-                  <p className="text-sm text-gray-500">Build Your Barbershop Brand</p>
-                </div>
+            <div className="flex items-center justify-between h-20">
+              <div className="flex items-center">
+                <LogoHeader />
               </div>
               
               <div className="flex items-center space-x-4">
@@ -107,32 +104,32 @@ export default function HomePage() {
         </header>
 
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-olive-600 via-gold-600 to-gold-700 text-white py-24 overflow-hidden">
+        <section className="relative bg-gradient-to-br from-olive-600 via-gold-600 to-gold-700 text-white py-32 overflow-hidden">
           <div className="absolute inset-0 bg-black opacity-10"></div>
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6">
+              <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-8">
                 <SparklesIcon className="h-4 w-4 mr-2" />
                 AI-POWERED BUSINESS PLATFORM
               </div>
               
-              <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+              <h1 className="text-5xl lg:text-7xl font-bold mb-8 leading-tight">
                 Build Your Barbershop Empire,<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-300">
                   Not Someone Else's
                 </span>
               </h1>
               
-              <p className="text-xl lg:text-2xl text-olive-100 max-w-3xl mx-auto mb-12">
+              <p className="text-xl lg:text-2xl text-olive-100 max-w-3xl mx-auto mb-16 leading-relaxed">
                 The AI-powered platform where barbers own their brand, automate their business, 
                 and grow with real data. No marketplace fees. No competing for visibility. 
                 100% your business.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
                 <Link
                   href="/register"
                   className="bg-white text-gray-900 px-8 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
@@ -166,6 +163,9 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Features Section - What you get */}
+        <FeaturesSection />
+
         {/* Brand Ownership Section */}
         <BrandOwnershipSection />
 
@@ -175,24 +175,27 @@ export default function HomePage() {
         {/* Analytics Preview */}
         <AnalyticsPreview />
 
+        {/* Pricing Section - Clear pricing tiers */}
+        <PricingSection />
+
         {/* Success Stories */}
         <BarberSuccessStories />
 
-        {/* Pricing Calculator */}
+        {/* Pricing Calculator - ROI Calculator */}
         <PricingCalculator />
 
         {/* Final CTA Section */}
-        <section className="py-20 bg-gradient-to-br from-gray-900 to-black text-white">
+        <section className="py-24 bg-gradient-to-br from-gray-900 to-black text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl font-bold mb-4">
+            <h2 className="text-4xl font-bold mb-6">
               Ready to Take Control of Your Business?
             </h2>
-            <p className="text-xl text-gray-300 mb-8">
+            <p className="text-xl text-gray-300 mb-12 leading-relaxed">
               Join 500+ barbers who've stopped renting space in marketplaces 
               and started building their own empires.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
               <Link
                 href="/register"
                 className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
@@ -213,16 +216,13 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-        <footer className="bg-black text-white py-12">
+        <footer className="bg-black text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
               {/* Brand */}
               <div>
-                <div className="flex items-center mb-4">
-                  <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">6FB</span>
-                  </div>
-                  <span className="ml-3 text-xl font-bold">BookedBarber</span>
+                <div className="mb-4">
+                  <Logo size="medium" />
                 </div>
                 <p className="text-gray-400 text-sm">
                   The AI-powered platform where barbers own their brand and grow their business.
@@ -299,7 +299,7 @@ export default function HomePage() {
                   </li>
                   <li className="mt-3">support@bookedbarber.com</li>
                   <li className="mt-3">
-                    6FB Headquarters<br />
+                    BookedBarber Headquarters<br />
                     Tampa, FL
                   </li>
                 </ul>

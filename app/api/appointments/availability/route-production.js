@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { withAuth, withRateLimit, createAuthenticatedClient } from '@/middleware/auth'
 import { DateTime } from 'luxon'
+export const runtime = 'edge'
 
 // Validation schemas
 const availabilityQuerySchema = z.object({

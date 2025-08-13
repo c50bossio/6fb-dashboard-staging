@@ -4,6 +4,7 @@
  */
 
 import NotificationService from '../../../lib/notifications/notification-service.js';
+export const runtime = 'edge'
 
 export async function GET(request) {
   return Response.json({ 

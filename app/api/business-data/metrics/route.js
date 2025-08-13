@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+export const runtime = 'edge'
 
 // Simple rate limiting store (in production, use Redis or database)
 const rateLimitStore = new Map();

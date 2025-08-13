@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 
 // Sync appointment to external calendar
 export async function POST(request) {

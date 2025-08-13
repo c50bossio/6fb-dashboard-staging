@@ -1,6 +1,7 @@
 // Simplified OAuth callback following Supabase best practices
 import { createClient } from '@/lib/supabase/server-client'
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 
 export async function GET(request) {
   const requestUrl = new URL(request.url)

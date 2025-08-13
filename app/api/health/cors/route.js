@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCorsStatus } from '@/lib/cors-config'
+export const runtime = 'edge'
 
 /**
  * CORS Configuration Health Check Endpoint

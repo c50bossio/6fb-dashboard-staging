@@ -49,7 +49,21 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Deep Olive & Gold Custom Palette
+        // BookedBarber Brand Colors - Updated to match new olive green logo
+        brand: {
+          50: '#f4f5f4',
+          100: '#e5e7e5',
+          200: '#c9cec9',
+          300: '#a5aea6',
+          400: '#7a8a7c',
+          500: '#546355',
+          600: '#3C4A3E',  // BookedBarber Primary (Deep Olive from logo)
+          700: '#2A352D',
+          800: '#232b24',
+          900: '#1a201b',
+          950: '#0f120f'
+        },
+        // Deep Olive & Gold Custom Palette (legacy)
         olive: {
           50: '#f4f5f4',
           100: '#e5e7e5',

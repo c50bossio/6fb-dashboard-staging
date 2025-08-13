@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 
 // Delete specific account
 export async function DELETE(request, { params }) {

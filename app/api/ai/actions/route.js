@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 
 /**
  * AI Actions API - Allows AI agents to perform actions on behalf of users  

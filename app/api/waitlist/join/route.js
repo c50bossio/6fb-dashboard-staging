@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'edge'
 // TODO: Implement waitlist service in JavaScript/TypeScript
 // import { waitlist_cancellation_service } from '../../../../services/waitlist_cancellation_service.py';
 

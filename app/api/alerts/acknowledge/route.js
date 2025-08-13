@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'edge'
 
 /**
  * POST /api/alerts/acknowledge

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+export const runtime = 'edge'
 
 // Initialize Supabase client with service role key for server-side operations
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

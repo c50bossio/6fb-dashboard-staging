@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 
 // Uncancel appointment (reactivate cancelled appointment)
 export async function POST(request) {

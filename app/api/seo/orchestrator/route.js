@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 
 // Main AI SEO Orchestrator API endpoint
 export async function POST(request) {

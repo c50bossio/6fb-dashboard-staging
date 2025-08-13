@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { posthog } from '@/lib/posthog/server'
+export const runtime = 'edge'
 
 // GDPR-compliant production metrics tracking endpoint
 export async function POST(request) {

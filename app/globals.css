@@ -9,11 +9,11 @@
     /* BOOKEDBARBER BRAND-MATCHED DESIGN TOKENS */
     /* Exact color matches from logo analysis for professional consistency */
     
-    /* Brand Colors - Exact Logo Matches */
-    --brand-olive-primary: 130 11% 24%; /* #3C4A3E - Exact logo Deep Olive */
-    --brand-gold-secondary: 42 38% 56%; /* #C5A35B - Exact logo Rich Gold */
-    --brand-charcoal: 120 7% 18%; /* #2C322D - Logo charcoal variant */
-    --brand-gunmetal: 120 7% 12%; /* #1F2320 - Logo text color */
+    /* Brand Colors - Updated for New Olive Green Logo */
+    --brand-olive-primary: 130 11% 24%; /* #3C4A3E - BookedBarber Deep Olive */
+    --brand-olive-light: 130 11% 35%; /* Lighter variant for accents */
+    --brand-olive-dark: 130 11% 18%; /* Darker variant for emphasis */
+    --brand-text: 130 11% 15%; /* Professional text color matching logo */
     
     /* Light Mode Theme */
     --background: 32 21% 96%; /* Ultra Light Sand for clean professional look */
@@ -22,10 +22,10 @@
     --card-foreground: 120 7% 12%; /* Brand Gunmetal */
     --popover: 0 0% 100%; /* Pure white popovers */
     --popover-foreground: 120 7% 12%; /* Brand Gunmetal */
-    --primary: 130 11% 24%; /* Brand Olive Primary */
+    --primary: 130 11% 24%; /* BookedBarber Olive Primary */
     --primary-foreground: 0 0% 100%; /* Pure white on olive */
-    --secondary: 42 38% 56%; /* Brand Gold Secondary */
-    --secondary-foreground: 120 7% 12%; /* Brand Gunmetal */
+    --secondary: 130 11% 35%; /* Lighter Olive Secondary */
+    --secondary-foreground: 0 0% 100%; /* White on secondary */
     --muted: 32 21% 94%; /* Light Sand muted */
     --muted-foreground: 120 7% 45%; /* Medium Gunmetal */
     --accent: 42 38% 56%; /* Brand Gold accent */

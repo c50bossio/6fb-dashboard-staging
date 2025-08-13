@@ -2,6 +2,7 @@
 // Exposes application metrics in Prometheus format
 
 import { NextResponse } from 'next/server';
+export const runtime = 'edge'
 
 // Simple in-memory metrics store
 const metrics = {

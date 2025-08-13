@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '../../../../lib/supabase/client'
 import { z } from 'zod'
+export const runtime = 'edge'
 
 // Validation schema for booking creation
 const bookingSchema = z.object({

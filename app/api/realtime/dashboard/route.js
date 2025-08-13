@@ -1,3 +1,5 @@
+export const runtime = 'edge'
+
 /**
  * Real-time Dashboard Updates using Server-Sent Events (SSE)
  * Provides live updates for dashboard metrics and performance data

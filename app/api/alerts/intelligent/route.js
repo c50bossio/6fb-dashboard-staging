@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { cacheQuery } from '../../../../lib/analytics-cache.js';
+export const runtime = 'edge'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

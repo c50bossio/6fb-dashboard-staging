@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+export const runtime = 'edge'
 
 // Cancel appointment (soft delete)
 export async function POST(request) {

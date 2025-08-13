@@ -2,7 +2,7 @@ import './globals.css'
 import ClientWrapper from '../components/ClientWrapper'
 
 export const metadata = {
-  title: '6FB AI Agent System - Barbershop Dashboard',
+  title: 'BookedBarber - Professional Barbershop Management',
   description: 'AI-powered barbershop management and marketing automation',
   manifest: '/manifest.json',
   icons: {
@@ -12,7 +12,7 @@ export const metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: '6FB Agent',
+    title: 'BookedBarber',
   },
   formatDetection: {
     telephone: false,

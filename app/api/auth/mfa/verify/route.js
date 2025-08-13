@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { authenticator } from 'otplib'
+export const runtime = 'edge'
 
 export async function POST(request) {
   try {

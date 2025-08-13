@@ -4,6 +4,7 @@
  */
 
 import { NextResponse } from 'next/server';
+export const runtime = 'edge'
 
 // GET: Get real-time optimization suggestions
 export async function GET(request) {

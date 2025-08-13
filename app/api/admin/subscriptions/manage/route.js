@@ -1,5 +1,6 @@
 import { createClient } from '../../../../../lib/supabase-server'
 import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
+export const runtime = 'edge'
 
 /**
  * POST /api/admin/subscriptions/manage

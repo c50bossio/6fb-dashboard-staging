@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { isDevBypassEnabled, getTestBillingData, TEST_USER_UUID } from '@/lib/auth/dev-bypass'
+export const runtime = 'edge'
 
 // Initialize Supabase client
 const supabase = createClient(

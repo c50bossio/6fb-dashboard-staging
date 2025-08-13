@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/analytics-cache.js';
+export const runtime = 'edge'
 
 export async function GET(request) {
   try {

@@ -4,6 +4,7 @@
  */
 
 import { NextResponse } from 'next/server';
+export const runtime = 'edge'
 
 // GET: Get scheduling analytics and insights
 export async function GET(request) {
