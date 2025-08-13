@@ -27,7 +27,49 @@ const nextConfig = {
       'recharts',
       'date-fns',
       '@supabase/supabase-js',
-      'lucide-react'
+      'lucide-react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@fullcalendar/react',
+      '@stripe/react-stripe-js',
+      'canvas-confetti',
+      'react-hot-toast',
+      'posthog-js',
+      'pusher-js',
+      'html2canvas',
+      'jspdf',
+      'qrcode'
+    ],
+    serverComponentsExternalPackages: [
+      '@anthropic-ai/sdk',
+      'openai',
+      '@google/generative-ai',
+      'nodemailer',
+      'bull',
+      'ioredis',
+      '@sendgrid/mail',
+      'stripe',
+      'pusher',
+      'twilio',
+      'axios',
+      'luxon',
+      'uuid',
+      'otplib',
+      'limiter'
+    ],
+    esmExternals: true,
+    serverExternalPackages: [
+      '@anthropic-ai/sdk',
+      'openai',
+      '@google/generative-ai',
+      'nodemailer',
+      'bull',
+      'ioredis',
+      '@sendgrid/mail',
+      'stripe',
+      'pusher',
+      'twilio'
     ],
   },
   
@@ -58,52 +100,76 @@ const nextConfig = {
           cacheGroups: {
             default: false,
             vendors: false,
-            // Framework chunk
+            // Framework chunk (smaller)
             framework: {
               name: 'framework',
               chunks: 'all',
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
-              priority: 40,
+              priority: 50,
               enforce: true,
+              maxSize: 5242880, // 5MB limit
             },
-            // Common libraries
-            lib: {
-              test(module) {
-                return module.size() > 160000 &&
-                  /node_modules[\\/]/.test(module.identifier())
-              },
-              name(module) {
-                const hash = crypto.createHash('sha1')
-                hash.update(module.identifier())
-                return hash.digest('hex').substring(0, 8)
-              },
+            // Large libraries separated
+            large: {
+              test: /[\\/]node_modules[\\/](@fullcalendar|recharts|@radix-ui|html2canvas|jspdf)[\\/]/,
+              name: 'large-libs',
+              chunks: 'async',
+              priority: 45,
+              maxSize: 3145728, // 3MB limit
+            },
+            // AI/ML libraries
+            ai: {
+              test: /[\\/]node_modules[\\/](@anthropic-ai|openai|@google|ai)[\\/]/,
+              name: 'ai-libs',
+              chunks: 'async',
+              priority: 40,
+              maxSize: 2097152, // 2MB limit
+            },
+            // UI libraries
+            ui: {
+              test: /[\\/]node_modules[\\/](@heroicons|lucide-react|@headlessui|posthog|pusher)[\\/]/,
+              name: 'ui-libs',
+              chunks: 'async',
+              priority: 35,
+              maxSize: 1048576, // 1MB limit
+            },
+            // Utilities
+            utils: {
+              test: /[\\/]node_modules[\\/](date-fns|luxon|uuid|zod|clsx|tailwind)[\\/]/,
+              name: 'utils',
+              chunks: 'async',
               priority: 30,
-              minChunks: 1,
-              reuseExistingChunk: true,
+              maxSize: 524288, // 512KB limit
             },
-            // Common components
+            // Common components (much smaller chunks)
             commons: {
               name: 'commons',
               minChunks: 2,
               priority: 20,
-            },
-            // Shared modules
-            shared: {
-              name(module, chunks) {
-                return crypto
-                  .createHash('sha1')
-                  .update(chunks.reduce((acc, chunk) => acc + chunk.name, ''))
-                  .digest('hex')
-                  .substring(0, 8)
-              },
-              priority: 10,
-              minChunks: 2,
-              reuseExistingChunk: true,
+              maxSize: 262144, // 256KB limit
             },
           },
-          maxAsyncRequests: 30,
-          maxInitialRequests: 30,
+          maxAsyncRequests: 50,
+          maxInitialRequests: 20,
+          minSize: 20000,
+          maxSize: 524288, // Global max size 512KB
         },
+      }
+      
+      // Aggressive dead code elimination
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        // Remove unused imports
+        '@sentry/react': false,
+        '@sentry/nextjs': false,
+      }
+      
+      // Remove development-only modules in production
+      config.plugins = config.plugins || []
+      if (config.plugins) {
+        config.plugins = config.plugins.filter(plugin => 
+          !plugin.constructor.name.includes('HotModuleReplacementPlugin')
+        )
       }
     }
     

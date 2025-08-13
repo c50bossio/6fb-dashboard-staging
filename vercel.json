@@ -2,11 +2,21 @@
   "version": 2,
   "build": {
     "env": {
-      "NODE_ENV": "production"
+      "NODE_ENV": "production",
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "NODE_OPTIONS": "--max-old-space-size=8192"
     }
   },
   "functions": {
     "app/api/**/*.js": {
+      "maxDuration": 30,
+      "memory": 3008
+    },
+    "app/api/ai/**/*.js": {
+      "maxDuration": 60,
+      "memory": 3008
+    },
+    "app/api/admin/**/*.js": {
       "maxDuration": 30,
       "memory": 1024
     }
@@ -15,5 +25,35 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "public": true,
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
 }
