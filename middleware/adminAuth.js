@@ -1,4 +1,4 @@
-import { createClient } from '../lib/supabase'
+import { createClient } from '../lib/supabase-server'
 
 /**
  * Admin Authentication Middleware

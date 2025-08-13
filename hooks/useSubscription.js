@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { supabase } from '../lib/supabase'
+import { createClient } from '../lib/supabase/client'
+
+const supabase = createClient()
 import { SUBSCRIPTION_PLANS } from '../lib/stripe-client'
 
 export function useSubscription() {

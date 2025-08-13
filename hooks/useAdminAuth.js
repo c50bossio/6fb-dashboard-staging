@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '../lib/supabase'
+import { createClient } from '../lib/supabase/client'
 
 /**
  * Client-side React hook for admin authentication
