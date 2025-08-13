@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic'
 import { createClient } from '../../../../../lib/supabase'
 import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
 

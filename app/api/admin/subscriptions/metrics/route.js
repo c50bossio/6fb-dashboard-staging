@@ -1,4 +1,5 @@
 import { createClient } from '../../../../../lib/supabase'
+export const dynamic = 'force-dynamic'
 import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
 
 /**
