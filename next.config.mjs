@@ -24,7 +24,6 @@ const nextConfig = {
     optimizeCss: true,
     optimizePackageImports: [
       '@heroicons/react',
-      'recharts',
       'date-fns',
       '@supabase/supabase-js',
       'lucide-react',
@@ -33,12 +32,9 @@ const nextConfig = {
       '@radix-ui/react-tabs',
       '@fullcalendar/react',
       '@stripe/react-stripe-js',
-      'canvas-confetti',
       'react-hot-toast',
       'posthog-js',
       'pusher-js',
-      'html2canvas',
-      'jspdf',
       'qrcode'
     ],
     serverComponentsExternalPackages: [
@@ -61,7 +57,20 @@ const nextConfig = {
       'jspdf',
       'qrcode',
       'canvas-confetti',
-      'posthog-node'
+      'posthog-node',
+      'recharts',
+      'chart.js',
+      'react-chartjs-2',
+      '@fullcalendar/core',
+      '@fullcalendar/daygrid',
+      '@fullcalendar/timegrid',
+      '@fullcalendar/react',
+      '@fullcalendar/resource',
+      '@fullcalendar/resource-timegrid',
+      '@fullcalendar/resource-timeline',
+      '@fullcalendar/interaction',
+      '@fullcalendar/list',
+      '@fullcalendar/rrule'
     ],
     esmExternals: true,
     serverExternalPackages: [
@@ -114,13 +123,29 @@ const nextConfig = {
               enforce: true,
               maxSize: 5242880, // 5MB limit
             },
+            // Calendar libraries (heavy)
+            calendar: {
+              test: /[\\/]node_modules[\\/](@fullcalendar)[\\/]/,
+              name: 'calendar-libs',
+              chunks: 'async',
+              priority: 48,
+              maxSize: 1048576, // 1MB limit per chunk
+            },
+            // Chart libraries (heavy)
+            charts: {
+              test: /[\\/]node_modules[\\/](recharts|chart\.js|react-chartjs-2)[\\/]/,
+              name: 'chart-libs',
+              chunks: 'async',
+              priority: 47,
+              maxSize: 1048576, // 1MB limit per chunk
+            },
             // Large libraries separated
             large: {
-              test: /[\\/]node_modules[\\/](@fullcalendar|recharts|@radix-ui|html2canvas|jspdf)[\\/]/,
+              test: /[\\/]node_modules[\\/](@radix-ui|html2canvas|jspdf|canvas-confetti)[\\/]/,
               name: 'large-libs',
               chunks: 'async',
               priority: 45,
-              maxSize: 3145728, // 3MB limit
+              maxSize: 1048576, // 1MB limit per chunk
             },
             // AI/ML libraries
             ai: {
@@ -154,10 +179,10 @@ const nextConfig = {
               maxSize: 262144, // 256KB limit
             },
           },
-          maxAsyncRequests: 50,
-          maxInitialRequests: 20,
-          minSize: 20000,
-          maxSize: 524288, // Global max size 512KB
+          maxAsyncRequests: 100,
+          maxInitialRequests: 30,
+          minSize: 10000,
+          maxSize: 262144, // Global max size 256KB
         },
       }
       

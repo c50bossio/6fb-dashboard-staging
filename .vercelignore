@@ -108,3 +108,14 @@ test-marketing-*.js
 # Disabled integrations
 app/api/integrations/google/
 app/api/integrations/trafft/
+
+# Additional route files that are disabled
+*.disabled
+*.backup*
+
+# Performance files
+*.spec.js
+*.test.js
+
+# Large backup files
+*.backup-*
