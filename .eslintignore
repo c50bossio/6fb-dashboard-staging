@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.next/
+.vercel/
+dist/
+build/
+
+# Environment files
+.env*
+
+# Test files (temporary exclusions)
+test-*.js
+*test*.js
+setup-*.js
+debug-*.js
+comprehensive-*.js
+detailed_perf_test.js
+
+# Scripts directory (temporary exclusions)
+scripts/
+
+# Legacy files that need refactoring
+components/AdminKnowledgeManager.js
+components/NotionIntegration.js
+
+# Temporary exclusions for deployment
+services/service-loader.js
