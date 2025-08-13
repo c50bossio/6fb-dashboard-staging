@@ -145,7 +145,7 @@ export default function AnalyticsPreview() {
             <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
-                  <ChartBarIcon className="h-5 w-5 text-blue-400 mr-2" />
+                  <ChartBarIcon className="h-5 w-5 text-olive-400 mr-2" />
                   <span className="text-gray-300 font-medium">
                     {dashboardPreviews[activeTab].chart.description}
                   </span>
@@ -158,7 +158,7 @@ export default function AnalyticsPreview() {
               
               <div className="h-48 bg-gradient-to-br from-gray-700/50 to-gray-800/50 rounded-lg flex items-center justify-center">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center h-16 w-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-3">
+                  <div className="inline-flex items-center justify-center h-16 w-16 bg-gradient-to-br from-olive-500 to-gold-600 rounded-full mb-3">
                     <ChartBarIcon className="h-8 w-8 text-white" />
                   </div>
                   <p className="text-gray-400 text-sm">
@@ -172,7 +172,7 @@ export default function AnalyticsPreview() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center h-12 w-12 bg-blue-900/50 text-blue-400 rounded-full mb-3">
+            <div className="inline-flex items-center justify-center h-12 w-12 bg-olive-900/50 text-olive-400 rounded-full mb-3">
               <ClockIcon className="h-6 w-6" />
             </div>
             <h4 className="text-lg font-semibold text-white mb-2">Real-Time Updates</h4>
@@ -190,7 +190,7 @@ export default function AnalyticsPreview() {
             </p>
           </div>
           <div className="text-center">
-            <div className="inline-flex items-center justify-center h-12 w-12 bg-purple-900/50 text-purple-400 rounded-full mb-3">
+            <div className="inline-flex items-center justify-center h-12 w-12 bg-gold-900/50 text-gold-400 rounded-full mb-3">
               <EyeIcon className="h-6 w-6" />
             </div>
             <h4 className="text-lg font-semibold text-white mb-2">Your Data, Private</h4>

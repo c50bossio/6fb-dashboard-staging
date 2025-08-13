@@ -90,7 +90,7 @@ function RecommendationCard({ recommendation, onImplement }) {
           <ul className="space-y-1">
             {recommendation.action_steps.slice(0, 3).map((step, idx) => (
               <li key={idx} className="flex items-start gap-2 text-sm">
-                <span className="flex-shrink-0 w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs">
+                <span className="flex-shrink-0 w-5 h-5 bg-olive-600 text-white rounded-full flex items-center justify-center text-xs">
                   {idx + 1}
                 </span>
                 <span className="text-gray-600">{step}</span>
@@ -151,7 +151,7 @@ function RecommendationCard({ recommendation, onImplement }) {
         </div>
         <button
           onClick={() => onImplement(recommendation)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-olive-600 text-white rounded-lg text-sm hover:bg-olive-700 transition-colors"
         >
           Mark as Implemented
         </button>
@@ -277,7 +277,7 @@ function BusinessRecommendationsContent() {
           <button
             onClick={() => fetchRecommendations(true)}
             disabled={loading}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors disabled:opacity-50"
           >
             <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh Recommendations
@@ -288,10 +288,10 @@ function BusinessRecommendationsContent() {
       {recommendations && (
         <>
           {/* Enhanced Summary with RAG Indicators */}
-          <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+          <div className="mb-8 bg-gradient-to-r from-olive-50 to-indigo-50 border border-olive-200 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                <ChartBarIcon className="h-6 w-6 mr-2 text-blue-600" />
+                <ChartBarIcon className="h-6 w-6 mr-2 text-olive-600" />
                 📊 AI Analysis Summary
               </h2>
               {recommendations.recommendations_suite?.rag_enhancement_active && (
@@ -324,13 +324,13 @@ function BusinessRecommendationsContent() {
                   )}
                 </div>
                 <div className="bg-white rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-olive-600">
                     {Math.round(recommendations.recommendations_suite.total_potential_impact.average_roi_percentage || 0)}%
                   </div>
                   <div className="text-sm text-gray-600">Average ROI</div>
                 </div>
                 <div className="bg-white rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-2xl font-bold text-gold-600">
                     {recommendations.recommendations_suite?.recommendations?.length || 0}
                   </div>
                   <div className="text-sm text-gray-600">Total Recommendations</div>
@@ -343,14 +343,14 @@ function BusinessRecommendationsContent() {
           {recommendations.recommendations_suite?.implementation_roadmap && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <RocketLaunchIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                <RocketLaunchIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Implementation Roadmap
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {recommendations.recommendations_suite.implementation_roadmap.map((phase, idx) => (
-                  <Card key={idx} className="border-l-4 border-indigo-500">
+                  <Card key={idx} className="border-l-4 border-olive-500">
                     <div className="flex items-center mb-2">
-                      <span className="bg-indigo-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-2">
+                      <span className="bg-olive-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-2">
                         {phase.phase}
                       </span>
                       <h3 className="font-semibold">{phase.title}</h3>
@@ -393,8 +393,8 @@ function BusinessRecommendationsContent() {
                     {recommendations.recommendations_suite.priority_matrix.urgent_important?.length || 0} recommendations
                   </div>
                 </Card>
-                <Card className="border-l-4 border-blue-500">
-                  <h3 className="font-semibold text-blue-900 mb-2">💡 Not Urgent but Important</h3>
+                <Card className="border-l-4 border-olive-500">
+                  <h3 className="font-semibold text-olive-900 mb-2">💡 Not Urgent but Important</h3>
                   <p className="text-sm text-gray-600 mb-2">Strategic improvements with high ROI potential</p>
                   <div className="text-sm text-gray-700">
                     {recommendations.recommendations_suite.priority_matrix.not_urgent_important?.length || 0} recommendations

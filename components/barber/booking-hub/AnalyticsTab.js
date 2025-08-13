@@ -76,13 +76,13 @@ export default function AnalyticsTab() {
   const getSourceColor = (type) => {
     switch (type) {
       case 'public':
-        return 'text-blue-600 bg-blue-100'
+        return 'text-olive-600 bg-olive-100'
       case 'marketing':
         return 'text-green-600 bg-green-100'
       case 'qr':
-        return 'text-purple-600 bg-purple-100'
+        return 'text-gold-600 bg-gold-100'
       case 'embed':
-        return 'text-indigo-600 bg-indigo-100'
+        return 'text-olive-600 bg-indigo-100'
       default:
         return 'text-gray-600 bg-gray-100'
     }
@@ -137,7 +137,7 @@ export default function AnalyticsTab() {
             </div>
           </div>
           <div className="mt-2">
-            <EyeIcon className="h-8 w-8 text-blue-600" />
+            <EyeIcon className="h-8 w-8 text-olive-600" />
           </div>
         </div>
 
@@ -181,7 +181,7 @@ export default function AnalyticsTab() {
             </div>
           </div>
           <div className="mt-2">
-            <CalendarDaysIcon className="h-8 w-8 text-purple-600" />
+            <CalendarDaysIcon className="h-8 w-8 text-gold-600" />
           </div>
         </div>
 
@@ -223,7 +223,7 @@ export default function AnalyticsTab() {
             <p className="text-2xl font-bold text-gray-900">${analyticsData.overview.avgBookingValue}</p>
           </div>
           <div className="mt-2">
-            <CurrencyDollarIcon className="h-8 w-8 text-blue-600" />
+            <CurrencyDollarIcon className="h-8 w-8 text-olive-600" />
           </div>
         </div>
       </div>
@@ -251,7 +251,7 @@ export default function AnalyticsTab() {
                 
                 <div className="grid grid-cols-4 gap-6 text-center">
                   <div>
-                    <div className="text-lg font-bold text-blue-600">{source.views}</div>
+                    <div className="text-lg font-bold text-olive-600">{source.views}</div>
                     <div className="text-xs text-gray-500">Views</div>
                   </div>
                   <div>
@@ -259,7 +259,7 @@ export default function AnalyticsTab() {
                     <div className="text-xs text-gray-500">Clicks</div>
                   </div>
                   <div>
-                    <div className="text-lg font-bold text-purple-600">{source.bookings}</div>
+                    <div className="text-lg font-bold text-gold-600">{source.bookings}</div>
                     <div className="text-xs text-gray-500">Bookings</div>
                   </div>
                   <div>
@@ -297,7 +297,7 @@ export default function AnalyticsTab() {
                     <div className="text-gray-500">Clicks</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-bold text-purple-600">{performer.bookings}</div>
+                    <div className="font-bold text-gold-600">{performer.bookings}</div>
                     <div className="text-gray-500">Bookings</div>
                   </div>
                   <div className="text-center">

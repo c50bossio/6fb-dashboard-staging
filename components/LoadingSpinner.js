@@ -23,10 +23,10 @@ export default function LoadingSpinner({ size = 'medium', className = '', fullSc
 
   if (fullScreen) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-olive-50 to-gold-50 flex flex-col justify-center items-center py-12 sm:px-6 lg:px-8">
         <div className="text-center">
           <div className="mb-8">
-            <div className="h-16 w-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto animate-pulse">
+            <div className="h-16 w-16 bg-gradient-to-br from-olive-600 to-gold-600 rounded-2xl flex items-center justify-center shadow-lg mx-auto animate-pulse">
               <span className="text-white font-bold text-xl">6FB</span>
             </div>
           </div>
@@ -34,7 +34,7 @@ export default function LoadingSpinner({ size = 'medium', className = '', fullSc
           <p className="mt-6 text-lg text-gray-700 font-medium">
             {text || 'Loading your AI-powered dashboard...'}
           </p>
-          <div className="mt-4 flex items-center justify-center text-blue-600">
+          <div className="mt-4 flex items-center justify-center text-olive-600">
             <SparklesIcon className="w-5 h-5 mr-2 animate-bounce" />
             <span className="text-sm">Preparing your AI agents</span>
           </div>

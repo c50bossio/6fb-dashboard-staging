@@ -33,9 +33,9 @@ export async function GET(request) {
         return NextResponse.json({
           barbers: [
             { id: 'barber-1', name: 'John Smith', color: '#10b981', active: true },
-            { id: 'barber-2', name: 'Sarah Johnson', color: '#3b82f6', active: true },
+            { id: 'barber-2', name: 'Sarah Johnson', color: '#546355', active: true },
             { id: 'barber-3', name: 'Mike Brown', color: '#f59e0b', active: true },
-            { id: 'barber-4', name: 'Lisa Davis', color: '#8b5cf6', active: true }
+            { id: 'barber-4', name: 'Lisa Davis', color: '#D4B878', active: true }
           ],
           source: 'mock'
         })
@@ -46,7 +46,7 @@ export async function GET(request) {
         id: profile.id,
         name: profile.full_name || profile.email || `Barber ${index + 1}`,
         email: profile.email,
-        color: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'][index % 4],
+        color: ['#10b981', '#546355', '#f59e0b', '#D4B878'][index % 4],
         active: true,
         role: profile.role
       }))
@@ -65,7 +65,7 @@ export async function GET(request) {
       return {
         id: barber.id,
         title: barber.name,
-        eventColor: barber.color || '#3b82f6',
+        eventColor: barber.color || '#546355',
         businessHours: barber.business_hours || { start: '09:00', end: '18:00' },
         extendedProps: {
           location: location,

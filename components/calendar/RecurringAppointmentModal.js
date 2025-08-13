@@ -200,7 +200,7 @@ export default function RecurringAppointmentModal({
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2"
                     onClick={onClose}
                   >
                     <span className="sr-only">Close</span>
@@ -236,7 +236,7 @@ export default function RecurringAppointmentModal({
                           id="recurrence_type"
                           value={recurrenceType}
                           onChange={(e) => setRecurrenceType(e.target.value)}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                         >
                           {RECURRENCE_OPTIONS.map(option => (
                             <option key={option.value} value={option.value}>
@@ -264,12 +264,12 @@ export default function RecurringAppointmentModal({
                                   max="99"
                                   value={customRule.interval}
                                   onChange={(e) => handleCustomRuleChange('interval', parseInt(e.target.value))}
-                                  className="w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                  className="w-20 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                                 />
                                 <select
                                   value={customRule.frequency}
                                   onChange={(e) => handleCustomRuleChange('frequency', e.target.value)}
-                                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                                 >
                                   <option value="daily">Day(s)</option>
                                   <option value="weekly">Week(s)</option>
@@ -294,7 +294,7 @@ export default function RecurringAppointmentModal({
                                     onClick={() => toggleWeekday(day.value)}
                                     className={`px-3 py-1 text-xs rounded-full border ${
                                       customRule.byweekday.includes(day.value)
-                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        ? 'bg-olive-600 text-white border-olive-600'
                                         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                                     }`}
                                   >
@@ -318,7 +318,7 @@ export default function RecurringAppointmentModal({
                                   name="end_condition"
                                   checked={!!customRule.count && !customRule.until}
                                   onChange={() => handleCustomRuleChange('until', '')}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
                                 />
                                 <label htmlFor="end_after_count" className="text-sm text-gray-700">
                                   After
@@ -329,7 +329,7 @@ export default function RecurringAppointmentModal({
                                   max="100"
                                   value={customRule.count || ''}
                                   onChange={(e) => handleCustomRuleChange('count', parseInt(e.target.value) || null)}
-                                  className="w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                  className="w-20 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                                 />
                                 <span className="text-sm text-gray-700">occurrences</span>
                               </div>
@@ -341,7 +341,7 @@ export default function RecurringAppointmentModal({
                                   name="end_condition"
                                   checked={!!customRule.until}
                                   onChange={() => handleCustomRuleChange('count', null)}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
                                 />
                                 <label htmlFor="end_on_date" className="text-sm text-gray-700">
                                   On
@@ -350,7 +350,7 @@ export default function RecurringAppointmentModal({
                                   type="date"
                                   value={customRule.until}
                                   onChange={(e) => handleCustomRuleChange('until', e.target.value)}
-                                  className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                  className="rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                                 />
                               </div>
                             </div>
@@ -403,7 +403,7 @@ export default function RecurringAppointmentModal({
                         <button
                           type="submit"
                           disabled={loading || recurrenceType === 'none' || preview.length === 0}
-                          className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="inline-flex w-full justify-center rounded-md bg-olive-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-olive-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {loading ? (
                             <>

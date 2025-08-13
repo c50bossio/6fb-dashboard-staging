@@ -16,8 +16,8 @@ export default function ExecutiveLoadingState() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-center mb-4">
           <div className="relative">
-            <ArrowPathIcon className="h-8 w-8 text-blue-500 animate-spin" />
-            <div className="absolute -inset-2 bg-blue-50 rounded-full animate-pulse"></div>
+            <ArrowPathIcon className="h-8 w-8 text-olive-500 animate-spin" />
+            <div className="absolute -inset-2 bg-olive-50 rounded-full animate-pulse"></div>
           </div>
         </div>
         <div className="text-center">
@@ -44,8 +44,8 @@ export default function ExecutiveLoadingState() {
         {/* Customers Card */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-pulse">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <UsersIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-olive-100 rounded-lg">
+              <UsersIcon className="h-6 w-6 text-olive-600" />
             </div>
             <div className="ml-4 flex-1">
               <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
@@ -57,8 +57,8 @@ export default function ExecutiveLoadingState() {
         {/* Appointments Card */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-pulse">
           <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <CalendarDaysIcon className="h-6 w-6 text-purple-600" />
+            <div className="p-2 bg-gold-100 rounded-lg">
+              <CalendarDaysIcon className="h-6 w-6 text-gold-600" />
             </div>
             <div className="ml-4 flex-1">
               <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
@@ -108,11 +108,11 @@ export default function ExecutiveLoadingState() {
           <span className="text-xs text-gray-500">Revenue data</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
+          <div className="w-2 h-2 bg-olive-500 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
           <span className="text-xs text-gray-500">Customer metrics</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-2 h-2 bg-gold-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
           <span className="text-xs text-gray-500">Appointments</span>
         </div>
         <div className="flex items-center space-x-2">

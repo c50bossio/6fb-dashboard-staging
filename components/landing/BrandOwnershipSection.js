@@ -71,14 +71,14 @@ export default function BrandOwnershipSection() {
                 className="relative p-6 bg-gray-50 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300 border border-gray-100"
               >
                 <div className="absolute -top-3 -right-3">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
                     {feature.highlight}
                   </span>
                 </div>
                 
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-olive-500 to-gold-600 text-white">
                       <Icon className="h-6 w-6" />
                     </div>
                   </div>
@@ -96,7 +96,7 @@ export default function BrandOwnershipSection() {
           })}
         </div>
 
-        <div className="mt-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+        <div className="mt-16 bg-gradient-to-r from-olive-600 to-gold-600 rounded-2xl p-8 text-white">
           <div className="text-center">
             <h3 className="text-2xl font-bold mb-4">
               The Marketplace Model is Broken for Barbers
@@ -104,15 +104,15 @@ export default function BrandOwnershipSection() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
               <div className="text-center">
                 <div className="text-3xl font-bold mb-2">$0</div>
-                <div className="text-blue-100">Marketplace fees with 6FB</div>
+                <div className="text-olive-100">Marketplace fees with 6FB</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold mb-2">100%</div>
-                <div className="text-blue-100">Your brand, your control</div>
+                <div className="text-olive-100">Your brand, your control</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold mb-2">24/7</div>
-                <div className="text-blue-100">AI working for your business</div>
+                <div className="text-olive-100">AI working for your business</div>
               </div>
             </div>
           </div>

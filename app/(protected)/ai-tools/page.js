@@ -29,8 +29,8 @@ const AIDashboard = () => (
       {/* AI Agent Status Cards */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-            <SparklesIcon className="h-6 w-6 text-blue-600" />
+          <div className="h-10 w-10 bg-olive-100 rounded-full flex items-center justify-center">
+            <SparklesIcon className="h-6 w-6 text-olive-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Marcus</h3>
@@ -57,8 +57,8 @@ const AIDashboard = () => (
 
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center space-x-3 mb-4">
-          <div className="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center">
-            <ChatBubbleLeftRightIcon className="h-6 w-6 text-purple-600" />
+          <div className="h-10 w-10 bg-gold-100 rounded-full flex items-center justify-center">
+            <ChatBubbleLeftRightIcon className="h-6 w-6 text-gold-600" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Sophia</h3>
@@ -116,8 +116,8 @@ const AIDashboard = () => (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
       <h3 className="text-lg font-medium text-gray-900 mb-4">Recent AI Activity</h3>
       <div className="space-y-4">
-        <div className="flex items-center space-x-4 p-4 bg-blue-50 rounded-lg">
-          <SparklesIcon className="h-5 w-5 text-blue-600" />
+        <div className="flex items-center space-x-4 p-4 bg-olive-50 rounded-lg">
+          <SparklesIcon className="h-5 w-5 text-olive-600" />
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-900">Marcus provided scheduling optimization</p>
             <p className="text-xs text-gray-600">Suggested moving 3 appointments to increase daily revenue by $180</p>
@@ -125,8 +125,8 @@ const AIDashboard = () => (
           <span className="text-xs text-gray-500">2 min ago</span>
         </div>
         
-        <div className="flex items-center space-x-4 p-4 bg-purple-50 rounded-lg">
-          <ChatBubbleLeftRightIcon className="h-5 w-5 text-purple-600" />
+        <div className="flex items-center space-x-4 p-4 bg-gold-50 rounded-lg">
+          <ChatBubbleLeftRightIcon className="h-5 w-5 text-gold-600" />
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-900">Sophia created new social media campaign</p>
             <p className="text-xs text-gray-600">Generated 5 Instagram posts for summer promotions</p>
@@ -197,7 +197,7 @@ const AIPerformance = () => {
   return (
     <div className="space-y-6">
       {/* Optimization Results Header */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
+      <div className="bg-gradient-to-r from-green-50 to-olive-50 border border-green-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">🚀 Optimization Results</h3>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -210,11 +210,11 @@ const AIPerformance = () => {
             <div className="text-xs text-gray-600">Response Time Improvement</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-blue-600">82.3%</div>
+            <div className="text-2xl font-bold text-olive-600">82.3%</div>
             <div className="text-xs text-gray-600">Cost Savings</div>
           </div>
           <div>
-            <div className="text-2xl font-bold text-purple-600">100%</div>
+            <div className="text-2xl font-bold text-gold-600">100%</div>
             <div className="text-xs text-gray-600">Security Detection</div>
           </div>
           <div>
@@ -248,12 +248,12 @@ const AIPerformance = () => {
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <SparklesIcon className="h-6 w-6 text-blue-600" />
+              <SparklesIcon className="h-6 w-6 text-olive-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Cache Hit Rate</dt>
-                <dd className="text-lg font-medium text-blue-600">
+                <dd className="text-lg font-medium text-olive-600">
                   {data.hit_rate || '78.5'}%
                 </dd>
                 <dd className="text-xs text-gray-400">
@@ -267,12 +267,12 @@ const AIPerformance = () => {
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <ChatBubbleLeftRightIcon className="h-6 w-6 text-purple-600" />
+              <ChatBubbleLeftRightIcon className="h-6 w-6 text-gold-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Avg Confidence</dt>
-                <dd className="text-lg font-medium text-purple-600">
+                <dd className="text-lg font-medium text-gold-600">
                   {metrics.ai_orchestrator?.confidence_score?.value 
                     ? `${Math.round(metrics.ai_orchestrator.confidence_score.value * 100)}%` 
                     : '94%'
@@ -346,30 +346,30 @@ const AIPerformance = () => {
             <div className="text-green-600 font-bold">✓ TARGET ACHIEVED</div>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-olive-50 rounded-lg">
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+              <div className="w-2 h-2 bg-olive-500 rounded-full mr-3"></div>
               <div>
-                <div className="font-medium text-blue-900">Cost Optimization</div>
-                <div className="text-sm text-blue-700">
+                <div className="font-medium text-olive-900">Cost Optimization</div>
+                <div className="text-sm text-olive-700">
                   82.3% reduction through advanced caching
                 </div>
               </div>
             </div>
-            <div className="text-blue-600 font-bold">$2,340/mo saved</div>
+            <div className="text-olive-600 font-bold">$2,340/mo saved</div>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gold-50 rounded-lg">
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+              <div className="w-2 h-2 bg-gold-500 rounded-full mr-3"></div>
               <div>
-                <div className="font-medium text-purple-900">Security Enhancement</div>
-                <div className="text-sm text-purple-700">
+                <div className="font-medium text-gold-900">Security Enhancement</div>
+                <div className="text-sm text-gold-700">
                   100% threat detection (up from 67%)
                 </div>
               </div>
             </div>
-            <div className="text-purple-600 font-bold">72 patterns active</div>
+            <div className="text-gold-600 font-bold">72 patterns active</div>
           </div>
         </div>
       </div>
@@ -393,7 +393,7 @@ const KnowledgeBase = () => (
         <div className="border border-gray-200 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-medium text-gray-900">Peak Hour Strategies</h4>
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
               Operations
             </span>
           </div>
@@ -425,7 +425,7 @@ const KnowledgeBase = () => (
         <div className="border border-gray-200 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-medium text-gray-900">Service Pricing Models</h4>
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gold-100 text-gold-800">
               Revenue
             </span>
           </div>
@@ -487,7 +487,7 @@ const AITestCenter = () => {
   return (
     <div className="space-y-6">
       {/* Testing Overview */}
-      <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-6">
+      <div className="bg-gradient-to-r from-olive-50 to-green-50 border border-olive-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">🧪 Automated Testing Pipeline</h3>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -501,12 +501,12 @@ const AITestCenter = () => {
             <div className="text-xs text-gray-400">↑ from 66.7%</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">45</div>
+            <div className="text-2xl font-bold text-olive-600">45</div>
             <div className="text-sm text-gray-600">Total Tests</div>
             <div className="text-xs text-gray-400">40 passed, 5 failed</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">5</div>
+            <div className="text-2xl font-bold text-gold-600">5</div>
             <div className="text-sm text-gray-600">Test Suites</div>
             <div className="text-xs text-gray-400">All active</div>
           </div>
@@ -648,7 +648,7 @@ const AITestCenter = () => {
           
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+              <div className="w-2 h-2 bg-olive-500 rounded-full mr-3"></div>
               <div>
                 <div className="font-medium text-gray-900">Quality Gate Checks</div>
                 <div className="text-sm text-gray-500">
@@ -656,12 +656,12 @@ const AITestCenter = () => {
                 </div>
               </div>
             </div>
-            <div className="text-blue-600 font-bold">✓ Passed</div>
+            <div className="text-olive-600 font-bold">✓ Passed</div>
           </div>
           
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center">
-              <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+              <div className="w-2 h-2 bg-gold-500 rounded-full mr-3"></div>
               <div>
                 <div className="font-medium text-gray-900">Automated Reports</div>
                 <div className="text-sm text-gray-500">
@@ -669,7 +669,7 @@ const AITestCenter = () => {
                 </div>
               </div>
             </div>
-            <div className="text-purple-600 font-bold">Enabled</div>
+            <div className="text-gold-600 font-bold">Enabled</div>
           </div>
         </div>
       </div>

@@ -45,7 +45,7 @@ const ProfessionalCalendar = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-[600px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
         <p className="mt-4 text-gray-600">Loading Calendar...</p>
       </div>
     )
@@ -411,7 +411,7 @@ export default function CalendarPage() {
         const transformedResources = result.barbers.map(barber => ({
           id: barber.id,
           title: barber.title || barber.name,
-          eventColor: barber.eventColor || barber.color || '#3b82f6',
+          eventColor: barber.eventColor || barber.color || '#546355',
           ...barber
         }))
         setResources(transformedResources)
@@ -876,7 +876,7 @@ export default function CalendarPage() {
       })
       // Skip optimistic update if dates are invalid
     } else {
-      const barberColor = resources.find(r => r.id === appointmentData.barber_id)?.eventColor || '#3b82f6'
+      const barberColor = resources.find(r => r.id === appointmentData.barber_id)?.eventColor || '#546355'
       
       optimisticAppointment = {
         id: `temp-${Date.now()}`, // Temporary ID
@@ -952,8 +952,8 @@ export default function CalendarPage() {
               start: result.appointment.start_time,
               end: result.appointment.end_time,
               resourceId: result.appointment.barber_id,
-              backgroundColor: resources.find(r => r.id === result.appointment.barber_id)?.eventColor || '#3b82f6',
-              borderColor: resources.find(r => r.id === result.appointment.barber_id)?.eventColor || '#3b82f6',
+              backgroundColor: resources.find(r => r.id === result.appointment.barber_id)?.eventColor || '#546355',
+              borderColor: resources.find(r => r.id === result.appointment.barber_id)?.eventColor || '#546355',
               extendedProps: {
                 customer_name: result.appointment.customer_name,
                 customer_phone: result.appointment.customer_phone,
@@ -1099,7 +1099,7 @@ export default function CalendarPage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading calendar...</p>
         </div>
       </div>
@@ -1117,7 +1117,7 @@ export default function CalendarPage() {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <CalendarIcon className="h-8 w-8 text-blue-600" />
+              <CalendarIcon className="h-8 w-8 text-olive-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Booking Calendar</h1>
                 <p className="text-sm text-gray-600">Stable FullCalendar Implementation</p>
@@ -1145,7 +1145,7 @@ export default function CalendarPage() {
                   setSelectedEvent(null)
                   setShowAppointmentModal(true)
                 }}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="flex items-center space-x-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
               >
                 <PlusCircleIcon className="h-5 w-5" />
                 <span>New Appointment</span>
@@ -1176,8 +1176,8 @@ export default function CalendarPage() {
                           return (
                             <div key={link.id} className="flex items-center justify-between px-3 py-3 hover:bg-gray-50 border-b border-gray-100">
                               <div className="flex items-center space-x-3">
-                                <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                  <IconComponent className="h-4 w-4 text-blue-600" />
+                                <div className="h-8 w-8 bg-olive-100 rounded-lg flex items-center justify-center">
+                                  <IconComponent className="h-4 w-4 text-olive-600" />
                                 </div>
                                 <div>
                                   <div className="text-sm font-medium text-gray-900">{link.title}</div>
@@ -1221,8 +1221,8 @@ export default function CalendarPage() {
                           return (
                             <div key={link.id} className="flex items-center justify-between px-3 py-3 hover:bg-gray-50">
                               <div className="flex items-center space-x-3">
-                                <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                                  <IconComponent className="h-4 w-4 text-purple-600" />
+                                <div className="h-8 w-8 bg-gold-100 rounded-lg flex items-center justify-center">
+                                  <IconComponent className="h-4 w-4 text-gold-600" />
                                 </div>
                                 <div>
                                   <div className="text-sm font-medium text-gray-900">{link.title}</div>
@@ -1282,7 +1282,7 @@ export default function CalendarPage() {
                 placeholder="Search customers, services..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent text-base"
               />
               {searchTerm && (
                 <button
@@ -1303,7 +1303,7 @@ export default function CalendarPage() {
             <select
               value={filterLocation}
               onChange={(e) => setFilterLocation(e.target.value)}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
+              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-olive-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Locations</option>
               <option value="Downtown">Downtown</option>
@@ -1314,7 +1314,7 @@ export default function CalendarPage() {
             <select
               value={filterBarber}
               onChange={(e) => setFilterBarber(e.target.value)}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
+              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-olive-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Barbers</option>
               {filteredResources.map(barber => (
@@ -1328,7 +1328,7 @@ export default function CalendarPage() {
             <select
               value={filterService}
               onChange={(e) => setFilterService(e.target.value)}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
+              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-olive-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Services</option>
               {uniqueServices.map(service => (
@@ -1342,7 +1342,7 @@ export default function CalendarPage() {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[44px]"
+              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-olive-500 focus:border-transparent min-h-[44px]"
             >
               <option value="all">All Status</option>
               <option value="confirmed">Confirmed</option>
@@ -1359,7 +1359,7 @@ export default function CalendarPage() {
                 id="test-data-toggle"
                 checked={showTestData}
                 onChange={(e) => setShowTestData(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
               />
               <label htmlFor="test-data-toggle" className="text-gray-700 font-medium whitespace-nowrap text-sm">
                 <span className="hidden sm:inline">Show Test Data</span>
@@ -1415,7 +1415,7 @@ export default function CalendarPage() {
                   setShowAppointmentModal(true)
                 }
               }}
-              className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              className="px-3 py-1.5 text-sm bg-gold-600 text-white rounded-lg hover:bg-gold-700"
             >
               Test Edit
             </button>
@@ -1541,7 +1541,7 @@ export default function CalendarPage() {
                       />
                       <button
                         onClick={() => copyToClipboard(selectedResource.url, 'modal')}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 flex items-center"
+                        className="px-3 py-2 bg-olive-600 text-white rounded-r-lg hover:bg-olive-700 flex items-center"
                       >
                         {copied.modal ? (
                           <CheckIcon className="h-4 w-4" />
@@ -1565,7 +1565,7 @@ export default function CalendarPage() {
                     
                     <button
                       onClick={() => window.open(selectedResource.url, '_blank')}
-                      className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center space-x-2"
+                      className="flex-1 px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700 flex items-center justify-center space-x-2"
                     >
                       <ShareIcon className="h-4 w-4" />
                       <span>Test Link</span>
@@ -1588,7 +1588,7 @@ export default function CalendarPage() {
                         onClick={() => generateQRCode({ id: link.id, title: link.title, url: link.url })}
                         className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 text-left"
                       >
-                        <div className={`h-8 w-8 bg-gradient-to-r ${link.color === 'blue' ? 'from-blue-500 to-blue-600' : link.color === 'green' ? 'from-green-500 to-green-600' : 'from-purple-500 to-purple-600'} rounded flex items-center justify-center`}>
+                        <div className={`h-8 w-8 bg-gradient-to-r ${link.color === 'blue' ? 'from-olive-500 to-olive-600' : link.color === 'green' ? 'from-green-500 to-green-600' : 'from-gold-500 to-gold-600'} rounded flex items-center justify-center`}>
                           <IconComponent className="h-4 w-4 text-white" />
                         </div>
                         <div>
@@ -1690,7 +1690,7 @@ export default function CalendarPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
             {/* Connection Status */}
             <div className="bg-gray-800 rounded p-3">
-              <div className="font-semibold text-blue-400 mb-2">Connection Status</div>
+              <div className="font-semibold text-olive-400 mb-2">Connection Status</div>
               <div className={`text-${realtimeHookConnected ? 'green' : 'red'}-400 font-mono`}>
                 {diagnostics.subscriptionStatus || 'unknown'}
               </div>
@@ -1729,7 +1729,7 @@ export default function CalendarPage() {
 
             {/* Data Status */}
             <div className="bg-gray-800 rounded p-3">
-              <div className="font-semibold text-purple-400 mb-2">Data Status</div>
+              <div className="font-semibold text-gold-400 mb-2">Data Status</div>
               <div className="space-y-1">
                 <div>Appointments: {realtimeAppointments?.length || 0}</div>
                 <div>Filtered: {filteredEvents?.length || 0}</div>
@@ -1758,11 +1758,11 @@ export default function CalendarPage() {
             {/* Subscription History */}
             {diagnostics.subscriptionStatusHistory?.length > 0 && (
               <div className="bg-gray-800 rounded p-3 md:col-span-2">
-                <div className="font-semibold text-blue-400 mb-2">Status History</div>
+                <div className="font-semibold text-olive-400 mb-2">Status History</div>
                 <div className="space-y-1 max-h-20 overflow-y-auto">
                   {diagnostics.subscriptionStatusHistory.slice(-3).map((status, i) => (
                     <div key={i} className="text-xs font-mono">
-                      <span className="text-blue-300">{status.status}</span>
+                      <span className="text-olive-300">{status.status}</span>
                       <div className="text-gray-500">{new Date(status.timestamp).toLocaleTimeString()}</div>
                     </div>
                   ))}
@@ -1775,7 +1775,7 @@ export default function CalendarPage() {
           <div className="flex items-center space-x-3 mt-4 pt-3 border-t border-gray-700">
             <button
               onClick={() => console.log('Full diagnostics:', diagnostics)}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs"
+              className="px-3 py-1 bg-olive-600 hover:bg-olive-700 rounded text-xs"
             >
               Log Full Diagnostics
             </button>

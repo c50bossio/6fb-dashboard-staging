@@ -93,8 +93,8 @@ export default function MonitoringDashboard() {
     datasets: [{
       label: 'Response Time (ms)',
       data: metrics.performance.responseTime,
-      borderColor: 'rgb(59, 130, 246)',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderColor: 'rgb(60, 74, 62)',
+      backgroundColor: 'rgba(60, 74, 62, 0.1)',
       tension: 0.4,
       fill: true
     }]
@@ -180,7 +180,7 @@ export default function MonitoringDashboard() {
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
           >
             <option value="1h">Last Hour</option>
             <option value="6h">Last 6 Hours</option>
@@ -206,7 +206,7 @@ export default function MonitoringDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-2">
-            <ServerIcon className="h-8 w-8 text-blue-500" />
+            <ServerIcon className="h-8 w-8 text-olive-500" />
             <span className="text-2xl font-bold">{metrics.system.uptime}%</span>
           </div>
           <h3 className="text-sm font-medium text-gray-700">Uptime</h3>
@@ -215,13 +215,13 @@ export default function MonitoringDashboard() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-2">
-            <CpuChipIcon className="h-8 w-8 text-purple-500" />
+            <CpuChipIcon className="h-8 w-8 text-gold-500" />
             <span className="text-2xl font-bold">{metrics.system.cpu}%</span>
           </div>
           <h3 className="text-sm font-medium text-gray-700">CPU Usage</h3>
           <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-purple-500 h-2 rounded-full transition-all"
+              className="bg-gold-500 h-2 rounded-full transition-all"
               style={{ width: `${metrics.system.cpu}%` }}
             />
           </div>
@@ -336,7 +336,7 @@ export default function MonitoringDashboard() {
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Recent Errors</h3>
-          <button className="text-sm text-blue-600 hover:text-blue-700">
+          <button className="text-sm text-olive-600 hover:text-olive-700">
             View All →
           </button>
         </div>

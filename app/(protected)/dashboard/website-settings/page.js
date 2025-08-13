@@ -261,7 +261,7 @@ export default function WebsiteSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -299,7 +299,7 @@ export default function WebsiteSettingsPage() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                       activeTab === tab.id
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-olive-600 text-white'
                         : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                     }`}
                   >
@@ -315,7 +315,7 @@ export default function WebsiteSettingsPage() {
               <button
                 onClick={saveSettings}
                 disabled={saving}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
+                className="w-full bg-olive-600 hover:bg-olive-700 disabled:bg-olive-400 text-white px-4 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center"
               >
                 {saving ? (
                   <>
@@ -350,7 +350,7 @@ export default function WebsiteSettingsPage() {
                         type="text"
                         value={settings.name}
                         onChange={(e) => handleInputChange('name', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                         placeholder="Elite Cuts Barbershop"
                       />
                     </div>
@@ -363,7 +363,7 @@ export default function WebsiteSettingsPage() {
                         type="text"
                         value={settings.tagline}
                         onChange={(e) => handleInputChange('tagline', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                         placeholder="Premium Cuts, Professional Service"
                       />
                     </div>
@@ -377,7 +377,7 @@ export default function WebsiteSettingsPage() {
                       value={settings.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
                       rows={4}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Brief description of your barbershop and services..."
                     />
                   </div>
@@ -391,7 +391,7 @@ export default function WebsiteSettingsPage() {
                         type="tel"
                         value={settings.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                         placeholder="(555) 123-4567"
                       />
                     </div>
@@ -404,7 +404,7 @@ export default function WebsiteSettingsPage() {
                         type="email"
                         value={settings.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                         placeholder="info@barbershop.com"
                       />
                     </div>
@@ -419,7 +419,7 @@ export default function WebsiteSettingsPage() {
                         type="text"
                         value={settings.address}
                         onChange={(e) => handleInputChange('address', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                         placeholder="123 Main Street"
                       />
                     </div>
@@ -432,7 +432,7 @@ export default function WebsiteSettingsPage() {
                         type="text"
                         value={settings.city}
                         onChange={(e) => handleInputChange('city', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                         placeholder="New York"
                       />
                     </div>
@@ -447,7 +447,7 @@ export default function WebsiteSettingsPage() {
                         type="text"
                         value={settings.shop_slug}
                         onChange={(e) => handleInputChange('shop_slug', e.target.value)}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                         placeholder="your-barbershop"
                       />
                       <button
@@ -467,7 +467,7 @@ export default function WebsiteSettingsPage() {
                       type="checkbox"
                       checked={settings.website_enabled}
                       onChange={(e) => handleInputChange('website_enabled', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                     />
                     <label className="ml-2 block text-sm text-gray-900">
                       Enable public website
@@ -507,7 +507,7 @@ export default function WebsiteSettingsPage() {
                           type="file"
                           accept="image/*"
                           onChange={(e) => handleFileUpload(e.target.files[0], 'logo')}
-                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-olive-50 file:text-olive-700 hover:file:bg-olive-100"
                         />
                         <p className="text-sm text-gray-500 mt-1">
                           Recommended: 200x200px, PNG or SVG
@@ -541,7 +541,7 @@ export default function WebsiteSettingsPage() {
                         type="file"
                         accept="image/*"
                         onChange={(e) => handleFileUpload(e.target.files[0], 'cover')}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-olive-50 file:text-olive-700 hover:file:bg-olive-100"
                       />
                       <p className="text-sm text-gray-500">
                         Recommended: 1200x400px, high quality image
@@ -561,7 +561,7 @@ export default function WebsiteSettingsPage() {
                           onClick={() => handleThemeChange(theme.id)}
                           className={`p-4 border-2 rounded-lg text-left transition-all ${
                             settings.theme_preset === theme.id
-                              ? 'border-blue-600 bg-blue-50'
+                              ? 'border-olive-600 bg-olive-50'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
@@ -607,7 +607,7 @@ export default function WebsiteSettingsPage() {
                               type="text"
                               value={value}
                               onChange={(e) => handleInputChange(`brand_colors.${key}`, e.target.value)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-olive-500 focus:border-transparent text-sm"
                             />
                           </div>
                         </div>
@@ -630,7 +630,7 @@ export default function WebsiteSettingsPage() {
                       type="text"
                       value={settings.hero_title}
                       onChange={(e) => handleInputChange('hero_title', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Welcome to Elite Cuts Barbershop"
                     />
                   </div>
@@ -643,7 +643,7 @@ export default function WebsiteSettingsPage() {
                       type="text"
                       value={settings.hero_subtitle}
                       onChange={(e) => handleInputChange('hero_subtitle', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Experience professional barbering with master craftsmen"
                     />
                   </div>
@@ -656,7 +656,7 @@ export default function WebsiteSettingsPage() {
                       value={settings.about_text}
                       onChange={(e) => handleInputChange('about_text', e.target.value)}
                       rows={6}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Tell your story... What makes your barbershop unique? Share your passion, experience, and commitment to quality."
                     />
                   </div>
@@ -672,7 +672,7 @@ export default function WebsiteSettingsPage() {
                           type="url"
                           value={settings.social_links.instagram}
                           onChange={(e) => handleInputChange('social_links.instagram', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                           placeholder="https://instagram.com/your-barbershop"
                         />
                       </div>
@@ -682,7 +682,7 @@ export default function WebsiteSettingsPage() {
                           type="url"
                           value={settings.social_links.facebook}
                           onChange={(e) => handleInputChange('social_links.facebook', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                           placeholder="https://facebook.com/your-barbershop"
                         />
                       </div>
@@ -692,7 +692,7 @@ export default function WebsiteSettingsPage() {
                           type="url"
                           value={settings.social_links.google}
                           onChange={(e) => handleInputChange('social_links.google', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                           placeholder="https://g.page/your-barbershop"
                         />
                       </div>
@@ -702,7 +702,7 @@ export default function WebsiteSettingsPage() {
                           type="url"
                           value={settings.social_links.twitter}
                           onChange={(e) => handleInputChange('social_links.twitter', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                           placeholder="https://twitter.com/your-barbershop"
                         />
                       </div>
@@ -724,7 +724,7 @@ export default function WebsiteSettingsPage() {
                       type="text"
                       value={settings.seo_title}
                       onChange={(e) => handleInputChange('seo_title', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Elite Cuts Barbershop | Professional Haircuts in Downtown"
                     />
                     <p className="text-sm text-gray-500 mt-1">
@@ -740,7 +740,7 @@ export default function WebsiteSettingsPage() {
                       value={settings.seo_description}
                       onChange={(e) => handleInputChange('seo_description', e.target.value)}
                       rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Experience premium barbering at Elite Cuts. Professional haircuts, modern fades, beard grooming & styling. Book online today!"
                     />
                     <p className="text-sm text-gray-500 mt-1">
@@ -756,7 +756,7 @@ export default function WebsiteSettingsPage() {
                       type="text"
                       value={settings.seo_keywords}
                       onChange={(e) => handleInputChange('seo_keywords', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="barbershop, haircuts, fade, beard trim, grooming, downtown"
                     />
                     <p className="text-sm text-gray-500 mt-1">
@@ -764,9 +764,9 @@ export default function WebsiteSettingsPage() {
                     </p>
                   </div>
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-blue-900 mb-2">SEO Tips</h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
+                  <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-olive-900 mb-2">SEO Tips</h4>
+                    <ul className="text-sm text-olive-700 space-y-1">
                       <li>• Include your location and main services in the title</li>
                       <li>• Write natural, compelling descriptions that encourage clicks</li>
                       <li>• Use keywords your customers would search for</li>
@@ -847,13 +847,13 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   {/* Preview Links */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-blue-900 mb-2">Preview Your Website</h4>
+                  <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+                    <h4 className="text-sm font-semibold text-olive-900 mb-2">Preview Your Website</h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <ClipboardIcon className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm text-blue-700">
+                          <ClipboardIcon className="h-4 w-4 text-olive-600" />
+                          <span className="text-sm text-olive-700">
                             {typeof window !== 'undefined' ? window.location.origin : 'localhost:9999'}/barbershop/{settings.shop_slug || 'your-slug'}
                           </span>
                         </div>
@@ -864,7 +864,7 @@ export default function WebsiteSettingsPage() {
                             setMessage({ type: 'success', text: 'URL copied to clipboard!' })
                             setTimeout(() => setMessage({ type: '', text: '' }), 2000)
                           }}
-                          className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                          className="text-xs px-2 py-1 bg-olive-100 text-olive-700 rounded hover:bg-olive-200 transition-colors"
                         >
                           Copy
                         </button>
@@ -877,7 +877,7 @@ export default function WebsiteSettingsPage() {
                             // Open preview page
                             window.open('/barbershop/preview', '_blank')
                           }}
-                          className="text-sm text-blue-600 hover:text-blue-800 underline font-medium"
+                          className="text-sm text-olive-600 hover:text-olive-800 underline font-medium"
                         >
                           🔗 View Live Preview →
                         </button>
@@ -888,7 +888,7 @@ export default function WebsiteSettingsPage() {
                             setMessage({ type: 'success', text: 'Preview URL copied to clipboard!' })
                             setTimeout(() => setMessage({ type: '', text: '' }), 2000)
                           }}
-                          className="text-sm text-blue-600 hover:text-blue-800 underline font-medium"
+                          className="text-sm text-olive-600 hover:text-olive-800 underline font-medium"
                         >
                           📋 Copy Preview Link →
                         </button>

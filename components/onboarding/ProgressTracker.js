@@ -16,7 +16,7 @@ export default function ProgressTracker({
         <div className="overflow-hidden h-2 text-xs flex rounded-full bg-gray-200">
           <div
             style={{ width: `${progress}%` }}
-            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600 transition-all duration-500 ease-out"
+            className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-olive-600 transition-all duration-500 ease-out"
           />
         </div>
         
@@ -59,7 +59,7 @@ export default function ProgressTracker({
                     isCompleted
                       ? 'bg-green-500 text-white'
                       : isCurrent
-                      ? 'bg-blue-600 text-white ring-4 ring-blue-100'
+                      ? 'bg-olive-600 text-white ring-4 ring-olive-100'
                       : 'bg-white border-2 border-gray-300 text-gray-400'
                   }`}
                 >
@@ -71,14 +71,14 @@ export default function ProgressTracker({
                   
                   {/* Current Step Pulse Animation */}
                   {isCurrent && (
-                    <div className="absolute inset-0 rounded-full bg-blue-600 animate-ping opacity-30" />
+                    <div className="absolute inset-0 rounded-full bg-olive-600 animate-ping opacity-30" />
                   )}
                 </div>
                 
                 {/* Step Label */}
                 <div className="mt-2 text-center">
                   <p className={`text-xs font-medium ${
-                    isCurrent ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                    isCurrent ? 'text-olive-600' : isCompleted ? 'text-green-600' : 'text-gray-500'
                   }`}>
                     {step.label}
                   </p>

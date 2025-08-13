@@ -12,7 +12,7 @@ export default function ContactPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
                 <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
@@ -20,11 +20,11 @@ export default function ContactPage() {
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
-              <Link href="/register" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+              <Link href="/register" className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-olive-700 hover:to-gold-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
                 Get Started
               </Link>
             </div>
@@ -41,7 +41,7 @@ export default function ContactPage() {
               Touch
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-olive-100 max-w-4xl mx-auto leading-relaxed">
             Have questions about our AI agents? Need help getting started? 
             Our team is here to help you succeed.
           </p>
@@ -53,12 +53,12 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <EnvelopeIcon className="h-8 w-8 text-blue-600" />
+              <div className="bg-olive-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <EnvelopeIcon className="h-8 w-8 text-olive-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Email Us</h3>
               <p className="text-gray-600 mb-4">Get in touch via email</p>
-              <a href="mailto:support@6fb.ai" className="text-blue-600 hover:text-blue-700 font-medium">
+              <a href="mailto:support@6fb.ai" className="text-olive-600 hover:text-olive-700 font-medium">
                 support@6fb.ai
               </a>
             </div>
@@ -69,18 +69,18 @@ export default function ContactPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Call Us</h3>
               <p className="text-gray-600 mb-4">Speak with our team</p>
-              <a href="tel:+1-555-6FB-AI" className="text-blue-600 hover:text-blue-700 font-medium">
+              <a href="tel:+1-555-6FB-AI" className="text-olive-600 hover:text-olive-700 font-medium">
                 +1 (555) 6FB-AI
               </a>
             </div>
             
             <div className="text-center">
-              <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <ChatBubbleLeftRightIcon className="h-8 w-8 text-purple-600" />
+              <div className="bg-gold-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <ChatBubbleLeftRightIcon className="h-8 w-8 text-gold-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Chat</h3>
               <p className="text-gray-600 mb-4">Chat with support</p>
-              <button className="text-blue-600 hover:text-blue-700 font-medium">
+              <button className="text-olive-600 hover:text-olive-700 font-medium">
                 Start Chat
               </button>
             </div>
@@ -91,7 +91,7 @@ export default function ContactPage() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Visit Us</h3>
               <p className="text-gray-600 mb-4">Our headquarters</p>
-              <p className="text-blue-600 font-medium">
+              <p className="text-olive-600 font-medium">
                 San Francisco, CA
               </p>
             </div>
@@ -116,7 +116,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent transition-all duration-200"
                     placeholder="John"
                   />
                 </div>
@@ -126,7 +126,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent transition-all duration-200"
                     placeholder="Doe"
                   />
                 </div>
@@ -138,7 +138,7 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent transition-all duration-200"
                   placeholder="john@barbershop.com"
                 />
               </div>
@@ -149,7 +149,7 @@ export default function ContactPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent transition-all duration-200"
                   placeholder="The Cut Above"
                 />
               </div>
@@ -158,7 +158,7 @@ export default function ContactPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Subject *
                 </label>
-                <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+                <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent transition-all duration-200">
                   <option value="">Select a topic</option>
                   <option value="general">General Inquiry</option>
                   <option value="demo">Request Demo</option>
@@ -174,7 +174,7 @@ export default function ContactPage() {
                 </label>
                 <textarea
                   rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-vertical"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent transition-all duration-200 resize-vertical"
                   placeholder="Tell us how we can help you..."
                 ></textarea>
               </div>
@@ -182,7 +182,7 @@ export default function ContactPage() {
               <div className="flex justify-center">
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:from-olive-700 hover:to-gold-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
                 >
                   Send Message
                 </button>

@@ -175,12 +175,12 @@ function AICoachingInsights({ selectedBarber }) {
     <Card>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <AcademicCapIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          <AcademicCapIcon className="h-5 w-5 mr-2 text-olive-600" />
           AI Performance Coaching
         </h3>
         <div className="flex items-center space-x-2">
-          <SparklesIcon className="h-4 w-4 text-indigo-600" />
-          <span className="text-sm text-indigo-600">Six Figure Barber AI</span>
+          <SparklesIcon className="h-4 w-4 text-olive-600" />
+          <span className="text-sm text-olive-600">Six Figure Barber AI</span>
         </div>
       </div>
 
@@ -194,7 +194,7 @@ function AICoachingInsights({ selectedBarber }) {
         <div className="space-y-4">
           <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
             <div className="flex items-center mb-2">
-              <LightBulbIcon className="h-4 w-4 text-indigo-600 mr-2" />
+              <LightBulbIcon className="h-4 w-4 text-olive-600 mr-2" />
               <span className="text-sm font-medium text-indigo-800">
                 Personalized Coaching - {selectedBarber ? selectedBarber.name : 'Team Focus'}
               </span>
@@ -209,14 +209,14 @@ function AICoachingInsights({ selectedBarber }) {
                 {insights.agent_details.recommendations.slice(0, 3).map((rec, idx) => (
                   <div key={idx} className="bg-white rounded-lg p-3 border border-indigo-100">
                     <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                      <div className="flex-shrink-0 w-6 h-6 bg-olive-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
                         {idx + 1}
                       </div>
                       <div>
                         <div className="text-sm font-medium text-gray-900 mb-1">
                           {rec.length > 80 ? rec.substring(0, 80) + '...' : rec}
                         </div>
-                        <div className="text-xs text-indigo-600">
+                        <div className="text-xs text-olive-600">
                           💡 Focus Area • Expected Impact: High
                         </div>
                       </div>
@@ -282,12 +282,12 @@ function GamificationProgress({ barber }) {
     <Card>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <BoltIcon className="h-5 w-5 mr-2 text-purple-600" />
+          <BoltIcon className="h-5 w-5 mr-2 text-gold-600" />
           {barber.name}'s Progress
         </h3>
         <div className="text-right">
-          <div className="text-2xl font-bold text-purple-600">Level {level}</div>
-          <div className="text-xs text-purple-500">{earnedCount}/8 achievements</div>
+          <div className="text-2xl font-bold text-gold-600">Level {level}</div>
+          <div className="text-xs text-gold-500">{earnedCount}/8 achievements</div>
         </div>
       </div>
 
@@ -295,11 +295,11 @@ function GamificationProgress({ barber }) {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-gray-600">Progress to Next Level</span>
-          <span className="text-sm font-medium text-purple-600">{currentLevelProgress}%</span>
+          <span className="text-sm font-medium text-gold-600">{currentLevelProgress}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div 
-            className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+            className="bg-gradient-to-r from-gold-500 to-pink-500 h-3 rounded-full transition-all duration-500"
             style={{ width: `${currentLevelProgress}%` }}
           ></div>
         </div>
@@ -325,8 +325,8 @@ function GamificationProgress({ barber }) {
 
       {/* Next Achievement */}
       <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-          <h4 className="text-sm font-medium text-purple-800 mb-2">🎯 Next Achievement</h4>
+        <div className="bg-gold-50 border border-gold-200 rounded-lg p-3">
+          <h4 className="text-sm font-medium text-gold-800 mb-2">🎯 Next Achievement</h4>
           {(() => {
             const nextAchievement = achievements.find(a => !a.earned)
             return nextAchievement ? (
@@ -338,7 +338,7 @@ function GamificationProgress({ barber }) {
                 </div>
               </div>
             ) : (
-              <div className="text-sm text-purple-700">🏆 All achievements unlocked! Master level reached!</div>
+              <div className="text-sm text-gold-700">🏆 All achievements unlocked! Master level reached!</div>
             )
           })()}
         </div>
@@ -480,7 +480,7 @@ function GamifiedLeaderboard() {
       </div>
 
       {/* Category Tabs */}
-      <div className="flex flex-wrap gap-2 mb-8 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+      <div className="flex flex-wrap gap-2 mb-8 p-4 bg-gradient-to-r from-gold-50 to-pink-50 rounded-xl border border-gold-200">
         {categories.map((category) => {
           const IconComponent = category.icon
           return (
@@ -489,7 +489,7 @@ function GamifiedLeaderboard() {
               onClick={() => setActiveCategory(category.id)}
               className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 ${
                 activeCategory === category.id
-                  ? 'bg-purple-600 text-white shadow-lg transform scale-105'
+                  ? 'bg-gold-600 text-white shadow-lg transform scale-105'
                   : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
               }`}
             >
@@ -560,13 +560,13 @@ function GamifiedLeaderboard() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Total Customers</span>
-                <span className="font-semibold text-blue-600">
+                <span className="font-semibold text-olive-600">
                   {barberData.reduce((sum, b) => sum + b.customers, 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Top Performers</span>
-                <span className="font-semibold text-purple-600">
+                <span className="font-semibold text-gold-600">
                   {barberData.filter(b => b.overallScore >= 80).length}/5
                 </span>
               </div>
@@ -576,17 +576,17 @@ function GamifiedLeaderboard() {
           {/* Quick Actions */}
           <Card>
             <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <RocketLaunchIcon className="h-5 w-5 mr-2 text-indigo-600" />
+              <RocketLaunchIcon className="h-5 w-5 mr-2 text-olive-600" />
               Quick Actions
             </h3>
             <div className="space-y-2">
-              <button className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
+              <button className="w-full bg-indigo-50 hover:bg-indigo-100 text-olive-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
                 🎯 Launch team coaching session
               </button>
               <button className="w-full bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
                 📊 Generate performance report
               </button>
-              <button className="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
+              <button className="w-full bg-gold-50 hover:bg-gold-100 text-gold-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">
                 🏆 Create achievement challenge
               </button>
               <button className="w-full bg-yellow-50 hover:bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg text-sm text-left transition-colors">

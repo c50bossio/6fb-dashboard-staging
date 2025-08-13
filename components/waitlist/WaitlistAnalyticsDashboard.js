@@ -40,7 +40,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
         fetchAnalytics();
     }, [barbershopId, dateRange]);
     
-    const MetricCard = ({ title, value, subtitle, trend, icon, color = 'text-blue-600' }) => (
+    const MetricCard = ({ title, value, subtitle, trend, icon, color = 'text-olive-600' }) => (
         <Card>
             <div className="p-6">
                 <div className="flex items-center justify-between">
@@ -69,7 +69,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
             <div className="p-4">
                 <div className="flex justify-between items-start mb-3">
                     <h3 className="font-semibold">{service.service_name}</h3>
-                    <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                    <span className="text-sm bg-olive-100 text-olive-800 px-2 py-1 rounded-full">
                         {service.percentage.toFixed(1)}%
                     </span>
                 </div>
@@ -112,7 +112,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                     <h2 className="text-2xl font-bold">Waitlist Analytics</h2>
                 </div>
                 <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600"></div>
                     <span className="ml-2 text-gray-600">Loading analytics...</span>
                 </div>
             </div>
@@ -182,7 +182,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                     value={analytics?.waitlist_stats?.total_entries || 0}
                     subtitle={`${analytics?.waitlist_stats?.current_waitlist_size || 0} currently active`}
                     icon="📋"
-                    color="text-blue-600"
+                    color="text-olive-600"
                     trend={analytics?.trends?.weekly_comparison && {
                         positive: analytics.trends.weekly_comparison.this_week.entries >= analytics.trends.weekly_comparison.last_week.entries,
                         text: `${Math.abs(((analytics.trends.weekly_comparison.this_week.entries - analytics.trends.weekly_comparison.last_week.entries) / Math.max(analytics.trends.weekly_comparison.last_week.entries, 1) * 100)).toFixed(1)}% vs last week`
@@ -214,7 +214,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                     value={`$${analytics?.waitlist_stats?.revenue_from_waitlist || 0}`}
                     subtitle="From waitlist conversions"
                     icon="💰"
-                    color="text-purple-600"
+                    color="text-gold-600"
                     trend={analytics?.trends?.monthly_growth && {
                         positive: analytics.trends.monthly_growth.revenue_growth > 0,
                         text: `${analytics.trends.monthly_growth.revenue_growth.toFixed(1)}% monthly growth`
@@ -319,7 +319,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                         <h3 className="text-lg font-semibold mb-4">Performance Insights</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-blue-600">{analytics.performance_insights.notification_response_rate.toFixed(1)}%</div>
+                                <div className="text-2xl font-bold text-olive-600">{analytics.performance_insights.notification_response_rate.toFixed(1)}%</div>
                                 <div className="text-gray-600">Notification Response Rate</div>
                             </div>
                             <div className="text-center">
@@ -327,7 +327,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                                 <div className="text-gray-600">Avg Response Time (min)</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-purple-600">{analytics.performance_insights.repeat_waitlist_customers}</div>
+                                <div className="text-2xl font-bold text-gold-600">{analytics.performance_insights.repeat_waitlist_customers}</div>
                                 <div className="text-gray-600">Repeat Customers</div>
                             </div>
                             <div className="text-center">
@@ -346,7 +346,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                         <h3 className="text-lg font-semibold mb-4">AI Recommendations</h3>
                         <div className="space-y-4">
                             {analytics.recommendations.map((rec, index) => (
-                                <div key={index} className="border-l-4 border-blue-500 pl-4">
+                                <div key={index} className="border-l-4 border-olive-500 pl-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <h4 className="font-semibold">{rec.title}</h4>
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${
@@ -358,7 +358,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
                                         </span>
                                     </div>
                                     <p className="text-gray-600 text-sm mb-2">{rec.description}</p>
-                                    <div className="text-blue-600 text-sm font-medium">
+                                    <div className="text-olive-600 text-sm font-medium">
                                         💡 {rec.potential_impact}
                                     </div>
                                 </div>

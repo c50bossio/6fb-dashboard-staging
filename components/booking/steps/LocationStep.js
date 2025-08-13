@@ -112,7 +112,7 @@ export default function LocationStep({ bookingData, onNext }) {
           placeholder="Search by location name or address..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
         />
         <MapPinIcon className="absolute right-3 top-3.5 h-5 w-5 text-gray-400" />
       </div>
@@ -134,7 +134,7 @@ export default function LocationStep({ bookingData, onNext }) {
               onClick={() => handleLocationSelect(location)}
               className={`relative border rounded-lg p-4 cursor-pointer transition-all ${
                 selectedLocation === location.id
-                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                  ? 'border-olive-500 bg-olive-50 ring-2 ring-olive-200'
                   : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
               }`}
             >
@@ -213,7 +213,7 @@ export default function LocationStep({ bookingData, onNext }) {
               {/* Selection Indicator */}
               {selectedLocation === location.id && (
                 <div className="absolute top-2 right-2">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-olive-600 rounded-full flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -232,7 +232,7 @@ export default function LocationStep({ bookingData, onNext }) {
           disabled={!selectedLocation}
           className={`px-6 py-3 rounded-lg font-medium transition-all ${
             selectedLocation
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-olive-600 text-white hover:bg-olive-700'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >

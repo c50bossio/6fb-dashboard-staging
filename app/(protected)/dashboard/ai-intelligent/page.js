@@ -292,7 +292,7 @@ function MarketingInsightsWidget({ onRefresh, loading }) {
     <Card className="h-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <MegaphoneIcon className="h-5 w-5 mr-2 text-blue-600" />
+          <MegaphoneIcon className="h-5 w-5 mr-2 text-olive-600" />
           Marketing Expert Insights
         </h3>
         <button
@@ -312,10 +312,10 @@ function MarketingInsightsWidget({ onRefresh, loading }) {
         </div>
       ) : insights ? (
         <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-olive-50 border border-olive-200 rounded-lg p-3">
             <div className="flex items-center mb-2">
-              <CheckCircleIcon className="h-4 w-4 text-blue-600 mr-2" />
-              <span className="text-sm font-medium text-blue-800">Sophia - Marketing Expert</span>
+              <CheckCircleIcon className="h-4 w-4 text-olive-600 mr-2" />
+              <span className="text-sm font-medium text-olive-800">Sophia - Marketing Expert</span>
             </div>
             <p className="text-sm text-gray-700 mb-3">
               {insights.response?.substring(0, 150)}...
@@ -338,7 +338,7 @@ function MarketingInsightsWidget({ onRefresh, loading }) {
           </div>
           <div className="flex justify-between items-center text-xs text-gray-500">
             <span>Confidence: {Math.round((insights.confidence || 0) * 100)}%</span>
-            {insights.agent_enhanced && <span className="text-blue-600">✨ AI Enhanced</span>}
+            {insights.agent_enhanced && <span className="text-olive-600">✨ AI Enhanced</span>}
           </div>
         </div>
       ) : (
@@ -392,7 +392,7 @@ function OperationsInsightsWidget({ onRefresh, loading }) {
     <Card className="h-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <CogIcon className="h-5 w-5 mr-2 text-purple-600" />
+          <CogIcon className="h-5 w-5 mr-2 text-gold-600" />
           Operations Manager Insights
         </h3>
         <button
@@ -412,10 +412,10 @@ function OperationsInsightsWidget({ onRefresh, loading }) {
         </div>
       ) : insights ? (
         <div className="space-y-4">
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+          <div className="bg-gold-50 border border-gold-200 rounded-lg p-3">
             <div className="flex items-center mb-2">
-              <CheckCircleIcon className="h-4 w-4 text-purple-600 mr-2" />
-              <span className="text-sm font-medium text-purple-800">David - Operations Manager</span>
+              <CheckCircleIcon className="h-4 w-4 text-gold-600 mr-2" />
+              <span className="text-sm font-medium text-gold-800">David - Operations Manager</span>
             </div>
             <p className="text-sm text-gray-700 mb-3">
               {insights.response?.substring(0, 150)}...
@@ -424,7 +424,7 @@ function OperationsInsightsWidget({ onRefresh, loading }) {
               <h4 className="text-xs font-medium text-gray-800">Operational Improvements:</h4>
               {insights.agent_details?.recommendations?.slice(0, 3).map((rec, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-xs">
-                  <span className="text-purple-600">•</span>
+                  <span className="text-gold-600">•</span>
                   <span className="text-gray-600">{rec}</span>
                 </div>
               ))}
@@ -432,7 +432,7 @@ function OperationsInsightsWidget({ onRefresh, loading }) {
           </div>
           <div className="flex justify-between items-center text-xs text-gray-500">
             <span>Confidence: {Math.round((insights.confidence || 0) * 100)}%</span>
-            {insights.agent_enhanced && <span className="text-purple-600">✨ AI Enhanced</span>}
+            {insights.agent_enhanced && <span className="text-gold-600">✨ AI Enhanced</span>}
           </div>
         </div>
       ) : (
@@ -631,22 +631,22 @@ function AIOptimizationMetricsWidget({ onRefresh, loading }) {
           </div>
 
           {/* Cache Performance */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-olive-50 border border-olive-200 rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-blue-800">Advanced Caching System</span>
-              <span className="text-xs text-blue-600">
+              <span className="text-sm font-medium text-olive-800">Advanced Caching System</span>
+              <span className="text-xs text-olive-600">
                 {metrics.optimization_results?.cache_performance?.strategies_active || 6} Strategies Active
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-white rounded p-2">
-                <div className="text-blue-600 font-bold text-lg">
+                <div className="text-olive-600 font-bold text-lg">
                   {metrics.optimization_results?.cache_performance?.hit_rate || 78.5}%
                 </div>
                 <div className="text-gray-600">Hit Rate</div>
               </div>
               <div className="bg-white rounded p-2">
-                <div className="text-blue-600 font-bold text-lg">
+                <div className="text-olive-600 font-bold text-lg">
                   {metrics.optimization_results?.cache_performance?.cost_savings_percentage || 82.3}%
                 </div>
                 <div className="text-gray-600">Cost Savings</div>
@@ -679,22 +679,22 @@ function AIOptimizationMetricsWidget({ onRefresh, loading }) {
           </div>
 
           {/* Testing Success */}
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+          <div className="bg-gold-50 border border-gold-200 rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-purple-800">Automated Testing Pipeline</span>
-              <span className="text-xs text-purple-600">
+              <span className="text-sm font-medium text-gold-800">Automated Testing Pipeline</span>
+              <span className="text-xs text-gold-600">
                 {metrics.optimization_results?.testing_success?.total_tests || 45} Tests
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-white rounded p-2">
-                <div className="text-purple-600 font-bold text-lg">
+                <div className="text-gold-600 font-bold text-lg">
                   {metrics.optimization_results?.testing_success?.overall_rate || 88.9}%
                 </div>
                 <div className="text-gray-600">Success Rate</div>
               </div>
               <div className="bg-white rounded p-2">
-                <div className="text-purple-600 font-bold text-lg">
+                <div className="text-gold-600 font-bold text-lg">
                   +{metrics.optimization_results?.testing_success?.improvement || 22.2}%
                 </div>
                 <div className="text-gray-600">Improvement</div>
@@ -741,7 +741,7 @@ function AgentSystemStatusWidget() {
     <Card className="h-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <SparklesIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          <SparklesIcon className="h-5 w-5 mr-2 text-olive-600" />
           AI System Status
         </h3>
         <div className={`w-3 h-3 rounded-full ${
@@ -763,11 +763,11 @@ function AgentSystemStatusWidget() {
               </div>
               <div className="text-xs text-green-700">Total Agents</div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="bg-olive-50 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-olive-600">
                 {status?.agent_system?.active_agents || 3}
               </div>
-              <div className="text-xs text-blue-700">Active Agents</div>
+              <div className="text-xs text-olive-700">Active Agents</div>
             </div>
           </div>
           
@@ -838,7 +838,7 @@ function IntelligentDashboardContent() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <SparklesIcon className="h-8 w-8 mr-3 text-indigo-600" />
+              <SparklesIcon className="h-8 w-8 mr-3 text-olive-600" />
               Intelligent AI Dashboard
             </h1>
             <p className="text-gray-600 mt-2">
@@ -848,7 +848,7 @@ function IntelligentDashboardContent() {
           <button
             onClick={handleGlobalRefresh}
             disabled={globalLoading}
-            className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors disabled:opacity-50"
           >
             <ArrowTrendingUpIcon className={`h-4 w-4 mr-2 ${globalLoading ? 'animate-spin' : ''}`} />
             Refresh All Insights
@@ -857,7 +857,7 @@ function IntelligentDashboardContent() {
       </div>
 
       {/* AI Agent Status Bar */}
-      <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
+      <div className="mb-6 bg-gradient-to-r from-indigo-50 to-gold-50 border border-indigo-200 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
             <div className="text-sm">
@@ -870,7 +870,7 @@ function IntelligentDashboardContent() {
             </div>
           </div>
           <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <SparklesIcon className="h-4 w-4 text-indigo-600" />
+            <SparklesIcon className="h-4 w-4 text-olive-600" />
             <span>Powered by Specialized AI Agents</span>
           </div>
         </div>
@@ -902,7 +902,7 @@ function IntelligentDashboardContent() {
       {/* Quick Actions Footer */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <RocketLaunchIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          <RocketLaunchIcon className="h-5 w-5 mr-2 text-olive-600" />
           Quick Actions
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -914,13 +914,13 @@ function IntelligentDashboardContent() {
             <ArrowTrendingUpIcon className="h-6 w-6 text-orange-600 mb-2" />
             <span className="text-sm text-orange-800">Strategic Pricing</span>
           </button>
-          <button className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-            <MegaphoneIcon className="h-6 w-6 text-blue-600 mb-2" />
-            <span className="text-sm text-blue-800">Marketing Strategy</span>
+          <button className="flex flex-col items-center p-4 bg-olive-50 rounded-lg hover:bg-olive-100 transition-colors">
+            <MegaphoneIcon className="h-6 w-6 text-olive-600 mb-2" />
+            <span className="text-sm text-olive-800">Marketing Strategy</span>
           </button>
-          <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-            <CogIcon className="h-6 w-6 text-purple-600 mb-2" />
-            <span className="text-sm text-purple-800">Operations Review</span>
+          <button className="flex flex-col items-center p-4 bg-gold-50 rounded-lg hover:bg-gold-100 transition-colors">
+            <CogIcon className="h-6 w-6 text-gold-600 mb-2" />
+            <span className="text-sm text-gold-800">Operations Review</span>
           </button>
         </div>
       </div>

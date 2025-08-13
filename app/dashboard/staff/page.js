@@ -144,9 +144,9 @@ export default function StaffPage() {
   const getRoleColor = (role) => {
     switch (role.toLowerCase()) {
       case 'master barber':
-        return 'bg-purple-100 text-purple-800 border-purple-200'
+        return 'bg-gold-100 text-gold-800 border-gold-200'
       case 'senior barber':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-olive-100 text-olive-800 border-olive-200'
       case 'barber':
         return 'bg-green-100 text-green-800 border-green-200'
       case 'apprentice':
@@ -179,7 +179,7 @@ export default function StaffPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500 transition-colors"
                 >
                   <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                   Add Staff Member
@@ -193,7 +193,7 @@ export default function StaffPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <UsersIcon className="h-6 w-6 text-blue-600" />
+                  <UsersIcon className="h-6 w-6 text-olive-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Staff</p>
@@ -255,14 +255,14 @@ export default function StaffPage() {
                     placeholder="Search staff..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-olive-500 focus:border-olive-500"
                   />
                 </div>
                 <div className="flex space-x-2">
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="border border-gray-300 rounded-md px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-olive-500 focus:border-olive-500"
                   >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>
@@ -288,7 +288,7 @@ export default function StaffPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="flex-shrink-0">
-                          <div className="h-16 w-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                          <div className="h-16 w-16 bg-gradient-to-br from-olive-600 to-gold-600 rounded-full flex items-center justify-center">
                             <span className="text-xl font-bold text-white">
                               {member.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </span>
@@ -349,7 +349,7 @@ export default function StaffPage() {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => setSelectedStaff(member)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            className="text-olive-600 hover:text-olive-800 text-sm font-medium"
                           >
                             View Details
                           </button>
@@ -366,16 +366,16 @@ export default function StaffPage() {
           </div>
 
           {/* Integration Notice */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="mt-8 bg-olive-50 border border-olive-200 rounded-lg p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <UsersIcon className="h-6 w-6 text-blue-600" />
+                <UsersIcon className="h-6 w-6 text-olive-600" />
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
+                <h3 className="text-sm font-medium text-olive-800">
                   Advanced Staff Management Features
                 </h3>
-                <div className="mt-2 text-sm text-blue-700">
+                <div className="mt-2 text-sm text-olive-700">
                   <p>Complete staff management system includes:</p>
                   <ul className="mt-2 list-disc list-inside space-y-1">
                     <li>Schedule management with availability tracking</li>
@@ -386,9 +386,9 @@ export default function StaffPage() {
                     <li>Payroll integration and tax reporting</li>
                     <li>Customer assignment and relationship management</li>
                   </ul>
-                  <div className="mt-4 p-3 bg-white border border-blue-300 rounded-md">
-                    <p className="text-sm font-medium text-blue-900">Production Ready:</p>
-                    <p className="text-xs text-blue-800 mt-1">
+                  <div className="mt-4 p-3 bg-white border border-olive-300 rounded-md">
+                    <p className="text-sm font-medium text-olive-900">Production Ready:</p>
+                    <p className="text-xs text-olive-800 mt-1">
                       The staff management system is fully architected and ready for your barbershop operations.
                       Features comprehensive scheduling, performance tracking, and commission management.
                     </p>

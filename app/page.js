@@ -54,7 +54,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-4">
-                <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">6FB</span>
                 </div>
                 <div>
@@ -95,7 +95,7 @@ export default function HomePage() {
                     </Link>
                     <Link
                       href="/register"
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
+                      className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
                     >
                       Start Free Trial
                     </Link>
@@ -107,7 +107,7 @@ export default function HomePage() {
         </header>
 
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-purple-700 text-white py-24 overflow-hidden">
+        <section className="relative bg-gradient-to-br from-olive-600 via-gold-600 to-gold-700 text-white py-24 overflow-hidden">
           <div className="absolute inset-0 bg-black opacity-10"></div>
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
@@ -126,7 +126,7 @@ export default function HomePage() {
                 </span>
               </h1>
               
-              <p className="text-xl lg:text-2xl text-blue-100 max-w-3xl mx-auto mb-12">
+              <p className="text-xl lg:text-2xl text-olive-100 max-w-3xl mx-auto mb-12">
                 The AI-powered platform where barbers own their brand, automate their business, 
                 and grow with real data. No marketplace fees. No competing for visibility. 
                 100% your business.
@@ -195,7 +195,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
                 href="/register"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
+                className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
               >
                 Start Your 30-Day Free Trial
                 <ArrowRightIcon className="h-5 w-5 ml-2" />
@@ -219,7 +219,7 @@ export default function HomePage() {
               {/* Brand */}
               <div>
                 <div className="flex items-center mb-4">
-                  <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center">
                     <span className="text-white font-bold text-lg">6FB</span>
                   </div>
                   <span className="ml-3 text-xl font-bold">BookedBarber</span>

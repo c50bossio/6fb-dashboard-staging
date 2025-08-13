@@ -66,7 +66,7 @@ export default function NotificationBell() {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-sm text-blue-600 hover:text-blue-700"
+                  className="text-sm text-olive-600 hover:text-olive-700"
                 >
                   Mark all as read
                 </button>
@@ -87,7 +87,7 @@ export default function NotificationBell() {
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification)}
                       className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
-                        !notification.read ? 'bg-blue-50' : ''
+                        !notification.read ? 'bg-olive-50' : ''
                       }`}
                     >
                       <div className="flex items-start gap-3">
@@ -124,7 +124,7 @@ export default function NotificationBell() {
                         {/* Unread indicator */}
                         {!notification.read && (
                           <div className="flex-shrink-0">
-                            <div className="h-2 w-2 bg-blue-600 rounded-full" />
+                            <div className="h-2 w-2 bg-olive-600 rounded-full" />
                           </div>
                         )}
                       </div>
@@ -143,7 +143,7 @@ export default function NotificationBell() {
                     alert('Browser notifications enabled!')
                   }
                 }}
-                className="text-sm text-blue-600 hover:text-blue-700"
+                className="text-sm text-olive-600 hover:text-olive-700"
               >
                 Enable browser notifications
               </button>

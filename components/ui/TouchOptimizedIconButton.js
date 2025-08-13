@@ -33,8 +33,8 @@ export default function TouchOptimizedIconButton({
       ? 'text-gray-400 cursor-not-allowed'
       : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 active:bg-gray-200 focus:ring-gray-500',
     primary: disabled
-      ? 'bg-blue-300 text-white cursor-not-allowed'
-      : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500 shadow-sm hover:shadow-md',
+      ? 'bg-olive-300 text-white cursor-not-allowed'
+      : 'bg-olive-600 text-white hover:bg-olive-700 active:bg-olive-800 focus:ring-olive-500 shadow-sm hover:shadow-md',
     secondary: disabled
       ? 'bg-gray-200 text-gray-400 border border-gray-200 cursor-not-allowed'
       : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus:ring-gray-500 shadow-sm',

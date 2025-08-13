@@ -129,7 +129,7 @@ export default function BarberSchedule() {
               >
                 <XMarkIcon className="h-4 w-4" />
               </button>
-              <button className="text-blue-600 hover:text-blue-800" title="Contact client">
+              <button className="text-olive-600 hover:text-olive-800" title="Contact client">
                 <PhoneIcon className="h-4 w-4" />
               </button>
             </div>
@@ -311,7 +311,7 @@ export default function BarberSchedule() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Upcoming</span>
-                  <span className="text-sm font-medium text-blue-600">
+                  <span className="text-sm font-medium text-olive-600">
                     {appointments.filter(a => a.status === 'confirmed').length}
                   </span>
                 </div>

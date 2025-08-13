@@ -43,14 +43,14 @@ export default function ContactUs() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 bg-olive-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">6FB</span>
               </div>
               <span className="text-xl font-bold text-gray-900">BookedBarber</span>
             </Link>
             
             <div className="flex items-center space-x-6">
-              <Link href="/" className="text-gray-600 hover:text-blue-600 flex items-center">
+              <Link href="/" className="text-gray-600 hover:text-olive-600 flex items-center">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -60,10 +60,10 @@ export default function ContactUs() {
       </nav>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-600 to-purple-700 py-16">
+      <div className="bg-gradient-to-br from-olive-600 to-gold-700 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl font-bold text-white mb-4">Get in Touch</h1>
-          <p className="text-xl text-blue-100">
+          <p className="text-xl text-olive-100">
             We're here to help with any questions about BookedBarber
           </p>
         </div>
@@ -80,7 +80,7 @@ export default function ContactUs() {
               
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <PhoneIcon className="h-5 w-5 text-blue-600 mt-1 mr-3" />
+                  <PhoneIcon className="h-5 w-5 text-olive-600 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Phone</p>
                     <p className="text-gray-600">1-800-BOOKED-1</p>
@@ -89,7 +89,7 @@ export default function ContactUs() {
                 </div>
 
                 <div className="flex items-start">
-                  <EnvelopeIcon className="h-5 w-5 text-blue-600 mt-1 mr-3" />
+                  <EnvelopeIcon className="h-5 w-5 text-olive-600 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Email</p>
                     <p className="text-gray-600">support@bookedbarber.com</p>
@@ -97,7 +97,7 @@ export default function ContactUs() {
                 </div>
 
                 <div className="flex items-start">
-                  <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-600 mt-1 mr-3" />
+                  <ChatBubbleLeftRightIcon className="h-5 w-5 text-olive-600 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">SMS Support</p>
                     <p className="text-gray-600">Text HELP to our SMS number</p>
@@ -106,7 +106,7 @@ export default function ContactUs() {
                 </div>
 
                 <div className="flex items-start">
-                  <MapPinIcon className="h-5 w-5 text-blue-600 mt-1 mr-3" />
+                  <MapPinIcon className="h-5 w-5 text-olive-600 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Mailing Address</p>
                     <p className="text-gray-600">
@@ -117,7 +117,7 @@ export default function ContactUs() {
                 </div>
 
                 <div className="flex items-start">
-                  <ClockIcon className="h-5 w-5 text-blue-600 mt-1 mr-3" />
+                  <ClockIcon className="h-5 w-5 text-olive-600 mt-1 mr-3" />
                   <div>
                     <p className="font-medium text-gray-900">Support Hours</p>
                     <p className="text-gray-600">
@@ -134,16 +134,16 @@ export default function ContactUs() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Helpful Resources</h3>
               <div className="space-y-2">
-                <Link href="/terms" className="block text-blue-600 hover:underline">
+                <Link href="/terms" className="block text-olive-600 hover:underline">
                   Terms of Service
                 </Link>
-                <Link href="/privacy" className="block text-blue-600 hover:underline">
+                <Link href="/privacy" className="block text-olive-600 hover:underline">
                   Privacy Policy
                 </Link>
-                <Link href="/sms-policy" className="block text-blue-600 hover:underline">
+                <Link href="/sms-policy" className="block text-olive-600 hover:underline">
                   SMS Messaging Policy
                 </Link>
-                <a href="https://support.bookedbarber.com" className="block text-blue-600 hover:underline">
+                <a href="https://support.bookedbarber.com" className="block text-olive-600 hover:underline">
                   Help Center
                 </a>
               </div>
@@ -174,7 +174,7 @@ export default function ContactUs() {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                       placeholder="John Doe"
                     />
                   </div>
@@ -190,7 +190,7 @@ export default function ContactUs() {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                       placeholder="john@example.com"
                     />
                   </div>
@@ -207,7 +207,7 @@ export default function ContactUs() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -222,7 +222,7 @@ export default function ContactUs() {
                       required
                       value={formData.subject}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     >
                       <option value="general">General Inquiry</option>
                       <option value="support">Technical Support</option>
@@ -247,7 +247,7 @@ export default function ContactUs() {
                     rows={6}
                     value={formData.message}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     placeholder="Please describe how we can help you..."
                   />
                 </div>
@@ -257,11 +257,11 @@ export default function ContactUs() {
                     type="checkbox"
                     id="consent"
                     required
-                    className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="mt-1 h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                   />
                   <label htmlFor="consent" className="ml-2 text-sm text-gray-600">
-                    I agree to the <Link href="/terms" className="text-blue-600 hover:underline">Terms of Service</Link> and {' '}
-                    <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>. 
+                    I agree to the <Link href="/terms" className="text-olive-600 hover:underline">Terms of Service</Link> and {' '}
+                    <Link href="/privacy" className="text-olive-600 hover:underline">Privacy Policy</Link>. 
                     I understand that BookedBarber may contact me regarding my inquiry.
                   </label>
                 </div>
@@ -269,7 +269,7 @@ export default function ContactUs() {
                 <div className="flex justify-end">
                   <button
                     type="submit"
-                    className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                    className="bg-olive-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-olive-700 transition-colors"
                   >
                     Send Message
                   </button>
@@ -278,7 +278,7 @@ export default function ContactUs() {
             </div>
 
             {/* Additional Support Options */}
-            <div className="mt-8 bg-blue-50 rounded-lg p-6">
+            <div className="mt-8 bg-olive-50 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Need Immediate Assistance?</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white rounded-lg p-4">
@@ -286,7 +286,7 @@ export default function ContactUs() {
                   <p className="text-sm text-gray-600 mb-2">
                     Get help with account setup, booking management, and business tools.
                   </p>
-                  <p className="text-sm text-blue-600">
+                  <p className="text-sm text-olive-600">
                     Email: business@bookedbarber.com
                   </p>
                 </div>
@@ -295,7 +295,7 @@ export default function ContactUs() {
                   <p className="text-sm text-gray-600 mb-2">
                     Questions about bookings, payments, or finding barbershops.
                   </p>
-                  <p className="text-sm text-blue-600">
+                  <p className="text-sm text-olive-600">
                     Email: customers@bookedbarber.com
                   </p>
                 </div>

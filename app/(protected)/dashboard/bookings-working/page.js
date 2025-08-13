@@ -53,7 +53,7 @@ export default function BookingsPage() {
       const resources = (barbersResponse.barbers || []).map((barber, index) => ({
         id: barber.id,
         title: barber.name,
-        eventColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'][index % 6],
+        eventColor: ['#10b981', '#546355', '#f59e0b', '#D4B878', '#ef4444', '#06b6d4'][index % 6],
         extendedProps: {
           email: barber.email,
           phone: barber.phone,

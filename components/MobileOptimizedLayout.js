@@ -51,7 +51,7 @@ export default function MobileOptimizedLayout({ children }) {
       {/* Pull-to-refresh indicator */}
       {pullToRefreshDistance > 0 && (
         <div 
-          className="absolute top-0 left-0 right-0 z-50 flex items-center justify-center bg-blue-500 text-white transition-all duration-200"
+          className="absolute top-0 left-0 right-0 z-50 flex items-center justify-center bg-olive-500 text-white transition-all duration-200"
           style={{ 
             height: `${pullToRefreshDistance}px`,
             opacity: pullToRefreshDistance / 60 

@@ -13,7 +13,7 @@ const ONBOARDING_STEPS = [
     content: (
       <div className="text-center">
         <div className="mb-6">
-          <div className="mx-auto w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="mx-auto w-24 h-24 bg-gradient-to-br from-olive-500 to-gold-600 rounded-full flex items-center justify-center">
             <span className="text-4xl text-white">👋</span>
           </div>
         </div>
@@ -35,7 +35,7 @@ const ONBOARDING_STEPS = [
           </label>
           <input
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
             placeholder="Elite Cuts Barbershop"
           />
         </div>
@@ -43,7 +43,7 @@ const ONBOARDING_STEPS = [
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Number of Barbers
           </label>
-          <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500">
             <option>1-3</option>
             <option>4-7</option>
             <option>8-15</option>
@@ -54,7 +54,7 @@ const ONBOARDING_STEPS = [
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Primary Goal
           </label>
-          <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500">
             <option>Increase bookings</option>
             <option>Improve customer retention</option>
             <option>Streamline operations</option>
@@ -105,7 +105,7 @@ const ONBOARDING_STEPS = [
           ].map((integration) => (
             <div key={integration.name} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
               <span className="font-medium">{integration.name}</span>
-              <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              <button className="px-3 py-1 text-sm bg-olive-600 text-white rounded-md hover:bg-olive-700">
                 Connect
               </button>
             </div>
@@ -127,7 +127,7 @@ const ONBOARDING_STEPS = [
           Congratulations! Your account is set up and ready to go. You can always adjust these settings later.
         </p>
         <div className="space-y-2">
-          <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          <button className="w-full px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700">
             Go to Dashboard
           </button>
           <button className="w-full px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
@@ -233,7 +233,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
           {/* Progress bar */}
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-olive-500 to-gold-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -265,9 +265,9 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
                   key={index}
                   className={`h-2 w-2 rounded-full transition-colors ${
                     index === currentStep
-                      ? 'bg-blue-600'
+                      ? 'bg-olive-600'
                       : index < currentStep
-                      ? 'bg-blue-300'
+                      ? 'bg-olive-300'
                       : 'bg-gray-300'
                   }`}
                 />
@@ -276,7 +276,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
             <button
               onClick={handleNext}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              className="px-4 py-2 bg-olive-600 text-white text-sm font-medium rounded-md hover:bg-olive-700 transition-colors flex items-center space-x-2"
             >
               <span>{currentStep === ONBOARDING_STEPS.length - 1 ? 'Complete' : 'Next'}</span>
               <ArrowRightIcon className="h-4 w-4" />

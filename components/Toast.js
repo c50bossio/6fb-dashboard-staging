@@ -21,14 +21,14 @@ const toastStyles = {
   success: 'bg-green-50 border-green-200 text-green-800',
   error: 'bg-red-50 border-red-200 text-red-800',
   warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800'
+  info: 'bg-olive-50 border-olive-200 text-olive-800'
 }
 
 const iconStyles = {
   success: 'text-green-400',
   error: 'text-red-400',
   warning: 'text-yellow-400',
-  info: 'text-blue-400'
+  info: 'text-olive-400'
 }
 
 export default function Toast({ 
@@ -85,7 +85,7 @@ export default function Toast({
                   <button
                     type="button"
                     onClick={action.onClick}
-                    className="text-sm font-medium underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="text-sm font-medium underline hover:no-underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                   >
                     {action.label}
                   </button>
@@ -94,7 +94,7 @@ export default function Toast({
             </div>
             <div className="ml-4 flex-shrink-0 flex">
               <button
-                className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                 onClick={() => onClose?.(id)}
               >
                 <span className="sr-only">Close</span>

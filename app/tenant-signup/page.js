@@ -219,7 +219,7 @@ export default function TenantSignup() {
   const renderStep1 = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <BuildingStorefrontIcon className="mx-auto h-12 w-12 text-blue-600" />
+        <BuildingStorefrontIcon className="mx-auto h-12 w-12 text-olive-600" />
         <h2 className="mt-4 text-2xl font-bold text-gray-900">Tell us about your barbershop</h2>
         <p className="mt-2 text-gray-600">Let's start with the basics</p>
       </div>
@@ -234,7 +234,7 @@ export default function TenantSignup() {
             value={formData.name}
             onChange={(e) => handleInputChange(null, 'name', e.target.value)}
             placeholder="e.g., Downtown Barbershop"
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
               errors.name ? 'border-red-300' : 'border-gray-300'
             }`}
           />
@@ -251,7 +251,7 @@ export default function TenantSignup() {
               value={formData.email}
               onChange={(e) => handleInputChange(null, 'email', e.target.value)}
               placeholder="owner@yourbarbershop.com"
-              className={`w-full px-4 py-3 pl-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-4 py-3 pl-10 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
                 errors.email ? 'border-red-300' : 'border-gray-300'
               }`}
             />
@@ -270,7 +270,7 @@ export default function TenantSignup() {
               value={formData.phone}
               onChange={(e) => handleInputChange(null, 'phone', e.target.value)}
               placeholder="+1 (555) 123-4567"
-              className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
             />
             <PhoneIcon className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
           </div>
@@ -283,7 +283,7 @@ export default function TenantSignup() {
           <select
             value={formData.business_type}
             onChange={(e) => handleInputChange(null, 'business_type', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
           >
             <option value="barbershop">Barbershop</option>
             <option value="salon">Hair Salon</option>
@@ -298,7 +298,7 @@ export default function TenantSignup() {
   const renderStep2 = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <GlobeAmericasIcon className="mx-auto h-12 w-12 text-blue-600" />
+        <GlobeAmericasIcon className="mx-auto h-12 w-12 text-olive-600" />
         <h2 className="mt-4 text-2xl font-bold text-gray-900">Where are you located?</h2>
         <p className="mt-2 text-gray-600">This helps us provide localized features</p>
       </div>
@@ -313,7 +313,7 @@ export default function TenantSignup() {
             value={formData.address.street}
             onChange={(e) => handleInputChange('address', 'street', e.target.value)}
             placeholder="123 Main Street"
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
               errors['address.street'] ? 'border-red-300' : 'border-gray-300'
             }`}
           />
@@ -330,7 +330,7 @@ export default function TenantSignup() {
               value={formData.address.city}
               onChange={(e) => handleInputChange('address', 'city', e.target.value)}
               placeholder="New York"
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
                 errors['address.city'] ? 'border-red-300' : 'border-gray-300'
               }`}
             />
@@ -346,7 +346,7 @@ export default function TenantSignup() {
               value={formData.address.state}
               onChange={(e) => handleInputChange('address', 'state', e.target.value)}
               placeholder="NY"
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
                 errors['address.state'] ? 'border-red-300' : 'border-gray-300'
               }`}
             />
@@ -364,7 +364,7 @@ export default function TenantSignup() {
               value={formData.address.zip}
               onChange={(e) => handleInputChange('address', 'zip', e.target.value)}
               placeholder="10001"
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
                 errors['address.zip'] ? 'border-red-300' : 'border-gray-300'
               }`}
             />
@@ -378,7 +378,7 @@ export default function TenantSignup() {
             <select
               value={formData.address.country}
               onChange={(e) => handleInputChange('address', 'country', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
             >
               <option value="US">United States</option>
               <option value="CA">Canada</option>
@@ -395,7 +395,7 @@ export default function TenantSignup() {
           <select
             value={formData.timezone}
             onChange={(e) => handleInputChange(null, 'timezone', e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
           >
             <option value="America/New_York">Eastern Time (ET)</option>
             <option value="America/Chicago">Central Time (CT)</option>
@@ -413,7 +413,7 @@ export default function TenantSignup() {
   const renderStep3 = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <CreditCardIcon className="mx-auto h-12 w-12 text-blue-600" />
+        <CreditCardIcon className="mx-auto h-12 w-12 text-olive-600" />
         <h2 className="mt-4 text-2xl font-bold text-gray-900">Choose your plan</h2>
         <p className="mt-2 text-gray-600">Start with a 14-day free trial</p>
       </div>
@@ -424,14 +424,14 @@ export default function TenantSignup() {
             key={plan.id}
             className={`relative rounded-lg border-2 p-6 cursor-pointer transition-all ${
               formData.plan_tier === plan.id
-                ? 'border-blue-500 bg-blue-50'
+                ? 'border-olive-500 bg-olive-50'
                 : 'border-gray-200 hover:border-gray-300'
-            } ${plan.popular ? 'ring-2 ring-blue-500' : ''}`}
+            } ${plan.popular ? 'ring-2 ring-olive-500' : ''}`}
             onClick={() => handleInputChange(null, 'plan_tier', plan.id)}
           >
             {plan.popular && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                <span className="bg-olive-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                   Most Popular
                 </span>
               </div>
@@ -464,7 +464,7 @@ export default function TenantSignup() {
 
             {formData.plan_tier === plan.id && (
               <div className="absolute top-4 right-4">
-                <CheckCircleIcon className="h-6 w-6 text-blue-500" />
+                <CheckCircleIcon className="h-6 w-6 text-olive-500" />
               </div>
             )}
           </div>
@@ -486,7 +486,7 @@ export default function TenantSignup() {
   const renderStep4 = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <CheckCircleIcon className="mx-auto h-12 w-12 text-blue-600" />
+        <CheckCircleIcon className="mx-auto h-12 w-12 text-olive-600" />
         <h2 className="mt-4 text-2xl font-bold text-gray-900">Owner information</h2>
         <p className="mt-2 text-gray-600">Create your admin account</p>
       </div>
@@ -502,7 +502,7 @@ export default function TenantSignup() {
               value={formData.owner_user.first_name}
               onChange={(e) => handleInputChange('owner_user', 'first_name', e.target.value)}
               placeholder="John"
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
                 errors['owner_user.first_name'] ? 'border-red-300' : 'border-gray-300'
               }`}
             />
@@ -518,7 +518,7 @@ export default function TenantSignup() {
               value={formData.owner_user.last_name}
               onChange={(e) => handleInputChange('owner_user', 'last_name', e.target.value)}
               placeholder="Smith"
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
                 errors['owner_user.last_name'] ? 'border-red-300' : 'border-gray-300'
               }`}
             />
@@ -536,7 +536,7 @@ export default function TenantSignup() {
               value={formData.owner_user.email}
               onChange={(e) => handleInputChange('owner_user', 'email', e.target.value)}
               placeholder="john@yourbarbershop.com"
-              className={`w-full px-4 py-3 pl-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-4 py-3 pl-10 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
                 errors['owner_user.email'] ? 'border-red-300' : 'border-gray-300'
               }`}
             />
@@ -555,17 +555,17 @@ export default function TenantSignup() {
               value={formData.owner_user.phone}
               onChange={(e) => handleInputChange('owner_user', 'phone', e.target.value)}
               placeholder="+1 (555) 123-4567"
-              className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
             />
             <PhoneIcon className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
           </div>
         </div>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
         <div className="flex items-start">
-          <CheckCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 mr-2" />
-          <div className="text-sm text-blue-800">
+          <CheckCircleIcon className="h-5 w-5 text-olive-600 mt-0.5 mr-2" />
+          <div className="text-sm text-olive-800">
             <strong>You're almost done!</strong> After creating your account, you'll get immediate access to:
             <ul className="mt-2 space-y-1 ml-4">
               <li className="flex items-center">
@@ -598,7 +598,7 @@ export default function TenantSignup() {
                 key={stepNumber}
                 className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
                   step >= stepNumber
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-olive-600 text-white'
                     : 'bg-gray-200 text-gray-600'
                 }`}
               >
@@ -608,7 +608,7 @@ export default function TenantSignup() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-olive-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${(step / 4) * 100}%` }}
             />
           </div>
@@ -647,7 +647,7 @@ export default function TenantSignup() {
               <button
                 type="button"
                 onClick={nextStep}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center"
+                className="px-6 py-2 bg-olive-600 text-white rounded-lg text-sm font-medium hover:bg-olive-700 flex items-center"
               >
                 Next
                 <ArrowRightIcon className="ml-2 h-4 w-4" />
@@ -657,7 +657,7 @@ export default function TenantSignup() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="px-8 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-8 py-2 bg-olive-600 text-white rounded-lg text-sm font-medium hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
                 {loading ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />

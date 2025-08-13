@@ -156,8 +156,8 @@ export async function GET(request) {
         title: title,
         start: booking.start_time,
         end: booking.end_time,
-        backgroundColor: isBlocked ? '#9ca3af' : (isCancelled ? '#ef4444' : (barber.color || '#3b82f6')),
-        borderColor: isBlocked ? '#6b7280' : (isCancelled ? '#dc2626' : (barber.color || '#3b82f6')),
+        backgroundColor: isBlocked ? '#9ca3af' : (isCancelled ? '#ef4444' : (barber.color || '#546355')),
+        borderColor: isBlocked ? '#6b7280' : (isCancelled ? '#dc2626' : (barber.color || '#546355')),
         classNames: isBlocked ? ['blocked-slot'] : (isCancelled ? ['cancelled-appointment'] : []),
         display: 'auto',
         extendedProps: {

@@ -275,7 +275,7 @@ export default function MarketingLinksTab() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <EyeIcon className="h-8 w-8 text-blue-600" />
+              <EyeIcon className="h-8 w-8 text-olive-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
@@ -290,14 +290,14 @@ export default function MarketingLinksTab() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <ChartBarIcon className="h-8 w-8 text-purple-600" />
+              <ChartBarIcon className="h-8 w-8 text-gold-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Conversions</dt>
                 <dd className="text-2xl font-bold text-gray-900">
                   {stats.totalConversions} 
-                  <span className="text-sm text-purple-600">
+                  <span className="text-sm text-gold-600">
                     ({stats.totalClicks > 0 ? ((stats.totalConversions / stats.totalClicks) * 100).toFixed(1) : 0}%)
                   </span>
                 </dd>
@@ -387,7 +387,7 @@ export default function MarketingLinksTab() {
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Services</h4>
                     <div className="flex flex-wrap gap-1">
                       {link.services?.map((service, index) => (
-                        <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
                           {service}
                         </span>
                       ))}
@@ -398,7 +398,7 @@ export default function MarketingLinksTab() {
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Time Slots</h4>
                     <div className="flex flex-wrap gap-1">
                       {link.timeSlots?.map((slot, index) => (
-                        <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gold-100 text-gold-800">
                           {slot}
                         </span>
                       ))}
@@ -409,7 +409,7 @@ export default function MarketingLinksTab() {
                 {/* Performance Metrics */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-blue-600">{link.clicks || 0}</div>
+                    <div className="text-2xl font-bold text-olive-600">{link.clicks || 0}</div>
                     <div className="text-xs text-gray-500">Clicks</div>
                   </div>
                   <div>
@@ -417,7 +417,7 @@ export default function MarketingLinksTab() {
                     <div className="text-xs text-gray-500">Bookings</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-purple-600">{link.embed_count || 0}</div>
+                    <div className="text-2xl font-bold text-gold-600">{link.embed_count || 0}</div>
                     <div className="text-xs text-gray-500">Embeds</div>
                   </div>
                   <div>
@@ -452,7 +452,7 @@ export default function MarketingLinksTab() {
                   
                   <button
                     onClick={() => generateQRCode(link.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all bg-olive-100 text-olive-700 hover:bg-olive-200"
                     title="Generate QR"
                   >
                     <QrCodeIcon className="h-4 w-4" />
@@ -461,7 +461,7 @@ export default function MarketingLinksTab() {
                   
                   <button
                     onClick={() => showEmbedCode(link.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg transition-all"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-100 text-olive-700 hover:bg-indigo-200 rounded-lg transition-all"
                     title="Embed Code"
                   >
                     <CodeBracketIcon className="h-4 w-4" />

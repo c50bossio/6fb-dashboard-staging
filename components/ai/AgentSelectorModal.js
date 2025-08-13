@@ -117,7 +117,7 @@ export default function AgentSelectorModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+            <div className="h-10 w-10 bg-gradient-to-br from-olive-500 to-gold-600 rounded-full flex items-center justify-center">
               <SparklesIcon className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -131,7 +131,7 @@ export default function AgentSelectorModal({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowMetrics(!showMetrics)}
-              className="px-3 py-1 text-sm text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+              className="px-3 py-1 text-sm text-olive-600 bg-olive-50 rounded-md hover:bg-olive-100 transition-colors"
             >
               {showMetrics ? 'Hide Metrics' : 'Show Metrics'}
             </button>
@@ -147,29 +147,29 @@ export default function AgentSelectorModal({
 
         {/* Routing Suggestion */}
         {routingSuggestion && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mb-6 p-4 bg-olive-50 border border-olive-200 rounded-lg">
             <div className="flex items-start space-x-3">
-              <SparklesIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+              <SparklesIcon className="h-5 w-5 text-olive-600 mt-0.5" />
               <div className="flex-1">
-                <h4 className="text-sm font-medium text-blue-900 mb-2">
+                <h4 className="text-sm font-medium text-olive-900 mb-2">
                   AI Recommendation
                 </h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-blue-700">Suggested Agent:</span>
-                    <span className="font-medium text-blue-900 ml-2">
+                    <span className="text-olive-700">Suggested Agent:</span>
+                    <span className="font-medium text-olive-900 ml-2">
                       {routingSuggestion.agent.name}
                     </span>
                   </div>
                   <div>
-                    <span className="text-blue-700">Confidence:</span>
-                    <span className="font-medium text-blue-900 ml-2">
+                    <span className="text-olive-700">Confidence:</span>
+                    <span className="font-medium text-olive-900 ml-2">
                       {formatPercentage(routingSuggestion.confidence)}
                     </span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-blue-700">Reason:</span>
-                    <span className="text-blue-800 ml-2">
+                    <span className="text-olive-700">Reason:</span>
+                    <span className="text-olive-800 ml-2">
                       {routingSuggestion.routing.reason}
                     </span>
                   </div>
@@ -177,7 +177,7 @@ export default function AgentSelectorModal({
                 
                 <button
                   onClick={() => handleSelectAgent(routingSuggestion.agent)}
-                  className="mt-3 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                  className="mt-3 px-4 py-2 bg-olive-600 text-white text-sm rounded-lg hover:bg-olive-700 transition-colors"
                 >
                   Use Recommendation
                 </button>
@@ -188,7 +188,7 @@ export default function AgentSelectorModal({
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <ArrowPathIcon className="h-8 w-8 animate-spin text-blue-600" />
+            <ArrowPathIcon className="h-8 w-8 animate-spin text-olive-600" />
             <span className="ml-2 text-gray-600">Loading agents...</span>
           </div>
         ) : (
@@ -203,14 +203,14 @@ export default function AgentSelectorModal({
                   key={agent.id}
                   className={`
                     relative border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md
-                    ${isRecommended ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white'}
+                    ${isRecommended ? 'border-olive-300 bg-olive-50' : 'border-gray-200 bg-white'}
                     ${isCurrentAgent ? 'ring-2 ring-green-500' : ''}
                   `}
                   onClick={() => handleSelectAgent(agent)}
                 >
                   {isRecommended && (
                     <div className="absolute -top-2 -right-2">
-                      <div className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                      <div className="bg-olive-600 text-white text-xs px-2 py-1 rounded-full">
                         Recommended
                       </div>
                     </div>

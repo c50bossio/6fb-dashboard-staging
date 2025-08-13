@@ -111,7 +111,7 @@ export default function AnalyticsDashboard() {
         <div className="flex gap-2">
           <button
             onClick={handleExportData}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
           >
             Export Data
           </button>
@@ -168,7 +168,7 @@ export default function AnalyticsDashboard() {
                     <p className="font-semibold">${service.revenue}</p>
                     <div className="w-20 bg-gray-200 rounded-full h-2">
                       <div 
-                        className="bg-blue-600 h-2 rounded-full" 
+                        className="bg-olive-600 h-2 rounded-full" 
                         style={{ width: `${Math.min((service.bookings / 50) * 100, 100)}%` }}
                       ></div>
                     </div>
@@ -226,7 +226,7 @@ export default function AnalyticsDashboard() {
             </div>
             <div>
               <h4 className="font-medium mb-2">Peak Hours</h4>
-              <p className="text-3xl font-bold text-blue-600">
+              <p className="text-3xl font-bold text-olive-600">
                 {metrics.peakHours || 'Analyzing...'}
               </p>
               <p className="text-sm text-gray-500">Highest booking volume</p>
@@ -314,7 +314,7 @@ function AIInsights({ analytics }) {
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center">
           🤖 AI Insights
-          <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+          <span className="ml-2 px-2 py-1 bg-olive-100 text-olive-800 text-xs rounded-full">
             Beta
           </span>
         </h3>
@@ -329,13 +329,13 @@ function AIInsights({ analytics }) {
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center">
         🤖 AI Insights
-        <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+        <span className="ml-2 px-2 py-1 bg-olive-100 text-olive-800 text-xs rounded-full">
           Beta
         </span>
       </h3>
       <div className="space-y-4">
         {insights.map((insight, index) => (
-          <div key={index} className="border-l-4 border-blue-500 pl-4">
+          <div key={index} className="border-l-4 border-olive-500 pl-4">
             <div className="flex items-center justify-between mb-1">
               <h4 className="font-medium">{insight.title}</h4>
               <span className={`px-2 py-1 text-xs rounded-full ${

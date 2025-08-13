@@ -94,7 +94,7 @@ export default function UnifiedExecutiveSummary({ data }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-4">
+      <div className="bg-gradient-to-r from-indigo-500 to-gold-600 text-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold">Executive Overview</h2>
@@ -123,7 +123,7 @@ export default function UnifiedExecutiveSummary({ data }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <CurrencyDollarIcon className="h-5 w-5 text-indigo-600" />
+                  <CurrencyDollarIcon className="h-5 w-5 text-olive-600" />
                   {formatChange(12.5)}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -134,7 +134,7 @@ export default function UnifiedExecutiveSummary({ data }) {
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <UserGroupIcon className="h-5 w-5 text-blue-600" />
+                  <UserGroupIcon className="h-5 w-5 text-olive-600" />
                   {formatChange(8.3)}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
@@ -175,14 +175,14 @@ export default function UnifiedExecutiveSummary({ data }) {
             </h3>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-blue-50 rounded-lg p-4">
+              <div className="bg-olive-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-gray-900">
                   ${todayMetrics.revenue}
                 </div>
                 <div className="text-sm text-gray-600">Today's Revenue</div>
               </div>
 
-              <div className="bg-purple-50 rounded-lg p-4">
+              <div className="bg-gold-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-gray-900">
                   {todayMetrics.bookings}
                 </div>
@@ -216,7 +216,7 @@ export default function UnifiedExecutiveSummary({ data }) {
                   <div className="text-3xl font-bold text-gray-900">{healthScore}/100</div>
                   <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                     healthColor === 'green' ? 'bg-green-100 text-green-800' :
-                    healthColor === 'blue' ? 'bg-blue-100 text-blue-800' :
+                    healthColor === 'blue' ? 'bg-olive-100 text-olive-800' :
                     healthColor === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-red-100 text-red-800'
                   }`}>
@@ -231,7 +231,7 @@ export default function UnifiedExecutiveSummary({ data }) {
                   <div 
                     className={`h-full transition-all duration-500 ${
                       healthColor === 'green' ? 'bg-green-500' :
-                      healthColor === 'blue' ? 'bg-blue-500' :
+                      healthColor === 'blue' ? 'bg-olive-500' :
                       healthColor === 'yellow' ? 'bg-yellow-500' :
                       'bg-red-500'
                     }`}
@@ -248,15 +248,15 @@ export default function UnifiedExecutiveSummary({ data }) {
         </div>
 
         {/* AI Insights */}
-        <div className="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4">
+        <div className="mt-6 bg-gradient-to-r from-gold-50 to-indigo-50 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <SparklesIcon className="h-5 w-5 text-purple-600 mt-0.5" />
+            <SparklesIcon className="h-5 w-5 text-gold-600 mt-0.5" />
             <div className="flex-1">
               <h4 className="text-sm font-semibold text-gray-900 mb-2">AI Insights</h4>
               <div className="space-y-2">
                 {aiInsights.slice(0, 2).map((insight, idx) => (
                   <div key={idx} className="flex items-start gap-2">
-                    <span className="text-purple-600">•</span>
+                    <span className="text-gold-600">•</span>
                     <p className="text-sm text-gray-700">{insight}</p>
                   </div>
                 ))}

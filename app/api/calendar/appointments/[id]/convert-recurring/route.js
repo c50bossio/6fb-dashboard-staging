@@ -263,8 +263,8 @@ function transformBookingToEvent(booking) {
     title: `${booking.customer_name || 'Customer'} - ${booking.service_type || 'Unknown Service'}`,
     start: booking.start_time,
     end: booking.end_time,
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: '#546355',
+    borderColor: '#546355',
     extendedProps: {
       customer: booking.customer_name,
       customerPhone: booking.customer_phone,

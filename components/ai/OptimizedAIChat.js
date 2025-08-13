@@ -236,7 +236,7 @@ export default function OptimizedAIChat({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="h-10 w-10 bg-gradient-to-br from-olive-500 to-gold-600 rounded-full flex items-center justify-center">
             <SparklesIcon className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -252,7 +252,7 @@ export default function OptimizedAIChat({
             <select
               value={selectedAgent}
               onChange={(e) => setSelectedAgent(e.target.value)}
-              className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               disabled={isStreaming}
             >
               {agents.map(agent => (
@@ -315,7 +315,7 @@ export default function OptimizedAIChat({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={placeholder}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
             disabled={isStreaming}
           />
           
@@ -331,7 +331,7 @@ export default function OptimizedAIChat({
             <button
               type="submit"
               disabled={!input.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               <PaperAirplaneIcon className="h-5 w-5" />
             </button>
@@ -360,7 +360,7 @@ function MessageBubble({ message }) {
         className={`
           max-w-[80%] rounded-lg px-4 py-2
           ${isUser 
-            ? 'bg-blue-600 text-white' 
+            ? 'bg-olive-600 text-white' 
             : 'bg-gray-100 text-gray-900'
           }
           ${message.isStreaming ? 'animate-pulse' : ''}

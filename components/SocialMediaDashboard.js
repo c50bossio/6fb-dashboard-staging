@@ -165,9 +165,9 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
     <div className="bg-white rounded-lg shadow-md border">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-2">
-          <ShareIcon className="h-5 w-5 text-blue-500" />
+          <ShareIcon className="h-5 w-5 text-olive-500" />
           <h3 className="font-semibold text-gray-900">Social Media Hub</h3>
-          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+          <span className="bg-olive-100 text-olive-800 text-xs px-2 py-1 rounded-full">
             {dashboard.overview.posts_this_month} posts this month
           </span>
         </div>
@@ -175,7 +175,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
         <div className="flex items-center space-x-2">
           <button
             onClick={() => generateContent('promotional')}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
+            className="text-olive-600 hover:text-olive-700 text-sm font-medium flex items-center space-x-1"
           >
             <SparklesIcon className="h-4 w-4" />
             <span>Generate</span>
@@ -183,7 +183,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
           <button
             onClick={loadDashboard}
             disabled={loading}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center space-x-1"
+            className="text-olive-600 hover:text-olive-700 text-sm font-medium flex items-center space-x-1"
           >
             <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
@@ -205,7 +205,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -223,16 +223,16 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
           <div className="space-y-6">
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+              <div className="bg-gradient-to-r from-olive-50 to-indigo-50 rounded-lg p-4 border border-olive-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-blue-600">Total Followers</div>
-                    <div className="text-2xl font-bold text-blue-900">
+                    <div className="text-sm font-medium text-olive-600">Total Followers</div>
+                    <div className="text-2xl font-bold text-olive-900">
                       {dashboard.overview.total_followers.toLocaleString()}
                     </div>
-                    <div className="text-xs text-blue-600">{dashboard.overview.monthly_growth} this month</div>
+                    <div className="text-xs text-olive-600">{dashboard.overview.monthly_growth} this month</div>
                   </div>
-                  <HeartIcon className="h-8 w-8 text-blue-400" />
+                  <HeartIcon className="h-8 w-8 text-olive-400" />
                 </div>
               </div>
               
@@ -249,16 +249,16 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
                 </div>
               </div>
               
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+              <div className="bg-gradient-to-r from-gold-50 to-pink-50 rounded-lg p-4 border border-gold-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-purple-600">Posts This Month</div>
-                    <div className="text-2xl font-bold text-purple-900">
+                    <div className="text-sm font-medium text-gold-600">Posts This Month</div>
+                    <div className="text-2xl font-bold text-gold-900">
                       {dashboard.overview.posts_this_month}
                     </div>
-                    <div className="text-xs text-purple-600">{dashboard.overview.automated_posts} automated</div>
+                    <div className="text-xs text-gold-600">{dashboard.overview.automated_posts} automated</div>
                   </div>
-                  <MegaphoneIcon className="h-8 w-8 text-purple-400" />
+                  <MegaphoneIcon className="h-8 w-8 text-gold-400" />
                 </div>
               </div>
               
@@ -356,48 +356,48 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
               <h4 className="font-medium text-gray-900 mb-3">AI Content Suggestions</h4>
               <div className="space-y-4">
                 {dashboard.content_suggestions.map((suggestion, idx) => (
-                  <div key={idx} className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                  <div key={idx} className="border border-olive-200 rounded-lg p-4 bg-olive-50">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${{
                             promotional: 'bg-red-100 text-red-800',
-                            behind_the_scenes: 'bg-purple-100 text-purple-800',
+                            behind_the_scenes: 'bg-gold-100 text-gold-800',
                             customer_showcase: 'bg-green-100 text-green-800',
-                            educational: 'bg-blue-100 text-blue-800'
+                            educational: 'bg-olive-100 text-olive-800'
                           }[suggestion.type] || 'bg-gray-100 text-gray-800'}`}>
                             {suggestion.type.replace('_', ' ')}
                           </span>
-                          <h5 className="font-medium text-blue-900">{suggestion.title}</h5>
+                          <h5 className="font-medium text-olive-900">{suggestion.title}</h5>
                         </div>
-                        <p className="text-blue-800 mb-3">{suggestion.content}</p>
+                        <p className="text-olive-800 mb-3">{suggestion.content}</p>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <span className="text-blue-600 font-medium">Best Time:</span>
-                            <span className="text-blue-800 ml-1">{suggestion.best_time}</span>
+                            <span className="text-olive-600 font-medium">Best Time:</span>
+                            <span className="text-olive-800 ml-1">{suggestion.best_time}</span>
                           </div>
                           <div>
-                            <span className="text-blue-600 font-medium">Expected:</span>
-                            <span className="text-blue-800 ml-1">{suggestion.expected_engagement}</span>
+                            <span className="text-olive-600 font-medium">Expected:</span>
+                            <span className="text-olive-800 ml-1">{suggestion.expected_engagement}</span>
                           </div>
                         </div>
                         <div className="mt-2">
-                          <span className="text-blue-600 font-medium text-sm">Platforms:</span>
-                          <span className="text-blue-800 ml-1 text-sm">{suggestion.platforms.join(', ')}</span>
+                          <span className="text-olive-600 font-medium text-sm">Platforms:</span>
+                          <span className="text-olive-800 ml-1 text-sm">{suggestion.platforms.join(', ')}</span>
                         </div>
                       </div>
                       <div className="flex flex-col space-y-2 ml-4">
                         <button
                           onClick={() => createPost(suggestion)}
                           disabled={creatingPost}
-                          className="bg-blue-600 text-white hover:bg-blue-700 px-3 py-1 rounded text-sm font-medium flex items-center space-x-1 disabled:opacity-50"
+                          className="bg-olive-600 text-white hover:bg-olive-700 px-3 py-1 rounded text-sm font-medium flex items-center space-x-1 disabled:opacity-50"
                         >
                           <PlusIcon className="h-3 w-3" />
                           <span>Post Now</span>
                         </button>
                         <button
                           onClick={() => schedulePost(suggestion)}
-                          className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded text-sm font-medium flex items-center space-x-1"
+                          className="bg-olive-100 text-olive-700 hover:bg-olive-200 px-3 py-1 rounded text-sm font-medium flex items-center space-x-1"
                         >
                           <CalendarDaysIcon className="h-3 w-3" />
                           <span>Schedule</span>
@@ -416,7 +416,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
                 {dashboard.recent_posts.map((post, idx) => (
                   <div key={idx} className={`border-l-4 rounded-r-lg p-4 ${
                     post.performance === 'excellent' ? 'border-l-green-500 bg-green-50' :
-                    post.performance === 'good' ? 'border-l-blue-500 bg-blue-50' :
+                    post.performance === 'good' ? 'border-l-blue-500 bg-olive-50' :
                     'border-l-gray-500 bg-gray-50'
                   }`}>
                     <div className="flex items-start justify-between">
@@ -424,13 +424,13 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
                         <div className="flex items-center space-x-2 mb-1">
                           <span className="font-medium text-gray-900">{post.platform}</span>
                           <span className={`text-xs px-2 py-1 rounded-full ${
-                            post.type === 'automated' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+                            post.type === 'automated' ? 'bg-gold-100 text-gold-800' : 'bg-gray-100 text-gray-800'
                           }`}>
                             {post.type}
                           </span>
                           <span className={`text-xs px-2 py-1 rounded-full ${
                             post.performance === 'excellent' ? 'bg-green-100 text-green-800' :
-                            post.performance === 'good' ? 'bg-blue-100 text-blue-800' :
+                            post.performance === 'good' ? 'bg-olive-100 text-olive-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {post.performance}
@@ -460,19 +460,19 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
               <h4 className="font-medium text-indigo-900 mb-3">📊 Performance Insights</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-medium text-indigo-700">Best Content:</span>
+                  <span className="font-medium text-olive-700">Best Content:</span>
                   <span className="text-indigo-800 ml-1">{dashboard.performance_insights.best_performing_content}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-indigo-700">Engagement Trend:</span>
+                  <span className="font-medium text-olive-700">Engagement Trend:</span>
                   <span className="text-indigo-800 ml-1">{dashboard.performance_insights.engagement_trends}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-indigo-700">Top Hashtags:</span>
+                  <span className="font-medium text-olive-700">Top Hashtags:</span>
                   <span className="text-indigo-800 ml-1">{dashboard.performance_insights.top_hashtags.slice(0, 3).join(', ')}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-indigo-700">Audience:</span>
+                  <span className="font-medium text-olive-700">Audience:</span>
                   <span className="text-indigo-800 ml-1">{dashboard.performance_insights.audience_demographics.age_groups}</span>
                 </div>
               </div>

@@ -24,7 +24,7 @@ const variantStyles = {
   success: 'border-green-200 shadow-sm bg-green-50',
   warning: 'border-yellow-200 shadow-sm bg-yellow-50',
   error: 'border-red-200 shadow-sm bg-red-50',
-  info: 'border-blue-200 shadow-sm bg-blue-50'
+  info: 'border-olive-200 shadow-sm bg-olive-50'
 }
 
 // Map padding sizes
@@ -106,8 +106,8 @@ export function StatCard({
   className = '' 
 }) {
   const colors = {
-    blue: 'text-blue-600',
-    purple: 'text-purple-600',
+    blue: 'text-olive-600',
+    purple: 'text-gold-600',
     green: 'text-green-600',
     orange: 'text-orange-600',
     red: 'text-red-600'

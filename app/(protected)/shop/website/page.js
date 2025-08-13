@@ -239,7 +239,7 @@ export default function ShopWebsiteCustomization() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <BuildingStorefrontIcon className="h-6 w-6 text-indigo-600" />
+              <BuildingStorefrontIcon className="h-6 w-6 text-olive-600" />
               <h1 className="text-lg font-semibold text-gray-900">
                 Shop Website Customization
               </h1>
@@ -264,7 +264,7 @@ export default function ShopWebsiteCustomization() {
               <button
                 onClick={handlePublish}
                 disabled={saving}
-                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 bg-olive-600 text-white text-sm font-medium rounded-lg hover:bg-olive-700 disabled:opacity-50"
               >
                 {saving ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
@@ -307,7 +307,7 @@ export default function ShopWebsiteCustomization() {
                   className={`
                     flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap
                     ${activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-olive-500 text-olive-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }
                   `}
@@ -341,7 +341,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.name}
                       onChange={(e) => setSettings({ ...settings, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -353,7 +353,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.tagline}
                       onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -365,7 +365,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.description}
                       onChange={(e) => setSettings({ ...settings, description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -379,7 +379,7 @@ export default function ShopWebsiteCustomization() {
                         type="text"
                         value={settings.slug}
                         onChange={(e) => setSettings({ ...settings, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                       />
                     </div>
                   </div>
@@ -400,7 +400,7 @@ export default function ShopWebsiteCustomization() {
                       type="tel"
                       value={settings.phone}
                       onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -412,7 +412,7 @@ export default function ShopWebsiteCustomization() {
                       type="email"
                       value={settings.email}
                       onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -424,7 +424,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.address}
                       onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -437,7 +437,7 @@ export default function ShopWebsiteCustomization() {
                         type="text"
                         value={settings.city}
                         onChange={(e) => setSettings({ ...settings, city: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                       />
                     </div>
                     <div>
@@ -448,7 +448,7 @@ export default function ShopWebsiteCustomization() {
                         type="text"
                         value={settings.state}
                         onChange={(e) => setSettings({ ...settings, state: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                       />
                     </div>
                   </div>
@@ -474,7 +474,7 @@ export default function ShopWebsiteCustomization() {
                           type="checkbox"
                           checked={!hours.closed}
                           onChange={(e) => updateBusinessHours(day, 'closed', !e.target.checked)}
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                         />
                         
                         {!hours.closed && (
@@ -519,7 +519,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.instagram_url}
                       onChange={(e) => setSettings({ ...settings, instagram_url: e.target.value })}
                       placeholder="https://instagram.com/yourshop"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -532,7 +532,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.facebook_url}
                       onChange={(e) => setSettings({ ...settings, facebook_url: e.target.value })}
                       placeholder="https://facebook.com/yourshop"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -545,7 +545,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.google_business_url}
                       onChange={(e) => setSettings({ ...settings, google_business_url: e.target.value })}
                       placeholder="https://g.page/yourshop"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -607,7 +607,7 @@ export default function ShopWebsiteCustomization() {
                       key={template.id}
                       className={`flex items-start p-4 border rounded-lg cursor-pointer hover:bg-gray-50 ${
                         settings.theme_template === template.id
-                          ? 'border-indigo-500 bg-indigo-50'
+                          ? 'border-olive-500 bg-indigo-50'
                           : 'border-gray-200'
                       }`}
                     >
@@ -617,7 +617,7 @@ export default function ShopWebsiteCustomization() {
                         value={template.id}
                         checked={settings.theme_template === template.id}
                         onChange={(e) => setSettings({ ...settings, theme_template: e.target.value })}
-                        className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                        className="mt-1 h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300"
                       />
                       <div className="ml-3">
                         <p className="font-medium text-gray-900">{template.name}</p>
@@ -711,7 +711,7 @@ export default function ShopWebsiteCustomization() {
                     <select
                       value={settings.heading_font}
                       onChange={(e) => setSettings({ ...settings, heading_font: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     >
                       {fontOptions.map(font => (
                         <option key={font} value={font}>{font}</option>
@@ -726,7 +726,7 @@ export default function ShopWebsiteCustomization() {
                     <select
                       value={settings.body_font}
                       onChange={(e) => setSettings({ ...settings, body_font: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     >
                       {fontOptions.map(font => (
                         <option key={font} value={font}>{font}</option>
@@ -757,7 +757,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.hero_title}
                       onChange={(e) => setSettings({ ...settings, hero_title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -769,7 +769,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.hero_subtitle}
                       onChange={(e) => setSettings({ ...settings, hero_subtitle: e.target.value })}
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -781,7 +781,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.hero_cta_text}
                       onChange={(e) => setSettings({ ...settings, hero_cta_text: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -801,7 +801,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.about_title}
                       onChange={(e) => setSettings({ ...settings, about_title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -813,7 +813,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.about_content}
                       onChange={(e) => setSettings({ ...settings, about_content: e.target.value })}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -835,7 +835,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.services_title}
                       onChange={(e) => setSettings({ ...settings, services_title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -847,7 +847,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.services_description}
                       onChange={(e) => setSettings({ ...settings, services_description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -857,7 +857,7 @@ export default function ShopWebsiteCustomization() {
                         type="checkbox"
                         checked={settings.show_pricing}
                         onChange={(e) => setSettings({ ...settings, show_pricing: e.target.checked })}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <span className="ml-2 text-sm text-gray-700">Show pricing on website</span>
                     </label>
@@ -879,7 +879,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.team_title}
                       onChange={(e) => setSettings({ ...settings, team_title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -891,7 +891,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.team_description}
                       onChange={(e) => setSettings({ ...settings, team_description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -901,7 +901,7 @@ export default function ShopWebsiteCustomization() {
                         type="checkbox"
                         checked={settings.show_team}
                         onChange={(e) => setSettings({ ...settings, show_team: e.target.checked })}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <span className="ml-2 text-sm text-gray-700">Show team section</span>
                     </label>
@@ -911,7 +911,7 @@ export default function ShopWebsiteCustomization() {
                         type="checkbox"
                         checked={settings.show_portfolio}
                         onChange={(e) => setSettings({ ...settings, show_portfolio: e.target.checked })}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <span className="ml-2 text-sm text-gray-700">Show portfolio gallery</span>
                     </label>
@@ -921,7 +921,7 @@ export default function ShopWebsiteCustomization() {
                         type="checkbox"
                         checked={settings.show_testimonials}
                         onChange={(e) => setSettings({ ...settings, show_testimonials: e.target.checked })}
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
                       <span className="ml-2 text-sm text-gray-700">Show testimonials</span>
                     </label>
@@ -946,7 +946,7 @@ export default function ShopWebsiteCustomization() {
                       type="checkbox"
                       checked={settings.show_barber_pages}
                       onChange={(e) => setSettings({ ...settings, show_barber_pages: e.target.checked })}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Enable barber pages</span>
                   </label>
@@ -981,7 +981,7 @@ export default function ShopWebsiteCustomization() {
 
                       <div className="flex items-center space-x-4">
                         {barber.custom_branding && (
-                          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+                          <span className="px-2 py-1 bg-gold-100 text-gold-700 text-xs font-medium rounded-full">
                             Custom Branding
                           </span>
                         )}
@@ -1020,11 +1020,11 @@ export default function ShopWebsiteCustomization() {
               </div>
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">
+            <div className="bg-olive-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-olive-900 mb-2">
                 Barber Page Settings
               </h4>
-              <ul className="text-xs text-blue-700 space-y-1">
+              <ul className="text-xs text-olive-700 space-y-1">
                 <li>• Barbers can customize their individual pages after approval</li>
                 <li>• Custom branding allows barbers to use their own colors and styling</li>
                 <li>• All pages remain under your shop's domain for better SEO</li>
@@ -1049,7 +1049,7 @@ export default function ShopWebsiteCustomization() {
                       type="checkbox"
                       checked={settings.enable_online_booking}
                       onChange={(e) => setSettings({ ...settings, enable_online_booking: e.target.checked })}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Enable online booking</span>
                   </label>
@@ -1061,7 +1061,7 @@ export default function ShopWebsiteCustomization() {
                     <select
                       value={settings.booking_widget_position}
                       onChange={(e) => setSettings({ ...settings, booking_widget_position: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     >
                       <option value="bottom-right">Bottom Right</option>
                       <option value="bottom-left">Bottom Left</option>
@@ -1075,7 +1075,7 @@ export default function ShopWebsiteCustomization() {
                       type="checkbox"
                       checked={settings.require_deposit}
                       onChange={(e) => setSettings({ ...settings, require_deposit: e.target.checked })}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Require deposit for bookings</span>
                   </label>
@@ -1091,7 +1091,7 @@ export default function ShopWebsiteCustomization() {
                           type="number"
                           value={settings.deposit_amount}
                           onChange={(e) => setSettings({ ...settings, deposit_amount: parseFloat(e.target.value) })}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                         />
                       </div>
                     </div>
@@ -1115,7 +1115,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.cancellation_policy}
                       onChange={(e) => setSettings({ ...settings, cancellation_policy: e.target.value })}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -1142,7 +1142,7 @@ export default function ShopWebsiteCustomization() {
                       type="text"
                       value={settings.seo_title}
                       onChange={(e) => setSettings({ ...settings, seo_title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                     <p className="mt-1 text-xs text-gray-500">
                       {settings.seo_title.length}/60 characters
@@ -1157,7 +1157,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.seo_description}
                       onChange={(e) => setSettings({ ...settings, seo_description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                     <p className="mt-1 text-xs text-gray-500">
                       {settings.seo_description.length}/160 characters
@@ -1173,7 +1173,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.seo_keywords}
                       onChange={(e) => setSettings({ ...settings, seo_keywords: e.target.value })}
                       placeholder="barbershop, haircut, beard trim, mens grooming"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -1196,7 +1196,7 @@ export default function ShopWebsiteCustomization() {
                       value={settings.google_analytics_id}
                       onChange={(e) => setSettings({ ...settings, google_analytics_id: e.target.value })}
                       placeholder="G-XXXXXXXXXX"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -1304,8 +1304,8 @@ export default function ShopWebsiteCustomization() {
               </div>
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-700">
+            <div className="bg-olive-50 rounded-lg p-4">
+              <p className="text-sm text-olive-700">
                 This is a simplified preview. The actual website will include all sections, responsive design, and interactive elements.
               </p>
             </div>
@@ -1317,7 +1317,7 @@ export default function ShopWebsiteCustomization() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="inline-flex items-center px-6 py-3 bg-olive-600 text-white font-medium rounded-lg hover:bg-olive-700 disabled:opacity-50"
           >
             {saving ? (
               <>

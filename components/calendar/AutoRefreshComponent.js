@@ -44,7 +44,7 @@ export default function AutoRefreshComponent({ onRefresh, intervalMs = 5000 }) {
   }, [intervalMs, onRefresh, isChecking, refreshCount])
   
   return (
-    <div className="fixed bottom-4 right-4 bg-blue-500 text-white px-3 py-1 rounded text-sm shadow-lg">
+    <div className="fixed bottom-4 right-4 bg-olive-500 text-white px-3 py-1 rounded text-sm shadow-lg">
       🔄 Auto-refresh: {isChecking ? 'Checking...' : `Last: ${new Date(lastCheck).toLocaleTimeString()}`}
     </div>
   )

@@ -279,7 +279,7 @@ export default function PublicBarbershopPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Loading barbershop...</p>
         </div>
       </div>
@@ -617,7 +617,7 @@ export default function PublicBarbershopPage() {
                   key={index}
                   onClick={() => setGalleryIndex(index)}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    index === galleryIndex ? 'bg-blue-600' : 'bg-gray-300'
+                    index === galleryIndex ? 'bg-olive-600' : 'bg-gray-300'
                   }`}
                 />
               ))}

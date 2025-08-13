@@ -314,7 +314,7 @@ function BookingPageContent() {
   if (loading && !barberData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -408,19 +408,19 @@ function BookingPageContent() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between text-sm">
-            <span className={currentStep >= 1 ? 'text-blue-600 font-medium' : 'text-gray-400'}>
+            <span className={currentStep >= 1 ? 'text-olive-600 font-medium' : 'text-gray-400'}>
               1. Choose Services
             </span>
-            <span className={currentStep >= 2 ? 'text-blue-600 font-medium' : 'text-gray-400'}>
+            <span className={currentStep >= 2 ? 'text-olive-600 font-medium' : 'text-gray-400'}>
               2. Select Time
             </span>
-            <span className={currentStep >= 3 ? 'text-blue-600 font-medium' : 'text-gray-400'}>
+            <span className={currentStep >= 3 ? 'text-olive-600 font-medium' : 'text-gray-400'}>
               3. Your Details
             </span>
           </div>
           <div className="mt-2 bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-olive-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${(currentStep / 3) * 100}%` }}
             />
           </div>
@@ -443,7 +443,7 @@ function BookingPageContent() {
                   onClick={() => handleServiceToggle(service)}
                   className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                     selectedServices.find(s => s.id === service.id)
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-olive-500 bg-olive-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
@@ -465,7 +465,7 @@ function BookingPageContent() {
                     <div className="text-right">
                       <p className="text-xl font-bold text-gray-900">${service.price}</p>
                       {selectedServices.find(s => s.id === service.id) && (
-                        <CheckCircleIcon className="h-5 w-5 text-blue-500 mt-1 ml-auto" />
+                        <CheckCircleIcon className="h-5 w-5 text-olive-500 mt-1 ml-auto" />
                       )}
                     </div>
                   </div>
@@ -531,7 +531,7 @@ function BookingPageContent() {
                           onClick={() => setSelectedDateTime(dateTime)}
                           className={`p-3 text-sm rounded-lg border-2 transition-all ${
                             isSelected
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              ? 'border-olive-500 bg-olive-50 text-olive-700'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
@@ -581,7 +581,7 @@ function BookingPageContent() {
                       type="text"
                       value={customerInfo.name}
                       onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Enter your full name"
                     />
                   </div>
@@ -597,7 +597,7 @@ function BookingPageContent() {
                       type="tel"
                       value={customerInfo.phone}
                       onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -614,7 +614,7 @@ function BookingPageContent() {
                     type="email"
                     value={customerInfo.email}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -628,7 +628,7 @@ function BookingPageContent() {
                   value={customerInfo.notes}
                   onChange={(e) => setCustomerInfo(prev => ({ ...prev, notes: e.target.value }))}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                   placeholder="Any special instructions or requests..."
                 />
               </div>
@@ -642,7 +642,7 @@ function BookingPageContent() {
                     type="checkbox"
                     checked={customerInfo.smsConsent}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, smsConsent: e.target.checked }))}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded mt-0.5"
                   />
                   <label htmlFor="smsConsent" className="ml-2 text-sm text-gray-600">
                     <span className="font-medium text-gray-900">Opt in to SMS appointment reminders</span> (optional)<br />
@@ -650,11 +650,11 @@ function BookingPageContent() {
                       I agree to receive SMS appointment reminders from BookedBarber. 
                       Message frequency varies. Message and data rates may apply. 
                       Reply STOP to unsubscribe, HELP for help. View our{' '}
-                      <a href="/sms-policy" target="_blank" className="text-blue-600 hover:underline">
+                      <a href="/sms-policy" target="_blank" className="text-olive-600 hover:underline">
                         SMS Policy
                       </a>
                       {' '}and{' '}
-                      <a href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                      <a href="/terms" target="_blank" className="text-olive-600 hover:underline">
                         Terms
                       </a>.
                     </span>
@@ -664,25 +664,25 @@ function BookingPageContent() {
             </div>
 
             {/* Final Summary */}
-            <div className="bg-blue-50 rounded-lg border border-blue-200 p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-4">Booking Summary</h3>
+            <div className="bg-olive-50 rounded-lg border border-olive-200 p-6">
+              <h3 className="text-lg font-semibold text-olive-900 mb-4">Booking Summary</h3>
               
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-blue-700">Barber:</span>
-                  <span className="font-medium text-blue-900">{barberData.name}</span>
+                  <span className="text-olive-700">Barber:</span>
+                  <span className="font-medium text-olive-900">{barberData.name}</span>
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className="text-blue-700">Services:</span>
-                  <span className="font-medium text-blue-900">
+                  <span className="text-olive-700">Services:</span>
+                  <span className="font-medium text-olive-900">
                     {selectedServices.map(s => s.name).join(', ')}
                   </span>
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className="text-blue-700">Date & Time:</span>
-                  <span className="font-medium text-blue-900">
+                  <span className="text-olive-700">Date & Time:</span>
+                  <span className="font-medium text-olive-900">
                     {selectedDateTime && new Date(selectedDateTime).toLocaleString('en-US', {
                       weekday: 'long',
                       year: 'numeric',
@@ -695,13 +695,13 @@ function BookingPageContent() {
                 </div>
                 
                 <div className="flex justify-between">
-                  <span className="text-blue-700">Duration:</span>
-                  <span className="font-medium text-blue-900">{calculateTotalDuration()} minutes</span>
+                  <span className="text-olive-700">Duration:</span>
+                  <span className="font-medium text-olive-900">{calculateTotalDuration()} minutes</span>
                 </div>
                 
                 <div className="flex justify-between text-lg">
-                  <span className="text-blue-700 font-semibold">Total:</span>
-                  <span className="font-bold text-blue-900">${calculateTotalPrice().toFixed(2)}</span>
+                  <span className="text-olive-700 font-semibold">Total:</span>
+                  <span className="font-bold text-olive-900">${calculateTotalPrice().toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -729,7 +729,7 @@ function BookingPageContent() {
                 disabled={!canProceedToStep2()}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
                   canProceedToStep2()
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-olive-600 text-white hover:bg-olive-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
@@ -744,7 +744,7 @@ function BookingPageContent() {
                 disabled={!canProceedToStep3()}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
                   canProceedToStep3()
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-olive-600 text-white hover:bg-olive-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
@@ -797,7 +797,7 @@ export default function BookingPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     }>
       <BookingPageContent />

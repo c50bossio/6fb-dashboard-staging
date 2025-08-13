@@ -57,7 +57,7 @@ export default function ReviewPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading your appointment details...</p>
         </div>
       </div>
@@ -66,7 +66,7 @@ export default function ReviewPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-olive-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Thank You for Your Review!</h1>
@@ -80,7 +80,7 @@ export default function ReviewPage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
           >
             Back to Home
             <ArrowRightIcon className="h-4 w-4 ml-2" />
@@ -91,12 +91,12 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-olive-50 to-gold-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <Link href="/" className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="h-10 w-10 bg-olive-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">6FB</span>
             </div>
             <span className="text-xl font-bold text-gray-900">BookedBarber</span>
@@ -172,7 +172,7 @@ export default function ReviewPage() {
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
               placeholder="What did you like about your visit? Any suggestions for improvement?"
             />
           </div>
@@ -180,7 +180,7 @@ export default function ReviewPage() {
           {/* SMS Opt-in Section */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2 text-blue-600" />
+              <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2 text-olive-600" />
               Stay Connected (Optional)
             </h2>
 
@@ -200,21 +200,21 @@ export default function ReviewPage() {
                     id="phone"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     placeholder="(555) 123-4567"
                   />
                 </div>
               </div>
 
               {phoneNumber && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
                   <div className="flex items-start">
                     <input
                       id="smsConsent"
                       type="checkbox"
                       checked={smsConsent}
                       onChange={(e) => setSmsConsent(e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+                      className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded mt-0.5"
                     />
                     <label htmlFor="smsConsent" className="ml-2 text-sm">
                       <span className="font-semibold text-gray-900">
@@ -227,8 +227,8 @@ export default function ReviewPage() {
                       </span>
                       <span className="text-xs text-gray-500 block mt-2">
                         Reply STOP to unsubscribe, HELP for assistance. 
-                        View our <Link href="/sms-policy" className="text-blue-600 hover:underline">SMS Policy</Link> and{' '}
-                        <Link href="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>.
+                        View our <Link href="/sms-policy" className="text-olive-600 hover:underline">SMS Policy</Link> and{' '}
+                        <Link href="/terms" className="text-olive-600 hover:underline">Terms of Service</Link>.
                       </span>
                     </label>
                   </div>
@@ -256,7 +256,7 @@ export default function ReviewPage() {
               disabled={rating === 0}
               className={`inline-flex items-center px-8 py-3 rounded-lg font-semibold transition-all ${
                 rating > 0
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  ? 'bg-olive-600 text-white hover:bg-olive-700'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
@@ -284,10 +284,10 @@ export default function ReviewPage() {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <p className="mb-4">© 2025 BookedBarber. All rights reserved.</p>
           <div className="flex justify-center space-x-6 text-sm">
-            <Link href="/terms" className="hover:text-blue-400">Terms</Link>
-            <Link href="/privacy" className="hover:text-blue-400">Privacy</Link>
-            <Link href="/sms-policy" className="hover:text-blue-400">SMS Policy</Link>
-            <Link href="/contact" className="hover:text-blue-400">Contact</Link>
+            <Link href="/terms" className="hover:text-olive-400">Terms</Link>
+            <Link href="/privacy" className="hover:text-olive-400">Privacy</Link>
+            <Link href="/sms-policy" className="hover:text-olive-400">SMS Policy</Link>
+            <Link href="/contact" className="hover:text-olive-400">Contact</Link>
           </div>
         </div>
       </footer>

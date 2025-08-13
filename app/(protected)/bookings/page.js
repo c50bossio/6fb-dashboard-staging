@@ -127,7 +127,7 @@ export default function BookingsPage() {
   const getPaymentStatusBadge = (paymentStatus) => {
     const statusConfig = {
       pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Payment Pending' },
-      deposit_paid: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Deposit Paid' },
+      deposit_paid: { bg: 'bg-olive-100', text: 'text-olive-800', label: 'Deposit Paid' },
       paid: { bg: 'bg-green-100', text: 'text-green-800', label: 'Paid' },
       refunded: { bg: 'bg-red-100', text: 'text-red-800', label: 'Refunded' }
     }
@@ -210,7 +210,7 @@ export default function BookingsPage() {
                     {services.find(s => s.id === booking.service_id)?.deposit_required && (
                       <button
                         onClick={() => openPaymentModal(booking, 'deposit')}
-                        className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="w-full flex items-center justify-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
                       >
                         <CreditCardIcon className="h-4 w-4 mr-2" />
                         Pay Deposit

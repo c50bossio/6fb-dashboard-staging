@@ -113,7 +113,7 @@ export default function NotionIntegration() {
   const getConnectionStatusIcon = () => {
     switch (connectionStatus) {
       case 'testing':
-        return <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+        return <Loader2 className="h-4 w-4 animate-spin text-olive-600" />
       case 'connected':
         return <CheckCircle className="h-4 w-4 text-green-600" />
       case 'failed':
@@ -127,12 +127,12 @@ export default function NotionIntegration() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-2 mb-6">
-        <Database className="h-6 w-6 text-purple-600" />
+        <Database className="h-6 w-6 text-gold-600" />
         <h2 className="text-2xl font-bold text-gray-900">Notion Knowledge Extraction</h2>
-        <Badge className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">Automated</Badge>
+        <Badge className="bg-gold-100 text-gold-800 px-2 py-1 rounded text-xs">Automated</Badge>
       </div>
 
-      <Alert className="p-4 border border-blue-200 bg-blue-50 rounded-lg">
+      <Alert className="p-4 border border-olive-200 bg-olive-50 rounded-lg">
         <Brain className="h-4 w-4" />
         <div className="ml-2">
           <strong>Intelligent Knowledge Import:</strong> This will automatically scan your Notion workspace, 
@@ -168,17 +168,17 @@ export default function NotionIntegration() {
                 <h4 className="font-semibold mb-3">📋 3-Step Setup Process:</h4>
                 <div className="space-y-3">
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                    <span className="flex-shrink-0 w-6 h-6 bg-olive-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
                     <div>
                       <p className="font-medium">Create Notion Integration</p>
                       <p className="text-sm text-gray-600">
-                        Go to <a href="https://www.notion.so/my-integrations" target="_blank" className="text-blue-600 underline">notion.so/my-integrations</a> → 
+                        Go to <a href="https://www.notion.so/my-integrations" target="_blank" className="text-olive-600 underline">notion.so/my-integrations</a> → 
                         "New Integration" → Name it "6FB AI Knowledge" → Copy the token
                       </p>
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                    <span className="flex-shrink-0 w-6 h-6 bg-olive-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
                     <div>
                       <p className="font-medium">Share Pages with Integration</p>
                       <p className="text-sm text-gray-600">
@@ -187,7 +187,7 @@ export default function NotionIntegration() {
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                    <span className="flex-shrink-0 w-6 h-6 bg-olive-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
                     <div>
                       <p className="font-medium">Extract Knowledge</p>
                       <p className="text-sm text-gray-600">
@@ -242,12 +242,12 @@ export default function NotionIntegration() {
                 placeholder="secret_xxxxxxxxxxxxxxxxxxxxxxxxxx"
                 value={notionToken}
                 onChange={(e) => setNotionToken(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               />
               <Button
                 onClick={testConnection}
                 disabled={!notionToken.trim() || connectionStatus === 'testing'}
-                className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded flex items-center gap-2"
+                className="bg-olive-600 text-white hover:bg-olive-700 px-4 py-2 rounded flex items-center gap-2"
               >
                 {getConnectionStatusIcon()}
                 Test
@@ -264,7 +264,7 @@ export default function NotionIntegration() {
           <Button
             onClick={extractKnowledge}
             disabled={connectionStatus !== 'connected' || isExtracting}
-            className="w-full bg-purple-600 text-white hover:bg-purple-700 px-4 py-2 rounded flex items-center justify-center gap-2"
+            className="w-full bg-gold-600 text-white hover:bg-gold-700 px-4 py-2 rounded flex items-center justify-center gap-2"
           >
             {isExtracting ? (
               <>
@@ -293,20 +293,20 @@ export default function NotionIntegration() {
             {extractionResults.success ? (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <BookOpen className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-blue-900">{extractionResults.entries_imported}</p>
-                    <p className="text-sm text-blue-700">Entries Imported</p>
+                  <div className="bg-olive-50 p-4 rounded-lg text-center">
+                    <BookOpen className="h-8 w-8 text-olive-600 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-olive-900">{extractionResults.entries_imported}</p>
+                    <p className="text-sm text-olive-700">Entries Imported</p>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg text-center">
                     <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-green-900">{extractionResults.domains_covered?.length || 0}</p>
                     <p className="text-sm text-green-700">Domains Covered</p>
                   </div>
-                  <div className="bg-purple-50 p-4 rounded-lg text-center">
-                    <Brain className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-purple-900">{Math.round((extractionResults.average_confidence || 0) * 100)}%</p>
-                    <p className="text-sm text-purple-700">Avg Confidence</p>
+                  <div className="bg-gold-50 p-4 rounded-lg text-center">
+                    <Brain className="h-8 w-8 text-gold-600 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-gold-900">{Math.round((extractionResults.average_confidence || 0) * 100)}%</p>
+                    <p className="text-sm text-gold-700">Avg Confidence</p>
                   </div>
                   <div className="bg-yellow-50 p-4 rounded-lg text-center">
                     <Zap className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
@@ -365,7 +365,7 @@ export default function NotionIntegration() {
                   <div className="flex justify-between items-start mb-2">
                     <h4 className="font-semibold text-gray-900">{sample.page_title}</h4>
                     <div className="flex items-center gap-2">
-                      <Badge className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                      <Badge className="px-2 py-1 text-xs bg-olive-100 text-olive-800 rounded">
                         {sample.detected_domain.replace('_', ' ')}
                       </Badge>
                       <Badge className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
@@ -384,19 +384,19 @@ export default function NotionIntegration() {
                 </div>
               ))}
               
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <div className="mt-4 p-4 bg-olive-50 rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-2xl font-bold text-blue-900">{demoData.extraction_summary?.knowledge_entries_created}</p>
-                    <p className="text-sm text-blue-700">Knowledge Entries</p>
+                    <p className="text-2xl font-bold text-olive-900">{demoData.extraction_summary?.knowledge_entries_created}</p>
+                    <p className="text-sm text-olive-700">Knowledge Entries</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-blue-900">{Math.round((demoData.extraction_summary?.average_confidence_score || 0) * 100)}%</p>
-                    <p className="text-sm text-blue-700">Avg Confidence</p>
+                    <p className="text-2xl font-bold text-olive-900">{Math.round((demoData.extraction_summary?.average_confidence_score || 0) * 100)}%</p>
+                    <p className="text-sm text-olive-700">Avg Confidence</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-blue-900">{demoData.extraction_summary?.domains_covered?.length}</p>
-                    <p className="text-sm text-blue-700">Business Domains</p>
+                    <p className="text-2xl font-bold text-olive-900">{demoData.extraction_summary?.domains_covered?.length}</p>
+                    <p className="text-sm text-olive-700">Business Domains</p>
                   </div>
                 </div>
               </div>

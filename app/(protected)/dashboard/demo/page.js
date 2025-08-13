@@ -21,7 +21,7 @@ export default function DemoPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
                 <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
@@ -29,11 +29,11 @@ export default function DemoPage() {
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
-              <Link href="/register" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+              <Link href="/register" className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-olive-700 hover:to-gold-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
                 Get Started
               </Link>
             </div>
@@ -50,7 +50,7 @@ export default function DemoPage() {
               AI in Action
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed mb-12">
+          <p className="text-xl md:text-2xl text-olive-100 max-w-4xl mx-auto leading-relaxed mb-12">
             Watch how our AI agents transform barbershop operations with intelligent automation, 
             customer insights, and marketing optimization.
           </p>
@@ -96,7 +96,7 @@ export default function DemoPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-xl shadow-sm">
-              <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+              <div className="bg-olive-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-2xl">🤖</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">AI Agent Coordination</h3>
@@ -112,7 +112,7 @@ export default function DemoPage() {
             </div>
             
             <div className="bg-white p-8 rounded-xl shadow-sm">
-              <div className="bg-purple-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+              <div className="bg-gold-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-2xl">⚡</span>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Instant Automation</h3>
@@ -133,14 +133,14 @@ export default function DemoPage() {
             our AI can solve your unique challenges.
           </p>
           
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
+          <div className="bg-gradient-to-r from-olive-50 to-gold-50 rounded-2xl p-8 border border-olive-100">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">15 min</div>
+                <div className="text-3xl font-bold text-olive-600">15 min</div>
                 <div className="text-gray-600">Demo Duration</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">1-on-1</div>
+                <div className="text-3xl font-bold text-gold-600">1-on-1</div>
                 <div className="text-gray-600">Personal Session</div>
               </div>
               <div className="text-center">
@@ -150,7 +150,7 @@ export default function DemoPage() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
+              <Link href="/register" className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-8 py-4 rounded-lg font-semibold hover:from-olive-700 hover:to-gold-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
                 Book Personal Demo
               </Link>
               <Link href="/" className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-200">

@@ -19,7 +19,7 @@ export default function AIAgentsShowcase() {
     {
       name: "Marketing AI",
       icon: ChatBubbleBottomCenterTextIcon,
-      color: "from-blue-500 to-cyan-500",
+      color: "from-olive-500 to-cyan-500",
       title: "Automated Marketing That Actually Works",
       description: "Your personal marketing team that never sleeps",
       features: [
@@ -55,7 +55,7 @@ export default function AIAgentsShowcase() {
     {
       name: "Client AI",
       icon: UserGroupIcon,
-      color: "from-purple-500 to-pink-500",
+      color: "from-gold-500 to-pink-500",
       title: "Build Relationships at Scale",
       description: "Remember every client preference automatically",
       features: [
@@ -91,7 +91,7 @@ export default function AIAgentsShowcase() {
     {
       name: "Growth AI",
       icon: RocketLaunchIcon,
-      color: "from-indigo-500 to-purple-500",
+      color: "from-indigo-500 to-gold-500",
       title: "Data-Driven Growth Strategies",
       description: "AI that learns your business and suggests improvements",
       features: [
@@ -112,7 +112,7 @@ export default function AIAgentsShowcase() {
     <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-olive-100 text-olive-800 rounded-full text-sm font-semibold mb-4">
             <ArrowPathIcon className="h-4 w-4 mr-2" />
             AI AUTOMATION
           </div>
@@ -135,7 +135,7 @@ export default function AIAgentsShowcase() {
                   onClick={() => setActiveAgent(index)}
                   className={`w-full text-left p-4 rounded-xl transition-all duration-300 ${
                     activeAgent === index 
-                      ? 'bg-white shadow-lg border-2 border-blue-500' 
+                      ? 'bg-white shadow-lg border-2 border-olive-500' 
                       : 'bg-gray-50 hover:bg-white hover:shadow-md border-2 border-transparent'
                   }`}
                 >
@@ -148,7 +148,7 @@ export default function AIAgentsShowcase() {
                       <p className="text-sm text-gray-500">Click to explore</p>
                     </div>
                     {activeAgent === index && (
-                      <CheckCircleIcon className="h-5 w-5 text-blue-500 ml-auto" />
+                      <CheckCircleIcon className="h-5 w-5 text-olive-500 ml-auto" />
                     )}
                   </div>
                 </button>
@@ -164,7 +164,7 @@ export default function AIAgentsShowcase() {
                     {agents[activeAgent].title}
                   </h3>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-blue-600">
+                    <div className="text-3xl font-bold text-olive-600">
                       {agents[activeAgent].stats.metric}
                     </div>
                     <div className="text-sm text-gray-500">
@@ -187,11 +187,11 @@ export default function AIAgentsShowcase() {
                 ))}
               </div>
 
-              <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+              <div className="mt-8 p-4 bg-gradient-to-r from-olive-50 to-gold-50 rounded-xl">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-md">
-                      <ClockIcon className="h-6 w-6 text-blue-600" />
+                      <ClockIcon className="h-6 w-6 text-olive-600" />
                     </div>
                   </div>
                   <div className="ml-4">

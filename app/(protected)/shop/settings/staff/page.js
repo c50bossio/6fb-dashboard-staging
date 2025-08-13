@@ -125,7 +125,7 @@ export default function StaffPermissions() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -153,7 +153,7 @@ export default function StaffPermissions() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <UserGroupIcon className="h-8 w-8 text-indigo-600" />
+              <UserGroupIcon className="h-8 w-8 text-olive-600" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Staff Permissions</h1>
@@ -176,9 +176,9 @@ export default function StaffPermissions() {
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-semibold text-gray-900">{template.name}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    template.template_level === 'basic' ? 'bg-blue-100 text-blue-800' :
+                    template.template_level === 'basic' ? 'bg-olive-100 text-olive-800' :
                     template.template_level === 'intermediate' ? 'bg-green-100 text-green-800' :
-                    template.template_level === 'advanced' ? 'bg-purple-100 text-purple-800' :
+                    template.template_level === 'advanced' ? 'bg-gold-100 text-gold-800' :
                     'bg-indigo-100 text-indigo-800'
                   }`}>
                     {template.template_level}
@@ -219,7 +219,7 @@ export default function StaffPermissions() {
               <h2 className="text-lg font-semibold text-gray-900">Staff Members</h2>
               <p className="text-gray-600">Manage individual barber permissions</p>
             </div>
-            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center">
+            <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center">
               <PlusIcon className="h-5 w-5 mr-2" />
               Invite Staff
             </button>
@@ -231,7 +231,7 @@ export default function StaffPermissions() {
             <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No Staff Members</h3>
             <p className="text-gray-600 mb-4">Start by inviting barbers to join your shop</p>
-            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
               Invite Your First Barber
             </button>
           </div>
@@ -254,9 +254,9 @@ export default function StaffPermissions() {
                         <div className="flex items-center space-x-2 mt-1">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             permissionSummary.level === 'none' ? 'bg-gray-100 text-gray-800' :
-                            permissionSummary.color === 'blue' ? 'bg-blue-100 text-blue-800' :
+                            permissionSummary.color === 'blue' ? 'bg-olive-100 text-olive-800' :
                             permissionSummary.color === 'green' ? 'bg-green-100 text-green-800' :
-                            permissionSummary.color === 'purple' ? 'bg-purple-100 text-purple-800' :
+                            permissionSummary.color === 'purple' ? 'bg-gold-100 text-gold-800' :
                             'bg-indigo-100 text-indigo-800'
                           }`}>
                             {permissionSummary.description}
@@ -276,9 +276,9 @@ export default function StaffPermissions() {
                             key={template.id}
                             onClick={() => handleApplyTemplate(staffMember.user.id, template.id)}
                             className={`px-3 py-1 text-xs rounded-md border transition-colors ${
-                              template.template_level === 'basic' ? 'border-blue-200 text-blue-700 hover:bg-blue-50' :
+                              template.template_level === 'basic' ? 'border-olive-200 text-olive-700 hover:bg-olive-50' :
                               template.template_level === 'intermediate' ? 'border-green-200 text-green-700 hover:bg-green-50' :
-                              'border-purple-200 text-purple-700 hover:bg-purple-50'
+                              'border-gold-200 text-gold-700 hover:bg-gold-50'
                             }`}
                             title={`Apply ${template.name} template`}
                           >
@@ -337,12 +337,12 @@ export default function StaffPermissions() {
       </div>
 
       {/* Help Section */}
-      <div className="mt-8 bg-blue-50 rounded-lg p-6">
+      <div className="mt-8 bg-olive-50 rounded-lg p-6">
         <div className="flex items-start">
-          <InformationCircleIcon className="h-6 w-6 text-blue-600 mt-1 mr-3" />
+          <InformationCircleIcon className="h-6 w-6 text-olive-600 mt-1 mr-3" />
           <div>
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Permission Management Tips</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+            <h3 className="text-lg font-semibold text-olive-900 mb-2">Permission Management Tips</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-olive-800">
               <div>
                 <h4 className="font-medium mb-2">Start with Templates</h4>
                 <p>Use pre-defined templates for quick setup, then customize as needed for individual barbers.</p>

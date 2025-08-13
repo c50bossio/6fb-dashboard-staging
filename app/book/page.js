@@ -48,7 +48,7 @@ const SERVICES = [
     name: 'Full Service', 
     duration: 50, 
     price: 50, 
-    color: '#8B5CF6',
+    color: '#C5A35B',
     description: 'Complete haircut + beard trim + hot towel',
     popular: true
   },
@@ -240,10 +240,10 @@ export default function CustomerBookingPage() {
           <button
             key={service.id}
             onClick={() => handleServiceSelect(service)}
-            className="relative p-6 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all text-left"
+            className="relative p-6 border border-gray-200 rounded-lg hover:border-olive-300 hover:shadow-md transition-all text-left"
           >
             {service.popular && (
-              <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">
+              <div className="absolute -top-2 -right-2 bg-olive-600 text-white text-xs font-bold py-1 px-3 rounded-full">
                 Popular
               </div>
             )}
@@ -284,7 +284,7 @@ export default function CustomerBookingPage() {
           <button
             key={barber.id}
             onClick={() => handleBarberSelect(barber)}
-            className="p-6 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all text-left"
+            className="p-6 border border-gray-200 rounded-lg hover:border-olive-300 hover:shadow-md transition-all text-left"
           >
             <div className="flex items-start space-x-4">
               <img
@@ -294,7 +294,7 @@ export default function CustomerBookingPage() {
               />
               <div className="flex-1">
                 <h3 className="font-semibold text-lg text-gray-900">{barber.name}</h3>
-                <p className="text-sm text-blue-600 font-medium">{barber.title}</p>
+                <p className="text-sm text-olive-600 font-medium">{barber.title}</p>
                 
                 <div className="flex items-center mt-2">
                   <div className="flex items-center">
@@ -320,7 +320,7 @@ export default function CustomerBookingPage() {
       
       <button
         onClick={() => setCurrentStep('service')}
-        className="w-full py-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+        className="w-full py-2 text-olive-600 hover:text-olive-800 text-sm font-medium"
       >
         ← Back to Services
       </button>
@@ -359,8 +359,8 @@ export default function CustomerBookingPage() {
                   onClick={() => setSelectedDate(date)}
                   className={`p-3 text-center border rounded-lg transition-all ${
                     isSelected
-                      ? 'border-blue-600 bg-blue-50 text-blue-600'
-                      : 'border-gray-200 hover:border-blue-300'
+                      ? 'border-olive-600 bg-olive-50 text-olive-600'
+                      : 'border-gray-200 hover:border-olive-300'
                   }`}
                 >
                   <div className="text-xs text-gray-500">{dayName}</div>
@@ -377,7 +377,7 @@ export default function CustomerBookingPage() {
             <h3 className="font-medium text-gray-900 mb-3">Available Times</h3>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <ArrowPathIcon className="h-6 w-6 animate-spin text-blue-600" />
+                <ArrowPathIcon className="h-6 w-6 animate-spin text-olive-600" />
                 <span className="ml-2 text-gray-600">Loading available times...</span>
               </div>
             ) : (
@@ -386,7 +386,7 @@ export default function CustomerBookingPage() {
                   <button
                     key={index}
                     onClick={() => handleTimeSelect(slot)}
-                    className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all text-center"
+                    className="p-3 border border-gray-200 rounded-lg hover:border-olive-300 hover:shadow-sm transition-all text-center"
                   >
                     <div className="text-sm font-medium">
                       {slot.time.toLocaleTimeString('en-US', {
@@ -411,7 +411,7 @@ export default function CustomerBookingPage() {
         
         <button
           onClick={() => setCurrentStep('barber')}
-          className="w-full py-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+          className="w-full py-2 text-olive-600 hover:text-olive-800 text-sm font-medium"
         >
           ← Back to Barber Selection
         </button>
@@ -427,9 +427,9 @@ export default function CustomerBookingPage() {
       </div>
       
       {/* Booking Summary */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-medium text-blue-900 mb-2">Booking Summary</h3>
-        <div className="text-sm text-blue-700 space-y-1">
+      <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+        <h3 className="font-medium text-olive-900 mb-2">Booking Summary</h3>
+        <div className="text-sm text-olive-700 space-y-1">
           <p><strong>Service:</strong> {selectedService.name}</p>
           <p><strong>Barber:</strong> {selectedBarber.name}</p>
           <p><strong>Date & Time:</strong> {selectedTime.time.toLocaleDateString('en-US', {
@@ -455,7 +455,7 @@ export default function CustomerBookingPage() {
               required
               value={customerDetails.firstName}
               onChange={(e) => setCustomerDetails({...customerDetails, firstName: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
             />
           </div>
           <div>
@@ -465,7 +465,7 @@ export default function CustomerBookingPage() {
               required
               value={customerDetails.lastName}
               onChange={(e) => setCustomerDetails({...customerDetails, lastName: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
             />
           </div>
         </div>
@@ -477,7 +477,7 @@ export default function CustomerBookingPage() {
             required
             value={customerDetails.phone}
             onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
             placeholder="+1 (555) 123-4567"
           />
         </div>
@@ -489,7 +489,7 @@ export default function CustomerBookingPage() {
             required
             value={customerDetails.email}
             onChange={(e) => setCustomerDetails({...customerDetails, email: e.target.value})}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
           />
         </div>
 
@@ -499,7 +499,7 @@ export default function CustomerBookingPage() {
             value={customerDetails.notes}
             onChange={(e) => setCustomerDetails({...customerDetails, notes: e.target.value})}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
             placeholder="Any special requests or preferences..."
           />
         </div>
@@ -511,7 +511,7 @@ export default function CustomerBookingPage() {
               type="checkbox"
               checked={customerDetails.isFirstTime}
               onChange={(e) => setCustomerDetails({...customerDetails, isFirstTime: e.target.checked})}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
             />
             <span className="ml-2 text-sm text-gray-700">
               This is my first time at {SHOP_INFO.name}
@@ -529,7 +529,7 @@ export default function CustomerBookingPage() {
                     ...customerDetails, 
                     reminderPrefs: {...customerDetails.reminderPrefs, sms: e.target.checked}
                   })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700 flex items-center">
                   <DevicePhoneMobileIcon className="h-4 w-4 mr-1" />
@@ -544,7 +544,7 @@ export default function CustomerBookingPage() {
                     ...customerDetails, 
                     reminderPrefs: {...customerDetails.reminderPrefs, email: e.target.checked}
                   })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700 flex items-center">
                   <EnvelopeIcon className="h-4 w-4 mr-1" />
@@ -559,7 +559,7 @@ export default function CustomerBookingPage() {
               type="checkbox"
               checked={customerDetails.marketingOptIn}
               onChange={(e) => setCustomerDetails({...customerDetails, marketingOptIn: e.target.checked})}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
             />
             <span className="ml-2 text-sm text-gray-700">
               Send me promotions and updates (optional)
@@ -571,7 +571,7 @@ export default function CustomerBookingPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-1 bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center font-medium"
+            className="flex-1 bg-olive-600 text-white py-3 rounded-md hover:bg-olive-700 disabled:bg-olive-400 disabled:cursor-not-allowed flex items-center justify-center font-medium"
           >
             {isLoading ? (
               <>
@@ -590,7 +590,7 @@ export default function CustomerBookingPage() {
       
       <button
         onClick={() => setCurrentStep('time')}
-        className="w-full py-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+        className="w-full py-2 text-olive-600 hover:text-olive-800 text-sm font-medium"
       >
         ← Back to Time Selection
       </button>
@@ -633,9 +633,9 @@ export default function CustomerBookingPage() {
       </div>
       
       {/* Next Steps */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-medium text-blue-900 mb-2">What's Next?</h4>
-        <ul className="text-sm text-blue-700 space-y-1 text-left">
+      <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+        <h4 className="font-medium text-olive-900 mb-2">What's Next?</h4>
+        <ul className="text-sm text-olive-700 space-y-1 text-left">
           <li>• You'll receive an SMS and email confirmation shortly</li>
           <li>• We'll send you a reminder 24 hours before your appointment</li>
           <li>• Please arrive 5 minutes early for your appointment</li>
@@ -657,7 +657,7 @@ export default function CustomerBookingPage() {
       
       <button
         onClick={() => window.location.reload()}
-        className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 font-medium"
+        className="w-full bg-olive-600 text-white py-3 rounded-md hover:bg-olive-700 font-medium"
       >
         Book Another Appointment
       </button>
@@ -685,15 +685,15 @@ export default function CustomerBookingPage() {
                     <div key={step} className="flex items-center">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                         isCompleted 
-                          ? 'bg-blue-600 text-white' 
+                          ? 'bg-olive-600 text-white' 
                           : isCurrent 
-                          ? 'bg-blue-100 text-blue-600 border-2 border-blue-600'
+                          ? 'bg-olive-100 text-olive-600 border-2 border-olive-600'
                           : 'bg-gray-200 text-gray-400'
                       }`}>
                         {isCompleted ? <CheckIcon className="h-4 w-4" /> : stepNumber}
                       </div>
                       {index < 4 && (
-                        <div className={`w-12 h-0.5 ${isCompleted ? 'bg-blue-600' : 'bg-gray-200'}`} />
+                        <div className={`w-12 h-0.5 ${isCompleted ? 'bg-olive-600' : 'bg-gray-200'}`} />
                       )}
                     </div>
                   )

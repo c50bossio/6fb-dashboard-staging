@@ -199,7 +199,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-olive-50 via-white to-gold-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Progress Steps */}
         <div className="mb-8">
@@ -213,14 +213,14 @@ export default function OnboardingPage() {
                 <div key={step.id} className="flex flex-col items-center">
                   <div className={`
                     w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-colors
-                    ${isActive ? 'bg-blue-600 text-white' : ''}
+                    ${isActive ? 'bg-olive-600 text-white' : ''}
                     ${isCompleted ? 'bg-green-600 text-white' : ''}
                     ${!isActive && !isCompleted ? 'bg-gray-200 text-gray-500' : ''}
                   `}>
                     <StepIcon className="w-6 h-6" />
                   </div>
                   <div className="text-center">
-                    <p className={`text-sm font-medium ${isActive ? 'text-blue-600' : 'text-gray-500'}`}>
+                    <p className={`text-sm font-medium ${isActive ? 'text-olive-600' : 'text-gray-500'}`}>
                       {step.title}
                     </p>
                     <p className="text-xs text-gray-400">{step.subtitle}</p>
@@ -233,7 +233,7 @@ export default function OnboardingPage() {
           {/* Progress Bar */}
           <div className="mt-6 bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-olive-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentStep) / (ONBOARDING_STEPS.length - 1)) * 100}%` }}
             />
           </div>
@@ -253,7 +253,7 @@ function WelcomeStep({ onNext }) {
   return (
     <div className="p-8 text-center">
       <div className="mb-6">
-        <SparklesIcon className="w-16 h-16 text-blue-600 mx-auto mb-4" />
+        <SparklesIcon className="w-16 h-16 text-olive-600 mx-auto mb-4" />
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Welcome to 6FB AI Agent System
         </h1>
@@ -264,13 +264,13 @@ function WelcomeStep({ onNext }) {
       
       <div className="mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <BuildingStorefrontIcon className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+          <div className="p-4 bg-olive-50 rounded-lg">
+            <BuildingStorefrontIcon className="w-8 h-8 text-olive-600 mx-auto mb-2" />
             <h3 className="font-semibold text-gray-900 mb-1">Business Management</h3>
             <p className="text-sm text-gray-600">Streamline operations and bookings</p>
           </div>
-          <div className="p-4 bg-purple-50 rounded-lg">
-            <SparklesIcon className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+          <div className="p-4 bg-gold-50 rounded-lg">
+            <SparklesIcon className="w-8 h-8 text-gold-600 mx-auto mb-2" />
             <h3 className="font-semibold text-gray-900 mb-1">AI Coaching</h3>
             <p className="text-sm text-gray-600">Get personalized business advice</p>
           </div>
@@ -284,7 +284,7 @@ function WelcomeStep({ onNext }) {
 
       <button
         onClick={onNext}
-        className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+        className="inline-flex items-center px-6 py-3 bg-olive-600 text-white font-medium rounded-lg hover:bg-olive-700 transition-colors"
       >
         Get Started
         <ChevronRightIcon className="w-5 h-5 ml-2" />
@@ -339,7 +339,7 @@ function BusinessDetailsStep({ data, updateData, onNext, onPrevious }) {
             type="text"
             value={data.businessName}
             onChange={(e) => updateData('businessName', e.target.value)}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
               errors.businessName ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="Enter your barbershop name"
@@ -356,7 +356,7 @@ function BusinessDetailsStep({ data, updateData, onNext, onPrevious }) {
           <select
             value={data.businessType}
             onChange={(e) => updateData('businessType', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
           >
             <option value="independent_barbershop">Independent Barbershop</option>
             <option value="chain_location">Chain Location</option>
@@ -373,7 +373,7 @@ function BusinessDetailsStep({ data, updateData, onNext, onPrevious }) {
             type="text"
             value={data.address}
             onChange={(e) => updateData('address', e.target.value)}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
               errors.address ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="123 Main St, City, State 12345"
@@ -391,7 +391,7 @@ function BusinessDetailsStep({ data, updateData, onNext, onPrevious }) {
             type="tel"
             value={data.phone}
             onChange={(e) => updateData('phone', e.target.value)}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500 ${
               errors.phone ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="(555) 123-4567"
@@ -417,7 +417,7 @@ function BusinessDetailsStep({ data, updateData, onNext, onPrevious }) {
                       : data.services.filter(s => s !== service)
                     updateData('services', newServices)
                   }}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">{service}</span>
               </label>
@@ -435,7 +435,7 @@ function BusinessDetailsStep({ data, updateData, onNext, onPrevious }) {
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
           >
             Next
           </button>
@@ -480,7 +480,7 @@ function AIPreferencesStep({ data, updateData, onNext, onPrevious }) {
               <label key={style.value} className={`
                 p-4 border-2 rounded-lg cursor-pointer transition-colors
                 ${data.aiPreferences.coaching_style === style.value 
-                  ? 'border-blue-500 bg-blue-50' 
+                  ? 'border-olive-500 bg-olive-50' 
                   : 'border-gray-200 hover:border-gray-300'
                 }
               `}>
@@ -511,7 +511,7 @@ function AIPreferencesStep({ data, updateData, onNext, onPrevious }) {
               <label key={area.value} className={`
                 flex items-center p-3 border rounded-lg cursor-pointer transition-colors
                 ${data.aiPreferences.focus_areas.includes(area.value)
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-olive-500 bg-olive-50'
                   : 'border-gray-200 hover:border-gray-300'
                 }
               `}>
@@ -531,7 +531,7 @@ function AIPreferencesStep({ data, updateData, onNext, onPrevious }) {
                   }}
                   disabled={!data.aiPreferences.focus_areas.includes(area.value) && 
                            data.aiPreferences.focus_areas.length >= 3}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3"
+                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded mr-3"
                 />
                 <span className="text-sm font-medium text-gray-700">{area.label}</span>
               </label>
@@ -552,7 +552,7 @@ function AIPreferencesStep({ data, updateData, onNext, onPrevious }) {
               ...data.aiPreferences,
               notification_frequency: e.target.value
             })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
           >
             <option value="daily">Daily insights</option>
             <option value="weekly">Weekly summaries</option>
@@ -571,7 +571,7 @@ function AIPreferencesStep({ data, updateData, onNext, onPrevious }) {
               ...data.aiPreferences,
               analytics_level: e.target.value
             })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
           >
             <option value="basic">Basic metrics</option>
             <option value="detailed">Detailed analytics</option>
@@ -591,7 +591,7 @@ function AIPreferencesStep({ data, updateData, onNext, onPrevious }) {
         <button
           type="button"
           onClick={onNext}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
         >
           Next
         </button>
@@ -639,13 +639,13 @@ function CompleteStep({ data, onComplete, onPrevious }) {
       <div className="mb-8">
         <h3 className="font-semibold text-gray-900 mb-4">What's Next?</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <SparklesIcon className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+          <div className="p-4 bg-olive-50 rounded-lg">
+            <SparklesIcon className="w-8 h-8 text-olive-600 mx-auto mb-2" />
             <h4 className="font-medium text-gray-900 mb-1">Start Chatting</h4>
             <p className="text-sm text-gray-600">Ask your AI coach for business advice</p>
           </div>
-          <div className="p-4 bg-purple-50 rounded-lg">
-            <CogIcon className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+          <div className="p-4 bg-gold-50 rounded-lg">
+            <CogIcon className="w-8 h-8 text-gold-600 mx-auto mb-2" />
             <h4 className="font-medium text-gray-900 mb-1">Explore Analytics</h4>
             <p className="text-sm text-gray-600">View your business insights dashboard</p>
           </div>

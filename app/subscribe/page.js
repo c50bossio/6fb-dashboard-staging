@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import ConversionTracker, { usePricingTracking } from '@/components/analytics/ConversionTracker'
 
 const PRICING_TIERS = [
   {
@@ -89,8 +90,10 @@ export default function SubscribePage() {
   const [selectedTier, setSelectedTier] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [hoveredPlans, setHoveredPlans] = useState(new Set())
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
+  const pricingTracking = usePricingTracking()
 
   useEffect(() => {
     // Only check subscription after auth has loaded
@@ -130,6 +133,9 @@ export default function SubscribePage() {
       return
     }
 
+    // Track plan selection
+    pricingTracking.trackPlanClick(tierId)
+
     // Show loading state immediately for better UX
     setLoading(true)
     setSelectedTier(tierId)
@@ -164,6 +170,9 @@ export default function SubscribePage() {
         throw new Error(data.error || 'Failed to create checkout session')
       }
 
+      // Track checkout redirect
+      pricingTracking.trackCheckoutRedirect(tierId, billingPeriod)
+
       // Redirect to Stripe Checkout
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl
@@ -191,12 +200,22 @@ export default function SubscribePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+    <ConversionTracker 
+      page="subscribe"
+      customProperties={{
+        billing_period: billingPeriod,
+        selected_tier: selectedTier,
+        plans_hovered: hoveredPlans.size,
+        user_authenticated: !!user,
+        auth_loading: authLoading
+      }}
+    >
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Auth Loading Message */}
         {authLoading && (
-          <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-            <p className="text-blue-700">Verifying your account status...</p>
+          <div className="mb-8 p-4 bg-olive-50 border border-olive-200 rounded-lg text-center">
+            <p className="text-olive-700">Verifying your account status...</p>
           </div>
         )}
         
@@ -215,8 +234,13 @@ export default function SubscribePage() {
               Monthly
             </span>
             <button
-              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
+              onClick={() => {
+                const newPeriod = billingPeriod === 'monthly' ? 'yearly' : 'monthly'
+                setBillingPeriod(newPeriod)
+                pricingTracking.trackBillingToggle(newPeriod)
+              }}
               className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              data-track-click="billing-period-toggle"
             >
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -251,7 +275,15 @@ export default function SubscribePage() {
                 tier.recommended
                   ? 'border-green-500 shadow-xl scale-105'
                   : 'border-gray-200 shadow-lg'
-              } bg-white p-8`}
+              } bg-white p-8 pricing-card`}
+              data-plan-name={tier.id}
+              data-track-view={`pricing-card-${tier.id}`}
+              onMouseEnter={(e) => {
+                if (!hoveredPlans.has(tier.id)) {
+                  setHoveredPlans(prev => new Set([...prev, tier.id]))
+                  pricingTracking.trackPlanHover(tier.id, e.currentTarget)
+                }
+              }}
             >
               {tier.recommended && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -292,13 +324,16 @@ export default function SubscribePage() {
               <button
                 onClick={() => handleSelectPlan(tier.id)}
                 disabled={authLoading || loading}
-                className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
+                className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors cta-button ${
                   (authLoading || (loading && selectedTier === tier.id))
                     ? 'bg-gray-400 text-white cursor-not-allowed'
                     : tier.recommended
                     ? 'bg-green-600 text-white hover:bg-green-700'
                     : 'bg-gray-900 text-white hover:bg-gray-800'
                 }`}
+                data-cta={`select-plan-${tier.id}`}
+                data-track-click={`plan-select-${tier.id}`}
+                data-track-view={`cta-button-${tier.id}`}
               >
                 {authLoading ? (
                   <span className="flex items-center justify-center">
@@ -402,5 +437,6 @@ export default function SubscribePage() {
         </div>
       </div>
     </div>
+    </ConversionTracker>
   )
 }

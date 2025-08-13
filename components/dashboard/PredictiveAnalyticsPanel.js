@@ -129,7 +129,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
             <select
               value={selectedForecastType}
               onChange={(e) => setSelectedForecastType(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 text-sm"
             >
               <option value="comprehensive">Comprehensive</option>
               <option value="revenue">Revenue Forecast</option>
@@ -140,7 +140,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
             <select
               value={selectedTimeHorizon}
               onChange={(e) => setSelectedTimeHorizon(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 text-sm"
             >
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -149,7 +149,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
             <button
               onClick={loadPredictions}
               disabled={loading}
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 flex items-center gap-2 text-sm"
+              className="px-3 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:bg-gray-300 flex items-center gap-2 text-sm"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -161,7 +161,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
             <button
               onClick={generateNewPredictions}
               disabled={generating}
-              className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300 flex items-center gap-2 text-sm"
+              className="px-3 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700 disabled:bg-gray-300 flex items-center gap-2 text-sm"
             >
               {generating ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -188,7 +188,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading predictive analytics...</p>
         </div>
       ) : predictions ? (
@@ -255,7 +255,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
                   <ul className="space-y-1">
                     {predictions.revenueForecast.factors?.map((factor, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-sm">
-                        <span className="text-blue-600">•</span>
+                        <span className="text-olive-600">•</span>
                         <span>{factor}</span>
                       </li>
                     ))}
@@ -283,7 +283,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 {predictions.customerBehavior.segments?.map((segment, idx) => (
-                  <div key={idx} className="p-4 bg-blue-50 rounded-lg">
+                  <div key={idx} className="p-4 bg-olive-50 rounded-lg">
                     <h3 className="font-semibold text-sm mb-2">{segment.name}</h3>
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between">
@@ -354,7 +354,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
           <button
             onClick={generateNewPredictions}
             disabled={generating}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300"
+            className="px-6 py-3 bg-gold-600 text-white rounded-lg hover:bg-gold-700 disabled:bg-gray-300"
           >
             Generate Predictions
           </button>

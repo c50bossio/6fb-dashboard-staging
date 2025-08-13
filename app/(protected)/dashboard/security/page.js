@@ -12,7 +12,7 @@ export default function SecurityPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
                 <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
@@ -20,11 +20,11 @@ export default function SecurityPage() {
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
-              <Link href="/register" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+              <Link href="/register" className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-olive-700 hover:to-gold-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
                 Get Started
               </Link>
             </div>
@@ -41,7 +41,7 @@ export default function SecurityPage() {
               Compliance
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-olive-100 max-w-4xl mx-auto leading-relaxed">
             Your data security is our top priority. Learn about our comprehensive security measures 
             and compliance standards.
           </p>
@@ -66,16 +66,16 @@ export default function SecurityPage() {
             </div>
             
             <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <ShieldCheckIcon className="h-8 w-8 text-blue-600" />
+              <div className="bg-olive-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <ShieldCheckIcon className="h-8 w-8 text-olive-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">SOC 2 Compliant</h3>
               <p className="text-gray-600">Our systems undergo regular third-party security audits and maintain SOC 2 Type II compliance.</p>
             </div>
             
             <div className="text-center">
-              <div className="bg-purple-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <EyeSlashIcon className="h-8 w-8 text-purple-600" />
+              <div className="bg-gold-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+                <EyeSlashIcon className="h-8 w-8 text-gold-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">Zero-Knowledge Architecture</h3>
               <p className="text-gray-600">We cannot access your sensitive business data, ensuring complete privacy and control.</p>
@@ -104,19 +104,19 @@ export default function SecurityPage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Data Protection</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-olive-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>All customer data is encrypted using AES-256 encryption</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-olive-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>Regular automated backups with point-in-time recovery</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-olive-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>Data residency controls and GDPR compliance</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-olive-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>Secure data deletion and retention policies</span>
                 </li>
               </ul>
@@ -148,19 +148,19 @@ export default function SecurityPage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">Infrastructure Security</h3>
               <ul className="space-y-3 text-gray-600">
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-gold-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>DDoS protection and web application firewall</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-gold-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>Network segregation and VPC isolation</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-gold-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>Regular security patches and updates</span>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <div className="w-2 h-2 bg-gold-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>24/7 security monitoring and incident response</span>
                 </li>
               </ul>
@@ -195,19 +195,19 @@ export default function SecurityPage() {
       </div>
 
       {/* Security Contact */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 py-16">
+      <div className="bg-gradient-to-r from-olive-600 to-gold-600 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Security Questions?
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-olive-100 mb-8 max-w-2xl mx-auto">
             Our security team is available to answer any questions about our security practices.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <Link href="/contact" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl">
               Contact Security Team
             </Link>
-            <a href="mailto:security@6fb.ai" className="text-blue-100 hover:text-white font-medium transition-colors">
+            <a href="mailto:security@6fb.ai" className="text-olive-100 hover:text-white font-medium transition-colors">
               security@6fb.ai
             </a>
           </div>

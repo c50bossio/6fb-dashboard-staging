@@ -48,7 +48,7 @@ const DashboardHeader = React.memo(function DashboardHeader({
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white relative overflow-hidden">
+    <div className="bg-gradient-to-br from-indigo-600 via-gold-600 to-olive-700 text-white relative overflow-hidden">
       {/* Background pattern */}
       <div className="absolute inset-0 bg-black/10">
         <div className="absolute inset-0" style={{
@@ -66,7 +66,7 @@ const DashboardHeader = React.memo(function DashboardHeader({
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 leading-tight text-white drop-shadow-sm">
                 {getCurrentTimeGreeting()}, {profile?.full_name || user?.user_metadata?.full_name || 'User'}! 👋
               </h1>
-              <div className="flex items-center text-blue-100 text-base sm:text-lg leading-relaxed">
+              <div className="flex items-center text-olive-100 text-base sm:text-lg leading-relaxed">
                 <BuildingStorefrontIcon className="h-5 w-5 mr-2 flex-shrink-0" />
                 <span>{businessName || tenantName || 'Your AI-powered barbershop is running smoothly'}</span>
               </div>
@@ -86,8 +86,8 @@ const DashboardHeader = React.memo(function DashboardHeader({
               </div>
               
               {tenant && (
-                <div className="bg-blue-500/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-blue-300/30">
-                  <span className="text-xs font-semibold text-blue-100">
+                <div className="bg-olive-500/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-olive-300/30">
+                  <span className="text-xs font-semibold text-olive-100">
                     ID: {tenant.id.split('_').pop()}
                   </span>
                 </div>
@@ -102,23 +102,23 @@ const DashboardHeader = React.memo(function DashboardHeader({
             {/* Quick stats preview - Mobile optimized */}
             <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-6">
               <div className="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-sm px-2 sm:px-3 py-2 sm:py-2 rounded-lg text-center sm:text-left">
-                <div className="bg-purple-500 p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3">
+                <div className="bg-gold-500 p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3">
                   <SparklesIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm sm:text-lg font-bold text-white">{dashboardStats?.activeAgents || 0}</div>
-                  <div className="text-xs text-blue-200 hidden sm:block">AI agents active</div>
-                  <div className="text-xs text-blue-200 sm:hidden">agents</div>
+                  <div className="text-xs text-olive-200 hidden sm:block">AI agents active</div>
+                  <div className="text-xs text-olive-200 sm:hidden">agents</div>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-sm px-2 sm:px-3 py-2 sm:py-2 rounded-lg text-center sm:text-left">
-                <div className="bg-blue-500 p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3">
+                <div className="bg-olive-500 p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3">
                   <ChartBarIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm sm:text-lg font-bold text-white">{dashboardStats?.totalConversations || 0}</div>
-                  <div className="text-xs text-blue-200 hidden sm:block">conversations today</div>
-                  <div className="text-xs text-blue-200 sm:hidden">today</div>
+                  <div className="text-xs text-olive-200 hidden sm:block">conversations today</div>
+                  <div className="text-xs text-olive-200 sm:hidden">today</div>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-sm px-2 sm:px-3 py-2 sm:py-2 rounded-lg text-center sm:text-left">
@@ -150,7 +150,7 @@ const DashboardHeader = React.memo(function DashboardHeader({
           {/* Action buttons - Mobile optimized */}
           <div className="flex items-center justify-between lg:justify-end space-x-2 sm:space-x-3">
             {/* Mobile: Show last login info */}
-            <div className="sm:hidden flex items-center text-blue-200 text-xs">
+            <div className="sm:hidden flex items-center text-olive-200 text-xs">
               <ClockIcon className="h-3 w-3 mr-1" />
               <span className="truncate">{getLastLoginTime()}</span>
             </div>
@@ -182,7 +182,7 @@ const DashboardHeader = React.memo(function DashboardHeader({
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="h-2 sm:h-4 bg-gradient-to-b from-purple-600/20 to-transparent"></div>
+      <div className="h-2 sm:h-4 bg-gradient-to-b from-gold-600/20 to-transparent"></div>
     </div>
   )
 })

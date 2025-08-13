@@ -188,7 +188,7 @@ export default function DashboardHeader() {
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length > 0 ? (
                       notifications.map(notif => (
-                        <div key={notif.id} className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notif.read ? 'bg-blue-50' : ''}`}>
+                        <div key={notif.id} className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notif.read ? 'bg-olive-50' : ''}`}>
                           <p className="text-sm text-gray-900">{notif.message}</p>
                           <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
                         </div>
@@ -200,7 +200,7 @@ export default function DashboardHeader() {
                     )}
                   </div>
                   <div className="p-3 border-t border-gray-200">
-                    <button className="text-sm text-blue-600 hover:text-blue-700 font-medium w-full text-center">
+                    <button className="text-sm text-olive-600 hover:text-olive-700 font-medium w-full text-center">
                       View all notifications
                     </button>
                   </div>

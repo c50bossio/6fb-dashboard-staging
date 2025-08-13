@@ -12,7 +12,7 @@ export default function PrivacyPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
                 <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
@@ -20,11 +20,11 @@ export default function PrivacyPage() {
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-blue-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
-              <Link href="/register" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
+              <Link href="/register" className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:from-olive-700 hover:to-gold-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg">
                 Get Started
               </Link>
             </div>
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
               Policy
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-blue-100 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-olive-100 max-w-4xl mx-auto leading-relaxed">
             Your privacy is important to us. Learn how we collect, use, and protect your information.
           </p>
         </div>
@@ -51,8 +51,8 @@ export default function PrivacyPage() {
       <div className="section-padding bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="prose prose-lg mx-auto">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-              <p className="text-sm text-blue-800 mb-0">
+            <div className="bg-olive-50 border border-olive-200 rounded-lg p-6 mb-8">
+              <p className="text-sm text-olive-800 mb-0">
                 <strong>Last Updated:</strong> January 2025
               </p>
             </div>

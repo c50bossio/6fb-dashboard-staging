@@ -91,7 +91,7 @@ export default function PricingCalculator() {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-gold-100 text-gold-800 rounded-full text-sm font-semibold mb-4">
             <CalculatorIcon className="h-4 w-4 mr-2" />
             TRANSPARENT PRICING
           </div>
@@ -104,7 +104,7 @@ export default function PricingCalculator() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 mb-16">
+        <div className="bg-gradient-to-br from-olive-50 to-gold-50 rounded-2xl p-8 mb-16">
           <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
             Calculate Your Savings
           </h3>
@@ -124,7 +124,7 @@ export default function PricingCalculator() {
               />
               <div className="flex justify-between text-sm text-gray-600 mt-1">
                 <span>50</span>
-                <span className="font-bold text-lg text-blue-600">{monthlyBookings}</span>
+                <span className="font-bold text-lg text-olive-600">{monthlyBookings}</span>
                 <span>500</span>
               </div>
             </div>
@@ -143,7 +143,7 @@ export default function PricingCalculator() {
               />
               <div className="flex justify-between text-sm text-gray-600 mt-1">
                 <span>$20</span>
-                <span className="font-bold text-lg text-blue-600">${averageTicket}</span>
+                <span className="font-bold text-lg text-olive-600">${averageTicket}</span>
                 <span>$150</span>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function PricingCalculator() {
           </div>
 
           {savings > 0 && (
-            <div className="mt-6 text-center p-4 bg-gradient-to-r from-green-100 to-blue-100 rounded-xl">
+            <div className="mt-6 text-center p-4 bg-gradient-to-r from-green-100 to-olive-100 rounded-xl">
               <p className="text-lg font-semibold text-gray-900">
                 That's <span className="text-green-600 text-2xl">${yearlySavings.toLocaleString()}</span> saved per year!
               </p>
@@ -188,13 +188,13 @@ export default function PricingCalculator() {
               key={index} 
               className={`relative rounded-2xl border-2 ${
                 plan.highlight 
-                  ? 'border-blue-500 shadow-2xl' 
+                  ? 'border-olive-500 shadow-2xl' 
                   : 'border-gray-200'
               } bg-white p-8`}
             >
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                  <span className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
                     {plan.badge}
                   </span>
                 </div>
@@ -220,7 +220,7 @@ export default function PricingCalculator() {
 
               <button className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${
                 plan.highlight
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg'
+                  ? 'bg-gradient-to-r from-olive-600 to-gold-600 text-white hover:shadow-lg'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}>
                 {plan.name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
@@ -270,7 +270,7 @@ export default function PricingCalculator() {
             <SparklesIcon className="h-5 w-5 mr-2" />
             <span className="font-medium">30-day free trial • No credit card required • Cancel anytime</span>
           </div>
-          <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300 inline-flex items-center">
+          <button className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300 inline-flex items-center">
             Start Building Your Brand
             <ArrowRightIcon className="h-5 w-5 ml-2" />
           </button>

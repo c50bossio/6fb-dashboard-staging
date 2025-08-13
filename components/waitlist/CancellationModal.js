@@ -211,7 +211,7 @@ const CancellationModal = ({
                             <div className="flex justify-end">
                                 <Button
                                     onClick={() => setStep(2)}
-                                    className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+                                    className="bg-olive-600 text-white px-6 py-2 rounded-md hover:bg-olive-700"
                                 >
                                     Continue
                                 </Button>
@@ -252,7 +252,7 @@ const CancellationModal = ({
                                                 <div>{currentRefund.reason}</div>
                                                 <div className="mt-1">Time until appointment: {currentRefund.hours_until_appointment} hours</div>
                                                 {currentRefund.refund_amount > 0 && (
-                                                    <div className="mt-2 text-blue-600">
+                                                    <div className="mt-2 text-olive-600">
                                                         💳 Refund will appear in your account within 3-5 business days
                                                     </div>
                                                 )}
@@ -261,7 +261,7 @@ const CancellationModal = ({
                                     </Card>
                                 ) : (
                                     <div className="text-center py-4">
-                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-olive-600 mx-auto"></div>
                                         <div className="mt-2 text-gray-600">Calculating refund...</div>
                                     </div>
                                 )}
@@ -273,7 +273,7 @@ const CancellationModal = ({
                                     <ul className="text-sm text-gray-600 space-y-1">
                                         {policy.policy_summary.key_points.map((point, index) => (
                                             <li key={index} className="flex items-start">
-                                                <span className="text-blue-600 mr-2">•</span>
+                                                <span className="text-olive-600 mr-2">•</span>
                                                 {point}
                                             </li>
                                         ))}
@@ -359,7 +359,7 @@ const CancellationModal = ({
                                         )}
                                         
                                         {result.waitlist_notifications_sent > 0 && (
-                                            <div className="flex justify-between text-blue-600">
+                                            <div className="flex justify-between text-olive-600">
                                                 <span>Waitlist notified:</span>
                                                 <span>{result.waitlist_notifications_sent} customer{result.waitlist_notifications_sent !== 1 ? 's' : ''}</span>
                                             </div>
@@ -374,8 +374,8 @@ const CancellationModal = ({
                                     <div className="space-y-2">
                                         {result.next_steps.map((step, index) => (
                                             <div key={index} className="flex items-start space-x-3">
-                                                <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                                                    <span className="text-xs font-semibold text-blue-600">{index + 1}</span>
+                                                <div className="flex-shrink-0 w-6 h-6 bg-olive-100 rounded-full flex items-center justify-center">
+                                                    <span className="text-xs font-semibold text-olive-600">{index + 1}</span>
                                                 </div>
                                                 <div className="text-sm">
                                                     <div className="font-medium">{step.description}</div>
@@ -392,7 +392,7 @@ const CancellationModal = ({
                             <div className="flex justify-center">
                                 <Button
                                     onClick={handleClose}
-                                    className="bg-blue-600 text-white px-8 py-2 rounded-md hover:bg-blue-700"
+                                    className="bg-olive-600 text-white px-8 py-2 rounded-md hover:bg-olive-700"
                                 >
                                     Done
                                 </Button>

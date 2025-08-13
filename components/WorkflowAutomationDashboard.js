@@ -208,30 +208,30 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
                 </div>
               </div>
               
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+              <div className="bg-gradient-to-r from-olive-50 to-indigo-50 rounded-lg p-4 border border-olive-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-blue-600">Time Saved</div>
-                    <div className="text-2xl font-bold text-blue-900">
+                    <div className="text-sm font-medium text-olive-600">Time Saved</div>
+                    <div className="text-2xl font-bold text-olive-900">
                       {dashboard.time_saved}
                     </div>
-                    <div className="text-xs text-blue-600">today</div>
+                    <div className="text-xs text-olive-600">today</div>
                   </div>
-                  <ClockIcon className="h-8 w-8 text-blue-400" />
+                  <ClockIcon className="h-8 w-8 text-olive-400" />
                 </div>
               </div>
               
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+              <div className="bg-gradient-to-r from-gold-50 to-pink-50 rounded-lg p-4 border border-gold-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-purple-600">Success Rate</div>
-                    <div className="text-2xl font-bold text-purple-900">
+                    <div className="text-sm font-medium text-gold-600">Success Rate</div>
+                    <div className="text-2xl font-bold text-gold-900">
                       {Math.round(Object.values(dashboard.workflow_categories).reduce((acc, cat) => 
                         acc + parseInt(cat.success_rate), 0) / Object.keys(dashboard.workflow_categories).length)}%
                     </div>
-                    <div className="text-xs text-purple-600">average</div>
+                    <div className="text-xs text-gold-600">average</div>
                   </div>
-                  <CheckCircleIcon className="h-8 w-8 text-purple-400" />
+                  <CheckCircleIcon className="h-8 w-8 text-gold-400" />
                 </div>
               </div>
             </div>
@@ -332,7 +332,7 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
                   <div key={idx} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h5 className="font-medium text-gray-900">{trigger.name}</h5>
-                      <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                      <span className="bg-olive-100 text-olive-800 text-xs px-2 py-1 rounded-full">
                         {trigger.active_workflows} active
                       </span>
                     </div>

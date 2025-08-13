@@ -77,7 +77,7 @@ export default function ProfilePage() {
   // Mock recent activity data
   const recentActivity = [
     { id: 1, type: 'booking', message: 'Completed appointment with John Doe', time: '2 hours ago', icon: CheckCircleIcon, color: 'text-green-600' },
-    { id: 2, type: 'update', message: 'Updated business hours', time: '1 day ago', icon: ClockIcon, color: 'text-blue-600' },
+    { id: 2, type: 'update', message: 'Updated business hours', time: '1 day ago', icon: ClockIcon, color: 'text-olive-600' },
     { id: 3, type: 'review', message: 'Received 5-star review from Sarah M.', time: '3 days ago', icon: ChartBarIcon, color: 'text-amber-600' },
   ]
 
@@ -103,7 +103,7 @@ export default function ProfilePage() {
           <div className={`mb-6 p-4 rounded-lg flex items-center space-x-2 ${
             saveStatus === 'saved' ? 'bg-green-50 text-green-800 border border-green-200' :
             saveStatus === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
-            'bg-blue-50 text-blue-800 border border-blue-200'
+            'bg-olive-50 text-olive-800 border border-olive-200'
           }`}>
             {saveStatus === 'saved' && <CheckCircleIcon className="h-5 w-5" />}
             {saveStatus === 'error' && <ExclamationTriangleIcon className="h-5 w-5" />}
@@ -124,7 +124,7 @@ export default function ProfilePage() {
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center space-x-2 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 px-3 py-1.5 text-sm text-olive-600 hover:text-olive-700 hover:bg-olive-50 rounded-lg transition-colors"
                   >
                     <PencilIcon className="h-4 w-4" />
                     <span>Edit</span>
@@ -140,7 +140,7 @@ export default function ProfilePage() {
                     <button
                       onClick={handleSave}
                       disabled={saveStatus === 'saving'}
-                      className="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                      className="px-3 py-1.5 text-sm text-white bg-olive-600 hover:bg-olive-700 rounded-lg transition-colors disabled:opacity-50"
                     >
                       {saveStatus === 'saving' ? 'Saving...' : 'Save'}
                     </button>
@@ -163,7 +163,7 @@ export default function ProfilePage() {
                     )}
                   </div>
                   {isEditing && (
-                    <button className="absolute bottom-0 right-0 h-6 w-6 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+                    <button className="absolute bottom-0 right-0 h-6 w-6 bg-olive-600 rounded-full flex items-center justify-center hover:bg-olive-700 transition-colors">
                       <CameraIcon className="h-3 w-3 text-white" />
                     </button>
                   )}
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                       type="text"
                       value={profileData.full_name}
                       onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     />
                   ) : (
                     <div className="flex items-center space-x-2 py-2">
@@ -209,7 +209,7 @@ export default function ProfilePage() {
                       type="tel"
                       value={profileData.phone}
                       onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     />
                   ) : (
                     <div className="flex items-center space-x-2 py-2">
@@ -226,7 +226,7 @@ export default function ProfilePage() {
                       type="text"
                       value={profileData.location}
                       onChange={(e) => setProfileData({...profileData, location: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     />
                   ) : (
                     <div className="flex items-center space-x-2 py-2">
@@ -243,7 +243,7 @@ export default function ProfilePage() {
                       value={profileData.bio}
                       onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     />
                   ) : (
                     <p className="text-gray-900 py-2">{profileData.bio}</p>
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-              <button className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium">
+              <button className="mt-4 text-sm text-olive-600 hover:text-olive-700 font-medium">
                 View all activity
               </button>
             </div>

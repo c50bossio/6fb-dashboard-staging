@@ -56,7 +56,7 @@ export default function BarbershopPreviewPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading preview...</p>
         </div>
       </div>
@@ -71,7 +71,7 @@ export default function BarbershopPreviewPage() {
           <p className="text-gray-600 mb-6">No preview data found. Please go back to Website Settings and try again.</p>
           <a 
             href="/dashboard/website-settings"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-olive-600 text-white px-6 py-3 rounded-lg hover:bg-olive-700 transition-colors"
           >
             Back to Website Settings
           </a>

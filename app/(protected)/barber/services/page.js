@@ -68,7 +68,7 @@ export default function BarberServices() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -95,8 +95,8 @@ export default function BarberServices() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
-              <ScissorsIcon className="h-8 w-8 text-purple-600" />
+            <div className="h-12 w-12 rounded-lg bg-gold-100 flex items-center justify-center">
+              <ScissorsIcon className="h-8 w-8 text-gold-600" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Services</h1>
@@ -143,11 +143,11 @@ export default function BarberServices() {
 
       {/* Permissions Summary for Active Users */}
       {permissions && permissions.is_active && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="mb-6 bg-olive-50 border border-olive-200 rounded-lg p-6">
           <div className="flex items-start">
-            <ShieldCheckIcon className="h-6 w-6 text-blue-600 mt-1 mr-3" />
+            <ShieldCheckIcon className="h-6 w-6 text-olive-600 mt-1 mr-3" />
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-blue-900">Your Service Permissions</h3>
+              <h3 className="text-lg font-semibold text-olive-900">Your Service Permissions</h3>
               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Service Management */}
                 <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -173,7 +173,7 @@ export default function BarberServices() {
                       {permissions.can_set_pricing ? '✓' : '✗'} Set custom pricing
                     </li>
                     {permissions.can_set_pricing && (
-                      <li className="text-blue-600">
+                      <li className="text-olive-600">
                         ±{permissions.pricing_variance_percent}% variance allowed
                       </li>
                     )}

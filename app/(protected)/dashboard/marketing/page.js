@@ -65,7 +65,7 @@ export default function MarketingDashboard() {
   const getStatusColor = (status) => {
     switch(status) {
       case 'active': return 'bg-green-100 text-green-800'
-      case 'completed': return 'bg-blue-100 text-blue-800'
+      case 'completed': return 'bg-olive-100 text-olive-800'
       case 'draft': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
@@ -95,7 +95,7 @@ export default function MarketingDashboard() {
                   })
                   setTimeout(() => setNotification(null), 3000)
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
               >
                 Create Campaign
               </button>
@@ -109,7 +109,7 @@ export default function MarketingDashboard() {
             <div className={`mb-6 p-4 rounded-lg ${
               notification.type === 'success' ? 'bg-green-50 text-green-800' : 
               notification.type === 'error' ? 'bg-red-50 text-red-800' : 
-              'bg-blue-50 text-blue-800'
+              'bg-olive-50 text-olive-800'
             }`}>
               <p className="font-medium">{notification.message}</p>
             </div>
@@ -118,7 +118,7 @@ export default function MarketingDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <MegaphoneIcon className="h-8 w-8 text-blue-600" />
+                <MegaphoneIcon className="h-8 w-8 text-olive-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Campaigns</p>
                   <p className="text-2xl font-semibold text-gray-900">{metrics.totalCampaigns}</p>
@@ -138,7 +138,7 @@ export default function MarketingDashboard() {
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <EnvelopeIcon className="h-8 w-8 text-purple-600" />
+                <EnvelopeIcon className="h-8 w-8 text-gold-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Messages Sent</p>
                   <p className="text-2xl font-semibold text-gray-900">{metrics.totalSent}</p>
@@ -158,7 +158,7 @@ export default function MarketingDashboard() {
 
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
-                <UserGroupIcon className="h-8 w-8 text-indigo-600" />
+                <UserGroupIcon className="h-8 w-8 text-olive-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Click Rate</p>
                   <p className="text-2xl font-semibold text-gray-900">{metrics.avgClickRate}%</p>
@@ -281,19 +281,19 @@ export default function MarketingDashboard() {
             <h3 className="text-lg font-medium text-gray-900 mb-4">AI Marketing Insights</h3>
             <div className="space-y-3">
               <div className="flex items-start">
-                <SparklesIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+                <SparklesIcon className="h-5 w-5 text-olive-600 mt-0.5" />
                 <p className="ml-3 text-sm text-gray-600">
                   Your email campaigns perform 23% better on Tuesdays and Thursdays. Consider scheduling future campaigns on these days.
                 </p>
               </div>
               <div className="flex items-start">
-                <SparklesIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+                <SparklesIcon className="h-5 w-5 text-olive-600 mt-0.5" />
                 <p className="ml-3 text-sm text-gray-600">
                   Customers who received SMS reminders are 3x more likely to book within 24 hours. Enable SMS for better conversions.
                 </p>
               </div>
               <div className="flex items-start">
-                <SparklesIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+                <SparklesIcon className="h-5 w-5 text-olive-600 mt-0.5" />
                 <p className="ml-3 text-sm text-gray-600">
                   Your "Father's Day Campaign" had the highest conversion rate. Consider creating similar holiday-themed campaigns.
                 </p>

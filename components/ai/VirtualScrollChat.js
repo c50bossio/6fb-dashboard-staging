@@ -310,7 +310,7 @@ export default function VirtualScrollChat({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="h-10 w-10 bg-gradient-to-br from-olive-500 to-gold-600 rounded-full flex items-center justify-center">
             <SparklesIcon className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -326,7 +326,7 @@ export default function VirtualScrollChat({
             <select
               value={selectedAgent}
               onChange={(e) => setSelectedAgent(e.target.value)}
-              className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               disabled={isStreaming}
             >
               {agents.map(agent => (
@@ -392,7 +392,7 @@ export default function VirtualScrollChat({
       {!isAtBottom && (
         <button
           onClick={scrollToBottom}
-          className="absolute right-4 bottom-20 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-colors z-10"
+          className="absolute right-4 bottom-20 bg-olive-600 text-white p-3 rounded-full shadow-lg hover:bg-olive-700 transition-colors z-10"
         >
           <ChevronDownIcon className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -412,7 +412,7 @@ export default function VirtualScrollChat({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={placeholder}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
             disabled={isStreaming}
           />
           
@@ -428,7 +428,7 @@ export default function VirtualScrollChat({
             <button
               type="submit"
               disabled={!input.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               <PaperAirplaneIcon className="h-5 w-5" />
             </button>
@@ -457,7 +457,7 @@ function MessageBubble({ message }) {
         className={`
           max-w-[80%] rounded-lg px-4 py-2
           ${isUser 
-            ? 'bg-blue-600 text-white' 
+            ? 'bg-olive-600 text-white' 
             : 'bg-gray-100 text-gray-900'
           }
           ${message.isStreaming ? 'animate-pulse' : ''}
@@ -477,7 +477,7 @@ function MessageBubble({ message }) {
             )}
           </div>
           {message.timestamp && (
-            <span className={`text-xs ${isUser ? 'text-blue-100' : 'text-gray-500'}`}>
+            <span className={`text-xs ${isUser ? 'text-olive-100' : 'text-gray-500'}`}>
               {new Date(message.timestamp).toLocaleTimeString()}
             </span>
           )}

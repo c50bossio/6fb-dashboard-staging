@@ -116,7 +116,7 @@ export default function BarberSuccessStories() {
                     <div className="flex items-center">
                       <h3 className="text-lg font-bold text-gray-900">{story.name}</h3>
                       {story.verified && (
-                        <CheckBadgeIcon className="h-5 w-5 text-blue-500 ml-2" />
+                        <CheckBadgeIcon className="h-5 w-5 text-olive-500 ml-2" />
                       )}
                     </div>
                     <p className="text-sm text-gray-600">{story.title}</p>
@@ -133,7 +133,7 @@ export default function BarberSuccessStories() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-3 mb-4">
+                <div className="bg-gradient-to-r from-green-50 to-olive-50 rounded-xl p-3 mb-4">
                   <div className="text-center">
                     <div className="text-sm font-semibold text-green-800 mb-1">
                       KEY ACHIEVEMENT
@@ -176,7 +176,7 @@ export default function BarberSuccessStories() {
               return (
                 <div key={index} className="text-center">
                   <div className="inline-flex items-center justify-center h-12 w-12 bg-white/10 rounded-full mb-4">
-                    <Icon className="h-6 w-6 text-blue-400" />
+                    <Icon className="h-6 w-6 text-olive-400" />
                   </div>
                   <h4 className="font-semibold mb-3">{transform.title}</h4>
                   <div className="space-y-2">
@@ -199,7 +199,7 @@ export default function BarberSuccessStories() {
           <p className="text-lg text-gray-700 font-medium mb-6">
             Join 500+ barbers who've taken control of their business
           </p>
-          <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300">
+          <button className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300">
             Start Your Success Story Today
           </button>
         </div>

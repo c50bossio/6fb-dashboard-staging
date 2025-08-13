@@ -306,7 +306,7 @@ export default function EnterprisePortalPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Loading enterprise portal...</p>
         </div>
       </div>
@@ -344,7 +344,7 @@ export default function EnterprisePortalPage() {
           <h1 className="text-6xl lg:text-8xl font-bold text-white mb-6 leading-tight">
             {enterpriseData.name}
           </h1>
-          <p className="text-2xl lg:text-3xl text-blue-200 mb-8 font-light">
+          <p className="text-2xl lg:text-3xl text-olive-200 mb-8 font-light">
             {enterpriseData.tagline}
           </p>
           <p className="text-xl text-gray-200 mb-12 max-w-3xl mx-auto leading-relaxed">
@@ -355,19 +355,19 @@ export default function EnterprisePortalPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-12">
             <div className="text-center">
               <div className="text-4xl font-bold text-white mb-2">{enterpriseData.total_locations}</div>
-              <div className="text-blue-200">Locations</div>
+              <div className="text-olive-200">Locations</div>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-white mb-2">{enterpriseData.total_barbers}+</div>
-              <div className="text-blue-200">Expert Barbers</div>
+              <div className="text-olive-200">Expert Barbers</div>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-white mb-2">{enterpriseData.avg_rating}</div>
-              <div className="text-blue-200">Average Rating</div>
+              <div className="text-olive-200">Average Rating</div>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-white mb-2">{(enterpriseData.clients_served/1000).toFixed(0)}K+</div>
-              <div className="text-blue-200">Clients Served</div>
+              <div className="text-olive-200">Clients Served</div>
             </div>
           </div>
 
@@ -442,7 +442,7 @@ export default function EnterprisePortalPage() {
                       {location.specialties.slice(0, 2).map((specialty) => (
                         <span 
                           key={specialty}
-                          className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium"
+                          className="px-3 py-1 bg-indigo-100 text-olive-700 rounded-full text-xs font-medium"
                         >
                           {specialty}
                         </span>
@@ -455,7 +455,7 @@ export default function EnterprisePortalPage() {
                       </div>
                       <Link
                         href={`/shop/${location.slug}`}
-                        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                        className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors text-sm font-medium"
                       >
                         Visit
                         <ArrowRightIcon className="h-4 w-4 ml-1" />
@@ -473,7 +473,7 @@ export default function EnterprisePortalPage() {
                   key={index}
                   onClick={() => setFeaturedIndex(index)}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    index === featuredIndex ? 'bg-indigo-600' : 'bg-gray-300'
+                    index === featuredIndex ? 'bg-olive-600' : 'bg-gray-300'
                   }`}
                 />
               ))}
@@ -494,7 +494,7 @@ export default function EnterprisePortalPage() {
                 {enterpriseData.about_content}
               </p>
               
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl mb-8">
+              <div className="bg-gradient-to-r from-indigo-50 to-gold-50 p-6 rounded-xl mb-8">
                 <h3 className="text-lg font-semibold mb-3 text-gray-900">Our Mission</h3>
                 <p className="text-gray-700 leading-relaxed">
                   {enterpriseData.mission_statement}
@@ -528,7 +528,7 @@ export default function EnterprisePortalPage() {
               </div>
               <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-lg shadow-xl">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-indigo-600 mb-1">
+                  <div className="text-3xl font-bold text-olive-600 mb-1">
                     {new Date().getFullYear() - enterpriseData.years_established}+
                   </div>
                   <div className="text-sm text-gray-600">Years of Excellence</div>
@@ -559,7 +559,7 @@ export default function EnterprisePortalPage() {
                   placeholder="Search by location, city, or specialty..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
               
@@ -567,7 +567,7 @@ export default function EnterprisePortalPage() {
                 <select
                   value={filterBy}
                   onChange={(e) => setFilterBy(e.target.value)}
-                  className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 >
                   <option value="all">Sort by</option>
                   <option value="rating">Highest Rated</option>
@@ -579,7 +579,7 @@ export default function EnterprisePortalPage() {
                   onClick={() => setMapView(!mapView)}
                   className={`px-6 py-3 rounded-xl font-medium transition-colors ${
                     mapView 
-                      ? 'bg-indigo-600 text-white' 
+                      ? 'bg-olive-600 text-white' 
                       : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                   }`}
                 >
@@ -666,7 +666,7 @@ export default function EnterprisePortalPage() {
                     <div className="flex gap-2">
                       <Link
                         href={`/shop/${location.slug}`}
-                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-center rounded-lg transition-colors font-medium"
+                        className="flex-1 py-2 bg-olive-600 hover:bg-olive-700 text-white text-center rounded-lg transition-colors font-medium"
                       >
                         Visit Shop
                       </Link>
@@ -693,7 +693,7 @@ export default function EnterprisePortalPage() {
                   setSearchQuery('')
                   setFilterBy('all')
                 }}
-                className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
               >
                 Clear Search
               </button>
@@ -715,7 +715,7 @@ export default function EnterprisePortalPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             <div className="text-center">
-              <div className="h-16 w-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="h-16 w-16 bg-olive-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MapPinIcon className="h-8 w-8" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Convenient Locations</h3>
@@ -806,7 +806,7 @@ export default function EnterprisePortalPage() {
                   {selectedLocation.specialties.map((specialty) => (
                     <span 
                       key={specialty}
-                      className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm"
+                      className="px-3 py-1 bg-indigo-100 text-olive-700 rounded-full text-sm"
                     >
                       {specialty}
                     </span>
@@ -816,7 +816,7 @@ export default function EnterprisePortalPage() {
                 <div className="space-y-3">
                   <Link
                     href={`/shop/${selectedLocation.slug}`}
-                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-center rounded-lg transition-colors font-medium block"
+                    className="w-full py-3 bg-olive-600 hover:bg-olive-700 text-white text-center rounded-lg transition-colors font-medium block"
                   >
                     Visit Shop Page
                   </Link>

@@ -60,7 +60,7 @@ export default function ShopBookingsManagement() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed': return 'text-green-700 bg-green-100'
-      case 'confirmed': return 'text-blue-700 bg-blue-100'
+      case 'confirmed': return 'text-olive-700 bg-olive-100'
       case 'in_progress': return 'text-yellow-700 bg-yellow-100'
       case 'cancelled': return 'text-red-700 bg-red-100'
       case 'no_show': return 'text-gray-700 bg-gray-100'
@@ -88,7 +88,7 @@ export default function ShopBookingsManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -99,8 +99,8 @@ export default function ShopBookingsManagement() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-              <CalendarDaysIcon className="h-8 w-8 text-blue-600" />
+            <div className="h-12 w-12 rounded-lg bg-olive-100 flex items-center justify-center">
+              <CalendarDaysIcon className="h-8 w-8 text-olive-600" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Bookings Management</h1>
@@ -112,7 +112,7 @@ export default function ShopBookingsManagement() {
             <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
               Export Schedule
             </button>
-            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center">
+            <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center">
               <PlusIcon className="h-5 w-5 mr-2" />
               New Booking
             </button>
@@ -124,8 +124,8 @@ export default function ShopBookingsManagement() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CalendarDaysIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-olive-100 rounded-lg">
+              <CalendarDaysIcon className="h-6 w-6 text-olive-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">{summary.total_appointments || 0}</p>
@@ -315,7 +315,7 @@ export default function ShopBookingsManagement() {
             <div className="p-12 text-center">
               <CalendarDaysIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
               <p className="text-gray-600 mb-4">No appointments found for the selected criteria</p>
-              <button className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              <button className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
                 <PlusIcon className="h-5 w-5 mr-2" />
                 Create New Booking
               </button>

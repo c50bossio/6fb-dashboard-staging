@@ -78,7 +78,7 @@ export default function WorkingLoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-olive-600 text-white p-3 rounded hover:bg-olive-700 disabled:opacity-50"
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
@@ -94,7 +94,7 @@ export default function WorkingLoginPage() {
         
         <div className="mt-6 text-center text-sm text-gray-600">
           <p>This login uses the simple dashboard that works</p>
-          <Link href="/" className="text-blue-600 hover:underline mt-2 block">
+          <Link href="/" className="text-olive-600 hover:underline mt-2 block">
             Back to home
           </Link>
         </div>

@@ -110,7 +110,7 @@ const MetricCard = ({ icon: Icon, title, value, change, trend, subtitle }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
     <div className="flex items-start justify-between mb-4">
       <div className="p-2 bg-indigo-50 rounded-lg">
-        <Icon className="h-6 w-6 text-indigo-600" />
+        <Icon className="h-6 w-6 text-olive-600" />
       </div>
       <div className={`flex items-center gap-1 text-sm font-medium ${
         trend === 'up' ? 'text-green-600' : 'text-red-600'

@@ -116,7 +116,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              currentStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              currentStep >= 1 ? 'bg-olive-600 text-white' : 'bg-gray-200 text-gray-600'
             }`}>
               1
             </div>
@@ -125,7 +125,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
           <div className="flex-1 h-1 bg-gray-200 mx-4" />
           <div className="flex items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              currentStep >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              currentStep >= 2 ? 'bg-olive-600 text-white' : 'bg-gray-200 text-gray-600'
             }`}>
               2
             </div>
@@ -134,7 +134,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
           <div className="flex-1 h-1 bg-gray-200 mx-4" />
           <div className="flex items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              currentStep >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              currentStep >= 3 ? 'bg-olive-600 text-white' : 'bg-gray-200 text-gray-600'
             }`}>
               3
             </div>
@@ -156,7 +156,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
                     setDnsProvider(key)
                     setCurrentStep(2)
                   }}
-                  className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                  className="p-4 border-2 border-gray-200 rounded-lg hover:border-olive-500 hover:bg-olive-50 transition-all"
                 >
                   <div className="text-center">
                     <div className="text-2xl mb-2">
@@ -177,17 +177,17 @@ export default function DomainSetupWizard({ domain, onComplete }) {
         {/* Step 2: Add DNS Records */}
         {currentStep === 2 && dnsProvider && (
           <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-3">
+            <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+              <h3 className="font-semibold text-olive-900 mb-3">
                 Follow these steps for {providerInstructions[dnsProvider].name}:
               </h3>
               <ol className="space-y-2">
                 {providerInstructions[dnsProvider].steps.map((step, index) => (
                   <li key={index} className="flex items-start">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold mr-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-olive-100 text-olive-600 rounded-full flex items-center justify-center text-xs font-bold mr-3">
                       {index + 1}
                     </span>
-                    <span className="text-sm text-blue-800">{step}</span>
+                    <span className="text-sm text-olive-800">{step}</span>
                   </li>
                 ))}
               </ol>
@@ -202,7 +202,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
                   <h5 className="font-medium text-gray-900">Record 1: A Record</h5>
                   <button
                     onClick={() => copyToClipboard(dnsRecords.a.value, 'a')}
-                    className="flex items-center text-sm text-blue-600 hover:text-blue-700"
+                    className="flex items-center text-sm text-olive-600 hover:text-olive-700"
                   >
                     <ClipboardDocumentIcon className="w-4 h-4 mr-1" />
                     {copied.a ? 'Copied!' : 'Copy'}
@@ -234,7 +234,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
                   <h5 className="font-medium text-gray-900">Record 2: CNAME Record</h5>
                   <button
                     onClick={() => copyToClipboard(dnsRecords.cname.value, 'cname')}
-                    className="flex items-center text-sm text-blue-600 hover:text-blue-700"
+                    className="flex items-center text-sm text-olive-600 hover:text-olive-700"
                   >
                     <ClipboardDocumentIcon className="w-4 h-4 mr-1" />
                     {copied.cname ? 'Copied!' : 'Copy'}
@@ -277,7 +277,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
               </button>
               <button
                 onClick={() => setCurrentStep(3)}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
               >
                 I've Added the Records →
               </button>
@@ -302,7 +302,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
                   </p>
                   <button
                     onClick={verifyDomain}
-                    className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                    className="px-8 py-3 bg-olive-600 text-white rounded-lg font-medium hover:bg-olive-700"
                   >
                     Verify Domain Setup
                   </button>
@@ -311,8 +311,8 @@ export default function DomainSetupWizard({ domain, onComplete }) {
               
               {verificationStatus === 'checking' && (
                 <>
-                  <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+                  <div className="w-20 h-20 bg-olive-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-olive-600"></div>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     Checking Your Domain...
@@ -375,13 +375,13 @@ export default function DomainSetupWizard({ domain, onComplete }) {
                     </button>
                     <button
                       onClick={verifyDomain}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
                     >
                       Try Again
                     </button>
                   </div>
                   <p className="text-sm text-gray-500 mt-4">
-                    Need help? <a href="#" className="text-blue-600 hover:underline">Contact support</a>
+                    Need help? <a href="#" className="text-olive-600 hover:underline">Contact support</a>
                   </p>
                 </>
               )}

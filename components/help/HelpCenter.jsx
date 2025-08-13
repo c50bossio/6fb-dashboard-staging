@@ -134,7 +134,7 @@ export default function HelpCenter() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-5">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+            <div className="bg-gradient-to-r from-olive-600 to-gold-600 text-white p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold">Help Center</h2>
                 <button
@@ -171,7 +171,7 @@ export default function HelpCenter() {
                       onClick={() => setSelectedCategory(category)}
                       className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                         selectedCategory === category
-                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          ? 'bg-olive-50 text-olive-700 font-medium'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
@@ -183,17 +183,17 @@ export default function HelpCenter() {
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <h3 className="font-semibold text-gray-900 mb-3">Quick Links</h3>
                   <div className="space-y-2">
-                    <button className="flex items-center space-x-2 text-sm text-gray-700 hover:text-blue-600">
+                    <button className="flex items-center space-x-2 text-sm text-gray-700 hover:text-olive-600">
                       <VideoCameraIcon className="h-4 w-4" />
                       <span>Video Tutorials</span>
                     </button>
-                    <button className="flex items-center space-x-2 text-sm text-gray-700 hover:text-blue-600">
+                    <button className="flex items-center space-x-2 text-sm text-gray-700 hover:text-olive-600">
                       <BookOpenIcon className="h-4 w-4" />
                       <span>User Guide</span>
                     </button>
                     <button 
                       onClick={handleContactSupport}
-                      className="flex items-center space-x-2 text-sm text-gray-700 hover:text-blue-600"
+                      className="flex items-center space-x-2 text-sm text-gray-700 hover:text-olive-600"
                     >
                       <ChatBubbleLeftRightIcon className="h-4 w-4" />
                       <span>Contact Support</span>
@@ -209,7 +209,7 @@ export default function HelpCenter() {
                   <div className="p-6">
                     <button
                       onClick={() => setSelectedArticle(null)}
-                      className="text-blue-600 hover:text-blue-700 text-sm mb-4"
+                      className="text-olive-600 hover:text-olive-700 text-sm mb-4"
                     >
                       ← Back to articles
                     </button>
@@ -246,11 +246,11 @@ export default function HelpCenter() {
                           <button
                             key={article.id}
                             onClick={() => setSelectedArticle(article)}
-                            className="text-left p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all group"
+                            className="text-left p-4 bg-white border border-gray-200 rounded-lg hover:border-olive-300 hover:shadow-md transition-all group"
                           >
                             <div className="flex items-start justify-between">
                               <div>
-                                <h4 className="font-medium text-gray-900 group-hover:text-blue-600">
+                                <h4 className="font-medium text-gray-900 group-hover:text-olive-600">
                                   {article.title}
                                 </h4>
                                 <p className="text-sm text-gray-600 mt-1">{article.content}</p>
@@ -269,7 +269,7 @@ export default function HelpCenter() {
                                   <span>{article.readTime}</span>
                                 </div>
                               </div>
-                              <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-blue-600 flex-shrink-0 ml-4" />
+                              <ArrowRightIcon className="h-5 w-5 text-gray-400 group-hover:text-olive-600 flex-shrink-0 ml-4" />
                             </div>
                           </button>
                         ))}

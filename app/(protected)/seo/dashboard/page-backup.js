@@ -201,7 +201,7 @@ export default function SEODashboard() {
   const getPerformanceIcon = (performance) => {
     switch (performance) {
       case 'excellent': return <TrendingUpIcon className="h-4 w-4 text-green-500" />
-      case 'good': return <CheckCircleIcon className="h-4 w-4 text-blue-500" />
+      case 'good': return <CheckCircleIcon className="h-4 w-4 text-olive-500" />
       case 'pending': return <ClockIcon className="h-4 w-4 text-yellow-500" />
       default: return <ExclamationTriangleIcon className="h-4 w-4 text-gray-400" />
     }
@@ -211,7 +211,7 @@ export default function SEODashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Loading AI SEO Dashboard...</p>
         </div>
       </div>
@@ -226,7 +226,7 @@ export default function SEODashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                <ChartBarIconSolid className="h-8 w-8 text-indigo-600" />
+                <ChartBarIconSolid className="h-8 w-8 text-olive-600" />
                 AI SEO Dashboard
               </h1>
               <p className="text-gray-600 mt-1">
@@ -238,14 +238,14 @@ export default function SEODashboard() {
               <select
                 value={selectedTimeRange}
                 onChange={(e) => setSelectedTimeRange(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
               >
                 <option value="7d">Last 7 days</option>
                 <option value="30d">Last 30 days</option>
                 <option value="90d">Last 90 days</option>
               </select>
               
-              <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              <button className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
                 <ArrowPathIcon className="h-4 w-4" />
                 Refresh
               </button>
@@ -280,7 +280,7 @@ export default function SEODashboard() {
                   {seoData.overview.ranking_keywords}
                 </p>
               </div>
-              <MagnifyingGlassIcon className="h-8 w-8 text-blue-500" />
+              <MagnifyingGlassIcon className="h-8 w-8 text-olive-500" />
             </div>
           </div>
 
@@ -292,7 +292,7 @@ export default function SEODashboard() {
                   {seoData.overview.avg_position}
                 </p>
               </div>
-              <ChartBarIcon className="h-8 w-8 text-indigo-500" />
+              <ChartBarIcon className="h-8 w-8 text-olive-500" />
             </div>
           </div>
 
@@ -337,7 +337,7 @@ export default function SEODashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`${
                   activeTab === tab.id
-                    ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
+                    ? 'border-olive-500 text-olive-600 bg-indigo-50'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm flex items-center gap-2 rounded-t-lg`}
               >
@@ -358,7 +358,7 @@ export default function SEODashboard() {
                   <StarIcon className="h-5 w-5 text-yellow-500" />
                   AI Recommendations
                 </h3>
-                <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                <button className="text-olive-600 hover:text-olive-700 text-sm font-medium">
                   View All
                 </button>
               </div>
@@ -391,11 +391,11 @@ export default function SEODashboard() {
                   <div key={index} className="flex-1 flex flex-col items-center">
                     <div className="w-full bg-gray-200 rounded-t relative" style={{ height: '200px' }}>
                       <div 
-                        className="bg-indigo-500 rounded-t w-full absolute bottom-0"
+                        className="bg-olive-500 rounded-t w-full absolute bottom-0"
                         style={{ height: `${(data.organic / 3500) * 200}px` }}
                       ></div>
                       <div 
-                        className="bg-blue-300 rounded-t w-full absolute bottom-0"
+                        className="bg-olive-300 rounded-t w-full absolute bottom-0"
                         style={{ height: `${(data.total / 3500) * 200}px`, opacity: 0.7 }}
                       ></div>
                     </div>
@@ -406,11 +406,11 @@ export default function SEODashboard() {
               
               <div className="flex items-center justify-center gap-6 mt-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-indigo-500 rounded"></div>
+                  <div className="w-3 h-3 bg-olive-500 rounded"></div>
                   <span className="text-sm text-gray-600">Organic Traffic</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-300 rounded"></div>
+                  <div className="w-3 h-3 bg-olive-300 rounded"></div>
                   <span className="text-sm text-gray-600">Total Traffic</span>
                 </div>
               </div>
@@ -480,7 +480,7 @@ export default function SEODashboard() {
                   <h3 className="text-lg font-semibold text-gray-900">AI Content Calendar</h3>
                   <p className="text-gray-600">Automated content planning and performance tracking</p>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                <button className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
                   <PencilSquareIcon className="h-4 w-4" />
                   Generate Content
                 </button>
@@ -497,7 +497,7 @@ export default function SEODashboard() {
                           {getPerformanceIcon(content.performance)}
                           <h4 className="font-medium text-gray-900">{content.title}</h4>
                         </div>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        <span className="px-2 py-1 bg-olive-100 text-olive-800 text-xs rounded-full">
                           {content.type}
                         </span>
                       </div>

@@ -107,12 +107,12 @@ export default function QuickActions({ profile }) {
 
   const getColorClasses = (color) => {
     const colorMap = {
-      purple: 'text-purple-600 bg-purple-50 hover:bg-purple-100',
-      blue: 'text-blue-600 bg-blue-50 hover:bg-blue-100',
+      purple: 'text-gold-600 bg-gold-50 hover:bg-gold-100',
+      blue: 'text-olive-600 bg-olive-50 hover:bg-olive-100',
       green: 'text-green-600 bg-green-50 hover:bg-green-100',
       orange: 'text-orange-600 bg-orange-50 hover:bg-orange-100',
       pink: 'text-pink-600 bg-pink-50 hover:bg-pink-100',
-      indigo: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100',
+      indigo: 'text-olive-600 bg-indigo-50 hover:bg-indigo-100',
       emerald: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100',
       amber: 'text-amber-600 bg-amber-50 hover:bg-amber-100'
     }
@@ -259,7 +259,7 @@ export default function QuickActions({ profile }) {
             <p className="text-sm text-gray-600 mt-1">Configure your AI system preferences</p>
           </div>
           <Link href="/dashboard/settings">
-            <div className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors cursor-pointer">
+            <div className="flex items-center space-x-2 text-olive-600 hover:text-olive-700 transition-colors cursor-pointer">
               {CogIcon ? (
                 <CogIcon className="h-5 w-5" />
               ) : (

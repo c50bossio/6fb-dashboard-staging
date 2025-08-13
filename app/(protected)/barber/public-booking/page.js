@@ -145,7 +145,7 @@ export default function PublicBookingPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your public booking page...</p>
         </div>
       </div>
@@ -159,11 +159,11 @@ export default function PublicBookingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <GlobeAltIcon className="h-6 w-6 text-indigo-600" />
+              <GlobeAltIcon className="h-6 w-6 text-olive-600" />
               <h1 className="text-lg font-semibold text-gray-900">
                 Public Booking Page
               </h1>
-              <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">
+              <span className="px-2 py-1 bg-indigo-100 text-olive-700 text-xs font-medium rounded-full">
                 SEO Ready
               </span>
             </div>
@@ -183,7 +183,7 @@ export default function PublicBookingPage() {
               
               <button
                 onClick={() => window.open(urls.main, '_blank')}
-                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
+                className="inline-flex items-center px-4 py-2 bg-olive-600 text-white text-sm font-medium rounded-lg hover:bg-olive-700"
               >
                 <GlobeAltIcon className="h-4 w-4 mr-2" />
                 View Live Page
@@ -206,7 +206,7 @@ export default function PublicBookingPage() {
                   className={`
                     flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors
                     ${activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-olive-500 text-olive-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }
                   `}
@@ -227,7 +227,7 @@ export default function PublicBookingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                <div className="bg-gradient-to-r from-indigo-500 to-gold-600 px-6 py-4">
                   <h2 className="text-lg font-semibold text-white flex items-center">
                     <EyeIcon className="h-5 w-5 mr-2" />
                     Live Preview - Client View
@@ -254,7 +254,7 @@ export default function PublicBookingPage() {
                 {/* Booking Page Preview */}
                 <div className="p-6">
                   <div className="text-center mb-8">
-                    <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-gold-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                       <span className="text-white text-2xl font-bold">
                         {previewData.name.split(' ').map(n => n[0]).join('')}
                       </span>
@@ -317,7 +317,7 @@ export default function PublicBookingPage() {
                     </div>
                   </div>
 
-                  <button className="w-full bg-indigo-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-indigo-700 transition-colors">
+                  <button className="w-full bg-olive-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-olive-700 transition-colors">
                     Continue to Book Appointment
                   </button>
                 </div>
@@ -328,7 +328,7 @@ export default function PublicBookingPage() {
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <ShareIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                  <ShareIcon className="h-5 w-5 mr-2 text-olive-600" />
                   Quick Actions
                 </h3>
                 
@@ -355,7 +355,7 @@ export default function PublicBookingPage() {
                   
                   <button
                     onClick={() => setActiveTab('share')}
-                    className="w-full flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                    className="w-full flex items-center justify-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
                   >
                     <QrCodeIcon className="h-4 w-4 mr-2" />
                     Get QR Code
@@ -406,7 +406,7 @@ export default function PublicBookingPage() {
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <LinkIcon className="h-5 w-5 mr-2 text-blue-600" />
+                  <LinkIcon className="h-5 w-5 mr-2 text-olive-600" />
                   Booking URLs
                 </h2>
                 
@@ -424,7 +424,7 @@ export default function PublicBookingPage() {
                       />
                       <button
                         onClick={() => copyToClipboard(urls.main, 'main')}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700"
+                        className="px-3 py-2 bg-olive-600 text-white rounded-r-lg hover:bg-olive-700"
                       >
                         {copied.main ? <CheckIcon className="h-4 w-4" /> : <ClipboardIcon className="h-4 w-4" />}
                       </button>
@@ -444,7 +444,7 @@ export default function PublicBookingPage() {
                       />
                       <button
                         onClick={() => copyToClipboard(urls.utmSocial, 'social')}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700"
+                        className="px-3 py-2 bg-olive-600 text-white rounded-r-lg hover:bg-olive-700"
                       >
                         {copied.social ? <CheckIcon className="h-4 w-4" /> : <ClipboardIcon className="h-4 w-4" />}
                       </button>
@@ -464,7 +464,7 @@ export default function PublicBookingPage() {
                       />
                       <button
                         onClick={() => copyToClipboard(urls.utmEmail, 'email')}
-                        className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700"
+                        className="px-3 py-2 bg-olive-600 text-white rounded-r-lg hover:bg-olive-700"
                       >
                         {copied.email ? <CheckIcon className="h-4 w-4" /> : <ClipboardIcon className="h-4 w-4" />}
                       </button>
@@ -478,7 +478,7 @@ export default function PublicBookingPage() {
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <QrCodeIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                  <QrCodeIcon className="h-5 w-5 mr-2 text-olive-600" />
                   QR Code Generator
                 </h2>
                 
@@ -524,7 +524,7 @@ export default function PublicBookingPage() {
                       <button
                         onClick={downloadQRCode}
                         disabled={downloadingQR}
-                        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                        className="inline-flex items-center px-4 py-2 bg-olive-600 text-white text-sm font-medium rounded-lg hover:bg-olive-700 disabled:opacity-50"
                       >
                         {downloadingQR ? (
                           <>
@@ -552,7 +552,7 @@ export default function PublicBookingPage() {
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <DevicePhoneMobileIcon className="h-5 w-5 mr-2 text-purple-600" />
+                  <DevicePhoneMobileIcon className="h-5 w-5 mr-2 text-gold-600" />
                   Social Media Templates
                 </h2>
                 
@@ -564,7 +564,7 @@ export default function PublicBookingPage() {
                       </label>
                       <button
                         onClick={() => copyToClipboard(shareTemplates.social.instagram, 'instagram')}
-                        className="text-xs text-blue-600 hover:text-blue-800"
+                        className="text-xs text-olive-600 hover:text-olive-800"
                       >
                         {copied.instagram ? 'Copied!' : 'Copy'}
                       </button>
@@ -584,7 +584,7 @@ export default function PublicBookingPage() {
                       </label>
                       <button
                         onClick={() => copyToClipboard(shareTemplates.social.whatsapp, 'whatsapp')}
-                        className="text-xs text-blue-600 hover:text-blue-800"
+                        className="text-xs text-olive-600 hover:text-olive-800"
                       >
                         {copied.whatsapp ? 'Copied!' : 'Copy'}
                       </button>
@@ -604,7 +604,7 @@ export default function PublicBookingPage() {
                       </label>
                       <button
                         onClick={() => copyToClipboard(shareTemplates.social.twitter, 'twitter')}
-                        className="text-xs text-blue-600 hover:text-blue-800"
+                        className="text-xs text-olive-600 hover:text-olive-800"
                       >
                         {copied.twitter ? 'Copied!' : 'Copy'}
                       </button>
@@ -623,7 +623,7 @@ export default function PublicBookingPage() {
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <EnvelopeIcon className="h-5 w-5 mr-2 text-blue-600" />
+                  <EnvelopeIcon className="h-5 w-5 mr-2 text-olive-600" />
                   Email Template
                 </h2>
                 
@@ -634,7 +634,7 @@ export default function PublicBookingPage() {
                     </label>
                     <button
                       onClick={() => copyToClipboard(shareTemplates.business.email, 'emailTemplate')}
-                      className="text-xs text-blue-600 hover:text-blue-800"
+                      className="text-xs text-olive-600 hover:text-olive-800"
                     >
                       {copied.emailTemplate ? 'Copied!' : 'Copy'}
                     </button>
@@ -648,11 +648,11 @@ export default function PublicBookingPage() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-blue-900 mb-2">
+              <div className="bg-olive-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-olive-900 mb-2">
                   Template Tips
                 </h4>
-                <ul className="text-xs text-blue-700 space-y-1">
+                <ul className="text-xs text-olive-700 space-y-1">
                   <li>• Customize the templates with your personal touch</li>
                   <li>• Add specific services or promotions you're offering</li>
                   <li>• Include your business hours and contact information</li>
@@ -720,17 +720,17 @@ export default function PublicBookingPage() {
                   Performance Metrics
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <div className="text-2xl font-bold text-blue-600">0</div>
-                    <div className="text-sm text-blue-700">Page Views</div>
+                  <div className="bg-olive-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-olive-600">0</div>
+                    <div className="text-sm text-olive-700">Page Views</div>
                   </div>
                   <div className="bg-green-50 rounded-lg p-4">
                     <div className="text-2xl font-bold text-green-600">0</div>
                     <div className="text-sm text-green-700">Bookings</div>
                   </div>
-                  <div className="bg-purple-50 rounded-lg p-4">
-                    <div className="text-2xl font-bold text-purple-600">0%</div>
-                    <div className="text-sm text-purple-700">Conversion</div>
+                  <div className="bg-gold-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-gold-600">0%</div>
+                    <div className="text-sm text-gold-700">Conversion</div>
                   </div>
                   <div className="bg-orange-50 rounded-lg p-4">
                     <div className="text-2xl font-bold text-orange-600">0</div>

@@ -81,7 +81,7 @@ export default function ShopDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -93,7 +93,7 @@ export default function ShopDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="h-16 w-16 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <BuildingStorefrontIcon className="h-10 w-10 text-indigo-600" />
+              <BuildingStorefrontIcon className="h-10 w-10 text-olive-600" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
@@ -114,7 +114,7 @@ export default function ShopDashboard() {
             </Link>
             <Link
               href="/shop/barbers/add"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center"
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
             >
               <UserPlusIcon className="h-5 w-5 mr-2" />
               Add Barber
@@ -151,8 +151,8 @@ export default function ShopDashboard() {
         {/* Today's Bookings */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CalendarDaysIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-olive-100 rounded-lg">
+              <CalendarDaysIcon className="h-6 w-6 text-olive-600" />
             </div>
             <span className={`text-sm font-medium flex items-center ${
               metrics.bookingsChange >= 0 ? 'text-green-600' : 'text-red-600'
@@ -173,7 +173,7 @@ export default function ShopDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-indigo-100 rounded-lg">
-              <ScissorsIcon className="h-6 w-6 text-indigo-600" />
+              <ScissorsIcon className="h-6 w-6 text-olive-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">{metrics.activeBarbers}</p>
@@ -262,7 +262,7 @@ export default function ShopDashboard() {
               <p className="text-gray-600 mb-4">No barbers added yet</p>
               <Link
                 href="/shop/barbers/add"
-                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
               >
                 <UserPlusIcon className="h-5 w-5 mr-2" />
                 Add Your First Barber
@@ -278,7 +278,7 @@ export default function ShopDashboard() {
           href="/shop/bookings"
           className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
-          <CalendarDaysIcon className="h-8 w-8 text-blue-600" />
+          <CalendarDaysIcon className="h-8 w-8 text-olive-600" />
           <div>
             <p className="font-medium text-gray-900">Manage Bookings</p>
             <p className="text-sm text-gray-600">View all appointments & schedule</p>
@@ -300,7 +300,7 @@ export default function ShopDashboard() {
           href="/shop/services"
           className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
-          <ScissorsIcon className="h-8 w-8 text-purple-600" />
+          <ScissorsIcon className="h-8 w-8 text-gold-600" />
           <div>
             <p className="font-medium text-gray-900">Services & Pricing</p>
             <p className="text-sm text-gray-600">Manage service catalog & pricing</p>
@@ -311,7 +311,7 @@ export default function ShopDashboard() {
           href="/shop/analytics"
           className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
-          <ChartBarIcon className="h-8 w-8 text-indigo-600" />
+          <ChartBarIcon className="h-8 w-8 text-olive-600" />
           <div>
             <p className="font-medium text-gray-900">Analytics</p>
             <p className="text-sm text-gray-600">Performance insights & reports</p>

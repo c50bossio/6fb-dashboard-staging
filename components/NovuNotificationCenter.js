@@ -71,10 +71,10 @@ export default function NovuNotificationCenter() {
         // Customization
         theme={{
           dark: {
-            loaderColor: '#6366f1',
+            loaderColor: '#546355',
           },
           light: {
-            loaderColor: '#6366f1',
+            loaderColor: '#546355',
             popover: {
               arrowColor: 'white',
             },
@@ -88,14 +88,14 @@ export default function NovuNotificationCenter() {
         listItem={(notification, handleActionButtonClick, handleNotificationClick) => (
           <div
             className={`p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 ${
-              !notification.read ? 'bg-blue-50' : ''
+              !notification.read ? 'bg-olive-50' : ''
             }`}
             onClick={() => handleNotificationClick(notification)}
           >
             <div className="flex items-start gap-3">
               {/* Icon based on notification type */}
               <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                notification.templateIdentifier === 'booking-reminder' ? 'bg-blue-100' :
+                notification.templateIdentifier === 'booking-reminder' ? 'bg-olive-100' :
                 notification.templateIdentifier === 'ai-insight' ? 'bg-amber-100' :
                 notification.templateIdentifier === 'payment-received' ? 'bg-green-100' :
                 'bg-gray-100'
@@ -127,7 +127,7 @@ export default function NovuNotificationCenter() {
                         e.stopPropagation()
                         handleActionButtonClick(notification, 'primary')
                       }}
-                      className="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700"
+                      className="text-xs bg-olive-600 text-white px-3 py-1 rounded hover:bg-olive-700"
                     >
                       {notification.cta.action.label || 'View'}
                     </button>
@@ -138,7 +138,7 @@ export default function NovuNotificationCenter() {
               {/* Unread indicator */}
               {!notification.read && (
                 <div className="flex-shrink-0">
-                  <div className="h-2 w-2 bg-blue-600 rounded-full" />
+                  <div className="h-2 w-2 bg-olive-600 rounded-full" />
                 </div>
               )}
             </div>
@@ -163,7 +163,7 @@ export default function NovuNotificationCenter() {
           <div className="p-3 border-t bg-gray-50 text-center">
             <a
               href="/settings/notifications"
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+              className="text-sm text-olive-600 hover:text-olive-700 font-medium"
             >
               Manage notification preferences
             </a>

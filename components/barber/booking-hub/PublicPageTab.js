@@ -122,7 +122,7 @@ export default function PublicPageTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
         <p className="ml-4 text-gray-600">Loading public page data...</p>
       </div>
     )
@@ -138,7 +138,7 @@ export default function PublicPageTab() {
         </div>
         <button
           onClick={openPreview}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
         >
           <EyeIcon className="h-5 w-5 mr-2" />
           View Live Page
@@ -161,7 +161,7 @@ export default function PublicPageTab() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
               >
@@ -176,12 +176,12 @@ export default function PublicPageTab() {
       {/* Tab Content */}
       {activeTab === 'preview' && (
         <div className="space-y-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+          <div className="bg-olive-50 border border-olive-200 rounded-xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <EyeIcon className="h-6 w-6 text-blue-600" />
-              <h3 className="text-lg font-semibold text-blue-900">Live Preview - Client View</h3>
+              <EyeIcon className="h-6 w-6 text-olive-600" />
+              <h3 className="text-lg font-semibold text-olive-900">Live Preview - Client View</h3>
             </div>
-            <p className="text-blue-700 text-sm mb-4">
+            <p className="text-olive-700 text-sm mb-4">
               This is exactly what clients see when they visit your booking page
             </p>
             
@@ -199,7 +199,7 @@ export default function PublicPageTab() {
               </div>
               
               <div className="p-8 text-center">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 text-white rounded-full text-2xl font-bold mb-4">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-olive-600 text-white rounded-full text-2xl font-bold mb-4">
                   {barberData.name.split(' ').map(n => n[0]).join('')}
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">Book with {barberData.name}</h1>
@@ -224,13 +224,13 @@ export default function PublicPageTab() {
                           <h3 className="font-semibold text-gray-900">{service.name}</h3>
                           <p className="text-sm text-gray-600">{service.duration} min</p>
                         </div>
-                        <span className="font-bold text-blue-600">${service.price}</span>
+                        <span className="font-bold text-olive-600">${service.price}</span>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <button className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700">
+                <button className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-olive-600 hover:bg-olive-700">
                   Book Appointment
                 </button>
               </div>
@@ -245,7 +245,7 @@ export default function PublicPageTab() {
             {/* QR Code Section */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <QrCodeIcon className="h-5 w-5 text-purple-600" />
+                <QrCodeIcon className="h-5 w-5 text-gold-600" />
                 QR Code
               </h3>
               
@@ -274,7 +274,7 @@ export default function PublicPageTab() {
                   <button
                     onClick={downloadQRCode}
                     disabled={downloadingQR}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gold-600 hover:bg-gold-700 disabled:opacity-50"
                   >
                     <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                     {downloadingQR ? 'Downloading...' : 'Download QR Code'}
@@ -286,7 +286,7 @@ export default function PublicPageTab() {
             {/* Direct Links Section */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <LinkIcon className="h-5 w-5 text-blue-600" />
+                <LinkIcon className="h-5 w-5 text-olive-600" />
                 Direct Links
               </h3>
               
@@ -376,7 +376,7 @@ export default function PublicPageTab() {
                       <h4 className="font-medium text-gray-900 capitalize">{platform}</h4>
                       <button
                         onClick={() => copyToClipboard(template, platform)}
-                        className="text-sm text-blue-600 hover:text-blue-700"
+                        className="text-sm text-olive-600 hover:text-olive-700"
                       >
                         {copied[platform] ? 'Copied!' : 'Copy'}
                       </button>
@@ -401,7 +401,7 @@ export default function PublicPageTab() {
                   <h4 className="font-medium text-gray-900">Professional Email</h4>
                   <button
                     onClick={() => copyToClipboard(shareTemplates.business.email, 'business-email')}
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    className="text-sm text-olive-600 hover:text-olive-700"
                   >
                     {copied['business-email'] ? 'Copied!' : 'Copy'}
                   </button>
@@ -425,7 +425,7 @@ export default function PublicPageTab() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">1,247</div>
+                <div className="text-3xl font-bold text-olive-600">1,247</div>
                 <div className="text-sm text-gray-500">Page Views</div>
                 <div className="text-xs text-green-600 mt-1">+12% from last month</div>
               </div>
@@ -437,9 +437,9 @@ export default function PublicPageTab() {
               </div>
               
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600">234</div>
+                <div className="text-3xl font-bold text-gold-600">234</div>
                 <div className="text-sm text-gray-500">QR Scans</div>
-                <div className="text-xs text-blue-600 mt-1">18.8% of traffic</div>
+                <div className="text-xs text-olive-600 mt-1">18.8% of traffic</div>
               </div>
             </div>
             

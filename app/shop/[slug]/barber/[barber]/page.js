@@ -264,7 +264,7 @@ John believes that a great haircut is more than just a service – it's an exper
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Loading barber profile...</p>
         </div>
       </div>
@@ -279,7 +279,7 @@ John believes that a great haircut is more than just a service – it's an exper
           <p className="text-gray-600 mb-6">The barber profile you're looking for doesn't exist.</p>
           <Link 
             href={`/shop/${shopSlug}`}
-            className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="inline-flex items-center px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
           >
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
             Back to {shopData?.name || 'Barbershop'}
@@ -320,7 +320,7 @@ John believes that a great haircut is more than just a service – it's an exper
             <h1 className="text-5xl lg:text-6xl font-bold mb-4 leading-tight">
               {barberData.name}
             </h1>
-            <p className="text-xl lg:text-2xl mb-2 text-blue-200">
+            <p className="text-xl lg:text-2xl mb-2 text-olive-200">
               {barberData.title}
             </p>
             <p className="text-3xl lg:text-4xl font-light mb-6 leading-tight">
@@ -436,7 +436,7 @@ John believes that a great haircut is more than just a service – it's an exper
                 <div className="space-y-2">
                   {barberData.certifications.map((cert) => (
                     <div key={cert} className="flex items-center gap-3">
-                      <AcademicCapIcon className="h-5 w-5 text-indigo-600 flex-shrink-0" />
+                      <AcademicCapIcon className="h-5 w-5 text-olive-600 flex-shrink-0" />
                       <span className="text-gray-700">{cert}</span>
                     </div>
                   ))}
@@ -516,7 +516,7 @@ John believes that a great haircut is more than just a service – it's an exper
                       <ClockIcon className="h-4 w-4 mr-1" />
                       {service.duration} min
                     </div>
-                    <div className="text-2xl font-bold text-indigo-600">
+                    <div className="text-2xl font-bold text-olive-600">
                       ${service.price}
                     </div>
                   </div>
@@ -526,7 +526,7 @@ John believes that a great haircut is more than just a service – it's an exper
                       setSelectedService(service)
                       setShowBookingModal(true)
                     }}
-                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                    className="w-full py-3 bg-olive-600 hover:bg-olive-700 text-white font-medium rounded-lg transition-colors"
                   >
                     Book This Service
                   </button>
@@ -737,7 +737,7 @@ John believes that a great haircut is more than just a service – it's an exper
             {selectedService && (
               <div className="mb-6 p-4 bg-indigo-50 rounded-lg">
                 <h4 className="font-semibold text-indigo-900">{selectedService.name}</h4>
-                <p className="text-sm text-indigo-700">{selectedService.duration} min • ${selectedService.price}</p>
+                <p className="text-sm text-olive-700">{selectedService.duration} min • ${selectedService.price}</p>
               </div>
             )}
 
@@ -747,12 +747,12 @@ John believes that a great haircut is more than just a service – it's an exper
                 Online booking system integration would go here
               </p>
               <div className="space-y-3">
-                <button className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg">
+                <button className="w-full py-3 bg-olive-600 hover:bg-olive-700 text-white font-medium rounded-lg">
                   Select Time & Date
                 </button>
                 <button 
                   onClick={() => window.open(`tel:${shopData.phone}`)}
-                  className="w-full py-3 border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-medium rounded-lg"
+                  className="w-full py-3 border-2 border-olive-600 text-olive-600 hover:bg-indigo-50 font-medium rounded-lg"
                 >
                   Call {shopData.phone}
                 </button>

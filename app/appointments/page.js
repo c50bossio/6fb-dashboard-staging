@@ -103,7 +103,7 @@ export default function AppointmentsPage() {
                         onClick={() => setView(option.value)}
                         className={`relative inline-flex items-center px-3 py-2 text-sm font-medium border ${
                           view === option.value
-                            ? 'bg-blue-600 text-white border-blue-600 z-10'
+                            ? 'bg-olive-600 text-white border-olive-600 z-10'
                             : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                         } ${
                           option.value === viewOptions[0].value
@@ -111,7 +111,7 @@ export default function AppointmentsPage() {
                             : option.value === viewOptions[viewOptions.length - 1].value
                             ? 'rounded-r-md -ml-px'
                             : '-ml-px'
-                        } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+                        } focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2`}
                       >
                         <Icon className="h-4 w-4 mr-1" />
                         <span className="hidden sm:inline">{option.label}</span>
@@ -141,7 +141,7 @@ export default function AppointmentsPage() {
                 <div className="text-xs text-gray-500">Confirmed</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-semibold text-blue-600">{stats.completed}</div>
+                <div className="text-2xl font-semibold text-olive-600">{stats.completed}</div>
                 <div className="text-xs text-gray-500">Completed</div>
               </div>
             </div>
@@ -165,16 +165,16 @@ export default function AppointmentsPage() {
           />
           
           {/* Instructions */}
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="mt-6 bg-olive-50 border border-olive-200 rounded-lg p-4">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <CalendarIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+                <CalendarIcon className="h-5 w-5 text-olive-600 mt-0.5" />
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
+                <h3 className="text-sm font-medium text-olive-800">
                   How to Use the Calendar
                 </h3>
-                <div className="mt-2 text-sm text-blue-700">
+                <div className="mt-2 text-sm text-olive-700">
                   <ul className="list-disc list-inside space-y-1">
                     <li><strong>Click on time slots</strong> to create new appointments</li>
                     <li><strong>Drag and drop</strong> appointments to reschedule</li>

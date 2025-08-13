@@ -117,8 +117,8 @@ const KeyFeatures = () => (
       <Card>
         <div className="p-6">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <SparklesIcon className="h-6 w-6 text-blue-600" />
+            <div className="h-10 w-10 bg-olive-100 rounded-lg flex items-center justify-center">
+              <SparklesIcon className="h-6 w-6 text-olive-600" />
             </div>
             <h3 className="font-semibold text-gray-900">Collapsible Sidebar</h3>
           </div>
@@ -137,8 +137,8 @@ const KeyFeatures = () => (
       <Card>
         <div className="p-6">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <CpuChipIcon className="h-6 w-6 text-purple-600" />
+            <div className="h-10 w-10 bg-gold-100 rounded-lg flex items-center justify-center">
+              <CpuChipIcon className="h-6 w-6 text-gold-600" />
             </div>
             <h3 className="font-semibold text-gray-900">Tabbed Pages</h3>
           </div>
@@ -190,7 +190,7 @@ const KeyFeatures = () => (
             <span>Bookings</span>
           </div>
           <ArrowRightIcon className="h-4 w-4" />
-          <div className="bg-blue-50 px-2 py-1 rounded text-blue-800">
+          <div className="bg-olive-50 px-2 py-1 rounded text-olive-800">
             AI Enhanced | Calendar View | Simple View | Analytics | Settings
           </div>
         </div>
@@ -289,12 +289,12 @@ const Implementation = () => (
             <span className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded">Complete</span>
           </div>
           
-          <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-olive-50 border border-olive-200 rounded-lg">
             <div className="flex items-center space-x-3">
-              <div className="h-5 w-5 bg-blue-600 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-blue-900">Mobile Optimization</span>
+              <div className="h-5 w-5 bg-olive-600 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-olive-900">Mobile Optimization</span>
             </div>
-            <span className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded">In Progress</span>
+            <span className="text-xs text-olive-700 bg-olive-100 px-2 py-1 rounded">In Progress</span>
           </div>
         </div>
       </div>

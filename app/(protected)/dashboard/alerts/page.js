@@ -78,7 +78,7 @@ const AlertsDashboardPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-olive-600"></div>
       </div>
     );
   }
@@ -90,7 +90,7 @@ const AlertsDashboardPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
-              <BellIcon className="h-8 w-8 text-blue-600 mr-3" />
+              <BellIcon className="h-8 w-8 text-olive-600 mr-3" />
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
                   Intelligent Alert System
@@ -114,7 +114,7 @@ const AlertsDashboardPage = () => {
                 onClick={() => setActiveTab('alerts')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'alerts'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -124,7 +124,7 @@ const AlertsDashboardPage = () => {
                 onClick={() => setActiveTab('analytics')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'analytics'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -134,7 +134,7 @@ const AlertsDashboardPage = () => {
                 onClick={() => setActiveTab('configuration')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'configuration'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -144,7 +144,7 @@ const AlertsDashboardPage = () => {
                 onClick={() => setActiveTab('monitoring')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'monitoring'
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -388,7 +388,7 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
         <button
           onClick={createTestAlert}
           disabled={creating}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-olive-600 hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {creating ? 'Creating...' : 'Create Test Alert'}
         </button>
@@ -432,7 +432,7 @@ const AlertAnalyticsDashboard = ({ integrationStatus }) => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="text-3xl font-bold text-blue-600">87%</div>
+            <div className="text-3xl font-bold text-olive-600">87%</div>
             <div className="text-sm text-gray-500">ML Accuracy</div>
           </div>
           <div className="text-center">
@@ -440,7 +440,7 @@ const AlertAnalyticsDashboard = ({ integrationStatus }) => {
             <div className="text-sm text-gray-500">User Satisfaction</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-purple-600">3.2s</div>
+            <div className="text-3xl font-bold text-gold-600">3.2s</div>
             <div className="text-sm text-gray-500">Avg Response Time</div>
           </div>
         </div>
@@ -488,10 +488,10 @@ const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
           Configure your alert preferences and thresholds. This feature integrates with the
           alert configuration API endpoints.
         </p>
-        <div className="mt-4 p-4 bg-blue-50 rounded-md">
+        <div className="mt-4 p-4 bg-olive-50 rounded-md">
           <div className="flex">
-            <InformationCircleIcon className="h-5 w-5 text-blue-400 mr-2" />
-            <span className="text-sm text-blue-800">
+            <InformationCircleIcon className="h-5 w-5 text-olive-400 mr-2" />
+            <span className="text-sm text-olive-800">
               Configuration UI would connect to /api/alerts/configure endpoints
             </span>
           </div>

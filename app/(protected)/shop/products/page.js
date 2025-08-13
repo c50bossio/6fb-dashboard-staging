@@ -116,7 +116,7 @@ export default function ProductInventory() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -133,8 +133,8 @@ export default function ProductInventory() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <ArchiveBoxIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-olive-100 rounded-lg">
+              <ArchiveBoxIcon className="h-6 w-6 text-olive-600" />
             </div>
             <span className="text-2xl font-bold text-gray-900">{metrics.totalProducts}</span>
           </div>
@@ -186,7 +186,7 @@ export default function ProductInventory() {
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
               />
             </div>
           </div>
@@ -195,7 +195,7 @@ export default function ProductInventory() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
           >
             {categories.map(cat => (
               <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -205,7 +205,7 @@ export default function ProductInventory() {
           {/* Add Product Button */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center"
+            className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Add Product
@@ -291,7 +291,7 @@ export default function ProductInventory() {
                       setEditingProduct(product)
                       setShowAddModal(true)
                     }}
-                    className="text-indigo-600 hover:text-indigo-900 mr-3"
+                    className="text-olive-600 hover:text-indigo-900 mr-3"
                   >
                     <PencilIcon className="h-5 w-5" />
                   </button>
@@ -369,7 +369,7 @@ function ProductModal({ product, onSave, onClose }) {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
               
@@ -381,7 +381,7 @@ function ProductModal({ product, onSave, onClose }) {
                   type="text"
                   value={formData.brand}
                   onChange={(e) => setFormData({...formData, brand: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
             </div>
@@ -394,7 +394,7 @@ function ProductModal({ product, onSave, onClose }) {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
               />
             </div>
             
@@ -407,7 +407,7 @@ function ProductModal({ product, onSave, onClose }) {
                   required
                   value={formData.category}
                   onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 >
                   <option value="hair_care">Hair Care</option>
                   <option value="beard_care">Beard Care</option>
@@ -424,7 +424,7 @@ function ProductModal({ product, onSave, onClose }) {
                   type="text"
                   value={formData.sku}
                   onChange={(e) => setFormData({...formData, sku: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
             </div>
@@ -440,7 +440,7 @@ function ProductModal({ product, onSave, onClose }) {
                   required
                   value={formData.cost_price}
                   onChange={(e) => setFormData({...formData, cost_price: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
               
@@ -454,7 +454,7 @@ function ProductModal({ product, onSave, onClose }) {
                   required
                   value={formData.retail_price}
                   onChange={(e) => setFormData({...formData, retail_price: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
             </div>
@@ -468,7 +468,7 @@ function ProductModal({ product, onSave, onClose }) {
                   type="number"
                   value={formData.current_stock}
                   onChange={(e) => setFormData({...formData, current_stock: parseInt(e.target.value) || 0})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
               
@@ -480,7 +480,7 @@ function ProductModal({ product, onSave, onClose }) {
                   type="number"
                   value={formData.min_stock_level}
                   onChange={(e) => setFormData({...formData, min_stock_level: parseInt(e.target.value) || 0})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
               
@@ -492,7 +492,7 @@ function ProductModal({ product, onSave, onClose }) {
                   type="number"
                   value={formData.max_stock_level}
                   onChange={(e) => setFormData({...formData, max_stock_level: parseInt(e.target.value) || 0})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                 />
               </div>
             </div>
@@ -503,7 +503,7 @@ function ProductModal({ product, onSave, onClose }) {
                 id="track_inventory"
                 checked={formData.track_inventory}
                 onChange={(e) => setFormData({...formData, track_inventory: e.target.checked})}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
               />
               <label htmlFor="track_inventory" className="ml-2 text-sm text-gray-700">
                 Track inventory for this product
@@ -520,7 +520,7 @@ function ProductModal({ product, onSave, onClose }) {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
               >
                 {product ? 'Update Product' : 'Add Product'}
               </button>

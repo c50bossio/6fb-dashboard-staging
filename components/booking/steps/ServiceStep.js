@@ -233,8 +233,8 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
       
       {/* Barber Note */}
       {!bookingData.barberDetails?.isAnyBarber && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-sm text-blue-800">
+        <div className="bg-olive-50 border border-olive-200 rounded-lg p-3">
+          <p className="text-sm text-olive-800">
             💡 Service times and prices shown are specific to {bookingData.barberDetails?.name}'s expertise and speed
           </p>
         </div>
@@ -264,7 +264,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
                     onClick={() => handleServiceSelect(service)}
                     className={`relative border rounded-lg p-4 cursor-pointer transition-all ${
                       selectedService === service.id
-                        ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                        ? 'border-olive-500 bg-olive-50 ring-2 ring-olive-200'
                         : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                     }`}
                   >
@@ -278,7 +278,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
                             </span>
                           )}
                           {service.premium && (
-                            <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                            <span className="ml-2 px-2 py-0.5 bg-gold-100 text-gold-800 text-xs font-medium rounded-full">
                               <SparklesIcon className="inline h-3 w-3 mr-0.5" />
                               Premium
                             </span>
@@ -335,7 +335,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
                     {/* Selection Indicator */}
                     {selectedService === service.id && (
                       <div className="absolute top-2 right-2">
-                        <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                        <div className="w-6 h-6 bg-olive-600 rounded-full flex items-center justify-center">
                           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
@@ -361,7 +361,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
               <PlusIcon className="h-5 w-5 text-gray-400 mr-2" />
               <span className="font-medium text-gray-900">Add Extra Services</span>
               {selectedAddOns.length > 0 && (
-                <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                <span className="ml-2 px-2 py-0.5 bg-olive-100 text-olive-800 text-xs font-medium rounded-full">
                   {selectedAddOns.length} selected
                 </span>
               )}
@@ -387,7 +387,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
                     type="checkbox"
                     checked={selectedAddOns.some(a => a.id === addOn.id)}
                     onChange={() => handleAddOnToggle(addOn)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                   />
                   <div className="ml-3 flex-1">
                     <div className="flex items-center justify-between">
@@ -419,7 +419,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-600">Total Price</p>
-              <p className="text-2xl font-bold text-blue-600">${calculateTotalPrice()}</p>
+              <p className="text-2xl font-bold text-olive-600">${calculateTotalPrice()}</p>
             </div>
           </div>
         </div>
@@ -439,7 +439,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
           disabled={!selectedService}
           className={`px-6 py-3 rounded-lg font-medium transition-all ${
             selectedService
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-olive-600 text-white hover:bg-olive-700'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >

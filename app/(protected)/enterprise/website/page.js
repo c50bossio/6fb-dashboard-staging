@@ -219,7 +219,7 @@ export default function EnterpriseWebsiteManagement() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <BuildingOffice2Icon className="h-6 w-6 text-indigo-600" />
+              <BuildingOffice2Icon className="h-6 w-6 text-olive-600" />
               <h1 className="text-lg font-semibold text-gray-900">
                 Enterprise Website Management
               </h1>
@@ -244,7 +244,7 @@ export default function EnterpriseWebsiteManagement() {
               <button
                 onClick={handlePublish}
                 disabled={saving}
-                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center px-4 py-2 bg-olive-600 text-white text-sm font-medium rounded-lg hover:bg-olive-700 disabled:opacity-50"
               >
                 {saving ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
@@ -287,7 +287,7 @@ export default function EnterpriseWebsiteManagement() {
                   className={`
                     flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors
                     ${activeTab === tab.id
-                      ? 'border-indigo-500 text-indigo-600'
+                      ? 'border-olive-500 text-olive-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }
                   `}
@@ -314,7 +314,7 @@ export default function EnterpriseWebsiteManagement() {
                     <p className="text-sm text-gray-600">Total Locations</p>
                     <p className="text-2xl font-bold text-gray-900">{analytics.total_locations}</p>
                   </div>
-                  <MapPinIcon className="h-8 w-8 text-indigo-600" />
+                  <MapPinIcon className="h-8 w-8 text-olive-600" />
                 </div>
               </div>
 
@@ -355,7 +355,7 @@ export default function EnterpriseWebsiteManagement() {
                       {analytics.conversion_rate}% conversion
                     </p>
                   </div>
-                  <ChartBarIcon className="h-8 w-8 text-purple-600" />
+                  <ChartBarIcon className="h-8 w-8 text-gold-600" />
                 </div>
               </div>
             </div>
@@ -400,7 +400,7 @@ export default function EnterpriseWebsiteManagement() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                  <PlusIcon className="h-6 w-6 text-indigo-600 mb-2" />
+                  <PlusIcon className="h-6 w-6 text-olive-600 mb-2" />
                   <h3 className="font-medium text-gray-900">Add New Location</h3>
                   <p className="text-sm text-gray-500">Register a new barbershop location</p>
                 </button>
@@ -412,7 +412,7 @@ export default function EnterpriseWebsiteManagement() {
                 </button>
                 
                 <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                  <UsersIcon className="h-6 w-6 text-purple-600 mb-2" />
+                  <UsersIcon className="h-6 w-6 text-gold-600 mb-2" />
                   <h3 className="font-medium text-gray-900">Manage Staff</h3>
                   <p className="text-sm text-gray-500">Add or remove barbers across locations</p>
                 </button>
@@ -435,10 +435,10 @@ export default function EnterpriseWebsiteManagement() {
                     <input
                       type="text"
                       placeholder="Search locations..."
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
-                  <button className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+                  <button className="inline-flex items-center px-4 py-2 bg-olive-600 text-white text-sm font-medium rounded-lg hover:bg-olive-700">
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Add Location
                   </button>
@@ -512,7 +512,7 @@ export default function EnterpriseWebsiteManagement() {
                               {location.website_status === 'published' ? 'Published' : 'Draft'}
                             </button>
                             {location.custom_branding && (
-                              <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+                              <span className="px-2 py-1 bg-gold-100 text-gold-700 text-xs font-medium rounded-full">
                                 Custom
                               </span>
                             )}
@@ -522,7 +522,7 @@ export default function EnterpriseWebsiteManagement() {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => window.open(`/shop/${location.id}/website`, '_blank')}
-                              className="text-indigo-600 hover:text-indigo-900"
+                              className="text-olive-600 hover:text-indigo-900"
                             >
                               Edit
                             </button>
@@ -541,11 +541,11 @@ export default function EnterpriseWebsiteManagement() {
               </div>
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">
+            <div className="bg-olive-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-olive-900 mb-2">
                 Location Website Management
               </h4>
-              <ul className="text-xs text-blue-700 space-y-1">
+              <ul className="text-xs text-olive-700 space-y-1">
                 <li>• Each location can have its own customized website</li>
                 <li>• Custom branding allows locations to override enterprise colors</li>
                 <li>• All locations remain under your enterprise domain</li>
@@ -573,7 +573,7 @@ export default function EnterpriseWebsiteManagement() {
                       type="text"
                       value={settings.name}
                       onChange={(e) => setSettings({ ...settings, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -585,7 +585,7 @@ export default function EnterpriseWebsiteManagement() {
                       type="text"
                       value={settings.tagline}
                       onChange={(e) => setSettings({ ...settings, tagline: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -597,7 +597,7 @@ export default function EnterpriseWebsiteManagement() {
                       value={settings.description}
                       onChange={(e) => setSettings({ ...settings, description: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -610,7 +610,7 @@ export default function EnterpriseWebsiteManagement() {
                       value={settings.custom_domain}
                       onChange={(e) => setSettings({ ...settings, custom_domain: e.target.value })}
                       placeholder="www.yourbarbergroup.com"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -728,7 +728,7 @@ export default function EnterpriseWebsiteManagement() {
                     <select
                       value={settings.heading_font}
                       onChange={(e) => setSettings({ ...settings, heading_font: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     >
                       <option value="Inter">Inter</option>
                       <option value="Montserrat">Montserrat</option>
@@ -744,7 +744,7 @@ export default function EnterpriseWebsiteManagement() {
                     <select
                       value={settings.body_font}
                       onChange={(e) => setSettings({ ...settings, body_font: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     >
                       <option value="Inter">Inter</option>
                       <option value="Roboto">Roboto</option>
@@ -776,7 +776,7 @@ export default function EnterpriseWebsiteManagement() {
                       type="text"
                       value={settings.hero_title}
                       onChange={(e) => setSettings({ ...settings, hero_title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -788,7 +788,7 @@ export default function EnterpriseWebsiteManagement() {
                       value={settings.hero_subtitle}
                       onChange={(e) => setSettings({ ...settings, hero_subtitle: e.target.value })}
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -808,7 +808,7 @@ export default function EnterpriseWebsiteManagement() {
                       value={settings.about_content}
                       onChange={(e) => setSettings({ ...settings, about_content: e.target.value })}
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -820,7 +820,7 @@ export default function EnterpriseWebsiteManagement() {
                       value={settings.mission_statement}
                       onChange={(e) => setSettings({ ...settings, mission_statement: e.target.value })}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -839,7 +839,7 @@ export default function EnterpriseWebsiteManagement() {
                       type="checkbox"
                       checked={settings.show_location_map}
                       onChange={(e) => setSettings({ ...settings, show_location_map: e.target.checked })}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Show interactive location map</span>
                   </label>
@@ -849,7 +849,7 @@ export default function EnterpriseWebsiteManagement() {
                       type="checkbox"
                       checked={settings.show_location_directory}
                       onChange={(e) => setSettings({ ...settings, show_location_directory: e.target.checked })}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Show location directory</span>
                   </label>
@@ -859,7 +859,7 @@ export default function EnterpriseWebsiteManagement() {
                       type="checkbox"
                       checked={settings.enable_online_booking}
                       onChange={(e) => setSettings({ ...settings, enable_online_booking: e.target.checked })}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Enable online booking</span>
                   </label>
@@ -869,7 +869,7 @@ export default function EnterpriseWebsiteManagement() {
                       type="checkbox"
                       checked={settings.enable_shop_comparison}
                       onChange={(e) => setSettings({ ...settings, enable_shop_comparison: e.target.checked })}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700">Enable location comparison tool</span>
                   </label>
@@ -890,7 +890,7 @@ export default function EnterpriseWebsiteManagement() {
                       type="text"
                       value={settings.seo_title}
                       onChange={(e) => setSettings({ ...settings, seo_title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
 
@@ -902,7 +902,7 @@ export default function EnterpriseWebsiteManagement() {
                       value={settings.seo_description}
                       onChange={(e) => setSettings({ ...settings, seo_description: e.target.value })}
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
                   </div>
                 </div>
@@ -945,7 +945,7 @@ export default function EnterpriseWebsiteManagement() {
                   <span className="text-sm text-gray-600">Organic Search</span>
                   <div className="flex items-center space-x-3">
                     <div className="w-48 bg-gray-200 rounded-full h-2">
-                      <div className="bg-indigo-600 h-2 rounded-full" style={{ width: '45%' }}></div>
+                      <div className="bg-olive-600 h-2 rounded-full" style={{ width: '45%' }}></div>
                     </div>
                     <span className="text-sm font-medium text-gray-900">45%</span>
                   </div>
@@ -965,7 +965,7 @@ export default function EnterpriseWebsiteManagement() {
                   <span className="text-sm text-gray-600">Social Media</span>
                   <div className="flex items-center space-x-3">
                     <div className="w-48 bg-gray-200 rounded-full h-2">
-                      <div className="bg-purple-600 h-2 rounded-full" style={{ width: '15%' }}></div>
+                      <div className="bg-gold-600 h-2 rounded-full" style={{ width: '15%' }}></div>
                     </div>
                     <span className="text-sm font-medium text-gray-900">15%</span>
                   </div>
@@ -990,7 +990,7 @@ export default function EnterpriseWebsiteManagement() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+            className="inline-flex items-center px-6 py-3 bg-olive-600 text-white font-medium rounded-lg hover:bg-olive-700 disabled:opacity-50"
           >
             {saving ? (
               <>

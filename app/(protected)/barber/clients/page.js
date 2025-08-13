@@ -133,8 +133,8 @@ export default function BarberClients() {
 
   const getClientTypeBadge = (type) => {
     const badges = {
-      vip: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'VIP' },
-      regular: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Regular' },
+      vip: { bg: 'bg-gold-100', text: 'text-gold-800', label: 'VIP' },
+      regular: { bg: 'bg-olive-100', text: 'text-olive-800', label: 'Regular' },
       new: { bg: 'bg-green-100', text: 'text-green-800', label: 'New' }
     }
     

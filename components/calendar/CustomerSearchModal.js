@@ -127,7 +127,7 @@ export default function CustomerSearchModal({
                     placeholder="Search by name, phone, or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     autoFocus
                   />
                 </div>
@@ -135,7 +135,7 @@ export default function CustomerSearchModal({
                 {/* Loading State */}
                 {loading && (
                   <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-olive-600"></div>
                     <span className="ml-2 text-sm text-gray-600">Searching customers...</span>
                   </div>
                 )}
@@ -195,7 +195,7 @@ export default function CustomerSearchModal({
                             </div>
                             
                             <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <div className="w-2 h-2 bg-olive-500 rounded-full"></div>
                             </div>
                           </div>
                         </button>
@@ -231,7 +231,7 @@ export default function CustomerSearchModal({
                   <button
                     type="button"
                     onClick={handleCreateNew}
-                    className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Create New Customer

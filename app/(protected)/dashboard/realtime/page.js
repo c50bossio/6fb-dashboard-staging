@@ -57,7 +57,7 @@ export default function RealtimePage() {
               onClick={() => setActiveTab('dashboard')}
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 activeTab === 'dashboard'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -68,7 +68,7 @@ export default function RealtimePage() {
               onClick={() => setActiveTab('chat')}
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 activeTab === 'chat'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -79,7 +79,7 @@ export default function RealtimePage() {
               onClick={() => setActiveTab('notifications')}
               className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                 activeTab === 'notifications'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -118,7 +118,7 @@ export default function RealtimePage() {
               {notifications.length > 0 && (
                 <button
                   onClick={clearNotifications}
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                  className="text-sm text-olive-600 hover:text-olive-800"
                 >
                   Clear all
                 </button>
@@ -140,8 +140,8 @@ export default function RealtimePage() {
                     <div className="flex items-start space-x-3">
                       <div className={`w-2 h-2 rounded-full mt-1.5 ${
                         notification.type === 'booking' ? 'bg-green-400' :
-                        notification.type === 'agent' ? 'bg-purple-400' :
-                        'bg-blue-400'
+                        notification.type === 'agent' ? 'bg-gold-400' :
+                        'bg-olive-400'
                       }`} />
                       <div className="flex-1">
                         <p className="text-sm text-gray-900">{notification.message}</p>
@@ -177,7 +177,7 @@ export default function RealtimePage() {
                   })
                 })
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
             >
               Update Metrics
             </button>
@@ -218,7 +218,7 @@ export default function RealtimePage() {
                   })
                 })
               }}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              className="px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700"
             >
               Agent Progress
             </button>

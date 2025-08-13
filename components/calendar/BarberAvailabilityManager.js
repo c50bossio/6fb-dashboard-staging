@@ -234,7 +234,7 @@ export default function BarberAvailabilityManager({
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2"
                     onClick={onClose}
                   >
                     <span className="sr-only">Close</span>
@@ -255,7 +255,7 @@ export default function BarberAvailabilityManager({
                         
                         {loading ? (
                           <div className="text-center py-8">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
                             <p className="mt-2 text-sm text-gray-600">Loading availability...</p>
                           </div>
                         ) : (
@@ -292,7 +292,7 @@ export default function BarberAvailabilityManager({
                                         <div className="flex items-center space-x-1">
                                           <button
                                             onClick={() => handleEdit(slot)}
-                                            className="text-blue-600 hover:text-blue-800"
+                                            className="text-olive-600 hover:text-olive-800"
                                           >
                                             <PencilIcon className="h-3 w-3" />
                                           </button>
@@ -330,7 +330,7 @@ export default function BarberAvailabilityManager({
                                   <div className="flex items-center space-x-1">
                                     <button
                                       onClick={() => handleEdit(slot)}
-                                      className="text-blue-600 hover:text-blue-800"
+                                      className="text-olive-600 hover:text-olive-800"
                                     >
                                       <PencilIcon className="h-3 w-3" />
                                     </button>
@@ -365,7 +365,7 @@ export default function BarberAvailabilityManager({
                               name="day_of_week"
                               value={formData.day_of_week}
                               onChange={(e) => setFormData(prev => ({ ...prev, day_of_week: parseInt(e.target.value) }))}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                             >
                               {daysOfWeek.map(day => (
                                 <option key={day.value} value={day.value}>
@@ -386,7 +386,7 @@ export default function BarberAvailabilityManager({
                               name="specific_date"
                               value={formData.specific_date}
                               onChange={(e) => setFormData(prev => ({ ...prev, specific_date: e.target.value }))}
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                             />
                             <p className="mt-1 text-xs text-gray-500">
                               Leave empty for recurring weekly availability
@@ -405,7 +405,7 @@ export default function BarberAvailabilityManager({
                                 name="start_time"
                                 value={formData.start_time}
                                 onChange={(e) => setFormData(prev => ({ ...prev, start_time: e.target.value }))}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                                 required
                               />
                             </div>
@@ -419,7 +419,7 @@ export default function BarberAvailabilityManager({
                                 name="end_time"
                                 value={formData.end_time}
                                 onChange={(e) => setFormData(prev => ({ ...prev, end_time: e.target.value }))}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                                 required
                               />
                             </div>
@@ -434,7 +434,7 @@ export default function BarberAvailabilityManager({
                               <button
                                 type="button"
                                 onClick={addBreakTime}
-                                className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
+                                className="text-olive-600 hover:text-olive-800 text-sm flex items-center"
                               >
                                 <PlusIcon className="h-4 w-4 mr-1" />
                                 Add Break
@@ -447,14 +447,14 @@ export default function BarberAvailabilityManager({
                                   type="time"
                                   value={breakTime.start}
                                   onChange={(e) => updateBreakTime(index, 'start', e.target.value)}
-                                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                                 />
                                 <span className="text-sm text-gray-500">to</span>
                                 <input
                                   type="time"
                                   value={breakTime.end}
                                   onChange={(e) => updateBreakTime(index, 'end', e.target.value)}
-                                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                  className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                                 />
                                 <button
                                   type="button"
@@ -476,7 +476,7 @@ export default function BarberAvailabilityManager({
                                 type="checkbox"
                                 checked={formData.is_available}
                                 onChange={(e) => setFormData(prev => ({ ...prev, is_available: e.target.checked }))}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                               />
                               <label htmlFor="is_available" className="ml-2 block text-sm text-gray-900">
                                 Available for bookings
@@ -495,7 +495,7 @@ export default function BarberAvailabilityManager({
                                 onChange={(e) => setFormData(prev => ({ ...prev, max_concurrent_bookings: parseInt(e.target.value) }))}
                                 min="1"
                                 max="10"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                               />
                             </div>
                             
@@ -509,7 +509,7 @@ export default function BarberAvailabilityManager({
                                 value={formData.notes}
                                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                                 rows={2}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                                 placeholder="Optional notes..."
                               />
                             </div>
@@ -541,7 +541,7 @@ export default function BarberAvailabilityManager({
                             <button
                               type="submit"
                               disabled={saving}
-                              className="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-3 py-2 text-sm font-medium text-white bg-olive-600 border border-transparent rounded-md hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {saving ? 'Saving...' : editingSlot ? 'Update' : 'Add'} Availability
                             </button>

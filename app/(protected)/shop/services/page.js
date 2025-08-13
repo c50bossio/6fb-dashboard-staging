@@ -248,10 +248,10 @@ export default function ShopServicesAndPricing() {
 
   const getCategoryColor = (category) => {
     const colors = {
-      haircut: 'bg-blue-100 text-blue-800',
+      haircut: 'bg-olive-100 text-olive-800',
       beard: 'bg-green-100 text-green-800',
       shave: 'bg-red-100 text-red-800',
-      styling: 'bg-purple-100 text-purple-800',
+      styling: 'bg-gold-100 text-gold-800',
       combo: 'bg-indigo-100 text-indigo-800'
     }
     return colors[category] || 'bg-gray-100 text-gray-800'
@@ -270,7 +270,7 @@ export default function ShopServicesAndPricing() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -281,8 +281,8 @@ export default function ShopServicesAndPricing() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
-              <ScissorsIcon className="h-8 w-8 text-purple-600" />
+            <div className="h-12 w-12 rounded-lg bg-gold-100 flex items-center justify-center">
+              <ScissorsIcon className="h-8 w-8 text-gold-600" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Services & Pricing</h1>
@@ -296,7 +296,7 @@ export default function ShopServicesAndPricing() {
             </button>
             <button 
               onClick={() => setShowServiceModal(true)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center"
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add Service
@@ -309,8 +309,8 @@ export default function ShopServicesAndPricing() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <ScissorsIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-olive-100 rounded-lg">
+              <ScissorsIcon className="h-6 w-6 text-olive-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">{services.length}</p>
@@ -339,8 +339,8 @@ export default function ShopServicesAndPricing() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <TagIcon className="h-6 w-6 text-purple-600" />
+            <div className="p-2 bg-gold-100 rounded-lg">
+              <TagIcon className="h-6 w-6 text-gold-600" />
             </div>
           </div>
           <p className="text-2xl font-bold text-gray-900">${averagePrice.toFixed(0)}</p>
@@ -545,7 +545,7 @@ export default function ShopServicesAndPricing() {
           <p className="text-gray-600 mb-4">No services found matching your criteria</p>
           <button 
             onClick={() => setShowServiceModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Add Your First Service

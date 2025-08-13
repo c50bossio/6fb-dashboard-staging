@@ -192,7 +192,7 @@ export default function TutorialSystem({ tutorial = 'dashboard', onComplete }) {
     return (
       <button
         onClick={startTutorial}
-        className="fixed bottom-4 left-4 z-40 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+        className="fixed bottom-4 left-4 z-40 bg-gold-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gold-700 transition-colors flex items-center space-x-2"
       >
         <span className="text-lg">💡</span>
         <span>Start Tutorial</span>
@@ -212,7 +212,7 @@ export default function TutorialSystem({ tutorial = 'dashboard', onComplete }) {
       {/* Highlight Box */}
       {highlightBox && (
         <div
-          className="fixed border-4 border-purple-500 rounded-lg z-[9999] pointer-events-none animate-pulse"
+          className="fixed border-4 border-gold-500 rounded-lg z-[9999] pointer-events-none animate-pulse"
           style={{
             top: `${highlightBox.top}px`,
             left: `${highlightBox.left}px`,
@@ -256,9 +256,9 @@ export default function TutorialSystem({ tutorial = 'dashboard', onComplete }) {
               key={index}
               className={`h-2 w-2 rounded-full transition-colors ${
                 index === currentStep
-                  ? 'bg-purple-600'
+                  ? 'bg-gold-600'
                   : index < currentStep
-                  ? 'bg-purple-300'
+                  ? 'bg-gold-300'
                   : 'bg-gray-300'
               }`}
             />
@@ -286,7 +286,7 @@ export default function TutorialSystem({ tutorial = 'dashboard', onComplete }) {
 
           <button
             onClick={handleNext}
-            className="flex items-center space-x-1 px-3 py-1 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700 transition-colors"
+            className="flex items-center space-x-1 px-3 py-1 bg-gold-600 text-white text-sm rounded-md hover:bg-gold-700 transition-colors"
           >
             <span>{currentStep === steps.length - 1 ? 'Finish' : 'Next'}</span>
             <ArrowRightIcon className="h-4 w-4" />

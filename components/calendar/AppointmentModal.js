@@ -174,15 +174,15 @@ export default function AppointmentModal({
 
                 {/* Appointment Time Display */}
                 {selectedSlot && (
-                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center space-x-2 text-sm text-blue-800">
+                  <div className="mb-4 p-3 bg-olive-50 border border-olive-200 rounded-lg">
+                    <div className="flex items-center space-x-2 text-sm text-olive-800">
                       <CalendarIcon className="h-4 w-4" />
                       <span>
                         {formatDateTime(selectedSlot.start)}
                         {calculatedEndTime && ` - ${formatDateTime(calculatedEndTime)}`}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-blue-600 mt-1">
+                    <div className="flex items-center space-x-2 text-sm text-olive-600 mt-1">
                       <ClockIcon className="h-4 w-4" />
                       <span>{selectedService.duration} minutes</span>
                       <CurrencyDollarIcon className="h-4 w-4 ml-2" />
@@ -202,7 +202,7 @@ export default function AppointmentModal({
                       name="customerName"
                       value={formData.customerName}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                       placeholder="Enter customer name"
                       required
                     />
@@ -217,7 +217,7 @@ export default function AppointmentModal({
                       name="customerPhone"
                       value={formData.customerPhone}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                       placeholder="(555) 123-4567"
                       required
                     />
@@ -232,7 +232,7 @@ export default function AppointmentModal({
                       name="customerEmail"
                       value={formData.customerEmail}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                       placeholder="customer@email.com"
                     />
                   </div>
@@ -246,7 +246,7 @@ export default function AppointmentModal({
                       name="service"
                       value={formData.service}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                     >
                       {services.map(service => (
                         <option key={service.id} value={service.id}>
@@ -265,7 +265,7 @@ export default function AppointmentModal({
                       name="barberId"
                       value={formData.barberId}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                       required
                     >
                       <option value="">Select a barber</option>
@@ -286,7 +286,7 @@ export default function AppointmentModal({
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                     >
                       <option value="pending">Pending</option>
                       <option value="confirmed">Confirmed</option>
@@ -305,7 +305,7 @@ export default function AppointmentModal({
                       value={formData.notes}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                       placeholder="Special requests, preferences, etc."
                     />
                   </div>
@@ -315,13 +315,13 @@ export default function AppointmentModal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="flex-1 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                     >
                       {existingAppointment ? 'Update' : 'Create'} Appointment
                     </button>

@@ -53,7 +53,7 @@ export default function AnalyticsExample() {
         <div>
           <button
             onClick={handleBookingCreated}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-olive-600 text-white rounded hover:bg-olive-700"
           >
             Simulate Booking Created
           </button>
@@ -102,8 +102,8 @@ export default function AnalyticsExample() {
 
         {/* Feature Flag Example */}
         {showNewFeature && (
-          <div className="p-4 bg-purple-50 rounded">
-            <p className="text-purple-800">
+          <div className="p-4 bg-gold-50 rounded">
+            <p className="text-gold-800">
               🎉 New Booking Flow Enabled (via Feature Flag)
             </p>
           </div>

@@ -101,11 +101,11 @@ export default function EmbedWidgetsTab() {
   const getTypeColor = (type) => {
     switch (type) {
       case 'iframe':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-olive-100 text-olive-800'
       case 'button':
         return 'bg-green-100 text-green-800'
       case 'javascript':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-gold-100 text-gold-800'
       case 'link':
         return 'bg-orange-100 text-orange-800'
       default:
@@ -116,7 +116,7 @@ export default function EmbedWidgetsTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
         <p className="ml-4 text-gray-600">Loading embed widgets...</p>
       </div>
     )
@@ -134,7 +134,7 @@ export default function EmbedWidgetsTab() {
           <h2 className="text-lg font-semibold text-gray-900">Embed Widgets</h2>
           <p className="text-sm text-gray-600">Manage and track booking widgets embedded on external websites</p>
         </div>
-        <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700">
+        <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-olive-600 hover:bg-olive-700">
           <PlusIcon className="h-5 w-5 mr-2" />
           Create Widget
         </button>
@@ -144,7 +144,7 @@ export default function EmbedWidgetsTab() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <CodeBracketIcon className="h-8 w-8 text-indigo-600" />
+            <CodeBracketIcon className="h-8 w-8 text-olive-600" />
             <div className="ml-4">
               <div className="text-2xl font-bold text-gray-900">{embedWidgets.length}</div>
               <div className="text-xs text-gray-500">Widget Types</div>
@@ -154,7 +154,7 @@ export default function EmbedWidgetsTab() {
         
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <GlobeAltIcon className="h-8 w-8 text-blue-600" />
+            <GlobeAltIcon className="h-8 w-8 text-olive-600" />
             <div className="ml-4">
               <div className="text-2xl font-bold text-gray-900">{totalEmbeds}</div>
               <div className="text-xs text-gray-500">Active Embeds</div>
@@ -174,7 +174,7 @@ export default function EmbedWidgetsTab() {
         
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <CursorArrowRaysIcon className="h-8 w-8 text-purple-600" />
+            <CursorArrowRaysIcon className="h-8 w-8 text-gold-600" />
             <div className="ml-4">
               <div className="text-2xl font-bold text-gray-900">
                 {totalConversions} ({totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(1) : 0}%)
@@ -242,7 +242,7 @@ export default function EmbedWidgetsTab() {
                   {/* Performance Metrics */}
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                      <div className="text-2xl font-bold text-blue-600">{widget.clicks}</div>
+                      <div className="text-2xl font-bold text-olive-600">{widget.clicks}</div>
                       <div className="text-xs text-gray-500">Clicks</div>
                     </div>
                     <div>
@@ -250,7 +250,7 @@ export default function EmbedWidgetsTab() {
                       <div className="text-xs text-gray-500">Bookings</div>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-purple-600">
+                      <div className="text-2xl font-bold text-gold-600">
                         {widget.clicks > 0 ? ((widget.conversions / widget.clicks) * 100).toFixed(1) : 0}%
                       </div>
                       <div className="text-xs text-gray-500">Conversion</div>
@@ -277,15 +277,15 @@ export default function EmbedWidgetsTab() {
       {/* Widget Types Guide */}
       <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-4">
-          <CodeBracketIcon className="h-6 w-6 text-indigo-600" />
+          <CodeBracketIcon className="h-6 w-6 text-olive-600" />
           <h3 className="font-semibold text-indigo-900">Widget Types Available</h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <CodeBracketIcon className="h-5 w-5 text-blue-600" />
-              <span className="font-medium text-blue-900">iFrame</span>
+              <CodeBracketIcon className="h-5 w-5 text-olive-600" />
+              <span className="font-medium text-olive-900">iFrame</span>
             </div>
             <p className="text-sm text-gray-600">Full booking form embedded directly in your website</p>
           </div>
@@ -300,8 +300,8 @@ export default function EmbedWidgetsTab() {
           
           <div className="bg-white rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
-              <GlobeAltIcon className="h-5 w-5 text-purple-600" />
-              <span className="font-medium text-purple-900">JavaScript</span>
+              <GlobeAltIcon className="h-5 w-5 text-gold-600" />
+              <span className="font-medium text-gold-900">JavaScript</span>
             </div>
             <p className="text-sm text-gray-600">Dynamic widget with auto-resize and themes</p>
           </div>

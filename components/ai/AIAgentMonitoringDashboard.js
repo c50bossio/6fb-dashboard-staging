@@ -263,7 +263,7 @@ export default function AIAgentMonitoringDashboard({
     switch (status) {
       case 'active': return 'text-green-600 bg-green-50'
       case 'busy': return 'text-yellow-600 bg-yellow-50'
-      case 'idle': return 'text-blue-600 bg-blue-50'
+      case 'idle': return 'text-olive-600 bg-olive-50'
       case 'error': return 'text-red-600 bg-red-50'
       case 'offline': return 'text-gray-600 bg-gray-50'
       default: return 'text-gray-600 bg-gray-50'
@@ -298,7 +298,7 @@ export default function AIAgentMonitoringDashboard({
     return (
       <div className={`bg-white rounded-lg shadow-lg p-8 ${className}`}>
         <div className="flex items-center justify-center">
-          <ArrowPathIcon className="h-8 w-8 animate-spin text-blue-600 mr-3" />
+          <ArrowPathIcon className="h-8 w-8 animate-spin text-olive-600 mr-3" />
           <span className="text-lg text-gray-600">Initializing monitoring dashboard...</span>
         </div>
       </div>
@@ -311,7 +311,7 @@ export default function AIAgentMonitoringDashboard({
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
+            <div className="h-10 w-10 bg-gradient-to-br from-gold-500 to-olive-600 rounded-full flex items-center justify-center">
               <ChartBarIcon className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -370,12 +370,12 @@ export default function AIAgentMonitoringDashboard({
       <div className="p-6 border-b border-gray-200">
         <h3 className="text-lg font-medium text-gray-900 mb-4">System Overview</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+          <div className="bg-gradient-to-r from-olive-50 to-olive-100 p-4 rounded-lg">
             <div className="flex items-center">
-              <UserGroupIcon className="h-8 w-8 text-blue-600" />
+              <UserGroupIcon className="h-8 w-8 text-olive-600" />
               <div className="ml-3">
-                <p className="text-sm font-medium text-blue-900">Active Agents</p>
-                <p className="text-2xl font-bold text-blue-700">
+                <p className="text-sm font-medium text-olive-900">Active Agents</p>
+                <p className="text-2xl font-bold text-olive-700">
                   {systemMetrics?.activeAgents || 0}/{systemMetrics?.totalAgents || 0}
                 </p>
               </div>
@@ -394,12 +394,12 @@ export default function AIAgentMonitoringDashboard({
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
+          <div className="bg-gradient-to-r from-gold-50 to-gold-100 p-4 rounded-lg">
             <div className="flex items-center">
-              <ChatBubbleLeftRightIcon className="h-8 w-8 text-purple-600" />
+              <ChatBubbleLeftRightIcon className="h-8 w-8 text-gold-600" />
               <div className="ml-3">
-                <p className="text-sm font-medium text-purple-900">Requests/min</p>
-                <p className="text-2xl font-bold text-purple-700">
+                <p className="text-sm font-medium text-gold-900">Requests/min</p>
+                <p className="text-2xl font-bold text-gold-700">
                   {systemMetrics?.requestsPerMinute || 0}
                 </p>
               </div>
@@ -420,10 +420,10 @@ export default function AIAgentMonitoringDashboard({
 
           <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 p-4 rounded-lg">
             <div className="flex items-center">
-              <BoltIcon className="h-8 w-8 text-indigo-600" />
+              <BoltIcon className="h-8 w-8 text-olive-600" />
               <div className="ml-3">
                 <p className="text-sm font-medium text-indigo-900">Cache Hit</p>
-                <p className="text-2xl font-bold text-indigo-700">
+                <p className="text-2xl font-bold text-olive-700">
                   {systemMetrics?.cacheHitRate || 0}%
                 </p>
               </div>

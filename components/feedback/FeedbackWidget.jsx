@@ -101,7 +101,7 @@ export default function FeedbackWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 z-50 bg-blue-600 text-white rounded-full p-3 shadow-lg hover:bg-blue-700 transition-colors group"
+          className="fixed bottom-4 right-4 z-50 bg-olive-600 text-white rounded-full p-3 shadow-lg hover:bg-olive-700 transition-colors group"
           aria-label="Open feedback form"
         >
           <ChatBubbleBottomCenterTextIcon className="h-6 w-6" />
@@ -141,7 +141,7 @@ export default function FeedbackWidget() {
                     onClick={() => setFeedbackType(type)}
                     className={`px-3 py-2 text-sm rounded-md border transition-colors ${
                       feedbackType === type
-                        ? 'bg-blue-50 border-blue-500 text-blue-700'
+                        ? 'bg-olive-50 border-olive-500 text-olive-700'
                         : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                     }`}
                   >
@@ -184,7 +184,7 @@ export default function FeedbackWidget() {
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
                 placeholder="Tell us what you think..."
               />
             </div>
@@ -199,7 +199,7 @@ export default function FeedbackWidget() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
                 placeholder="your@email.com"
               />
               <p className="mt-1 text-xs text-gray-500">
@@ -212,7 +212,7 @@ export default function FeedbackWidget() {
               <button
                 type="submit"
                 disabled={isSubmitting || !message}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 bg-olive-600 text-white py-2 px-4 rounded-md hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? 'Sending...' : 'Send Feedback'}
               </button>

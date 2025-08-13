@@ -104,8 +104,8 @@ export default function NotificationsPage() {
 
   const getTypeIcon = (type) => {
     return type === 'email' ? 
-      <EnvelopeIcon className="h-5 w-5 text-blue-500" /> : 
-      <PhoneIcon className="h-5 w-5 text-purple-500" />
+      <EnvelopeIcon className="h-5 w-5 text-olive-500" /> : 
+      <PhoneIcon className="h-5 w-5 text-gold-500" />
   }
 
   return (
@@ -124,7 +124,7 @@ export default function NotificationsPage() {
               onClick={() => setActiveTab('test')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'test'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -134,7 +134,7 @@ export default function NotificationsPage() {
               onClick={() => setActiveTab('history')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'history'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -144,7 +144,7 @@ export default function NotificationsPage() {
               onClick={() => setActiveTab('queue')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'queue'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -173,9 +173,9 @@ export default function NotificationsPage() {
               <button
                 onClick={() => sendTestNotification('email')}
                 disabled={loading}
-                className="flex items-center justify-center space-x-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center space-x-3 p-4 border-2 border-olive-200 rounded-lg hover:bg-olive-50 transition-colors disabled:opacity-50"
               >
-                <EnvelopeIcon className="h-8 w-8 text-blue-600" />
+                <EnvelopeIcon className="h-8 w-8 text-olive-600" />
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">Test Email</p>
                   <p className="text-sm text-gray-600">Send to {user?.email}</p>
@@ -185,9 +185,9 @@ export default function NotificationsPage() {
               <button
                 onClick={() => sendTestNotification('sms')}
                 disabled={loading}
-                className="flex items-center justify-center space-x-3 p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-50"
+                className="flex items-center justify-center space-x-3 p-4 border-2 border-gold-200 rounded-lg hover:bg-gold-50 transition-colors disabled:opacity-50"
               >
-                <PhoneIcon className="h-8 w-8 text-purple-600" />
+                <PhoneIcon className="h-8 w-8 text-gold-600" />
                 <div className="text-left">
                   <p className="font-semibold text-gray-900">Test SMS</p>
                   <p className="text-sm text-gray-600">Send to phone on file</p>

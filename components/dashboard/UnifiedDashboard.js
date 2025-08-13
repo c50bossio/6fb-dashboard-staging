@@ -308,20 +308,20 @@ export default function UnifiedDashboard({ user }) {
         return (
           <div className="space-y-6">
             {/* AI System Status */}
-            <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
+            <div className="bg-gradient-to-r from-gold-500 to-indigo-600 rounded-xl p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold mb-1">AI System Status</h3>
-                  <p className="text-purple-100">Intelligent agents powering your business</p>
+                  <p className="text-gold-100">Intelligent agents powering your business</p>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold">{aiAgents.total}</div>
-                    <div className="text-sm text-purple-100">Total Agents</div>
+                    <div className="text-sm text-gold-100">Total Agents</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold">{aiAgents.active}</div>
-                    <div className="text-sm text-purple-100">Active Now</div>
+                    <div className="text-sm text-gold-100">Active Now</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 bg-green-400 rounded-full animate-pulse"></div>

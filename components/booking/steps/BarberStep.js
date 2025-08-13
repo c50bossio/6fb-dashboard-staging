@@ -186,7 +186,7 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
             onClick={() => setFilterBy(filter.value)}
             className={`px-4 py-2 font-medium text-sm transition-all ${
               filterBy === filter.value
-                ? 'text-blue-600 border-b-2 border-blue-600'
+                ? 'text-olive-600 border-b-2 border-olive-600'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -212,14 +212,14 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
               onClick={() => handleBarberSelect(barber)}
               className={`relative border rounded-lg p-4 cursor-pointer transition-all ${
                 selectedBarber === barber.id
-                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                  ? 'border-olive-500 bg-olive-50 ring-2 ring-olive-200'
                   : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
-              } ${barber.isAnyBarber ? 'bg-gradient-to-br from-blue-50 to-purple-50' : ''}`}
+              } ${barber.isAnyBarber ? 'bg-gradient-to-br from-olive-50 to-gold-50' : ''}`}
             >
               {barber.isAnyBarber ? (
                 // First Available Card
                 <div className="text-center py-4">
-                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4">
+                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-olive-500 to-gold-500 rounded-full flex items-center justify-center mb-4">
                     <CalendarIcon className="h-10 w-10 text-white" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900">{barber.name}</h3>
@@ -320,7 +320,7 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
               {/* Selection Indicator */}
               {selectedBarber === barber.id && (
                 <div className="absolute top-2 right-2">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-olive-600 rounded-full flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -346,7 +346,7 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
           disabled={!selectedBarber}
           className={`px-6 py-3 rounded-lg font-medium transition-all ${
             selectedBarber
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-olive-600 text-white hover:bg-olive-700'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >

@@ -18,14 +18,14 @@ import {
 // Color schemes for different models
 const MODEL_COLORS = {
   'gpt-5': '#22c55e',
-  'gpt-5-mini': '#3b82f6', 
-  'gpt-5-nano': '#8b5cf6',
+  'gpt-5-mini': '#546355', 
+  'gpt-5-nano': '#D4B878',
   'claude-opus-4-1-20250805': '#f59e0b',
   'gemini-2.0-flash-exp': '#ef4444'
 }
 
 const ALERT_COLORS = {
-  'info': '#3b82f6',
+  'info': '#546355',
   'warning': '#f59e0b', 
   'error': '#ef4444',
   'critical': '#dc2626'
@@ -134,7 +134,7 @@ export default function PerformanceDashboard() {
   const getStatusBadge = (status) => {
     const statusConfig = {
       'excellent': { variant: 'default', color: 'bg-green-500', label: 'Excellent' },
-      'good': { variant: 'secondary', color: 'bg-blue-500', label: 'Good' },
+      'good': { variant: 'secondary', color: 'bg-olive-500', label: 'Good' },
       'degraded': { variant: 'outline', color: 'bg-yellow-500', label: 'Degraded' },
       'poor': { variant: 'destructive', color: 'bg-orange-500', label: 'Poor' },
       'critical': { variant: 'destructive', color: 'bg-red-500', label: 'Critical' }
@@ -255,7 +255,7 @@ export default function PerformanceDashboard() {
                     <p className="text-sm font-medium text-gray-600">Requests (1h)</p>
                     <p className="text-2xl font-bold">{dashboardData.total_requests_last_hour || 0}</p>
                   </div>
-                  <Activity className="w-8 h-8 text-blue-500" />
+                  <Activity className="w-8 h-8 text-olive-500" />
                 </div>
               </CardContent>
             </Card>
@@ -430,7 +430,7 @@ export default function PerformanceDashboard() {
                           <div className="flex items-center space-x-2">
                             <div className="w-24 bg-gray-200 rounded-full h-2">
                               <div 
-                                className="bg-blue-500 h-2 rounded-full" 
+                                className="bg-olive-500 h-2 rounded-full" 
                                 style={{ width: `${snapshot.overall_score}%` }}
                               ></div>
                             </div>
@@ -475,7 +475,7 @@ export default function PerformanceDashboard() {
                             }
                           </p>
                         </div>
-                        <Target className="w-8 h-8 text-blue-500" />
+                        <Target className="w-8 h-8 text-olive-500" />
                       </div>
                     </CardContent>
                   </Card>
@@ -540,7 +540,7 @@ export default function PerformanceDashboard() {
                           <XAxis dataKey="hour" />
                           <YAxis tickFormatter={formatCost} />
                           <Tooltip formatter={(value) => formatCost(value)} />
-                          <Area type="monotone" dataKey="cost" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.3} />
+                          <Area type="monotone" dataKey="cost" stroke="#546355" fill="#546355" fillOpacity={0.3} />
                         </AreaChart>
                       </ResponsiveContainer>
                     </CardContent>
@@ -677,7 +677,7 @@ export default function PerformanceDashboard() {
                   </div>
                   
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">2.3s</div>
+                    <div className="text-2xl font-bold text-olive-600">2.3s</div>
                     <div className="text-sm text-gray-600">Avg Response Time</div>
                     <div className="text-xs text-gray-500">Target: &lt; 5.0s</div>
                   </div>
@@ -689,7 +689,7 @@ export default function PerformanceDashboard() {
                   </div>
                   
                   <div className="text-center p-4 border rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">$0.045</div>
+                    <div className="text-2xl font-bold text-gold-600">$0.045</div>
                     <div className="text-sm text-gray-600">Avg Cost/Request</div>
                     <div className="text-xs text-gray-500">Target: &lt; $0.10</div>
                   </div>

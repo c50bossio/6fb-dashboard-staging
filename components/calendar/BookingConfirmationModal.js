@@ -218,12 +218,12 @@ Booking ID: ${appointmentData.id}
 
                     {/* Recurring indicator */}
                     {appointmentData.is_recurring && (
-                      <div className="rounded-md bg-blue-50 p-2">
-                        <div className="flex items-center text-sm text-blue-700">
+                      <div className="rounded-md bg-olive-50 p-2">
+                        <div className="flex items-center text-sm text-olive-700">
                           <CheckCircleIcon className="mr-2 h-4 w-4" />
                           <span className="font-medium">Recurring Appointment</span>
                         </div>
-                        <div className="mt-1 text-xs text-blue-600">
+                        <div className="mt-1 text-xs text-olive-600">
                           This appointment will repeat according to your schedule
                         </div>
                       </div>
@@ -250,7 +250,7 @@ Booking ID: ${appointmentData.id}
                 <div className="mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                   <button
                     type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+                    className="inline-flex w-full justify-center rounded-md bg-olive-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-olive-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
                     onClick={onClose}
                   >
                     Done

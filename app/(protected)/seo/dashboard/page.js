@@ -145,7 +145,7 @@ function GMBIntegrationTab() {
               <button
                 onClick={handleConnectGMB}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -194,7 +194,7 @@ function GMBIntegrationTab() {
       <div className="bg-white rounded-xl p-6 shadow-sm border">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900">📝 Recent Reviews & AI Attribution</h3>
-          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+          <button className="text-olive-600 hover:text-olive-700 text-sm font-medium">
             View All Reviews
           </button>
         </div>
@@ -204,8 +204,8 @@ function GMBIntegrationTab() {
             <div key={review.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-medium">
+                  <div className="w-10 h-10 bg-olive-100 rounded-full flex items-center justify-center">
+                    <span className="text-olive-600 font-medium">
                       {review.reviewer_name.charAt(0)}
                     </span>
                   </div>
@@ -235,7 +235,7 @@ function GMBIntegrationTab() {
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">AI Analysis:</span>
-                  <span className="text-sm text-blue-600">
+                  <span className="text-sm text-olive-600">
                     {review.attributed_barber !== 'Unknown' 
                       ? `Detected "${review.attributed_barber.split(' ')[0]}" mentioned in review`
                       : 'No specific barber mentioned'
@@ -243,7 +243,7 @@ function GMBIntegrationTab() {
                   </span>
                 </div>
                 
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                <button className="text-olive-600 hover:text-olive-700 text-sm font-medium">
                   Generate Response
                 </button>
               </div>
@@ -299,12 +299,12 @@ function GMBIntegrationTab() {
       </div>
 
       {/* Implementation Status */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold text-blue-800 mb-4">🚀 Implementation Status</h3>
+      <div className="bg-olive-50 border border-olive-200 rounded-xl p-6">
+        <h3 className="text-lg font-semibold text-olive-800 mb-4">🚀 Implementation Status</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 className="font-medium text-blue-700 mb-2">✅ Backend Ready:</h4>
-            <ul className="text-blue-600 space-y-1 text-sm">
+            <h4 className="font-medium text-olive-700 mb-2">✅ Backend Ready:</h4>
+            <ul className="text-olive-600 space-y-1 text-sm">
               <li>• OAuth2 authentication flow</li>
               <li>• GMB API integration endpoints</li>
               <li>• AI review attribution engine</li>
@@ -313,8 +313,8 @@ function GMBIntegrationTab() {
             </ul>
           </div>
           <div>
-            <h4 className="font-medium text-blue-700 mb-2">🔧 Ready to Test:</h4>
-            <ul className="text-blue-600 space-y-1 text-sm">
+            <h4 className="font-medium text-olive-700 mb-2">🔧 Ready to Test:</h4>
+            <ul className="text-olive-600 space-y-1 text-sm">
               <li>• Click "Connect GMB Account" above</li>
               <li>• OAuth flow redirects to Google</li>
               <li>• Real API endpoints functioning</li>
@@ -414,7 +414,7 @@ export default function SEODashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600 text-lg">Loading AI SEO Dashboard...</p>
         </div>
       </div>
@@ -440,14 +440,14 @@ export default function SEODashboard() {
               <select
                 value={selectedTimeRange}
                 onChange={(e) => setSelectedTimeRange(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
               >
                 <option value="7d">Last 7 days</option>
                 <option value="30d">Last 30 days</option>
                 <option value="90d">Last 90 days</option>
               </select>
               
-              <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              <button className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
                 🔄 Refresh
               </button>
             </div>
@@ -537,7 +537,7 @@ export default function SEODashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`${
                   activeTab === tab.id
-                    ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
+                    ? 'border-olive-500 text-olive-600 bg-indigo-50'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-2 px-4 border-b-2 font-medium text-sm flex items-center gap-2 rounded-t-lg`}
               >
@@ -557,7 +557,7 @@ export default function SEODashboard() {
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   🤖 AI Recommendations
                 </h3>
-                <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                <button className="text-olive-600 hover:text-olive-700 text-sm font-medium">
                   View All
                 </button>
               </div>
@@ -648,13 +648,13 @@ export default function SEODashboard() {
         {activeTab === 'content' && (
           <div className="bg-white rounded-xl shadow-sm border p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">📅 AI Content Calendar</h3>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-800 mb-2">🎯 Content Strategy Generated</h4>
-              <p className="text-blue-700">AI has planned 30+ content pieces including blog posts, GMB updates, and social media content optimized for local SEO.</p>
+            <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+              <h4 className="font-medium text-olive-800 mb-2">🎯 Content Strategy Generated</h4>
+              <p className="text-olive-700">AI has planned 30+ content pieces including blog posts, GMB updates, and social media content optimized for local SEO.</p>
               <div className="mt-3 flex gap-2">
-                <span className="px-2 py-1 bg-blue-200 text-blue-800 text-xs rounded">Blog Posts: 12/month</span>
+                <span className="px-2 py-1 bg-olive-200 text-olive-800 text-xs rounded">Blog Posts: 12/month</span>
                 <span className="px-2 py-1 bg-green-200 text-green-800 text-xs rounded">GMB Posts: Daily</span>
-                <span className="px-2 py-1 bg-purple-200 text-purple-800 text-xs rounded">Social: 15/month</span>
+                <span className="px-2 py-1 bg-gold-200 text-gold-800 text-xs rounded">Social: 15/month</span>
               </div>
             </div>
           </div>

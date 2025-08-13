@@ -104,7 +104,7 @@ export default function PaymentsPage() {
   const getPaymentMethodIcon = (method) => {
     switch (method) {
       case 'Credit Card':
-        return <CreditCardIcon className="h-4 w-4 text-blue-500" />
+        return <CreditCardIcon className="h-4 w-4 text-olive-500" />
       case 'Cash':
         return <BanknotesIcon className="h-4 w-4 text-green-500" />
       default:
@@ -181,8 +181,8 @@ export default function PaymentsPage() {
                     Avg: {formatCurrency(stats.today.total_tips / stats.today.transactions)}
                   </p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <CreditCardIcon className="h-6 w-6 text-blue-600" />
+                <div className="p-3 bg-olive-100 rounded-full">
+                  <CreditCardIcon className="h-6 w-6 text-olive-600" />
                 </div>
               </div>
             </div>
@@ -198,8 +198,8 @@ export default function PaymentsPage() {
                     {stats.this_week.transactions} transactions
                   </p>
                 </div>
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <ChartBarIcon className="h-6 w-6 text-purple-600" />
+                <div className="p-3 bg-gold-100 rounded-full">
+                  <ChartBarIcon className="h-6 w-6 text-gold-600" />
                 </div>
               </div>
             </div>
@@ -263,7 +263,7 @@ export default function PaymentsPage() {
                   <select
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-olive-500"
                   >
                     <option value="all">All Status</option>
                     <option value="completed">Completed</option>
@@ -345,16 +345,16 @@ export default function PaymentsPage() {
           </div>
 
           {/* Stripe Integration Notice */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="mt-8 bg-olive-50 border border-olive-200 rounded-lg p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <CreditCardIcon className="h-6 w-6 text-blue-600" />
+                <CreditCardIcon className="h-6 w-6 text-olive-600" />
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
+                <h3 className="text-sm font-medium text-olive-800">
                   Stripe Payment Processing Integration
                 </h3>
-                <div className="mt-2 text-sm text-blue-700">
+                <div className="mt-2 text-sm text-olive-700">
                   <p>Full Stripe integration for payment processing includes:</p>
                   <ul className="mt-2 list-disc list-inside space-y-1">
                     <li>Secure credit card processing with PCI DSS compliance</li>
@@ -364,9 +364,9 @@ export default function PaymentsPage() {
                     <li>Refund and dispute management</li>
                     <li>Real-time transaction reporting</li>
                   </ul>
-                  <div className="mt-4 p-3 bg-white border border-blue-300 rounded-md">
-                    <p className="text-sm font-medium text-blue-900">Ready for Production:</p>
-                    <p className="text-xs text-blue-800 mt-1">
+                  <div className="mt-4 p-3 bg-white border border-olive-300 rounded-md">
+                    <p className="text-sm font-medium text-olive-900">Ready for Production:</p>
+                    <p className="text-xs text-olive-800 mt-1">
                       The payment system is architected and ready for Stripe API integration. 
                       Connect your Stripe account to start processing real payments.
                     </p>

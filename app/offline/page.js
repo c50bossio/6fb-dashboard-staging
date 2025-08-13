@@ -27,9 +27,9 @@ export default function OfflinePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-medium text-blue-900 mb-2">What you can still do:</h3>
-            <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+          <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+            <h3 className="font-medium text-olive-900 mb-2">What you can still do:</h3>
+            <ul className="text-sm text-olive-700 space-y-1 list-disc list-inside">
               <li>View cached appointments</li>
               <li>Access previously loaded data</li>
               <li>Create appointments (will sync when online)</li>

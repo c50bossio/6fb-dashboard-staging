@@ -34,14 +34,14 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
       transition-all duration-500 ease-out
       ${animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}
     `}>
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-4 mb-4">
+      <div className="bg-gradient-to-r from-gold-50 to-olive-50 border border-gold-200 rounded-xl p-4 mb-4">
         {/* Collaboration Header */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
             {isMultiAgent ? (
-              <UsersIcon className="h-5 w-5 text-purple-600" />
+              <UsersIcon className="h-5 w-5 text-gold-600" />
             ) : (
-              <SparklesIcon className="h-5 w-5 text-blue-600" />
+              <SparklesIcon className="h-5 w-5 text-olive-600" />
             )}
             <div>
               <h3 className="text-sm font-semibold text-gray-900">
@@ -75,8 +75,8 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
         {/* Primary Agent */}
         <div className="mb-3">
           <div className="flex items-center space-x-2 mb-1">
-            <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-            <span className="text-sm font-medium text-blue-900">Primary: {primary_agent}</span>
+            <div className="h-2 w-2 bg-olive-500 rounded-full"></div>
+            <span className="text-sm font-medium text-olive-900">Primary: {primary_agent}</span>
           </div>
         </div>
 
@@ -87,8 +87,8 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
             <div className="space-y-1">
               {collaborative_responses.map((response, index) => (
                 <div key={index} className="flex items-center space-x-2">
-                  <div className="h-2 w-2 bg-purple-400 rounded-full"></div>
-                  <span className="text-sm text-purple-800">
+                  <div className="h-2 w-2 bg-gold-400 rounded-full"></div>
+                  <span className="text-sm text-gold-800">
                     {response.agent_id?.replace('_', ' ')?.replace(/\w\S*/g, (txt) => 
                       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
                     ) || `Agent ${index + 1}`}
@@ -128,7 +128,7 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
 
         {/* Combined Recommendations Preview */}
         {combined_recommendations.length > 0 && (
-          <div className="border-t border-purple-100 pt-3">
+          <div className="border-t border-gold-100 pt-3">
             <div className="text-xs font-medium text-gray-700 mb-2">
               Key Recommendations ({combined_recommendations.length}):
             </div>
@@ -149,7 +149,7 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
         )}
 
         {/* Status Indicator */}
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-purple-100">
+        <div className="flex items-center justify-between mt-3 pt-2 border-t border-gold-100">
           <div className="flex items-center space-x-2">
             <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
             <span className="text-xs text-gray-600">
@@ -158,7 +158,7 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
           </div>
           
           {isMultiAgent && (
-            <div className="text-xs text-purple-600 font-medium">
+            <div className="text-xs text-gold-600 font-medium">
               Collaborative Response
             </div>
           )}
@@ -185,9 +185,9 @@ export function CompactCollaborationIndicator({ collaborationData, className = '
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
       {isMultiAgent ? (
-        <UsersIcon className="h-4 w-4 text-purple-500" />
+        <UsersIcon className="h-4 w-4 text-gold-500" />
       ) : (
-        <SparklesIcon className="h-4 w-4 text-blue-500" />
+        <SparklesIcon className="h-4 w-4 text-olive-500" />
       )}
       
       <div className="text-xs">

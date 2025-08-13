@@ -148,8 +148,8 @@ export default function FinancialArrangements() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <BanknotesIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-olive-100 rounded-lg">
+              <BanknotesIcon className="h-6 w-6 text-olive-600" />
             </div>
             <span className="text-2xl font-bold text-gray-900">
               ${metrics.totalBoothRent.toLocaleString()}
@@ -172,8 +172,8 @@ export default function FinancialArrangements() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <CheckCircleIcon className="h-6 w-6 text-purple-600" />
+            <div className="p-2 bg-gold-100 rounded-lg">
+              <CheckCircleIcon className="h-6 w-6 text-gold-600" />
             </div>
             <span className="text-2xl font-bold text-gray-900">
               ${metrics.completedPayouts.toLocaleString()}
@@ -245,8 +245,8 @@ export default function FinancialArrangements() {
                     arrangement.type === 'commission' 
                       ? 'bg-green-100 text-green-800'
                       : arrangement.type === 'booth_rent'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-purple-100 text-purple-800'
+                      ? 'bg-olive-100 text-olive-800'
+                      : 'bg-gold-100 text-gold-800'
                   }`}>
                     {arrangement.type === 'commission' ? 'Commission' :
                      arrangement.type === 'booth_rent' ? 'Booth Rent' : 'Hybrid'}
@@ -290,7 +290,7 @@ export default function FinancialArrangements() {
                       setEditingArrangement(arrangement)
                       setShowArrangementModal(true)
                     }}
-                    className="text-indigo-600 hover:text-indigo-900"
+                    className="text-olive-600 hover:text-indigo-900"
                   >
                     <PencilIcon className="h-5 w-5" />
                   </button>

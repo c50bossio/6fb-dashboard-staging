@@ -36,7 +36,7 @@ const WaitlistJoinModal = ({
     const priorities = [
         { value: 'urgent', label: 'Urgent', description: 'Need appointment ASAP', color: 'text-red-600' },
         { value: 'high', label: 'High Priority', description: 'Important but flexible', color: 'text-orange-600' },
-        { value: 'medium', label: 'Medium Priority', description: 'Standard priority', color: 'text-blue-600' },
+        { value: 'medium', label: 'Medium Priority', description: 'Standard priority', color: 'text-olive-600' },
         { value: 'low', label: 'Low Priority', description: 'Very flexible timing', color: 'text-green-600' }
     ];
     
@@ -241,12 +241,12 @@ const WaitlistJoinModal = ({
                                     {formData.preferred_dates.map(date => (
                                         <span 
                                             key={date}
-                                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-olive-100 text-olive-800"
                                         >
                                             {new Date(date).toLocaleDateString()}
                                             <button
                                                 onClick={() => removePrefDate(date)}
-                                                className="ml-1 text-blue-600 hover:text-blue-800"
+                                                className="ml-1 text-olive-600 hover:text-olive-800"
                                             >
                                                 ×
                                             </button>
@@ -268,7 +268,7 @@ const WaitlistJoinModal = ({
                                             onClick={() => toggleTimeRange(timeRange)}
                                             className={`px-3 py-2 text-sm rounded-md border ${
                                                 formData.preferred_times.includes(timeRange)
-                                                    ? 'bg-blue-100 border-blue-300 text-blue-700'
+                                                    ? 'bg-olive-100 border-olive-300 text-olive-700'
                                                     : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                                             }`}
                                         >
@@ -405,7 +405,7 @@ const WaitlistJoinModal = ({
                                 <Button
                                     onClick={handleSubmit}
                                     disabled={loading}
-                                    className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                                    className="bg-olive-600 text-white px-6 py-2 rounded-md hover:bg-olive-700 disabled:opacity-50"
                                 >
                                     {loading ? 'Joining...' : 'Join Waitlist'}
                                 </Button>

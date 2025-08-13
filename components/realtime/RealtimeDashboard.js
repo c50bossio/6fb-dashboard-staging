@@ -156,7 +156,7 @@ export default function RealtimeDashboard() {
             <div
               key={notification.id}
               className={`p-3 border-b last:border-b-0 cursor-pointer hover:bg-gray-50 ${
-                !notification.read ? 'bg-blue-50' : ''
+                !notification.read ? 'bg-olive-50' : ''
               }`}
               onClick={() => markNotificationRead(notification.id)}
             >
@@ -166,7 +166,7 @@ export default function RealtimeDashboard() {
                     notification.priority === 'success' ? 'text-green-800' :
                     notification.priority === 'warning' ? 'text-yellow-800' :
                     notification.priority === 'error' ? 'text-red-800' :
-                    'text-blue-800'
+                    'text-olive-800'
                   }`}>
                     {notification.title}
                   </div>
@@ -178,7 +178,7 @@ export default function RealtimeDashboard() {
                   </div>
                 </div>
                 {!notification.read && (
-                  <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
+                  <div className="w-2 h-2 bg-olive-500 rounded-full ml-2 mt-1"></div>
                 )}
               </div>
             </div>
@@ -243,8 +243,8 @@ export default function RealtimeDashboard() {
         <div className="space-y-6">
           {/* Core Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg shadow">
-              <div className="text-sm font-medium text-blue-800 mb-1">Revenue Today</div>
+            <div className="bg-gradient-to-r from-olive-50 to-olive-100 p-4 rounded-lg shadow">
+              <div className="text-sm font-medium text-olive-800 mb-1">Revenue Today</div>
               <TrendIndicator 
                 metric="total_revenue" 
                 value={realtimeMetrics.total_revenue} 
@@ -260,8 +260,8 @@ export default function RealtimeDashboard() {
               />
             </div>
             
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg shadow">
-              <div className="text-sm font-medium text-purple-800 mb-1">Satisfaction</div>
+            <div className="bg-gradient-to-r from-gold-50 to-gold-100 p-4 rounded-lg shadow">
+              <div className="text-sm font-medium text-gold-800 mb-1">Satisfaction</div>
               <TrendIndicator 
                 metric="satisfaction_rating" 
                 value={realtimeMetrics.satisfaction_rating}
@@ -334,7 +334,7 @@ export default function RealtimeDashboard() {
                     activity.priority === 'success' ? 'bg-green-400' :
                     activity.priority === 'warning' ? 'bg-yellow-400' :
                     activity.priority === 'error' ? 'bg-red-400' :
-                    'bg-blue-400'
+                    'bg-olive-400'
                   }`} />
                   <div className="flex-1">
                     <p className="text-sm text-gray-900">{activity.message}</p>

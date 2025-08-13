@@ -77,16 +77,16 @@ export default function FeatureFlagsPage() {
         </div>
 
         {/* Info Banner */}
-        <div className="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="mb-8 bg-olive-50 border border-olive-200 rounded-lg p-4">
           <div className="flex items-start">
-            <BeakerIcon className="h-5 w-5 text-blue-600 mt-0.5 mr-2" />
+            <BeakerIcon className="h-5 w-5 text-olive-600 mt-0.5 mr-2" />
             <div>
-              <p className="text-sm text-blue-800">
+              <p className="text-sm text-olive-800">
                 <span className="font-semibold">Vercel Edge Config Integration:</span> Feature flags are 
                 globally distributed and update instantly without redeployment. Changes propagate to all 
                 edge locations within seconds.
               </p>
-              <p className="text-sm text-blue-700 mt-2">
+              <p className="text-sm text-olive-700 mt-2">
                 To modify flags in production, use the Vercel Dashboard → Edge Config → Update your configuration.
               </p>
             </div>
@@ -95,7 +95,7 @@ export default function FeatureFlagsPage() {
 
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
             <p className="text-gray-500 mt-4">Loading feature flags...</p>
           </div>
         ) : (

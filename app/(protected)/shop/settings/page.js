@@ -199,7 +199,7 @@ export default function ShopSettings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -217,7 +217,7 @@ export default function ShopSettings() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -242,7 +242,7 @@ export default function ShopSettings() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                   activeTab === tab.id
-                    ? 'border-indigo-500 text-indigo-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -408,7 +408,7 @@ export default function ShopSettings() {
                       type="checkbox"
                       checked={!hours.closed}
                       onChange={(e) => updateHours(day, 'closed', !e.target.checked)}
-                      className="h-4 w-4 text-indigo-600 rounded"
+                      className="h-4 w-4 text-olive-600 rounded"
                     />
                     
                     {!hours.closed && (
@@ -436,8 +436,8 @@ export default function ShopSettings() {
                 ))}
               </div>
               
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="mt-6 p-4 bg-olive-50 rounded-lg">
+                <p className="text-sm text-olive-800">
                   💡 Tip: Set accurate business hours to help clients book appointments at the right times.
                 </p>
               </div>
@@ -461,7 +461,7 @@ export default function ShopSettings() {
                           ...shopData,
                           payment: {...shopData.payment, acceptCash: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">Cash</span>
                     </label>
@@ -474,7 +474,7 @@ export default function ShopSettings() {
                           ...shopData,
                           payment: {...shopData.payment, acceptCard: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">Credit/Debit Card</span>
                     </label>
@@ -487,7 +487,7 @@ export default function ShopSettings() {
                           ...shopData,
                           payment: {...shopData.payment, acceptOnline: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">Online Payment</span>
                     </label>
@@ -677,7 +677,7 @@ export default function ShopSettings() {
                       ...shopData,
                       booking: {...shopData.booking, autoConfirm: e.target.checked}
                     })}
-                    className="h-4 w-4 text-indigo-600 rounded mr-3"
+                    className="h-4 w-4 text-olive-600 rounded mr-3"
                   />
                   <span className="text-sm text-gray-700">Auto-confirm bookings</span>
                 </label>
@@ -690,7 +690,7 @@ export default function ShopSettings() {
                       ...shopData,
                       booking: {...shopData.booking, requirePhone: e.target.checked}
                     })}
-                    className="h-4 w-4 text-indigo-600 rounded mr-3"
+                    className="h-4 w-4 text-olive-600 rounded mr-3"
                   />
                   <span className="text-sm text-gray-700">Require phone number</span>
                 </label>
@@ -703,7 +703,7 @@ export default function ShopSettings() {
                       ...shopData,
                       booking: {...shopData.booking, requireEmail: e.target.checked}
                     })}
-                    className="h-4 w-4 text-indigo-600 rounded mr-3"
+                    className="h-4 w-4 text-olive-600 rounded mr-3"
                   />
                   <span className="text-sm text-gray-700">Require email address</span>
                 </label>
@@ -716,7 +716,7 @@ export default function ShopSettings() {
                       ...shopData,
                       booking: {...shopData.booking, allowWalkIns: e.target.checked}
                     })}
-                    className="h-4 w-4 text-indigo-600 rounded mr-3"
+                    className="h-4 w-4 text-olive-600 rounded mr-3"
                   />
                   <span className="text-sm text-gray-700">Allow walk-in appointments</span>
                 </label>
@@ -734,7 +734,7 @@ export default function ShopSettings() {
                 </div>
                 <a
                   href="/shop/settings/staff"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center"
+                  className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
                 >
                   <UserGroupIcon className="h-5 w-5 mr-2" />
                   Manage Permissions
@@ -742,14 +742,14 @@ export default function ShopSettings() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-blue-50 rounded-lg p-4">
+                <div className="bg-olive-50 rounded-lg p-4">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <UserGroupIcon className="h-6 w-6 text-blue-600" />
+                    <div className="h-10 w-10 rounded-lg bg-olive-100 flex items-center justify-center">
+                      <UserGroupIcon className="h-6 w-6 text-olive-600" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-blue-900">Basic Level</p>
-                      <p className="text-xs text-blue-700">View schedule, set availability</p>
+                      <p className="text-sm font-medium text-olive-900">Basic Level</p>
+                      <p className="text-xs text-olive-700">View schedule, set availability</p>
                     </div>
                   </div>
                 </div>
@@ -766,14 +766,14 @@ export default function ShopSettings() {
                   </div>
                 </div>
                 
-                <div className="bg-purple-50 rounded-lg p-4">
+                <div className="bg-gold-50 rounded-lg p-4">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                      <UserGroupIcon className="h-6 w-6 text-purple-600" />
+                    <div className="h-10 w-10 rounded-lg bg-gold-100 flex items-center justify-center">
+                      <UserGroupIcon className="h-6 w-6 text-gold-600" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-purple-900">Advanced Level</p>
-                      <p className="text-xs text-purple-700">Full service control, analytics</p>
+                      <p className="text-sm font-medium text-gold-900">Advanced Level</p>
+                      <p className="text-xs text-gold-700">Full service control, analytics</p>
                     </div>
                   </div>
                 </div>
@@ -820,7 +820,7 @@ export default function ShopSettings() {
                           ...shopData,
                           notifications: {...shopData.notifications, emailBookings: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">New booking notifications</span>
                     </label>
@@ -833,7 +833,7 @@ export default function ShopSettings() {
                           ...shopData,
                           notifications: {...shopData.notifications, emailCancellations: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">Cancellation notifications</span>
                     </label>
@@ -846,7 +846,7 @@ export default function ShopSettings() {
                           ...shopData,
                           notifications: {...shopData.notifications, dailyReport: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">Daily summary report</span>
                     </label>
@@ -859,7 +859,7 @@ export default function ShopSettings() {
                           ...shopData,
                           notifications: {...shopData.notifications, weeklyReport: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">Weekly performance report</span>
                     </label>
@@ -877,7 +877,7 @@ export default function ShopSettings() {
                           ...shopData,
                           notifications: {...shopData.notifications, smsBookings: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">New booking SMS alerts</span>
                     </label>
@@ -890,7 +890,7 @@ export default function ShopSettings() {
                           ...shopData,
                           notifications: {...shopData.notifications, smsCancellations: e.target.checked}
                         })}
-                        className="h-4 w-4 text-indigo-600 rounded mr-3"
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
                       <span className="text-sm text-gray-700">Cancellation SMS alerts</span>
                     </label>

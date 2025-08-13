@@ -223,7 +223,7 @@ export default function AddBarber() {
                   <div
                     key={s}
                     className={`h-2 w-8 rounded-full ${
-                      s === step ? 'bg-indigo-600' : s < step ? 'bg-indigo-200' : 'bg-gray-200'
+                      s === step ? 'bg-olive-600' : s < step ? 'bg-indigo-200' : 'bg-gray-200'
                     }`}
                   />
                 ))}
@@ -239,7 +239,7 @@ export default function AddBarber() {
           {step === 1 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <UserIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                <UserIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Basic Information
               </h2>
               
@@ -347,7 +347,7 @@ export default function AddBarber() {
           {step === 2 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <CurrencyDollarIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                <CurrencyDollarIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Financial Arrangement
               </h2>
               
@@ -363,7 +363,7 @@ export default function AddBarber() {
                         value="commission"
                         checked={barberData.financialModel === 'commission'}
                         onChange={(e) => setBarberData({...barberData, financialModel: e.target.value})}
-                        className="mt-1 h-4 w-4 text-indigo-600"
+                        className="mt-1 h-4 w-4 text-olive-600"
                       />
                       <div className="ml-3">
                         <p className="font-medium">Commission Based</p>
@@ -377,7 +377,7 @@ export default function AddBarber() {
                         value="booth_rent"
                         checked={barberData.financialModel === 'booth_rent'}
                         onChange={(e) => setBarberData({...barberData, financialModel: e.target.value})}
-                        className="mt-1 h-4 w-4 text-indigo-600"
+                        className="mt-1 h-4 w-4 text-olive-600"
                       />
                       <div className="ml-3">
                         <p className="font-medium">Booth Rent</p>
@@ -442,7 +442,7 @@ export default function AddBarber() {
           {step === 3 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <CalendarDaysIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                <CalendarDaysIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Default Schedule
               </h2>
               
@@ -461,7 +461,7 @@ export default function AddBarber() {
                       type="checkbox"
                       checked={schedule.enabled}
                       onChange={(e) => updateSchedule(day, 'enabled', e.target.checked)}
-                      className="h-4 w-4 text-indigo-600 rounded"
+                      className="h-4 w-4 text-olive-600 rounded"
                     />
                     
                     {schedule.enabled && (
@@ -497,7 +497,7 @@ export default function AddBarber() {
                       type="checkbox"
                       checked={barberData.canManageOwnSchedule}
                       onChange={(e) => setBarberData({...barberData, canManageOwnSchedule: e.target.checked})}
-                      className="h-4 w-4 text-indigo-600 rounded mr-3"
+                      className="h-4 w-4 text-olive-600 rounded mr-3"
                     />
                     <span className="text-sm text-gray-700">Can manage own schedule</span>
                   </label>
@@ -507,7 +507,7 @@ export default function AddBarber() {
                       type="checkbox"
                       checked={barberData.canViewOwnReports}
                       onChange={(e) => setBarberData({...barberData, canViewOwnReports: e.target.checked})}
-                      className="h-4 w-4 text-indigo-600 rounded mr-3"
+                      className="h-4 w-4 text-olive-600 rounded mr-3"
                     />
                     <span className="text-sm text-gray-700">Can view own reports</span>
                   </label>
@@ -517,7 +517,7 @@ export default function AddBarber() {
                       type="checkbox"
                       checked={barberData.canManageOwnClients}
                       onChange={(e) => setBarberData({...barberData, canManageOwnClients: e.target.checked})}
-                      className="h-4 w-4 text-indigo-600 rounded mr-3"
+                      className="h-4 w-4 text-olive-600 rounded mr-3"
                     />
                     <span className="text-sm text-gray-700">Can manage own clients</span>
                   </label>
@@ -527,7 +527,7 @@ export default function AddBarber() {
                       type="checkbox"
                       checked={barberData.canSellProducts}
                       onChange={(e) => setBarberData({...barberData, canSellProducts: e.target.checked})}
-                      className="h-4 w-4 text-indigo-600 rounded mr-3"
+                      className="h-4 w-4 text-olive-600 rounded mr-3"
                     />
                     <span className="text-sm text-gray-700">Can sell products</span>
                   </label>
@@ -540,7 +540,7 @@ export default function AddBarber() {
           {step === 4 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                <CheckCircleIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                <CheckCircleIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Review & Confirm
               </h2>
               
@@ -585,8 +585,8 @@ export default function AddBarber() {
                   </div>
                 </div>
                 
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="p-4 bg-olive-50 rounded-lg">
+                  <p className="text-sm text-olive-800">
                     <strong>Note:</strong> The barber will receive an email invitation to set up their password and access their dashboard.
                   </p>
                 </div>
@@ -611,7 +611,7 @@ export default function AddBarber() {
             {step < 4 ? (
               <button
                 onClick={nextStep}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
               >
                 Next Step
               </button>

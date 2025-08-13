@@ -11,14 +11,14 @@ export default function SMSPolicy() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 bg-olive-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">6FB</span>
               </div>
               <span className="text-xl font-bold text-gray-900">BookedBarber</span>
             </Link>
             
             <div className="flex items-center space-x-6">
-              <Link href="/" className="text-gray-600 hover:text-blue-600 flex items-center">
+              <Link href="/" className="text-gray-600 hover:text-olive-600 flex items-center">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -31,7 +31,7 @@ export default function SMSPolicy() {
       <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow-sm p-8 md:p-12">
           <div className="flex items-center mb-8">
-            <ChatBubbleLeftRightIcon className="h-8 w-8 text-blue-600 mr-3" />
+            <ChatBubbleLeftRightIcon className="h-8 w-8 text-olive-600 mr-3" />
             <h1 className="text-3xl font-bold text-gray-900">SMS Messaging Policy</h1>
           </div>
           
@@ -41,8 +41,8 @@ export default function SMSPolicy() {
               <strong>Last Updated:</strong> January 1, 2025
             </p>
 
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
-              <p className="text-blue-800">
+            <div className="bg-olive-50 border-l-4 border-olive-400 p-4 mb-8">
+              <p className="text-olive-800">
                 <strong>Quick Reference:</strong><br />
                 • Text <strong>STOP</strong> to opt out at any time<br />
                 • Text <strong>HELP</strong> for assistance<br />
@@ -53,7 +53,7 @@ export default function SMSPolicy() {
 
             <section className="mb-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <BellIcon className="h-5 w-5 mr-2 text-blue-600" />
+                <BellIcon className="h-5 w-5 mr-2 text-olive-600" />
                 1. SMS Service Overview
               </h2>
               <p className="text-gray-600 mb-4">
@@ -205,7 +205,7 @@ export default function SMSPolicy() {
                 <li>We use Twilio as our SMS service provider, which complies with telecommunications regulations</li>
               </ul>
               <p className="text-gray-600 mb-4">
-                For more information about how we handle your data, see our <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>.
+                For more information about how we handle your data, see our <Link href="/privacy" className="text-olive-600 hover:underline">Privacy Policy</Link>.
               </p>
             </section>
 
@@ -221,7 +221,7 @@ export default function SMSPolicy() {
                 <li>Be responsible for message and data charges from your carrier</li>
               </ul>
               <p className="text-gray-600 mb-4">
-                Our full terms are available in our <Link href="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>.
+                Our full terms are available in our <Link href="/terms" className="text-olive-600 hover:underline">Terms of Service</Link>.
               </p>
             </section>
 
@@ -267,9 +267,9 @@ export default function SMSPolicy() {
           <div className="mt-12 pt-8 border-t border-gray-200">
             <p className="text-sm text-gray-500 text-center">
               © 2025 BookedBarber. All rights reserved. | 
-              <Link href="/terms" className="ml-2 text-blue-600 hover:underline">Terms of Service</Link> | 
-              <Link href="/privacy" className="ml-2 text-blue-600 hover:underline">Privacy Policy</Link> | 
-              <Link href="/contact" className="ml-2 text-blue-600 hover:underline">Contact Us</Link>
+              <Link href="/terms" className="ml-2 text-olive-600 hover:underline">Terms of Service</Link> | 
+              <Link href="/privacy" className="ml-2 text-olive-600 hover:underline">Privacy Policy</Link> | 
+              <Link href="/contact" className="ml-2 text-olive-600 hover:underline">Contact Us</Link>
             </p>
           </div>
         </div>

@@ -169,7 +169,7 @@ export default function BillingDemoPage() {
           <h2 className="text-xl font-semibold mb-4">💳 Billing Accounts</h2>
           <button 
             onClick={testBillingAccounts} 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-4"
+            className="bg-olive-600 hover:bg-olive-700 text-white px-4 py-2 rounded mb-4"
           >
             🔄 Test Billing Accounts API
           </button>
@@ -197,7 +197,7 @@ export default function BillingDemoPage() {
           <h2 className="text-xl font-semibold mb-4">💰 Payment Methods</h2>
           <button 
             onClick={testPaymentMethods} 
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mb-4"
+            className="bg-gold-600 hover:bg-gold-700 text-white px-4 py-2 rounded mb-4"
           >
             🔄 Test Payment Methods API
           </button>
@@ -292,7 +292,7 @@ export default function BillingDemoPage() {
         <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
           <button 
             onClick={runAllTests}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-semibold text-lg"
+            className="bg-olive-600 hover:bg-olive-700 text-white px-8 py-3 rounded-lg font-semibold text-lg"
           >
             🚀 Run Complete End-to-End Test Suite
           </button>

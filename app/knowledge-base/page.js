@@ -24,11 +24,11 @@ import { Card } from '../../components/ui'
 
 function KnowledgeDocumentCard({ document, onViewDetails }) {
   const domainColors = {
-    'barbershop_operations': 'border-blue-500 bg-blue-50',
+    'barbershop_operations': 'border-olive-500 bg-olive-50',
     'customer_experience': 'border-green-500 bg-green-50',
-    'revenue_optimization': 'border-purple-500 bg-purple-50',
+    'revenue_optimization': 'border-gold-500 bg-gold-50',
     'marketing_strategies': 'border-orange-500 bg-orange-50',
-    'staff_management': 'border-indigo-500 bg-indigo-50'
+    'staff_management': 'border-olive-500 bg-indigo-50'
   }
 
   const domainIcons = {
@@ -131,17 +131,17 @@ function KnowledgeSearchResults({ results, onViewDetails }) {
   return (
     <div className="space-y-6">
       {/* Results Summary */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-blue-900 mb-2">Search Results</h3>
-        <p className="text-blue-800 mb-3">{results.context_summary}</p>
+      <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+        <h3 className="text-lg font-semibold text-olive-900 mb-2">Search Results</h3>
+        <p className="text-olive-800 mb-3">{results.context_summary}</p>
         
         {results.recommended_actions && results.recommended_actions.length > 0 && (
           <div>
-            <h4 className="font-medium text-blue-900 mb-2">💡 Recommended Actions:</h4>
+            <h4 className="font-medium text-olive-900 mb-2">💡 Recommended Actions:</h4>
             <ul className="space-y-1">
               {results.recommended_actions.slice(0, 3).map((action, idx) => (
-                <li key={idx} className="flex items-start gap-2 text-sm text-blue-800">
-                  <span className="text-blue-600">•</span>
+                <li key={idx} className="flex items-start gap-2 text-sm text-olive-800">
+                  <span className="text-olive-600">•</span>
                   <span>{action}</span>
                 </li>
               ))}
@@ -229,7 +229,7 @@ function DocumentDetailModal({ document, isOpen, onClose }) {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Relevance Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {document.relevance_tags.map((tag, idx) => (
-                  <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                  <span key={idx} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-olive-100 text-olive-800">
                     <TagIcon className="h-4 w-4 mr-1" />
                     {tag}
                   </span>
@@ -405,7 +405,7 @@ function KnowledgeBaseContent() {
 
       {/* Knowledge Base Status */}
       {knowledgeStatus && (
-        <div className="mb-8 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
+        <div className="mb-8 bg-gradient-to-r from-green-50 to-olive-50 border border-green-200 rounded-xl p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">📊 Knowledge Base Status</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-lg p-4 text-center">
@@ -415,13 +415,13 @@ function KnowledgeBaseContent() {
               <div className="text-sm text-gray-600">Total Documents</div>
             </div>
             <div className="bg-white rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-olive-600">
                 {Math.round((knowledgeStatus.knowledge_status?.average_confidence || 0) * 100)}%
               </div>
               <div className="text-sm text-gray-600">Avg Confidence</div>
             </div>
             <div className="bg-white rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-gold-600">
                 {knowledgeStatus.knowledge_status?.knowledge_graph_entities || 0}
               </div>
               <div className="text-sm text-gray-600">Graph Entities</div>
@@ -457,7 +457,7 @@ function KnowledgeBaseContent() {
       <div className="mb-8">
         <Card className="p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <MagnifyingGlassIcon className="h-5 w-5 mr-2 text-blue-600" />
+            <MagnifyingGlassIcon className="h-5 w-5 mr-2 text-olive-600" />
             Smart Knowledge Search
           </h2>
           
@@ -490,13 +490,13 @@ function KnowledgeBaseContent() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Search for business knowledge, strategies, best practices..."
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
               />
             </div>
             <button
               onClick={performSearch}
               disabled={loading || !searchQuery.trim()}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 flex items-center gap-2"
+              className="px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:bg-gray-300 flex items-center gap-2"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

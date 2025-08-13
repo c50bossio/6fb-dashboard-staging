@@ -269,7 +269,7 @@ export default function InventoryPage() {
                   <div className="mt-4 flex space-x-3 md:mt-0 md:ml-4">
                     <button
                       type="button"
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                     >
                       <TruckIcon className="-ml-1 mr-2 h-5 w-5" />
                       Create Order
@@ -277,7 +277,7 @@ export default function InventoryPage() {
                     <button
                       type="button"
                       onClick={() => setShowAddModal(true)}
-                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500 transition-colors"
                     >
                       <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                       Add Product
@@ -291,7 +291,7 @@ export default function InventoryPage() {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <CubeIcon className="h-6 w-6 text-blue-600" />
+                      <CubeIcon className="h-6 w-6 text-olive-600" />
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">Total Products</p>
@@ -326,7 +326,7 @@ export default function InventoryPage() {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
-                      <ShoppingCartIcon className="h-6 w-6 text-purple-600" />
+                      <ShoppingCartIcon className="h-6 w-6 text-gold-600" />
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-500">Retail Value</p>
@@ -351,14 +351,14 @@ export default function InventoryPage() {
                         placeholder="Search products..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-olive-500 focus:border-olive-500"
                       />
                     </div>
                     <div className="flex space-x-2">
                       <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="border border-gray-300 rounded-md px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        className="border border-gray-300 rounded-md px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-olive-500 focus:border-olive-500"
                       >
                         <option value="all">All Categories</option>
                         {PRODUCT_CATEGORIES.map(cat => (
@@ -368,7 +368,7 @@ export default function InventoryPage() {
                       <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="border border-gray-300 rounded-md px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        className="border border-gray-300 rounded-md px-3 py-2 bg-white text-sm focus:outline-none focus:ring-1 focus:ring-olive-500 focus:border-olive-500"
                       >
                         <option value="all">All Status</option>
                         <option value="good">In Stock</option>
@@ -473,7 +473,7 @@ export default function InventoryPage() {
                               {item.location}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <button className="text-blue-600 hover:text-blue-900 mr-3">
+                              <button className="text-olive-600 hover:text-olive-900 mr-3">
                                 Edit
                               </button>
                               {(item.status === 'low' || item.status === 'critical') && (
@@ -541,7 +541,7 @@ export default function InventoryPage() {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">Supplier Info</h3>
-                    <TruckIcon className="h-5 w-5 text-blue-500" />
+                    <TruckIcon className="h-5 w-5 text-olive-500" />
                   </div>
                   <div className="space-y-3">
                     <div>

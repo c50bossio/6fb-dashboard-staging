@@ -182,7 +182,7 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
           placeholder="Any special requests, parking instructions, or things your barber should know..."
         />
       </div>
@@ -194,13 +194,13 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
             type="checkbox"
             checked={agreedToTerms}
             onChange={(e) => setAgreedToTerms(e.target.checked)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded mt-0.5"
           />
           <span className="ml-2 text-sm text-gray-600">
             I agree to the{' '}
-            <a href="#" className="text-blue-600 hover:underline">terms and conditions</a>
+            <a href="#" className="text-olive-600 hover:underline">terms and conditions</a>
             {' '}and understand the{' '}
-            <a href="#" className="text-blue-600 hover:underline">cancellation policy</a>
+            <a href="#" className="text-olive-600 hover:underline">cancellation policy</a>
             {' '}(cancellations less than {shopSettings.cancellationWindow} hours before 
             appointment may incur a fee)
           </span>
@@ -211,7 +211,7 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
             type="checkbox"
             checked={marketingConsent}
             onChange={(e) => setMarketingConsent(e.target.checked)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded mt-0.5"
           />
           <span className="ml-2 text-sm text-gray-600">
             I would like to receive appointment reminders, special offers, and updates via SMS and email
@@ -220,9 +220,9 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
       </div>
       
       {/* Important Reminders */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-blue-900 mb-2">Remember to:</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+        <h4 className="text-sm font-semibold text-olive-900 mb-2">Remember to:</h4>
+        <ul className="text-sm text-olive-800 space-y-1">
           <li>• Arrive 5 minutes early for check-in</li>
           {bookingData.paymentMethod === 'in-person' && (
             <li>• Bring ${bookingData.price?.toFixed(2)} for payment (cash or card accepted)</li>

@@ -45,14 +45,14 @@ export function MobileBottomNav() {
               className={cn(
                 "flex flex-col items-center justify-center flex-1 h-full py-2 px-1 transition-colors",
                 "active:scale-95 touch-manipulation",
-                isActive ? "text-blue-600" : "text-gray-600"
+                isActive ? "text-olive-600" : "text-gray-600"
               )}
               onClick={() => setActiveTab(item.href)}
             >
               <Icon className="h-6 w-6 mb-1" />
               <span className="text-xs">{item.label}</span>
               {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-olive-600" />
               )}
             </Link>
           )
@@ -184,10 +184,10 @@ export function PullToRefreshIndicator({ pullDistance, isRefreshing }) {
     >
       <div className="bg-white rounded-full shadow-lg p-2">
         {isRefreshing ? (
-          <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full" />
+          <div className="animate-spin h-6 w-6 border-2 border-olive-600 border-t-transparent rounded-full" />
         ) : (
           <svg 
-            className="h-6 w-6 text-blue-600" 
+            className="h-6 w-6 text-olive-600" 
             fill="none" 
             viewBox="0 0 24 24" 
             stroke="currentColor"

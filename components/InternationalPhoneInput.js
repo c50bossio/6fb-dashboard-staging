@@ -243,7 +243,7 @@ const InternationalPhoneInput = memo(forwardRef(({
             disabled={disabled}
             className={`
               flex items-center px-3 py-2 border border-r-0 rounded-l-md bg-gray-50 
-              hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500
+              hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-olive-500
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
           >
@@ -270,8 +270,8 @@ const InternationalPhoneInput = memo(forwardRef(({
                   type="button"
                   onClick={() => handleCountrySelect(country.code)}
                   className={`
-                    w-full px-3 py-2 text-left hover:bg-blue-50 flex items-center
-                    ${selectedCountry === country.code ? 'bg-blue-100' : ''}
+                    w-full px-3 py-2 text-left hover:bg-olive-50 flex items-center
+                    ${selectedCountry === country.code ? 'bg-olive-100' : ''}
                   `}
                 >
                   <span className="text-lg mr-2">{country.flag}</span>

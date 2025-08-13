@@ -29,7 +29,7 @@ const ProfessionalCalendar = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center h-[600px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
         <p className="mt-4 text-gray-600">Loading Calendar...</p>
       </div>
     )
@@ -135,7 +135,7 @@ export default function CalendarPageV2() {
         const resources = result.barbers.map(barber => ({
           id: barber.id,
           title: barber.title || barber.name,
-          eventColor: barber.eventColor || barber.color || '#3b82f6',
+          eventColor: barber.eventColor || barber.color || '#546355',
           ...barber
         }))
         setResources(resources)
@@ -385,7 +385,7 @@ export default function CalendarPageV2() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading calendar...</p>
         </div>
       </div>
@@ -399,7 +399,7 @@ export default function CalendarPageV2() {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <CalendarIcon className="h-8 w-8 text-blue-600" />
+              <CalendarIcon className="h-8 w-8 text-olive-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Booking Calendar</h1>
                 <p className="text-sm text-gray-600">Enhanced with Recurring Appointments</p>
@@ -410,7 +410,7 @@ export default function CalendarPageV2() {
               {/* Refresh Button */}
               <button
                 onClick={refresh}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                 disabled={loading}
               >
                 <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -441,14 +441,14 @@ export default function CalendarPageV2() {
                   placeholder="Search appointments..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 />
               </div>
               
               <select
                 value={filterBarber}
                 onChange={(e) => setFilterBarber(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
               >
                 <option value="all">All Barbers</option>
                 {resources.map(barber => (
@@ -459,7 +459,7 @@ export default function CalendarPageV2() {
               <select
                 value={filterService}
                 onChange={(e) => setFilterService(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
               >
                 <option value="all">All Services</option>
                 {services.map(service => (
@@ -470,7 +470,7 @@ export default function CalendarPageV2() {
             
             <button
               onClick={() => setShowAppointmentModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
             >
               <PlusCircleIcon className="h-5 w-5 mr-2" />
               New Appointment
@@ -540,7 +540,7 @@ export default function CalendarPageV2() {
             </div>
             <button
               onClick={() => setShowQRModal(false)}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="w-full px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
             >
               Close
             </button>

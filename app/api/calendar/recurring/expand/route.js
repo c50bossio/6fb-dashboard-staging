@@ -110,8 +110,8 @@ export async function POST(request) {
             title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Unknown Service'}`,
             start: occurrence.isoString,
             end: occurrenceEnd,
-            backgroundColor: appointment.barbers?.color || '#3b82f6',
-            borderColor: appointment.barbers?.color || '#3b82f6',
+            backgroundColor: appointment.barbers?.color || '#546355',
+            borderColor: appointment.barbers?.color || '#546355',
             resourceId: appointment.barber_id, // For resource view
             display: 'block',
             extendedProps: {
@@ -175,8 +175,8 @@ export async function POST(request) {
           title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Unknown Service'}`,
           start: appointment.start_time,
           end: appointment.end_time,
-          backgroundColor: appointment.barbers?.color || '#3b82f6',
-          borderColor: appointment.barbers?.color || '#3b82f6',
+          backgroundColor: appointment.barbers?.color || '#546355',
+          borderColor: appointment.barbers?.color || '#546355',
           resourceId: appointment.barber_id,
           display: 'block',
           extendedProps: {

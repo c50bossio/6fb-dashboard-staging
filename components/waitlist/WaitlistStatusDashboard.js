@@ -93,7 +93,7 @@ const WaitlistStatusDashboard = ({ customerId }) => {
     const getPriorityBadge = (position) => {
         if (position === 1) return { text: 'Next', color: 'bg-green-100 text-green-800' };
         if (position <= 3) return { text: 'Soon', color: 'bg-yellow-100 text-yellow-800' };
-        if (position <= 5) return { text: 'Queue', color: 'bg-blue-100 text-blue-800' };
+        if (position <= 5) return { text: 'Queue', color: 'bg-olive-100 text-olive-800' };
         return { text: 'Waiting', color: 'bg-gray-100 text-gray-800' };
     };
     
@@ -104,7 +104,7 @@ const WaitlistStatusDashboard = ({ customerId }) => {
                     <h2 className="text-xl font-bold">My Waitlists</h2>
                 </div>
                 <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600"></div>
                     <span className="ml-2 text-gray-600">Loading waitlist status...</span>
                 </div>
             </div>
@@ -171,7 +171,7 @@ const WaitlistStatusDashboard = ({ customerId }) => {
                                                 <div>Position in queue: #{entry.position}</div>
                                                 <div>Estimated time: {timeLeft}</div>
                                                 {entry.notification_count > 0 && (
-                                                    <div className="text-blue-600">
+                                                    <div className="text-olive-600">
                                                         {entry.notification_count} notification{entry.notification_count !== 1 ? 's' : ''} sent
                                                     </div>
                                                 )}
@@ -211,7 +211,7 @@ const WaitlistStatusDashboard = ({ customerId }) => {
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2">
                                             <div 
-                                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                                className="bg-olive-600 h-2 rounded-full transition-all duration-300"
                                                 style={{ 
                                                     width: `${Math.max(10, 100 - (entry.position * 10))}%` 
                                                 }}

@@ -181,7 +181,7 @@ export default function RoleSelector({ onComplete, initialData = {} }) {
                   disabled={!isSelected && selectedGoals.length >= 3}
                   className={`p-4 rounded-lg border-2 transition-all text-left ${
                     isSelected
-                      ? 'border-blue-500 bg-blue-50'
+                      ? 'border-olive-500 bg-olive-50'
                       : selectedGoals.length >= 3
                       ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
                       : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -189,7 +189,7 @@ export default function RoleSelector({ onComplete, initialData = {} }) {
                 >
                   <div className="flex items-start">
                     <Icon className={`w-6 h-6 mr-3 flex-shrink-0 ${
-                      isSelected ? 'text-blue-600' : 'text-gray-500'
+                      isSelected ? 'text-olive-600' : 'text-gray-500'
                     }`} />
                     <div>
                       <h4 className="font-medium text-gray-900 text-sm mb-1">
@@ -220,7 +220,7 @@ export default function RoleSelector({ onComplete, initialData = {} }) {
                 onClick={() => setBusinessSize(size)}
                 className={`py-3 px-4 rounded-lg border-2 font-medium transition-all ${
                   businessSize === size
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    ? 'border-olive-500 bg-olive-50 text-olive-700'
                     : 'border-gray-200 hover:border-gray-300 bg-white text-gray-700'
                 }`}
               >
@@ -238,7 +238,7 @@ export default function RoleSelector({ onComplete, initialData = {} }) {
           disabled={!isComplete || (selectedRole !== 'individual' && !businessSize)}
           className={`px-6 py-3 rounded-lg font-medium transition-all ${
             isComplete && (selectedRole === 'individual' || businessSize)
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-olive-600 text-white hover:bg-olive-700'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >

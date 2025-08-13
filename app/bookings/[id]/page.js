@@ -171,7 +171,7 @@ export default function BookingDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -184,7 +184,7 @@ export default function BookingDetailPage() {
           <p className="text-gray-600 mb-4">The booking you're looking for doesn't exist.</p>
           <button
             onClick={() => router.push('/dashboard/bookings')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
           >
             Back to Bookings
           </button>
@@ -198,7 +198,7 @@ export default function BookingDetailPage() {
       confirmed: 'bg-green-100 text-green-800 border-green-200',
       pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
       cancelled: 'bg-red-100 text-red-800 border-red-200',
-      completed: 'bg-blue-100 text-blue-800 border-blue-200'
+      completed: 'bg-olive-100 text-olive-800 border-olive-200'
     }
     return colors[status] || colors.pending
   }
@@ -309,7 +309,7 @@ export default function BookingDetailPage() {
                   onClick={() => setActiveTab(tab)}
                   className={`px-6 py-3 text-sm font-medium capitalize border-b-2 transition-all ${
                     activeTab === tab
-                      ? 'text-blue-600 border-blue-600'
+                      ? 'text-olive-600 border-olive-600'
                       : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                   }`}
                 >
@@ -359,7 +359,7 @@ export default function BookingDetailPage() {
                           href={`https://maps.google.com/?q=${encodeURIComponent(booking.location.address)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline"
+                          className="text-sm text-olive-600 hover:underline"
                         >
                           Get Directions →
                         </a>
@@ -426,14 +426,14 @@ export default function BookingDetailPage() {
                     
                     <div className="flex items-center">
                       <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-3" />
-                      <a href={`mailto:${booking.customer.email}`} className="text-sm text-blue-600 hover:underline">
+                      <a href={`mailto:${booking.customer.email}`} className="text-sm text-olive-600 hover:underline">
                         {booking.customer.email}
                       </a>
                     </div>
                     
                     <div className="flex items-center">
                       <PhoneIcon className="h-5 w-5 text-gray-400 mr-3" />
-                      <a href={`tel:${booking.customer.phone}`} className="text-sm text-blue-600 hover:underline">
+                      <a href={`tel:${booking.customer.phone}`} className="text-sm text-olive-600 hover:underline">
                         {booking.customer.phone}
                       </a>
                     </div>
@@ -513,7 +513,7 @@ export default function BookingDetailPage() {
                         {booking.barber.specialties.map((specialty, index) => (
                           <span
                             key={index}
-                            className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                            className="px-3 py-1 bg-olive-100 text-olive-800 text-xs rounded-full"
                           >
                             {specialty}
                           </span>
@@ -524,7 +524,7 @@ export default function BookingDetailPage() {
                 </div>
                 
                 <div className="pt-4 border-t">
-                  <button className="text-blue-600 hover:underline text-sm font-medium">
+                  <button className="text-olive-600 hover:underline text-sm font-medium">
                     View Full Profile →
                   </button>
                 </div>
@@ -567,7 +567,7 @@ export default function BookingDetailPage() {
                       <div className="pt-2 border-t">
                         <div className="flex justify-between">
                           <span className="font-semibold">Total</span>
-                          <span className="text-lg font-bold text-blue-600">
+                          <span className="text-lg font-bold text-olive-600">
                             ${booking.payment.breakdown.total.toFixed(2)}
                           </span>
                         </div>
@@ -602,7 +602,7 @@ export default function BookingDetailPage() {
 
                 {booking.payment.status === 'paid' && (
                   <div>
-                    <button className="text-blue-600 hover:underline text-sm font-medium">
+                    <button className="text-olive-600 hover:underline text-sm font-medium">
                       Download Receipt →
                     </button>
                   </div>
@@ -619,8 +619,8 @@ export default function BookingDetailPage() {
                   {booking.timeline.map((event, index) => (
                     <div key={index} className="flex items-start">
                       <div className="flex-shrink-0">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <CheckCircleIcon className="h-4 w-4 text-blue-600" />
+                        <div className="w-8 h-8 bg-olive-100 rounded-full flex items-center justify-center">
+                          <CheckCircleIcon className="h-4 w-4 text-olive-600" />
                         </div>
                         {index < booking.timeline.length - 1 && (
                           <div className="w-0.5 h-12 bg-gray-200 mx-4 -mt-4"></div>
@@ -643,15 +643,15 @@ export default function BookingDetailPage() {
         </div>
 
         {/* Contact Support */}
-        <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
+        <div className="bg-olive-50 rounded-lg border border-olive-200 p-4">
           <div className="flex items-start">
-            <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-600 mt-0.5" />
+            <ChatBubbleLeftRightIcon className="h-5 w-5 text-olive-600 mt-0.5" />
             <div className="ml-3">
-              <p className="text-sm font-medium text-blue-900">Need Help?</p>
-              <p className="text-sm text-blue-700 mt-1">
+              <p className="text-sm font-medium text-olive-900">Need Help?</p>
+              <p className="text-sm text-olive-700 mt-1">
                 Contact us at {booking.location.phone} or {booking.location.email}
               </p>
-              <button className="text-sm text-blue-600 hover:underline font-medium mt-2">
+              <button className="text-sm text-olive-600 hover:underline font-medium mt-2">
                 Start Live Chat →
               </button>
             </div>

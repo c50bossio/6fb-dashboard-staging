@@ -105,7 +105,7 @@ export default function RealtimeStatusIndicator({
               <span className="text-green-600">+{eventCounts.INSERT}</span>
             )}
             {eventCounts.UPDATE > 0 && (
-              <span className="text-blue-600">↻{eventCounts.UPDATE}</span>
+              <span className="text-olive-600">↻{eventCounts.UPDATE}</span>
             )}
             {eventCounts.DELETE > 0 && (
               <span className="text-red-600">-{eventCounts.DELETE}</span>

@@ -148,23 +148,23 @@ function SubscribeSuccessContent() {
           )}
 
           {/* What's Next */}
-          <div className="bg-blue-50 rounded-lg p-6 mb-8">
+          <div className="bg-olive-50 rounded-lg p-6 mb-8">
             <h3 className="font-semibold text-gray-900 mb-3">What's Next?</h3>
             <ul className="text-left space-y-2 text-sm text-gray-600">
               <li className="flex items-start">
-                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-olive-500 mr-2">•</span>
                 <span>Complete your barbershop profile</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-olive-500 mr-2">•</span>
                 <span>Add your services and pricing</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-olive-500 mr-2">•</span>
                 <span>Set up your booking schedule</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-olive-500 mr-2">•</span>
                 <span>Invite your team members</span>
               </li>
             </ul>

@@ -84,7 +84,7 @@ export default function CustomersPage() {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'vip':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-gold-100 text-gold-800'
       case 'active':
         return 'bg-green-100 text-green-800'
       case 'inactive':
@@ -103,7 +103,7 @@ export default function CustomersPage() {
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
-                <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700">
                   <PlusIcon className="h-5 w-5 mr-2" />
                   Add Customer
                 </button>
@@ -195,16 +195,16 @@ export default function CustomersPage() {
             </div>
           </div>
 
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="mt-8 bg-olive-50 border border-olive-200 rounded-lg p-6">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <UsersIcon className="h-6 w-6 text-blue-600" />
+                <UsersIcon className="h-6 w-6 text-olive-600" />
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
+                <h3 className="text-sm font-medium text-olive-800">
                   Advanced Customer Management Coming Soon
                 </h3>
-                <div className="mt-2 text-sm text-blue-700">
+                <div className="mt-2 text-sm text-olive-700">
                   <p>We're building comprehensive customer relationship tools including:</p>
                   <ul className="mt-2 list-disc list-inside space-y-1">
                     <li>Detailed customer profiles and preferences</li>

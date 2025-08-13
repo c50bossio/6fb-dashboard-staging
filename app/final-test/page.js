@@ -52,10 +52,10 @@ export default function FinalTestPage() {
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
           🔬 Final RRule Test with Real API Data
         </h1>
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-          <h2 className="font-semibold text-blue-900">Debug Info:</h2>
-          <p className="text-blue-700">{debugInfo}</p>
-          <p className="text-sm text-blue-600 mt-2">
+        <div className="mb-6 p-4 bg-olive-50 rounded-lg">
+          <h2 className="font-semibold text-olive-900">Debug Info:</h2>
+          <p className="text-olive-700">{debugInfo}</p>
+          <p className="text-sm text-olive-600 mt-2">
             This test uses REAL API data from the calendar system to verify RRule functionality
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function FinalTestPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading real calendar events...</p>
           </div>
         )}

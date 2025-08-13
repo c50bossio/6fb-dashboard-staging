@@ -158,7 +158,7 @@ export async function POST(request) {
         end: data.end_time,
         rrule: fullCalendarFormat.rrule,
         duration: fullCalendarFormat.duration,
-        backgroundColor: data.barbers?.color || '#3b82f6',
+        backgroundColor: data.barbers?.color || '#546355',
         extendedProps: {
           barber_id: data.barber_id,
           barber_name: data.barbers?.name,

@@ -22,7 +22,7 @@ export default function SimpleFullCalendar({ events: externalEvents }) {
       start: '2025-08-11T13:00:00',
       end: '2025-08-11T13:30:00',
       rrule: 'FREQ=WEEKLY;INTERVAL=1;COUNT=4',
-      backgroundColor: '#3b82f6'
+      backgroundColor: '#546355'
     },
     {
       id: 'simple-test-2', 
@@ -77,12 +77,12 @@ Original RRule: ${event.extendedProps?.rrule || 'None'}`)
 
   return (
     <div className="p-4">
-      <div className="mb-4 p-3 bg-blue-50 rounded">
-        <h3 className="font-semibold text-blue-900">🧪 Simple RRule Test Calendar</h3>
-        <p className="text-sm text-blue-700">
+      <div className="mb-4 p-3 bg-olive-50 rounded">
+        <h3 className="font-semibold text-olive-900">🧪 Simple RRule Test Calendar</h3>
+        <p className="text-sm text-olive-700">
           Testing RRule functionality in isolation. Debug: {debugInfo}
         </p>
-        <p className="text-xs text-blue-600">
+        <p className="text-xs text-olive-600">
           Expected: Weekly meeting on Aug 11, 18, 25, Sep 1 + Regular event on Aug 12
         </p>
       </div>
@@ -125,7 +125,7 @@ Original RRule: ${event.extendedProps?.rrule || 'None'}`)
       <div className="mt-4 text-center space-x-2">
         <button
           onClick={() => calendarRef.current?.getApi().gotoDate('2025-08-11')}
-          className="px-3 py-1 bg-blue-500 text-white rounded"
+          className="px-3 py-1 bg-olive-500 text-white rounded"
         >
           Aug 11 (Original)
         </button>
@@ -143,7 +143,7 @@ Original RRule: ${event.extendedProps?.rrule || 'None'}`)
         </button>
         <button
           onClick={() => calendarRef.current?.getApi().gotoDate('2025-09-01')}
-          className="px-3 py-1 bg-purple-500 text-white rounded"
+          className="px-3 py-1 bg-gold-500 text-white rounded"
         >
           Sep 1 (Recurring)
         </button>

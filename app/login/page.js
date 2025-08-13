@@ -11,11 +11,13 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
 import { useAuth } from '../../components/SupabaseAuthProvider'
+import ConversionTracker, { useLoginTracking } from '@/components/analytics/ConversionTracker'
 
 
 export default function LoginPage() {
   const router = useRouter()
   const { user, signIn, signInWithGoogle } = useAuth()
+  const loginTracking = useLoginTracking()
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -44,13 +46,23 @@ export default function LoginPage() {
     setIsLoading(true)
     setError('')
 
+    // Track login attempt
+    loginTracking.trackLoginAttempt('email')
+
     try {
-      await signIn({ 
+      const result = await signIn({ 
         email: formData.email, 
         password: formData.password 
       })
+      
+      // Track successful login
+      loginTracking.trackLoginSuccess('email', result?.user?.id)
+      
       // The auth provider will handle the redirect
     } catch (err) {
+      // Track login failure
+      loginTracking.trackLoginFailure('email', err.message || 'Unknown error')
+      
       setError(err.message || 'Login failed. Please try again.')
       setIsLoading(false)
     }
@@ -64,29 +76,49 @@ export default function LoginPage() {
       setIsLoading(true)
       setError('')
       
+      // Track OAuth attempt
+      loginTracking.trackOAuthAttempt('google')
+      
       // Use the Supabase client directly - it handles PKCE properly
       if (!signInWithGoogle) {
         throw new Error('Google sign-in not available. Please refresh the page.')
       }
       
       console.log('🚀 Calling signInWithGoogle from SupabaseAuthProvider...')
-      await signInWithGoogle()
+      const result = await signInWithGoogle()
       console.log('✅ signInWithGoogle completed')
+      
+      // Track successful login (if we get here without redirect)
+      if (result?.user?.id) {
+        loginTracking.trackLoginSuccess('google', result.user.id)
+      }
       
       // The redirect happens automatically via Supabase
       
     } catch (err) {
       console.error('❌ Google sign-in error:', err)
+      
+      // Track login failure
+      loginTracking.trackLoginFailure('google', err.message || 'Unknown error')
+      
       setError(err.message || 'Google sign-in failed.')
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <ConversionTracker 
+      page="login"
+      customProperties={{
+        has_error: !!error,
+        loading_state: isLoading,
+        form_filled: !!(formData.email && formData.password)
+      }}
+    >
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="h-12 w-12 bg-olive-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">6FB</span>
           </div>
         </div>
@@ -95,7 +127,7 @@ export default function LoginPage() {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
-          <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link href="/register" className="font-medium text-olive-600 hover:text-olive-500">
             create a new account
           </Link>
         </p>
@@ -103,7 +135,7 @@ export default function LoginPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit} data-track-form="login-form" data-track-view="login-form">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
                 {error}
@@ -127,7 +159,7 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm disabled:opacity-50"
                   placeholder="Enter your email"
                 />
               </div>
@@ -150,7 +182,7 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm disabled:opacity-50"
+                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm disabled:opacity-50"
                   placeholder="Enter your password"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -172,7 +204,12 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between">
               <div className="text-sm">
-                <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                <Link 
+                  href="/forgot-password" 
+                  className="font-medium text-olive-600 hover:text-olive-500"
+                  onClick={() => loginTracking.trackPasswordReset()}
+                  data-track-click="password-reset-link"
+                >
                   Forgot your password?
                 </Link>
               </div>
@@ -184,8 +221,8 @@ export default function LoginPage() {
                 disabled={isLoading}
                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
                   isLoading
-                    ? 'bg-blue-400 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                    ? 'bg-olive-400 cursor-not-allowed' 
+                    : 'bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500'
                 }`}
               >
                 {isLoading ? 'Signing in...' : 'Sign in'}
@@ -217,6 +254,8 @@ export default function LoginPage() {
                   e.preventDefault()
                   handleGoogleSignIn()
                 }}
+                data-track-click="oauth-google-signin"
+                data-track-view="oauth-signin-button"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -241,11 +280,12 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="mt-8 text-center">
-        <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
-          ← Back to home page
-        </Link>
+        <div className="mt-8 text-center">
+          <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+            ← Back to home page
+          </Link>
+        </div>
       </div>
-    </div>
+    </ConversionTracker>
   )
 }

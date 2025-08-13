@@ -183,7 +183,7 @@ export default function BookingWizard({
                   {/* Line */}
                   {index < steps.length - 1 && (
                     <div className={`absolute top-5 w-full h-0.5 ${
-                      currentStep > step.number ? 'bg-blue-600' : 'bg-gray-300'
+                      currentStep > step.number ? 'bg-olive-600' : 'bg-gray-300'
                     }`} style={{ left: '50%' }} />
                   )}
                   
@@ -193,9 +193,9 @@ export default function BookingWizard({
                     disabled={step.number > currentStep}
                     className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
                       currentStep === step.number
-                        ? 'bg-blue-600 text-white ring-4 ring-blue-100'
+                        ? 'bg-olive-600 text-white ring-4 ring-olive-100'
                         : currentStep > step.number
-                        ? 'bg-blue-600 text-white cursor-pointer hover:ring-2 hover:ring-blue-200'
+                        ? 'bg-olive-600 text-white cursor-pointer hover:ring-2 hover:ring-olive-200'
                         : 'bg-gray-300 text-gray-600 cursor-not-allowed'
                     }`}
                   >
@@ -314,7 +314,7 @@ export default function BookingWizard({
                     
                     <div className="flex justify-between text-base font-semibold mt-3 pt-3 border-t">
                       <span>Total:</span>
-                      <span className="text-blue-600">
+                      <span className="text-olive-600">
                         ${(bookingData.price + bookingData.addOns.reduce((sum, addon) => sum + addon.price, 0)).toFixed(2)}
                       </span>
                     </div>

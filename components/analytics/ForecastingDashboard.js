@@ -24,7 +24,7 @@ const COLORS = {
   muted: '#6B7280'
 }
 
-const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#8B5CF6']
+const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#C5A35B']
 
 export default function ForecastingDashboard({ barbershopId }) {
   const [forecastData, setForecastData] = useState(null)
@@ -99,7 +99,7 @@ export default function ForecastingDashboard({ barbershopId }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
         <span className="ml-3 text-lg text-gray-600">Loading forecasting insights...</span>
       </div>
     )
@@ -171,16 +171,16 @@ export default function ForecastingDashboard({ barbershopId }) {
           value={forecastData.bookings.summary?.total_predicted_bookings || 0}
           change={`${Math.round((forecastData.bookings.summary?.overall_utilization || 0) * 100)}% utilization`}
           icon={CalendarIcon}
-          color="text-blue-600"
-          bgColor="bg-blue-50"
+          color="text-olive-600"
+          bgColor="bg-olive-50"
         />
         <MetricCard
           title="Growth Trend"
           value={`${(forecastData.trends.trend_analysis?.overall_trend?.growthRate * 100 || 0).toFixed(1)}%`}
           change={forecastData.trends.trend_analysis?.overall_trend?.direction || 'stable'}
           icon={ArrowTrendingUpIcon}
-          color="text-purple-600"
-          bgColor="bg-purple-50"
+          color="text-gold-600"
+          bgColor="bg-gold-50"
         />
         <MetricCard
           title="Seasonal Impact"
@@ -208,7 +208,7 @@ export default function ForecastingDashboard({ barbershopId }) {
                 onClick={() => setActiveTab(tab.id)}
                 className={`${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
@@ -243,7 +243,7 @@ function OverviewTab({ data, chartData }) {
             <ComposedChart data={chartData.revenueChart}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="period" stroke="#6b7280" />
-              <YAxis yAxisId="revenue" orientation="left" stroke="#3b82f6" />
+              <YAxis yAxisId="revenue" orientation="left" stroke="#546355" />
               <YAxis yAxisId="bookings" orientation="right" stroke="#10b981" />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
@@ -257,9 +257,9 @@ function OverviewTab({ data, chartData }) {
                 yAxisId="revenue"
                 type="monotone"
                 dataKey="revenue"
-                fill="#3b82f6"
+                fill="#546355"
                 fillOpacity={0.1}
-                stroke="#3b82f6"
+                stroke="#546355"
                 strokeWidth={2}
                 name="Revenue"
               />
@@ -282,7 +282,7 @@ function OverviewTab({ data, chartData }) {
         <InsightCard
           title="Peak Demand Forecast"
           insight={data.bookings.business_insights?.[0]}
-          color="bg-blue-50 border-blue-200"
+          color="bg-olive-50 border-olive-200"
         />
         <InsightCard
           title="Revenue Opportunity"
@@ -304,7 +304,7 @@ function OverviewTab({ data, chartData }) {
                 formatter={(value) => [`${Math.round(value * 100)}%`, 'Utilization']}
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
               />
-              <Bar dataKey="utilization" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="utilization" fill="#D4B878" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -329,8 +329,8 @@ function RevenueTab({ data, chartData }) {
             <AreaChart data={chartData.revenueChart}>
               <defs>
                 <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#546355" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#546355" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -343,7 +343,7 @@ function RevenueTab({ data, chartData }) {
               <Area
                 type="monotone"
                 dataKey="revenue"
-                stroke="#3b82f6"
+                stroke="#546355"
                 strokeWidth={3}
                 fillOpacity={1}
                 fill="url(#revenueGradient)"
@@ -491,7 +491,7 @@ function BookingsTab({ data, chartData }) {
                 <span className="w-16 text-sm text-gray-600">{hour}</span>
                 <div className="flex-1 mx-3 bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-blue-600 h-2 rounded-full"
+                    className="bg-olive-600 h-2 rounded-full"
                     style={{ width: `${(demand.demand || 0) * 100}%` }}
                   ></div>
                 </div>
@@ -544,8 +544,8 @@ function TrendsTab({ data, chartData }) {
               <Area
                 type="monotone"
                 dataKey="factor"
-                stroke="#8b5cf6"
-                fill="#8b5cf6"
+                stroke="#D4B878"
+                fill="#D4B878"
                 fillOpacity={0.3}
               />
             </AreaChart>
@@ -584,7 +584,7 @@ function TrendsTab({ data, chartData }) {
               <div className="flex items-center">
                 <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
                   <div
-                    className="bg-blue-600 h-2 rounded-full"
+                    className="bg-olive-600 h-2 rounded-full"
                     style={{ width: `${(data.trend_analysis?.trend_strength || 0) * 100}%` }}
                   ></div>
                 </div>
@@ -653,11 +653,11 @@ function InsightsTab({ data }) {
   return (
     <div className="space-y-6">
       {/* Strategic Recommendations */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+      <div className="bg-gradient-to-r from-olive-50 to-indigo-50 border border-olive-200 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Strategic Recommendations</h3>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {data.trends.strategic_recommendations?.map((rec, index) => (
-            <div key={index} className="bg-white rounded-lg p-4 border border-blue-100">
+            <div key={index} className="bg-white rounded-lg p-4 border border-olive-100">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium text-gray-900 capitalize">
                   {rec.category.replace('_', ' ')}
@@ -674,7 +674,7 @@ function InsightsTab({ data }) {
               <ul className="text-xs text-gray-500 space-y-1">
                 {rec.actions?.map((action, actionIndex) => (
                   <li key={actionIndex} className="flex items-center">
-                    <div className="w-1 h-1 bg-blue-400 rounded-full mr-2"></div>
+                    <div className="w-1 h-1 bg-olive-400 rounded-full mr-2"></div>
                     {action}
                   </li>
                 ))}
@@ -708,7 +708,7 @@ function InsightsTab({ data }) {
                   {metric.replace('_', ' ')}
                 </h5>
                 <div className="relative">
-                  <div className="text-2xl font-bold text-blue-600">
+                  <div className="text-2xl font-bold text-olive-600">
                     {data.percentile}th
                   </div>
                   <div className="text-sm text-gray-500">percentile</div>
@@ -774,7 +774,7 @@ function InsightCard({ title, insight, color }) {
           <ul className="text-sm text-gray-600 space-y-1">
             {insight.recommendations.map((rec, index) => (
               <li key={index} className="flex items-center">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></div>
+                <div className="w-1.5 h-1.5 bg-olive-400 rounded-full mr-2"></div>
                 {typeof rec === 'string' ? rec : rec.action || rec}
               </li>
             ))}
@@ -787,7 +787,7 @@ function InsightCard({ title, insight, color }) {
 
 function ProjectionCard({ title, data, confidence }) {
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-lg p-4">
+    <div className="bg-gradient-to-br from-gray-50 to-olive-50 border border-gray-200 rounded-lg p-4">
       <h5 className="font-medium text-gray-900 mb-2">{title}</h5>
       <div className="space-y-2">
         <div className="flex justify-between">
@@ -798,14 +798,14 @@ function ProjectionCard({ title, data, confidence }) {
         </div>
         <div className="flex justify-between">
           <span className="text-sm text-gray-600">Confidence</span>
-          <span className="text-sm font-semibold text-blue-600">
+          <span className="text-sm font-semibold text-olive-600">
             {Math.round((data?.confidence || confidence || 0) * 100)}%
           </span>
         </div>
       </div>
       <div className="mt-3 w-full bg-gray-200 rounded-full h-1">
         <div
-          className="bg-blue-600 h-1 rounded-full"
+          className="bg-olive-600 h-1 rounded-full"
           style={{ width: `${Math.round((data?.confidence || confidence || 0) * 100)}%` }}
         ></div>
       </div>
@@ -823,8 +823,8 @@ function getConfidenceColor(confidence) {
 function getInsightColor(type) {
   const colors = {
     'revenue_opportunity': 'bg-green-50 border-green-200',
-    'demand_optimization': 'bg-blue-50 border-blue-200',
-    'seasonal_opportunity': 'bg-purple-50 border-purple-200',
+    'demand_optimization': 'bg-olive-50 border-olive-200',
+    'seasonal_opportunity': 'bg-gold-50 border-gold-200',
     'growth_trend': 'bg-indigo-50 border-indigo-200',
     'market_positioning': 'bg-orange-50 border-orange-200',
     'utilization_improvement': 'bg-cyan-50 border-cyan-200'

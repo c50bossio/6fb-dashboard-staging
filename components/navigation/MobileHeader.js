@@ -132,7 +132,7 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
                   <div className="px-4 py-3 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
-                      <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                      <button className="text-xs text-olive-600 hover:text-olive-800 font-medium">
                         Mark all read
                       </button>
                     </div>
@@ -143,14 +143,14 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
                       <div
                         key={notification.id}
                         className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                          notification.unread ? 'bg-blue-50' : ''
+                          notification.unread ? 'bg-olive-50' : ''
                         }`}
                       >
                         <div className="flex items-start space-x-3">
                           <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
                             notification.type === 'appointment' ? 'bg-green-500' :
                             notification.type === 'reminder' ? 'bg-amber-500' :
-                            'bg-blue-500'
+                            'bg-olive-500'
                           }`}></div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900">
@@ -164,7 +164,7 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
                             </p>
                           </div>
                           {notification.unread && (
-                            <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-2"></div>
+                            <div className="w-2 h-2 bg-olive-600 rounded-full flex-shrink-0 mt-2"></div>
                           )}
                         </div>
                       </div>
@@ -172,7 +172,7 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
                   </div>
                   
                   <div className="px-4 py-3 border-t border-gray-200">
-                    <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                    <button className="text-sm text-olive-600 hover:text-olive-800 font-medium">
                       View all notifications
                     </button>
                   </div>

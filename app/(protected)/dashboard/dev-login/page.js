@@ -57,13 +57,13 @@ export default function DevLoginPage() {
         <button
           onClick={handleDevLogin}
           disabled={loading}
-          className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+          className="w-full py-3 px-4 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50 transition"
         >
           {loading ? 'Setting up session...' : 'Continue as Developer'}
         </button>
         
         <div className="mt-6 text-center">
-          <a href="/login" className="text-sm text-blue-600 hover:text-blue-500">
+          <a href="/login" className="text-sm text-olive-600 hover:text-olive-500">
             Use regular login →
           </a>
         </div>

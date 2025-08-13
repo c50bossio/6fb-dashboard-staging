@@ -137,12 +137,12 @@ export default function ShopAnalytics() {
     }
   }
 
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#C5A35B']
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -156,7 +156,7 @@ export default function ShopAnalytics() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <ChartBarIcon className="h-8 w-8 text-indigo-600" />
+              <ChartBarIcon className="h-8 w-8 text-olive-600" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Shop Analytics</h1>
@@ -207,8 +207,8 @@ export default function ShopAnalytics() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <CalendarDaysIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-2 bg-olive-100 rounded-lg">
+              <CalendarDaysIcon className="h-6 w-6 text-olive-600" />
             </div>
             <span className={`text-sm font-medium flex items-center ${
               overview.bookingsChange >= 0 ? 'text-green-600' : 'text-red-600'
@@ -227,8 +227,8 @@ export default function ShopAnalytics() {
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <UserGroupIcon className="h-6 w-6 text-purple-600" />
+            <div className="p-2 bg-gold-100 rounded-lg">
+              <UserGroupIcon className="h-6 w-6 text-gold-600" />
             </div>
             <span className={`text-sm font-medium flex items-center ${
               overview.clientsChange >= 0 ? 'text-green-600' : 'text-red-600'

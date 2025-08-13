@@ -98,7 +98,7 @@ export default function TenantAnalyticsDashboard() {
             <div className="flex items-center text-gray-600">
               <span className="font-medium">{businessName || tenantName}</span>
               <span className="mx-2">•</span>
-              <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+              <span className="text-sm bg-olive-100 text-olive-800 px-2 py-1 rounded-full">
                 {subscriptionTier?.toUpperCase() || 'PROFESSIONAL'}
               </span>
             </div>
@@ -109,7 +109,7 @@ export default function TenantAnalyticsDashboard() {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
             >
               {dateRangeOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -122,7 +122,7 @@ export default function TenantAnalyticsDashboard() {
             <select
               value={selectedMetric}
               onChange={(e) => setSelectedMetric(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
             >
               {metricOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -145,8 +145,8 @@ export default function TenantAnalyticsDashboard() {
                 {analytics.summary.total_events.toLocaleString()}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <ChartBarIcon className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-olive-100 rounded-full">
+              <ChartBarIcon className="h-6 w-6 text-olive-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
@@ -202,8 +202,8 @@ export default function TenantAnalyticsDashboard() {
                 {analytics.ai_usage.ai_conversations}
               </p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <SparklesIcon className="h-6 w-6 text-purple-600" />
+            <div className="p-3 bg-gold-100 rounded-full">
+              <SparklesIcon className="h-6 w-6 text-gold-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
@@ -217,7 +217,7 @@ export default function TenantAnalyticsDashboard() {
         {/* AI Usage Details */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center mb-6">
-            <SparklesIcon className="h-6 w-6 text-purple-600 mr-3" />
+            <SparklesIcon className="h-6 w-6 text-gold-600 mr-3" />
             <h3 className="text-lg font-semibold text-gray-900">AI Usage Analytics</h3>
           </div>
           
@@ -231,7 +231,7 @@ export default function TenantAnalyticsDashboard() {
             
             <div className="flex justify-between items-center py-3 border-b border-gray-100">
               <span className="text-sm font-medium text-gray-600">Most Used Model</span>
-              <span className="text-sm font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">
+              <span className="text-sm font-semibold text-gold-600 bg-gold-50 px-2 py-1 rounded">
                 {analytics.ai_usage.most_used_model}
               </span>
             </div>
@@ -273,11 +273,11 @@ export default function TenantAnalyticsDashboard() {
               <div className="flex items-center">
                 <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
                   <div 
-                    className="bg-blue-500 h-2 rounded-full"
+                    className="bg-olive-500 h-2 rounded-full"
                     style={{ width: `${analytics.business_metrics.completion_rate * 100}%` }}
                   ></div>
                 </div>
-                <span className="text-sm font-semibold text-blue-600">
+                <span className="text-sm font-semibold text-olive-600">
                   {formatPercentage(analytics.business_metrics.completion_rate)}
                 </span>
               </div>
@@ -303,7 +303,7 @@ export default function TenantAnalyticsDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center p-4 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-600 mb-2">Your Booking Rate</p>
-            <p className="text-2xl font-bold text-blue-600">
+            <p className="text-2xl font-bold text-olive-600">
               {formatPercentage(analytics.benchmarks.tenant_booking_rate)}
             </p>
           </div>
@@ -327,7 +327,7 @@ export default function TenantAnalyticsDashboard() {
       {/* Feature Usage Breakdown */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <div className="flex items-center mb-6">
-          <CalendarDaysIcon className="h-6 w-6 text-blue-600 mr-3" />
+          <CalendarDaysIcon className="h-6 w-6 text-olive-600 mr-3" />
           <h3 className="text-lg font-semibold text-gray-900">Feature Usage Breakdown</h3>
         </div>
         
@@ -347,14 +347,14 @@ export default function TenantAnalyticsDashboard() {
       {analytics.integrations && (
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-center mb-6">
-            <ClockIcon className="h-6 w-6 text-indigo-600 mr-3" />
+            <ClockIcon className="h-6 w-6 text-olive-600 mr-3" />
             <h3 className="text-lg font-semibold text-gray-900">Integration Activity</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-700 mb-2">Stripe Events</p>
-              <p className="text-xl font-bold text-blue-600">
+            <div className="text-center p-4 bg-olive-50 rounded-lg">
+              <p className="text-sm text-olive-700 mb-2">Stripe Events</p>
+              <p className="text-xl font-bold text-olive-600">
                 {analytics.integrations.stripe_events}
               </p>
             </div>
@@ -366,9 +366,9 @@ export default function TenantAnalyticsDashboard() {
               </p>
             </div>
             
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <p className="text-sm text-purple-700 mb-2">Email Campaigns</p>
-              <p className="text-xl font-bold text-purple-600">
+            <div className="text-center p-4 bg-gold-50 rounded-lg">
+              <p className="text-sm text-gold-700 mb-2">Email Campaigns</p>
+              <p className="text-xl font-bold text-gold-600">
                 {analytics.integrations.email_campaigns}
               </p>
             </div>

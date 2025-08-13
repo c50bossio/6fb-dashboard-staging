@@ -172,7 +172,7 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
       </div>
       
       {/* Service & Barber Reminder */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+      <div className="bg-olive-50 border border-olive-200 rounded-lg p-3">
         <div className="flex items-center justify-between text-sm">
           <div>
             <span className="text-gray-600">Service:</span>
@@ -240,9 +240,9 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
                 disabled={!dayStatus.isOpen}
                 className={`relative p-3 rounded-lg text-center transition-all ${
                   isSelected
-                    ? 'bg-blue-600 text-white ring-2 ring-blue-200'
+                    ? 'bg-olive-600 text-white ring-2 ring-olive-200'
                     : dayStatus.isOpen
-                    ? 'bg-white border border-gray-200 hover:border-blue-300 hover:shadow-md cursor-pointer'
+                    ? 'bg-white border border-gray-200 hover:border-olive-300 hover:shadow-md cursor-pointer'
                     : 'bg-gray-50 text-gray-400 cursor-not-allowed'
                 }`}
               >
@@ -317,9 +317,9 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
                           disabled={!slot.available}
                           className={`relative px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                             selectedTime?.dateTime === slot.dateTime
-                              ? 'bg-blue-600 text-white ring-2 ring-blue-200'
+                              ? 'bg-olive-600 text-white ring-2 ring-olive-200'
                               : slot.available
-                              ? 'bg-white border border-gray-200 hover:border-blue-300 hover:shadow-md cursor-pointer'
+                              ? 'bg-white border border-gray-200 hover:border-olive-300 hover:shadow-md cursor-pointer'
                               : 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
                           }`}
                         >
@@ -401,7 +401,7 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
           disabled={!selectedDate || !selectedTime}
           className={`px-6 py-3 rounded-lg font-medium transition-all ${
             selectedDate && selectedTime
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-olive-600 text-white hover:bg-olive-700'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >

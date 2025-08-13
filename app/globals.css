@@ -4,48 +4,50 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    /* Light Mode - Deep Olive & Gold Theme */
+    --background: 32 21% 92%; /* Light Sand #EAE3D2 */
+    --foreground: 120 7% 14%; /* Gunmetal #1F2320 */
+    --card: 32 21% 92%; /* Light Sand */
+    --card-foreground: 120 7% 14%; /* Gunmetal */
+    --popover: 32 21% 95%; /* Lighter Sand */
+    --popover-foreground: 120 7% 14%; /* Gunmetal */
+    --primary: 130 11% 27%; /* Deep Olive #3C4A3E */
+    --primary-foreground: 32 21% 92%; /* Light Sand */
+    --secondary: 42 38% 56%; /* Rich Gold #C5A35B */
+    --secondary-foreground: 120 7% 14%; /* Gunmetal */
+    --muted: 39 15% 85%; /* Light Warm Gray */
+    --muted-foreground: 120 7% 35%; /* Darker Gunmetal */
+    --accent: 42 38% 56%; /* Rich Gold */
+    --accent-foreground: 120 7% 14%; /* Gunmetal */
+    --destructive: 2 49% 57%; /* Soft Red #D9534F */
+    --destructive-foreground: 32 21% 92%; /* Light Sand */
+    --border: 39 15% 85%; /* Light Warm Gray border */
+    --input: 39 15% 85%; /* Light Warm Gray input */
+    --ring: 130 11% 27%; /* Deep Olive focus ring */
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    /* Dark Mode - Deep Olive & Gold Theme */
+    --background: 132 6% 18%; /* Charcoal Olive #2C322D */
+    --foreground: 39 15% 75%; /* Warm Gray #BEB7A7 */
+    --card: 132 6% 20%; /* Slightly lighter Charcoal */
+    --card-foreground: 39 15% 75%; /* Warm Gray */
+    --popover: 132 6% 22%; /* Lighter Charcoal */
+    --popover-foreground: 39 15% 75%; /* Warm Gray */
+    --primary: 130 11% 35%; /* Lighter Deep Olive for visibility */
+    --primary-foreground: 39 15% 85%; /* Light Warm Gray */
+    --secondary: 42 38% 56%; /* Rich Gold #C5A35B */
+    --secondary-foreground: 132 6% 18%; /* Charcoal Olive */
+    --muted: 132 6% 25%; /* Muted Charcoal */
+    --muted-foreground: 39 15% 60%; /* Muted Warm Gray */
+    --accent: 42 38% 66%; /* Light Gold */
+    --accent-foreground: 132 6% 18%; /* Charcoal Olive */
+    --destructive: 2 49% 47%; /* Darker Soft Red */
+    --destructive-foreground: 39 15% 85%; /* Light Warm Gray */
+    --border: 132 6% 28%; /* Charcoal border */
+    --input: 132 6% 28%; /* Charcoal input */
+    --ring: 42 38% 56%; /* Gold focus ring in dark mode */
   }
 
   * {
@@ -63,35 +65,35 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg;
+    @apply bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg;
   }
   
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-all duration-200 transform hover:scale-105;
+    @apply bg-secondary text-secondary-foreground px-4 py-2 rounded-lg font-medium hover:bg-secondary/90 transition-all duration-200 transform hover:scale-105;
   }
   
   .btn-cta {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+    @apply bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-lg font-semibold hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6 transition-all duration-300 hover:shadow-lg hover:border-blue-200;
+    @apply bg-card rounded-xl shadow-sm border border-border p-6 transition-all duration-300 hover:shadow-lg hover:border-secondary/50;
   }
   
   .feature-card {
-    @apply bg-white p-8 rounded-xl border border-gray-200 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-2;
+    @apply bg-card p-8 rounded-xl border border-border hover:shadow-xl hover:border-secondary/60 transition-all duration-300 transform hover:-translate-y-2;
   }
   
   .input-field {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200;
   }
   
   .gradient-text {
-    @apply bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
   }
   
   .hero-gradient {
-    @apply bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800;
+    @apply bg-gradient-to-br from-primary via-secondary to-primary/80;
   }
   
   .section-padding {
@@ -103,19 +105,19 @@
   }
   
   .badge-success {
-    @apply bg-green-100 text-green-800;
+    @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
   }
   
   .badge-warning {
-    @apply bg-yellow-100 text-yellow-800;
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
   }
   
   .badge-error {
-    @apply bg-red-100 text-red-800;
+    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
   }
   
   .badge-info {
-    @apply bg-blue-100 text-blue-800;
+    @apply bg-secondary/20 text-secondary-foreground dark:bg-secondary/30;
   }
 }
 
@@ -395,23 +397,23 @@
 
 /* Form validation states */
 .form-field-valid {
-  border-color: #10b981;
-  background-color: #f0fdf4;
+  border-color: #6BA368; /* Moss Green */
+  background-color: rgba(107, 163, 104, 0.08);
 }
 
 .form-field-error {
-  border-color: #ef4444;
-  background-color: #fef2f2;
+  border-color: #D9534F; /* Soft Red */
+  background-color: rgba(217, 83, 79, 0.08);
 }
 
 .form-field-focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: hsl(130 11% 27%); /* Deep Olive */
+  box-shadow: 0 0 0 3px rgba(60, 74, 62, 0.1);
 }
 
 /* Navigation active states */
 .nav-item-active {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, hsl(130 11% 27%), hsl(42 38% 56%)); /* Olive to Gold */
   color: white;
 }
 
@@ -420,8 +422,8 @@
 }
 
 .nav-item-hover:hover {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #1e40af;
+  background-color: rgba(60, 74, 62, 0.1); /* Deep Olive with opacity */
+  color: hsl(130 11% 27%);
 }
 
 /* Card variants with consistent shadows */

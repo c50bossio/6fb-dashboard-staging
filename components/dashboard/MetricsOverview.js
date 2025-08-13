@@ -77,7 +77,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
       icon: ChatBubbleLeftRightIcon,
       color: "blue",
       description: "from yesterday",
-      gradient: "from-blue-500 to-cyan-500"
+      gradient: "from-olive-500 to-cyan-500"
     },
     {
       title: "Active AI Agents",
@@ -87,7 +87,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
       icon: SparklesIcon,
       color: "purple",
       description: "operational",
-      gradient: "from-purple-500 to-pink-500"
+      gradient: "from-gold-500 to-pink-500"
     },
     {
       title: "Active Users",
@@ -163,7 +163,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
           {onViewFullAnalytics && (
             <button
               onClick={onViewFullAnalytics}
-              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-olive-600 hover:text-olive-700 bg-olive-50 hover:bg-olive-100 rounded-lg transition-colors"
             >
               <EyeIcon className="h-4 w-4" />
               <span>View Full Analytics</span>
@@ -318,7 +318,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600">Efficiency Gain</span>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-blue-600">
+                <span className="text-sm font-semibold text-olive-600">
                   {dashboardStats?.efficiency || '+34%'}
                 </span>
                 <Badge variant="info" size="sm">vs last month</Badge>

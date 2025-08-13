@@ -11,14 +11,14 @@ export default function PrivacyPolicy() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 bg-olive-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">6FB</span>
               </div>
               <span className="text-xl font-bold text-gray-900">BookedBarber</span>
             </Link>
             
             <div className="flex items-center space-x-6">
-              <Link href="/" className="text-gray-600 hover:text-blue-600 flex items-center">
+              <Link href="/" className="text-gray-600 hover:text-olive-600 flex items-center">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -72,7 +72,7 @@ export default function PrivacyPolicy() {
               </ul>
               <p className="text-gray-600 mb-4">
                 We use Twilio as our SMS service provider. Your phone number and message data are processed in accordance with 
-                <a href="https://www.twilio.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">Twilio's Privacy Policy</a>.
+                <a href="https://www.twilio.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-olive-600 hover:underline ml-1">Twilio's Privacy Policy</a>.
               </p>
 
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Automatically Collected Information</h3>
@@ -266,9 +266,9 @@ export default function PrivacyPolicy() {
           <div className="mt-12 pt-8 border-t border-gray-200">
             <p className="text-sm text-gray-500 text-center">
               © 2025 BookedBarber. All rights reserved. | 
-              <Link href="/terms" className="ml-2 text-blue-600 hover:underline">Terms of Service</Link> | 
-              <Link href="/sms-policy" className="ml-2 text-blue-600 hover:underline">SMS Policy</Link> | 
-              <Link href="/contact" className="ml-2 text-blue-600 hover:underline">Contact Us</Link>
+              <Link href="/terms" className="ml-2 text-olive-600 hover:underline">Terms of Service</Link> | 
+              <Link href="/sms-policy" className="ml-2 text-olive-600 hover:underline">SMS Policy</Link> | 
+              <Link href="/contact" className="ml-2 text-olive-600 hover:underline">Contact Us</Link>
             </p>
           </div>
         </div>

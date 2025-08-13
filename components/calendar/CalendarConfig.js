@@ -174,8 +174,8 @@ export const processCalendarEvents = (appointments, timezone = 'America/New_York
       id: appointment.id,
       groupId: appointment.series_id || appointment.id,
       title: appointment.title || `${appointment.customer_name} - ${appointment.service_name}`,
-      backgroundColor: appointment.barber_color || '#3b82f6',
-      borderColor: appointment.barber_color || '#3b82f6',
+      backgroundColor: appointment.barber_color || '#546355',
+      borderColor: appointment.barber_color || '#546355',
       textColor: '#ffffff',
       display: 'block',
       resourceId: appointment.barber_id,
@@ -221,8 +221,8 @@ export const processCalendarEvents = (appointments, timezone = 'America/New_York
 export const createCalendarEvent = (formData, timezone = 'America/New_York') => {
   const event = {
     title: `${formData.client_name} - ${formData.service_name || 'Unknown Service'}`,
-    backgroundColor: formData.barber_color || '#3b82f6',
-    borderColor: formData.barber_color || '#3b82f6',
+    backgroundColor: formData.barber_color || '#546355',
+    borderColor: formData.barber_color || '#546355',
     extendedProps: {
       barber_id: formData.barber_id,
       customer_name: formData.client_name,

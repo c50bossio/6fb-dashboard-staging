@@ -162,7 +162,7 @@ export default function ConversationRecoveryModal({ onRecover, onDismiss }) {
           <button
             onClick={handleRecover}
             disabled={isRecovering}
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors flex items-center justify-center space-x-2"
+            className="flex-1 bg-olive-600 text-white px-4 py-2 rounded-lg hover:bg-olive-700 disabled:bg-olive-400 transition-colors flex items-center justify-center space-x-2"
           >
             {isRecovering ? (
               <>

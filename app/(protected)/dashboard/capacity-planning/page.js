@@ -39,7 +39,7 @@ export default function CapacityPlanningPage() {
                 <div className="md:flex md:items-center md:justify-between">
                   <div className="min-w-0 flex-1">
                     <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl flex items-center gap-3">
-                      <WrenchScrewdriverIcon className="h-10 w-10 text-blue-600" />
+                      <WrenchScrewdriverIcon className="h-10 w-10 text-olive-600" />
                       Capacity Planning
                     </h1>
                     <p className="mt-2 text-lg text-gray-600">
@@ -51,7 +51,7 @@ export default function CapacityPlanningPage() {
                       <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                         AI Enhanced
                       </div>
-                      <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="bg-olive-100 text-olive-800 px-3 py-1 rounded-full text-sm font-medium">
                         Real-time Data
                       </div>
                     </div>
@@ -63,7 +63,7 @@ export default function CapacityPlanningPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <ChartBarIcon className="h-6 w-6 text-blue-500" />
+                    <ChartBarIcon className="h-6 w-6 text-olive-500" />
                     <h3 className="font-semibold">Demand Forecasting</h3>
                   </div>
                   <p className="text-sm text-gray-600">
@@ -83,7 +83,7 @@ export default function CapacityPlanningPage() {
                 
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <LightBulbIcon className="h-6 w-6 text-purple-500" />
+                    <LightBulbIcon className="h-6 w-6 text-gold-500" />
                     <h3 className="font-semibold">Smart Recommendations</h3>
                   </div>
                   <p className="text-sm text-gray-600">
@@ -96,14 +96,14 @@ export default function CapacityPlanningPage() {
               <CapacityPlanningPanel barbershop_id={profile?.shop_id || 'demo'} />
 
               {/* Additional Resources */}
-              <div className="mt-8 bg-blue-50 rounded-lg border border-blue-200 p-6">
+              <div className="mt-8 bg-olive-50 rounded-lg border border-olive-200 p-6">
                 <div className="flex items-start gap-4">
-                  <LightBulbIcon className="h-6 w-6 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <LightBulbIcon className="h-6 w-6 text-olive-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-semibold text-blue-900 mb-2">
+                    <h3 className="font-semibold text-olive-900 mb-2">
                       💡 Getting the Most from Capacity Planning
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-800">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-olive-800">
                       <div>
                         <h4 className="font-medium mb-1">📊 Data Quality</h4>
                         <p className="mb-3">Ensure accurate booking and customer data for better predictions.</p>
@@ -129,7 +129,7 @@ export default function CapacityPlanningPage() {
                   href="/dashboard/analytics-enhanced"
                   className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
                 >
-                  <ChartBarIcon className="h-6 w-6 text-blue-500" />
+                  <ChartBarIcon className="h-6 w-6 text-olive-500" />
                   <div>
                     <h3 className="font-medium">Enhanced Analytics</h3>
                     <p className="text-sm text-gray-600">View detailed performance metrics</p>
@@ -151,7 +151,7 @@ export default function CapacityPlanningPage() {
                   href="/dashboard/ai-intelligent"
                   className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
                 >
-                  <LightBulbIcon className="h-6 w-6 text-purple-500" />
+                  <LightBulbIcon className="h-6 w-6 text-gold-500" />
                   <div>
                     <h3 className="font-medium">AI Intelligence</h3>
                     <p className="text-sm text-gray-600">Advanced AI insights and recommendations</p>

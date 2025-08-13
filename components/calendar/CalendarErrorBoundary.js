@@ -34,7 +34,7 @@ class CalendarErrorBoundary extends React.Component {
             <div className="space-y-2">
               <button
                 onClick={() => window.location.reload()}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                className="w-full px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700 transition"
               >
                 Reload Page
               </button>

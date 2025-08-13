@@ -16,8 +16,8 @@ export default function CalendarSimplePage() {
           initialView: 'dayGridMonth',
           events: [
             { title: 'Haircut - John', date: '2025-08-05', color: '#10b981' },
-            { title: 'Beard Trim - Mike', date: '2025-08-06', color: '#3b82f6' },
-            { title: 'Full Service - David', date: '2025-08-07', color: '#8b5cf6' }
+            { title: 'Beard Trim - Mike', date: '2025-08-06', color: '#546355' },
+            { title: 'Full Service - David', date: '2025-08-07', color: '#D4B878' }
           ],
           headerToolbar: {
             left: 'prev,next today',

@@ -267,7 +267,7 @@ export default function CustomersEnhancedPage() {
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               />
             </div>
 
@@ -281,7 +281,7 @@ export default function CustomersEnhancedPage() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               />
             </div>
 
@@ -295,7 +295,7 @@ export default function CustomersEnhancedPage() {
                 required
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               />
             </div>
 
@@ -306,7 +306,7 @@ export default function CustomersEnhancedPage() {
               <select
                 value={formData.preferred_contact}
                 onChange={(e) => setFormData({...formData, preferred_contact: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               >
                 <option value="email">Email</option>
                 <option value="sms">SMS</option>
@@ -322,7 +322,7 @@ export default function CustomersEnhancedPage() {
                 value={formData.notes}
                 onChange={(e) => setFormData({...formData, notes: e.target.value})}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
                 placeholder="Preferences, special requirements, etc."
               />
             </div>
@@ -330,7 +330,7 @@ export default function CustomersEnhancedPage() {
             <div className="flex space-x-3">
               <button
                 type="submit"
-                className="flex-1 bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
+                className="flex-1 bg-olive-600 text-white py-2 rounded-md hover:bg-olive-700 transition-colors"
               >
                 {customer ? 'Update' : 'Add'} Customer
               </button>
@@ -427,9 +427,9 @@ export default function CustomersEnhancedPage() {
             </div>
 
             {/* Spending Information */}
-            <div className="bg-blue-50 rounded-lg p-4">
+            <div className="bg-olive-50 rounded-lg p-4">
               <h4 className="font-semibold text-gray-900 mb-3">Spending</h4>
-              <div className="text-3xl font-bold text-blue-600">
+              <div className="text-3xl font-bold text-olive-600">
                 ${customer.total_spent}
               </div>
               <div className="text-sm text-gray-600 mt-1">
@@ -453,7 +453,7 @@ export default function CustomersEnhancedPage() {
                 setShowEditModal(true)
                 onClose()
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+              className="px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700 flex items-center"
             >
               <PencilSquareIcon className="h-4 w-4 mr-2" />
               Edit Customer
@@ -476,7 +476,7 @@ export default function CustomersEnhancedPage() {
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <UserGroupIcon className="h-8 w-8 text-blue-600" />
+            <UserGroupIcon className="h-8 w-8 text-olive-600" />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
               <p className="text-sm text-gray-600">Track and manage your customer relationships</p>
@@ -484,7 +484,7 @@ export default function CustomersEnhancedPage() {
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+            className="bg-olive-600 text-white px-4 py-2 rounded-md hover:bg-olive-700 flex items-center"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Add Customer
@@ -493,13 +493,13 @@ export default function CustomersEnhancedPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-4 mt-6">
-          <div className="bg-blue-50 rounded-lg p-4">
+          <div className="bg-olive-50 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-600 font-medium">Total Customers</p>
+                <p className="text-sm text-olive-600 font-medium">Total Customers</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
               </div>
-              <UserGroupIcon className="h-8 w-8 text-blue-600" />
+              <UserGroupIcon className="h-8 w-8 text-olive-600" />
             </div>
           </div>
           <div className="bg-green-50 rounded-lg p-4">
@@ -511,13 +511,13 @@ export default function CustomersEnhancedPage() {
               <ChartBarIcon className="h-8 w-8 text-green-600" />
             </div>
           </div>
-          <div className="bg-purple-50 rounded-lg p-4">
+          <div className="bg-gold-50 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-purple-600 font-medium">VIP Customers</p>
+                <p className="text-sm text-gold-600 font-medium">VIP Customers</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.vipCount}</p>
               </div>
-              <StarIcon className="h-8 w-8 text-purple-600" />
+              <StarIcon className="h-8 w-8 text-gold-600" />
             </div>
           </div>
           <div className="bg-orange-50 rounded-lg p-4">
@@ -544,7 +544,7 @@ export default function CustomersEnhancedPage() {
                 placeholder="Search customers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               />
             </div>
 
@@ -586,7 +586,7 @@ export default function CustomersEnhancedPage() {
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading customers...</p>
             </div>
           </div>

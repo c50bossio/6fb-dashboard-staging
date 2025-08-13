@@ -65,13 +65,13 @@ export default function StreamingChat() {
                 <p className="text-xs font-semibold text-green-800">OpenAI</p>
                 <p className="text-xs text-green-600 mt-1">o3, GPT-4.1, o4-mini</p>
               </div>
-              <div className="bg-purple-50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-purple-800">Claude</p>
-                <p className="text-xs text-purple-600 mt-1">Claude 4 Opus, Sonnet 4</p>
+              <div className="bg-gold-50 p-3 rounded-lg">
+                <p className="text-xs font-semibold text-gold-800">Claude</p>
+                <p className="text-xs text-gold-600 mt-1">Claude 4 Opus, Sonnet 4</p>
               </div>
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-xs font-semibold text-blue-800">Gemini</p>
-                <p className="text-xs text-blue-600 mt-1">Gemini 2.5 Pro, 2.0 Flash</p>
+              <div className="bg-olive-50 p-3 rounded-lg">
+                <p className="text-xs font-semibold text-olive-800">Gemini</p>
+                <p className="text-xs text-olive-600 mt-1">Gemini 2.5 Pro, 2.0 Flash</p>
               </div>
             </div>
           </div>
@@ -87,7 +87,7 @@ export default function StreamingChat() {
             <div
               className={`max-w-[70%] rounded-lg px-4 py-2 ${
                 message.role === 'user'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-olive-600 text-white'
                   : 'bg-gray-100 text-gray-900'
               }`}
             >
@@ -129,13 +129,13 @@ export default function StreamingChat() {
             value={input}
             onChange={handleInputChange}
             placeholder="Type your message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Send
           </button>

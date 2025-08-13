@@ -39,7 +39,7 @@ export default function FormInput({
             <Icon className={`h-5 w-5 transition-colors duration-200 ${
               hasError ? 'text-red-400' : 
               isValid ? 'text-green-400' : 
-              isFocused ? 'text-blue-400' : 'text-gray-400'
+              isFocused ? 'text-olive-400' : 'text-gray-400'
             }`} />
           </div>
         )}
@@ -63,7 +63,7 @@ export default function FormInput({
               ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:ring-opacity-50' 
               : isValid 
                 ? 'border-green-300 bg-green-50 focus:ring-green-500 focus:ring-opacity-50'
-                : 'border-gray-300 bg-white focus:ring-blue-500 focus:ring-opacity-50'
+                : 'border-gray-300 bg-white focus:ring-olive-500 focus:ring-opacity-50'
             }
           `}
           {...props}
@@ -161,7 +161,7 @@ export function FormSelect({
               ? 'border-red-300 bg-red-50 focus:ring-red-500 focus:ring-opacity-50' 
               : isValid 
                 ? 'border-green-300 bg-green-50 focus:ring-green-500 focus:ring-opacity-50'
-                : 'border-gray-300 bg-white focus:ring-blue-500 focus:ring-opacity-50'
+                : 'border-gray-300 bg-white focus:ring-olive-500 focus:ring-opacity-50'
             }
           `}
           {...props}

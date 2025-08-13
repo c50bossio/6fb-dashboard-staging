@@ -269,7 +269,7 @@ export default function CampaignsPage() {
         return 'bg-green-100 text-green-800'
       case 'scheduled':
       case 'pending_approval':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-olive-100 text-olive-800'
       case 'draft':
         return 'bg-gray-100 text-gray-800'
       case 'failed':
@@ -323,7 +323,7 @@ export default function CampaignsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading campaigns...</p>
         </div>
       </div>
@@ -350,7 +350,7 @@ export default function CampaignsPage() {
           <div className={`mb-6 p-4 rounded-lg ${
             notification.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
             notification.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
-            'bg-blue-50 text-blue-800 border border-blue-200'
+            'bg-olive-50 text-olive-800 border border-olive-200'
           }`}>
             {notification.message}
           </div>
@@ -387,7 +387,7 @@ export default function CampaignsPage() {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium ${
                   marketingAccounts.length === 0
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-olive-600 text-white hover:bg-olive-700'
                 }`}
               >
                 <EnvelopeIcon className="h-4 w-4" />
@@ -413,7 +413,7 @@ export default function CampaignsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center">
-              <ChartBarIcon className="h-8 w-8 text-blue-600" />
+              <ChartBarIcon className="h-8 w-8 text-olive-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Campaigns</p>
                 <p className="text-2xl font-bold text-gray-900">{campaignStats.totalCampaigns}</p>
@@ -435,7 +435,7 @@ export default function CampaignsPage() {
 
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex items-center">
-              <EnvelopeIcon className="h-8 w-8 text-purple-600" />
+              <EnvelopeIcon className="h-8 w-8 text-gold-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Email Campaigns</p>
                 <p className="text-2xl font-bold text-gray-900">
@@ -522,7 +522,7 @@ export default function CampaignsPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             {campaign.type === 'email' ? (
-                              <EnvelopeIcon className="h-4 w-4 text-blue-600 mr-2" />
+                              <EnvelopeIcon className="h-4 w-4 text-olive-600 mr-2" />
                             ) : (
                               <PhoneIcon className="h-4 w-4 text-green-600 mr-2" />
                             )}
@@ -566,7 +566,7 @@ export default function CampaignsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button 
                             onClick={() => handleViewCampaign(campaign)}
-                            className="text-blue-600 hover:text-blue-900 flex items-center"
+                            className="text-olive-600 hover:text-olive-900 flex items-center"
                           >
                             <EyeIcon className="h-4 w-4 mr-1" />
                             View
@@ -665,7 +665,7 @@ export default function CampaignsPage() {
                             </div>
                           </div>
                           {method.is_default && (
-                            <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                            <span className="px-2 py-1 text-xs font-medium bg-olive-100 text-olive-800 rounded">
                               Default
                             </span>
                           )}
@@ -761,7 +761,7 @@ export default function CampaignsPage() {
                   </label>
                   <select 
                     name="billing_account" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                     required
                   >
                     <option value="">Select billing account</option>
@@ -786,7 +786,7 @@ export default function CampaignsPage() {
                     <input
                       type="text"
                       name="campaign_name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                       placeholder={`${selectedCampaignType} Campaign - ${new Date().toLocaleDateString()}`}
                     />
                   </div>
@@ -797,7 +797,7 @@ export default function CampaignsPage() {
                     </label>
                     <select 
                       name="segment" 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                       required
                       onChange={(e) => {
                         // Update estimated cost when audience changes
@@ -826,7 +826,7 @@ export default function CampaignsPage() {
                     <input
                       type="text"
                       name="subject"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                       placeholder="Enter email subject line..."
                       required
                     />
@@ -841,7 +841,7 @@ export default function CampaignsPage() {
                   <textarea
                     name="message"
                     rows={selectedCampaignType === 'email' ? '8' : '4'}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                     placeholder={
                       selectedCampaignType === 'email' 
                         ? 'Enter your email content here. You can use HTML formatting...'
@@ -865,7 +865,7 @@ export default function CampaignsPage() {
                   <input
                     type="datetime-local"
                     name="schedule_date"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                     min={new Date().toISOString().slice(0, 16)}
                   />
                   <p className="mt-1 text-xs text-gray-500">
@@ -874,19 +874,19 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Cost Estimate */}
-                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <div className="mb-6 p-4 bg-olive-50 border border-olive-200 rounded-md">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-sm font-medium text-blue-900">Estimated Campaign Cost</h4>
-                      <p className="text-xs text-blue-700">
+                      <h4 className="text-sm font-medium text-olive-900">Estimated Campaign Cost</h4>
+                      <p className="text-xs text-olive-700">
                         Platform cost + markup for {selectedCampaignType} delivery
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-blue-900" id="estimated-cost">
+                      <div className="text-lg font-bold text-olive-900" id="estimated-cost">
                         {formatCurrency(calculateEstimatedCost('all'))}
                       </div>
-                      <div className="text-xs text-blue-700">
+                      <div className="text-xs text-olive-700">
                         {selectedCampaignType === 'email' ? 'per email' : 'per SMS'}
                       </div>
                     </div>
@@ -908,7 +908,7 @@ export default function CampaignsPage() {
                     className={`px-6 py-2 text-sm font-medium text-white rounded-md ${
                       loading
                         ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700'
+                        : 'bg-olive-600 hover:bg-olive-700'
                     }`}
                   >
                     {loading ? (

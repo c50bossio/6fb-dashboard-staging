@@ -29,17 +29,17 @@ export default function ChatPage() {
         </div>
         
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-blue-900 mb-2">📅 Booking Insights</h3>
-            <p className="text-blue-700 text-sm">Ask about today's appointments, weekly schedule, and booking patterns</p>
+          <div className="bg-olive-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-olive-900 mb-2">📅 Booking Insights</h3>
+            <p className="text-olive-700 text-sm">Ask about today's appointments, weekly schedule, and booking patterns</p>
           </div>
           <div className="bg-green-50 p-4 rounded-lg">
             <h3 className="font-semibold text-green-900 mb-2">💰 Revenue Analysis</h3>
             <p className="text-green-700 text-sm">Get insights on daily revenue, popular services, and pricing optimization</p>
           </div>
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-purple-900 mb-2">👥 Customer Analytics</h3>
-            <p className="text-purple-700 text-sm">Understand customer behavior, retention, and engagement patterns</p>
+          <div className="bg-gold-50 p-4 rounded-lg">
+            <h3 className="font-semibold text-gold-900 mb-2">👥 Customer Analytics</h3>
+            <p className="text-gold-700 text-sm">Understand customer behavior, retention, and engagement patterns</p>
           </div>
         </div>
       </div>

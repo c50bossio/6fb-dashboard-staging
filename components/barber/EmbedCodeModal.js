@@ -235,7 +235,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
               onClick={() => setActiveTab('iframe')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-all min-h-[44px] ${
                 activeTab === 'iframe'
-                  ? 'text-blue-600 border-blue-600'
+                  ? 'text-olive-600 border-olive-600'
                   : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
             >
@@ -246,7 +246,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
               onClick={() => setActiveTab('javascript')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-all min-h-[44px] ${
                 activeTab === 'javascript'
-                  ? 'text-blue-600 border-blue-600'
+                  ? 'text-olive-600 border-olive-600'
                   : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
             >
@@ -257,7 +257,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
               onClick={() => setActiveTab('button')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-all min-h-[44px] ${
                 activeTab === 'button'
-                  ? 'text-blue-600 border-blue-600'
+                  ? 'text-olive-600 border-olive-600'
                   : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
             >
@@ -268,7 +268,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
               onClick={() => setActiveTab('link')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-all min-h-[44px] ${
                 activeTab === 'link'
-                  ? 'text-blue-600 border-blue-600'
+                  ? 'text-olive-600 border-olive-600'
                   : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
             >
@@ -298,7 +298,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                     value={embedOptions.width}
                     onChange={(e) => setEmbedOptions(prev => ({ ...prev, width: e.target.value }))}
                     placeholder="100% or 600px"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
                 
@@ -311,7 +311,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                       type="number"
                       value={embedOptions.height}
                       onChange={(e) => setEmbedOptions(prev => ({ ...prev, height: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                     />
                   </div>
                 )}
@@ -321,7 +321,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                     type="checkbox"
                     checked={embedOptions.autoResize}
                     onChange={(e) => setEmbedOptions(prev => ({ ...prev, autoResize: e.target.checked }))}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                   />
                   <span className="ml-2 text-sm text-gray-700">Auto-resize height</span>
                 </label>
@@ -337,7 +337,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                 <select
                   value={embedOptions.theme}
                   onChange={(e) => setEmbedOptions(prev => ({ ...prev, theme: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                 >
                   <option value="light">Light</option>
                   <option value="dark">Dark</option>
@@ -360,7 +360,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                     type="text"
                     value={embedOptions.primaryColor}
                     onChange={(e) => setEmbedOptions(prev => ({ ...prev, primaryColor: e.target.value }))}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
               </div>
@@ -387,7 +387,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                       type="checkbox"
                       checked={embedOptions.shadow}
                       onChange={(e) => setEmbedOptions(prev => ({ ...prev, shadow: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Show shadow</span>
                   </label>
@@ -397,7 +397,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                       type="checkbox"
                       checked={embedOptions.hideHeader}
                       onChange={(e) => setEmbedOptions(prev => ({ ...prev, hideHeader: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Hide header</span>
                   </label>
@@ -407,7 +407,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                       type="checkbox"
                       checked={embedOptions.hideFooter}
                       onChange={(e) => setEmbedOptions(prev => ({ ...prev, hideFooter: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Hide footer</span>
                   </label>
@@ -440,7 +440,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                             }))
                           }
                         }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                       />
                       <span className="ml-2 text-sm text-gray-700">{service.name}</span>
                     </label>
@@ -463,7 +463,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                   onClick={() => setPreviewDevice('desktop')}
                   className={`p-2 rounded-lg transition-all ${
                     previewDevice === 'desktop' 
-                      ? 'bg-blue-100 text-blue-600' 
+                      ? 'bg-olive-100 text-olive-600' 
                       : 'text-gray-400 hover:text-gray-600'
                   }`}
                   title="Desktop preview"
@@ -474,7 +474,7 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                   onClick={() => setPreviewDevice('mobile')}
                   className={`p-2 rounded-lg transition-all ${
                     previewDevice === 'mobile' 
-                      ? 'bg-blue-100 text-blue-600' 
+                      ? 'bg-olive-100 text-olive-600' 
                       : 'text-gray-400 hover:text-gray-600'
                   }`}
                   title="Mobile preview"
@@ -624,9 +624,9 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
             </div>
 
             {/* Instructions */}
-            <div className="mt-6 bg-blue-50 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">How to use:</h4>
-              <ol className="list-decimal list-inside text-sm text-blue-800 space-y-1">
+            <div className="mt-6 bg-olive-50 rounded-lg p-4">
+              <h4 className="font-medium text-olive-900 mb-2">How to use:</h4>
+              <ol className="list-decimal list-inside text-sm text-olive-800 space-y-1">
                 {activeTab === 'iframe' && (
                   <>
                     <li>Copy the embed code above</li>

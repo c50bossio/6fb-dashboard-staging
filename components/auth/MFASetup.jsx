@@ -123,22 +123,22 @@ export default function MFASetup({ onComplete, onCancel }) {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Progress Indicator */}
       <div className="flex items-center justify-center space-x-4 mb-8">
-        <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+        <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-olive-600' : 'text-gray-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-olive-600 text-white' : 'bg-gray-200'}`}>
             1
           </div>
           <span className="text-sm font-medium">Setup</span>
         </div>
-        <div className={`w-12 h-0.5 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-        <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+        <div className={`w-12 h-0.5 ${step >= 2 ? 'bg-olive-600' : 'bg-gray-200'}`}></div>
+        <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-olive-600' : 'text-gray-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-olive-600 text-white' : 'bg-gray-200'}`}>
             2
           </div>
           <span className="text-sm font-medium">Verify</span>
         </div>
-        <div className={`w-12 h-0.5 ${step >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-        <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
+        <div className={`w-12 h-0.5 ${step >= 3 ? 'bg-olive-600' : 'bg-gray-200'}`}></div>
+        <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-olive-600' : 'text-gray-400'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-olive-600 text-white' : 'bg-gray-200'}`}>
             3
           </div>
           <span className="text-sm font-medium">Backup</span>
@@ -201,7 +201,7 @@ export default function MFASetup({ onComplete, onCancel }) {
                   placeholder="123456"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value.replace(/\\D/g, ''))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-center text-lg font-mono"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-olive-500 focus:border-olive-500 text-center text-lg font-mono"
                   autoFocus
                 />
               </div>
@@ -210,14 +210,14 @@ export default function MFASetup({ onComplete, onCancel }) {
                 <button
                   onClick={handleVerifyCode}
                   disabled={loading || verificationCode.length !== 6}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 bg-olive-600 text-white py-2 px-4 rounded-md hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                   {loading ? 'Verifying...' : 'Verify & Enable MFA'}
                 </button>
                 <button
                   onClick={onCancel}
                   disabled={loading}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-olive-500"
                 >
                   Cancel
                 </button>
@@ -272,7 +272,7 @@ export default function MFASetup({ onComplete, onCancel }) {
                 <div className="flex space-x-2 justify-center">
                   <button
                     onClick={copyBackupCodes}
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-1 text-sm bg-olive-600 text-white rounded hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500"
                   >
                     Copy Codes
                   </button>
@@ -286,11 +286,11 @@ export default function MFASetup({ onComplete, onCancel }) {
               </div>
             )}
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
+            <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+              <p className="text-sm text-olive-800">
                 <strong>Next Steps:</strong>
               </p>
-              <ul className="text-sm text-blue-700 mt-2 space-y-1 text-left">
+              <ul className="text-sm text-olive-700 mt-2 space-y-1 text-left">
                 <li>• Store your backup codes in a secure location</li>
                 <li>• Test your authenticator app before closing this setup</li>
                 <li>• Consider adding your backup codes to a password manager</li>
@@ -311,7 +311,7 @@ export default function MFASetup({ onComplete, onCancel }) {
       {loading && step === 1 && (
         <Card className="p-6">
           <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
             <p className="text-gray-600">Setting up Multi-Factor Authentication...</p>
           </div>
         </Card>

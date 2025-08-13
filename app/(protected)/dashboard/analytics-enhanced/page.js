@@ -46,8 +46,8 @@ function AnalyticsBreadcrumb({ level, levelData, onNavigate }) {
   ]
 
   return (
-    <div className="flex items-center space-x-2 mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-      <FunnelIcon className="h-5 w-5 text-blue-600" />
+    <div className="flex items-center space-x-2 mb-6 p-4 bg-gradient-to-r from-olive-50 to-gold-50 rounded-xl border border-olive-200">
+      <FunnelIcon className="h-5 w-5 text-olive-600" />
       <span className="text-sm font-medium text-gray-700">Analytics Navigation:</span>
       
       {levels.map((levelItem, index) => {
@@ -63,7 +63,7 @@ function AnalyticsBreadcrumb({ level, levelData, onNavigate }) {
               disabled={!isClickable}
               className={`flex items-center px-3 py-2 rounded-lg transition-all ${
                 isActive 
-                  ? 'bg-blue-600 text-white shadow-md' 
+                  ? 'bg-olive-600 text-white shadow-md' 
                   : isClickable 
                     ? 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200' 
                     : 'text-gray-400 cursor-not-allowed'
@@ -127,7 +127,7 @@ function AIAnalyticsInsights({ level, levelData }) {
     <Card className="mb-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <ChartBarIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          <ChartBarIcon className="h-5 w-5 mr-2 text-olive-600" />
           AI Strategic Insights - {level.charAt(0).toUpperCase() + level.slice(1)} Level
         </h3>
         <div className="flex items-center space-x-2">
@@ -154,7 +154,7 @@ function AIAnalyticsInsights({ level, levelData }) {
                 <h4 className="text-sm font-medium text-indigo-800">Strategic Recommendations:</h4>
                 {insights.agent_details.recommendations.slice(0, 3).map((rec, idx) => (
                   <div key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="flex-shrink-0 w-5 h-5 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs">
+                    <span className="flex-shrink-0 w-5 h-5 bg-olive-600 text-white rounded-full flex items-center justify-center text-xs">
                       {idx + 1}
                     </span>
                     <span className="text-gray-600">{rec}</span>
@@ -263,13 +263,13 @@ function EnterpriseAnalytics({ onDrillDown }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Total Customers</p>
-              <p className="text-2xl font-bold text-blue-600">{enterpriseData.totalCustomers}</p>
-              <p className="text-xs text-blue-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-olive-600">{enterpriseData.totalCustomers}</p>
+              <p className="text-xs text-olive-500 flex items-center mt-1">
                 <ArrowTrendingUpIcon className="h-3 w-3 mr-1" />
                 +8.3% vs last month
               </p>
             </div>
-            <UserGroupIcon className="h-8 w-8 text-blue-600" />
+            <UserGroupIcon className="h-8 w-8 text-olive-600" />
           </div>
         </Card>
 
@@ -277,13 +277,13 @@ function EnterpriseAnalytics({ onDrillDown }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Active Locations</p>
-              <p className="text-2xl font-bold text-purple-600">{enterpriseData.locations.length}</p>
-              <p className="text-xs text-purple-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-gold-600">{enterpriseData.locations.length}</p>
+              <p className="text-xs text-gold-500 flex items-center mt-1">
                 <BuildingStorefrontIcon className="h-3 w-3 mr-1" />
                 All operational
               </p>
             </div>
-            <MapPinIcon className="h-8 w-8 text-purple-600" />
+            <MapPinIcon className="h-8 w-8 text-gold-600" />
           </div>
         </Card>
 
@@ -373,7 +373,7 @@ function EnterpriseAnalytics({ onDrillDown }) {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => onDrillDown('location', location)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                      className="bg-olive-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-olive-700 transition-colors"
                     >
                       Analyze Location
                     </button>
@@ -452,13 +452,13 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Active Customers</p>
-              <p className="text-2xl font-bold text-blue-600">{locationData.customers}</p>
-              <p className="text-xs text-blue-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-olive-600">{locationData.customers}</p>
+              <p className="text-xs text-olive-500 flex items-center mt-1">
                 <UserGroupIcon className="h-3 w-3 mr-1" />
                 {Math.round(locationData.customers / locationData.barbers)} per barber
               </p>
             </div>
-            <UserGroupIcon className="h-8 w-8 text-blue-600" />
+            <UserGroupIcon className="h-8 w-8 text-olive-600" />
           </div>
         </Card>
 
@@ -466,13 +466,13 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Team Size</p>
-              <p className="text-2xl font-bold text-purple-600">{locationData.barbers}</p>
-              <p className="text-xs text-purple-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-gold-600">{locationData.barbers}</p>
+              <p className="text-xs text-gold-500 flex items-center mt-1">
                 <ScissorsIcon className="h-3 w-3 mr-1" />
                 Professional barbers
               </p>
             </div>
-            <UsersIcon className="h-8 w-8 text-purple-600" />
+            <UsersIcon className="h-8 w-8 text-gold-600" />
           </div>
         </Card>
 
@@ -508,7 +508,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
               <Legend />
               <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="#10B981" name="Revenue ($)" strokeWidth={3} />
               <Line yAxisId="right" type="monotone" dataKey="customers" stroke="#3B82F6" name="Customers" strokeWidth={2} />
-              <Line yAxisId="right" type="monotone" dataKey="bookings" stroke="#8B5CF6" name="Bookings" strokeWidth={2} />
+              <Line yAxisId="right" type="monotone" dataKey="bookings" stroke="#C5A35B" name="Bookings" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -523,7 +523,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
           </h3>
           <button
             onClick={onNavigateUp}
-            className="text-blue-600 text-sm hover:text-blue-800 flex items-center"
+            className="text-olive-600 text-sm hover:text-olive-800 flex items-center"
           >
             <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
             Back to Enterprise View
@@ -578,7 +578,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       onClick={() => onDrillDown('barber', barber)}
-                      className="bg-purple-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-purple-700 transition-colors"
+                      className="bg-gold-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-gold-700 transition-colors"
                     >
                       Analyze Barber
                     </button>
@@ -657,13 +657,13 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Regular Customers</p>
-              <p className="text-2xl font-bold text-blue-600">{barberData.customers}</p>
-              <p className="text-xs text-blue-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-olive-600">{barberData.customers}</p>
+              <p className="text-xs text-olive-500 flex items-center mt-1">
                 <UserGroupIcon className="h-3 w-3 mr-1" />
                 {Math.round(barberData.customers * 0.75)} returning clients
               </p>
             </div>
-            <UserGroupIcon className="h-8 w-8 text-blue-600" />
+            <UserGroupIcon className="h-8 w-8 text-olive-600" />
           </div>
         </Card>
 
@@ -685,13 +685,13 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Efficiency Score</p>
-              <p className="text-2xl font-bold text-purple-600">{barberData.efficiency}%</p>
-              <p className="text-xs text-purple-500 flex items-center mt-1">
+              <p className="text-2xl font-bold text-gold-600">{barberData.efficiency}%</p>
+              <p className="text-xs text-gold-500 flex items-center mt-1">
                 <ClockIcon className="h-3 w-3 mr-1" />
                 {barberData.efficiency >= 90 ? 'Excellent' : barberData.efficiency >= 85 ? 'Good' : 'Needs improvement'}
               </p>
             </div>
-            <AdjustmentsHorizontalIcon className="h-8 w-8 text-purple-600" />
+            <AdjustmentsHorizontalIcon className="h-8 w-8 text-gold-600" />
           </div>
         </Card>
       </div>
@@ -705,7 +705,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
           </h3>
           <button
             onClick={onNavigateUp}
-            className="text-blue-600 text-sm hover:text-blue-800 flex items-center"
+            className="text-olive-600 text-sm hover:text-olive-800 flex items-center"
           >
             <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
             Back to Location View
@@ -816,7 +816,7 @@ function KnowledgeEnhancedAnalytics() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-          <ChartBarIcon className="h-8 w-8 mr-3 text-blue-600" />
+          <ChartBarIcon className="h-8 w-8 mr-3 text-olive-600" />
           Knowledge-Enhanced Analytics
         </h1>
         <p className="text-gray-600 mt-2">

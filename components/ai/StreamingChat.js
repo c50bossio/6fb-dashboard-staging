@@ -78,13 +78,13 @@ export default function StreamingChat({
             <div
               className={`max-w-[80%] rounded-lg px-4 py-2 ${
                 message.role === 'user'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-olive-600 text-white'
                   : 'bg-gray-100 text-gray-900'
               }`}
             >
               <div className="whitespace-pre-wrap break-words">{message.content}</div>
               <div className={`text-xs mt-1 ${
-                message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
+                message.role === 'user' ? 'text-olive-100' : 'text-gray-500'
               }`}>
                 {new Date(message.createdAt || Date.now()).toLocaleTimeString()}
               </div>
@@ -128,7 +128,7 @@ export default function StreamingChat({
             onChange={handleInputChange}
             placeholder={placeholder}
             disabled={isLoading}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
             autoFocus
           />
           
@@ -144,7 +144,7 @@ export default function StreamingChat({
             <button
               type="submit"
               disabled={!input.trim()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               <PaperAirplaneIcon className="h-5 w-5" />
             </button>

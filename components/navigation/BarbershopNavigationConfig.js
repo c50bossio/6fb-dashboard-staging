@@ -199,7 +199,7 @@ export const QUICK_ACTIONS = [
     name: 'Book Walk-in',
     href: '/dashboard/bookings/new',
     icon: CalendarDaysIcon,
-    color: 'bg-blue-600 hover:bg-blue-700',
+    color: 'bg-olive-600 hover:bg-olive-700',
     description: 'Quick booking for walk-in customer'
   },
   {
@@ -213,7 +213,7 @@ export const QUICK_ACTIONS = [
     name: 'Quick Payment',
     href: '/dashboard/payment',
     icon: CurrencyDollarIcon,
-    color: 'bg-purple-600 hover:bg-purple-700',
+    color: 'bg-gold-600 hover:bg-gold-700',
     description: 'Process payment'
   },
   {
@@ -277,11 +277,11 @@ export const NAVIGATION_THEMES = {
     accent: 'bg-amber-600'
   },
   schedule: {
-    bg: 'bg-blue-50',
-    text: 'text-blue-700',
-    border: 'border-blue-200',
-    hover: 'hover:bg-blue-100',
-    accent: 'bg-blue-600'
+    bg: 'bg-olive-50',
+    text: 'text-olive-700',
+    border: 'border-olive-200',
+    hover: 'hover:bg-olive-100',
+    accent: 'bg-olive-600'
   },
   customers: {
     bg: 'bg-green-50',
@@ -291,18 +291,18 @@ export const NAVIGATION_THEMES = {
     accent: 'bg-green-600'
   },
   business: {
-    bg: 'bg-purple-50',
-    text: 'text-purple-700',
-    border: 'border-purple-200',
-    hover: 'hover:bg-purple-100',
-    accent: 'bg-purple-600'
+    bg: 'bg-gold-50',
+    text: 'text-gold-700',
+    border: 'border-gold-200',
+    hover: 'hover:bg-gold-100',
+    accent: 'bg-gold-600'
   },
   'ai-tools': {
     bg: 'bg-indigo-50',
-    text: 'text-indigo-700',
+    text: 'text-olive-700',
     border: 'border-indigo-200',
     hover: 'hover:bg-indigo-100',
-    accent: 'bg-indigo-600'
+    accent: 'bg-olive-600'
   },
   operations: {
     bg: 'bg-gray-50',

@@ -46,12 +46,12 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
             onClick={() => setDomainOption('free')}
             className={`relative rounded-lg border-2 p-4 cursor-pointer transition-all ${
               domainOption === 'free' 
-                ? 'border-blue-500 bg-blue-50' 
+                ? 'border-olive-500 bg-olive-50' 
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             {domainOption === 'free' && (
-              <CheckCircleIcon className="absolute top-2 right-2 w-5 h-5 text-blue-600" />
+              <CheckCircleIcon className="absolute top-2 right-2 w-5 h-5 text-olive-600" />
             )}
             <div className="text-center">
               <div className="text-2xl mb-2">🆓</div>
@@ -76,12 +76,12 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
             }}
             className={`relative rounded-lg border-2 p-4 cursor-pointer transition-all ${
               domainOption === 'buy' 
-                ? 'border-blue-500 bg-blue-50' 
+                ? 'border-olive-500 bg-olive-50' 
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             {domainOption === 'buy' && (
-              <CheckCircleIcon className="absolute top-2 right-2 w-5 h-5 text-blue-600" />
+              <CheckCircleIcon className="absolute top-2 right-2 w-5 h-5 text-olive-600" />
             )}
             <div className="text-center">
               <div className="text-2xl mb-2">🌐</div>
@@ -92,7 +92,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
               <div className="mt-3 p-2 bg-gray-100 rounded text-xs font-mono">
                 yourbusiness.com
               </div>
-              <p className="text-xs text-blue-600 mt-2 font-semibold">
+              <p className="text-xs text-olive-600 mt-2 font-semibold">
                 From $12/year • We set it up
               </p>
             </div>
@@ -103,12 +103,12 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
             onClick={() => setDomainOption('existing')}
             className={`relative rounded-lg border-2 p-4 cursor-pointer transition-all ${
               domainOption === 'existing' 
-                ? 'border-blue-500 bg-blue-50' 
+                ? 'border-olive-500 bg-olive-50' 
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
             {domainOption === 'existing' && (
-              <CheckCircleIcon className="absolute top-2 right-2 w-5 h-5 text-blue-600" />
+              <CheckCircleIcon className="absolute top-2 right-2 w-5 h-5 text-olive-600" />
             )}
             <div className="text-center">
               <div className="text-2xl mb-2">🔗</div>
@@ -119,7 +119,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
               <div className="mt-3 p-2 bg-gray-100 rounded text-xs font-mono">
                 yourdomain.com
               </div>
-              <p className="text-xs text-purple-600 mt-2 font-semibold">
+              <p className="text-xs text-gold-600 mt-2 font-semibold">
                 Free • Guided setup
               </p>
             </div>
@@ -149,14 +149,14 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
 
       {domainOption === 'buy' && (
         <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-900 mb-3">
+          <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+            <h4 className="font-semibold text-olive-900 mb-3">
               🎯 Available Domains for "{businessName}"
             </h4>
             
             {isCheckingAvailability ? (
               <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
                 <p className="text-sm text-gray-600 mt-2">Checking availability...</p>
               </div>
             ) : (
@@ -168,7 +168,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
                     className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
                       item.available 
                         ? selectedNewDomain === item.domain 
-                          ? 'border-blue-500 bg-white shadow-sm'
+                          ? 'border-olive-500 bg-white shadow-sm'
                           : 'border-gray-200 hover:border-gray-300 bg-white'
                         : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
                     }`}
@@ -216,7 +216,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
           <button 
             onClick={() => onDomainSelect({ type: 'buy', domain: selectedNewDomain })}
             disabled={!selectedNewDomain}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-olive-600 text-white rounded-lg font-medium hover:bg-olive-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Continue with {selectedNewDomain || 'Selected Domain'} →
           </button>
@@ -225,8 +225,8 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
 
       {domainOption === 'existing' && (
         <div className="space-y-4">
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <h4 className="font-semibold text-purple-900 mb-3">
+          <div className="bg-gold-50 border border-gold-200 rounded-lg p-4">
+            <h4 className="font-semibold text-gold-900 mb-3">
               Connect Your Existing Domain
             </h4>
             
@@ -235,12 +235,12 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
               value={customDomain}
               onChange={(e) => setCustomDomain(e.target.value)}
               placeholder="www.yourdomain.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
             />
             
             <div className="mt-4 space-y-3">
               <div className="flex items-start">
-                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">
+                <span className="flex-shrink-0 w-6 h-6 bg-gold-100 text-gold-600 rounded-full flex items-center justify-center text-xs font-bold">
                   1
                 </span>
                 <div className="ml-3">
@@ -250,7 +250,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
               </div>
               
               <div className="flex items-start">
-                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">
+                <span className="flex-shrink-0 w-6 h-6 bg-gold-100 text-gold-600 rounded-full flex items-center justify-center text-xs font-bold">
                   2
                 </span>
                 <div className="ml-3">
@@ -260,7 +260,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
               </div>
               
               <div className="flex items-start">
-                <span className="flex-shrink-0 w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-xs font-bold">
+                <span className="flex-shrink-0 w-6 h-6 bg-gold-100 text-gold-600 rounded-full flex items-center justify-center text-xs font-bold">
                   3
                 </span>
                 <div className="ml-3">
@@ -270,8 +270,8 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
               </div>
             </div>
             
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-xs text-blue-800">
+            <div className="mt-4 p-3 bg-olive-50 rounded-lg">
+              <p className="text-xs text-olive-800">
                 <strong>🛡️ Don't worry!</strong> Our support team will help you every step of the way. 
                 Works with GoDaddy, Namecheap, Google Domains, and all major providers.
               </p>
@@ -281,7 +281,7 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
           <button 
             onClick={() => onDomainSelect({ type: 'existing', domain: customDomain })}
             disabled={!customDomain}
-            className="w-full py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-gold-600 text-white rounded-lg font-medium hover:bg-gold-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Continue with My Domain →
           </button>

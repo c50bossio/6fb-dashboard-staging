@@ -146,7 +146,7 @@ export default function ClearAllPage() {
           <div className="text-center">
             {!cleared ? (
               <>
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
                 <h2 className="mt-4 text-xl font-semibold text-gray-900">
                   Clearing all browser data...
                 </h2>
@@ -182,7 +182,7 @@ export default function ClearAllPage() {
         <div className="mt-6 text-center">
           <button
             onClick={() => router.push('/login')}
-            className="text-sm text-blue-600 hover:text-blue-500"
+            className="text-sm text-olive-600 hover:text-olive-500"
           >
             Go to login now →
           </button>

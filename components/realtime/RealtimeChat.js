@@ -180,7 +180,7 @@ export default function RealtimeChat({ className = '' }) {
             <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-xs sm:max-w-md px-4 py-2 rounded-lg ${
                 msg.role === 'user'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-olive-600 text-white'
                   : msg.error
                   ? 'bg-red-50 text-red-800 border border-red-200'
                   : 'bg-gray-100 text-gray-800'
@@ -192,7 +192,7 @@ export default function RealtimeChat({ className = '' }) {
                   <div className="flex items-center justify-between mt-2 text-xs opacity-75">
                     <div className="flex items-center space-x-2">
                       {msg.knowledgeEnhanced && (
-                        <span className="bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-xs">
+                        <span className="bg-gold-100 text-gold-800 px-1.5 py-0.5 rounded text-xs">
                           RAG Enhanced
                         </span>
                       )}
@@ -259,13 +259,13 @@ export default function RealtimeChat({ className = '' }) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Ask about your business performance..."
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent text-sm"
             disabled={isTyping}
           />
           <button
             type="submit"
             disabled={!message.trim() || isTyping}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <PaperAirplaneIcon className="h-4 w-4" />
           </button>

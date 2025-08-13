@@ -692,7 +692,7 @@ export default function FloatingAIChat() {
                 Online
               </div>
               {contextLoaded && businessContext && (
-                <div className="bg-blue-400 text-blue-900 text-xs px-2 py-0.5 rounded-full font-bold" title="Enhanced with comprehensive business context">
+                <div className="bg-olive-400 text-olive-900 text-xs px-2 py-0.5 rounded-full font-bold" title="Enhanced with comprehensive business context">
                   Enhanced
                 </div>
               )}

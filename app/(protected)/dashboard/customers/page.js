@@ -108,8 +108,8 @@ export default function CustomersPage() {
 
   const getSegmentColor = (segment) => {
     switch (segment) {
-      case 'vip': return 'bg-purple-100 text-purple-800'
-      case 'regular': return 'bg-blue-100 text-blue-800'
+      case 'vip': return 'bg-gold-100 text-gold-800'
+      case 'regular': return 'bg-olive-100 text-olive-800'
       case 'new': return 'bg-green-100 text-green-800'
       case 'lapsed': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
@@ -274,7 +274,7 @@ export default function CustomersPage() {
           <div className={`mb-6 p-4 rounded-lg ${
             notification.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
             notification.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
-            'bg-blue-50 text-blue-800 border border-blue-200'
+            'bg-olive-50 text-olive-800 border border-olive-200'
           }`}>
             {notification.message}
           </div>
@@ -325,7 +325,7 @@ export default function CustomersPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center">
-              <UserIcon className="h-8 w-8 text-blue-600" />
+              <UserIcon className="h-8 w-8 text-olive-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Customers</p>
                 {loading ? (
@@ -339,7 +339,7 @@ export default function CustomersPage() {
           
           <div className="card">
             <div className="flex items-center">
-              <StarIcon className="h-8 w-8 text-purple-600" />
+              <StarIcon className="h-8 w-8 text-gold-600" />
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">VIP Customers</p>
                 {loading ? (
@@ -508,7 +508,7 @@ export default function CustomersPage() {
                       <div className="flex space-x-2">
                         <button 
                           onClick={() => handleEditCustomer(customer.id)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="text-olive-600 hover:text-olive-900"
                           title="Edit Customer"
                         >
                           <PencilSquareIcon className="h-4 w-4" />

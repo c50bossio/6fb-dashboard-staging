@@ -293,7 +293,7 @@ export default function Navigation() {
   const MobileHeader = () => (
     <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-40">
       <div className="flex items-center">
-        <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+        <div className="h-8 w-8 bg-gradient-to-br from-olive-600 to-gold-600 rounded-lg flex items-center justify-center">
           <SparklesIcon className="h-5 w-5 text-white" />
         </div>
         <div className="ml-3">
@@ -333,7 +333,7 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? (isLegacy ? 'bg-gray-100 shadow-sm' : 'bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 shadow-md') : 'hover:bg-gray-50'} ${isLegacy ? 'opacity-60' : ''}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? (isLegacy ? 'bg-gray-100 shadow-sm' : 'bg-gradient-to-r from-olive-50 to-gold-50 border border-olive-200 shadow-md') : 'hover:bg-gray-50'} ${isLegacy ? 'opacity-60' : ''}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
@@ -342,7 +342,7 @@ export default function Navigation() {
                         ${isActive 
                           ? isLegacy 
                             ? 'text-gray-500' 
-                            : 'text-blue-600' 
+                            : 'text-olive-600' 
                           : 'text-gray-400 group-hover:text-gray-600'
                         }
                       `}
@@ -364,7 +364,7 @@ export default function Navigation() {
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
                             ${isActive 
-                              ? 'bg-blue-100 text-blue-700' 
+                              ? 'bg-olive-100 text-olive-700' 
                               : 'bg-gray-100 text-gray-600'
                             }
                           `}>
@@ -394,7 +394,7 @@ export default function Navigation() {
                         key={submode.mode}
                         href={`${item.href}?mode=${submode.mode}`}
                         onClick={onItemClick}
-                        className="flex items-center gap-2 text-xs text-gray-600 hover:text-blue-600 py-1"
+                        className="flex items-center gap-2 text-xs text-gray-600 hover:text-olive-600 py-1"
                       >
                         <submode.icon className="h-3 w-3" />
                         <span>{submode.name}</span>
@@ -622,13 +622,13 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 shadow-md' : 'hover:bg-gray-50'}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-indigo-50 to-olive-50 border border-indigo-200 shadow-md' : 'hover:bg-gray-50'}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
                       className={`
                         ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
-                        ${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}
+                        ${isActive ? 'text-olive-600' : 'text-gray-400 group-hover:text-gray-600'}
                       `}
                       title={collapsed ? item.name : undefined}
                     />
@@ -644,7 +644,7 @@ export default function Navigation() {
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
                             ${isActive 
-                              ? 'bg-indigo-100 text-indigo-700' 
+                              ? 'bg-indigo-100 text-olive-700' 
                               : 'bg-gray-100 text-gray-600'
                             }
                           `}>
@@ -688,13 +688,13 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 shadow-md' : 'hover:bg-gray-50'}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-gold-50 to-pink-50 border border-gold-200 shadow-md' : 'hover:bg-gray-50'}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
                       className={`
                         ${collapsed ? '' : 'mt-0.5'} h-5 w-5 flex-shrink-0
-                        ${isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-gray-600'}
+                        ${isActive ? 'text-gold-600' : 'text-gray-400 group-hover:text-gray-600'}
                       `}
                       title={collapsed ? item.name : undefined}
                     />
@@ -710,7 +710,7 @@ export default function Navigation() {
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
                             ${isActive 
-                              ? 'bg-purple-100 text-purple-700' 
+                              ? 'bg-gold-100 text-gold-700' 
                               : 'bg-gray-100 text-gray-600'
                             }
                           `}>
@@ -795,7 +795,7 @@ export default function Navigation() {
             {/* Header */}
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center">
-                <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center">
                   <SparklesIcon className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-3">
@@ -855,7 +855,7 @@ export default function Navigation() {
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <div className={`flex items-center ${isCollapsed ? 'hidden' : ''}`}>
-                  <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center">
                     <SparklesIcon className="h-6 w-6 text-white" />
                   </div>
                   <div className="ml-3">

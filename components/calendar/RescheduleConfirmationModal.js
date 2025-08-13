@@ -153,17 +153,17 @@ export default function RescheduleConfirmationModal({
                       </div>
                       
                       {/* New Time */}
-                      <div className="border-2 border-blue-500 rounded-lg p-3 bg-blue-50">
-                        <div className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-1">
+                      <div className="border-2 border-olive-500 rounded-lg p-3 bg-olive-50">
+                        <div className="text-xs font-medium text-olive-600 uppercase tracking-wide mb-1">
                           To (New)
                         </div>
                         <div className="space-y-1">
                           <div className="flex items-center text-sm">
-                            <CalendarIcon className="h-4 w-4 mr-2 text-blue-500" />
+                            <CalendarIcon className="h-4 w-4 mr-2 text-olive-500" />
                             <span className="font-medium">{formatDateTime(newTimeSlot.start)}</span>
                           </div>
                           <div className="flex items-center text-sm">
-                            <UserIcon className="h-4 w-4 mr-2 text-blue-500" />
+                            <UserIcon className="h-4 w-4 mr-2 text-olive-500" />
                             <span className="font-medium">{newBarberName}</span>
                           </div>
                         </div>
@@ -177,7 +177,7 @@ export default function RescheduleConfirmationModal({
                             type="checkbox"
                             checked={notifyCustomer}
                             onChange={(e) => setNotifyCustomer(e.target.checked)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                           />
                           <label htmlFor="notify-customer" className="ml-2 flex items-center text-sm font-medium text-gray-900">
                             <BellIcon className="h-4 w-4 mr-1" />
@@ -198,7 +198,7 @@ export default function RescheduleConfirmationModal({
                                     ...notificationMethods,
                                     email: e.target.checked
                                   })}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                                 />
                                 <label htmlFor="notify-email" className="ml-2 flex items-center text-sm text-gray-700">
                                   <EnvelopeIcon className="h-4 w-4 mr-1" />
@@ -215,7 +215,7 @@ export default function RescheduleConfirmationModal({
                                     ...notificationMethods,
                                     sms: e.target.checked
                                   })}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                                 />
                                 <label htmlFor="notify-sms" className="ml-2 flex items-center text-sm text-gray-700">
                                   <DevicePhoneMobileIcon className="h-4 w-4 mr-1" />
@@ -234,7 +234,7 @@ export default function RescheduleConfirmationModal({
                                 rows={2}
                                 value={customMessage}
                                 onChange={(e) => setCustomMessage(e.target.value)}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 text-sm"
                                 placeholder="e.g., Sorry for the inconvenience..."
                               />
                             </div>
@@ -249,7 +249,7 @@ export default function RescheduleConfirmationModal({
                   <button
                     type="button"
                     disabled={loading}
-                    className="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex w-full justify-center rounded-md bg-olive-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-olive-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleConfirm}
                   >
                     {loading ? (

@@ -101,7 +101,7 @@ export default function ManualEntryForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert className="p-4 border border-blue-200 bg-blue-50 rounded-lg mb-6">
+          <Alert className="p-4 border border-olive-200 bg-olive-50 rounded-lg mb-6">
             <Brain />
             <div className="ml-2">
               <strong>Pro Tip:</strong> Be specific and include measurable results when possible. 
@@ -121,7 +121,7 @@ export default function ManualEntryForm() {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="e.g., Customer Retention Follow-up Strategy"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
                 required
               />
             </div>
@@ -137,7 +137,7 @@ export default function ManualEntryForm() {
                 onChange={handleInputChange}
                 placeholder="Describe the strategy, process, or insight in detail. Include specific metrics, time periods, and results when available."
                 rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
                 required
               />
               <p className="text-sm text-gray-500 mt-1">
@@ -154,7 +154,7 @@ export default function ManualEntryForm() {
                 name="domain"
                 value={formData.domain}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               >
                 {businessDomains.map(domain => (
                   <option key={domain.id} value={domain.id}>
@@ -175,7 +175,7 @@ export default function ManualEntryForm() {
                 value={formData.tags}
                 onChange={handleInputChange}
                 placeholder="e.g., follow-up, retention, text message, 24-48 hours"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               />
             </div>
 
@@ -210,7 +210,7 @@ export default function ManualEntryForm() {
                 className={`w-full px-4 py-2 rounded flex items-center justify-center gap-2 ${
                   !isFormValid || isSubmitting 
                     ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-olive-600 text-white hover:bg-olive-700'
                 }`}
               >
                 {isSubmitting ? (
@@ -258,7 +258,7 @@ export default function ManualEntryForm() {
           <p className="text-gray-600 mb-3">
             For faster entry, you can also chat directly with the AI and say:
           </p>
-          <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+          <div className="bg-gray-50 p-4 rounded-lg border-l-4 border-olive-500">
             <p className="font-mono text-sm">
               "Add this knowledge: [Your strategy/insight here]. Domain: [domain_name]"
             </p>

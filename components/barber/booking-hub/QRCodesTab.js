@@ -60,7 +60,7 @@ export default function QRCodesTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-600"></div>
         <p className="ml-4 text-gray-600">Loading QR codes...</p>
       </div>
     )
@@ -74,7 +74,7 @@ export default function QRCodesTab() {
           <h2 className="text-lg font-semibold text-gray-900">QR Code Manager</h2>
           <p className="text-sm text-gray-600">Generate and manage QR codes for all your booking sources</p>
         </div>
-        <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700">
+        <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gold-600 hover:bg-gold-700">
           <PlusIcon className="h-5 w-5 mr-2" />
           Create QR Code
         </button>
@@ -84,7 +84,7 @@ export default function QRCodesTab() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <QrCodeIcon className="h-8 w-8 text-purple-600" />
+            <QrCodeIcon className="h-8 w-8 text-gold-600" />
             <div className="ml-4">
               <div className="text-2xl font-bold text-gray-900">{qrCodes.length}</div>
               <div className="text-xs text-gray-500">Total QR Codes</div>
@@ -94,7 +94,7 @@ export default function QRCodesTab() {
         
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex items-center">
-            <ArrowDownTrayIcon className="h-8 w-8 text-blue-600" />
+            <ArrowDownTrayIcon className="h-8 w-8 text-olive-600" />
             <div className="ml-4">
               <div className="text-2xl font-bold text-gray-900">
                 {qrCodes.reduce((sum, qr) => sum + qr.downloads, 0)}
@@ -137,9 +137,9 @@ export default function QRCodesTab() {
               <div>
                 <h3 className="font-semibold text-gray-900">{qr.name}</h3>
                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                  qr.type === 'booking' ? 'bg-blue-100 text-blue-800' :
+                  qr.type === 'booking' ? 'bg-olive-100 text-olive-800' :
                   qr.type === 'social' ? 'bg-green-100 text-green-800' :
-                  'bg-purple-100 text-purple-800'
+                  'bg-gold-100 text-gold-800'
                 }`}>
                   {qr.type}
                 </span>
@@ -173,7 +173,7 @@ export default function QRCodesTab() {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4 text-center mb-4">
               <div>
-                <div className="text-lg font-bold text-blue-600">{qr.downloads}</div>
+                <div className="text-lg font-bold text-olive-600">{qr.downloads}</div>
                 <div className="text-xs text-gray-500">Downloads</div>
               </div>
               <div>
@@ -202,12 +202,12 @@ export default function QRCodesTab() {
       </div>
 
       {/* Coming Soon Notice */}
-      <div className="bg-purple-50 border border-purple-200 rounded-xl p-6">
+      <div className="bg-gold-50 border border-gold-200 rounded-xl p-6">
         <div className="flex items-center gap-3">
-          <QrCodeIcon className="h-6 w-6 text-purple-600" />
+          <QrCodeIcon className="h-6 w-6 text-gold-600" />
           <div>
-            <h3 className="font-semibold text-purple-900">Centralized QR Management</h3>
-            <p className="text-sm text-purple-700 mt-1">
+            <h3 className="font-semibold text-gold-900">Centralized QR Management</h3>
+            <p className="text-sm text-gold-700 mt-1">
               This unified QR code manager consolidates all QR generation from Marketing Links, Public Page, 
               and Calendar appointments. Create, customize, and track all your QR codes in one place.
             </p>

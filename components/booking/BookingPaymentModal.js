@@ -206,10 +206,10 @@ export default function BookingPaymentModal({
 
             {/* Payment Types Info */}
             {paymentType === 'deposit' && serviceInfo?.deposit_required && (
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mt-6 p-4 bg-olive-50 border border-olive-200 rounded-lg">
                 <div className="flex items-start space-x-2">
-                  <CheckCircleIcon className="h-5 w-5 text-blue-600 mt-0.5" />
-                  <div className="text-sm text-blue-800">
+                  <CheckCircleIcon className="h-5 w-5 text-olive-600 mt-0.5" />
+                  <div className="text-sm text-olive-800">
                     <p className="font-medium">Deposit Payment</p>
                     <p>
                       You're paying a ${((serviceInfo.base_price * serviceInfo.deposit_percentage) / 100).toFixed(2)} deposit now. 

@@ -39,7 +39,7 @@ import SubscriptionDashboard from '../../../../components/billing/SubscriptionDa
 const ChartLoadingSpinner = () => (
   <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
       <p className="text-sm text-gray-500 mt-2">Loading chart...</p>
     </div>
   </div>
@@ -387,8 +387,8 @@ export default function SettingsPage() {
 
   const getTypeIcon = (type) => {
     return type === 'email' ? 
-      <EnvelopeIcon className="h-5 w-5 text-blue-500" /> : 
-      <PhoneIcon className="h-5 w-5 text-purple-500" />
+      <EnvelopeIcon className="h-5 w-5 text-olive-500" /> : 
+      <PhoneIcon className="h-5 w-5 text-gold-500" />
   }
 
   // Edit/Save/Cancel handlers
@@ -654,7 +654,7 @@ export default function SettingsPage() {
   // Usage breakdown for pie chart
   const usageBreakdown = [
     { name: 'AI Business Coach', value: billingData.usage.ai.cost, color: '#3B82F6' },
-    { name: 'SMS Marketing', value: billingData.usage.sms.cost, color: '#8B5CF6' },
+    { name: 'SMS Marketing', value: billingData.usage.sms.cost, color: '#C5A35B' },
     { name: 'Email Campaigns', value: billingData.usage.email.cost, color: '#10B981' }
   ]
 
@@ -666,10 +666,10 @@ export default function SettingsPage() {
     const successMessage = successMessages[section]
 
     return (
-      <div className={`card ${isEditing ? 'ring-2 ring-blue-500 ring-opacity-50' : ''} ${className}`}>
+      <div className={`card ${isEditing ? 'ring-2 ring-olive-500 ring-opacity-50' : ''} ${className}`}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <Icon className="h-6 w-6 text-blue-600 mr-3" />
+            <Icon className="h-6 w-6 text-olive-600 mr-3" />
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           </div>
           <div className="flex items-center space-x-2">
@@ -685,7 +685,7 @@ export default function SettingsPage() {
                 <button 
                   onClick={() => handleSave(section)} 
                   disabled={isLoading}
-                  className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="px-3 py-1.5 text-sm bg-olive-600 text-white rounded-md hover:bg-olive-700 disabled:opacity-50"
                 >
                   {isLoading ? 'Saving...' : 'Save'}
                 </button>
@@ -724,7 +724,7 @@ export default function SettingsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="text-gray-600 mt-4 text-lg">Loading Settings...</p>
           <p className="text-gray-400 text-sm">Optimizing components for best performance</p>
         </div>
@@ -767,7 +767,7 @@ export default function SettingsPage() {
                     onClick={() => handleSectionChange(section.id)}
                     className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       activeSection === section.id
-                        ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                        ? 'bg-olive-100 text-olive-700 border border-olive-200'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
                   >
@@ -926,7 +926,7 @@ export default function SettingsPage() {
                                 onChange={() => toggleDay(day)}
                                 className="sr-only peer"
                               />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                             </label>
                           ) : (
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -991,7 +991,7 @@ export default function SettingsPage() {
                             {editStates.businessHours && (
                               <button
                                 onClick={() => addShift(day)}
-                                className="flex items-center justify-center w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:text-blue-600 hover:border-blue-300 transition-colors"
+                                className="flex items-center justify-center w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:text-olive-600 hover:border-olive-300 transition-colors"
                               >
                                 <PlusIcon className="h-4 w-4 mr-1" />
                                 Add another shift
@@ -1032,9 +1032,9 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: standardHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-left group"
+                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-blue-900">Standard 9-5</h4>
+                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Standard 9-5</h4>
                         <p className="text-sm text-gray-600 mt-1">Mon-Fri • 9:00 AM - 5:00 PM</p>
                         <p className="text-xs text-gray-500 mt-2">40 hours/week</p>
                       </button>
@@ -1052,9 +1052,9 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: barbershopHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-left group"
+                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-blue-900">Classic Barbershop</h4>
+                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Classic Barbershop</h4>
                         <p className="text-sm text-gray-600 mt-1">Tue-Sun • Closed Mondays</p>
                         <p className="text-xs text-gray-500 mt-2">56 hours/week</p>
                       </button>
@@ -1072,9 +1072,9 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: extendedHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-left group"
+                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-blue-900">Extended Hours</h4>
+                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Extended Hours</h4>
                         <p className="text-sm text-gray-600 mt-1">7 days • Early to late</p>
                         <p className="text-xs text-gray-500 mt-2">75 hours/week</p>
                       </button>
@@ -1092,16 +1092,16 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: weekendHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors text-left group"
+                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-blue-900">Weekend Only</h4>
+                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Weekend Only</h4>
                         <p className="text-sm text-gray-600 mt-1">Sat-Sun only</p>
                         <p className="text-xs text-gray-500 mt-2">15 hours/week</p>
                       </button>
                     </div>
                     
-                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm text-blue-800">
+                    <div className="mt-4 p-3 bg-olive-50 border border-olive-200 rounded-lg">
+                      <p className="text-sm text-olive-800">
                         💡 <strong>Tip:</strong> Most barbershops find success with 50-60 hours per week, including evenings and weekends when customers are available.
                       </p>
                     </div>
@@ -1136,7 +1136,7 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -1163,7 +1163,7 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -1187,7 +1187,7 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -1211,7 +1211,7 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -1235,7 +1235,7 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -1256,9 +1256,9 @@ export default function SettingsPage() {
                     <button
                       onClick={() => sendTestNotification('email')}
                       disabled={loading.testNotifications}
-                      className="flex items-center justify-center space-x-3 p-4 border-2 border-blue-200 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50"
+                      className="flex items-center justify-center space-x-3 p-4 border-2 border-olive-200 rounded-lg hover:bg-olive-50 transition-colors disabled:opacity-50"
                     >
-                      <EnvelopeIcon className="h-8 w-8 text-blue-600" />
+                      <EnvelopeIcon className="h-8 w-8 text-olive-600" />
                       <div className="text-left">
                         <p className="font-semibold text-gray-900">Test Email</p>
                         <p className="text-sm text-gray-600">Send test email</p>
@@ -1268,9 +1268,9 @@ export default function SettingsPage() {
                     <button
                       onClick={() => sendTestNotification('sms')}
                       disabled={loading.testNotifications}
-                      className="flex items-center justify-center space-x-3 p-4 border-2 border-purple-200 rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-50"
+                      className="flex items-center justify-center space-x-3 p-4 border-2 border-gold-200 rounded-lg hover:bg-gold-50 transition-colors disabled:opacity-50"
                     >
-                      <PhoneIcon className="h-8 w-8 text-purple-600" />
+                      <PhoneIcon className="h-8 w-8 text-gold-600" />
                       <div className="text-left">
                         <p className="font-semibold text-gray-900">Test SMS</p>
                         <p className="text-sm text-gray-600">Send test SMS</p>
@@ -1381,7 +1381,7 @@ export default function SettingsPage() {
                 <div className="card">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center">
-                      <KeyIcon className="h-6 w-6 text-blue-600 mr-3" />
+                      <KeyIcon className="h-6 w-6 text-olive-600 mr-3" />
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">Multi-Factor Authentication</h3>
                         <p className="text-sm text-gray-600">Secure your account with an additional layer of protection</p>
@@ -1389,29 +1389,29 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <div className="bg-gradient-to-r from-olive-50 to-indigo-50 border border-olive-200 rounded-lg p-4 mb-6">
                     <div className="flex items-start">
                       <div className="flex-shrink-0">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-md bg-blue-500">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-md bg-olive-500">
                           <CheckCircleIcon className="h-5 w-5 text-white" />
                         </div>
                       </div>
                       <div className="ml-3">
-                        <h3 className="text-sm font-medium text-blue-900">Enhanced Security Available</h3>
-                        <div className="mt-2 text-sm text-blue-800">
+                        <h3 className="text-sm font-medium text-olive-900">Enhanced Security Available</h3>
+                        <div className="mt-2 text-sm text-olive-800">
                           <p>Set up multi-factor authentication to protect your barbershop data and customer information.</p>
                         </div>
                         <div className="mt-4">
                           <div className="flex space-x-4 text-sm">
-                            <div className="flex items-center text-blue-700">
+                            <div className="flex items-center text-olive-700">
                               <CheckCircleIcon className="h-4 w-4 mr-1" />
                               TOTP Authentication
                             </div>
-                            <div className="flex items-center text-blue-700">
+                            <div className="flex items-center text-olive-700">
                               <CheckCircleIcon className="h-4 w-4 mr-1" />
                               Backup Recovery Codes
                             </div>
-                            <div className="flex items-center text-blue-700">
+                            <div className="flex items-center text-olive-700">
                               <CheckCircleIcon className="h-4 w-4 mr-1" />
                               Device Trust Management
                             </div>
@@ -1439,7 +1439,7 @@ export default function SettingsPage() {
                 <div className="card">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center">
-                      <CreditCardIcon className="h-6 w-6 text-blue-600 mr-3" />
+                      <CreditCardIcon className="h-6 w-6 text-olive-600 mr-3" />
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">Subscription & Billing</h3>
                         <p className="text-sm text-gray-600">Manage your subscription plan and payment methods</p>
@@ -1454,7 +1454,7 @@ export default function SettingsPage() {
                 {/* Security Settings */}
                 <div className="card">
                   <div className="flex items-center mb-6">
-                    <KeyIcon className="h-6 w-6 text-blue-600 mr-3" />
+                    <KeyIcon className="h-6 w-6 text-olive-600 mr-3" />
                     <h3 className="text-lg font-semibold text-gray-900">Security Settings</h3>
                   </div>
                   
@@ -1478,7 +1478,7 @@ export default function SettingsPage() {
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" defaultChecked className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                       </label>
                     </div>
                     
@@ -1528,7 +1528,7 @@ export default function SettingsPage() {
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-600">AI Usage</span>
-                      <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                      <div className="h-2 w-2 bg-olive-500 rounded-full"></div>
                     </div>
                     <div className="flex items-baseline">
                       <span className="text-2xl font-bold text-gray-900">${billingData.usage.ai.cost}</span>
@@ -1539,7 +1539,7 @@ export default function SettingsPage() {
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-600">SMS Usage</span>
-                      <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
+                      <div className="h-2 w-2 bg-gold-500 rounded-full"></div>
                     </div>
                     <div className="flex items-baseline">
                       <span className="text-2xl font-bold text-gray-900">${billingData.usage.sms.cost}</span>
@@ -1654,7 +1654,7 @@ export default function SettingsPage() {
                           <Tooltip formatter={(value) => `$${value}`} />
                           <Legend />
                           <Line type="monotone" dataKey="ai" stroke="#3B82F6" name="AI" strokeWidth={2} />
-                          <Line type="monotone" dataKey="sms" stroke="#8B5CF6" name="SMS" strokeWidth={2} />
+                          <Line type="monotone" dataKey="sms" stroke="#C5A35B" name="SMS" strokeWidth={2} />
                           <Line type="monotone" dataKey="email" stroke="#10B981" name="Email" strokeWidth={2} />
                         </LineChart>
                       </ResponsiveContainer>
@@ -1772,9 +1772,9 @@ export default function SettingsPage() {
                               <option value="Enterprise">Enterprise - $199/month</option>
                             </select>
                           </div>
-                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-                            <h4 className="font-medium text-blue-900 mb-1">Plan Change Impact</h4>
-                            <p className="text-sm text-blue-800">
+                          <div className="p-4 bg-olive-50 border border-olive-200 rounded-md">
+                            <h4 className="font-medium text-olive-900 mb-1">Plan Change Impact</h4>
+                            <p className="text-sm text-olive-800">
                               Changes will be prorated and applied on your next billing cycle ({billingData.subscription.nextBilling}).
                             </p>
                           </div>

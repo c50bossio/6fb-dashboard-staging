@@ -49,7 +49,7 @@
 
 /* Gradient text utility */
 .gradient-text {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #3C4A3E, #C5A35B); /* Deep Olive to Rich Gold */
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -57,7 +57,7 @@
 
 /* Brand gradient backgrounds */
 .hero-gradient {
-  background: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #be185d 100%);
+  background: linear-gradient(135deg, #3C4A3E 0%, #C5A35B 50%, #2A352D 100%); /* Deep Olive to Gold to Dark Olive */
 }
 
 .section-padding {
@@ -82,7 +82,7 @@
 }
 
 .focus-visible-ring:focus-visible {
-  outline-color: #3b82f6;
+  outline-color: #3C4A3E; /* Deep Olive */
   outline-offset: 2px;
 }
 
@@ -139,23 +139,23 @@
 
 /* Form validation states */
 .form-field-valid {
-  border-color: #10b981;
-  background-color: #f0fdf4;
+  border-color: #6BA368; /* Moss Green */
+  background-color: rgba(107, 163, 104, 0.08);
 }
 
 .form-field-error {
-  border-color: #ef4444;
-  background-color: #fef2f2;
+  border-color: #D9534F; /* Soft Red */
+  background-color: rgba(217, 83, 79, 0.08);
 }
 
 .form-field-focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #3C4A3E; /* Deep Olive */
+  box-shadow: 0 0 0 3px rgba(60, 74, 62, 0.1);
 }
 
 /* Navigation active states */
 .nav-item-active {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #3C4A3E, #C5A35B); /* Deep Olive to Rich Gold */
   color: white;
 }
 
@@ -164,8 +164,8 @@
 }
 
 .nav-item-hover:hover {
-  background-color: rgba(59, 130, 246, 0.1);
-  color: #1e40af;
+  background-color: rgba(60, 74, 62, 0.1); /* Deep Olive with opacity */
+  color: #3C4A3E;
 }
 
 /* Card variants with consistent shadows */
@@ -315,7 +315,7 @@
 
 /* Focus management */
 .focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #3C4A3E; /* Deep Olive */
   outline-offset: 2px;
 }
 
@@ -393,7 +393,7 @@
 /* Better tap highlights */
 @media (max-width: 1023px) {
   * {
-    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+    -webkit-tap-highlight-color: rgba(60, 74, 62, 0.1);
   }
 }
 
@@ -416,7 +416,7 @@
 }
 
 .focus-trap:focus-within {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #3C4A3E; /* Deep Olive */
   outline-offset: 2px;
   border-radius: 0.5rem;
 }

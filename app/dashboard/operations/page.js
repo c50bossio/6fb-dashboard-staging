@@ -39,14 +39,14 @@ const QUICK_ACTIONS = [
   { 
     name: 'Staff Check-in', 
     icon: UserGroupIcon, 
-    color: 'bg-blue-500 hover:bg-blue-600',
+    color: 'bg-olive-500 hover:bg-olive-600',
     description: 'Mark staff attendance',
     href: '/dashboard/staff'
   },
   { 
     name: 'Capacity Planning', 
     icon: LightBulbIcon, 
-    color: 'bg-indigo-500 hover:bg-indigo-600',
+    color: 'bg-olive-500 hover:bg-olive-600',
     description: 'AI-powered capacity optimization',
     href: '/dashboard/capacity-planning'
   },
@@ -174,7 +174,7 @@ export default function OperationsPage() {
     switch(type) {
       case 'warning': return 'text-amber-600 bg-amber-50'
       case 'success': return 'text-green-600 bg-green-50'
-      default: return 'text-blue-600 bg-blue-50'
+      default: return 'text-olive-600 bg-olive-50'
     }
   }
 
@@ -295,7 +295,7 @@ export default function OperationsPage() {
 
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <CalendarIcon className="h-8 w-8 text-blue-600" />
+                    <CalendarIcon className="h-8 w-8 text-olive-600" />
                     <span className="text-sm font-medium text-gray-500">
                       {operationalData?.completedAppointments}/{operationalData?.todayAppointments}
                     </span>
@@ -307,7 +307,7 @@ export default function OperationsPage() {
 
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <UserGroupIcon className="h-8 w-8 text-purple-600" />
+                    <UserGroupIcon className="h-8 w-8 text-gold-600" />
                     <span className="text-sm font-medium text-gray-500">
                       {operationalData?.currentStaff}/{operationalData?.totalStaff}
                     </span>
@@ -363,7 +363,7 @@ export default function OperationsPage() {
                         {operationalData?.recentActivity.map((activity, index) => (
                           <div key={index} className="flex items-start space-x-3">
                             <div className="flex-shrink-0">
-                              <div className="h-2 w-2 bg-blue-600 rounded-full mt-1.5"></div>
+                              <div className="h-2 w-2 bg-olive-600 rounded-full mt-1.5"></div>
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-900">{activity.action}</p>
@@ -400,7 +400,7 @@ export default function OperationsPage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <ClockIcon className="h-5 w-5 text-blue-600" />
+                          <ClockIcon className="h-5 w-5 text-olive-600" />
                           <span className="text-sm text-gray-700">Last Backup</span>
                         </div>
                         <span className="text-sm font-medium text-gray-600">{operationalData?.lastBackup}</span>
@@ -450,7 +450,7 @@ export default function OperationsPage() {
                           <span className="text-sm font-medium text-gray-900">{operationalData?.averageServiceTime} min</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{width: '70%'}}></div>
+                          <div className="bg-olive-600 h-2 rounded-full" style={{width: '70%'}}></div>
                         </div>
                       </div>
                       <div>

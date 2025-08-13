@@ -68,7 +68,7 @@ const TimePickerDropdown = ({ value, onChange, placeholder = "Select time", clas
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 text-left border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="w-full flex items-center justify-between px-3 py-2 text-left border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
       >
         <span className={value ? 'text-gray-900' : 'text-gray-500'}>
           {getDisplayValue(value)}
@@ -90,8 +90,8 @@ const TimePickerDropdown = ({ value, onChange, placeholder = "Select time", clas
                     onChange(time.value)
                     setIsOpen(false)
                   }}
-                  className={`px-2 py-1 text-xs rounded hover:bg-blue-50 transition-colors ${
-                    value === time.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                  className={`px-2 py-1 text-xs rounded hover:bg-olive-50 transition-colors ${
+                    value === time.value ? 'bg-olive-100 text-olive-700' : 'text-gray-700'
                   }`}
                 >
                   {time.label}
@@ -112,7 +112,7 @@ const TimePickerDropdown = ({ value, onChange, placeholder = "Select time", clas
                   setIsOpen(false)
                 }}
                 className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${
-                  value === option.value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-900'
+                  value === option.value ? 'bg-olive-50 text-olive-700 font-medium' : 'text-gray-900'
                 }`}
               >
                 {option.label}

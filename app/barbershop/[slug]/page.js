@@ -46,7 +46,7 @@ export default function BarbershopPublicPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading barbershop...</p>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function BarbershopPublicPage() {
           <p className="text-gray-600 mb-6">{error}</p>
           <a 
             href="/"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-olive-600 text-white px-6 py-3 rounded-lg hover:bg-olive-700 transition-colors"
           >
             Back to Home
           </a>

@@ -30,7 +30,7 @@ export async function GET() {
         .logo {
             width: 48px;
             height: 48px;
-            background: #3b82f6;
+            background: #546355;
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -64,13 +64,13 @@ export async function GET() {
         }
         input:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #546355;
+            box-shadow: 0 0 0 3px rgba(60, 74, 62, 0.1);
         }
         button {
             width: 100%;
             padding: 0.75rem;
-            background: #3b82f6;
+            background: #546355;
             color: white;
             border: none;
             border-radius: 6px;
@@ -80,7 +80,7 @@ export async function GET() {
             margin-top: 1rem;
         }
         button:hover {
-            background: #2563eb;
+            background: #3C4A3E;
         }
         button:disabled {
             opacity: 0.5;
@@ -109,7 +109,7 @@ export async function GET() {
             color: #6b7280;
         }
         .help a {
-            color: #3b82f6;
+            color: #546355;
             text-decoration: none;
         }
         .help a:hover {

@@ -112,7 +112,7 @@ function ResetPasswordContent() {
             
             <Link
               href="/login"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
             >
               Go to login now
             </Link>
@@ -126,7 +126,7 @@ function ResetPasswordContent() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="h-12 w-12 bg-olive-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">6FB</span>
           </div>
         </div>
@@ -162,7 +162,7 @@ function ResetPasswordContent() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm"
                   placeholder="Enter new password"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -199,7 +199,7 @@ function ResetPasswordContent() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm"
                   placeholder="Confirm new password"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -224,8 +224,8 @@ function ResetPasswordContent() {
                 disabled={isLoading}
                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
                   isLoading
-                    ? 'bg-blue-400 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                    ? 'bg-olive-400 cursor-not-allowed' 
+                    : 'bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500'
                 }`}
               >
                 {isLoading ? (
@@ -243,15 +243,15 @@ function ResetPasswordContent() {
           <div className="mt-6">
             <Link
               href="/login"
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
             >
               Back to login
             </Link>
           </div>
 
           <div className="mt-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-              <p className="text-xs text-blue-800">
+            <div className="bg-olive-50 border border-olive-200 rounded-md p-3">
+              <p className="text-xs text-olive-800">
                 💡 <strong>Security tip:</strong> Choose a strong password that you don't use elsewhere.
               </p>
             </div>

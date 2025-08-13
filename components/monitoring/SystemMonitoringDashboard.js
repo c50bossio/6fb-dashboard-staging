@@ -170,7 +170,7 @@ export default function SystemMonitoringDashboard() {
           </button>
           <button
             onClick={handleRefresh}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
           >
             🔄 Refresh
           </button>
@@ -320,7 +320,7 @@ function MetricCard({ title, value, status = 'healthy', icon }) {
 function ServiceCard({ name, service }) {
   const statusColors = {
     healthy: 'bg-green-100 text-green-800',
-    configured: 'bg-blue-100 text-blue-800',
+    configured: 'bg-olive-100 text-olive-800',
     not_configured: 'bg-gray-100 text-gray-800',
     error: 'bg-red-100 text-red-800',
   }
@@ -350,7 +350,7 @@ function ServiceCard({ name, service }) {
       )}
       
       {service.test_mode && (
-        <p className="text-xs text-blue-600 mt-1">Test Mode</p>
+        <p className="text-xs text-olive-600 mt-1">Test Mode</p>
       )}
     </div>
   )
@@ -379,7 +379,7 @@ function ResourceCard({ title, used, total, unit, threshold, value }) {
       
       <div className="w-full bg-gray-200 rounded-full h-2">
         <div 
-          className={`h-2 rounded-full ${isHigh ? 'bg-red-500' : 'bg-blue-500'}`}
+          className={`h-2 rounded-full ${isHigh ? 'bg-red-500' : 'bg-olive-500'}`}
           style={{ width: `${Math.min(percentage, 100)}%` }}
         ></div>
       </div>
@@ -396,7 +396,7 @@ function AlertCard({ alert, onDismiss }) {
   const alertColors = {
     critical: 'bg-red-50 border-red-200 text-red-800',
     warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
+    info: 'bg-olive-50 border-olive-200 text-olive-800',
     performance: 'bg-orange-50 border-orange-200 text-orange-800',
   }
 

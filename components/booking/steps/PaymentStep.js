@@ -242,7 +242,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
               <span className="font-semibold">
                 {paymentMethod === 'online' ? 'Pay Now' : 'Total Due'}
               </span>
-              <span className="text-xl font-bold text-blue-600">
+              <span className="text-xl font-bold text-olive-600">
                 ${paymentMethod === 'online' ? paymentAmount.toFixed(2) : totalAmount.toFixed(2)}
               </span>
             </div>
@@ -260,7 +260,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
               onClick={() => handlePaymentMethodChange('online')}
               className={`relative p-4 rounded-lg border-2 transition-all ${
                 paymentMethod === 'online'
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-olive-500 bg-olive-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -270,7 +270,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
               
               {paymentMethod === 'online' && (
                 <div className="absolute top-2 right-2">
-                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                  <div className="w-5 h-5 bg-olive-600 rounded-full flex items-center justify-center">
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -283,7 +283,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
               onClick={() => handlePaymentMethodChange('in-person')}
               className={`relative p-4 rounded-lg border-2 transition-all ${
                 paymentMethod === 'in-person'
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-olive-500 bg-olive-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -293,7 +293,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
               
               {paymentMethod === 'in-person' && (
                 <div className="absolute top-2 right-2">
-                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                  <div className="w-5 h-5 bg-olive-600 rounded-full flex items-center justify-center">
                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -318,7 +318,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
               type="text"
               value={customerInfo.name}
               onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
               placeholder="Enter your name"
             />
           </div>
@@ -332,7 +332,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
                 type="email"
                 value={customerInfo.email}
                 onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
                 placeholder="john@example.com"
               />
             </div>
@@ -345,7 +345,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
                 type="tel"
                 value={customerInfo.phone}
                 onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
                 placeholder="(555) 123-4567"
               />
             </div>
@@ -374,14 +374,14 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
                       setSelectedCard(card.id)
                       setUseNewCard(false)
                     }}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                    className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                   />
                   <div className="ml-3 flex-1">
                     <div className="flex items-center">
                       <span className="text-lg mr-2">{getCardBrandIcon(card.brand)}</span>
                       <span className="font-medium">{card.brand} •••• {card.last4}</span>
                       {card.isDefault && (
-                        <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        <span className="ml-2 px-2 py-0.5 bg-olive-100 text-olive-800 text-xs rounded-full">
                           Default
                         </span>
                       )}
@@ -414,7 +414,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                   />
                   <span className="ml-2 text-sm text-gray-600">
                     Save this card for future appointments
@@ -475,7 +475,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
           className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center ${
             processing
               ? 'bg-gray-400 text-white cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-olive-600 text-white hover:bg-olive-700'
           }`}
         >
           {processing ? (

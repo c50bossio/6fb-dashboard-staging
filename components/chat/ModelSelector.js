@@ -51,13 +51,13 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
         <>
           <Listbox.Label className="block text-sm font-medium text-gray-700">AI Model</Listbox.Label>
           <div className="relative mt-1">
-            <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+            <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
               <div className="flex items-center">
                 <span className={classNames(
                   'inline-block h-2 w-2 flex-shrink-0 rounded-full',
                   selected.provider === 'openai' ? 'bg-green-400' : 
-                  selected.provider === 'anthropic' ? 'bg-purple-400' : 
-                  selected.provider === 'google' ? 'bg-blue-400' : 'bg-gray-400'
+                  selected.provider === 'anthropic' ? 'bg-gold-400' : 
+                  selected.provider === 'google' ? 'bg-olive-400' : 'bg-gray-400'
                 )} />
                 <span className="ml-3 block truncate">
                   {selected.name}
@@ -82,7 +82,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                     key={model.id}
                     className={({ active }) =>
                       classNames(
-                        active ? 'text-white bg-indigo-600' : 'text-gray-900',
+                        active ? 'text-white bg-olive-600' : 'text-gray-900',
                         'relative cursor-default select-none py-2 pl-3 pr-9'
                       )
                     }
@@ -94,8 +94,8 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                           <span className={classNames(
                             'inline-block h-2 w-2 flex-shrink-0 rounded-full',
                             model.provider === 'openai' ? 'bg-green-400' : 
-                            model.provider === 'anthropic' ? 'bg-purple-400' : 
-                            model.provider === 'google' ? 'bg-blue-400' : 'bg-gray-400'
+                            model.provider === 'anthropic' ? 'bg-gold-400' : 
+                            model.provider === 'google' ? 'bg-olive-400' : 'bg-gray-400'
                           )} />
                           <span className={classNames(
                             selected ? 'font-semibold' : 'font-normal', 
@@ -113,7 +113,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                         {selected ? (
                           <span
                             className={classNames(
-                              active ? 'text-white' : 'text-indigo-600',
+                              active ? 'text-white' : 'text-olive-600',
                               'absolute inset-y-0 right-0 flex items-center pr-4'
                             )}
                           >

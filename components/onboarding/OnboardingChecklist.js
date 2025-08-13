@@ -145,7 +145,7 @@ export default function OnboardingChecklist({
       <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
         {/* Header */}
         <div 
-          className="px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-pointer"
+          className="px-4 py-3 bg-gradient-to-r from-olive-500 to-olive-600 text-white cursor-pointer"
           onClick={handleToggleMinimize}
         >
           <div className="flex items-center justify-between">
@@ -168,7 +168,7 @@ export default function OnboardingChecklist({
           </div>
           
           {/* Progress Bar */}
-          <div className="mt-2 bg-blue-400 rounded-full h-2 overflow-hidden">
+          <div className="mt-2 bg-olive-400 rounded-full h-2 overflow-hidden">
             <div
               className="h-full bg-white rounded-full transition-all duration-500"
               style={{ width: `${progressPercentage}%` }}
@@ -219,7 +219,7 @@ export default function OnboardingChecklist({
                     className={`p-3 rounded-lg border transition-all ${
                       isCompleted
                         ? 'bg-green-50 border-green-200'
-                        : 'bg-white border-gray-200 hover:border-blue-300 cursor-pointer'
+                        : 'bg-white border-gray-200 hover:border-olive-300 cursor-pointer'
                     }`}
                   >
                     <div className="flex items-start">
@@ -254,7 +254,7 @@ export default function OnboardingChecklist({
                           {item.description}
                         </p>
                         {item.milestone && !isCompleted && (
-                          <span className="inline-flex items-center mt-1 text-xs text-blue-600">
+                          <span className="inline-flex items-center mt-1 text-xs text-olive-600">
                             <TrophyIcon className="w-3 h-3 mr-1" />
                             Milestone
                           </span>

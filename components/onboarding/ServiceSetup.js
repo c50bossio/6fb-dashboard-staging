@@ -131,12 +131,12 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
     <div className="space-y-6">
       {/* AI Pricing Suggestion */}
       {pricingSuggestion && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
           <div className="flex items-start">
-            <InformationCircleIcon className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+            <InformationCircleIcon className="w-5 h-5 text-olive-600 mr-2 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-medium text-blue-900">{pricingSuggestion.message}</p>
-              <div className="mt-1 text-blue-700">
+              <p className="font-medium text-olive-900">{pricingSuggestion.message}</p>
+              <div className="mt-1 text-olive-700">
                 Haircuts: {pricingSuggestion.ranges.haircut} • 
                 Beard: {pricingSuggestion.ranges.beard} • 
                 Combo: {pricingSuggestion.ranges.combo}
@@ -164,7 +164,7 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
                 onClick={() => handleToggleService(template)}
                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-olive-500 bg-olive-50'
                     : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
               >
@@ -184,7 +184,7 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                     isSelected 
-                      ? 'border-blue-500 bg-blue-500' 
+                      ? 'border-olive-500 bg-olive-500' 
                       : 'border-gray-300'
                   }`}>
                     {isSelected && (
@@ -271,7 +271,7 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
         {!showCustomForm ? (
           <button
             onClick={() => setShowCustomForm(true)}
-            className="flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm"
+            className="flex items-center text-olive-600 hover:text-olive-700 font-medium text-sm"
           >
             <PlusIcon className="w-4 h-4 mr-1" />
             Add custom service
@@ -317,7 +317,7 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
               <button
                 onClick={handleAddCustomService}
                 disabled={!customService.name || customService.price <= 0}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300"
+                className="px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700 disabled:bg-gray-300"
               >
                 Add Service
               </button>
@@ -345,7 +345,7 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
           disabled={services.length === 0}
           className={`px-6 py-3 rounded-lg font-medium transition-all ${
             services.length > 0
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-olive-600 text-white hover:bg-olive-700'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >

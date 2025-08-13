@@ -11,14 +11,14 @@ export default function TermsOfService() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 bg-olive-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">6FB</span>
               </div>
               <span className="text-xl font-bold text-gray-900">BookedBarber</span>
             </Link>
             
             <div className="flex items-center space-x-6">
-              <Link href="/" className="text-gray-600 hover:text-blue-600 flex items-center">
+              <Link href="/" className="text-gray-600 hover:text-olive-600 flex items-center">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -88,7 +88,7 @@ export default function TermsOfService() {
                 <strong>Help:</strong> For help with SMS services, reply HELP to any message or contact support@bookedbarber.com.
               </p>
               <p className="text-gray-600 mb-4">
-                For complete SMS terms, please see our <Link href="/sms-policy" className="text-blue-600 hover:underline">SMS Messaging Policy</Link>.
+                For complete SMS terms, please see our <Link href="/sms-policy" className="text-olive-600 hover:underline">SMS Messaging Policy</Link>.
               </p>
             </section>
 
@@ -135,7 +135,7 @@ export default function TermsOfService() {
             <section className="mb-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">7. Privacy and Data Protection</h2>
               <p className="text-gray-600 mb-4">
-                Your use of our services is also governed by our <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>, 
+                Your use of our services is also governed by our <Link href="/privacy" className="text-olive-600 hover:underline">Privacy Policy</Link>, 
                 which describes how we collect, use, and protect your personal information.
               </p>
             </section>
@@ -195,9 +195,9 @@ export default function TermsOfService() {
           <div className="mt-12 pt-8 border-t border-gray-200">
             <p className="text-sm text-gray-500 text-center">
               © 2025 BookedBarber. All rights reserved. | 
-              <Link href="/privacy" className="ml-2 text-blue-600 hover:underline">Privacy Policy</Link> | 
-              <Link href="/sms-policy" className="ml-2 text-blue-600 hover:underline">SMS Policy</Link> | 
-              <Link href="/contact" className="ml-2 text-blue-600 hover:underline">Contact Us</Link>
+              <Link href="/privacy" className="ml-2 text-olive-600 hover:underline">Privacy Policy</Link> | 
+              <Link href="/sms-policy" className="ml-2 text-olive-600 hover:underline">SMS Policy</Link> | 
+              <Link href="/contact" className="ml-2 text-olive-600 hover:underline">Contact Us</Link>
             </p>
           </div>
         </div>

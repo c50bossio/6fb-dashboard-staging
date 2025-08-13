@@ -153,7 +153,7 @@ export default function AICoachPanel({ data }) {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <ChatBubbleLeftRightIcon className="h-6 w-6 text-indigo-500" />
+              <ChatBubbleLeftRightIcon className="h-6 w-6 text-olive-500" />
               Conversation with {selectedCoach.name}
             </h3>
             <button
@@ -171,11 +171,11 @@ export default function AICoachPanel({ data }) {
                 <div className="flex-1">
                   <p className="text-sm text-gray-700">{insight}</p>
                   <div className="mt-2 flex items-center gap-2">
-                    <button className="text-xs text-indigo-600 hover:text-indigo-800">
+                    <button className="text-xs text-olive-600 hover:text-indigo-800">
                       Learn more
                     </button>
                     <span className="text-gray-300">•</span>
-                    <button className="text-xs text-indigo-600 hover:text-indigo-800">
+                    <button className="text-xs text-olive-600 hover:text-indigo-800">
                       Take action
                     </button>
                   </div>
@@ -191,7 +191,7 @@ export default function AICoachPanel({ data }) {
                 placeholder={`Ask ${selectedCoach.name} a question...`}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
-              <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600 transition-colors">
+              <button className="px-4 py-2 bg-olive-500 text-white rounded-lg text-sm hover:bg-olive-600 transition-colors">
                 Send
               </button>
             </div>
@@ -269,7 +269,7 @@ const RecommendationCard = ({ recommendation }) => {
   const impactColors = {
     high: 'bg-red-50 border-red-200',
     medium: 'bg-amber-50 border-amber-200',
-    low: 'bg-blue-50 border-blue-200'
+    low: 'bg-olive-50 border-olive-200'
   }
 
   const confidenceLevel = Math.round(recommendation.confidence * 100)
@@ -291,7 +291,7 @@ const RecommendationCard = ({ recommendation }) => {
             </span>
           </div>
         </div>
-        <button className="px-3 py-1 bg-white rounded-lg text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition-colors">
+        <button className="px-3 py-1 bg-white rounded-lg text-sm font-medium text-olive-600 hover:bg-indigo-50 transition-colors">
           Implement
         </button>
       </div>

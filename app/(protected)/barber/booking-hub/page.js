@@ -61,17 +61,17 @@ export default function BookingHub() {
   const getTabColorClasses = (color, isActive) => {
     const colorMap = {
       blue: isActive 
-        ? 'border-blue-500 text-blue-600 bg-blue-50' 
-        : 'border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-300',
+        ? 'border-olive-500 text-olive-600 bg-olive-50' 
+        : 'border-transparent text-gray-500 hover:text-olive-600 hover:border-olive-300',
       green: isActive 
         ? 'border-green-500 text-green-600 bg-green-50' 
         : 'border-transparent text-gray-500 hover:text-green-600 hover:border-green-300',
       purple: isActive 
-        ? 'border-purple-500 text-purple-600 bg-purple-50' 
-        : 'border-transparent text-gray-500 hover:text-purple-600 hover:border-purple-300',
+        ? 'border-gold-500 text-gold-600 bg-gold-50' 
+        : 'border-transparent text-gray-500 hover:text-gold-600 hover:border-gold-300',
       indigo: isActive 
-        ? 'border-indigo-500 text-indigo-600 bg-indigo-50' 
-        : 'border-transparent text-gray-500 hover:text-indigo-600 hover:border-indigo-300',
+        ? 'border-olive-500 text-olive-600 bg-indigo-50' 
+        : 'border-transparent text-gray-500 hover:text-olive-600 hover:border-indigo-300',
       orange: isActive 
         ? 'border-orange-500 text-orange-600 bg-orange-50' 
         : 'border-transparent text-gray-500 hover:text-orange-600 hover:border-orange-300'
@@ -105,9 +105,9 @@ export default function BookingHub() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                  <LinkIcon className="h-8 w-8 text-blue-600" />
+                  <LinkIcon className="h-8 w-8 text-olive-600" />
                   Booking Hub
-                  <span className="text-sm font-medium bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                  <span className="text-sm font-medium bg-olive-100 text-olive-800 px-2 py-1 rounded-full">
                     All-in-One
                   </span>
                 </h1>
@@ -119,7 +119,7 @@ export default function BookingHub() {
               {/* Quick Stats */}
               <div className="hidden md:flex items-center space-x-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">3</div>
+                  <div className="text-2xl font-bold text-olive-600">3</div>
                   <div className="text-xs text-gray-500">Active Links</div>
                 </div>
                 <div className="text-center">
@@ -127,7 +127,7 @@ export default function BookingHub() {
                   <div className="text-xs text-gray-500">Total Clicks</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-600">6</div>
+                  <div className="text-2xl font-bold text-gold-600">6</div>
                   <div className="text-xs text-gray-500">QR Codes</div>
                 </div>
               </div>
@@ -157,7 +157,7 @@ export default function BookingHub() {
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">3</span>
                   )}
                   {tab.id === 'qr-codes' && (
-                    <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">6</span>
+                    <span className="bg-gold-100 text-gold-800 text-xs px-2 py-1 rounded-full">6</span>
                   )}
                 </button>
               )

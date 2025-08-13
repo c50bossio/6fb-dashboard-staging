@@ -69,12 +69,12 @@ export default function AdvancedRAGPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-olive-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3">
-            <Brain className="w-12 h-12 text-blue-600" />
+            <Brain className="w-12 h-12 text-olive-600" />
             <h1 className="text-4xl font-bold text-gray-900">Advanced RAG System</h1>
           </div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -106,7 +106,7 @@ export default function AdvancedRAGPage() {
                       onClick={() => setSelectedDomain(domain.id)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedDomain === domain.id
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-olive-600 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
@@ -128,7 +128,7 @@ export default function AdvancedRAGPage() {
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask about barbershop best practices, optimization strategies, or business growth..."
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                 />
                 <Button 
                   onClick={handleSearch}
@@ -152,7 +152,7 @@ export default function AdvancedRAGPage() {
                   <button
                     key={index}
                     onClick={() => setQuery(example)}
-                    className="px-3 py-1 text-sm bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
+                    className="px-3 py-1 text-sm bg-olive-50 text-olive-700 rounded-full hover:bg-olive-100 transition-colors"
                   >
                     {example}
                   </button>
@@ -258,7 +258,7 @@ export default function AdvancedRAGPage() {
                   <CardContent>
                     <ul className="space-y-2">
                       {results.key_insights.map((insight, index) => (
-                        <li key={index} className="text-sm text-gray-700 border-l-2 border-blue-200 pl-3">
+                        <li key={index} className="text-sm text-gray-700 border-l-2 border-olive-200 pl-3">
                           {insight}
                         </li>
                       ))}

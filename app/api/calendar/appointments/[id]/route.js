@@ -10,8 +10,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 // Helper function to transform appointment to calendar event
 function transformBookingToEvent(appointment) {
   // Determine background color based on status
-  let backgroundColor = appointment.barbers?.color || '#3b82f6'
-  let borderColor = appointment.barbers?.color || '#3b82f6'
+  let backgroundColor = appointment.barbers?.color || '#546355'
+  let borderColor = appointment.barbers?.color || '#546355'
   
   if (appointment.status === 'cancelled') {
     backgroundColor = '#ef4444' // Red color for cancelled appointments

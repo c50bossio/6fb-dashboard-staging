@@ -44,7 +44,7 @@ function RegisterConfirmContent() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <div className="flex justify-center">
-          <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="h-12 w-12 bg-olive-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">6FB</span>
           </div>
         </div>
@@ -67,8 +67,8 @@ function RegisterConfirmContent() {
           {/* Email Icon and Info */}
           <div className="text-center">
             <div className="flex justify-center">
-              <div className="bg-blue-100 rounded-full p-3">
-                <EnvelopeIcon className="h-8 w-8 text-blue-600" />
+              <div className="bg-olive-100 rounded-full p-3">
+                <EnvelopeIcon className="h-8 w-8 text-olive-600" />
               </div>
             </div>
             
@@ -80,7 +80,7 @@ function RegisterConfirmContent() {
               We've sent a verification link to:
             </p>
             
-            <p className="mt-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-md px-3 py-2">
+            <p className="mt-1 text-sm font-medium text-olive-600 bg-olive-50 rounded-md px-3 py-2">
               {email}
             </p>
           </div>
@@ -91,15 +91,15 @@ function RegisterConfirmContent() {
               <h4 className="font-medium text-gray-900 mb-2">Next Steps:</h4>
               <ol className="text-sm text-gray-600 space-y-2">
                 <li className="flex items-start">
-                  <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">1</span>
+                  <span className="bg-olive-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">1</span>
                   <span>Check your email inbox (and spam folder)</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">2</span>
+                  <span className="bg-olive-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">2</span>
                   <span>Click the verification link in the email</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">3</span>
+                  <span className="bg-olive-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">3</span>
                   <span>Log in to access your barbershop dashboard</span>
                 </li>
               </ol>
@@ -121,7 +121,7 @@ function RegisterConfirmContent() {
           <div className="mt-6 space-y-3">
             <Link
               href="/login"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500 transition duration-150 ease-in-out"
             >
               Go to Login Page
             </Link>
@@ -132,7 +132,7 @@ function RegisterConfirmContent() {
               className={`w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium transition duration-150 ease-in-out ${
                 isResending 
                   ? 'text-gray-400 bg-gray-100 cursor-not-allowed' 
-                  : 'text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                  : 'text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500'
               }`}
             >
               {isResending ? (
@@ -150,7 +150,7 @@ function RegisterConfirmContent() {
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">
               Didn't receive the email? Check your spam folder or{' '}
-              <Link href="/support" className="text-blue-600 hover:text-blue-500">
+              <Link href="/support" className="text-olive-600 hover:text-olive-500">
                 contact support
               </Link>
             </p>
@@ -160,16 +160,16 @@ function RegisterConfirmContent() {
 
       {/* Additional Info */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
           <div className="flex">
             <div className="flex-shrink-0">
-              <CheckCircleIcon className="h-5 w-5 text-blue-400" />
+              <CheckCircleIcon className="h-5 w-5 text-olive-400" />
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">
+              <h3 className="text-sm font-medium text-olive-800">
                 Your 14-day free trial has started!
               </h3>
-              <p className="mt-1 text-sm text-blue-700">
+              <p className="mt-1 text-sm text-olive-700">
                 Once verified, you'll have full access to all professional features with no credit card required.
               </p>
             </div>

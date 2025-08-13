@@ -81,7 +81,7 @@ export default function EnterpriseFeaturesPage() {
       <div className="p-8">
         {/* Header */}
         <div className="mb-8 text-center">
-          <RocketLaunchIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+          <RocketLaunchIcon className="h-12 w-12 text-olive-600 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Enterprise Features</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Your 6FB AI Agent System is now powered by enterprise-grade SDKs for stability, 
@@ -96,7 +96,7 @@ export default function EnterpriseFeaturesPage() {
               onClick={() => setActiveTab('overview')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'overview'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -106,7 +106,7 @@ export default function EnterpriseFeaturesPage() {
               onClick={() => setActiveTab('analytics')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'analytics'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -116,7 +116,7 @@ export default function EnterpriseFeaturesPage() {
               onClick={() => setActiveTab('feature-flags')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'feature-flags'
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-olive-500 text-olive-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -197,7 +197,7 @@ export default function EnterpriseFeaturesPage() {
             </div>
 
             {/* Monthly Cost Estimate */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow p-6 text-white">
+            <div className="bg-gradient-to-r from-olive-600 to-gold-600 rounded-lg shadow p-6 text-white">
               <h2 className="text-lg font-semibold mb-4">Estimated Monthly Costs</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>

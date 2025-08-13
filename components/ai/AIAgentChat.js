@@ -148,7 +148,7 @@ export default function AIAgentChat() {
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="h-10 w-10 bg-gradient-to-br from-olive-500 to-gold-600 rounded-full flex items-center justify-center">
             <SparklesIcon className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -179,7 +179,7 @@ export default function AIAgentChat() {
           <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
               msg.type === 'user' 
-                ? 'bg-blue-600 text-white' 
+                ? 'bg-olive-600 text-white' 
                 : 'bg-gray-100 text-gray-900'
             }`}>
               {msg.type === 'assistant' && (
@@ -190,7 +190,7 @@ export default function AIAgentChat() {
               )}
               <p className="text-sm">{msg.content}</p>
               <p className={`text-xs mt-1 ${
-                msg.type === 'user' ? 'text-blue-200' : 'text-gray-500'
+                msg.type === 'user' ? 'text-olive-200' : 'text-gray-500'
               }`}>
                 {formatTime(msg.timestamp)}
               </p>
@@ -232,7 +232,7 @@ export default function AIAgentChat() {
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask about scheduling, customers, marketing, or business optimization..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
               rows={2}
               disabled={isLoading}
             />
@@ -240,7 +240,7 @@ export default function AIAgentChat() {
           <button
             onClick={handleSendMessage}
             disabled={!message.trim() || isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
           >
             <PaperAirplaneIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Send</span>
@@ -251,14 +251,14 @@ export default function AIAgentChat() {
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={() => setMessage("Show me today's bookings and revenue")}
-            className="px-3 py-1 text-xs bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100"
+            className="px-3 py-1 text-xs bg-olive-50 text-olive-700 rounded-full hover:bg-olive-100"
             disabled={!apiConnected}
           >
             Today's Performance
           </button>
           <button
             onClick={() => setMessage("Analyze my customer booking patterns this month")}
-            className="px-3 py-1 text-xs bg-purple-50 text-purple-700 rounded-full hover:bg-purple-100"
+            className="px-3 py-1 text-xs bg-gold-50 text-gold-700 rounded-full hover:bg-gold-100"
             disabled={!apiConnected}
           >
             Customer Analytics

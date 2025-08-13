@@ -108,7 +108,7 @@ export default function OAuthTestPage() {
           <p>User: {user ? user.email : 'null'}</p>
         </div>
         
-        <div className="p-4 bg-blue-100 rounded">
+        <div className="p-4 bg-olive-100 rounded">
           <h2 className="font-bold">URL Data:</h2>
           <pre>{JSON.stringify(urlData, null, 2)}</pre>
         </div>

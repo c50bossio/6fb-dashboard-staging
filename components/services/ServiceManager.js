@@ -191,7 +191,7 @@ export default function ServiceManager({
   const getServicePermissionIndicator = (service) => {
     if (isShopOwner) {
       return (
-        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
           <ShieldCheckIcon className="h-3 w-3 mr-1" />
           Owner
         </span>
@@ -251,10 +251,10 @@ export default function ServiceManager({
 
   const getCategoryColor = (category) => {
     const colors = {
-      haircut: 'bg-blue-100 text-blue-800',
+      haircut: 'bg-olive-100 text-olive-800',
       beard: 'bg-green-100 text-green-800',
       shave: 'bg-red-100 text-red-800',
-      styling: 'bg-purple-100 text-purple-800',
+      styling: 'bg-gold-100 text-gold-800',
       combo: 'bg-indigo-100 text-indigo-800',
       treatment: 'bg-pink-100 text-pink-800'
     }
@@ -270,7 +270,7 @@ export default function ServiceManager({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -282,7 +282,7 @@ export default function ServiceManager({
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <ShieldCheckIcon className="h-8 w-8 text-indigo-600" />
+              <ShieldCheckIcon className="h-8 w-8 text-olive-600" />
               <div>
                 <h3 className="font-semibold text-gray-900">Your Service Permissions</h3>
                 <p className="text-sm text-gray-600">
@@ -356,7 +356,7 @@ export default function ServiceManager({
             {canCreateService() && (
               <button 
                 onClick={() => setEditingService({})}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center"
+                className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
                 {isBarber ? 'Add Personal Service' : 'Add Service'}
@@ -495,7 +495,7 @@ export default function ServiceManager({
           {canCreateService() && (
             <button 
               onClick={() => setEditingService({})}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
             >
               <PlusIcon className="h-5 w-5 mr-2" />
               Add Your First Service

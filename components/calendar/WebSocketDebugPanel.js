@@ -65,7 +65,7 @@ export default function WebSocketDebugPanel() {
   }, [])
   
   return (
-    <div className="fixed bottom-20 right-4 bg-white border-2 border-blue-500 rounded-lg shadow-lg p-4 z-50 max-w-sm">
+    <div className="fixed bottom-20 right-4 bg-white border-2 border-olive-500 rounded-lg shadow-lg p-4 z-50 max-w-sm">
       <h3 className="font-bold text-sm mb-2">WebSocket Debug Panel</h3>
       <div className="text-xs space-y-1">
         <div>

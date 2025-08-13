@@ -245,7 +245,7 @@ const AlertManagementDashboard = ({
           <p className="mt-1 text-sm text-gray-500">{error}</p>
           <button
             onClick={fetchAlerts}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-olive-600 hover:bg-olive-700"
           >
             Retry
           </button>
@@ -277,7 +277,7 @@ const AlertManagementDashboard = ({
               onClick={() => setGroupedView(!groupedView)}
               className={`px-3 py-1 text-sm rounded-md ${
                 groupedView 
-                  ? 'bg-blue-100 text-blue-800' 
+                  ? 'bg-olive-100 text-olive-800' 
                   : 'bg-gray-100 text-gray-700'
               }`}
             >
@@ -326,7 +326,7 @@ const AlertManagementDashboard = ({
               <div className="text-sm text-gray-500">Confidence</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-olive-600">
                 ${Math.round(analytics.total_business_impact || 0)}
               </div>
               <div className="text-sm text-gray-500">Impact</div>
@@ -428,7 +428,7 @@ const AlertItem = ({ alert, onAction, onSelect, isSelected }) => {
       high: 'text-orange-600 bg-orange-50 border-orange-200',
       medium: 'text-yellow-600 bg-yellow-50 border-yellow-200',
       low: 'text-green-600 bg-green-50 border-green-200',
-      info: 'text-blue-600 bg-blue-50 border-blue-200'
+      info: 'text-olive-600 bg-olive-50 border-olive-200'
     };
     return colors[priority] || colors.info;
   };
@@ -458,7 +458,7 @@ const AlertItem = ({ alert, onAction, onSelect, isSelected }) => {
   return (
     <div 
       className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-        isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+        isSelected ? 'bg-olive-50 border-l-4 border-olive-500' : ''
       }`}
       onClick={() => onSelect(alert)}
     >
@@ -682,7 +682,7 @@ const AlertDetailModal = ({ alert, onClose, onAction }) => {
                   className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
                     actionType === 'acknowledge' ? 'bg-green-600 hover:bg-green-700' :
                     actionType === 'dismiss' ? 'bg-gray-600 hover:bg-gray-700' :
-                    'bg-blue-600 hover:bg-blue-700'
+                    'bg-olive-600 hover:bg-olive-700'
                   }`}
                 >
                   {actionType === 'acknowledge' ? 'Acknowledge' :

@@ -351,7 +351,7 @@ export default function BookingLinksPage() {
           <p className="text-sm font-medium text-gray-700 mb-1">Services</p>
           <div className="flex flex-wrap gap-1">
             {link.services.map((service, index) => (
-              <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+              <span key={index} className="px-2 py-1 bg-olive-100 text-olive-800 text-xs rounded">
                 {service}
               </span>
             ))}
@@ -362,7 +362,7 @@ export default function BookingLinksPage() {
           <p className="text-sm font-medium text-gray-700 mb-1">Time Slots</p>
           <div className="flex flex-wrap gap-1">
             {link.timeSlots.map((slot, index) => (
-              <span key={index} className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded capitalize">
+              <span key={index} className="px-2 py-1 bg-gold-100 text-gold-800 text-xs rounded capitalize">
                 {slot}
               </span>
             ))}
@@ -386,7 +386,7 @@ export default function BookingLinksPage() {
       {/* Performance Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
         <div className="text-center">
-          <p className="text-2xl font-bold text-blue-600">{link.clicks}</p>
+          <p className="text-2xl font-bold text-olive-600">{link.clicks}</p>
           <p className="text-xs text-gray-500">Clicks</p>
         </div>
         <div className="text-center">
@@ -394,11 +394,11 @@ export default function BookingLinksPage() {
           <p className="text-xs text-gray-500">Bookings</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-indigo-600">{link.embed_count || 0}</p>
+          <p className="text-2xl font-bold text-olive-600">{link.embed_count || 0}</p>
           <p className="text-xs text-gray-500">Embeds</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-purple-600">{link.conversionRate}%</p>
+          <p className="text-2xl font-bold text-gold-600">{link.conversionRate}%</p>
           <p className="text-xs text-gray-500">Conversion</p>
         </div>
         <div className="text-center">
@@ -423,7 +423,7 @@ export default function BookingLinksPage() {
             className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all ${
               link.qrGenerated
                 ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                : 'bg-olive-100 text-olive-700 hover:bg-olive-200'
             }`}
           >
             <QrCodeIcon className="h-4 w-4" />
@@ -432,13 +432,13 @@ export default function BookingLinksPage() {
           
           <button
             onClick={() => showEmbedCode(link.id)}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg transition-all"
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-100 text-olive-700 hover:bg-indigo-200 rounded-lg transition-all"
           >
             <CodeBracketIcon className="h-4 w-4" />
             Embed
           </button>
           
-          <button className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg transition-all">
+          <button className="flex items-center gap-2 px-3 py-2 text-sm bg-gold-100 text-gold-700 hover:bg-gold-200 rounded-lg transition-all">
             <ShareIcon className="h-4 w-4" />
             Share
           </button>
@@ -463,7 +463,7 @@ export default function BookingLinksPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -481,7 +481,7 @@ export default function BookingLinksPage() {
             
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-all"
             >
               <PlusIcon className="h-4 w-4" />
               Create New Link
@@ -498,7 +498,7 @@ export default function BookingLinksPage() {
             title="Active Links"
             value={bookingLinks.filter(l => l.active).length}
             subtitle={`${bookingLinks.length} total`}
-            color="text-blue-900"
+            color="text-olive-900"
           />
           <StatCard
             icon={EyeIcon}
@@ -512,7 +512,7 @@ export default function BookingLinksPage() {
             title="Conversions"
             value={`${totalConversions} (${averageConversion}%)`}
             subtitle="Clicks to bookings"
-            color="text-purple-900"
+            color="text-gold-900"
           />
           <StatCard
             icon={CurrencyDollarIcon}
@@ -536,7 +536,7 @@ export default function BookingLinksPage() {
               <p className="text-gray-600 mb-6">Create your first custom booking link to share with clients</p>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+                className="px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-all"
               >
                 Create Your First Link
               </button>

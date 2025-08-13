@@ -97,7 +97,7 @@ export default function ActionCenter({ data }) {
   return (
     <div className="space-y-6">
       {/* Real-time Status Bar */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-4">
+      <div className="bg-gradient-to-r from-green-50 to-olive-50 border border-green-200 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
@@ -213,7 +213,7 @@ export default function ActionCenter({ data }) {
         </div>
         
         {appointments.length > 5 && (
-          <button className="w-full mt-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 border-t border-gray-100 pt-4">
+          <button className="w-full mt-4 py-2 text-sm font-medium text-olive-600 hover:text-olive-800 border-t border-gray-100 pt-4">
             View all {appointments.length} appointments →
           </button>
         )}
@@ -228,7 +228,7 @@ const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
   const priorityColors = {
     high: 'border-red-200 bg-red-50',
     medium: 'border-amber-200 bg-amber-50',
-    low: 'border-blue-200 bg-blue-50'
+    low: 'border-olive-200 bg-olive-50'
   }
 
   if (isCompleted) {
@@ -265,7 +265,7 @@ const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
               <span className={`px-2 py-0.5 rounded-full font-medium ${
                 task.priority === 'high' ? 'bg-red-100 text-red-700' :
                 task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
-                'bg-blue-100 text-blue-700'
+                'bg-olive-100 text-olive-700'
               }`}>
                 {task.priority} priority
               </span>
@@ -275,7 +275,7 @@ const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
         
         <div className="flex items-center gap-2">
           {isActive ? (
-            <div className="px-3 py-1 bg-indigo-500 text-white rounded-lg text-sm flex items-center gap-2">
+            <div className="px-3 py-1 bg-olive-500 text-white rounded-lg text-sm flex items-center gap-2">
               <ArrowPathIcon className="h-4 w-4 animate-spin" />
               Processing...
             </div>
@@ -301,7 +301,7 @@ const AlertCard = ({ alert }) => {
   const typeStyles = {
     warning: 'bg-amber-50 border-amber-200 text-amber-800',
     error: 'bg-red-50 border-red-200 text-red-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
+    info: 'bg-olive-50 border-olive-200 text-olive-800',
     success: 'bg-green-50 border-green-200 text-green-800'
   }
 

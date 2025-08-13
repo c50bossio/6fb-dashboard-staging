@@ -294,7 +294,7 @@ export default function BarberReports() {
   }
 
 
-  const COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#8B5CF6']
+  const COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#C5A35B']
 
   const downloadReport = () => {
     // Generate CSV data
@@ -407,10 +407,10 @@ export default function BarberReports() {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <UserGroupIcon className="h-6 w-6 text-blue-600" />
+              <div className="p-2 bg-olive-100 rounded-lg">
+                <UserGroupIcon className="h-6 w-6 text-olive-600" />
               </div>
-              <span className="text-sm font-medium text-blue-600 flex items-center">
+              <span className="text-sm font-medium text-olive-600 flex items-center">
                 +{reportData.clients.new}
               </span>
             </div>
@@ -420,8 +420,8 @@ export default function BarberReports() {
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <ScissorsIcon className="h-6 w-6 text-purple-600" />
+              <div className="p-2 bg-gold-100 rounded-lg">
+                <ScissorsIcon className="h-6 w-6 text-gold-600" />
               </div>
             </div>
             <p className="text-2xl font-bold text-gray-900">

@@ -92,7 +92,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
     <div className="bg-white rounded-lg shadow-md border">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-2">
-          <ChartBarIcon className="h-5 w-5 text-indigo-500" />
+          <ChartBarIcon className="h-5 w-5 text-olive-500" />
           <h3 className="font-semibold text-gray-900">Predictive Analytics</h3>
           {predictions?.dashboard && (
             <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
@@ -119,7 +119,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
           <button
             onClick={refreshPredictions}
             disabled={loading}
-            className="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center space-x-1"
+            className="text-olive-600 hover:text-olive-700 text-sm font-medium flex items-center space-x-1"
           >
             <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             <span>Update</span>
@@ -141,7 +141,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                 onClick={() => setActiveView(tab.id)}
                 className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
                   activeView === tab.id
-                    ? 'border-indigo-500 text-indigo-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -159,14 +159,14 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
           <div className="space-y-6">
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-4 border border-indigo-200">
+              <div className="bg-gradient-to-r from-indigo-50 to-olive-50 rounded-lg p-4 border border-indigo-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-indigo-600">Revenue Forecast</div>
+                    <div className="text-sm font-medium text-olive-600">Revenue Forecast</div>
                     <div className="text-2xl font-bold text-indigo-900">
                       {predictions.dashboard.revenue_forecast_next_30_days}
                     </div>
-                    <div className="text-xs text-indigo-600">Next {selectedTimeframe} days</div>
+                    <div className="text-xs text-olive-600">Next {selectedTimeframe} days</div>
                   </div>
                   <ArrowTrendingUpIcon className="h-8 w-8 text-indigo-400" />
                 </div>
@@ -185,16 +185,16 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                 </div>
               </div>
               
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+              <div className="bg-gradient-to-r from-gold-50 to-pink-50 rounded-lg p-4 border border-gold-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm font-medium text-purple-600">Active Predictions</div>
-                    <div className="text-2xl font-bold text-purple-900">
+                    <div className="text-sm font-medium text-gold-600">Active Predictions</div>
+                    <div className="text-2xl font-bold text-gold-900">
                       {predictions.dashboard.active_predictions}
                     </div>
-                    <div className="text-xs text-purple-600">Monitoring key patterns</div>
+                    <div className="text-xs text-gold-600">Monitoring key patterns</div>
                   </div>
-                  <EyeIcon className="h-8 w-8 text-purple-400" />
+                  <EyeIcon className="h-8 w-8 text-gold-400" />
                 </div>
               </div>
             </div>
@@ -214,7 +214,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                           </span>
                         </div>
                         <p className="text-sm text-indigo-800 mb-2">{prediction.prediction}</p>
-                        <p className="text-xs text-indigo-600 flex items-center space-x-1">
+                        <p className="text-xs text-olive-600 flex items-center space-x-1">
                           <LightBulbIcon className="h-3 w-3" />
                           <span>Recommended: {prediction.action}</span>
                         </p>
@@ -236,13 +236,13 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                   <div className="text-sm text-gray-600">Revenue Growth</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-blue-600">
+                  <div className="text-lg font-bold text-olive-600">
                     {predictions.dashboard.trends.customer_growth}
                   </div>
                   <div className="text-sm text-gray-600">New Customers</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-purple-600">35%</div>
+                  <div className="text-lg font-bold text-gold-600">35%</div>
                   <div className="text-sm text-gray-600">Premium Adoption</div>
                 </div>
               </div>
@@ -259,14 +259,14 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {Object.entries(predictions.forecast.scenarios).map(([scenario, data]) => (
                   <div key={scenario} className={`rounded-lg p-4 border ${
-                    scenario === 'realistic' ? 'bg-blue-50 border-blue-200' :
+                    scenario === 'realistic' ? 'bg-olive-50 border-olive-200' :
                     scenario === 'optimistic' ? 'bg-green-50 border-green-200' :
                     'bg-orange-50 border-orange-200'
                   }`}>
                     <div className="text-center">
                       <div className="text-sm font-medium capitalize text-gray-700 mb-2">{scenario}</div>
                       <div className={`text-xl font-bold ${
-                        scenario === 'realistic' ? 'text-blue-900' :
+                        scenario === 'realistic' ? 'text-olive-900' :
                         scenario === 'optimistic' ? 'text-green-900' :
                         'text-orange-900'
                       }`}>
@@ -369,11 +369,11 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-blue-600 mb-2">Slow Periods</div>
+                    <div className="text-sm font-medium text-olive-600 mb-2">Slow Periods</div>
                     <div className="space-y-1">
                       {predictions.demand.hourly_patterns.slow_periods.map((period, idx) => (
                         <div key={idx} className="text-sm text-gray-700 flex items-center space-x-2">
-                          <span className="text-blue-500">📉</span>
+                          <span className="text-olive-500">📉</span>
                           <span>{period}</span>
                         </div>
                       ))}
@@ -388,10 +388,10 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
               <h4 className="font-medium text-gray-900 mb-3">Capacity Optimization</h4>
               <div className="space-y-3">
                 {predictions.demand.capacity_recommendations.map((rec, idx) => (
-                  <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="font-medium text-blue-900 mb-1">{rec.recommendation}</div>
-                    <div className="text-sm text-blue-800 mb-2">{rec.impact}</div>
-                    <div className="text-sm font-medium text-blue-700">{rec.revenue_potential}</div>
+                  <div key={idx} className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+                    <div className="font-medium text-olive-900 mb-1">{rec.recommendation}</div>
+                    <div className="text-sm text-olive-800 mb-2">{rec.impact}</div>
+                    <div className="text-sm font-medium text-olive-700">{rec.revenue_potential}</div>
                   </div>
                 ))}
               </div>

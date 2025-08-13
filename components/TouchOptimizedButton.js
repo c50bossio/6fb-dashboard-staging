@@ -27,16 +27,16 @@ export default function TouchOptimizedButton({
   const variantClasses = {
     primary: disabled 
       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-      : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500 shadow-md hover:shadow-lg active:shadow-sm',
+      : 'bg-olive-600 text-white hover:bg-olive-700 active:bg-olive-800 focus:ring-olive-500 shadow-md hover:shadow-lg active:shadow-sm',
     secondary: disabled
       ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 focus:ring-gray-500 shadow-sm hover:shadow-md',
+      : 'bg-gold-500 text-charcoal-800 border border-gold-400 hover:bg-gold-600 active:bg-gold-700 focus:ring-gold-500 shadow-sm hover:shadow-md',
     danger: disabled
       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-      : 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 focus:ring-red-500 shadow-md hover:shadow-lg active:shadow-sm',
+      : 'bg-softred-500 text-white hover:bg-softred-600 active:bg-softred-700 focus:ring-softred-500 shadow-md hover:shadow-lg active:shadow-sm',
     ghost: disabled
       ? 'text-gray-400 cursor-not-allowed'
-      : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200 focus:ring-gray-500'
+      : 'text-charcoal-700 hover:bg-sand-100 active:bg-sand-200 focus:ring-olive-500'
   }
 
   const handleTouchStart = () => {
@@ -166,10 +166,10 @@ export function TouchInput({
         placeholder={placeholder}
         className={`
           block w-full px-4 py-3 text-base border border-gray-300 rounded-lg
-          focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+          focus:ring-2 focus:ring-olive-500 focus:border-olive-500
           placeholder-gray-400 transition-colors duration-200
           min-h-[44px] touch-manipulation
-          ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}
+          ${error ? 'border-softred-500 focus:ring-softred-500 focus:border-softred-500' : ''}
           ${className}
         `}
         {...props}
@@ -206,10 +206,10 @@ export function TouchTextarea({
         rows={rows}
         className={`
           block w-full px-4 py-3 text-base border border-gray-300 rounded-lg
-          focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+          focus:ring-2 focus:ring-olive-500 focus:border-olive-500
           placeholder-gray-400 transition-colors duration-200
           min-h-[44px] touch-manipulation resize-none
-          ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}
+          ${error ? 'border-softred-500 focus:ring-softred-500 focus:border-softred-500' : ''}
           ${className}
         `}
         {...props}

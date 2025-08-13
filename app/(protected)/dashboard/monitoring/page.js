@@ -78,8 +78,8 @@ function MonitoringPage() {
                 <label className="text-sm font-medium text-gray-700">Auto Refresh:</label>
                 <button
                   onClick={() => setAutoRefresh(!autoRefresh)}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                    autoRefresh ? 'bg-blue-600' : 'bg-gray-200'
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2 ${
+                    autoRefresh ? 'bg-olive-600' : 'bg-gray-200'
                   }`}
                 >
                   <span
@@ -96,7 +96,7 @@ function MonitoringPage() {
                 <select
                   value={refreshInterval}
                   onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
-                  className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-olive-500"
                 >
                   <option value={5000}>5s</option>
                   <option value={10000}>10s</option>
@@ -136,14 +136,14 @@ function MonitoringPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
+                      ? 'border-olive-500 text-olive-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
                   <IconComponent
                     className={`-ml-0.5 mr-2 h-5 w-5 ${
                       activeTab === tab.id
-                        ? 'text-blue-500'
+                        ? 'text-olive-500'
                         : 'text-gray-400 group-hover:text-gray-500'
                     }`}
                   />
@@ -199,7 +199,7 @@ function MonitoringPage() {
             <div className="flex items-center space-x-4">
               <span>Last Updated: {new Date().toLocaleTimeString()}</span>
               {isFullscreen && (
-                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                <span className="bg-olive-100 text-olive-800 px-2 py-1 rounded-full text-xs font-medium">
                   Fullscreen Mode
                 </span>
               )}

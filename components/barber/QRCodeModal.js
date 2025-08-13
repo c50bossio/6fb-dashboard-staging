@@ -255,7 +255,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
               onClick={() => setActiveTab('basic')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-all min-h-[44px] ${
                 activeTab === 'basic'
-                  ? 'text-blue-600 border-blue-600'
+                  ? 'text-olive-600 border-olive-600'
                   : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
             >
@@ -265,7 +265,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
               onClick={() => setActiveTab('customize')}
               className={`px-6 py-3 text-sm font-medium border-b-2 transition-all min-h-[44px] ${
                 activeTab === 'customize'
-                  ? 'text-blue-600 border-blue-600'
+                  ? 'text-olive-600 border-olive-600'
                   : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
             >
@@ -282,7 +282,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
               
               <div className="bg-gray-50 rounded-lg p-8 flex items-center justify-center min-h-[300px]">
                 {loading ? (
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600"></div>
                 ) : qrDataUrl ? (
                   <Image 
                     src={qrDataUrl} 
@@ -305,7 +305,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
                 <button
                   onClick={() => downloadQR('png')}
                   disabled={!qrDataUrl}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   <ArrowDownTrayIcon className="h-4 w-4" />
                   Download PNG
@@ -331,14 +331,14 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
               </div>
 
               {/* Link Info */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">Booking Link</h4>
-                <p className="text-sm text-blue-800 font-mono break-all">
+              <div className="bg-olive-50 rounded-lg p-4">
+                <h4 className="font-medium text-olive-900 mb-2">Booking Link</h4>
+                <p className="text-sm text-olive-800 font-mono break-all">
                   {typeof window !== 'undefined' ? window.location.origin : ''}{bookingLink?.url}
                 </p>
                 <button
                   onClick={() => navigator.clipboard.writeText(`${window.location.origin}${bookingLink?.url}`)}
-                  className="flex items-center gap-2 mt-2 text-sm text-blue-600 hover:text-blue-800 min-h-[44px] px-3 py-2 rounded-lg hover:bg-blue-50 transition-all"
+                  className="flex items-center gap-2 mt-2 text-sm text-olive-600 hover:text-olive-800 min-h-[44px] px-3 py-2 rounded-lg hover:bg-olive-50 transition-all"
                 >
                   <ClipboardIcon className="h-4 w-4" />
                   Copy Link
@@ -425,7 +425,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
                     <select
                       value={qrOptions.errorCorrectionLevel}
                       onChange={(e) => setQrOptions(prev => ({ ...prev, errorCorrectionLevel: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                     >
                       <option value="L">Low (7%)</option>
                       <option value="M">Medium (15%)</option>
@@ -440,7 +440,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
                         type="checkbox"
                         checked={qrOptions.includeText}
                         onChange={(e) => setQrOptions(prev => ({ ...prev, includeText: e.target.checked }))}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                       />
                       <span className="ml-2 text-sm text-gray-700">Include text below QR code</span>
                     </label>
@@ -456,7 +456,7 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
                         value={qrOptions.customText}
                         onChange={(e) => setQrOptions(prev => ({ ...prev, customText: e.target.value }))}
                         placeholder={`Scan to book with ${bookingLink?.name}`}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                       />
                     </div>
                   )}

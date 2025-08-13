@@ -239,7 +239,7 @@ export default function CalendarSettings() {
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-3">
+            <div className="bg-gradient-to-r from-olive-500 to-gold-600 rounded-xl p-3">
               <CalendarSolid className="h-8 w-8 text-white" />
             </div>
             <div>
@@ -255,7 +255,7 @@ export default function CalendarSettings() {
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 flex items-center">
-              <LinkIcon className="h-6 w-6 mr-2 text-blue-600" />
+              <LinkIcon className="h-6 w-6 mr-2 text-olive-600" />
               Connected Calendars
             </h2>
           </div>
@@ -273,12 +273,12 @@ export default function CalendarSettings() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        account.provider === 'google' ? 'bg-red-100' : 'bg-blue-100'
+                        account.provider === 'google' ? 'bg-red-100' : 'bg-olive-100'
                       }`}>
                         {account.provider === 'google' ? (
                           <span className="text-red-600 font-bold text-sm">G</span>
                         ) : (
-                          <span className="text-blue-600 font-bold text-sm">O</span>
+                          <span className="text-olive-600 font-bold text-sm">O</span>
                         )}
                       </div>
                       <div>
@@ -312,7 +312,7 @@ export default function CalendarSettings() {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => syncAppointment(account.account_id)}
-                        className="text-sm bg-blue-50 text-blue-700 px-3 py-1 rounded-md hover:bg-blue-100"
+                        className="text-sm bg-olive-50 text-olive-700 px-3 py-1 rounded-md hover:bg-olive-100"
                       >
                         Test Sync
                       </button>
@@ -349,7 +349,7 @@ export default function CalendarSettings() {
                 disabled={connecting === 'outlook'}
                 className="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <div className="w-5 h-5 bg-blue-500 rounded flex items-center justify-center">
+                <div className="w-5 h-5 bg-olive-500 rounded flex items-center justify-center">
                   <span className="text-white text-xs font-bold">O</span>
                 </div>
                 <span className="font-medium text-gray-700">
@@ -378,7 +378,7 @@ export default function CalendarSettings() {
                   type="checkbox"
                   checked={syncSettings.autoCreateEvents}
                   onChange={(e) => updateSyncSettings({ ...syncSettings, autoCreateEvents: e.target.checked })}
-                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  className="rounded border-gray-300 text-olive-600 shadow-sm focus:border-olive-300 focus:ring focus:ring-olive-200 focus:ring-opacity-50"
                 />
                 <span className="ml-2 text-sm font-medium text-gray-700">
                   Automatically create calendar events for new appointments
@@ -394,7 +394,7 @@ export default function CalendarSettings() {
               <select
                 value={syncSettings.syncDirection}
                 onChange={(e) => updateSyncSettings({ ...syncSettings, syncDirection: e.target.value })}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-olive-500 focus:outline-none focus:ring-olive-500"
               >
                 <option value="both">Both directions (recommended)</option>
                 <option value="push_only">6FB to Calendar only</option>
@@ -411,7 +411,7 @@ export default function CalendarSettings() {
                 type="text"
                 value={syncSettings.eventTitleTemplate}
                 onChange={(e) => updateSyncSettings({ ...syncSettings, eventTitleTemplate: e.target.value })}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-olive-500 focus:outline-none focus:ring-olive-500"
                 placeholder="{customer_name} - {service_name}"
               />
               <p className="text-xs text-gray-500 mt-1">
@@ -427,7 +427,7 @@ export default function CalendarSettings() {
               <select
                 value={syncSettings.bufferTimeMinutes}
                 onChange={(e) => updateSyncSettings({ ...syncSettings, bufferTimeMinutes: parseInt(e.target.value) })}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-olive-500 focus:outline-none focus:ring-olive-500"
               >
                 <option value="0">No buffer</option>
                 <option value="5">5 minutes</option>
@@ -445,7 +445,7 @@ export default function CalendarSettings() {
               <select
                 value={syncSettings.conflictResolution}
                 onChange={(e) => updateSyncSettings({ ...syncSettings, conflictResolution: e.target.value })}
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-olive-500 focus:outline-none focus:ring-olive-500"
               >
                 <option value="manual">Ask me what to do</option>
                 <option value="6fb_wins">6FB appointment takes priority</option>

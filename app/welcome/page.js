@@ -262,7 +262,7 @@ export default function WelcomePage() {
   const businessSlug = generateSlug(onboardingData.businessName || 'your-business')
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div className="min-h-screen bg-gradient-to-br from-olive-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -329,7 +329,7 @@ export default function WelcomePage() {
                       type="text"
                       value={onboardingData.businessName}
                       onChange={handleBusinessUpdate}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-olive-500 focus:border-olive-500"
                       placeholder="Elite Cuts Barbershop"
                     />
                   </div>
@@ -356,7 +356,7 @@ export default function WelcomePage() {
                       type="text"
                       value={onboardingData.customDomain || ''}
                       onChange={handleBusinessUpdate}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-olive-500 focus:border-olive-500"
                       placeholder="www.yourshop.com"
                     />
                   </div>
@@ -379,7 +379,7 @@ export default function WelcomePage() {
                       type="text"
                       value={onboardingData.businessAddress}
                       onChange={handleBusinessUpdate}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-olive-500 focus:border-olive-500"
                       placeholder="123 Main St, City, State 12345"
                     />
                   </div>
@@ -399,7 +399,7 @@ export default function WelcomePage() {
                       type="tel"
                       value={onboardingData.businessPhone}
                       onChange={handleBusinessUpdate}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-olive-500 focus:border-olive-500"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -414,7 +414,7 @@ export default function WelcomePage() {
                     name="businessType"
                     value={onboardingData.businessType}
                     onChange={handleBusinessUpdate}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-olive-500 focus:border-olive-500"
                   >
                     <option value="barbershop">Barbershop</option>
                     <option value="salon">Hair Salon</option>
@@ -438,7 +438,7 @@ export default function WelcomePage() {
                         })}
                         className={`py-2 px-3 rounded-md border text-sm font-medium transition-all ${
                           onboardingData.businessHours === template
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            ? 'border-olive-500 bg-olive-50 text-olive-700'
                             : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                         }`}
                       >
@@ -460,7 +460,7 @@ export default function WelcomePage() {
                     disabled={!onboardingData.businessName}
                     className={`px-6 py-3 rounded-lg font-medium transition-all ${
                       onboardingData.businessName
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        ? 'bg-olive-600 text-white hover:bg-olive-700'
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                   >
@@ -503,7 +503,7 @@ export default function WelcomePage() {
                     <button
                       onClick={handleCompleteSetup}
                       disabled={isLoading || isSaving}
-                      className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
+                      className="px-6 py-3 bg-olive-600 text-white rounded-lg font-medium hover:bg-olive-700 disabled:bg-gray-400 flex items-center justify-center gap-2"
                     >
                       {isLoading || isSaving ? (
                         <>
@@ -549,11 +549,11 @@ export default function WelcomePage() {
         <div className="mt-12 text-center text-sm text-gray-600">
           <p>
             Need help getting started?{' '}
-            <Link href="/help" className="text-blue-600 hover:text-blue-500 font-medium">
+            <Link href="/help" className="text-olive-600 hover:text-olive-500 font-medium">
               Visit our Help Center
             </Link>
             {' '}or{' '}
-            <Link href="/contact" className="text-blue-600 hover:text-blue-500 font-medium">
+            <Link href="/contact" className="text-olive-600 hover:text-olive-500 font-medium">
               Contact Support
             </Link>
           </p>

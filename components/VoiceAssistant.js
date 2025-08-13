@@ -242,7 +242,7 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
     <div className="bg-white rounded-lg shadow-md border">
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center space-x-2">
-          <SpeakerWaveIcon className="h-5 w-5 text-indigo-500" />
+          <SpeakerWaveIcon className="h-5 w-5 text-olive-500" />
           <h3 className="font-semibold text-gray-900">Voice Assistant</h3>
           {isListening && (
             <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full animate-pulse">
@@ -270,7 +270,7 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
             className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 ${
               isListening 
                 ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                : 'bg-indigo-500 hover:bg-indigo-600 hover:scale-105'
+                : 'bg-olive-500 hover:bg-olive-600 hover:scale-105'
             } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isProcessing ? (
@@ -301,11 +301,11 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
 
         {/* Response Display */}
         {response && (
-          <div className="bg-blue-50 rounded-lg p-4 mb-4">
+          <div className="bg-olive-50 rounded-lg p-4 mb-4">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <div className="text-xs text-blue-500 mb-1">AI Assistant:</div>
-                <div className="text-sm text-blue-900">{response.response || response.message}</div>
+                <div className="text-xs text-olive-500 mb-1">AI Assistant:</div>
+                <div className="text-sm text-olive-900">{response.response || response.message}</div>
                 
                 {response.data && (
                   <div className="mt-3 p-3 bg-white rounded border">
@@ -318,13 +318,13 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
                 
                 {response.suggestions && response.suggestions.length > 0 && (
                   <div className="mt-2">
-                    <div className="text-xs text-blue-500 mb-1">Try saying:</div>
+                    <div className="text-xs text-olive-500 mb-1">Try saying:</div>
                     <div className="space-y-1">
                       {response.suggestions.map((suggestion, idx) => (
                         <button
                           key={idx}
                           onClick={() => processVoiceCommand(suggestion)}
-                          className="block text-xs text-blue-700 hover:text-blue-900 hover:underline text-left"
+                          className="block text-xs text-olive-700 hover:text-olive-900 hover:underline text-left"
                         >
                           "{suggestion}"
                         </button>
@@ -337,7 +337,7 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
               {response.voice_response?.text && (
                 <button
                   onClick={() => speakResponse(response.voice_response.text)}
-                  className="ml-2 text-blue-600 hover:text-blue-800"
+                  className="ml-2 text-olive-600 hover:text-olive-800"
                   title="Play response"
                 >
                   <PlayIcon className="h-4 w-4" />

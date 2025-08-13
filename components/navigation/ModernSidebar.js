@@ -126,7 +126,7 @@ export default function ModernSidebar() {
                           <>
                             <span className="ml-3 flex-1 text-left">{item.name}</span>
                             {item.badge && (
-                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-olive-100 text-olive-700 rounded-full">
                                 {item.badge}
                               </span>
                             )}
@@ -153,7 +153,7 @@ export default function ModernSidebar() {
                           <>
                             <span className="ml-3">{item.name}</span>
                             {item.badge && (
-                              <span className="ml-auto px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                              <span className="ml-auto px-2 py-1 text-xs font-medium bg-olive-100 text-olive-700 rounded-full">
                                 {item.badge}
                               </span>
                             )}
@@ -187,8 +187,8 @@ export default function ModernSidebar() {
                             {child.badge && (
                               <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                                 child.badge === 'Live' ? 'bg-green-100 text-green-700' :
-                                child.badge === 'AI' ? 'bg-purple-100 text-purple-700' :
-                                child.badge === 'New' ? 'bg-blue-100 text-blue-700' :
+                                child.badge === 'AI' ? 'bg-gold-100 text-gold-700' :
+                                child.badge === 'New' ? 'bg-olive-100 text-olive-700' :
                                 'bg-gray-100 text-gray-700'
                               }`}>
                                 {child.badge}
@@ -295,7 +295,7 @@ export default function ModernSidebar() {
                             <Icon className="h-5 w-5 flex-shrink-0 text-gray-400" />
                             <span className="ml-3 flex-1 text-left">{item.name}</span>
                             {item.badge && (
-                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-olive-100 text-olive-700 rounded-full">
                                 {item.badge}
                               </span>
                             )}
@@ -316,7 +316,7 @@ export default function ModernSidebar() {
                             <Icon className="h-5 w-5 flex-shrink-0 text-gray-400" />
                             <span className="ml-3">{item.name}</span>
                             {item.badge && (
-                              <span className="ml-auto px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
+                              <span className="ml-auto px-2 py-1 text-xs font-medium bg-olive-100 text-olive-700 rounded-full">
                                 {item.badge}
                               </span>
                             )}
@@ -345,8 +345,8 @@ export default function ModernSidebar() {
                                   {child.badge && (
                                     <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                                       child.badge === 'Live' ? 'bg-green-100 text-green-700' :
-                                      child.badge === 'AI' ? 'bg-purple-100 text-purple-700' :
-                                      child.badge === 'New' ? 'bg-blue-100 text-blue-700' :
+                                      child.badge === 'AI' ? 'bg-gold-100 text-gold-700' :
+                                      child.badge === 'New' ? 'bg-olive-100 text-olive-700' :
                                       'bg-gray-100 text-gray-700'
                                     }`}>
                                       {child.badge}

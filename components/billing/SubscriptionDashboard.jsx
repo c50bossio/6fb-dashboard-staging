@@ -41,7 +41,7 @@ export default function SubscriptionDashboard() {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'active': return 'bg-green-100 text-green-800'
-      case 'trialing': return 'bg-blue-100 text-blue-800'  
+      case 'trialing': return 'bg-olive-100 text-olive-800'  
       case 'past_due': return 'bg-yellow-100 text-yellow-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
@@ -164,10 +164,10 @@ export default function SubscriptionDashboard() {
           </div>
 
           <div className="flex items-center space-x-3">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button className="px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500">
               Upgrade Plan
             </button>
-            <button className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-olive-500">
               Manage Billing
             </button>
           </div>
@@ -245,10 +245,10 @@ export default function SubscriptionDashboard() {
           <div>
             <h3 className="font-medium text-gray-900 mb-3">Available Upgrades</h3>
             <div className="space-y-3">
-              <div className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+              <div className="p-3 border border-gray-200 rounded-lg hover:border-olive-300 cursor-pointer transition-colors">
                 <p className="font-medium text-gray-900">Enterprise</p>
                 <p className="text-sm text-gray-600">Unlimited everything</p>
-                <p className="text-sm font-medium text-blue-600">$99/month</p>
+                <p className="text-sm font-medium text-olive-600">$99/month</p>
               </div>
             </div>
           </div>
@@ -256,15 +256,15 @@ export default function SubscriptionDashboard() {
           <div>
             <h3 className="font-medium text-gray-900 mb-3">Add-ons</h3>
             <div className="space-y-3">
-              <div className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+              <div className="p-3 border border-gray-200 rounded-lg hover:border-olive-300 cursor-pointer transition-colors">
                 <p className="font-medium text-gray-900">Extra AI Credits</p>
                 <p className="text-sm text-gray-600">+2,000 interactions</p>
-                <p className="text-sm font-medium text-blue-600">$10/month</p>
+                <p className="text-sm font-medium text-olive-600">$10/month</p>
               </div>
-              <div className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-colors">
+              <div className="p-3 border border-gray-200 rounded-lg hover:border-olive-300 cursor-pointer transition-colors">
                 <p className="font-medium text-gray-900">Priority Support</p>
                 <p className="text-sm text-gray-600">24/7 dedicated support</p>
-                <p className="text-sm font-medium text-blue-600">$25/month</p>
+                <p className="text-sm font-medium text-olive-600">$25/month</p>
               </div>
             </div>
           </div>
@@ -275,7 +275,7 @@ export default function SubscriptionDashboard() {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Recent Billing</h2>
-          <button className="text-sm text-blue-600 hover:text-blue-500 font-medium">
+          <button className="text-sm text-olive-600 hover:text-olive-500 font-medium">
             View All Invoices
           </button>
         </div>

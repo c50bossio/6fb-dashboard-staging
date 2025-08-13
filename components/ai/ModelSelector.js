@@ -54,7 +54,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
           <div className="w-2 h-2 rounded-full bg-green-500"></div>
           <span className="font-medium text-sm">{currentModel.name}</span>
           {currentModel.badge && (
-            <span className="px-1.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
+            <span className="px-1.5 py-0.5 text-xs font-semibold bg-olive-100 text-olive-800 dark:bg-olive-900 dark:text-olive-200 rounded">
               {currentModel.badge}
             </span>
           )}
@@ -82,7 +82,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                   setIsOpen(false)
                 }}
                 className={`w-full text-left px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                  selectedModel === key ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                  selectedModel === key ? 'bg-olive-50 dark:bg-olive-900/20' : ''
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -90,7 +90,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="font-medium text-sm">{model.name}</span>
                       {model.badge && (
-                        <span className="px-1.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
+                        <span className="px-1.5 py-0.5 text-xs font-semibold bg-olive-100 text-olive-800 dark:bg-olive-900 dark:text-olive-200 rounded">
                           {model.badge}
                         </span>
                       )}
@@ -109,7 +109,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                       </span>
                       <span className={`text-xs font-medium ${
                         model.cost === 'Premium' ? 'text-orange-600 dark:text-orange-400' :
-                        model.cost === 'Standard' ? 'text-blue-600 dark:text-blue-400' :
+                        model.cost === 'Standard' ? 'text-olive-600 dark:text-olive-400' :
                         'text-green-600 dark:text-green-400'
                       }`}>
                         {model.cost}
@@ -118,7 +118,7 @@ export default function ModelSelector({ selectedModel, onModelChange }) {
                   </div>
                   {selectedModel === key && (
                     <div className="ml-2 mt-1">
-                      <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-olive-600 dark:text-olive-400" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>

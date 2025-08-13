@@ -56,14 +56,14 @@ const QUICK_ACTIONS = [
 const getColorClasses = (color, variant = 'default') => {
   const colors = {
     purple: {
-      default: 'bg-purple-600 hover:bg-purple-700 text-white',
-      light: 'bg-purple-50 text-purple-700 hover:bg-purple-100',
-      border: 'border-purple-200'
+      default: 'bg-gold-600 hover:bg-gold-700 text-white',
+      light: 'bg-gold-50 text-gold-700 hover:bg-gold-100',
+      border: 'border-gold-200'
     },
     blue: {
-      default: 'bg-blue-600 hover:bg-blue-700 text-white',
-      light: 'bg-blue-50 text-blue-700 hover:bg-blue-100',
-      border: 'border-blue-200'
+      default: 'bg-olive-600 hover:bg-olive-700 text-white',
+      light: 'bg-olive-50 text-olive-700 hover:bg-olive-100',
+      border: 'border-olive-200'
     },
     green: {
       default: 'bg-green-600 hover:bg-green-700 text-white',
@@ -137,7 +137,7 @@ export default function QuickActionsBar() {
           {/* User Context */}
           <div className="flex items-center space-x-3">
             <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
-              <SparklesIcon className="h-4 w-4 text-purple-500" />
+              <SparklesIcon className="h-4 w-4 text-gold-500" />
               <span>AI Assistant Ready</span>
             </div>
             

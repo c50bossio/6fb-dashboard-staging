@@ -16,9 +16,9 @@ export default function FinalProfessionalCalendar({
   // Professional barber resources
   const resources = [
     { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
-    { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#3b82f6' },
+    { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#546355' },
     { id: 'barber-3', title: 'Mike Brown', eventColor: '#f59e0b' },
-    { id: 'barber-4', title: 'Lisa Davis', eventColor: '#8b5cf6' }
+    { id: 'barber-4', title: 'Lisa Davis', eventColor: '#D4B878' }
   ]
   
   // Generate events for today
@@ -59,7 +59,7 @@ export default function FinalProfessionalCalendar({
       start: `${dateStr}T10:00:00`,
       end: `${dateStr}T11:30:00`,
       resourceId: 'barber-2',
-      backgroundColor: '#3b82f6'
+      backgroundColor: '#546355'
     },
     {
       id: '5',
@@ -67,7 +67,7 @@ export default function FinalProfessionalCalendar({
       start: `${dateStr}T13:00:00`,
       end: `${dateStr}T14:00:00`,
       resourceId: 'barber-2',
-      backgroundColor: '#3b82f6'
+      backgroundColor: '#546355'
     },
     {
       id: '6',
@@ -75,7 +75,7 @@ export default function FinalProfessionalCalendar({
       start: `${dateStr}T15:00:00`,
       end: `${dateStr}T16:30:00`,
       resourceId: 'barber-2',
-      backgroundColor: '#3b82f6'
+      backgroundColor: '#546355'
     },
     
     // Mike Brown's appointments
@@ -111,7 +111,7 @@ export default function FinalProfessionalCalendar({
       start: `${dateStr}T10:30:00`,
       end: `${dateStr}T11:00:00`,
       resourceId: 'barber-4',
-      backgroundColor: '#8b5cf6'
+      backgroundColor: '#D4B878'
     },
     {
       id: '11',
@@ -119,7 +119,7 @@ export default function FinalProfessionalCalendar({
       start: `${dateStr}T14:00:00`,
       end: `${dateStr}T14:30:00`,
       resourceId: 'barber-4',
-      backgroundColor: '#8b5cf6'
+      backgroundColor: '#D4B878'
     },
     {
       id: '12',
@@ -127,7 +127,7 @@ export default function FinalProfessionalCalendar({
       start: `${dateStr}T15:30:00`,
       end: `${dateStr}T16:15:00`,
       resourceId: 'barber-4',
-      backgroundColor: '#8b5cf6'
+      backgroundColor: '#D4B878'
     }
   ]
   

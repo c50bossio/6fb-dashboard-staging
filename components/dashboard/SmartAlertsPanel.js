@@ -105,7 +105,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
     switch (type) {
       case 'critical': return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
       case 'warning': return <ExclamationTriangleIcon className="h-5 w-5 text-amber-500" />
-      case 'info': return <InformationCircleIcon className="h-5 w-5 text-blue-500" />
+      case 'info': return <InformationCircleIcon className="h-5 w-5 text-olive-500" />
       case 'success': return <CheckCircleIcon className="h-5 w-5 text-green-500" />
       default: return <BellIcon className="h-5 w-5 text-gray-500" />
     }
@@ -115,7 +115,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
     switch (type) {
       case 'critical': return 'border-l-red-500 bg-red-50'
       case 'warning': return 'border-l-amber-500 bg-amber-50'
-      case 'info': return 'border-l-blue-500 bg-blue-50'
+      case 'info': return 'border-l-blue-500 bg-olive-50'
       case 'success': return 'border-l-green-500 bg-green-50'
       default: return 'border-l-gray-500 bg-gray-50'
     }
@@ -133,7 +133,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
         <p className="text-gray-600 mt-2">Loading alerts...</p>
       </div>
     )
@@ -181,7 +181,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
                       )}
                       
                       {alert.action_required && (
-                        <button className="mt-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center">
+                        <button className="mt-3 text-sm text-olive-600 hover:text-indigo-800 font-medium flex items-center">
                           {alert.action_text || 'Take Action'}
                           <ArrowRightIcon className="h-3 w-3 ml-1" />
                         </button>
@@ -207,7 +207,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
         <div className="bg-white rounded-lg shadow-sm border">
           <div className="p-4 border-b">
             <div className="flex items-center space-x-2">
-              <ClockIcon className="h-5 w-5 text-indigo-500" />
+              <ClockIcon className="h-5 w-5 text-olive-500" />
               <h3 className="font-semibold">Priority Actions</h3>
             </div>
           </div>

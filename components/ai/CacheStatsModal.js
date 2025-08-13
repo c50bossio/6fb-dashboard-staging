@@ -89,7 +89,7 @@ export default function CacheStatsModal({ isOpen, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
+            <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-olive-600 rounded-full flex items-center justify-center">
               <DatabaseIcon className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -117,19 +117,19 @@ export default function CacheStatsModal({ isOpen, onClose }) {
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <ArrowPathIcon className="h-8 w-8 animate-spin text-blue-600" />
+            <ArrowPathIcon className="h-8 w-8 animate-spin text-olive-600" />
             <span className="ml-2 text-gray-600">Loading cache statistics...</span>
           </div>
         ) : (
           <div className="space-y-6">
             {/* Performance Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+              <div className="bg-gradient-to-r from-olive-50 to-olive-100 p-4 rounded-lg">
                 <div className="flex items-center">
-                  <ChartBarIcon className="h-8 w-8 text-blue-600" />
+                  <ChartBarIcon className="h-8 w-8 text-olive-600" />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-blue-900">Hit Rate</p>
-                    <p className="text-2xl font-bold text-blue-700">
+                    <p className="text-sm font-medium text-olive-900">Hit Rate</p>
+                    <p className="text-2xl font-bold text-olive-700">
                       {streamStats?.hitRate || '0%'}
                     </p>
                   </div>
@@ -148,12 +148,12 @@ export default function CacheStatsModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
+              <div className="bg-gradient-to-r from-gold-50 to-gold-100 p-4 rounded-lg">
                 <div className="flex items-center">
-                  <ClockIcon className="h-8 w-8 text-purple-600" />
+                  <ClockIcon className="h-8 w-8 text-gold-600" />
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-purple-900">Total Entries</p>
-                    <p className="text-2xl font-bold text-purple-700">
+                    <p className="text-sm font-medium text-gold-900">Total Entries</p>
+                    <p className="text-2xl font-bold text-gold-700">
                       {stats?.totalEntries || 0}
                     </p>
                   </div>
@@ -205,13 +205,13 @@ export default function CacheStatsModal({ isOpen, onClose }) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Prefetch Hits</span>
-                    <span className="text-sm font-medium text-blue-600">
+                    <span className="text-sm font-medium text-olive-600">
                       {streamStats?.prefetchHits || 0}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-gray-600">Prefetch Efficiency</span>
-                    <span className="text-sm font-medium text-blue-600">
+                    <span className="text-sm font-medium text-olive-600">
                       {streamStats?.prefetchEfficiency || '0%'}
                     </span>
                   </div>
@@ -266,7 +266,7 @@ export default function CacheStatsModal({ isOpen, onClose }) {
                 <button
                   onClick={loadStats}
                   disabled={loading}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                  className="px-4 py-2 bg-olive-600 text-white text-sm rounded-lg hover:bg-olive-700 disabled:opacity-50 flex items-center space-x-2"
                 >
                   <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                   <span>Refresh Stats</span>

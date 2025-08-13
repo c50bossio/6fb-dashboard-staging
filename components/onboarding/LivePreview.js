@@ -79,7 +79,7 @@ export default function LivePreview({
             onClick={() => setViewMode('mobile')}
             className={`p-2 rounded-lg transition-all ${
               viewMode === 'mobile' 
-                ? 'bg-blue-100 text-blue-600' 
+                ? 'bg-olive-100 text-olive-600' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -89,7 +89,7 @@ export default function LivePreview({
             onClick={() => setViewMode('desktop')}
             className={`p-2 rounded-lg transition-all ${
               viewMode === 'desktop' 
-                ? 'bg-blue-100 text-blue-600' 
+                ? 'bg-olive-100 text-olive-600' 
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -133,7 +133,7 @@ export default function LivePreview({
         <span className="text-sm text-gray-600 font-mono">{bookingUrl}</span>
         <button
           onClick={handleCopyLink}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          className="text-olive-600 hover:text-olive-700 text-sm font-medium"
         >
           {copied ? 'Copied!' : 'Copy'}
         </button>
@@ -197,7 +197,7 @@ export default function LivePreview({
                 services.slice(0, 3).map((service, idx) => (
                   <div 
                     key={idx}
-                    className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition-all"
+                    className="p-3 border border-gray-200 rounded-lg hover:border-olive-300 cursor-pointer transition-all"
                   >
                     <div className="flex justify-between items-center">
                       <div>
@@ -259,7 +259,7 @@ export default function LivePreview({
                 link.href = qrCodeUrl
                 link.click()
               }}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              className="text-olive-600 hover:text-olive-700 text-sm font-medium"
             >
               Download QR Code
             </button>
@@ -294,7 +294,7 @@ export default function LivePreview({
               const embedCode = `<a href="${bookingUrl}" target="_blank" style="display:inline-block;background:${primaryColor};color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">Book Now</a>`
               navigator.clipboard.writeText(embedCode)
             }}
-            className="mt-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
+            className="mt-2 text-olive-600 hover:text-olive-700 text-sm font-medium"
           >
             Copy Embed Code
           </button>

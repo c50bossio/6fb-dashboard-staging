@@ -50,9 +50,9 @@ export function ButtonABTestExample() {
   const variant = useABTest('button_style_test', ['control', 'variant_a', 'variant_b'])
 
   const buttonStyles = {
-    control: 'px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700',
-    variant_a: 'px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700',
-    variant_b: 'px-4 py-2 bg-white text-blue-600 border-2 border-blue-600 rounded-full hover:bg-blue-50',
+    control: 'px-4 py-2 bg-olive-600 text-white rounded hover:bg-olive-700',
+    variant_a: 'px-6 py-3 bg-gradient-to-r from-olive-600 to-gold-600 text-white rounded-lg hover:from-olive-700 hover:to-gold-700',
+    variant_b: 'px-4 py-2 bg-white text-olive-600 border-2 border-olive-600 rounded-full hover:bg-olive-50',
   }
 
   return (
@@ -92,14 +92,14 @@ export function BetaFeaturesExample() {
             <FeatureFlag flag={FLAGS.VIDEO_CONSULTATIONS}>
               <div className="flex items-center justify-between">
                 <span>Video Consultations</span>
-                <span className="text-purple-600">✨ Beta</span>
+                <span className="text-gold-600">✨ Beta</span>
               </div>
             </FeatureFlag>
             
             <FeatureFlag flag={FLAGS.AI_RECOMMENDATIONS}>
               <div className="flex items-center justify-between">
                 <span>AI Recommendations</span>
-                <span className="text-purple-600">✨ Beta</span>
+                <span className="text-gold-600">✨ Beta</span>
               </div>
             </FeatureFlag>
           </>

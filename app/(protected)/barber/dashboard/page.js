@@ -97,7 +97,7 @@ export default function BarberDashboard() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      confirmed: { bg: 'bg-blue-100', text: 'text-blue-800', label: 'Confirmed' },
+      confirmed: { bg: 'bg-olive-100', text: 'text-olive-800', label: 'Confirmed' },
       completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
       cancelled: { bg: 'bg-red-100', text: 'text-red-800', label: 'Cancelled' },
       no_show: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'No Show' }
@@ -153,7 +153,7 @@ export default function BarberDashboard() {
             icon={CalendarIcon}
             title="Today's Appointments"
             value={stats.todayAppointments}
-            color="text-blue-600"
+            color="text-olive-600"
             subtitle={`${stats.upcomingToday} upcoming`}
           />
           <StatCard
@@ -174,7 +174,7 @@ export default function BarberDashboard() {
             icon={UserGroupIcon}
             title="New Clients"
             value={stats.newClients}
-            color="text-purple-600"
+            color="text-gold-600"
             subtitle="This week"
           />
         </div>
@@ -187,16 +187,16 @@ export default function BarberDashboard() {
               <CalendarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-amber-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">View Schedule</p>
             </Link>
-            <Link href="/barber/clients" className="p-3 sm:p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors text-center">
-              <UserGroupIcon className="h-5 sm:h-6 w-5 sm:w-6 text-blue-600 mx-auto mb-1 sm:mb-2" />
+            <Link href="/barber/clients" className="p-3 sm:p-4 bg-olive-50 rounded-lg hover:bg-olive-100 transition-colors text-center">
+              <UserGroupIcon className="h-5 sm:h-6 w-5 sm:w-6 text-olive-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">My Clients</p>
             </Link>
             <Link href="/barber/reports" className="p-3 sm:p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors text-center">
               <ChartBarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-green-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">View Reports</p>
             </Link>
-            <Link href="/barber/services" className="p-3 sm:p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors text-center">
-              <ScissorsIcon className="h-5 sm:h-6 w-5 sm:w-6 text-purple-600 mx-auto mb-1 sm:mb-2" />
+            <Link href="/barber/services" className="p-3 sm:p-4 bg-gold-50 rounded-lg hover:bg-gold-100 transition-colors text-center">
+              <ScissorsIcon className="h-5 sm:h-6 w-5 sm:w-6 text-gold-600 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900">My Services</p>
             </Link>
           </div>
@@ -229,7 +229,7 @@ export default function BarberDashboard() {
                     </div>
                     <div className="flex items-center space-x-3">
                       {getStatusBadge(appointment.status)}
-                      <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                      <button className="text-sm text-olive-600 hover:text-olive-800 font-medium">
                         View Details
                       </button>
                     </div>

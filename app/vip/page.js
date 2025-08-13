@@ -37,7 +37,7 @@ export default function VIPPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 to-black flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-gold-900 to-black flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-2xl p-8 text-center">
           <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <StarIconSolid className="h-8 w-8 text-white" />
@@ -48,7 +48,7 @@ export default function VIPPage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all"
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gold-600 to-gold-700 text-white rounded-lg hover:from-gold-700 hover:to-gold-800 transition-all"
           >
             Back to Home
             <ArrowRightIcon className="h-4 w-4 ml-2" />
@@ -59,7 +59,7 @@ export default function VIPPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-black">
+    <div className="min-h-screen bg-gradient-to-br from-gold-900 via-black to-black">
       {/* Header */}
       <header className="bg-black/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4">
@@ -134,7 +134,7 @@ export default function VIPPage() {
                     id="phone"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500"
                     placeholder="(555) 123-4567"
                     required
                   />
@@ -142,19 +142,19 @@ export default function VIPPage() {
               </div>
 
               {/* SMS Consent Checkbox - CRITICAL FOR TWILIO */}
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="bg-gold-50 border border-gold-200 rounded-lg p-4">
                 <div className="flex items-start">
                   <input
                     id="smsConsent"
                     type="checkbox"
                     checked={smsConsent}
                     onChange={(e) => setSmsConsent(e.target.checked)}
-                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mt-0.5"
+                    className="h-4 w-4 text-gold-600 focus:ring-gold-500 border-gray-300 rounded mt-0.5"
                     required
                   />
                   <label htmlFor="smsConsent" className="ml-2 text-sm">
                     <span className="font-semibold text-gray-900 flex items-center">
-                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1 text-purple-600" />
+                      <ChatBubbleLeftRightIcon className="h-4 w-4 mr-1 text-gold-600" />
                       Yes, text me VIP offers & booking priority! *
                     </span>
                     <span className="text-gray-600 block mt-1">
@@ -164,8 +164,8 @@ export default function VIPPage() {
                     </span>
                     <span className="text-xs text-gray-500 block mt-2">
                       Reply STOP to unsubscribe, HELP for assistance. 
-                      View our <Link href="/sms-policy" className="text-purple-600 hover:underline">SMS Policy</Link> and{' '}
-                      <Link href="/terms" className="text-purple-600 hover:underline">Terms of Service</Link>.
+                      View our <Link href="/sms-policy" className="text-gold-600 hover:underline">SMS Policy</Link> and{' '}
+                      <Link href="/terms" className="text-gold-600 hover:underline">Terms of Service</Link>.
                     </span>
                   </label>
                 </div>
@@ -187,7 +187,7 @@ export default function VIPPage() {
                 disabled={!phoneNumber || !smsConsent}
                 className={`w-full py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center ${
                   phoneNumber && smsConsent
-                    ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800'
+                    ? 'bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >

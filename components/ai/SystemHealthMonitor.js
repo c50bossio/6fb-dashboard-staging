@@ -306,7 +306,7 @@ export default function SystemHealthMonitor({
     return (
       <div className={`bg-white rounded-lg shadow-lg p-8 ${className}`}>
         <div className="flex items-center justify-center">
-          <ServerIcon className="h-8 w-8 animate-pulse text-blue-600 mr-3" />
+          <ServerIcon className="h-8 w-8 animate-pulse text-olive-600 mr-3" />
           <span className="text-lg text-gray-600">Loading system health data...</span>
         </div>
       </div>
@@ -319,7 +319,7 @@ export default function SystemHealthMonitor({
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
+            <div className="h-10 w-10 bg-gradient-to-br from-green-500 to-olive-600 rounded-full flex items-center justify-center">
               <ServerIcon className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -425,7 +425,7 @@ export default function SystemHealthMonitor({
             <div className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <CpuChipIcon className="h-5 w-5 text-blue-600" />
+                  <CpuChipIcon className="h-5 w-5 text-olive-600" />
                   <span className="font-medium text-gray-900">CPU</span>
                 </div>
                 {healthData?.trends?.cpuUsage && getTrendIcon(healthData.trends.cpuUsage)}
@@ -451,7 +451,7 @@ export default function SystemHealthMonitor({
             <div className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <CircleStackIcon className="h-5 w-5 text-purple-600" />
+                  <CircleStackIcon className="h-5 w-5 text-gold-600" />
                   <span className="font-medium text-gray-900">Memory</span>
                 </div>
               </div>
@@ -501,7 +501,7 @@ export default function SystemHealthMonitor({
             <div className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <WifiIcon className="h-5 w-5 text-indigo-600" />
+                  <WifiIcon className="h-5 w-5 text-olive-600" />
                   <span className="font-medium text-gray-900">Network</span>
                 </div>
               </div>
@@ -523,12 +523,12 @@ export default function SystemHealthMonitor({
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-3">Performance</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="bg-olive-50 p-4 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-blue-900">Requests/sec</span>
+                <span className="text-sm font-medium text-olive-900">Requests/sec</span>
                 {healthData?.trends?.responseTime && getTrendIcon(healthData.trends.responseTime)}
               </div>
-              <p className="text-2xl font-bold text-blue-700">
+              <p className="text-2xl font-bold text-olive-700">
                 {Math.round(healthData?.performance?.requestsPerSecond || 0)}
               </p>
             </div>
@@ -550,9 +550,9 @@ export default function SystemHealthMonitor({
               </p>
             </div>
 
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <span className="text-sm font-medium text-purple-900">Throughput</span>
-              <p className="text-2xl font-bold text-purple-700">
+            <div className="bg-gold-50 p-4 rounded-lg">
+              <span className="text-sm font-medium text-gold-900">Throughput</span>
+              <p className="text-2xl font-bold text-gold-700">
                 {Math.round(healthData?.performance?.throughput || 0)}
               </p>
             </div>

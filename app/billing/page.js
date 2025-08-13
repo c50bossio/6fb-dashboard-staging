@@ -106,7 +106,7 @@ export default function BillingPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
@@ -119,7 +119,7 @@ export default function BillingPage() {
           <p className="text-gray-600 mb-8">You need an active subscription to access this page.</p>
           <button
             onClick={() => router.push('/subscribe')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
           >
             Choose a Plan
           </button>
@@ -183,7 +183,7 @@ export default function BillingPage() {
               {subscription.tier !== 'enterprise' && (
                 <button
                   onClick={handleUpgrade}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                  className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center gap-2"
                 >
                   <ArrowUpIcon className="h-5 w-5" />
                   Upgrade Plan
@@ -198,7 +198,7 @@ export default function BillingPage() {
           {/* SMS Usage */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <DevicePhoneMobileIcon className="h-8 w-8 text-blue-600" />
+              <DevicePhoneMobileIcon className="h-8 w-8 text-olive-600" />
               <span className="text-2xl font-bold text-gray-900">
                 {usage.sms.percentage}%
               </span>
@@ -244,7 +244,7 @@ export default function BillingPage() {
           {/* AI Usage */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <BoltIcon className="h-8 w-8 text-purple-600" />
+              <BoltIcon className="h-8 w-8 text-gold-600" />
               <span className="text-2xl font-bold text-gray-900">
                 {usage.ai.percentage}%
               </span>

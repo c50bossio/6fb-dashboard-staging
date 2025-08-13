@@ -81,7 +81,7 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
   const getHealthColor = (status) => {
     switch (status) {
       case 'excellent': return 'text-green-600 bg-green-50 border-green-200'
-      case 'good': return 'text-blue-600 bg-blue-50 border-blue-200'
+      case 'good': return 'text-olive-600 bg-olive-50 border-olive-200'
       case 'warning': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
       case 'critical': return 'text-red-600 bg-red-50 border-red-200'
       default: return 'text-gray-600 bg-gray-50 border-gray-200'
@@ -102,7 +102,7 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
     switch (type) {
       case 'critical': return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
       case 'warning': return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
-      case 'opportunity': return <LightBulbIcon className="h-5 w-5 text-blue-500" />
+      case 'opportunity': return <LightBulbIcon className="h-5 w-5 text-olive-500" />
       default: return <BellIcon className="h-5 w-5 text-gray-500" />
     }
   }
@@ -111,7 +111,7 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
     switch (type) {
       case 'critical': return 'border-l-red-500 bg-red-50'
       case 'warning': return 'border-l-yellow-500 bg-yellow-50'
-      case 'opportunity': return 'border-l-blue-500 bg-blue-50'
+      case 'opportunity': return 'border-l-blue-500 bg-olive-50'
       default: return 'border-l-gray-500 bg-gray-50'
     }
   }
@@ -161,10 +161,10 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
 
       {/* Daily Business Pulse */}
       {dailyPulse && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
+        <div className="bg-gradient-to-r from-olive-50 to-indigo-50 rounded-lg p-6 border border-olive-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-blue-900">{dailyPulse.greeting}</h3>
-            <div className="text-sm text-blue-700">
+            <h3 className="text-lg font-semibold text-olive-900">{dailyPulse.greeting}</h3>
+            <div className="text-sm text-olive-700">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 month: 'long', 
@@ -176,30 +176,30 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
           {/* Today's Snapshot */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-900">{dailyPulse.todays_snapshot.revenue}</div>
-              <div className="text-sm text-blue-700">Revenue</div>
+              <div className="text-2xl font-bold text-olive-900">{dailyPulse.todays_snapshot.revenue}</div>
+              <div className="text-sm text-olive-700">Revenue</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-900">{dailyPulse.todays_snapshot.bookings}</div>
-              <div className="text-sm text-blue-700">Bookings</div>
+              <div className="text-2xl font-bold text-olive-900">{dailyPulse.todays_snapshot.bookings}</div>
+              <div className="text-sm text-olive-700">Bookings</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-900">{dailyPulse.todays_snapshot.capacity_utilization}</div>
-              <div className="text-sm text-blue-700">Capacity</div>
+              <div className="text-2xl font-bold text-olive-900">{dailyPulse.todays_snapshot.capacity_utilization}</div>
+              <div className="text-sm text-olive-700">Capacity</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-900">{dailyPulse.todays_snapshot.next_appointment}</div>
-              <div className="text-sm text-blue-700">Next Appt</div>
+              <div className="text-2xl font-bold text-olive-900">{dailyPulse.todays_snapshot.next_appointment}</div>
+              <div className="text-sm text-olive-700">Next Appt</div>
             </div>
           </div>
 
           {/* Quick Insights */}
           {dailyPulse.quick_insights && dailyPulse.quick_insights.length > 0 && (
             <div className="bg-white/70 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">💡 AI Insights</h4>
+              <h4 className="font-medium text-olive-900 mb-2">💡 AI Insights</h4>
               <div className="space-y-1">
                 {dailyPulse.quick_insights.slice(0, 2).map((insight, idx) => (
-                  <div key={idx} className="text-sm text-blue-800">{insight}</div>
+                  <div key={idx} className="text-sm text-olive-800">{insight}</div>
                 ))}
               </div>
             </div>
@@ -298,7 +298,7 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
                   }`}>
                     {action.urgency}
                   </span>
-                  <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                  <button className="text-sm text-olive-600 hover:text-olive-800 font-medium">
                     Mark Done
                   </button>
                 </div>

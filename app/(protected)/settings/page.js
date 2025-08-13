@@ -27,8 +27,8 @@ function SettingsSection({ title, description, icon: Icon, children }) {
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <div className="flex items-start space-x-4 mb-6">
         <div className="flex-shrink-0">
-          <div className="h-10 w-10 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg flex items-center justify-center">
-            <Icon className="h-6 w-6 text-blue-600" />
+          <div className="h-10 w-10 bg-gradient-to-br from-olive-50 to-gold-50 rounded-lg flex items-center justify-center">
+            <Icon className="h-6 w-6 text-olive-600" />
           </div>
         </div>
         <div className="flex-1">
@@ -58,7 +58,7 @@ function SettingsItem({ label, description, value, onChange, type = "text", opti
           <button
             onClick={() => onChange(!value)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              value ? 'bg-blue-600' : 'bg-gray-200'
+              value ? 'bg-olive-600' : 'bg-gray-200'
             }`}
           >
             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -69,7 +69,7 @@ function SettingsItem({ label, description, value, onChange, type = "text", opti
           <select
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            className="text-sm border-gray-300 rounded-lg focus:ring-olive-500 focus:border-olive-500"
           >
             {options.map(option => (
               <option key={option.value} value={option.value}>
@@ -80,7 +80,7 @@ function SettingsItem({ label, description, value, onChange, type = "text", opti
         ) : type === "button" ? (
           <button
             onClick={onChange}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center"
+            className="text-sm text-olive-600 hover:text-olive-700 font-medium flex items-center"
           >
             {value}
             <ChevronRightIcon className="h-4 w-4 ml-1" />
@@ -90,7 +90,7 @@ function SettingsItem({ label, description, value, onChange, type = "text", opti
             type={type}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="text-sm border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+            className="text-sm border-gray-300 rounded-lg focus:ring-olive-500 focus:border-olive-500"
           />
         )}
       </div>
@@ -342,13 +342,13 @@ function Settings() {
           description="Manage your subscription and payments"
           icon={CreditCardIcon}
         >
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-blue-900">Current Plan</span>
-              <span className="text-sm font-bold text-blue-600">Professional</span>
+              <span className="text-sm font-medium text-olive-900">Current Plan</span>
+              <span className="text-sm font-bold text-olive-600">Professional</span>
             </div>
-            <p className="text-xs text-blue-700 mb-3">$99/month • Renews on Jan 1, 2025</p>
-            <button className="w-full bg-blue-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            <p className="text-xs text-olive-700 mb-3">$99/month • Renews on Jan 1, 2025</p>
+            <button className="w-full bg-olive-600 text-white text-sm font-medium py-2 px-4 rounded-lg hover:bg-olive-700 transition-colors">
               Upgrade Plan
             </button>
           </div>
@@ -402,7 +402,7 @@ function Settings() {
                   <p className="text-xs text-gray-500">Not connected</p>
                 </div>
               </div>
-              <button className="text-xs text-blue-600 hover:text-blue-700">Connect</button>
+              <button className="text-xs text-olive-600 hover:text-olive-700">Connect</button>
             </div>
             
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -415,7 +415,7 @@ function Settings() {
                   <p className="text-xs text-gray-500">Not connected</p>
                 </div>
               </div>
-              <button className="text-xs text-blue-600 hover:text-blue-700">Connect</button>
+              <button className="text-xs text-olive-600 hover:text-olive-700">Connect</button>
             </div>
           </div>
         </SettingsSection>
@@ -426,7 +426,7 @@ function Settings() {
         {/* API & Developer */}
         <Card className="hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center space-x-3 mb-4">
-            <CodeBracketIcon className="h-6 w-6 text-purple-600" />
+            <CodeBracketIcon className="h-6 w-6 text-gold-600" />
             <h3 className="text-lg font-semibold text-gray-900">API & Developer</h3>
           </div>
           <div className="space-y-3">
@@ -502,7 +502,7 @@ function Settings() {
           </button>
           <button 
             onClick={handleSave}
-            className="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-2 text-sm font-medium text-white bg-olive-600 rounded-lg hover:bg-olive-700 transition-colors"
           >
             Save Changes
           </button>

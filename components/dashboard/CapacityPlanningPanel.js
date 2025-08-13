@@ -375,7 +375,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       case 'high': return <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
       case 'medium': return <ClockIcon className="h-4 w-4 text-yellow-500" />
       case 'low': return <CheckCircleIcon className="h-4 w-4 text-green-500" />
-      default: return <LightBulbIcon className="h-4 w-4 text-blue-500" />
+      default: return <LightBulbIcon className="h-4 w-4 text-olive-500" />
     }
   }
 
@@ -384,14 +384,14 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       case 'high': return 'border-l-red-500 bg-red-50'
       case 'medium': return 'border-l-yellow-500 bg-yellow-50'
       case 'low': return 'border-l-green-500 bg-green-50'
-      default: return 'border-l-blue-500 bg-blue-50'
+      default: return 'border-l-blue-500 bg-olive-50'
     }
   }
 
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
         <p className="text-gray-600 mt-2">Analyzing capacity...</p>
       </div>
     )
@@ -414,7 +414,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
             <select
               value={selectedTimeframe}
               onChange={(e) => setSelectedTimeframe(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 text-sm"
             >
               <option value="daily">Daily</option>
               <option value="weekly">Weekly</option>
@@ -423,7 +423,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
             <select
               value={optimizationFocus}
               onChange={(e) => setOptimizationFocus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 text-sm"
             >
               <option value="revenue">Revenue Focus</option>
               <option value="efficiency">Efficiency Focus</option>
@@ -432,7 +432,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
             <button
               onClick={loadCapacityData}
               disabled={loading}
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 flex items-center gap-2 text-sm"
+              className="px-3 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:bg-gray-300 flex items-center gap-2 text-sm"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -451,7 +451,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">Current Utilization</h3>
-              <ChartBarIcon className="h-5 w-5 text-blue-500" />
+              <ChartBarIcon className="h-5 w-5 text-olive-500" />
             </div>
             <div className={`text-2xl font-bold px-2 py-1 rounded-full text-center ${getUtilizationColor(capacityData.current.utilization)}`}>
               {formatUtilization(capacityData.current.utilization)}
@@ -477,7 +477,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
               <h3 className="text-sm font-semibold">Seasonal Impact</h3>
               <ArrowTrendingUpIcon className="h-5 w-5 text-amber-500" />
             </div>
-            <div className={`text-2xl font-bold ${capacityData.current.seasonal_impact > 1 ? 'text-amber-600' : 'text-blue-600'}`}>
+            <div className={`text-2xl font-bold ${capacityData.current.seasonal_impact > 1 ? 'text-amber-600' : 'text-olive-600'}`}>
               {capacityData.current.seasonal_impact > 1 ? '+' : ''}{Math.round((capacityData.current.seasonal_impact - 1) * 100)}%
             </div>
             <p className="text-xs text-gray-600 mt-1">vs. baseline</p>
@@ -486,9 +486,9 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">Recommendations</h3>
-              <LightBulbIcon className="h-5 w-5 text-purple-500" />
+              <LightBulbIcon className="h-5 w-5 text-gold-500" />
             </div>
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-gold-600">
               {recommendations.length}
             </div>
             <p className="text-xs text-gray-600 mt-1">Active suggestions</p>
@@ -530,7 +530,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
                           <ul className="space-y-1">
                             {rec.actions.map((action, idx) => (
                               <li key={idx} className="flex items-start gap-2 text-xs text-gray-600">
-                                <ArrowRightIcon className="h-3 w-3 text-blue-500 mt-0.5 flex-shrink-0" />
+                                <ArrowRightIcon className="h-3 w-3 text-olive-500 mt-0.5 flex-shrink-0" />
                                 <span>{action}</span>
                               </li>
                             ))}
@@ -557,7 +557,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
         <div className="bg-white rounded-lg shadow-sm border">
           <div className="p-4 border-b">
             <h3 className="text-lg font-semibold flex items-center gap-2">
-              <CalendarDaysIcon className="h-5 w-5 text-blue-500" />
+              <CalendarDaysIcon className="h-5 w-5 text-olive-500" />
               Capacity Patterns & Forecasting
             </h3>
           </div>

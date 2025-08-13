@@ -102,7 +102,7 @@ END:VCALENDAR`
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-olive-50 via-white to-gold-50">
       <div className="max-w-3xl mx-auto px-4 py-16">
         {/* Success Header */}
         <div className="text-center mb-8">
@@ -115,7 +115,7 @@ END:VCALENDAR`
             Your appointment has been successfully scheduled
           </p>
           
-          <div className="mt-4 inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full">
+          <div className="mt-4 inline-flex items-center px-4 py-2 bg-olive-100 text-olive-800 rounded-full">
             <span className="text-sm font-medium">Confirmation #</span>
             <span className="ml-2 font-mono font-bold">{booking.confirmationNumber}</span>
           </div>
@@ -123,7 +123,7 @@ END:VCALENDAR`
         
         {/* Booking Details Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+          <div className="bg-gradient-to-r from-olive-600 to-gold-600 p-6 text-white">
             <h2 className="text-2xl font-bold mb-2">Appointment Details</h2>
             <p className="opacity-90">
               {new Date(booking.dateTime).toLocaleDateString('en-US', {
@@ -138,7 +138,7 @@ END:VCALENDAR`
           <div className="p-6 space-y-6">
             {/* Time */}
             <div className="flex items-start">
-              <ClockIcon className="h-6 w-6 text-blue-600 mt-0.5" />
+              <ClockIcon className="h-6 w-6 text-olive-600 mt-0.5" />
               <div className="ml-4">
                 <p className="font-semibold text-gray-900">Time</p>
                 <p className="text-gray-600">
@@ -153,14 +153,14 @@ END:VCALENDAR`
             
             {/* Location */}
             <div className="flex items-start">
-              <MapPinIcon className="h-6 w-6 text-blue-600 mt-0.5" />
+              <MapPinIcon className="h-6 w-6 text-olive-600 mt-0.5" />
               <div className="ml-4">
                 <p className="font-semibold text-gray-900">Location</p>
                 <p className="text-gray-600">{booking.location.name}</p>
                 <p className="text-sm text-gray-500">{booking.location.address}</p>
                 <a 
                   href={`tel:${booking.location.phone}`}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-olive-600 hover:underline"
                 >
                   {booking.location.phone}
                 </a>
@@ -169,7 +169,7 @@ END:VCALENDAR`
             
             {/* Service & Barber */}
             <div className="flex items-start">
-              <CalendarIcon className="h-6 w-6 text-blue-600 mt-0.5" />
+              <CalendarIcon className="h-6 w-6 text-olive-600 mt-0.5" />
               <div className="ml-4">
                 <p className="font-semibold text-gray-900">Service</p>
                 <p className="text-gray-600">{booking.service.name}</p>
@@ -209,7 +209,7 @@ END:VCALENDAR`
                 className={`flex items-center justify-center px-4 py-3 rounded-lg font-medium transition-all ${
                   addedToCalendar
                     ? 'bg-green-100 text-green-800 cursor-default'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-olive-600 text-white hover:bg-olive-700'
                 }`}
               >
                 <CalendarDaysIcon className="h-5 w-5 mr-2" />
@@ -227,25 +227,25 @@ END:VCALENDAR`
           </div>
           
           {/* What's Next */}
-          <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
-            <h3 className="font-semibold text-blue-900 mb-3">What's Next?</h3>
+          <div className="bg-olive-50 rounded-xl border border-olive-200 p-6">
+            <h3 className="font-semibold text-olive-900 mb-3">What's Next?</h3>
             
-            <ul className="space-y-2 text-blue-800">
+            <ul className="space-y-2 text-olive-800">
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">✓</span>
+                <span className="text-olive-600 mr-2">✓</span>
                 <span>You'll receive a confirmation email at {booking.customer.email}</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">✓</span>
+                <span className="text-olive-600 mr-2">✓</span>
                 <span>We'll send you a reminder 24 hours before your appointment</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">✓</span>
+                <span className="text-olive-600 mr-2">✓</span>
                 <span>Arrive 5 minutes early for check-in</span>
               </li>
               {booking.paymentStatus !== 'paid' && (
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">✓</span>
+                  <span className="text-olive-600 mr-2">✓</span>
                   <span>Bring ${booking.totalAmount} for payment (cash or card accepted)</span>
                 </li>
               )}
@@ -264,7 +264,7 @@ END:VCALENDAR`
             
             <button
               onClick={() => router.push('/bookings')}
-              className="flex-1 flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all"
+              className="flex-1 flex items-center justify-center px-6 py-3 bg-olive-600 text-white rounded-lg font-medium hover:bg-olive-700 transition-all"
             >
               View My Bookings
             </button>
@@ -275,12 +275,12 @@ END:VCALENDAR`
         <div className="mt-8 text-center text-sm text-gray-600">
           <p>Need help? Contact us at</p>
           <div className="flex items-center justify-center space-x-4 mt-2">
-            <a href={`tel:${booking.location.phone}`} className="flex items-center text-blue-600 hover:underline">
+            <a href={`tel:${booking.location.phone}`} className="flex items-center text-olive-600 hover:underline">
               <PhoneIcon className="h-4 w-4 mr-1" />
               {booking.location.phone}
             </a>
             <span className="text-gray-400">•</span>
-            <a href="mailto:support@6fb-ai.com" className="flex items-center text-blue-600 hover:underline">
+            <a href="mailto:support@6fb-ai.com" className="flex items-center text-olive-600 hover:underline">
               <EnvelopeIcon className="h-4 w-4 mr-1" />
               support@6fb-ai.com
             </a>

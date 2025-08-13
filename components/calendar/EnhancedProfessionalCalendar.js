@@ -36,9 +36,9 @@ export default function EnhancedProfessionalCalendar({
   // NO MOCK DATA - Use external resources if provided, otherwise use empty defaults for proper setup
   const defaultResources = [
     { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
-    { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#3b82f6' },
+    { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#546355' },
     { id: 'barber-3', title: 'Mike Brown', eventColor: '#f59e0b' },
-    { id: 'barber-4', title: 'Lisa Davis', eventColor: '#8b5cf6' }
+    { id: 'barber-4', title: 'Lisa Davis', eventColor: '#D4B878' }
   ]
   
   const resources = externalResources || defaultResources

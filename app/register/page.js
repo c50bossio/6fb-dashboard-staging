@@ -14,11 +14,13 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
 import { useAuth } from '../../components/SupabaseAuthProvider'
+import ConversionTracker, { useRegistrationTracking } from '@/components/analytics/ConversionTracker'
 
 
 export default function RegisterPage() {
   const router = useRouter()
   const { signUp, signInWithGoogle, loading: authLoading } = useAuth()
+  const registrationTracking = useRegistrationTracking()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     // Personal Info
@@ -121,6 +123,15 @@ export default function RegisterPage() {
     console.log('Form field changed:', name, '=', fieldValue)
     setFormData(prev => ({ ...prev, [name]: fieldValue }))
     
+    // Track form field interaction
+    registrationTracking.trackFieldInteraction && registrationTracking.trackFieldInteraction({
+      field_name: name,
+      field_value: type === 'password' ? '[HIDDEN]' : fieldValue,
+      field_type: type || 'text',
+      step: currentStep,
+      interaction_type: 'input_change'
+    })
+    
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
@@ -135,17 +146,28 @@ export default function RegisterPage() {
     
     // Validate single field on blur
     const newErrors = { ...errors }
+    let hasValidationError = false
+    
     if (field === 'email' && formData.email && !validateEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address'
+      hasValidationError = true
     }
     if (field === 'password' && formData.password && !validatePassword(formData.password)) {
       newErrors.password = 'Password must be at least 8 characters with uppercase, lowercase, and number'
+      hasValidationError = true
     }
     if (field === 'confirmPassword' && formData.confirmPassword && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match'
+      hasValidationError = true
     }
     if ((field === 'phone' || field === 'businessPhone') && formData[field] && !validatePhone(formData[field])) {
       newErrors[field] = 'Please enter a valid phone number'
+      hasValidationError = true
+    }
+    
+    // Track validation errors
+    if (hasValidationError && newErrors[field]) {
+      registrationTracking.trackFieldValidationError(field, newErrors[field])
     }
     
     setErrors(newErrors)
@@ -222,11 +244,29 @@ export default function RegisterPage() {
     e.preventDefault()
     e.stopPropagation()
     console.log('Next button clicked - current step:', currentStep)
+    
     if (validateStep(currentStep)) {
       console.log('Validation passed, moving to step:', currentStep + 1)
+      
+      // Track step completion
+      registrationTracking.trackStepCompleted(currentStep, {
+        step_name: currentStep === 1 ? 'personal_info' : 'business_info',
+        fields_completed: Object.keys(formData).filter(key => formData[key] && formData[key] !== '').length,
+        validation_errors: 0
+      })
+      
       setCurrentStep(currentStep + 1)
     } else {
       console.log('Validation failed for step:', currentStep)
+      
+      // Track step validation failure
+      const errorCount = Object.keys(errors).length
+      registrationTracking.trackStepCompleted(currentStep, {
+        step_name: currentStep === 1 ? 'personal_info' : 'business_info',
+        validation_failed: true,
+        error_count: errorCount,
+        errors: Object.keys(errors)
+      })
     }
   }
 
@@ -264,6 +304,9 @@ export default function RegisterPage() {
         }
       })
       
+      // Track successful registration
+      registrationTracking.trackRegistrationSuccess('email', result?.user?.id)
+      
       // Show success message briefly before redirect
       setErrors({ 
         submit: '✅ Account created successfully! Redirecting to choose your plan...',
@@ -284,6 +327,9 @@ export default function RegisterPage() {
       }, 1500)
     } catch (err) {
       console.error('Registration error:', err)
+      
+      // Track registration failure
+      registrationTracking.trackRegistrationFailure(err.message || 'Unknown error', currentStep)
       
       // Handle specific Supabase errors with user-friendly messages
       if (err.message && (err.message.includes('security purposes') || err.message.includes('temporarily busy'))) {
@@ -328,6 +374,9 @@ export default function RegisterPage() {
       setErrors({})
       console.log('🔐 Starting Google sign-up...')
       
+      // Track OAuth attempt
+      registrationTracking.trackOAuthAttempt('google')
+      
       const result = await signInWithGoogle()
       
       // If signInWithGoogle returns without error, the redirect should happen
@@ -338,6 +387,10 @@ export default function RegisterPage() {
       
     } catch (err) {
       console.error('🔐 Google sign-up error:', err)
+      
+      // Track OAuth failure
+      registrationTracking.trackRegistrationFailure(`Google OAuth: ${err.message}`, 'oauth')
+      
       setErrors({ 
         submit: err.message || 'Google sign-up failed. Please try again.',
         isSuccess: false 
@@ -364,7 +417,7 @@ export default function RegisterPage() {
               required
               value={formData.firstName}
               onChange={handleInputChange}
-              className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+              className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
                 errors.firstName ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="John"
@@ -385,7 +438,7 @@ export default function RegisterPage() {
               required
               value={formData.lastName}
               onChange={handleInputChange}
-              className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+              className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
                 errors.lastName ? 'border-red-300' : 'border-gray-300'
               }`}
               placeholder="Doe"
@@ -411,7 +464,7 @@ export default function RegisterPage() {
             required
             value={formData.email}
             onChange={handleInputChange}
-            className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+            className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
               errors.email ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="john@barbershop.com"
@@ -435,7 +488,7 @@ export default function RegisterPage() {
             required
             value={formData.phone}
             onChange={handleInputChange}
-            className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+            className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
               errors.phone ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="(555) 123-4567"
@@ -453,7 +506,7 @@ export default function RegisterPage() {
             type="checkbox"
             checked={formData.smsConsent}
             onChange={handleInputChange}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-0.5"
+            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded mt-0.5"
           />
           <label htmlFor="smsConsent" className="ml-2 text-sm text-gray-600">
             <span className="font-medium text-gray-900">Opt in to SMS messages</span> (optional)<br />
@@ -461,11 +514,11 @@ export default function RegisterPage() {
               I agree to receive SMS appointment reminders and promotional offers from BookedBarber. 
               Message frequency varies. Message and data rates may apply. 
               Reply STOP to unsubscribe, HELP for help. View our{' '}
-              <Link href="/sms-policy" target="_blank" className="text-blue-600 hover:underline">
+              <Link href="/sms-policy" target="_blank" className="text-olive-600 hover:underline">
                 SMS Policy
               </Link>
               {' '}and{' '}
-              <Link href="/terms" target="_blank" className="text-blue-600 hover:underline">
+              <Link href="/terms" target="_blank" className="text-olive-600 hover:underline">
                 Terms
               </Link>.
             </span>
@@ -488,7 +541,7 @@ export default function RegisterPage() {
             required
             value={formData.password}
             onChange={handleInputChange}
-            className={`appearance-none block w-full pl-10 pr-10 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+            className={`appearance-none block w-full pl-10 pr-10 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
               errors.password ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Enter a secure password"
@@ -525,7 +578,7 @@ export default function RegisterPage() {
             required
             value={formData.confirmPassword}
             onChange={handleInputChange}
-            className={`appearance-none block w-full pl-10 pr-10 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+            className={`appearance-none block w-full pl-10 pr-10 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
               errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Confirm your password"
@@ -566,7 +619,7 @@ export default function RegisterPage() {
             required
             value={formData.businessName}
             onChange={handleInputChange}
-            className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+            className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
               errors.businessName ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="Premium Cuts Barbershop"
@@ -587,7 +640,7 @@ export default function RegisterPage() {
             required
             value={formData.businessAddress}
             onChange={handleInputChange}
-            className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+            className={`appearance-none block w-full px-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
               errors.businessAddress ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="123 Main Street, Suite 100, City, State 12345"
@@ -611,7 +664,7 @@ export default function RegisterPage() {
             required
             value={formData.businessPhone}
             onChange={handleInputChange}
-            className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+            className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm ${
               errors.businessPhone ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="(555) 987-6543"
@@ -630,7 +683,7 @@ export default function RegisterPage() {
             name="businessType"
             value={formData.businessType}
             onChange={handleInputChange}
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm"
           >
             <option value="barbershop">Barbershop</option>
             <option value="salon">Hair Salon</option>
@@ -661,9 +714,9 @@ export default function RegisterPage() {
             }}
             className={`relative rounded-lg border-2 p-6 cursor-pointer transition-all ${
             formData.selectedPlan === plan.value 
-              ? 'border-blue-500 bg-blue-50' 
+              ? 'border-olive-500 bg-olive-50' 
               : 'border-gray-200 hover:border-gray-300'
-          } ${plan.featured ? 'ring-2 ring-blue-500' : ''}`}>
+          } ${plan.featured ? 'ring-2 ring-olive-500' : ''}`}>
             <input
               type="radio"
               name="selectedPlan"
@@ -675,7 +728,7 @@ export default function RegisterPage() {
             
             {plan.featured && (
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                <span className="bg-olive-500 text-white px-3 py-1 rounded-full text-xs font-medium">
                   Recommended
                 </span>
               </div>
@@ -716,11 +769,19 @@ export default function RegisterPage() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <ConversionTracker 
+      page="register"
+      customProperties={{
+        current_step: currentStep,
+        total_steps: 2,
+        form_completion_rate: Math.round((Object.keys(formData).filter(key => formData[key] && formData[key] !== '').length / 10) * 100)
+      }}
+    >
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
         {/* Logo */}
         <div className="flex justify-center">
-          <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="h-12 w-12 bg-olive-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">6FB</span>
           </div>
         </div>
@@ -729,7 +790,7 @@ export default function RegisterPage() {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+          <Link href="/login" className="font-medium text-olive-600 hover:text-olive-500">
             Sign in here
           </Link>
         </p>
@@ -741,14 +802,14 @@ export default function RegisterPage() {
               <div key={step} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   step <= currentStep 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-olive-600 text-white' 
                     : 'bg-gray-200 text-gray-600'
                 }`}>
                   {step}
                 </div>
                 {step < 2 && (
                   <div className={`w-12 h-1 mx-2 ${
-                    step < currentStep ? 'bg-blue-600' : 'bg-gray-200'
+                    step < currentStep ? 'bg-olive-600' : 'bg-gray-200'
                   }`} />
                 )}
               </div>
@@ -763,7 +824,7 @@ export default function RegisterPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-2xl">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} data-track-form="registration-form" data-track-view="registration-form">
             {errors.submit && (
               <div className={`mb-6 px-4 py-3 rounded-md text-sm ${
                 errors.isSuccess 
@@ -838,6 +899,8 @@ export default function RegisterPage() {
                     : 'text-gray-500 hover:bg-gray-50'
                 }`}
                 onClick={handleGoogleSignUp}
+                data-track-click="oauth-google-signup"
+                data-track-view="oauth-button"
               >
                 {(isLoading || authLoading) ? (
                   <div className="flex items-center">
@@ -861,12 +924,13 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Back to home link */}
-      <div className="mt-8 text-center">
-        <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
-          ← Back to home page
-        </Link>
+        {/* Back to home link */}
+        <div className="mt-8 text-center">
+          <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+            ← Back to home page
+          </Link>
+        </div>
       </div>
-    </div>
+    </ConversionTracker>
   )
 }

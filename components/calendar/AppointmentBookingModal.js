@@ -1036,7 +1036,7 @@ export default function AppointmentBookingModal({
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="min-h-[44px] min-w-[44px] p-3 rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center"
+                    className="min-h-[44px] min-w-[44px] p-3 rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2 flex items-center justify-center"
                     onClick={onClose}
                   >
                     <span className="sr-only">Close</span>
@@ -1109,7 +1109,7 @@ export default function AppointmentBookingModal({
                                   id="duration"
                                   value={formData.duration_minutes}
                                   onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
                                 >
                                   <option value="15">15 minutes</option>
                                   <option value="30">30 minutes</option>
@@ -1142,7 +1142,7 @@ export default function AppointmentBookingModal({
                                 value={blockReason}
                                 onChange={(e) => setBlockReason(e.target.value)}
                                 placeholder="e.g., Lunch break, Meeting, Personal time"
-                                className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
                               />
                             </div>
                             
@@ -1169,7 +1169,7 @@ export default function AppointmentBookingModal({
                           className={`mt-1 block w-full rounded-md shadow-sm ${
                             fieldErrors.barber_id 
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                              : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
                           } ${loading ? 'bg-gray-50' : ''}`}
                           disabled={loading}
                           required
@@ -1199,7 +1199,7 @@ export default function AppointmentBookingModal({
                           className={`mt-1 block w-full rounded-md shadow-sm ${
                             fieldErrors.service_id 
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                              : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
                           } ${loading ? 'bg-gray-50' : ''}`}
                           disabled={loading}
                           required
@@ -1223,17 +1223,17 @@ export default function AppointmentBookingModal({
 
                       {/* Time Slot Display - Shows when service and time are selected */}
                       {formData.scheduled_at && formData.service_id && getTimeRangeDisplay() && (
-                        <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                        <div className="rounded-lg bg-olive-50 border border-olive-200 p-4">
                           <div className="flex items-center">
-                            <ClockIcon className="h-5 w-5 text-blue-600 mr-2" />
+                            <ClockIcon className="h-5 w-5 text-olive-600 mr-2" />
                             <div>
-                              <p className="text-sm font-medium text-blue-900">
+                              <p className="text-sm font-medium text-olive-900">
                                 Appointment Time Slot
                               </p>
-                              <p className="text-lg font-semibold text-blue-700">
+                              <p className="text-lg font-semibold text-olive-700">
                                 {getTimeRangeDisplay()}
                               </p>
-                              <p className="text-xs text-blue-600 mt-1">
+                              <p className="text-xs text-olive-600 mt-1">
                                 Duration: {formData.duration_minutes} minutes
                                 {selectedService && ` • ${selectedService.name}`}
                               </p>
@@ -1248,7 +1248,7 @@ export default function AppointmentBookingModal({
                           <label htmlFor="scheduled_at" className="block text-sm font-medium text-gray-700">
                             Date & Time <span className="text-red-500">*</span>
                             {selectedSlot?.needsTimePicker && (
-                              <span className="ml-2 text-xs text-blue-600 font-normal">
+                              <span className="ml-2 text-xs text-olive-600 font-normal">
                                 (Please select a time for {selectedSlot.selectedDate})
                               </span>
                             )}
@@ -1262,7 +1262,7 @@ export default function AppointmentBookingModal({
                             className={`mt-1 block w-full rounded-md shadow-sm ${
                               fieldErrors.scheduled_at 
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
                             } ${loading ? 'bg-gray-50' : ''}`}
                             disabled={loading}
                             required
@@ -1285,7 +1285,7 @@ export default function AppointmentBookingModal({
                             min="5"
                             max="480"
                             step="5"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                           />
                         </div>
                       </div>
@@ -1298,7 +1298,7 @@ export default function AppointmentBookingModal({
                           </label>
                           {checkingAvailability ? (
                             <div className="flex items-center justify-center py-4">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-olive-600"></div>
                               <span className="ml-2 text-sm text-gray-600">
                                 Checking availability...
                               </span>
@@ -1333,8 +1333,8 @@ export default function AppointmentBookingModal({
                         <div className="flex items-center justify-between">
                           <h4 className="text-sm font-semibold text-gray-900">Customer Information</h4>
                           {customerSearchLoading && (
-                            <div className="flex items-center text-xs text-blue-600">
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-1"></div>
+                            <div className="flex items-center text-xs text-olive-600">
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-olive-600 mr-1"></div>
                               Finding customer...
                             </div>
                           )}
@@ -1349,7 +1349,7 @@ export default function AppointmentBookingModal({
                               value="new"
                               checked={customerMode === 'new'}
                               onChange={() => handleCustomerModeChange('new')}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
                             />
                             <span className="ml-2 text-sm text-gray-700">New Customer</span>
                           </label>
@@ -1360,7 +1360,7 @@ export default function AppointmentBookingModal({
                               value="existing"
                               checked={customerMode === 'existing'}
                               onChange={() => handleCustomerModeChange('existing')}
-                              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
                             />
                             <span className="ml-2 text-sm text-gray-700">Existing Customer</span>
                           </label>
@@ -1368,11 +1368,11 @@ export default function AppointmentBookingModal({
 
                         {/* Existing Customer Display */}
                         {customerMode === 'existing' && selectedCustomer && (
-                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="p-4 bg-olive-50 border border-olive-200 rounded-lg">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
-                                  <UserIcon className="h-5 w-5 text-blue-600" />
+                                  <UserIcon className="h-5 w-5 text-olive-600" />
                                   <span className="font-medium text-gray-900">{selectedCustomer.name}</span>
                                   {selectedCustomer.vip_status && (
                                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -1400,7 +1400,7 @@ export default function AppointmentBookingModal({
                               <button
                                 type="button"
                                 onClick={() => setShowCustomerSearch(true)}
-                                className="ml-3 text-sm text-blue-600 hover:text-blue-700"
+                                className="ml-3 text-sm text-olive-600 hover:text-olive-700"
                               >
                                 Change
                               </button>
@@ -1413,7 +1413,7 @@ export default function AppointmentBookingModal({
                           <button
                             type="button"
                             onClick={() => setShowCustomerSearch(true)}
-                            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-olive-500 hover:bg-olive-50 transition-colors"
                           >
                             <UserIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                             <span className="text-sm text-gray-600">Click to search for existing customer</span>
@@ -1443,7 +1443,7 @@ export default function AppointmentBookingModal({
                                   className={`mt-1 block w-full rounded-md shadow-sm ${
                                     fieldErrors.client_name 
                                       ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                      : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
                                   } ${loading ? 'bg-gray-50' : ''}`}
                                   disabled={loading}
                                   required
@@ -1472,7 +1472,7 @@ export default function AppointmentBookingModal({
                                   className={`mt-1 block w-full rounded-md shadow-sm ${
                                     fieldErrors.client_phone 
                                       ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                      : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                      : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
                                   } ${loading ? 'bg-gray-50' : ''}`}
                                   disabled={loading}
                                   required
@@ -1502,7 +1502,7 @@ export default function AppointmentBookingModal({
                                 className={`mt-1 block w-full rounded-md shadow-sm ${
                                   fieldErrors.client_email 
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                    : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
                                 } ${loading ? 'bg-gray-50' : ''}`}
                                 disabled={loading}
                               />
@@ -1523,7 +1523,7 @@ export default function AppointmentBookingModal({
                             value={formData.client_notes}
                             onChange={handleInputChange}
                             rows={3}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             placeholder="Any special requests or preferences..."
                           />
                         </div>
@@ -1541,7 +1541,7 @@ export default function AppointmentBookingModal({
                                     ...prev,
                                     confirmations: e.target.checked
                                   }))}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Send booking confirmation</span>
                               </label>
@@ -1554,7 +1554,7 @@ export default function AppointmentBookingModal({
                                     ...prev,
                                     reminders: e.target.checked
                                   }))}
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                                 />
                                 <span className="ml-2 text-sm text-gray-700">Send reminder (24h before)</span>
                               </label>
@@ -1568,7 +1568,7 @@ export default function AppointmentBookingModal({
                                       ...prev,
                                       sms: e.target.checked
                                     }))}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                                   />
                                   <span className="ml-2 text-sm text-gray-600">📱 Text message (SMS)</span>
                                 </label>
@@ -1583,7 +1583,7 @@ export default function AppointmentBookingModal({
                                       ...prev,
                                       email: e.target.checked
                                     }))}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                                   />
                                   <span className="ml-2 text-sm text-gray-600">✉️ Email notification</span>
                                 </label>
@@ -1610,7 +1610,7 @@ export default function AppointmentBookingModal({
                               onChange={handleInputChange}
                               min="0"
                               step="0.01"
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             />
                           </div>
                           
@@ -1626,7 +1626,7 @@ export default function AppointmentBookingModal({
                               onChange={handleInputChange}
                               min="0"
                               step="0.01"
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             />
                           </div>
                           
@@ -1646,7 +1646,7 @@ export default function AppointmentBookingModal({
                         <h4 className="text-sm font-semibold text-gray-900">Recurring Schedule</h4>
                         
                         {isEditing && editingAppointment?.recurrence_rule && (
-                          <div className="mb-4 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-md p-3">
+                          <div className="mb-4 text-sm text-olive-600 bg-olive-50 border border-olive-200 rounded-md p-3">
                             ℹ️ This appointment is already part of a recurring series. Converting will create a new series starting from this appointment.
                           </div>
                         )}
@@ -1740,7 +1740,7 @@ export default function AppointmentBookingModal({
                             type="checkbox"
                             checked={formData.is_recurring}
                             onChange={handleInputChange}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                           />
                           <label htmlFor="is_recurring" className="ml-2 block text-sm text-gray-900">
                             {isEditing ? 'Convert to recurring appointment' : 'Make this a recurring appointment'}
@@ -1748,7 +1748,7 @@ export default function AppointmentBookingModal({
                         </div>
                         
                         {formData.is_recurring && (
-                          <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="space-y-4 p-4 bg-olive-50 rounded-lg border border-olive-200">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {/* Recurrence Pattern */}
                               <div>
@@ -1760,7 +1760,7 @@ export default function AppointmentBookingModal({
                                   name="recurrence_pattern"
                                   value={formData.recurrence_pattern}
                                   onChange={handleInputChange}
-                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                                 >
                                   <option value="daily">Daily</option>
                                   <option value="weekly">Weekly</option>
@@ -1782,7 +1782,7 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     min="1"
                                     max="12"
-                                    className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                                   />
                                   <span className="text-sm text-gray-600">
                                     {formData.recurrence_pattern === 'daily' ? 'day(s)' :
@@ -1811,7 +1811,7 @@ export default function AppointmentBookingModal({
                                       }}
                                       className={`w-10 h-10 rounded-full text-xs font-medium transition-colors ${
                                         formData.recurrence_days.includes(index)
-                                          ? 'bg-blue-600 text-white'
+                                          ? 'bg-olive-600 text-white'
                                           : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                                       }`}
                                     >
@@ -1836,7 +1836,7 @@ export default function AppointmentBookingModal({
                                     value="count"
                                     checked={formData.recurrence_end_type === 'count'}
                                     onChange={handleInputChange}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
                                   <label htmlFor="recurrence_end_count" className="ml-2 text-sm text-gray-900">
                                     After
@@ -1849,7 +1849,7 @@ export default function AppointmentBookingModal({
                                     min="1"
                                     max="52"
                                     disabled={formData.recurrence_end_type !== 'count'}
-                                    className="ml-2 w-16 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
+                                    className="ml-2 w-16 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-gray-100"
                                   />
                                   <span className="ml-1 text-sm text-gray-600">appointments</span>
                                 </div>
@@ -1862,7 +1862,7 @@ export default function AppointmentBookingModal({
                                     value="date"
                                     checked={formData.recurrence_end_type === 'date'}
                                     onChange={handleInputChange}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
                                   <label htmlFor="recurrence_end_date" className="ml-2 text-sm text-gray-900">
                                     On
@@ -1873,7 +1873,7 @@ export default function AppointmentBookingModal({
                                     value={formData.recurrence_end_date}
                                     onChange={handleInputChange}
                                     disabled={formData.recurrence_end_type !== 'date'}
-                                    className="ml-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100"
+                                    className="ml-2 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-gray-100"
                                   />
                                 </div>
                                 
@@ -1885,7 +1885,7 @@ export default function AppointmentBookingModal({
                                     value="never"
                                     checked={formData.recurrence_end_type === 'never'}
                                     onChange={handleInputChange}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
                                   <label htmlFor="recurrence_end_never" className="ml-2 text-sm text-gray-900">
                                     Never
@@ -1906,7 +1906,7 @@ export default function AppointmentBookingModal({
                             type="checkbox"
                             checked={formData.is_walk_in}
                             onChange={handleInputChange}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                           />
                           <label htmlFor="is_walk_in" className="ml-2 block text-sm text-gray-900">
                             This is a walk-in appointment
@@ -1922,7 +1922,7 @@ export default function AppointmentBookingModal({
                             name="priority"
                             value={formData.priority}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
                           >
                             <option value={0}>Normal</option>
                             <option value={1}>High</option>
@@ -2016,7 +2016,7 @@ export default function AppointmentBookingModal({
                             className={`inline-flex items-center justify-center rounded-lg px-5 py-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                               isBlockMode 
                                 ? 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500' 
-                                : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                                : 'bg-olive-600 hover:bg-olive-700 focus:ring-olive-500'
                             }`}
                           >
                             {loading ? (

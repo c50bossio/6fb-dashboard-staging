@@ -41,11 +41,11 @@ const AGENT_ICONS = {
 
 const AGENT_COLORS = {
   'financial_coach': 'bg-green-50 text-green-600 border-green-200',
-  'marketing_expert': 'bg-purple-50 text-purple-600 border-purple-200',
-  'operations_manager': 'bg-blue-50 text-blue-600 border-blue-200',
+  'marketing_expert': 'bg-gold-50 text-gold-600 border-gold-200',
+  'operations_manager': 'bg-olive-50 text-olive-600 border-olive-200',
   'customer_relations': 'bg-pink-50 text-pink-600 border-pink-200',
   'growth_strategy': 'bg-orange-50 text-orange-600 border-orange-200',
-  'strategic_mindset': 'bg-indigo-50 text-indigo-600 border-indigo-200'
+  'strategic_mindset': 'bg-indigo-50 text-olive-600 border-indigo-200'
 }
 
 // Quick Actions Component
@@ -62,14 +62,14 @@ function QuickActions({ onQuickAction, isLoading }) {
       id: 'marketing_campaign',
       label: 'Launch Campaign',
       icon: RocketLaunchIcon,
-      color: 'bg-purple-100 text-purple-700 hover:bg-purple-200',
+      color: 'bg-gold-100 text-gold-700 hover:bg-gold-200',
       prompt: 'Help me create and launch a marketing campaign to attract new customers'
     },
     {
       id: 'staff_optimization',
       label: 'Optimize Operations',
       icon: Cog6ToothIcon,
-      color: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+      color: 'bg-olive-100 text-olive-700 hover:bg-olive-200',
       prompt: 'Review my current operations and suggest improvements for efficiency and customer satisfaction'
     },
     {
@@ -98,7 +98,7 @@ function QuickActions({ onQuickAction, isLoading }) {
   return (
     <div className="mb-8">
       <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center">
-        <BoltIcon className="h-4 w-4 mr-2 text-blue-600" />
+        <BoltIcon className="h-4 w-4 mr-2 text-olive-600" />
         Quick Actions
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -109,7 +109,7 @@ function QuickActions({ onQuickAction, isLoading }) {
               key={action.id}
               onClick={() => onQuickAction(action.prompt)}
               disabled={isLoading}
-              className={`${action.color} p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group relative focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+              className={`${action.color} p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group relative focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2`}
               aria-label={`Quick action: ${action.label}. ${action.prompt}`}
               role="button"
               tabIndex={isLoading ? -1 : 0}
@@ -136,7 +136,7 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
   if (isUser) {
     return (
       <div className="flex justify-end mb-6" role="article" aria-label="User message">
-        <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl rounded-br-md px-5 py-3 max-w-xs lg:max-w-md shadow-lg">
+        <div className="bg-gradient-to-br from-olive-600 to-olive-700 text-white rounded-2xl rounded-br-md px-5 py-3 max-w-xs lg:max-w-md shadow-lg">
           <p className="text-sm leading-relaxed">{message}</p>
         </div>
       </div>
@@ -202,15 +202,15 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
 
               {/* Recommendations */}
               {agent?.recommendations && agent.recommendations.length > 0 && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                  <h4 className="font-semibold text-sm text-blue-800 mb-2 flex items-center">
+                <div className="mt-4 p-3 bg-olive-50 rounded-lg border-l-4 border-olive-400">
+                  <h4 className="font-semibold text-sm text-olive-800 mb-2 flex items-center">
                     <LightBulbIcon className="h-4 w-4 mr-1" />
                     Key Recommendations
                   </h4>
                   <ul className="space-y-2">
                     {agent.recommendations.slice(0, 3).map((rec, idx) => (
-                      <li key={idx} className="text-sm text-blue-700 flex items-start space-x-2">
-                        <CheckCircleIcon className="h-4 w-4 mt-0.5 text-blue-500 flex-shrink-0" />
+                      <li key={idx} className="text-sm text-olive-700 flex items-start space-x-2">
+                        <CheckCircleIcon className="h-4 w-4 mt-0.5 text-olive-500 flex-shrink-0" />
                         <span>{rec}</span>
                       </li>
                     ))}
@@ -386,7 +386,7 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
             )}
             <button
               onClick={onNewConversation}
-              className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-olive-600 text-white p-2 rounded-lg hover:bg-olive-700 transition-colors"
               title="New Conversation"
               aria-label="Start new conversation"
             >
@@ -405,7 +405,7 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                 placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 aria-label="Search conversations"
               />
               <div className="absolute left-2.5 top-2.5 text-gray-400">
@@ -419,7 +419,7 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full py-2 px-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full py-2 px-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
               aria-label="Sort conversations by"
             >
               <option value="recent">Most Recent</option>
@@ -445,7 +445,7 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
             <p className="text-xs">Try a different search term</p>
             <button
               onClick={() => setSearchQuery('')}
-              className="mt-2 text-xs text-blue-600 hover:text-blue-700 underline"
+              className="mt-2 text-xs text-olive-600 hover:text-olive-700 underline"
             >
               Clear search
             </button>
@@ -458,7 +458,7 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                   onClick={() => onSelectConversation(conversation.id)}
                   className={`w-full p-3 text-left rounded-lg border transition-colors ${
                     activeConversation === conversation.id
-                      ? 'bg-blue-50 border-blue-200 text-blue-700'
+                      ? 'bg-olive-50 border-olive-200 text-olive-700'
                       : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
                   }`}
                 >
@@ -1034,7 +1034,7 @@ What would you like to work on today?`,
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-10 h-10 rounded-lg flex items-center justify-center">
+              <div className="bg-gradient-to-r from-olive-500 to-gold-600 w-10 h-10 rounded-lg flex items-center justify-center">
                 <SparklesIcon className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -1063,12 +1063,12 @@ What would you like to work on today?`,
               {/* Enhanced Status Indicator */}
               <div className={`flex items-center space-x-2 text-sm transition-colors duration-300 ${
                 isLoading 
-                  ? 'text-blue-600' 
+                  ? 'text-olive-600' 
                   : 'text-green-600'
               }`}>
                 <div className={`w-2 h-2 rounded-full ${
                   isLoading 
-                    ? 'bg-blue-500 animate-pulse' 
+                    ? 'bg-olive-500 animate-pulse' 
                     : 'bg-green-500 animate-pulse'
                 }`}></div>
                 <span>
@@ -1129,8 +1129,8 @@ What would you like to work on today?`,
                 rows={1}
                 className={`w-full px-4 py-3 border rounded-xl resize-none transition-all duration-200 ${
                   isLoading 
-                    ? 'border-blue-300 bg-blue-50 text-gray-600 cursor-wait' 
-                    : 'border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    ? 'border-olive-300 bg-olive-50 text-gray-600 cursor-wait' 
+                    : 'border-gray-300 bg-white focus:ring-2 focus:ring-olive-500 focus:border-transparent'
                 }`}
                 style={{
                   minHeight: '50px',
@@ -1151,7 +1151,7 @@ What would you like to work on today?`,
             <button
               type="submit"
               disabled={!inputMessage.trim() || isLoading}
-              className="bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="bg-olive-600 text-white p-3 rounded-xl hover:bg-olive-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2"
               aria-label={isLoading ? "AI is processing your message" : "Send message to AI Command Center"}
               aria-describedby="send-button-help"
             >

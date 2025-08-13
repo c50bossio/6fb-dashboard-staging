@@ -84,7 +84,7 @@ export default function BillingPage() {
   // Usage breakdown for pie chart
   const usageBreakdown = [
     { name: 'AI Business Coach', value: billingData.usage.ai.cost, color: '#3B82F6' },
-    { name: 'SMS Marketing', value: billingData.usage.sms.cost, color: '#8B5CF6' },
+    { name: 'SMS Marketing', value: billingData.usage.sms.cost, color: '#C5A35B' },
     { name: 'Email Campaigns', value: billingData.usage.email.cost, color: '#10B981' }
   ]
 
@@ -102,7 +102,7 @@ export default function BillingPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading billing data...</p>
         </div>
       </div>
@@ -147,7 +147,7 @@ export default function BillingPage() {
           <div className="card">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-600">AI Usage</span>
-              <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+              <div className="h-2 w-2 bg-olive-500 rounded-full"></div>
             </div>
             <div className="flex items-baseline">
               <span className="text-2xl font-bold text-gray-900">${billingData.usage.ai.cost}</span>
@@ -158,7 +158,7 @@ export default function BillingPage() {
           <div className="card">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-600">SMS Usage</span>
-              <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
+              <div className="h-2 w-2 bg-gold-500 rounded-full"></div>
             </div>
             <div className="flex items-baseline">
               <span className="text-2xl font-bold text-gray-900">${billingData.usage.sms.cost}</span>
@@ -203,7 +203,7 @@ export default function BillingPage() {
                   <Tooltip formatter={(value) => `$${value}`} />
                   <Legend />
                   <Line type="monotone" dataKey="ai" stroke="#3B82F6" name="AI" strokeWidth={2} />
-                  <Line type="monotone" dataKey="sms" stroke="#8B5CF6" name="SMS" strokeWidth={2} />
+                  <Line type="monotone" dataKey="sms" stroke="#C5A35B" name="SMS" strokeWidth={2} />
                   <Line type="monotone" dataKey="email" stroke="#10B981" name="Email" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>

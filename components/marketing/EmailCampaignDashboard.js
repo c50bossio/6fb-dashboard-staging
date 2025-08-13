@@ -92,7 +92,7 @@ const EmailCampaignDashboard = ({ userId }) => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <Card className="p-4">
                 <div className="text-sm text-gray-600">Emails Sent</div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-olive-600">
                     {formatNumber(campaign.emails_sent)}
                 </div>
             </Card>
@@ -109,7 +109,7 @@ const EmailCampaignDashboard = ({ userId }) => {
             
             <Card className="p-4">
                 <div className="text-sm text-gray-600">Click Rate</div>
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-gold-600">
                     {formatPercentage(campaign.click_rate)}
                 </div>
                 <div className="text-xs text-gray-500">
@@ -174,7 +174,7 @@ const EmailCampaignDashboard = ({ userId }) => {
                                 </div>
                                 <div>
                                     <div className="text-gray-600">Clicks</div>
-                                    <div className="font-medium text-purple-600">
+                                    <div className="font-medium text-gold-600">
                                         {formatPercentage(campaign.click_rate)}
                                     </div>
                                 </div>
@@ -358,7 +358,7 @@ const EmailCampaignDashboard = ({ userId }) => {
         return (
             <div className="flex items-center justify-center h-64">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto mb-4"></div>
                     <div>Loading email campaigns...</div>
                 </div>
             </div>
@@ -424,7 +424,7 @@ const EmailCampaignDashboard = ({ userId }) => {
                             onClick={() => setActiveTab(tab.id)}
                             className={`py-2 px-1 border-b-2 font-medium text-sm ${
                                 activeTab === tab.id
-                                    ? 'border-blue-500 text-blue-600'
+                                    ? 'border-olive-500 text-olive-600'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                         >

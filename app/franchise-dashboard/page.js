@@ -51,7 +51,7 @@ export default function FranchiseDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading franchise dashboard...</p>
         </div>
       </div>
@@ -124,8 +124,8 @@ export default function FranchiseDashboard() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Calendar className="h-6 w-6 text-blue-600" />
+                <div className="p-2 bg-olive-100 rounded-lg">
+                  <Calendar className="h-6 w-6 text-olive-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Appointments (MTD)</p>
@@ -140,8 +140,8 @@ export default function FranchiseDashboard() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Users className="h-6 w-6 text-purple-600" />
+                <div className="p-2 bg-gold-100 rounded-lg">
+                  <Users className="h-6 w-6 text-gold-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">New Customers (MTD)</p>
@@ -260,7 +260,7 @@ export default function FranchiseDashboard() {
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div className="w-2 h-2 bg-olive-500 rounded-full mt-2"></div>
                     <div>
                       <p className="text-sm text-gray-900">Monthly performance report generated</p>
                       <p className="text-xs text-gray-500">1 day ago</p>
@@ -282,7 +282,7 @@ export default function FranchiseDashboard() {
           <TabsContent value="locations" className="space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Location Management</h3>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors">
                 Add New Location
               </button>
             </div>
@@ -330,7 +330,7 @@ export default function FranchiseDashboard() {
                       </div>
                     </div>
                     <div className="mt-4 pt-4 border-t">
-                      <button className="w-full text-sm text-blue-600 hover:text-blue-700 font-medium">
+                      <button className="w-full text-sm text-olive-600 hover:text-olive-700 font-medium">
                         View Details →
                       </button>
                     </div>
@@ -357,7 +357,7 @@ export default function FranchiseDashboard() {
                     {performanceData?.location_rankings?.slice(0, 5).map((location, index) => (
                       <div key={location.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center">
-                          <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3">
+                          <div className="w-8 h-8 bg-olive-600 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3">
                             {index + 1}
                           </div>
                           <div>
@@ -405,27 +405,27 @@ export default function FranchiseDashboard() {
                       </p>
                     </div>
                     
-                    <div className="p-4 bg-blue-50 rounded-lg">
+                    <div className="p-4 bg-olive-50 rounded-lg">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-blue-800">Customer Retention</span>
-                        <span className="font-medium text-blue-800">
+                        <span className="text-sm font-medium text-olive-800">Customer Retention</span>
+                        <span className="font-medium text-olive-800">
                           {((performanceData?.current_month_analytics?.returning_customers / 
                             (performanceData?.current_month_analytics?.new_customers + performanceData?.current_month_analytics?.returning_customers)) * 100 || 0).toFixed(1)}%
                         </span>
                       </div>
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-xs text-olive-600 mt-1">
                         Returning vs new customer ratio
                       </p>
                     </div>
 
-                    <div className="p-4 bg-purple-50 rounded-lg">
+                    <div className="p-4 bg-gold-50 rounded-lg">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-purple-800">Active Locations</span>
-                        <span className="font-medium text-purple-800">
+                        <span className="text-sm font-medium text-gold-800">Active Locations</span>
+                        <span className="font-medium text-gold-800">
                           {performanceData?.current_month_analytics?.reporting_locations || 0}
                         </span>
                       </div>
-                      <p className="text-xs text-purple-600 mt-1">
+                      <p className="text-xs text-gold-600 mt-1">
                         Locations with activity this month
                       </p>
                     </div>
@@ -449,7 +449,7 @@ export default function FranchiseDashboard() {
                   <p className="text-gray-600 mb-4">
                     Detailed charts, reports, and AI-powered insights will be available here.
                   </p>
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors">
                     Request Demo
                   </button>
                 </div>

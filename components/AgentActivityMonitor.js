@@ -25,11 +25,11 @@ const AGENT_ICONS = {
 
 const AGENT_COLORS = {
   'Marcus': 'text-green-600 bg-green-50 border-green-200',
-  'Sophia': 'text-purple-600 bg-purple-50 border-purple-200',
-  'David': 'text-blue-600 bg-blue-50 border-blue-200',
+  'Sophia': 'text-gold-600 bg-gold-50 border-gold-200',
+  'David': 'text-olive-600 bg-olive-50 border-olive-200',
   'Financial Coach': 'text-green-600 bg-green-50 border-green-200',
-  'Marketing Expert': 'text-purple-600 bg-purple-50 border-purple-200',
-  'Operations Manager': 'text-blue-600 bg-blue-50 border-blue-200'
+  'Marketing Expert': 'text-gold-600 bg-gold-50 border-gold-200',
+  'Operations Manager': 'text-olive-600 bg-olive-50 border-olive-200'
 }
 
 export default function AgentActivityMonitor({ className = '', showHeader = true }) {
@@ -120,7 +120,7 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
         <div className="px-4 py-3 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-900 flex items-center space-x-2">
-              <SparklesIcon className="h-4 w-4 text-indigo-500" />
+              <SparklesIcon className="h-4 w-4 text-olive-500" />
               <span>AI Agent Activity</span>
             </h3>
             <div className="flex items-center space-x-2">
@@ -185,7 +185,7 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
             </h4>
             <div className="space-y-2">
               {activeCollaborations.map((collab) => (
-                <div key={collab.id} className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-2">
+                <div key={collab.id} className="bg-gradient-to-r from-indigo-50 to-gold-50 border border-indigo-200 rounded-lg p-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <div className="flex -space-x-1">
@@ -193,7 +193,7 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
                           const IconComponent = getAgentIcon(agentName)
                           return (
                             <div key={index} className="h-6 w-6 bg-white border-2 border-indigo-200 rounded-full flex items-center justify-center">
-                              <IconComponent className="h-3 w-3 text-indigo-600" />
+                              <IconComponent className="h-3 w-3 text-olive-600" />
                             </div>
                           )
                         })}
@@ -202,7 +202,7 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
                         <div className="text-xs font-medium text-indigo-900">
                           {collab.agents.join(' + ')}
                         </div>
-                        <div className="text-xs text-indigo-700">
+                        <div className="text-xs text-olive-700">
                           {collab.topic.replace('_', ' ')}
                         </div>
                       </div>
@@ -212,7 +212,7 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
                       <div className="text-xs font-medium text-indigo-800">
                         {(collab.confidence * 100).toFixed(0)}%
                       </div>
-                      <div className="text-xs text-indigo-600">
+                      <div className="text-xs text-olive-600">
                         {formatTimeSince(collab.started_at)}
                       </div>
                     </div>
@@ -231,7 +231,7 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
           </div>
           <button
             onClick={fetchAgentStatus}
-            className="text-indigo-600 hover:text-indigo-800 font-medium"
+            className="text-olive-600 hover:text-indigo-800 font-medium"
           >
             Refresh
           </button>
@@ -249,16 +249,16 @@ export function MiniAgentActivityIndicator({ className = '' }) {
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
       <div className="relative">
-        <SparklesIcon className="h-4 w-4 text-indigo-500" />
+        <SparklesIcon className="h-4 w-4 text-olive-500" />
         {hasCollaboration && (
-          <div className="absolute -top-1 -right-1 h-2 w-2 bg-purple-400 rounded-full animate-pulse"></div>
+          <div className="absolute -top-1 -right-1 h-2 w-2 bg-gold-400 rounded-full animate-pulse"></div>
         )}
       </div>
       <span className="text-sm text-gray-700">
         {activeAgents} agents
       </span>
       {hasCollaboration && (
-        <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">
+        <span className="text-xs bg-gold-100 text-gold-700 px-1.5 py-0.5 rounded-full">
           collaborating
         </span>
       )}

@@ -260,7 +260,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
           {mode === 'login' && (
             <p className="mt-2 text-center text-sm text-gray-600">
               Or{' '}
-              <a href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+              <a href="/register" className="font-medium text-olive-600 hover:text-olive-500">
                 create a new account
               </a>
             </p>
@@ -282,7 +282,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
                       name="firstName"
                       type="text"
                       required={mode === 'register'}
-                      className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                      className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-olive-500 focus:z-10 sm:text-sm"
                       placeholder="John"
                       value={formData.firstName}
                       onChange={handleInputChange}
@@ -297,7 +297,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
                       name="lastName"
                       type="text"
                       required={mode === 'register'}
-                      className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                      className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-olive-500 focus:z-10 sm:text-sm"
                       placeholder="Doe"
                       value={formData.lastName}
                       onChange={handleInputChange}
@@ -313,7 +313,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
                     id="shopName"
                     name="shopName"
                     type="text"
-                    className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-olive-500 focus:z-10 sm:text-sm"
                     placeholder="Your Barbershop Name"
                     value={formData.shopName}
                     onChange={handleInputChange}
@@ -333,7 +333,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
                 type="email"
                 autoComplete="email"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-olive-500 focus:z-10 sm:text-sm"
                 placeholder="your@email.com"
                 value={formData.email}
                 onChange={handleInputChange}
@@ -353,7 +353,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
                     type="password"
                     autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                     required
-                    className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-olive-500 focus:z-10 sm:text-sm"
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleInputChange}
@@ -371,7 +371,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
                       type="password"
                       autoComplete="new-password"
                       required
-                      className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                      className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-olive-500 focus:z-10 sm:text-sm"
                       placeholder="••••••••"
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
@@ -421,7 +421,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
             <button
               type="submit"
               disabled={loading || authLoading || (showTurnstile && !turnstileToken)}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {getSubmitButtonText()}
             </button>
@@ -432,7 +432,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
             {mode === 'login' && (
               <a
                 href="/reset-password"
-                className="text-sm text-indigo-600 hover:text-indigo-500"
+                className="text-sm text-olive-600 hover:text-olive-500"
               >
                 Forgot your password?
               </a>
@@ -441,7 +441,7 @@ export default function AuthenticationForm({ mode = 'login' }) {
             {mode !== 'login' && (
               <a
                 href="/login"
-                className="text-sm text-indigo-600 hover:text-indigo-500"
+                className="text-sm text-olive-600 hover:text-olive-500"
               >
                 Back to Sign In
               </a>

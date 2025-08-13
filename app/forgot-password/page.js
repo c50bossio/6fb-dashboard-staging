@@ -83,8 +83,8 @@ export default function ForgotPasswordPage() {
                   <li>Return to the login page</li>
                 </ol>
                 
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-4">
-                  <p className="text-xs text-blue-800">
+                <div className="bg-olive-50 border border-olive-200 rounded-md p-3 mt-4">
+                  <p className="text-xs text-olive-800">
                     💡 <strong>Tip:</strong> The reset link will expire in 24 hours for security.
                   </p>
                 </div>
@@ -96,14 +96,14 @@ export default function ForgotPasswordPage() {
                     setIsSuccess(false)
                     setEmail('')
                   }}
-                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                 >
                   Send to a different email
                 </button>
                 
                 <Link
                   href="/login"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
                 >
                   Back to login
                 </Link>
@@ -120,7 +120,7 @@ export default function ForgotPasswordPage() {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <div className="flex justify-center">
-          <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center">
+          <div className="h-12 w-12 bg-olive-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">6FB</span>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function ForgotPasswordPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-olive-500 focus:border-olive-500 sm:text-sm"
                   placeholder="Enter your email address"
                 />
               </div>
@@ -169,8 +169,8 @@ export default function ForgotPasswordPage() {
                 disabled={isLoading}
                 className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
                   isLoading
-                    ? 'bg-blue-400 cursor-not-allowed' 
-                    : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                    ? 'bg-olive-400 cursor-not-allowed' 
+                    : 'bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500'
                 }`}
               >
                 {isLoading ? (
@@ -198,7 +198,7 @@ export default function ForgotPasswordPage() {
             <div className="mt-6">
               <Link
                 href="/login"
-                className="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
               >
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />
                 Back to login

@@ -205,13 +205,13 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
         {/* Progress Bar */}
         <div className="px-6 py-3 bg-gray-50">
           <div className="flex items-center justify-between text-sm">
-            <span className={currentStep >= 1 ? 'text-blue-600 font-medium' : 'text-gray-400'}>Services & Pricing</span>
-            <span className={currentStep >= 2 ? 'text-blue-600 font-medium' : 'text-gray-400'}>Time & Availability</span>
-            <span className={currentStep >= 3 ? 'text-blue-600 font-medium' : 'text-gray-400'}>Settings & Review</span>
+            <span className={currentStep >= 1 ? 'text-olive-600 font-medium' : 'text-gray-400'}>Services & Pricing</span>
+            <span className={currentStep >= 2 ? 'text-olive-600 font-medium' : 'text-gray-400'}>Time & Availability</span>
+            <span className={currentStep >= 3 ? 'text-olive-600 font-medium' : 'text-gray-400'}>Settings & Review</span>
           </div>
           <div className="mt-2 bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-olive-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${(currentStep / 3) * 100}%` }}
             />
           </div>
@@ -230,7 +230,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="e.g., Quick Fade Special, Weekend Package"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 />
               </div>
 
@@ -245,7 +245,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       onClick={() => handleServiceToggle(service)}
                       className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                         formData.services.find(s => s.id === service.id)
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-olive-500 bg-olive-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -276,7 +276,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       value={formData.customPrice}
                       onChange={(e) => setFormData(prev => ({ ...prev, customPrice: e.target.value }))}
                       placeholder="Override pricing"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                     />
                   </div>
                 </div>
@@ -292,7 +292,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                     placeholder="0"
                     min="0"
                     max="100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
 
@@ -306,23 +306,23 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       type="number"
                       value={formData.duration}
                       onChange={(e) => setFormData(prev => ({ ...prev, duration: parseInt(e.target.value) || 45 }))}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Pricing Preview */}
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">Pricing Preview</h4>
+              <div className="bg-olive-50 rounded-lg p-4">
+                <h4 className="font-medium text-olive-900 mb-2">Pricing Preview</h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-blue-700">Total Duration:</span>
-                    <span className="font-medium text-blue-900">{calculateTotalDuration()} minutes</span>
+                    <span className="text-olive-700">Total Duration:</span>
+                    <span className="font-medium text-olive-900">{calculateTotalDuration()} minutes</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700">Total Price:</span>
-                    <span className="font-medium text-blue-900">${calculateTotalPrice().toFixed(2)}</span>
+                    <span className="text-olive-700">Total Price:</span>
+                    <span className="font-medium text-olive-900">${calculateTotalPrice().toFixed(2)}</span>
                   </div>
                   {formData.discount > 0 && (
                     <div className="flex justify-between text-green-600">
@@ -349,7 +349,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       onClick={() => handleTimeSlotToggle(slot.value)}
                       className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                         formData.timeSlots.includes(slot.value)
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-olive-500 bg-olive-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -359,7 +359,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                           <p className="text-sm text-gray-600">{slot.label.includes('(') ? slot.label.split('(')[1].replace(')', '') : ''}</p>
                         </div>
                         {formData.timeSlots.includes(slot.value) && (
-                          <CheckCircleIcon className="h-5 w-5 text-blue-500" />
+                          <CheckCircleIcon className="h-5 w-5 text-olive-500" />
                         )}
                       </div>
                     </div>
@@ -378,7 +378,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                     value={formData.expiresAt}
                     onChange={(e) => setFormData(prev => ({ ...prev, expiresAt: e.target.value }))}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Leave empty for no expiration</p>
@@ -393,7 +393,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Add any special instructions or notes for customers..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                 />
               </div>
             </div>
@@ -410,7 +410,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       type="checkbox"
                       checked={formData.requirePhone}
                       onChange={(e) => setFormData(prev => ({ ...prev, requirePhone: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Require phone number</span>
                   </label>
@@ -420,7 +420,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       type="checkbox"
                       checked={formData.requireEmail}
                       onChange={(e) => setFormData(prev => ({ ...prev, requireEmail: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Require email address</span>
                   </label>
@@ -430,7 +430,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       type="checkbox"
                       checked={formData.allowReschedule}
                       onChange={(e) => setFormData(prev => ({ ...prev, allowReschedule: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Allow customers to reschedule</span>
                   </label>
@@ -440,7 +440,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       type="checkbox"
                       checked={formData.sendReminders}
                       onChange={(e) => setFormData(prev => ({ ...prev, sendReminders: e.target.checked }))}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Send appointment reminders</span>
                   </label>
@@ -468,7 +468,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                       <p className="text-sm font-medium text-gray-700">Services:</p>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {formData.services.map(service => (
-                          <span key={service.id} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                          <span key={service.id} className="px-2 py-1 bg-olive-100 text-olive-800 text-xs rounded">
                             {service.name}
                           </span>
                         ))}
@@ -519,7 +519,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
                 disabled={!canProceed()}
                 className={`px-6 py-2 rounded-lg font-medium transition-all ${
                   canProceed()
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-olive-600 text-white hover:bg-olive-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
@@ -529,7 +529,7 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
               <button
                 onClick={handleSave}
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-all disabled:opacity-50"
               >
                 {loading ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

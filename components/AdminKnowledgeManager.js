@@ -107,7 +107,7 @@ function ManualEntryTab() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Alert className="p-4 border border-blue-200 bg-blue-50 rounded-lg mb-6">
+          <Alert className="p-4 border border-olive-200 bg-olive-50 rounded-lg mb-6">
             <Brain />
             <div className="ml-2">
               <strong>Pro Tip:</strong> Be specific and include measurable results when possible. 
@@ -127,7 +127,7 @@ function ManualEntryTab() {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="e.g., Customer Retention Follow-up Strategy"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
                 required
               />
             </div>
@@ -143,7 +143,7 @@ function ManualEntryTab() {
                 onChange={handleInputChange}
                 placeholder="Describe the strategy, process, or insight in detail. Include specific metrics, time periods, and results when available."
                 rows={5}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
                 required
               />
               <p className="text-sm text-gray-500 mt-1">
@@ -160,7 +160,7 @@ function ManualEntryTab() {
                 name="domain"
                 value={formData.domain}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               >
                 {businessDomains.map(domain => (
                   <option key={domain.id} value={domain.id}>
@@ -181,7 +181,7 @@ function ManualEntryTab() {
                 value={formData.tags}
                 onChange={handleInputChange}
                 placeholder="e.g., follow-up, retention, text message, 24-48 hours"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
               />
             </div>
 
@@ -216,7 +216,7 @@ function ManualEntryTab() {
                 className={`w-full px-4 py-2 rounded flex items-center justify-center gap-2 ${
                   !isFormValid || isSubmitting 
                     ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-olive-600 text-white hover:bg-olive-700'
                 }`}
               >
                 {isSubmitting ? (
@@ -267,7 +267,7 @@ export default function AdminKnowledgeManager() {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading admin interface...</p>
         </div>
       </div>
@@ -290,7 +290,7 @@ export default function AdminKnowledgeManager() {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <Shield className="h-6 w-6 text-blue-600" />
+          <Shield className="h-6 w-6 text-olive-600" />
           <h1 className="text-2xl font-bold text-gray-900">Global AI Knowledge Management</h1>
           <Badge className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Admin Only</Badge>
         </div>
@@ -316,7 +316,7 @@ export default function AdminKnowledgeManager() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-olive-500 text-olive-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
               >
@@ -362,7 +362,7 @@ export default function AdminKnowledgeManager() {
                     <p className="text-3xl font-bold">0</p>
                     <p className="text-xs text-gray-500 mt-1">Ready for import</p>
                   </div>
-                  <BookOpen className="h-8 w-8 text-blue-600" />
+                  <BookOpen className="h-8 w-8 text-olive-600" />
                 </div>
               </CardContent>
             </Card>
@@ -388,7 +388,7 @@ export default function AdminKnowledgeManager() {
                     <p className="text-3xl font-bold">0</p>
                     <p className="text-xs text-gray-500 mt-1">Business areas</p>
                   </div>
-                  <Users className="h-8 w-8 text-purple-600" />
+                  <Users className="h-8 w-8 text-gold-600" />
                 </div>
               </CardContent>
             </Card>
@@ -425,9 +425,9 @@ export default function AdminKnowledgeManager() {
               </Alert>
               
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-900 mb-3">📈 Expected Improvements</h4>
-                  <ul className="space-y-2 text-sm text-blue-800">
+                <div className="bg-olive-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-olive-900 mb-3">📈 Expected Improvements</h4>
+                  <ul className="space-y-2 text-sm text-olive-800">
                     <li>• 25-40% increase in recommendation accuracy</li>
                     <li>• 60-80% more actionable business advice</li>
                     <li>• Industry-specific insights vs generic tips</li>
