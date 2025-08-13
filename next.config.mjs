@@ -161,8 +161,8 @@ const nextConfig = {
   compress: true,
   generateEtags: true,
   
-  // Output configuration
-  output: 'standalone',
+  // Output configuration - remove standalone for Vercel deployment
+  // output: 'standalone',
   
   // Environment variables
   env: {

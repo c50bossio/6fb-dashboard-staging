@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "6fb-ai-dashboard",
   "build": {
     "env": {
       "NODE_ENV": "production"
@@ -8,11 +7,14 @@
   },
   "functions": {
     "app/api/**/*.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
     }
   },
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "public": true
+  "public": true,
+  "regions": ["iad1"],
+  "installCommand": "npm ci --omit=dev --audit=false"
 }
