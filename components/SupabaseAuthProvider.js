@@ -17,18 +17,22 @@ export const useAuth = () => {
 function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  // Start with loading false for better UX on public pages
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
-  
-  // Log initialization for debugging
-  useEffect(() => {
-    console.log('[Auth] Provider initialized, loading:', loading)
-  }, [])
 
   useEffect(() => {
     // Check initial session
     const checkUser = async () => {
+      // Only set loading true if we're on a protected page
+      const publicPaths = ['/login', '/register', '/forgot-password', '/', '/subscribe']
+      const isPublicPage = typeof window !== 'undefined' && publicPaths.includes(window.location.pathname)
+      
+      if (!isPublicPage) {
+        setLoading(true)
+      }
+      
       try {
         // Use getUser for secure authentication check
         const { data: { user }, error } = await supabase.auth.getUser()
@@ -64,12 +68,6 @@ function SupabaseAuthProvider({ children }) {
         // Always set loading to false after checking
         setLoading(false)
       }
-    }
-
-    // Set loading to false immediately for public pages where auth isn't required
-    const publicPaths = ['/login', '/register', '/forgot-password', '/', '/subscribe']
-    if (typeof window !== 'undefined' && publicPaths.includes(window.location.pathname)) {
-      setLoading(false)
     }
     
     checkUser()

@@ -328,30 +328,13 @@ export default function RegisterPage() {
       setErrors({})
       console.log('🔐 Starting Google sign-up...')
       
-      // Add timeout to prevent button from staying loading forever
-      const timeoutId = setTimeout(() => {
-        console.log('🔐 Google sign-up timeout - resetting loading state')
-        setErrors({ 
-          submit: 'Google sign-up is taking longer than expected. Please try again or contact support if this persists.',
-          isSuccess: false 
-        })
-        setIsLoading(false)
-      }, 10000) // 10 second timeout
-      
       const result = await signInWithGoogle()
-      clearTimeout(timeoutId)
       
       // If signInWithGoogle returns without error, the redirect should happen
       console.log('🔐 Google OAuth initiated successfully:', result)
       
-      // Add a small delay to allow for redirect, then reset loading if still here
-      setTimeout(() => {
-        // If we're still on this page after 3 seconds, something went wrong
-        if (window.location.pathname === '/register') {
-          console.log('🔐 Still on register page after OAuth - resetting loading state')
-          setIsLoading(false)
-        }
-      }, 3000)
+      // OAuth will redirect the browser, so loading state will persist until redirect
+      // This is expected behavior
       
     } catch (err) {
       console.error('🔐 Google sign-up error:', err)
