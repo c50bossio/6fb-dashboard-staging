@@ -8,13 +8,7 @@ export async function GET(request) {
   const error = requestUrl.searchParams.get('error')
   const errorDescription = requestUrl.searchParams.get('error_description')
 
-  console.log('🔐 OAuth callback received:', {
-    hasCode: !!code,
-    hasError: !!error,
-    next,
-    error,
-    errorDescription
-  })
+  // OAuth callback received - logging removed for security
 
   // Handle OAuth errors
   if (error) {
@@ -38,7 +32,7 @@ export async function GET(request) {
         )
       }
 
-      console.log('✅ OAuth session created for:', data?.user?.email)
+      // OAuth session created successfully - logging removed for security
 
       // Check if user profile exists, create if not
       if (data?.user) {
@@ -50,7 +44,7 @@ export async function GET(request) {
 
         if (profileError && profileError.code === 'PGRST116') {
           // Profile doesn't exist, create it
-          console.log('📝 Creating profile for OAuth user')
+          // Creating profile for OAuth user - logging removed for security
           
           const { error: insertError } = await supabase
             .from('profiles')
@@ -68,10 +62,10 @@ export async function GET(request) {
             console.error('❌ Profile creation error:', insertError)
             // Continue anyway - user is authenticated
           } else {
-            console.log('✅ Profile created successfully')
+            // Profile created successfully - logging removed for security
           }
         } else if (profile) {
-          console.log('✅ Existing profile found for:', profile.email)
+          // Existing profile found - logging removed for security
         }
       }
 
@@ -86,7 +80,7 @@ export async function GET(request) {
   }
 
   // No code provided
-  console.error('❌ No authorization code provided')
+  // No authorization code provided - logging removed for security
   return NextResponse.redirect(
     new URL('/login?error=No%20authorization%20code%20provided', requestUrl.origin)
   )

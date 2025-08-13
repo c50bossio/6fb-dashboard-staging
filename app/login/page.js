@@ -58,20 +58,23 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     console.log('🔍 handleGoogleSignIn called')
-    console.log('🔍 signInWithGoogle function:', typeof signInWithGoogle)
     console.log('🔍 Current loading state:', isLoading)
     
     try {
       setIsLoading(true)
       setError('')
       
+      // Use the Supabase client directly - it handles PKCE properly
       if (!signInWithGoogle) {
         throw new Error('Google sign-in not available. Please refresh the page.')
       }
       
-      console.log('🚀 Calling signInWithGoogle...')
+      console.log('🚀 Calling signInWithGoogle from SupabaseAuthProvider...')
       await signInWithGoogle()
       console.log('✅ signInWithGoogle completed')
+      
+      // The redirect happens automatically via Supabase
+      
     } catch (err) {
       console.error('❌ Google sign-in error:', err)
       setError(err.message || 'Google sign-in failed.')

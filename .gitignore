@@ -49,6 +49,23 @@ __pycache__/
 *.pyc
 venv/
 
+# Test and Debug Files
+*.backup
+test-*.html
+debug-*.html
+check-*.js
+apply-*.js
+simple-*.html
+*-test.js
+*-test.html
+revert-*.sh
+fix-*.sh
+
+# Temporary Files
+*.tmp
+*.temp
+automated-test-*.js
+
 # Security
 *.key
 *.pem
