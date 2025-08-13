@@ -15,6 +15,5 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "public": true,
-  "regions": ["iad1"],
-  "installCommand": "npm ci --omit=dev --audit=false"
+  "regions": ["iad1"]
 }

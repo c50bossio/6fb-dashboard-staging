@@ -147,7 +147,9 @@
     "twilio": "^5.8.0",
     "uuid": "^11.1.0",
     "web-vitals": "^5.1.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "chart.js": "^4.5.0",
+    "react-chartjs-2": "^5.3.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.9.0",
@@ -159,7 +161,6 @@
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "chalk": "^5.5.0",
-    "chart.js": "^4.5.0",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.0.4",
     "eslint-plugin-import": "^2.32.0",
@@ -172,7 +173,6 @@
     "node-fetch": "^2.7.0",
     "playwright": "^1.54.2",
     "puppeteer": "^24.15.0",
-    "react-chartjs-2": "^5.3.0",
     "resize-observer-polyfill": "^1.5.1",
     "typescript": "^5.3.3",
     "webpack-bundle-analyzer": "^4.10.2",
