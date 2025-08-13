@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { posthog } from '@/lib/posthog/server'
+// import { posthog } from '@/lib/posthog/server'
 
 // GDPR-compliant production metrics tracking endpoint
 export async function POST(request) {
@@ -83,9 +83,9 @@ export async function POST(request) {
 
     // Track with PostHog for real-time analytics (if consent given)
     let posthogResult = null
-    if (consent.analytics && posthog) {
+    if (consent.analytics && false) { // posthog temporarily disabled
       try {
-        posthogResult = await posthog.capture({
+        // posthogResult = await posthog.capture({
           distinctId: userId || sessionId,
           event: event,
           properties: enhancedProperties
@@ -115,8 +115,8 @@ export async function POST(request) {
     
     // Track error occurrence (without sensitive data)
     try {
-      if (posthog) {
-        await posthog.capture({
+      if (false) { // posthog temporarily disabled
+        // await posthog.capture({
           distinctId: 'system',
           event: 'metrics_tracking_error',
           properties: {

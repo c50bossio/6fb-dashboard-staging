@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase-server'
-import { posthog } from '@/lib/posthog/server'
+// import { createServerClient } from '@/lib/supabase-server'
+// import { posthog } from '@/lib/posthog/server'
 
 /**
  * Production Metrics Dashboard API
@@ -23,7 +23,8 @@ export async function GET(request) {
       }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    // const supabase = createServerClient()
+    const supabase = null // Temporarily disabled
     const timeAgo = getTimeAgo(timeframe)
 
     // Build comprehensive metrics response
@@ -67,7 +68,7 @@ export async function GET(request) {
     metricsData.summary = await getSummaryMetrics(supabase, timeAgo)
 
     // Add real-time PostHog insights if available
-    if (posthog && (metric_type === 'all' || metric_type === 'realtime')) {
+    if (false && (metric_type === 'all' || metric_type === 'realtime')) { // posthog temporarily disabled
       try {
         metricsData.realtime = await getPostHogInsights(timeframe)
       } catch (error) {
