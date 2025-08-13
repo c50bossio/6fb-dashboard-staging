@@ -2,6 +2,9 @@
 import { createClient } from '@/lib/supabase/server-client'
 import { NextResponse } from 'next/server'
 
+// Force Node.js runtime to support Supabase dependencies
+export const runtime = 'nodejs'
+
 export async function GET(request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')

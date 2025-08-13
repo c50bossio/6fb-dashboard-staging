@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import rateLimiter from '@/lib/redis-rate-limiter'
 
+// Force Node.js runtime to support Redis/ioredis dependencies
+export const runtime = 'nodejs'
+
 /**
  * Rate Limiter Health Check Endpoint
  * Provides status information about the rate limiting system

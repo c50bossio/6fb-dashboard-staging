@@ -14,6 +14,8 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
+  // Remove experimental runtime config - will configure per route instead
+  
   images: {
     domains: ['localhost', '127.0.0.1'],
     formats: ['image/avif', 'image/webp'],

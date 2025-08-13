@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 
+// Force Node.js runtime to support Supabase dependencies
+export const runtime = 'nodejs'
+
 // Validation schema for availability check
 const availabilitySchema = z.object({
   barber_id: z.string().min(1), // Allow any string ID (test IDs or UUIDs)
