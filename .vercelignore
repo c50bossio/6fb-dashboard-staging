@@ -11,6 +11,14 @@ playwright.config.js
 htmlcov
 .pytest_cache
 
+# Additional development files
+components/test-*
+components/debug-*
+pages/test-*
+pages/debug-*
+lib/test-*
+lib/debug-*
+
 # Documentation
 README.md
 docs/
@@ -46,7 +54,14 @@ deploy-staging.sh
 node_modules/.cache/
 .next/cache/
 .next/trace
+.next/static/chunks/webpack-*
 .eslintcache
+
+# Large development assets
+components/unused/
+pages/unused/
+public/demo/
+public/test/
 
 # Environment and git
 .env*

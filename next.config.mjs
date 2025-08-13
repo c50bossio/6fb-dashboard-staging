@@ -56,7 +56,12 @@ const nextConfig = {
       'luxon',
       'uuid',
       'otplib',
-      'limiter'
+      'limiter',
+      'html2canvas',
+      'jspdf',
+      'qrcode',
+      'canvas-confetti',
+      'posthog-node'
     ],
     esmExternals: true,
     serverExternalPackages: [
