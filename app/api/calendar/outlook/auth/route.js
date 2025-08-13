@@ -16,7 +16,7 @@ export async function GET(request) {
     // auth_url = service.get_outlook_auth_url(barber_id)
     
     // For demo purposes, return a mock auth URL
-    const AuthUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=demo&redirect_uri=${encodeURIComponent(
+    const mockAuthUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=demo&redirect_uri=${encodeURIComponent(
       'http://localhost:9999/api/calendar/outlook/callback'
     )}&scope=${encodeURIComponent(
       'https://graph.microsoft.com/Calendars.ReadWrite https://graph.microsoft.com/User.Read'

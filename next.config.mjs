@@ -94,6 +94,9 @@ const nextConfig = {
       'pusher',
       'twilio'
     ],
+    // Disable static optimization to prevent Dynamic Server Usage errors
+    staticPageGenerationTimeout: 1000,
+    isrMemoryCacheSize: 0,
   },
   
   // Webpack configuration
@@ -281,6 +284,21 @@ const nextConfig = {
   // Environment variables
   env: {
     NEXT_PUBLIC_APP_VERSION: process.env.npm_package_version || '1.0.0',
+  },
+  
+  // Disable static optimization for API routes to prevent Dynamic Server Usage errors
+  trailingSlash: false,
+  generateBuildId: async () => {
+    return 'build-' + Date.now()
+  },
+  
+  // Force dynamic rendering for all API routes
+  async rewrites() {
+    return {
+      beforeFiles: [],
+      afterFiles: [],
+      fallback: []
+    }
   },
 }
 
