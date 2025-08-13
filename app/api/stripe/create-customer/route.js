@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import Stripe from 'stripe'
 
+// Force Node.js runtime to support Supabase and Stripe dependencies
+export const runtime = 'nodejs'
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy')
 
 export async function POST(request) {

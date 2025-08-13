@@ -2,8 +2,10 @@
 
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-
 import { createClient } from '@/lib/supabase/server'
+
+// Force Node.js runtime to support Supabase dependencies
+export const runtime = 'nodejs'
 
 // Validation schemas
 const appointmentSchema = z.object({
