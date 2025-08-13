@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Supabase Providers</title>
+</head>
+<body>
+    <h1>Checking Supabase OAuth Providers</h1>
+    <button onclick="checkProviders()">Check Available Providers</button>
+    <div id="output" style="margin-top: 20px; font-family: monospace; white-space: pre-wrap;"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            console.log(message);
+            output.textContent += new Date().toISOString() + ': ' + message + '\n';
+        }
+        
+        async function checkProviders() {
+            log('🔍 Checking Supabase OAuth providers...');
+            
+            try {
+                const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co';
+                const response = await fetch(`${supabaseUrl}/auth/v1/settings`);
+                const settings = await response.json();
+                
+                log('✅ Supabase auth settings:');
+                log(JSON.stringify(settings, null, 2));
+                
+                if (settings.external) {
+                    log('🔑 Available OAuth providers:');
+                    Object.keys(settings.external).forEach(provider => {
+                        const config = settings.external[provider];
+                        log(`  ${provider}: enabled=${config.enabled}, client_id=${config.client_id ? 'SET' : 'NOT SET'}`);
+                    });
+                } else {
+                    log('❌ No external providers found in settings');
+                }
+                
+            } catch (error) {
+                log('❌ Error checking providers: ' + error.message);
+            }
+        }
+        
+        log('✅ Provider check page loaded');
+    </script>
+</body>
+</html>
