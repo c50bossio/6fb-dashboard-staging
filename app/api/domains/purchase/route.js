@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server-client'
-export const runtime = 'edge'
 
 // Domain registrar API integration (examples with popular providers)
 const DOMAIN_PROVIDERS = {

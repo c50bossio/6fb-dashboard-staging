@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import fs from 'fs'
 import path from 'path'
-export const runtime = 'edge'
 
 /**
  * System Health Monitoring Endpoint

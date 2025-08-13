@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 
 import { pusherServer } from '@/lib/pusher/server'
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
 
 export async function POST(req) {
   try {

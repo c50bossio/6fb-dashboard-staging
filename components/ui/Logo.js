@@ -35,20 +35,26 @@ const Logo = ({
     setMounted(true);
   }, []);
 
-  // Size configurations for responsive design - optimized for new logo
+  // Size configurations for responsive design - optimized for new logos
   const sizeConfig = {
-    small: { width: 120, height: 40, textClass: 'text-sm' },
-    medium: { width: 180, height: 60, textClass: 'text-base' },
-    large: { width: 240, height: 80, textClass: 'text-lg' },
-    xlarge: { width: 300, height: 100, textClass: 'text-xl' },
-    hero: { width: 360, height: 120, textClass: 'text-2xl' }
+    small: { width: 100, height: 80, textClass: 'text-sm' },
+    medium: { width: 150, height: 120, textClass: 'text-base' },
+    large: { width: 200, height: 160, textClass: 'text-lg' },
+    xlarge: { width: 250, height: 200, textClass: 'text-xl' },
+    hero: { width: 300, height: 240, textClass: 'text-2xl' }
   };
 
   // Logo variant mapping based on theme and preferences
   const getLogoVariant = () => {
-    // Use the new professional olive green logo
-    // This logo works well on both light and dark backgrounds
-    return 'bookedbarber-logo-new.png';
+    // Use the professional gold/black logos based on theme
+    const isDarkMode = resolvedTheme === 'dark';
+    
+    if (isDarkMode) {
+      // Use gold logo for dark backgrounds
+      return 'bookedbarber-logo-gold.png';
+    }
+    // Use black logo for light backgrounds
+    return 'bookedbarber-logo-black.png';
   };
 
   const config = sizeConfig[size] || sizeConfig.medium;

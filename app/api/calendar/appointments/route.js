@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
 
 // Inline notification handler (can be moved to external service later)
 const sendBookingNotification = async (appointmentData, customerData, preferences) => {

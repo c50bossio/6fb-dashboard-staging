@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 import { posthog } from '@/lib/posthog/server'
-export const runtime = 'edge'
 
 /**
  * Production Metrics Dashboard API

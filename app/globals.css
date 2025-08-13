@@ -9,11 +9,11 @@
     /* BOOKEDBARBER BRAND-MATCHED DESIGN TOKENS */
     /* Exact color matches from logo analysis for professional consistency */
     
-    /* Brand Colors - Updated for New Olive Green Logo */
-    --brand-olive-primary: 130 11% 24%; /* #3C4A3E - BookedBarber Deep Olive */
-    --brand-olive-light: 130 11% 35%; /* Lighter variant for accents */
-    --brand-olive-dark: 130 11% 18%; /* Darker variant for emphasis */
-    --brand-text: 130 11% 15%; /* Professional text color matching logo */
+    /* Brand Colors - Gold and Black from new logos */
+    --brand-gold-primary: 39 52% 56%; /* #B8913A - BookedBarber Gold */
+    --brand-gold-light: 39 52% 66%; /* Lighter gold for accents */
+    --brand-gold-dark: 39 52% 46%; /* Darker gold for emphasis */
+    --brand-black: 0 0% 20%; /* Professional black from logo */
     
     /* Light Mode Theme */
     --background: 32 21% 96%; /* Ultra Light Sand for clean professional look */
@@ -22,10 +22,10 @@
     --card-foreground: 120 7% 12%; /* Brand Gunmetal */
     --popover: 0 0% 100%; /* Pure white popovers */
     --popover-foreground: 120 7% 12%; /* Brand Gunmetal */
-    --primary: 130 11% 24%; /* BookedBarber Olive Primary */
-    --primary-foreground: 0 0% 100%; /* Pure white on olive */
-    --secondary: 130 11% 35%; /* Lighter Olive Secondary */
-    --secondary-foreground: 0 0% 100%; /* White on secondary */
+    --primary: 39 52% 56%; /* BookedBarber Gold Primary */
+    --primary-foreground: 0 0% 100%; /* Pure white on gold */
+    --secondary: 0 0% 20%; /* Black Secondary */
+    --secondary-foreground: 0 0% 100%; /* White on black */
     --muted: 32 21% 94%; /* Light Sand muted */
     --muted-foreground: 120 7% 45%; /* Medium Gunmetal */
     --accent: 42 38% 56%; /* Brand Gold accent */

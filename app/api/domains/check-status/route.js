@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server-client'
 import dns from 'dns/promises'
-export const runtime = 'edge'
 
 export async function GET(request) {
   try {

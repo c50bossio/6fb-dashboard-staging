@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-export const runtime = 'edge'
 
 // Test mode services for reliable testing
 const testSendGridService = {

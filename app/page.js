@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import Head from 'next/head'
 import { createClient } from '@/lib/supabase/client'
 import { 
   RocketLaunchIcon,
@@ -40,18 +39,7 @@ export default function HomePage() {
   }
 
   return (
-    <>
-      <Head>
-        <title>BookedBarber | Build Your Barbershop Empire, Not Someone Else's</title>
-        <meta name="description" content="The AI-powered platform where barbers own their brand, automate their business, and grow with real data. No marketplace fees, 100% your business." />
-        <meta name="keywords" content="barber business platform, barbershop management, AI automation, brand ownership, barber software" />
-        <meta property="og:title" content="BookedBarber - Own Your Barbershop Brand" />
-        <meta property="og:description" content="Stop paying marketplace fees. Start building your own barbershop empire with AI automation and real analytics." />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href="/" />
-      </Head>
-
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -92,7 +80,7 @@ export default function HomePage() {
                     </Link>
                     <Link
                       href="/register"
-                      className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
+                      className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
                     >
                       Start Free Trial
                     </Link>
@@ -104,7 +92,7 @@ export default function HomePage() {
         </header>
 
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-olive-600 via-gold-600 to-gold-700 text-white py-32 overflow-hidden">
+        <section className="relative bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 text-white py-32 overflow-hidden">
           <div className="absolute inset-0 bg-black opacity-10"></div>
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
@@ -198,7 +186,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
               <Link
                 href="/register"
-                className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
+                className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
               >
                 Start Your 30-Day Free Trial
                 <ArrowRightIcon className="h-5 w-5 ml-2" />
@@ -330,6 +318,5 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
-    </>
   )
 }

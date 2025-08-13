@@ -1,4 +1,3 @@
-export const runtime = 'edge'
 
 // Use require for CommonJS compatibility with Next.js
 const { RRule, RRuleSet, rrulestr } = require('rrule');

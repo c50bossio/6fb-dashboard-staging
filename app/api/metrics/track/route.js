@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase-server'
+import { createClient } from '@/lib/supabase/server'
 import { posthog } from '@/lib/posthog/server'
-export const runtime = 'edge'
 
 // GDPR-compliant production metrics tracking endpoint
 export async function POST(request) {
@@ -63,7 +62,7 @@ export async function POST(request) {
     let supabaseResult = null
     if (consent.analytics) {
       try {
-        const supabase = createServerClient()
+        const supabase = createClient()
         supabaseResult = await supabase
           .from('metrics_events')
           .insert([{
@@ -144,7 +143,7 @@ async function trackProductionSpecificEvents(event, properties, consent) {
   if (!consent.analytics) return
 
   try {
-    const supabase = createServerClient()
+    const supabase = createClient()
     
     // Conversion Funnel Tracking
     if (event === 'pricing_page_viewed') {
