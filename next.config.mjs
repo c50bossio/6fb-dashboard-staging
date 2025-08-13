@@ -97,6 +97,23 @@ const nextConfig = {
     // Disable static optimization to prevent Dynamic Server Usage errors
     staticPageGenerationTimeout: 1000,
     isrMemoryCacheSize: 0,
+    // Force dynamic for all routes to reduce bundle size
+    appDir: true,
+    forceSwcTransforms: true,
+    // Ultra-aggressive caching and externalization
+    serverMinification: true,
+    swcMinify: true,
+    modularizeImports: {
+      '@heroicons/react/outline': {
+        transform: '@heroicons/react/outline/{{member}}',
+      },
+      '@heroicons/react/solid': {
+        transform: '@heroicons/react/solid/{{member}}',
+      },
+      'lucide-react': {
+        transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+      },
+    },
   },
   
   // Webpack configuration
@@ -206,13 +223,45 @@ const nextConfig = {
         '@sentry/nextjs': false,
         // Remove heavy AI SDKs from client bundles
         '@anthropic-ai/sdk': false,
+        '@ai-sdk/anthropic': false,
+        '@ai-sdk/openai': false,
         'openai': false,
         '@google/generative-ai': false,
+        'ai': false,
         // Remove server-only packages
         'nodemailer': false,
         'bull': false,
         'ioredis': false,
         'twilio': false,
+        'axios': false,
+        '@sendgrid/mail': false,
+        'pusher': false,
+        'stripe': false,
+        'posthog-node': false,
+        // Remove heavy chart libraries
+        'chart.js': false,
+        'react-chartjs-2': false,
+        'recharts': false,
+        // Remove heavy utility libraries
+        'luxon': false,
+        'uuid': false,
+        'otplib': false,
+        'qrcode': false,
+        'canvas-confetti': false,
+        'html2canvas': false,
+        'jspdf': false,
+        // Remove FullCalendar packages from client bundle
+        '@fullcalendar/core': false,
+        '@fullcalendar/daygrid': false,
+        '@fullcalendar/timegrid': false,
+        '@fullcalendar/react': false,
+        '@fullcalendar/resource': false,
+        '@fullcalendar/resource-timegrid': false,
+        '@fullcalendar/resource-timeline': false,
+        '@fullcalendar/interaction': false,
+        '@fullcalendar/list': false,
+        '@fullcalendar/rrule': false,
+        'rrule': false,
       }
       
       // Remove development-only modules in production
@@ -278,8 +327,8 @@ const nextConfig = {
   compress: true,
   generateEtags: true,
   
-  // Output configuration - remove standalone for Vercel deployment
-  // output: 'standalone',
+  // Output configuration - optimized for Vercel deployment
+  output: 'export' === process.env.BUILD_OUTPUT ? 'export' : undefined,
   
   // Environment variables
   env: {
