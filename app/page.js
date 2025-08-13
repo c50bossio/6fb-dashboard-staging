@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
+import { createClient } from '@/lib/supabase/client'
 import { 
   RocketLaunchIcon,
   ArrowRightIcon,
@@ -29,9 +30,10 @@ export default function HomePage() {
     checkAuth()
   }, [])
 
-  const checkAuth = () => {
-    const token = localStorage.getItem('access_token')
-    setIsAuthenticated(!!token)
+  const checkAuth = async () => {
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    setIsAuthenticated(!!session)
   }
 
   return (
@@ -72,9 +74,11 @@ export default function HomePage() {
                       <span>Dashboard</span>
                     </Link>
                     <button
-                      onClick={() => {
-                        localStorage.removeItem('access_token')
+                      onClick={async () => {
+                        const supabase = createClient()
+                        await supabase.auth.signOut()
                         setIsAuthenticated(false)
+                        router.refresh()
                       }}
                       className="text-gray-600 hover:text-gray-900 font-medium"
                     >
