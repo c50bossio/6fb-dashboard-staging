@@ -43,11 +43,48 @@ export default function HomePage() {
         {/* Header */}
         <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-20">
+            <div className="flex items-center justify-between h-16">
               <div className="flex items-center">
-                <LogoHeader />
+                <Link href="/" className="block">
+                  <LogoHeader size="small" />
+                </Link>
               </div>
               
+              {/* Navigation Links */}
+              <nav className="hidden md:flex items-center space-x-8">
+                <Link
+                  href="#features"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                >
+                  Features
+                </Link>
+                <Link
+                  href="#pricing"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                >
+                  Pricing
+                </Link>
+                <Link
+                  href="#how-it-works"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                >
+                  How It Works
+                </Link>
+                <Link
+                  href="#testimonials"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                >
+                  Testimonials
+                </Link>
+                <Link
+                  href="/contact"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                >
+                  Contact
+                </Link>
+              </nav>
+              
+              {/* Auth Buttons */}
               <div className="flex items-center space-x-4">
                 {isAuthenticated ? (
                   <>
@@ -80,7 +117,7 @@ export default function HomePage() {
                     </Link>
                     <Link
                       href="/register"
-                      className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
+                      className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
                     >
                       Start Free Trial
                     </Link>
@@ -152,10 +189,14 @@ export default function HomePage() {
         </section>
 
         {/* Features Section - What you get */}
-        <FeaturesSection />
+        <section id="features">
+          <FeaturesSection />
+        </section>
 
-        {/* Brand Ownership Section */}
-        <BrandOwnershipSection />
+        {/* How It Works Section */}
+        <section id="how-it-works">
+          <BrandOwnershipSection />
+        </section>
 
         {/* AI Agents Showcase */}
         <AIAgentsShowcase />
@@ -164,10 +205,14 @@ export default function HomePage() {
         <AnalyticsPreview />
 
         {/* Pricing Section - Clear pricing tiers */}
-        <PricingSection />
+        <section id="pricing">
+          <PricingSection />
+        </section>
 
-        {/* Success Stories */}
-        <BarberSuccessStories />
+        {/* Success Stories / Testimonials */}
+        <section id="testimonials">
+          <BarberSuccessStories />
+        </section>
 
         {/* Pricing Calculator - ROI Calculator */}
         <PricingCalculator />

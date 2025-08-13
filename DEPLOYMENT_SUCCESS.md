@@ -2,9 +2,9 @@
 
 ## ✅ Staging Deployment is LIVE!
 
-**URL**: https://6fb-ai-dashboard-f62lshna2-6fb.vercel.app/  
+**URL**: https://bookedbarber.vercel.app/  
 **Status**: Fully Operational  
-**API Health**: https://6fb-ai-dashboard-f62lshna2-6fb.vercel.app/api/health
+**API Health**: https://bookedbarber.vercel.app/api/health
 
 Successfully resolved the 250MB serverless function limit through hybrid Edge/Node.js runtime architecture.
 

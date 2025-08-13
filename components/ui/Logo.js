@@ -46,15 +46,15 @@ const Logo = ({
 
   // Logo variant mapping based on theme and preferences
   const getLogoVariant = () => {
-    // Use the professional gold/black logos based on theme
+    // Use the transparent background logos based on theme
     const isDarkMode = resolvedTheme === 'dark';
     
     if (isDarkMode) {
-      // Use gold logo for dark backgrounds
-      return 'bookedbarber-logo-gold.png';
+      // Use gold logo with transparent background for dark mode
+      return 'bookedbarber-logo-transparent.png';
     }
-    // Use black logo for light backgrounds
-    return 'bookedbarber-logo-black.png';
+    // Use green logo with transparent background for light mode
+    return 'bookedbarber-logo-green.png';
   };
 
   const config = sizeConfig[size] || sizeConfig.medium;
