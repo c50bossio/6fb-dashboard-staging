@@ -1,0 +1,35 @@
+{
+  "project": "bookedbarber-app",
+  "team": "6fb",
+  "deployment": {
+    "production": {
+      "branch": "main",
+      "domains": [
+        "bookedbarber.com",
+        "www.bookedbarber.com"
+      ]
+    },
+    "staging": {
+      "branch": "staging",
+      "domain": "staging.bookedbarber.com"
+    },
+    "preview": {
+      "branches": ["feature/*", "fix/*", "test/*"],
+      "domain_pattern": "[branch]-bookedbarber.vercel.app"
+    }
+  },
+  "environment_variables": {
+    "production": {
+      "NEXT_PUBLIC_ENV": "production",
+      "NEXT_PUBLIC_API_URL": "https://api.bookedbarber.com"
+    },
+    "staging": {
+      "NEXT_PUBLIC_ENV": "staging",
+      "NEXT_PUBLIC_API_URL": "https://staging-api.bookedbarber.com"
+    },
+    "preview": {
+      "NEXT_PUBLIC_ENV": "preview",
+      "NEXT_PUBLIC_API_URL": "https://preview-api.bookedbarber.com"
+    }
+  }
+}
