@@ -46,7 +46,7 @@ const puppeteer = require('puppeteer');
     
     // Group resources by type
     const resourcesByType = resources.reduce((acc, resource) => {
-      if (\!acc[resource.initiatorType]) acc[resource.initiatorType] = [];
+      if (!acc[resource.initiatorType]) acc[resource.initiatorType] = [];
       acc[resource.initiatorType].push({
         name: resource.name.split('/').pop(),
         duration: resource.duration,
@@ -86,8 +86,7 @@ const puppeteer = require('puppeteer');
     return acc + (total - used);
   }, 0);
   
-  console.log('
-📈 Performance Summary:');
+  console.log('📈 Performance Summary:');
   console.log();
   console.log();
   console.log();
@@ -99,21 +98,18 @@ const puppeteer = require('puppeteer');
     console.log();
   }
   
-  console.log('
-🎯 Resource Analysis:');
+  console.log('🎯 Resource Analysis:');
   Object.entries(performanceData.resourcesByType).forEach(([type, resources]) => {
     const totalSize = resources.reduce((sum, r) => sum + r.size, 0);
     const avgDuration = resources.reduce((sum, r) => sum + r.duration, 0) / resources.length;
     console.log();
   });
   
-  console.log('
-🧹 Code Coverage:');
+  console.log('🧹 Code Coverage:');
   console.log();
   console.log();
   
-  console.log('
-💾 Chrome DevTools Metrics:');
+  console.log('💾 Chrome DevTools Metrics:');
   console.log();
   console.log();
   console.log();

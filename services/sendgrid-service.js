@@ -39,7 +39,9 @@ class EnhancedSendGridService {
      * Initialize service with validation
      */
     async initializeService() {
-        console.log('🔧 Initializing Enhanced SendGrid Service...');
+        if (process.env.NODE_ENV === 'development') {
+            console.log('🔧 Initializing Enhanced SendGrid Service...');
+        }
         
         // Check if API key exists
         if (!this.apiKey || this.apiKey.includes('placeholder')) {
@@ -57,7 +59,9 @@ class EnhancedSendGridService {
             await this.validateApiKey();
             this.testMode = false;
             this.validationStatus = 'VALIDATED';
-            console.log('✅ SendGrid service initialized successfully');
+            if (process.env.NODE_ENV === 'development') {
+                console.log('✅ SendGrid service initialized successfully');
+            }
         } catch (error) {
             console.warn('⚠️  SendGrid API key validation failed:', error.message);
             this.testMode = true;

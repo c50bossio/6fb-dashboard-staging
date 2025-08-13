@@ -7,9 +7,12 @@ export async function GET(request) {
   const serverUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serverKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
-  console.log('🔍 Server-side OAuth debug');
-  console.log('Server URL:', serverUrl);
-  console.log('Server Key:', serverKey?.substring(0, 50) + '...');
+  // Use structured logging instead of console.log for production safety
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Server-side OAuth debug');
+    console.log('Server URL:', serverUrl);
+    console.log('Server Key:', serverKey?.substring(0, 50) + '...');
+  }
   
   try {
     const supabase = createClient(serverUrl, serverKey);

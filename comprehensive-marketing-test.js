@@ -1,4 +1,4 @@
-#\!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * Comprehensive Marketing Campaign System Test
  * Tests the complete agent-driven marketing workflow
@@ -231,7 +231,7 @@ async function runComprehensiveTest() {
         
         testResults.summary.totalTests = allTests.length;
         testResults.summary.passed = allTests.filter(t => t.passed).length;
-        testResults.summary.failed = allTests.filter(t => \!t.passed).length;
+        testResults.summary.failed = allTests.filter(t => !t.passed).length;
         
         console.log('📊 FINAL TEST SUMMARY');
         console.log('=' .repeat(50));

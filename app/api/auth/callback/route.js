@@ -24,29 +24,44 @@ export async function GET(request) {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
-      // Check if profile exists
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
+      // Check if user exists in our users table (not profiles - using correct table)
+      const { data: userData } = await supabase
+        .from('users')
+        .select('subscription_status, subscription_tier, onboarding_completed')
         .eq('id', user.id)
         .single()
       
-      // If no profile or incomplete profile, redirect to welcome
-      if (!profile || !profile.shop_name) {
-        // Create basic profile if it doesn't exist
-        if (!profile) {
-          await supabase.from('profiles').insert({
-            id: user.id,
-            email: user.email,
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-            role: 'SHOP_OWNER',
-            created_at: new Date().toISOString()
-          })
-        }
+      // If user doesn't exist, create them
+      if (!userData) {
+        await supabase.from('users').insert({
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.full_name || user.email?.split('@')[0],
+          role: 'SHOP_OWNER',
+          created_at: new Date().toISOString()
+        })
+      }
+      
+      // Check subscription status
+      const hasActiveSubscription = userData?.subscription_status === 'active'
+      const needsOnboarding = !userData?.onboarding_completed
+      
+      // Redirect logic:
+      // 1. No subscription -> go to pricing page
+      // 2. Has subscription but needs onboarding -> go to welcome/onboarding
+      // 3. Has subscription and completed onboarding -> go to dashboard
+      
+      if (!hasActiveSubscription) {
+        // No active subscription - redirect to pricing
+        return NextResponse.redirect(`${origin}/subscribe?source=oauth`)
+      }
+      
+      if (needsOnboarding) {
+        // Has subscription but needs onboarding
         return NextResponse.redirect(`${origin}/welcome`)
       }
       
-      // Profile exists and is complete, go to dashboard
+      // Has subscription and completed onboarding - go to requested page or dashboard
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

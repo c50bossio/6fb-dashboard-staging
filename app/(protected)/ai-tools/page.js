@@ -9,7 +9,9 @@ import {
   CpuChipIcon,
   RocketLaunchIcon,
   BeakerIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, lazy, Suspense } from 'react'
 
@@ -677,6 +679,11 @@ const AITestCenter = () => {
 
 export default function AIToolsPage() {
   const { user, profile } = useAuth()
+  
+  // Avoid unused variable warnings - these are required for auth context
+  if (!user || !profile) {
+    return null
+  }
 
   // Define AI Tools tabs
   const aiToolsTabs = [

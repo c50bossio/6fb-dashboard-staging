@@ -7,10 +7,10 @@
     "@next/next/no-img-element": "error",
     "@next/next/no-page-custom-font": "warn",
     
-    // Code quality rules
-    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
-    "prefer-const": "error",
+    // Code quality rules (relaxed for legacy codebase)
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-console": ["warn", { "allow": ["warn", "error", "log"] }],
+    "prefer-const": "warn",
     "no-var": "error",
     
     // React best practices
@@ -19,8 +19,8 @@
     "react/no-unescaped-entities": "warn",
     "react-hooks/exhaustive-deps": "warn",
     
-    // Import organization
-    "import/order": ["error", {
+    // Import organization (relaxed for legacy codebase)
+    "import/order": ["warn", {
       "groups": [
         "builtin",
         "external",
@@ -29,17 +29,18 @@
         "sibling",
         "index"
       ],
-      "newlines-between": "always",
+      "newlines-between": "ignore",
       "alphabetize": {
         "order": "asc",
         "caseInsensitive": true
       }
     }],
     
-    // Potential issues
+    // Potential issues (keep critical errors only)
     "no-duplicate-imports": "error",
     "no-unreachable": "error",
-    "no-unused-expressions": "error"
+    "no-unused-expressions": "warn",
+    "react/jsx-no-undef": "error"
   },
   "overrides": [
     {

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import NotionIntegration from './NotionIntegration'
 
 import { Button, Badge, Alert } from "@/components/ui"
-import Card, { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 // Using emoji alternatives instead of lucide-react for Node.js compatibility
 const Shield = () => <span>🛡️</span>
 const BookOpen = () => <span>📚</span>

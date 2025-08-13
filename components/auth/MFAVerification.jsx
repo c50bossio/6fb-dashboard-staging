@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Alert, AlertDescription } from '@/components/ui/Alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function MFAVerification({ onVerified, onCancel, userEmail }) {
   const [code, setCode] = useState('')

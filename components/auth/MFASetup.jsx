@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Alert, { AlertDescription } from '@/components/ui/Alert'
-import Badge from '@/components/ui/Badge'
-import Card from '@/components/ui/Card'
+import Image from 'next/image'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function MFASetup({ onComplete, onCancel }) {
@@ -171,10 +172,12 @@ export default function MFASetup({ onComplete, onCancel }) {
 
             {qrCode && (
               <div className="flex justify-center">
-                <img 
+                <Image 
                   src={qrCode} 
                   alt="MFA QR Code" 
-                  className="w-64 h-64 border border-gray-200 rounded-lg"
+                  width={256}
+                  height={256}
+                  className="border border-gray-200 rounded-lg"
                 />
               </div>
             )}

@@ -1,0 +1,14 @@
+/**
+ * Custom App component for performance monitoring
+ */
+
+import { reportWebVitals as reportToAnalytics } from '@/lib/performance-monitor'
+
+// Report web vitals
+export function reportWebVitals(metric) {
+  reportToAnalytics(metric)
+}
+
+export default function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}

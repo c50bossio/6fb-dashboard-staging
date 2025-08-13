@@ -5,7 +5,7 @@ import GlobalNavigation from '../../../../components/GlobalNavigation'
 import CapacityPlanningPanel from '../../../../components/dashboard/CapacityPlanningPanel'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import {
-  HammerIcon,
+  WrenchScrewdriverIcon,
   ChartBarIcon,
   CalendarDaysIcon,
   LightBulbIcon,
@@ -39,7 +39,7 @@ export default function CapacityPlanningPage() {
                 <div className="md:flex md:items-center md:justify-between">
                   <div className="min-w-0 flex-1">
                     <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl flex items-center gap-3">
-                      <HammerIcon className="h-10 w-10 text-blue-600" />
+                      <WrenchScrewdriverIcon className="h-10 w-10 text-blue-600" />
                       Capacity Planning
                     </h1>
                     <p className="mt-2 text-lg text-gray-600">

@@ -1,16 +1,18 @@
 import { updateSession } from '@/lib/supabase/middleware'
 import { NextResponse } from 'next/server'
+import rateLimiter from '@/lib/redis-rate-limiter'
+import { isOriginAllowed, addCorsHeaders, handlePreflightRequest } from '@/lib/cors-config'
 
 // Enhanced security headers middleware
 function addSecurityHeaders(response) {
   const isDevelopment = process.env.NODE_ENV === 'development'
   
-  // Content Security Policy - Allow Next.js inline scripts for hydration
-  // In production, we need 'unsafe-inline' for Next.js to work properly
-  // This is a known requirement for Next.js App Router
+  // Enhanced Content Security Policy - Removed unsafe-eval, restricted unsafe-inline
+  // Only allow unsafe-inline for styles due to Tailwind CSS requirements
+  // Removed unsafe-eval completely for better security
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com https://vercel.live`,
+    `script-src 'self' 'unsafe-inline' https://js.stripe.com https://checkout.stripe.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://*.posthog.com https://vercel.live`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
     "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net",
     "img-src 'self' data: https: blob:",
@@ -24,7 +26,7 @@ function addSecurityHeaders(response) {
     "upgrade-insecure-requests"
   ].join('; ')
 
-  // Security headers
+  // Enhanced security headers
   response.headers.set('Content-Security-Policy', csp)
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('X-Frame-Options', 'DENY')
@@ -32,6 +34,11 @@ function addSecurityHeaders(response) {
   response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(self), accelerometer=(), gyroscope=(), magnetometer=(), usb=(), midi=(), sync-xhr=(), battery=(), display-capture=()')
+  
+  // Additional security headers
+  response.headers.set('Cross-Origin-Embedder-Policy', 'require-corp')
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin')
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-site')
   
   // Additional security headers
   response.headers.set('X-DNS-Prefetch-Control', 'off')
@@ -57,31 +64,25 @@ function generateRequestId() {
   return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
-// Rate limiting storage (in production, use Redis)
-const rateLimitStore = new Map()
-
-function isRateLimited(ip, endpoint, limit = 60, window = 60000) {
+// Enhanced rate limiting with Redis support and in-memory fallback
+async function checkRateLimit(ip, endpoint, limit = 60, windowMs = 60000) {
   const key = `${ip}:${endpoint}`
-  const now = Date.now()
   
-  if (!rateLimitStore.has(key)) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + window })
-    return false
+  try {
+    const result = await rateLimiter.isRateLimited(key, limit, windowMs)
+    return result
+  } catch (error) {
+    console.warn('⚠️ Rate limit check failed:', error.message)
+    // Fall back to allowing the request if rate limiter fails
+    return {
+      isLimited: false,
+      count: 0,
+      limit,
+      resetTime: Date.now() + windowMs,
+      remaining: limit,
+      source: 'error'
+    }
   }
-  
-  const data = rateLimitStore.get(key)
-  
-  if (now > data.resetTime) {
-    rateLimitStore.set(key, { count: 1, resetTime: now + window })
-    return false
-  }
-  
-  if (data.count >= limit) {
-    return true
-  }
-  
-  data.count++
-  return false
 }
 
 // Security event logging
@@ -100,37 +101,158 @@ export async function middleware(request) {
             'unknown'
   
   try {
-    // Rate limiting for authentication endpoints
+    // Check subscription status for protected routes
+    const pathname = request.nextUrl.pathname
+    const isProtectedRoute = 
+      pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/barber') ||
+      pathname.startsWith('/shop') ||
+      pathname.startsWith('/enterprise') ||
+      pathname.startsWith('/ai-tools') ||
+      pathname.startsWith('/analytics') ||
+      pathname.startsWith('/billing') ||
+      pathname.startsWith('/team') ||
+      pathname.startsWith('/settings') ||
+      pathname.startsWith('/api/protected')
+    
+    const isPublicRoute = 
+      pathname === '/' ||
+      pathname.startsWith('/login') ||
+      pathname.startsWith('/register') ||
+      pathname.startsWith('/subscribe') ||
+      pathname.startsWith('/api/auth') ||
+      pathname.startsWith('/api/stripe') ||
+      pathname.startsWith('/api/health') ||
+      pathname.startsWith('/_next') ||
+      pathname.startsWith('/static')
+    
+    // For protected routes, check subscription status
+    if (isProtectedRoute && !isPublicRoute) {
+      const { createClient } = await import('@/lib/supabase/server-client')
+      const supabase = createClient()
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        // Not authenticated - redirect to login
+        const url = new URL('/login', request.url)
+        url.searchParams.set('redirectTo', pathname)
+        return NextResponse.redirect(url)
+      }
+      
+      // Check subscription status
+      const { data: userData } = await supabase
+        .from('users')
+        .select('subscription_status, subscription_tier, subscription_current_period_end')
+        .eq('id', user.id)
+        .single()
+      
+      // If no active subscription, redirect to pricing page
+      if (!userData || userData.subscription_status !== 'active') {
+        // Allow access to billing page so they can manage subscription
+        if (!pathname.startsWith('/billing')) {
+          const url = new URL('/subscribe', request.url)
+          url.searchParams.set('reason', 'subscription_required')
+          url.searchParams.set('redirectTo', pathname)
+          return NextResponse.redirect(url)
+        }
+      }
+      
+      // Check if subscription has expired
+      if (userData?.subscription_current_period_end) {
+        const expirationDate = new Date(userData.subscription_current_period_end)
+        if (expirationDate < new Date()) {
+          // Subscription expired - redirect to billing
+          if (!pathname.startsWith('/billing')) {
+            const url = new URL('/subscribe', request.url)
+            url.searchParams.set('reason', 'subscription_expired')
+            url.searchParams.set('redirectTo', pathname)
+            return NextResponse.redirect(url)
+          }
+        }
+      }
+    }
+    
+    // Enhanced rate limiting for authentication endpoints
     if (request.nextUrl.pathname.startsWith('/api/auth/')) {
-      if (isRateLimited(ip, 'auth', 10, 60000)) { // 10 requests per minute
+      const rateLimitResult = await checkRateLimit(ip, 'auth', 10, 60000) // 10 requests per minute
+      
+      if (rateLimitResult.isLimited) {
         logSecurityEvent('RATE_LIMIT_EXCEEDED', {
           endpoint: request.nextUrl.pathname,
-          method: request.method
+          method: request.method,
+          count: rateLimitResult.count,
+          limit: rateLimitResult.limit,
+          source: rateLimitResult.source
         }, ip)
+        
+        const retryAfter = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
         
         return new Response('Too Many Requests', { 
           status: 429, 
-          headers: { 'Retry-After': '60' }
+          headers: { 
+            'Retry-After': retryAfter.toString(),
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString()
+          }
         })
       }
     }
 
-    // Enhanced CORS for API routes
+    // Enhanced CORS and rate limiting for API routes
     if (request.nextUrl.pathname.startsWith('/api/')) {
-      const origin = request.headers.get('origin')
-      const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || [
-        'http://localhost:9999',
-        'https://your-production-domain.com'
-      ]
+      // General API rate limiting (more permissive than auth)
+      if (!request.nextUrl.pathname.startsWith('/api/auth/')) {
+        const rateLimitResult = await checkRateLimit(ip, 'api', 100, 60000) // 100 requests per minute
+        
+        if (rateLimitResult.isLimited) {
+          logSecurityEvent('RATE_LIMIT_EXCEEDED', {
+            endpoint: request.nextUrl.pathname,
+            method: request.method,
+            count: rateLimitResult.count,
+            limit: rateLimitResult.limit,
+            source: rateLimitResult.source
+          }, ip)
+          
+          const retryAfter = Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)
+          
+          return new Response('Too Many Requests', { 
+            status: 429, 
+            headers: { 
+              'Retry-After': retryAfter.toString(),
+              'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+              'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+              'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString()
+            }
+          })
+        }
+      }
       
-      // Strict origin validation
-      if (origin && !allowedOrigins.includes(origin)) {
+      const origin = request.headers.get('origin')
+      
+      // Handle preflight OPTIONS requests
+      if (request.method === 'OPTIONS') {
+        return handlePreflightRequest(request)
+      }
+      
+      // Enhanced origin validation using CORS utility
+      if (origin && !isOriginAllowed(origin)) {
         logSecurityEvent('CORS_VIOLATION', {
           origin,
-          endpoint: request.nextUrl.pathname
+          endpoint: request.nextUrl.pathname,
+          method: request.method,
+          userAgent: request.headers.get('user-agent')
         }, ip)
         
-        return new Response('Forbidden', { status: 403 })
+        return new Response('Forbidden - Origin not allowed', { 
+          status: 403,
+          headers: {
+            'X-CORS-Error': 'origin-not-allowed',
+            'X-Allowed-Origins': 'See API documentation'
+          }
+        })
       }
     }
 
@@ -138,19 +260,12 @@ export async function middleware(request) {
     const response = await updateSession(request)
     
     // Add security headers to all responses
-    const enhancedResponse = addSecurityHeaders(response || NextResponse.next())
+    let enhancedResponse = addSecurityHeaders(response || NextResponse.next())
     
-    // Add CORS headers for allowed origins
+    // Add enhanced CORS headers for API routes
     if (request.nextUrl.pathname.startsWith('/api/')) {
       const origin = request.headers.get('origin')
-      const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:9999']
-      
-      if (origin && allowedOrigins.includes(origin)) {
-        enhancedResponse.headers.set('Access-Control-Allow-Origin', origin)
-        enhancedResponse.headers.set('Access-Control-Allow-Credentials', 'true')
-        enhancedResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        enhancedResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
-      }
+      enhancedResponse = addCorsHeaders(enhancedResponse, origin)
     }
 
     // Performance monitoring

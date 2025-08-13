@@ -478,30 +478,30 @@ class PuppeteerDebugger {
  * CLI interface for direct usage
  */
 async function main() {
-  const debugger = new PuppeteerDebugger()
+  const puppeteerDebugger = new PuppeteerDebugger()
   
   try {
-    await debugger.init()
+    await puppeteerDebugger.init()
     
     const command = process.argv[2]
     
     switch (command) {
       case 'booking':
-        await debugger.debugBookingFlow()
+        await puppeteerDebugger.debugBookingFlow()
         break
       case 'agents':
-        await debugger.debugAIAgents()
+        await puppeteerDebugger.debugAIAgents()
         break
       case 'auth':
-        await debugger.debugAuth()
+        await puppeteerDebugger.debugAuth()
         break
       case 'performance':
-        await debugger.navigate('/')
-        await debugger.getPerformanceMetrics()
+        await puppeteerDebugger.navigate('/')
+        await puppeteerDebugger.getPerformanceMetrics()
         break
       case 'report':
-        await debugger.navigate('/')
-        await debugger.generateDebugReport()
+        await puppeteerDebugger.navigate('/')
+        await puppeteerDebugger.generateDebugReport()
         break
       default:
         console.log('Usage: node puppeteer-debug.js [booking|agents|auth|performance|report]')
@@ -515,7 +515,7 @@ async function main() {
   } catch (error) {
     console.error('Debug session failed:', error)
   } finally {
-    await debugger.close()
+    await puppeteerDebugger.close()
   }
 }
 

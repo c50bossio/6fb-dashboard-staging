@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { 
   XMarkIcon,
   ArrowDownTrayIcon,
@@ -283,9 +284,11 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
                 {loading ? (
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 ) : qrDataUrl ? (
-                  <img 
+                  <Image 
                     src={qrDataUrl} 
                     alt="QR Code Preview" 
+                    width={qrOptions.size}
+                    height={qrOptions.size}
                     className="max-w-full h-auto"
                     style={{ imageRendering: 'pixelated' }}
                   />

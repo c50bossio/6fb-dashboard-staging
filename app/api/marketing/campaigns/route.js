@@ -8,7 +8,9 @@ try {
     sendGridService = services.sendGridService;
     twilioSMSService = services.twilioSMSService;
     stripeService = services.stripeService;
-    console.log('✅ Marketing services loaded successfully');
+    if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Marketing services loaded successfully');
+    }
 } catch (error) {
     console.error('Failed to import marketing services:', error.message);
 }

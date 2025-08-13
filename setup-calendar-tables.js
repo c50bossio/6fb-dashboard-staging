@@ -36,9 +36,9 @@ async function setupCalendarTables() {
     console.log('⚠️  You need to run this SQL in the Supabase SQL Editor:\n')
     console.log('1. Go to: https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee/sql')
     console.log('2. Copy and paste the following SQL:')
-    console.log('='.'='.repeat(60))
+    console.log('='.repeat(60))
     console.log(schema)
-    console.log('='.'='.repeat(60))
+    console.log('='.repeat(60))
     console.log('\n✅ After running the SQL above in Supabase, your calendar tables will be ready!')
     
     // Test if tables exist

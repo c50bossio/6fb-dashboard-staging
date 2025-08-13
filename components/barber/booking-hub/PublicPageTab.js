@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import QRCode from 'qrcode'
 import { 
   GlobeAltIcon, 
@@ -251,7 +252,7 @@ export default function PublicPageTab() {
               <div className="text-center">
                 {qrCodeUrl && (
                   <div className="inline-block p-4 bg-white rounded-lg shadow-sm border">
-                    <img src={qrCodeUrl} alt="Booking QR Code" className="mx-auto" />
+                    <Image src={qrCodeUrl} alt="Booking QR Code" width={qrSize} height={qrSize} className="mx-auto" />
                   </div>
                 )}
                 

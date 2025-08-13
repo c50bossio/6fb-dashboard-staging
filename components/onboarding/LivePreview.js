@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import {
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
@@ -162,10 +163,12 @@ export default function LivePreview({
             style={{ backgroundColor: `${primaryColor}10` }}
           >
             {brandingData.logoUrl ? (
-              <img 
+              <Image 
                 src={brandingData.logoUrl} 
                 alt="Logo" 
-                className="w-20 h-20 mx-auto mb-3 rounded-full"
+                width={80}
+                height={80}
+                className="mx-auto mb-3 rounded-full"
               />
             ) : (
               <div 
@@ -243,7 +246,7 @@ export default function LivePreview({
         </h3>
         <div className="flex items-center space-x-4">
           {qrCodeUrl && (
-            <img src={qrCodeUrl} alt="QR Code" className="w-32 h-32" />
+            <Image src={qrCodeUrl} alt="QR Code" width={128} height={128} />
           )}
           <div className="flex-1">
             <p className="text-sm text-gray-600 mb-2">

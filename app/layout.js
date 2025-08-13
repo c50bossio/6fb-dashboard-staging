@@ -4,15 +4,28 @@ import ClientWrapper from '../components/ClientWrapper'
 export const metadata = {
   title: '6FB AI Agent System - Barbershop Dashboard',
   description: 'AI-powered barbershop management and marketing automation',
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
+    apple: '/icons/icon-192x192.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: '6FB Agent',
+  },
+  formatDetection: {
+    telephone: false,
   },
 }
 
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: '#2563eb',
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children }) {

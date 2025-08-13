@@ -5,7 +5,7 @@ import {
   ClockIcon,
   UserGroupIcon,
   CalendarDaysIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   LightBulbIcon,
@@ -475,7 +475,7 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">Seasonal Impact</h3>
-              <TrendingUpIcon className="h-5 w-5 text-amber-500" />
+              <ArrowTrendingUpIcon className="h-5 w-5 text-amber-500" />
             </div>
             <div className={`text-2xl font-bold ${capacityData.current.seasonal_impact > 1 ? 'text-amber-600' : 'text-blue-600'}`}>
               {capacityData.current.seasonal_impact > 1 ? '+' : ''}{Math.round((capacityData.current.seasonal_impact - 1) * 100)}%

@@ -36,8 +36,7 @@ export default function RegisterPage() {
     businessPhone: '',
     businessType: 'barbershop',
     
-    // Plan Selection
-    selectedPlan: 'professional'
+    // Plan selection removed - will be handled after registration
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -241,13 +240,13 @@ export default function RegisterPage() {
     
     if (!validateStep(currentStep)) return
 
-    if (currentStep < 3) {
+    if (currentStep < 2) {
       console.log('Moving to next step:', currentStep + 1)
       setCurrentStep(currentStep + 1)
       return
     }
 
-    // Final submission - only happens on step 3 when user clicks "Create account"
+    // Final submission - only happens on step 2 when user clicks "Create account"
     console.log('Final submission - creating account')
     setIsLoading(true)
     setErrors({})
@@ -261,14 +260,13 @@ export default function RegisterPage() {
           full_name: `${formData.firstName} ${formData.lastName}`.trim(),
           shop_name: formData.businessName || undefined,
           phone: formData.phone || undefined,
-          selected_plan: formData.selectedPlan,
           sms_consent: formData.smsConsent
         }
       })
       
       // Show success message briefly before redirect
       setErrors({ 
-        submit: '✅ Account created successfully! Redirecting to email confirmation...',
+        submit: '✅ Account created successfully! Redirecting to choose your plan...',
         isSuccess: true 
       })
       
@@ -277,10 +275,11 @@ export default function RegisterPage() {
         // Check if email verification is required
         if (result?.requiresEmailConfirmation) {
           // Redirect to confirmation page with email parameter
-          router.push(`/register/confirm?email=${encodeURIComponent(formData.email)}`)
+          // After confirmation, they'll be redirected to pricing
+          router.push(`/register/confirm?email=${encodeURIComponent(formData.email)}&next=/subscribe`)
         } else {
-          // If no email verification required, redirect to dashboard
-          router.push('/dashboard')
+          // No email verification required, redirect to pricing to select plan
+          router.push('/subscribe?source=registration')
         }
       }, 1500)
     } catch (err) {
@@ -640,7 +639,8 @@ export default function RegisterPage() {
     </div>
   )
 
-  const renderStep3 = () => (
+  // Step 3 removed - pricing handled separately after registration
+  const renderStep3_removed = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h3 className="text-lg font-semibold text-gray-900">Choose your plan</h3>
@@ -734,7 +734,7 @@ export default function RegisterPage() {
         {/* Progress bar */}
         <div className="mt-8 mb-8">
           <div className="flex items-center justify-center space-x-4">
-            {[1, 2, 3].map((step) => (
+            {[1, 2].map((step) => (
               <div key={step} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   step <= currentStep 
@@ -743,7 +743,7 @@ export default function RegisterPage() {
                 }`}>
                   {step}
                 </div>
-                {step < 3 && (
+                {step < 2 && (
                   <div className={`w-12 h-1 mx-2 ${
                     step < currentStep ? 'bg-blue-600' : 'bg-gray-200'
                   }`} />
@@ -751,10 +751,9 @@ export default function RegisterPage() {
               </div>
             ))}
           </div>
-          <div className="flex justify-center space-x-8 mt-2">
-            <span className="text-xs text-gray-600">Personal</span>
-            <span className="text-xs text-gray-600">Business</span>
-            <span className="text-xs text-gray-600">Plan</span>
+          <div className="flex justify-center space-x-12 mt-2">
+            <span className="text-xs text-gray-600">Personal Info</span>
+            <span className="text-xs text-gray-600">Business Info</span>
           </div>
         </div>
       </div>
@@ -774,7 +773,6 @@ export default function RegisterPage() {
 
             {currentStep === 1 && renderStep1()}
             {currentStep === 2 && renderStep2()}
-            {currentStep === 3 && renderStep3()}
 
             <div className="mt-8 flex justify-between">
               {currentStep > 1 && (
@@ -788,7 +786,7 @@ export default function RegisterPage() {
               )}
               
               <div className="ml-auto">
-                {currentStep < 3 ? (
+                {currentStep < 2 ? (
                   <button
                     type="button"
                     onClick={handleNext}

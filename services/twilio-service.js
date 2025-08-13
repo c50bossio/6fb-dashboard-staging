@@ -79,7 +79,9 @@ class TwilioSMSService {
             }
 
             this.isInitialized = true;
-            console.log('Twilio SMS service initialized successfully');
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Twilio SMS service initialized successfully');
+            }
             return true;
         } catch (error) {
             console.error('Failed to initialize Twilio SMS service:', error);

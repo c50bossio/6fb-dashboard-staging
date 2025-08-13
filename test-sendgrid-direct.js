@@ -1,4 +1,4 @@
-#\!/usr/bin/env node
+#!/usr/bin/env node
 
 /**
  * Direct SendGrid API Key Test
@@ -12,7 +12,7 @@ async function testSendGridAPI() {
     console.log('=====================================\n');
     
     const apiKey = process.env.SENDGRID_API_KEY;
-    if (\!apiKey) {
+    if (!apiKey) {
         console.error('❌ No SendGrid API key found in environment');
         return;
     }

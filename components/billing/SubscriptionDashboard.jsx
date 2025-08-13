@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Alert, { AlertDescription } from '@/components/ui/Alert'
-import Badge from '@/components/ui/Badge'
-import Card from '@/components/ui/Card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function SubscriptionDashboard() {
