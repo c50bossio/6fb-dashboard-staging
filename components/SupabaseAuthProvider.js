@@ -31,9 +31,9 @@ function SupabaseAuthProvider({ children }) {
   // Emergency timeout to prevent infinite loading (production fallback)
   useEffect(() => {
     const emergencyTimeout = setTimeout(() => {
-      console.warn('🚨 EMERGENCY: Forcing loading = false after 3 seconds')
+      console.warn('🚨 EMERGENCY: Forcing loading = false after 5 seconds')
       setLoading(false)
-    }, 3000)
+    }, 5000) // Increased to 5 seconds for OAuth callback handling
     
     return () => clearTimeout(emergencyTimeout)
   }, [])
@@ -42,8 +42,9 @@ function SupabaseAuthProvider({ children }) {
   useEffect(() => {
     let isMounted = true
     
-    // Check for complete dev bypass first
-    if (isDevBypassEnabled()) {
+    // DISABLED: Dev bypass was overriding real OAuth user data
+    // Only enable via NEXT_PUBLIC_DEV_MODE=true environment variable
+    if (process.env.NEXT_PUBLIC_DEV_MODE === 'true' && isDevBypassEnabled()) {
       console.log('🔐 DEV BYPASS: Using test user for all pages')
       const testUser = getTestUser()
       const testProfile = getTestProfile()
@@ -57,72 +58,53 @@ function SupabaseAuthProvider({ children }) {
       return () => { isMounted = false }
     }
     
-    // Development mode bypass for testing calendar and analytics functionality
+    // DISABLED: Development mode bypass was overriding real OAuth user data
+    // Development mode bypass for testing - DISABLED for OAuth testing
+    // To enable dev bypass, add ?dev_bypass=true to URL
     const isDevelopment = process.env.NODE_ENV === 'development'
-    // TEMPORARY: Direct bypass for barber pages during development
-    // Safe window access for SSR compatibility
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
-    const currentSearch = typeof window !== 'undefined' ? window.location.search : ''
-    const enableDevBypass = currentPath.includes('/barber') || (isDevelopment && (
-      currentPath.includes('/dashboard/calendar') ||
-      currentPath.includes('/calendar') ||
-      currentPath.includes('/dashboard/website-settings') ||
-      currentPath.includes('/dashboard') && currentSearch.includes('mode=analytics') ||
-      currentPath.includes('/analytics')
-    ))
-    
-    if (enableDevBypass) {
-      console.log('🔧 DEV MODE: Auth bypass enabled for calendar/analytics testing')
-      const devUser = {
-        id: 'dev-user-123',
-        email: 'dev@localhost.com',
-        user_metadata: { full_name: 'Dev User', role: 'SHOP_OWNER' }
-      }
-      const devProfile = {
-        id: 'dev-user-123',
-        email: 'dev@localhost.com',
-        full_name: 'Dev User',
-        role: 'SHOP_OWNER',
-        shop_id: 'demo-shop-001',
-        shop_name: 'Demo Barbershop'
-      }
-      
-      if (isMounted) {
-        setUser(devUser)
-        setProfile(devProfile)
-        setLoading(false)
-      }
-      return () => { isMounted = false }
-    }
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+    // const forceDevBypass = urlParams && urlParams.get('dev_bypass') === 'true'
+    // 
+    // if (forceDevBypass && isDevelopment) {
+    //   console.log('🔧 DEV MODE: Auth bypass enabled via ?dev_bypass=true')
+    //   const devUser = {
+    //     id: 'dev-user-123',
+    //     email: 'dev@localhost.com',
+    //     user_metadata: { full_name: 'Dev User', role: 'SHOP_OWNER' }
+    //   }
+    //   const devProfile = {
+    //     id: 'dev-user-123',
+    //     email: 'dev@localhost.com',
+    //     full_name: 'Dev User',
+    //     role: 'SHOP_OWNER',
+    //     shop_id: 'demo-shop-001',
+    //     shop_name: 'Demo Barbershop'
+    //   }
+    //   
+    //   if (isMounted) {
+    //     setUser(devUser)
+    //     setProfile(devProfile)
+    //     setLoading(false)
+    //   }
+    //   return () => { isMounted = false }
+    // }
     
     // Add timeout to prevent hanging (reduced for production)
     const loadingTimeout = setTimeout(() => {
-      if (isMounted && loading) {
+      if (isMounted) {
         console.warn('⚠️ Auth loading timeout - forcing loading = false')
         setLoading(false)
       }
     }, 2000) // 2 second timeout for faster loading
     
-    // Session refresh interval to prevent expiry
-    const sessionRefreshInterval = setInterval(async () => {
-      if (!isMounted || enableDevBypass) return
-      
-      try {
-        console.log('🔄 Refreshing session to prevent expiry...')
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session && isMounted) {
-          // Session is still valid, no action needed
-          console.log('✅ Session refresh successful')
-        }
-      } catch (error) {
-        console.warn('⚠️ Session refresh failed:', error.message)
-      }
-    }, 5 * 60 * 1000) // Refresh every 5 minutes
+    // Check if we're coming from OAuth callback (reuse urlParams from above)
+    const isOAuthCallback = urlParams && (urlParams.has('code') || window.location.pathname.includes('/auth/callback'))
     
-    // Check initial session
-    const checkUser = async () => {
+    // Check initial session with retry logic for OAuth callbacks
+    const checkUser = async (retryCount = 0) => {
       try {
-        console.log('🔍 Checking initial session...')
+        console.log('🔍 Checking initial session... (attempt', retryCount + 1, ')')
         console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
         console.log('Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 30) + '...')
         
@@ -139,9 +121,21 @@ function SupabaseAuthProvider({ children }) {
         }
         
         console.log('🔍 Session check result:', session ? 'Found session' : 'No session')
-        console.log('🍪 Cookies available:', document.cookie)
+        console.log('🍪 Cookies available:', typeof document !== 'undefined' ? document.cookie : 'SSR')
+        
+        // If no session and we're coming from OAuth, retry a few times
+        if (!session && isOAuthCallback && retryCount < 3) {
+          console.log('⏳ OAuth callback detected, retrying session check in 500ms...')
+          setTimeout(() => {
+            if (isMounted) {
+              checkUser(retryCount + 1)
+            }
+          }, 500)
+          return
+        }
         
         if (session?.user && isMounted) {
+          console.log('✅ Session found for user:', session.user.email)
           setUser(session.user)
           
           // Fetch user profile
@@ -153,14 +147,34 @@ function SupabaseAuthProvider({ children }) {
               .single()
               
             if (profileData && isMounted) {
+              console.log('✅ Profile loaded:', profileData.email)
               setProfile(profileData)
             }
           } catch (profileErr) {
             console.warn('Profile fetch failed:', profileErr)
+            // Try to create profile if it doesn't exist
+            if (profileErr.code === 'PGRST116') {
+              console.log('📝 Creating profile for authenticated user...')
+              const { data: newProfile } = await supabase
+                .from('profiles')
+                .insert({
+                  id: session.user.id,
+                  email: session.user.email,
+                  full_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+                  role: 'CLIENT'
+                })
+                .select()
+                .single()
+              
+              if (newProfile && isMounted) {
+                setProfile(newProfile)
+              }
+            }
           }
         } else {
           // No session found - ensure we clear user state
           if (isMounted) {
+            console.log('🔍 No session found')
             setUser(null)
             setProfile(null)
           }
@@ -173,7 +187,8 @@ function SupabaseAuthProvider({ children }) {
         }
       } finally {
         // ALWAYS set loading to false, regardless of session state
-        if (isMounted) {
+        if (isMounted && (retryCount >= 3 || !isOAuthCallback)) {
+          console.log('🏁 Final loading state: false')
           setLoading(false)
         }
       }
@@ -183,7 +198,7 @@ function SupabaseAuthProvider({ children }) {
     
     // Safety net: ensure loading is false after max wait time
     const safetyTimeout = setTimeout(() => {
-      if (loading && isMounted) {
+      if (isMounted) {
         console.warn('⚠️ Safety timeout reached - forcing loading = false')
         setLoading(false)
       }
@@ -293,7 +308,6 @@ function SupabaseAuthProvider({ children }) {
       isMounted = false
       clearTimeout(loadingTimeout)
       clearTimeout(safetyTimeout)
-      clearInterval(sessionRefreshInterval)
       subscription.unsubscribe()
     }
   }, [router, supabase])
@@ -396,12 +410,53 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    console.log('🔐 SupabaseAuthProvider: signOut called')
     
-    setUser(null)
-    setProfile(null)
-    router.push('/login')
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('❌ Supabase signOut error:', error)
+        throw error
+      }
+      
+      console.log('✅ Supabase signOut successful')
+      
+      // Clear state immediately
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+      
+      // Clear any cached auth data
+      if (typeof window !== 'undefined') {
+        // Clear localStorage auth keys
+        const authKeys = Object.keys(localStorage).filter(key => 
+          key.includes('sb-') || 
+          key.includes('supabase') || 
+          key.includes('auth')
+        )
+        authKeys.forEach(key => localStorage.removeItem(key))
+        
+        // Clear sessionStorage as well
+        const sessionKeys = Object.keys(sessionStorage).filter(key => 
+          key.includes('sb-') || 
+          key.includes('supabase') || 
+          key.includes('auth')
+        )
+        sessionKeys.forEach(key => sessionStorage.removeItem(key))
+      }
+      
+      console.log('🧹 Auth data cleared from storage')
+      
+    } catch (error) {
+      console.error('💥 SignOut error:', error)
+      
+      // Even if signOut fails, clear local state
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+      
+      throw error
+    }
   }
 
   const resetPassword = async (email) => {
@@ -441,24 +496,38 @@ function SupabaseAuthProvider({ children }) {
 
   const signInWithGoogle = async () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9999'
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${origin}/dashboard`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      }
-    })
     
-    if (error) {
-      console.error('Google sign in error:', error)
+    try {
+      console.log('🚀 Starting Google OAuth flow...')
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${origin}/api/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      })
+      
+      if (error) {
+        console.error('❌ Google sign in error:', error)
+        throw error
+      }
+      
+      console.log('✅ Google sign in initiated:', data)
+      
+      // Fallback: if Supabase didn't redirect, do it manually
+      if (data?.url && typeof window !== 'undefined') {
+        console.log('🔄 Manual redirect to:', data.url)
+        window.location.href = data.url
+      }
+      
+      return data
+    } catch (error) {
+      console.error('💥 OAuth exception:', error)
       throw error
     }
-    
-    console.log('Google sign in initiated:', data)
-    return data
   }
 
   const value = {

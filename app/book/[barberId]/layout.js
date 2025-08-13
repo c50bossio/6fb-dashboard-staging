@@ -37,7 +37,7 @@ export async function generateMetadata({ params, searchParams }) {
       }
     }
 
-    return generateBarberMetadata(mockBarber, searchParams)
+    return generateBarberMetadata(Barber, searchParams)
   } catch (error) {
     console.error('Error generating metadata:', error)
     return {

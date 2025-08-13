@@ -6,16 +6,40 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
+// Determine the base URL based on environment
+const getBaseUrl = (request) => {
+  // Check if we're in production
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL_URL) {
+    return 'https://bookedbarber.com'
+  }
+  
+  // Use the request URL if available
+  if (request && request.headers) {
+    const host = request.headers.get('host')
+    if (host && host.includes('bookedbarber.com')) {
+      return `https://${host}`
+    }
+    // Fix for Docker environment - never use internal backend URL
+    if (host && (host.includes('backend') || host.includes(':8000') || host.includes(':8001'))) {
+      return 'http://localhost:9999'
+    }
+  }
+  
+  // Default to environment variable or localhost
+  // Always use frontend URL for OAuth redirects
+  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'
+}
+
 // Google OAuth 2.0 configuration for Google My Business API
-const GOOGLE_OAUTH_CONFIG = {
-  client_id: process.env.GOOGLE_CLIENT_ID,
+const getGoogleOAuthConfig = (request) => ({
+  client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
   client_secret: process.env.GOOGLE_CLIENT_SECRET,
-  redirect_uri: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:9999'}/api/gmb/oauth/callback`,
+  redirect_uri: `${getBaseUrl(request)}/api/gmb/oauth/callback`,
   scope: 'https://www.googleapis.com/auth/business.manage',
   access_type: 'offline',
   prompt: 'consent',
   include_granted_scopes: 'true'
-}
+})
 
 /**
  * GET /api/gmb/oauth
@@ -26,6 +50,9 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const barbershopId = searchParams.get('barbershop_id')
     const userId = searchParams.get('user_id')
+    
+    // Get OAuth config with proper redirect URI
+    const GOOGLE_OAUTH_CONFIG = getGoogleOAuthConfig(request)
     
     if (!barbershopId || !userId) {
       return NextResponse.json({
@@ -66,16 +93,41 @@ export async function GET(request) {
       timestamp: Date.now()
     })
     
-    // Store state in database for verification
-    await supabase
-      .from('oauth_states')
-      .insert({
-        state_token: state,
-        barbershop_id: barbershopId,
-        user_id: userId,
-        provider: 'google_mybusiness',
-        expires_at: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
-      })
+    // Try to store state in database for verification (skip if table doesn't exist)
+    try {
+      await supabase
+        .from('oauth_states')
+        .insert({
+          state_token: state,
+          barbershop_id: barbershopId,
+          user_id: userId,
+          provider: 'google_mybusiness',
+          expires_at: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+        })
+    } catch (error) {
+      console.log('Could not store OAuth state (table may not exist):', error.message)
+      // Continue anyway for development
+    }
+    
+    // Check if Google OAuth credentials are configured
+    if (!GOOGLE_OAUTH_CONFIG.client_id || GOOGLE_OAUTH_CONFIG.client_id === 'your-google-client-id') {
+      console.error('Google OAuth Client ID not configured')
+      return NextResponse.json({
+        success: false,
+        error: 'Google OAuth is not configured. Please set up Google Cloud credentials.',
+        setup_instructions: 'Visit https://console.cloud.google.com to create OAuth 2.0 credentials'
+      }, { status: 500 })
+    }
+    
+    console.log('Google OAuth Config:', {
+      client_id: GOOGLE_OAUTH_CONFIG.client_id?.substring(0, 20) + '...',
+      has_secret: !!GOOGLE_OAUTH_CONFIG.client_secret,
+      redirect_uri: GOOGLE_OAUTH_CONFIG.redirect_uri,
+      env_check: {
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET
+      }
+    })
     
     // Build Google OAuth URL
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')

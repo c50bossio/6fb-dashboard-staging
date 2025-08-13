@@ -25,6 +25,7 @@ import {
   CubeIcon,
   CreditCardIcon,
   BuildingStorefrontIcon,
+  BuildingOffice2Icon,
   ScissorsIcon,
   ShoppingBagIcon,
   DocumentChartBarIcon,
@@ -109,10 +110,11 @@ const barberOperations = [
     description: 'Track your earnings and performance metrics'
   },
   { 
-    name: 'Public Page Preview', 
-    href: '/barber/public-booking', 
-    icon: EyeIcon,
-    description: 'Preview and share your customized booking page'
+    name: 'Booking Hub', 
+    href: '/barber/booking-hub', 
+    icon: LinkIcon,
+    description: 'Manage all booking links, QR codes, embeds, and public page',
+    badge: 'All-in-One'
   }
   // Coming Soon:
   // - My Services (manage your services and pricing)
@@ -126,6 +128,13 @@ const shopManagement = [
     href: '/shop/dashboard', 
     icon: BuildingStorefrontIcon,
     description: 'Multi-barber overview and shop analytics'
+  },
+  { 
+    name: 'Website Customization', 
+    href: '/shop/website', 
+    icon: GlobeAltIcon,
+    description: 'Customize your shop website and barber pages',
+    badge: 'NEW'
   },
   { 
     name: 'Shop Settings', 
@@ -159,6 +168,13 @@ const shopManagement = [
 
 const marketingOperations = [
   { 
+    name: 'SEO Dashboard', 
+    href: '/seo/dashboard', 
+    icon: MegaphoneIcon,
+    description: 'AI-powered SEO automation and competitive intelligence',
+    badge: '🤖 AI'
+  },
+  { 
     name: 'Campaigns', 
     href: '/dashboard/campaigns', 
     icon: RocketLaunchIcon,
@@ -178,8 +194,16 @@ const marketingOperations = [
   }
 ]
 
-// Enterprise operations - Coming Soon
-const enterpriseOperations = []
+// Enterprise operations
+const enterpriseOperations = [
+  { 
+    name: 'Enterprise Portal', 
+    href: '/enterprise/website', 
+    icon: BuildingOffice2Icon,
+    description: 'Manage multi-location website and portal',
+    badge: 'NEW'
+  }
+]
 // Future features:
 // - Enterprise Dashboard (multi-location overview)
 // - Location Management (manage all shops)

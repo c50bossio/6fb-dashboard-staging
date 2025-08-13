@@ -21,6 +21,25 @@ const nextConfig = {
     return config
   },
   
+  async headers() {
+    return [
+      {
+        // Allow iframe embedding for embed routes
+        source: '/book/:barberId/embed',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'ALLOWALL',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors *;",
+          },
+        ],
+      },
+    ];
+  },
+
   async rewrites() {
     const isDev = process.env.NODE_ENV === 'development';
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || (isDev 

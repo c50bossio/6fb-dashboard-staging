@@ -48,6 +48,12 @@ export default function DashboardHeader() {
     updateTime()
     const interval = setInterval(updateTime, 60000) // Update every minute
     
+    // Load dark mode preference from localStorage
+    const savedDarkMode = localStorage.getItem('darkMode')
+    if (savedDarkMode !== null) {
+      setDarkMode(savedDarkMode === 'true')
+    }
+    
     return () => clearInterval(interval)
   }, [])
 
@@ -101,11 +107,38 @@ export default function DashboardHeader() {
 
   const handleSignOut = async () => {
     try {
+      console.log('🚪 Attempting to sign out...')
+      setActiveDropdown(null) // Close dropdown immediately
+      
       await signOut()
+      
+      // Clear any cached data
+      localStorage.removeItem('supabase.auth.token')
+      
+      console.log('✅ Sign out successful, redirecting to login')
       router.push('/login')
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('❌ Error signing out:', error)
+      // Still redirect to login even if there's an error
+      router.push('/login')
     }
+  }
+
+  const handleDarkModeToggle = () => {
+    const newDarkMode = !darkMode
+    setDarkMode(newDarkMode)
+    
+    // Save to localStorage
+    localStorage.setItem('darkMode', newDarkMode.toString())
+    
+    // Apply dark mode class to document
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+    
+    console.log('🌙 Dark mode toggled to:', newDarkMode ? 'ON' : 'OFF')
   }
 
   return (
@@ -215,7 +248,7 @@ export default function DashboardHeader() {
                       View Profile
                     </Link>
                     <button 
-                      onClick={() => setDarkMode(!darkMode)}
+                      onClick={handleDarkModeToggle}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
                     >
                       <span className="flex items-center">

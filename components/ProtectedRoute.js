@@ -20,12 +20,13 @@ export default function ProtectedRoute({ children }) {
     const isAnalyticsPage = window.location.pathname.includes('/analytics')
     const isShopPage = window.location.pathname.includes('/shop')
     const isBarberPage = window.location.pathname.includes('/barber')
+    const isSeoPage = window.location.pathname.includes('/seo')
     
     // Check for dev session or development mode bypass
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
-    // TEMPORARY: Direct bypass for barber pages
-    const enableDevBypass = isBarberPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
+    // TEMPORARY: Direct bypass for barber pages and SEO dashboard
+    const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
     
     if (devAuth || devSession || enableDevBypass) {
       console.log('🔓 Dev session active - bypassing auth check')
@@ -57,8 +58,9 @@ export default function ProtectedRoute({ children }) {
   const isAnalyticsPage = window.location.pathname.includes('/analytics')
   const isShopPage = window.location.pathname.includes('/shop')
   const isBarberPage = window.location.pathname.includes('/barber')
-  // TEMPORARY: Direct bypass for barber pages during development
-  const enableDevBypass = isBarberPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
+  const isSeoPage = window.location.pathname.includes('/seo')
+  // TEMPORARY: Direct bypass for barber pages and SEO dashboard during development
+  const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
 
   // Check for dev session or development bypass
   const devAuth = document.cookie.includes('dev_auth=true')

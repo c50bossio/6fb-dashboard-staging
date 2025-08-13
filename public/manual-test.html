@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual Embed Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+    iframe { width: 100%; height: 500px; border: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Manual Embed Functionality Test</h1>
+  
+  <div class="test-section">
+    <h2>Test 1: Direct embed page link</h2>
+    <p><a href="/book/demo-barber/embed?theme=light" target="_blank">Open embed page in new tab</a></p>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 2: Basic iframe embed</h2>
+    <iframe src="/book/demo-barber/embed?theme=light" frameborder="0"></iframe>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 3: Dark theme iframe</h2>
+    <iframe src="/book/demo-barber/embed?theme=dark&color=10B981" frameborder="0"></iframe>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 4: Status Check</h2>
+    <p id="status">Testing embed page availability...</p>
+    <script>
+      fetch('/book/demo-barber/embed')
+        .then(response => {
+          document.getElementById('status').innerHTML = 
+            `Embed page returns: ${response.status} ${response.statusText}`;
+        })
+        .catch(error => {
+          document.getElementById('status').innerHTML = 
+            `Error: ${error.message}`;
+        });
+    </script>
+  </div>
+  
+  <div class="test-section">
+    <h2>Expected Results:</h2>
+    <ul>
+      <li>✅ Direct link should open a booking form with services</li>
+      <li>✅ Light theme iframe should show booking form</li>  
+      <li>✅ Dark theme iframe should show booking form with green accent</li>
+      <li>✅ Status should show "200 OK"</li>
+    </ul>
+  </div>
+</body>
+</html>

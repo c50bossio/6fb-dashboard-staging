@@ -57,11 +57,23 @@ export default function LoginPage() {
   }
 
   const handleGoogleSignIn = async () => {
+    console.log('🔍 handleGoogleSignIn called')
+    console.log('🔍 signInWithGoogle function:', typeof signInWithGoogle)
+    console.log('🔍 Current loading state:', isLoading)
+    
     try {
       setIsLoading(true)
       setError('')
+      
+      if (!signInWithGoogle) {
+        throw new Error('Google sign-in not available. Please refresh the page.')
+      }
+      
+      console.log('🚀 Calling signInWithGoogle...')
       await signInWithGoogle()
+      console.log('✅ signInWithGoogle completed')
     } catch (err) {
+      console.error('❌ Google sign-in error:', err)
       setError(err.message || 'Google sign-in failed.')
       setIsLoading(false)
     }
@@ -197,7 +209,11 @@ export default function LoginPage() {
                     ? 'text-gray-400 cursor-not-allowed' 
                     : 'text-gray-500 hover:bg-gray-50'
                 }`}
-                onClick={handleGoogleSignIn}
+                onClick={(e) => {
+                  console.log('🖱️ Google OAuth button clicked!')
+                  e.preventDefault()
+                  handleGoogleSignIn()
+                }}
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

@@ -227,7 +227,7 @@ export async function POST(request) {
  * Post response to Google My Business
  */
 async function postResponseToGMB(locationId, reviewName, responseText, accessToken) {
-  const url = `https://mybusiness.googleapis.com/v4/${locationId}/reviews/${reviewName}/reply`
+  const url = `https://mybusinessbusinessinformation.googleapis.com/v1/${locationId}/reviews/${reviewName}/reply`
   
   const response = await fetch(url, {
     method: 'PUT',

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Widget Embed Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-section {
+      margin-bottom: 50px;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #3B82F6;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #555;
+      margin-top: 0;
+    }
+    .code-block {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 10px 0;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+    }
+    .widget-container {
+      margin: 20px 0;
+      min-height: 400px;
+    }
+    .button-demo {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .link-demo {
+      margin: 20px 0;
+      text-align: center;
+      font-size: 18px;
+    }
+    .controls {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    button {
+      background: #3B82F6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #2563EB;
+    }
+    .status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .status.info { background: #cce7ff; color: #004085; border: 1px solid #b3d7ff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Booking Widget Embed Test Suite</h1>
+    <p>This page demonstrates the different ways to embed the booking widget on external websites.</p>
+
+    <!-- Status Display -->
+    <div id="status" class="status info">
+      Ready to test embed functionality
+    </div>
+
+    <!-- Test 1: Basic iframe Embed -->
+    <div class="test-section">
+      <h2>1. Basic iframe Embed</h2>
+      <p>Simple iframe embed with fixed dimensions:</p>
+      <div class="code-block">
+&lt;iframe 
+  src="http://localhost:9999/book/demo-barber/embed?theme=light&amp;hideHeader=false"
+  width="100%" 
+  height="600"
+  style="border: 0; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
+  frameborder="0"&gt;
+&lt;/iframe&gt;
+      </div>
+      <div class="widget-container">
+        <iframe 
+          src="http://localhost:9999/book/demo-barber/embed?theme=light&hideHeader=false"
+          width="100%" 
+          height="600"
+          style="border: 0; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"
+          frameborder="0">
+        </iframe>
+      </div>
+    </div>
+
+    <!-- Test 2: Responsive iframe Embed -->
+    <div class="test-section">
+      <h2>2. Responsive iframe Embed</h2>
+      <p>Auto-adjusting height iframe:</p>
+      <div class="code-block">
+&lt;div style="position: relative; width: 100%; padding-bottom: 75%; height: 0; overflow: hidden;"&gt;
+  &lt;iframe 
+    src="http://localhost:9999/book/demo-barber/embed?theme=light&amp;hideFooter=true"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; border-radius: 8px;"
+    frameborder="0"&gt;
+  &lt;/iframe&gt;
+&lt;/div&gt;
+      </div>
+      <div class="widget-container">
+        <div style="position: relative; width: 100%; padding-bottom: 75%; height: 0; overflow: hidden;">
+          <iframe 
+            src="http://localhost:9999/book/demo-barber/embed?theme=light&hideFooter=true"
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; border-radius: 8px;"
+            frameborder="0">
+          </iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Test 3: Dark Theme Embed -->
+    <div class="test-section">
+      <h2>3. Dark Theme Embed</h2>
+      <p>Embed with dark theme and custom color:</p>
+      <div class="code-block">
+&lt;iframe 
+  src="http://localhost:9999/book/demo-barber/embed?theme=dark&amp;color=10B981&amp;hideHeader=true"
+  width="100%" 
+  height="500"
+  style="border: 0; border-radius: 8px;"
+  frameborder="0"&gt;
+&lt;/iframe&gt;
+      </div>
+      <div class="widget-container">
+        <iframe 
+          src="http://localhost:9999/book/demo-barber/embed?theme=dark&color=10B981&hideHeader=true"
+          width="100%" 
+          height="500"
+          style="border: 0; border-radius: 8px;"
+          frameborder="0">
+        </iframe>
+      </div>
+    </div>
+
+    <!-- Test 4: JavaScript Widget -->
+    <div class="test-section">
+      <h2>4. JavaScript Widget</h2>
+      <p>Dynamic widget loaded via JavaScript:</p>
+      <div class="code-block">
+&lt;div id="booking-widget-js"&gt;&lt;/div&gt;
+&lt;script&gt;
+  window.BookingWidget.init({
+    container: 'booking-widget-js',
+    barberId: 'demo-barber',
+    theme: 'light',
+    primaryColor: '#7C3AED',
+    autoResize: true,
+    services: ['1', '2']
+  });
+&lt;/script&gt;
+      </div>
+      <div class="controls">
+        <button onclick="loadJSWidget()">Load JavaScript Widget</button>
+        <button onclick="destroyJSWidget()">Destroy Widget</button>
+      </div>
+      <div id="booking-widget-js" class="widget-container"></div>
+    </div>
+
+    <!-- Test 5: Button Popup -->
+    <div class="test-section">
+      <h2>5. Popup Button</h2>
+      <p>Button that opens booking form in a popup window:</p>
+      <div class="code-block">
+&lt;button 
+  onclick="window.open('http://localhost:9999/book/demo-barber?services=1,2', 'booking', 'width=600,height=800')"
+  style="background-color: #F59E0B; color: white; padding: 12px 24px; border: none; border-radius: 8px;"&gt;
+  Book Appointment
+&lt;/button&gt;
+      </div>
+      <div class="button-demo">
+        <button 
+          onclick="window.open('http://localhost:9999/book/demo-barber?services=1,2', 'booking', 'width=600,height=800,scrollbars=yes,resizable=yes')"
+          style="background-color: #F59E0B; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600;">
+          📅 Book Appointment
+        </button>
+      </div>
+    </div>
+
+    <!-- Test 6: Direct Link -->
+    <div class="test-section">
+      <h2>6. Direct Booking Link</h2>
+      <p>Simple text link that opens booking page:</p>
+      <div class="code-block">
+&lt;a href="http://localhost:9999/book/demo-barber" 
+   target="_blank"
+   style="color: #3B82F6; text-decoration: none; font-weight: 600;"&gt;
+  Book an Appointment →
+&lt;/a&gt;
+      </div>
+      <div class="link-demo">
+        <a href="http://localhost:9999/book/demo-barber" 
+           target="_blank"
+           style="color: #3B82F6; text-decoration: none; font-weight: 600; font-size: 18px;">
+          📋 Book an Appointment →
+        </a>
+      </div>
+    </div>
+
+    <!-- Test Controls -->
+    <div class="test-section">
+      <h2>🔧 Test Controls</h2>
+      <div class="controls">
+        <button onclick="testAllEmbeds()">Test All Embeds</button>
+        <button onclick="checkResponsiveness()">Test Responsiveness</button>
+        <button onclick="clearStatus()">Clear Status</button>
+        <button onclick="simulateEvents()">Simulate Analytics Events</button>
+      </div>
+    </div>
+
+    <!-- Analytics Display -->
+    <div class="test-section">
+      <h2>📊 Analytics Events</h2>
+      <div id="analytics-log" style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px;">
+        <em>Analytics events will appear here...</em>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load the booking widget script -->
+  <script src="http://localhost:9999/booking-widget.js" data-auto-init="false"></script>
+
+  <script>
+    let jsWidget = null;
+    const statusEl = document.getElementById('status');
+    const analyticsLog = document.getElementById('analytics-log');
+
+    function updateStatus(message, type = 'info') {
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+      logEvent('Status Update', message);
+    }
+
+    function logEvent(eventType, message) {
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.innerHTML = `<strong>${timestamp}</strong> [${eventType}] ${message}`;
+      logEntry.style.margin = '2px 0';
+      analyticsLog.appendChild(logEntry);
+      analyticsLog.scrollTop = analyticsLog.scrollHeight;
+    }
+
+    function loadJSWidget() {
+      if (jsWidget) {
+        updateStatus('JavaScript widget already loaded', 'error');
+        return;
+      }
+
+      try {
+        jsWidget = window.BookingWidget.init({
+          container: 'booking-widget-js',
+          barberId: 'demo-barber',
+          theme: 'light',
+          primaryColor: '#7C3AED',
+          autoResize: true,
+          services: ['1', '2'],
+          onReady: function() {
+            updateStatus('JavaScript widget loaded successfully', 'success');
+            logEvent('Widget Event', 'JavaScript widget ready');
+          },
+          onBookingComplete: function(data) {
+            updateStatus(`Booking completed: ${data.bookingId}`, 'success');
+            logEvent('Booking Event', `Booking completed: ${JSON.stringify(data)}`);
+          },
+          onError: function(error) {
+            updateStatus(`Widget error: ${error}`, 'error');
+            logEvent('Widget Error', error);
+          }
+        });
+      } catch (error) {
+        updateStatus(`Failed to load JavaScript widget: ${error.message}`, 'error');
+        logEvent('Error', error.message);
+      }
+    }
+
+    function destroyJSWidget() {
+      if (!jsWidget) {
+        updateStatus('No JavaScript widget to destroy', 'error');
+        return;
+      }
+
+      try {
+        jsWidget.destroy();
+        jsWidget = null;
+        updateStatus('JavaScript widget destroyed', 'success');
+        logEvent('Widget Event', 'JavaScript widget destroyed');
+      } catch (error) {
+        updateStatus(`Failed to destroy widget: ${error.message}`, 'error');
+        logEvent('Error', error.message);
+      }
+    }
+
+    function testAllEmbeds() {
+      updateStatus('Testing all embed methods...', 'info');
+      
+      const iframes = document.querySelectorAll('iframe');
+      let loadedCount = 0;
+      let totalCount = iframes.length;
+      
+      if (totalCount === 0) {
+        updateStatus('No iframes found to test', 'error');
+        return;
+      }
+
+      iframes.forEach((iframe, index) => {
+        iframe.onload = function() {
+          loadedCount++;
+          logEvent('iframe Load', `iframe ${index + 1} loaded successfully`);
+          
+          if (loadedCount === totalCount) {
+            updateStatus(`All ${totalCount} iframes loaded successfully`, 'success');
+          }
+        };
+
+        iframe.onerror = function() {
+          logEvent('iframe Error', `iframe ${index + 1} failed to load`);
+          updateStatus(`iframe ${index + 1} failed to load`, 'error');
+        };
+      });
+    }
+
+    function checkResponsiveness() {
+      updateStatus('Checking responsiveness...', 'info');
+      
+      const originalWidth = document.body.style.width;
+      
+      // Test mobile width
+      document.body.style.width = '375px';
+      setTimeout(() => {
+        logEvent('Responsiveness', 'Testing mobile width (375px)');
+        
+        // Test tablet width
+        document.body.style.width = '768px';
+        setTimeout(() => {
+          logEvent('Responsiveness', 'Testing tablet width (768px)');
+          
+          // Restore original width
+          document.body.style.width = originalWidth;
+          setTimeout(() => {
+            logEvent('Responsiveness', 'Restored original width');
+            updateStatus('Responsiveness test completed', 'success');
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    }
+
+    function clearStatus() {
+      statusEl.className = 'status info';
+      statusEl.textContent = 'Status cleared';
+      analyticsLog.innerHTML = '<em>Analytics log cleared...</em>';
+    }
+
+    function simulateEvents() {
+      updateStatus('Simulating analytics events...', 'info');
+      
+      const events = [
+        { type: 'widget-view', message: 'Widget viewed from external site' },
+        { type: 'widget-init', message: 'Widget initialized successfully' },
+        { type: 'service-selection', message: 'User selected services: Classic Cut, Beard Trim' },
+        { type: 'form-interaction', message: 'User filled out contact information' },
+        { type: 'booking-attempt', message: 'User attempted to complete booking' },
+        { type: 'booking-complete', message: 'Booking completed successfully (ID: demo-12345)' }
+      ];
+      
+      events.forEach((event, index) => {
+        setTimeout(() => {
+          logEvent('Simulated Event', `${event.type}: ${event.message}`);
+          
+          if (index === events.length - 1) {
+            updateStatus('Analytics simulation completed', 'success');
+          }
+        }, (index + 1) * 500);
+      });
+    }
+
+    // Listen for booking widget events
+    window.addEventListener('bookingWidgetReady', function(event) {
+      logEvent('Global Event', 'Booking widget ready event received');
+    });
+
+    window.addEventListener('bookingComplete', function(event) {
+      logEvent('Global Event', `Booking complete event: ${JSON.stringify(event.detail)}`);
+    });
+
+    // Initial status
+    updateStatus('Embed test page loaded successfully', 'success');
+    
+    // Log initial load
+    logEvent('Page Load', 'Test page initialized');
+    
+    // Test iframe loads on page load
+    setTimeout(testAllEmbeds, 2000);
+  </script>
+</body>
+</html>

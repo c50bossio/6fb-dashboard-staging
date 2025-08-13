@@ -10,7 +10,7 @@ import json
 import logging
 import time
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Callable, Union
+from typing import Dict, List, Optional, Any, Callable, Union, Tuple
 from contextlib import asynccontextmanager
 
 from .ai_performance_monitor import (
