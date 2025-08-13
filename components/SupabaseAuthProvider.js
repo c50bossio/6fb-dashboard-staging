@@ -20,6 +20,11 @@ function SupabaseAuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+  
+  // Log initialization for debugging
+  useEffect(() => {
+    console.log('[Auth] Provider initialized, loading:', loading)
+  }, [])
 
   useEffect(() => {
     // Check initial session
@@ -56,10 +61,17 @@ function SupabaseAuthProvider({ children }) {
         setUser(null)
         setProfile(null)
       } finally {
+        // Always set loading to false after checking
         setLoading(false)
       }
     }
 
+    // Set loading to false immediately for public pages where auth isn't required
+    const publicPaths = ['/login', '/register', '/forgot-password', '/', '/subscribe']
+    if (typeof window !== 'undefined' && publicPaths.includes(window.location.pathname)) {
+      setLoading(false)
+    }
+    
     checkUser()
 
     // Listen for auth changes

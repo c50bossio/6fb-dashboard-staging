@@ -1,0 +1,47 @@
+[
+  {
+    "key": "STRIPE_WEBHOOK_SECRET",
+    "value": "whsec_cZp8kIswQ93jdfTfheabZyU7GKUNCCNx",
+    "target": ["production"]
+  },
+  {
+    "key": "STRIPE_BARBER_PRICE_ID",
+    "value": "price_1Rvec7EzoIvSRPoDPEzD2d8g",
+    "target": ["production"]
+  },
+  {
+    "key": "STRIPE_BARBER_PRICE_ID_YEARLY",
+    "value": "price_1Rvec7EzoIvSRPoDUQIpiOKM", 
+    "target": ["production"]
+  },
+  {
+    "key": "STRIPE_SHOP_PRICE_ID",
+    "value": "price_1Rvec7EzoIvSRPoD2pNplqi0",
+    "target": ["production"]
+  },
+  {
+    "key": "STRIPE_SHOP_PRICE_ID_YEARLY", 
+    "value": "price_1Rvec8EzoIvSRPoDV3ExJmsf",
+    "target": ["production"]
+  },
+  {
+    "key": "STRIPE_ENTERPRISE_PRICE_ID",
+    "value": "price_1Rvec8EzoIvSRPoDXoEzrEHC",
+    "target": ["production"]
+  },
+  {
+    "key": "STRIPE_ENTERPRISE_PRICE_ID_YEARLY",
+    "value": "price_1Rvec9EzoIvSRPoDxNfO8uEn",
+    "target": ["production"]
+  },
+  {
+    "key": "STRIPE_PORTAL_CONFIG_ID",
+    "value": "bpc_1Rvec9EzoIvSRPoD9RwGjWFz",
+    "target": ["production"]
+  },
+  {
+    "key": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+    "value": "pk_live_v6ilAqP9y2gT46Os63ONgGmC",
+    "target": ["production"]
+  }
+]
