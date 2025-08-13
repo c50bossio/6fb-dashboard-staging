@@ -165,11 +165,11 @@ export default function FeaturesPage() {
             Ready to Experience These Features?
           </h2>
           <p className="text-xl text-olive-100 mb-8 max-w-2xl mx-auto">
-            Start your free trial today and see how AI can transform your barbershop business.
+            Sign up today and see how AI can transform your barbershop business.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/register" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-10 py-5 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl">
-              Start Free Trial
+              Sign Up
             </Link>
             <Link href="/demo" className="border-2 border-white/30 text-white px-10 py-5 rounded-xl text-lg font-semibold hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm">
               Watch Demo

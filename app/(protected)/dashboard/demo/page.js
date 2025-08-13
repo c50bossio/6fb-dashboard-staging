@@ -154,7 +154,7 @@ export default function DemoPage() {
                 Book Personal Demo
               </Link>
               <Link href="/" className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-200">
-                Try Free Trial Instead
+                Sign Up Instead
               </Link>
             </div>
           </div>

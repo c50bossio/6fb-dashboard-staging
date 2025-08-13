@@ -119,7 +119,7 @@ export default function HomePage() {
                       href="/register"
                       className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
                     >
-                      Start Free Trial
+                      Sign Up
                     </Link>
                   </>
                 )}
@@ -173,7 +173,7 @@ export default function HomePage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
                 <div className="flex items-center justify-center">
                   <CheckCircleIcon className="h-5 w-5 mr-2 text-green-300" />
-                  <span className="font-medium">30-Day Free Trial</span>
+                  <span className="font-medium">Start Free</span>
                 </div>
                 <div className="flex items-center justify-center">
                   <CheckCircleIcon className="h-5 w-5 mr-2 text-green-300" />
@@ -233,7 +233,7 @@ export default function HomePage() {
                 href="/register"
                 className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
               >
-                Start Your 30-Day Free Trial
+                Sign Up
                 <ArrowRightIcon className="h-5 w-5 ml-2" />
               </Link>
               

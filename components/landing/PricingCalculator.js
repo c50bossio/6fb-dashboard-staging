@@ -223,7 +223,7 @@ export default function PricingCalculator() {
                   ? 'bg-gradient-to-r from-olive-600 to-gold-600 text-white hover:shadow-lg'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}>
-                {plan.name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
+                {plan.name === "Enterprise" ? "Contact Sales" : "Sign Up"}
               </button>
             </div>
           ))}
@@ -268,7 +268,7 @@ export default function PricingCalculator() {
         <div className="mt-12 text-center">
           <div className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-full mb-6">
             <SparklesIcon className="h-5 w-5 mr-2" />
-            <span className="font-medium">30-day free trial • No credit card required • Cancel anytime</span>
+            <span className="font-medium">No credit card required • Cancel anytime</span>
           </div>
           <button className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300 inline-flex items-center">
             Start Building Your Brand

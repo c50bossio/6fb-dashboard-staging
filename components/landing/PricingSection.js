@@ -25,7 +25,7 @@ const PricingSection = () => {
         { name: 'Team management', included: false },
         { name: 'Advanced marketing tools', included: false }
       ],
-      cta: 'Start Free Trial',
+      cta: 'Sign Up',
       highlighted: false
     },
     {
@@ -45,7 +45,7 @@ const PricingSection = () => {
         { name: 'Team scheduling', included: true },
         { name: 'Multi-location support', included: false }
       ],
-      cta: 'Start Free Trial',
+      cta: 'Sign Up',
       highlighted: true,
       badge: 'Most Popular'
     },
@@ -195,9 +195,9 @@ const PricingSection = () => {
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">30-Day Free Trial</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">Get Started Today</h4>
               <p className="text-gray-600">
-                Try BookedBarber risk-free. No credit card required to start.
+                Join BookedBarber now. No credit card required to start.
               </p>
             </div>
             <div>

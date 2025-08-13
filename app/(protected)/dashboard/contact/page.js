@@ -205,7 +205,7 @@ export default function ContactPage() {
           <div className="space-y-6">
             <div className="bg-gray-50 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">How quickly can I get started?</h3>
-              <p className="text-gray-600">You can start your free trial immediately and have your first AI agent running within 5 minutes of signup.</p>
+              <p className="text-gray-600">You can sign up immediately and have your first AI agent running within 5 minutes of signup.</p>
             </div>
             
             <div className="bg-gray-50 rounded-xl p-6">
