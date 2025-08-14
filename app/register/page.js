@@ -892,7 +892,7 @@ export default function RegisterPage() {
               <button
                 type="button"
                 disabled={isLoading || authLoading}
-                className={`btn-outline w-full transition-all duration-200 ${
+                className={`btn-outline w-full flex items-center justify-center transition-all duration-200 ${
                   (isLoading || authLoading)
                     ? 'opacity-50 cursor-not-allowed' 
                     : 'hover:shadow-lg hover:-translate-y-0.5'
