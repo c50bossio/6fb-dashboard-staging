@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/analytics-cache.js'
 
 const supabase = createClient(

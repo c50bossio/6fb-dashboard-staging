@@ -477,6 +477,7 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
       data_points_used: 2847,
       model_last_trained: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() // 24 hours ago
     }
+    }
     
     return predictiveAnalytics
     

@@ -187,7 +187,6 @@ export async function POST(request) {
 
 // NO MOCK DATA - Recipients should come from real customer database
 // Real implementation would query customers table with filters
-}
 
 export async function PUT(request) {
     try {

@@ -593,6 +593,6 @@ function generateTimeSeriesData(days, minValue, maxValue) {
   //     date: date.toISOString().split('T')[0],
   //     value: value
   //   })
-  }
-  return data
+  // }
+  // return data
 }
