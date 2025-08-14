@@ -70,8 +70,7 @@ export default function LoginPage() {
   }
 
   const handleGoogleSignIn = async () => {
-    console.log('🔍 handleGoogleSignIn called')
-    console.log('🔍 Current loading state:', isLoading)
+    console.log('🔍 Standard Google sign-in from login page')
     
     try {
       setIsLoading(true)
@@ -80,21 +79,21 @@ export default function LoginPage() {
       // Track OAuth attempt
       loginTracking.trackOAuthAttempt('google')
       
-      // Use the Supabase client directly - it handles PKCE properly
+      // Use standard OAuth without plan data (login page context)
       if (!signInWithGoogle) {
         throw new Error('Google sign-in not available. Please refresh the page.')
       }
       
-      console.log('🚀 Calling signInWithGoogle from SupabaseAuthProvider...')
-      const result = await signInWithGoogle()
-      console.log('✅ signInWithGoogle completed')
+      console.log('🚀 Starting Google OAuth...')
+      const result = await signInWithGoogle() // No plan parameters for standard login
+      console.log('✅ OAuth initiated successfully')
       
-      // Track successful login (if we get here without redirect)
-      if (result?.user?.id) {
-        loginTracking.trackLoginSuccess('google', result.user.id)
+      // Track successful login attempt (actual success tracked by auth provider)
+      if (result) {
+        loginTracking.trackOAuthAttempt('google')
       }
       
-      // The redirect happens automatically via Supabase
+      // The OAuth callback will handle the redirect based on user status
       
     } catch (err) {
       console.error('❌ Google sign-in error:', err)
@@ -281,15 +280,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="mt-6">
-            <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/50">
-              <p className="text-sm text-muted-foreground mb-2">Demo credentials for testing:</p>
-              <div className="font-mono text-xs bg-card border border-border/50 rounded-lg p-2 text-foreground/80">
-                <div><strong>Email:</strong> demo@barbershop.com</div>
-                <div><strong>Password:</strong> demo123</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 

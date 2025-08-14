@@ -23,6 +23,14 @@ export default function ProtectedRoute({ children }) {
     const isSeoPage = window.location.pathname.includes('/seo')
     const isDashboardPage = window.location.pathname.includes('/dashboard')
     
+    // Check for explicit sign out flag to force redirect
+    const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
+    if (forceSignOut) {
+      sessionStorage.removeItem('force_sign_out')
+      router.push('/login')
+      return
+    }
+    
     // Check for dev session or development mode bypass
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
@@ -61,12 +69,26 @@ export default function ProtectedRoute({ children }) {
   const isBarberPage = window.location.pathname.includes('/barber')
   const isSeoPage = window.location.pathname.includes('/seo')
   const isDashboardPage = window.location.pathname.includes('/dashboard')
-  // TEMPORARY: Direct bypass for barber pages, SEO dashboard, and main dashboard during development
-  const enableDevBypass = isBarberPage || isSeoPage || isDashboardPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
-
+  
+  // Check for explicit sign out flag to force redirect - HIGHEST PRIORITY
+  const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
+  if (forceSignOut) {
+    sessionStorage.removeItem('force_sign_out')
+    console.log('🚪 Force sign out detected, redirecting to login...')
+    // Force immediate redirect without rendering anything
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login'
+    }
+    return null
+  }
+  
   // Check for dev session or development bypass
   const devAuth = document.cookie.includes('dev_auth=true')
   const devSession = localStorage.getItem('dev_session')
+  
+  // TEMPORARY: Direct bypass for barber pages, SEO dashboard, and main dashboard during development
+  // But ONLY if not in a forced sign out state
+  const enableDevBypass = isBarberPage || isSeoPage || isDashboardPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
   
   if (devAuth || devSession || enableDevBypass) {
     console.log('🔓 DEV MODE: Bypassing protected route for calendar/analytics testing')

@@ -106,21 +106,21 @@ export default function DashboardHeader() {
   ]
 
   const handleSignOut = async () => {
-    try {
-      console.log('🚪 Attempting to sign out...')
-      setActiveDropdown(null) // Close dropdown immediately
-      
-      await signOut()
-      
-      // Clear any cached data
-      localStorage.removeItem('supabase.auth.token')
-      
-      console.log('✅ Sign out successful, redirecting to login')
-      router.push('/login')
-    } catch (error) {
-      console.error('❌ Error signing out:', error)
-      // Still redirect to login even if there's an error
-      router.push('/login')
+    console.log('🚪 Starting sign out process...')
+    setActiveDropdown(null) // Close dropdown immediately
+    
+    // Attempt to sign out
+    const result = await signOut()
+    console.log('📤 Sign out result:', result)
+    
+    // The auth state change listener in SupabaseAuthProvider will handle the redirect
+    // We don't need to manually redirect here to avoid conflicts
+    
+    // Optional: Show a loading state or message
+    if (result && result.success) {
+      console.log('✅ Sign out successful, auth provider will redirect')
+    } else {
+      console.log('⚠️ Sign out may have issues, but auth provider will handle cleanup')
     }
   }
 

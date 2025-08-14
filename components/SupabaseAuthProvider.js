@@ -139,11 +139,33 @@ function SupabaseAuthProvider({ children }) {
     return data
   }
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (planId = null, billingPeriod = null) => {
+    // If plan data is provided, use the new secure OAuth session method
+    if (planId && billingPeriod) {
+      console.log('🔒 Starting secure OAuth with plan data:', { planId, billingPeriod })
+      
+      try {
+        // Import the OAuth session utility dynamically to avoid SSR issues
+        const { initiateOAuthWithPlan } = await import('../lib/oauth-session')
+        console.log('📦 OAuth session module imported successfully')
+        
+        const { data, error } = await initiateOAuthWithPlan(planId, billingPeriod)
+        console.log('🚀 initiateOAuthWithPlan result:', { hasData: !!data, hasError: !!error })
+        
+        if (error) throw error
+        return data
+      } catch (err) {
+        console.error('❌ Error in signInWithGoogle with plan:', err)
+        throw err
+      }
+    }
+    
+    // Fallback to standard OAuth for cases without plan data
+    console.log('🔓 Starting standard OAuth without plan data')
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       }
     })
     
@@ -152,8 +174,58 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    try {
+      console.log('🔐 Starting sign out process...')
+      
+      // Clear development session indicators FIRST
+      // This ensures the ProtectedRoute bypass is disabled
+      if (typeof window !== 'undefined') {
+        console.log('🧹 Clearing dev session...')
+        localStorage.removeItem('dev_session')
+        
+        // Set force sign out flag to ensure redirect even with dev bypass
+        sessionStorage.setItem('force_sign_out', 'true')
+        
+        // Clear dev_auth cookie
+        document.cookie = 'dev_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        
+        // Clear critical auth items only (faster than scanning all localStorage)
+        const criticalKeys = ['sb-access-token', 'sb-refresh-token', 'supabase.auth.token', 'auth-token']
+        let clearedCount = 0
+        criticalKeys.forEach(key => {
+          if (localStorage.getItem(key)) {
+            localStorage.removeItem(key)
+            clearedCount++
+          }
+        })
+        console.log('✅ Cleared critical auth items:', clearedCount)
+      }
+      
+      // Start Supabase sign out in background (don't wait for it)
+      console.log('🔄 Starting Supabase signOut in background...')
+      supabase.auth.signOut().catch(error => {
+        console.error('⚠️ Supabase signOut error (non-blocking):', error)
+      })
+      
+      // Immediate redirect - don't wait for Supabase since we cleared all local data
+      console.log('✅ Local session cleared, redirecting immediately...')
+      
+      if (typeof window !== 'undefined') {
+        // Instant redirect - no waiting for network calls
+        window.location.href = '/login'
+      }
+      
+      return { success: true }
+    } catch (error) {
+      console.error('❌ Sign out error:', error)
+      
+      // Still try to redirect even on error
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
+      
+      return { success: false, error }
+    }
   }
 
   const resetPassword = async (email) => {
