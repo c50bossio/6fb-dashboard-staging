@@ -223,7 +223,7 @@ export default function PricingPage() {
             onClick={() => router.push('/register')}
             className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
-            Start Free Trial
+            Sign Up Now
           </button>
         </div>
       </div>
@@ -268,10 +268,10 @@ export default function PricingPage() {
             Ready to Transform Your Barbershop?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Start your free trial today. No commitment, no credit card required.
+            Start growing your business today. No commitment, no credit card required.
           </p>
           <Link href="/register" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-10 py-5 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl inline-block">
-            Start Free Trial
+            Sign Up Now
           </Link>
         </div>
       </div>

@@ -329,7 +329,7 @@ cat > marketing/landing-pages/google-ads-landing.html << 'EOF'
             <h2 class="text-3xl font-bold mb-6">Ready to Transform Your Barbershop?</h2>
             <p class="text-lg mb-8">No setup fees. No long-term contracts. See results in 7 days or get your money back.</p>
             <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg mr-4">
-                Start Free Trial
+                Sign Up Now
             </button>
             <button class="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-bold py-4 px-8 rounded-lg text-lg">
                 Watch Demo (2 min)
@@ -478,7 +478,7 @@ const AB_TESTS = {
         id: 'control',
         weight: 50,
         headline: 'Transform Your Barbershop with AI',
-        cta: 'Start Free Trial'
+        cta: 'Sign Up Now'
       },
       {
         id: 'urgency',
