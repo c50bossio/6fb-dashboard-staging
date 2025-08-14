@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 // import { useTheme } from 'next-themes'; // Temporarily disabled for testing
 
@@ -27,27 +27,22 @@ const Logo = ({
   showText = true 
 }) => {
   // const { theme, resolvedTheme } = useTheme(); // Temporarily disabled for testing
-  const [mounted, setMounted] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  // Avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Size configurations for responsive design - optimized for new logos
+  // Size configurations for responsive design - optimized for BookedBarber logos
   const sizeConfig = {
-    small: { width: 100, height: 80, textClass: 'text-sm' },
-    medium: { width: 150, height: 120, textClass: 'text-base' },
-    large: { width: 200, height: 160, textClass: 'text-lg' },
-    xlarge: { width: 250, height: 200, textClass: 'text-xl' },
-    hero: { width: 300, height: 240, textClass: 'text-2xl' }
+    xsmall: { width: 100, height: 24, textClass: 'text-xs' }, // Mobile header/sidebar
+    small: { width: 120, height: 32, textClass: 'text-sm' },   // Compact navigation
+    medium: { width: 160, height: 40, textClass: 'text-base' }, // Website header
+    large: { width: 200, height: 50, textClass: 'text-lg' },   // Large displays
+    xlarge: { width: 240, height: 60, textClass: 'text-xl' },  // Hero sections
+    hero: { width: 300, height: 75, textClass: 'text-2xl' }    // Landing pages
   };
 
   // Logo variant mapping based on theme and preferences
   const getLogoVariant = () => {
-    // Temporarily use green logo for testing
-    return 'bookedbarber-logo-green.png';
+    // Use the new BookedBarber transparent logo by default
+    return 'bookedbarber-transparent.png';
   };
 
   const config = sizeConfig[size] || sizeConfig.medium;
@@ -77,9 +72,9 @@ const Logo = ({
         flex items-center justify-center text-white font-bold
         ${config.textClass} ${className}
       `}
-      style={{ width: showText === false || size === 'small' ? 40 : 180, height: showText === false || size === 'small' ? 40 : 60 }}
+      style={{ width: showText === false || size === 'small' || size === 'xsmall' ? config.width : 180, height: showText === false || size === 'small' || size === 'xsmall' ? config.height : 60 }}
     >
-      {showText === false || size === 'small' ? (
+      {showText === false || size === 'small' || size === 'xsmall' ? (
         // Icon only - show barber pole stripes
         <div className="w-6 h-8 bg-white/20 rounded relative overflow-hidden">
           <div className="absolute inset-0 bg-repeating-linear-gradient(45deg, #C5A35B 0px, #C5A35B 4px, white 4px, white 8px)"></div>
@@ -91,16 +86,13 @@ const Logo = ({
     </div>
   );
 
-  // Show loading state during SSR/hydration
-  if (!mounted) {
-    return <LoadingLogo />;
-  }
-
   // Show error fallback if image failed to load
   if (imageError) {
     return <ErrorLogo />;
   }
 
+  // During SSR and after hydration, show the actual image
+  // The Next.js Image component handles its own loading states
   return (
     <div 
       className={`
@@ -121,6 +113,7 @@ const Logo = ({
           className="object-contain"
           onError={() => setImageError(true)}
           onLoadingComplete={() => setImageError(false)}
+          placeholder="empty" // Prevent blur placeholder
         />
         
       </div>
