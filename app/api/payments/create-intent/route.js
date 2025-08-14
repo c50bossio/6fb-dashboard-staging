@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16'
-    })
-  : null
+// Safe Stripe initialization - only initialize when needed at runtime
+const getStripeInstance = () => {
+  if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'your_stripe_secret_key_here') {
+    return null
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2023-10-16'
+  })
+}
 
 export async function POST(request) {
   try {
@@ -19,8 +23,16 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Check if Stripe is properly configured
-    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'your_stripe_secret_key_here') {
+    // Get service information to set payment details
+    const serviceInfo = {
+      id: service_id,
+      name: 'Barbershop Service',
+      price: amount
+    }
+
+    // Get Stripe instance
+    const stripe = getStripeInstance()
+    if (!stripe) {
       return NextResponse.json({
         success: false,
         error: 'Stripe not configured - add STRIPE_SECRET_KEY to environment variables',
@@ -33,13 +45,6 @@ export async function POST(request) {
           note: 'This is a mock response - configure Stripe for real payments'
         }
       }, { status: 200 })
-    }
-
-    // Get service information to set payment details
-    const serviceInfo = {
-      id: service_id,
-      name: 'Barbershop Service',
-      price: amount
     }
 
     // Create payment intent
