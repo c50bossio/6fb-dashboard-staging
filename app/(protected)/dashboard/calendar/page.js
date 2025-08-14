@@ -122,7 +122,6 @@ export default function CalendarPage() {
   const [filterService, setFilterService] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterLocation, setFilterLocation] = useState('all')
-  const [showTestData, setShowTestData] = useState(true)
   
   // Developer debug states
   const [showDiagnostics, setShowDiagnostics] = useState(false)
@@ -504,31 +503,7 @@ export default function CalendarPage() {
     // IMPROVED FILTERING LOGIC - Sequential step-by-step filtering
     let currentEvents = [...uniqueEvents]
     
-    // STEP 1: Test data filter
-    if (!showTestData) {
-      currentEvents = currentEvents.filter(event => {
-        const isTestAppointment = (
-          event.id?.toString().startsWith('test-booking-') ||
-          event.id?.toString().startsWith('event-') ||
-          event.id?.toString().startsWith('mock-') ||
-          event.id?.toString().includes('temp-') ||
-          event.extendedProps?.customer?.toLowerCase().includes('test') ||
-          event.title?.toLowerCase().includes('test') ||
-          event.extendedProps?.notes?.toLowerCase().includes('test appointment') ||
-          event.extendedProps?.notes?.toLowerCase().includes('mock data') ||
-          event.extendedProps?.isMockData === true
-        )
-        
-        // Real database appointments (UUID format) should always show
-        const isRealDatabaseAppointment = (
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(event.id?.toString())
-        )
-        
-        return isRealDatabaseAppointment || !isTestAppointment
-      })
-    }
-    
-    // STEP 2: Search filter
+    // STEP 1: Search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase()
       currentEvents = currentEvents.filter(event => 
@@ -539,7 +514,7 @@ export default function CalendarPage() {
       )
     }
     
-    // STEP 3: Location filter
+    // STEP 2: Location filter
     if (filterLocation !== 'all') {
       currentEvents = currentEvents.filter(event => {
         const barber = resources.find(r => r.id === event.resourceId)
@@ -548,12 +523,12 @@ export default function CalendarPage() {
       })
     }
     
-    // STEP 4: Barber filter
+    // STEP 3: Barber filter
     if (filterBarber !== 'all') {
       currentEvents = currentEvents.filter(event => event.resourceId === filterBarber)
     }
     
-    // STEP 5: Service filter
+    // STEP 4: Service filter
     if (filterService !== 'all') {
       currentEvents = currentEvents.filter(event => {
         const eventService = event.extendedProps?.service || 

@@ -5,7 +5,11 @@ import Stripe from 'stripe'
 // Force Node.js runtime to support Supabase and Stripe dependencies
 export const runtime = 'nodejs'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy')
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    })
+  : null
 
 export async function POST(request) {
   try {
@@ -37,6 +41,13 @@ export async function POST(request) {
       .single()
 
     if (profile?.stripe_customer_id) {
+      if (!stripe) {
+        return NextResponse.json(
+          { error: 'Stripe not configured - customer retrieval unavailable' },
+          { status: 503 }
+        )
+      }
+      
       // Return existing customer
       const customer = await stripe.customers.retrieve(profile.stripe_customer_id)
       return NextResponse.json({
@@ -51,6 +62,13 @@ export async function POST(request) {
     }
 
     // Create new Stripe customer
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe not configured - customer creation unavailable' },
+        { status: 503 }
+      )
+    }
+    
     const customer = await stripe.customers.create({
       email: email,
       name: name || user.user_metadata?.full_name || 'User',

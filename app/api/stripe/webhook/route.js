@@ -3,11 +3,12 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
 
-// Initialize Stripe
+// Initialize Stripe conditionally
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2023-10-16',
-})
+    })
+  : null
 
 // Initialize Supabase with service role
 const supabase = createClient(
@@ -31,6 +32,13 @@ export async function POST(request) {
     }
 
     // Verify webhook signature
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe not configured - webhook processing unavailable' },
+        { status: 503 }
+      )
+    }
+    
     let event
     try {
       event = stripe.webhooks.constructEvent(
