@@ -320,7 +320,7 @@
 /* Responsive improvements */
 @media (max-width: 768px) {
   .hero-gradient {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #1d4ed8 100%);
+    @apply bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10;
   }
 }
 

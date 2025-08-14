@@ -116,7 +116,7 @@ export default function LoginPage() {
         form_filled: !!(formData.email && formData.password)
       }}
     >
-      <div className="min-h-screen bg-background hero-gradient flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-4">
           <Logo size="medium" priority />
