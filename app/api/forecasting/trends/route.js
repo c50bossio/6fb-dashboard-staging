@@ -340,8 +340,8 @@ function generateHistoricalBusinessData(timeframe) {
     const monthlySeasonality = getMonthlySeasonalityFactor(month)
     const weeklySeasonality = getWeeklySeasonalityFactor(dayOfWeek)
     
-    // Add some realistic noise
-    const noise = 0.9 + Math.random() * 0.2
+    // NO RANDOM - use consistent noise factor
+    const noise = 1.0
     
     const baseRevenue = 450
     const baseBookings = 12

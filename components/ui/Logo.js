@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useTheme } from 'next-themes';
+// import { useTheme } from 'next-themes'; // Temporarily disabled for testing
 
 /**
  * BookedBarber Logo Component
@@ -26,7 +26,7 @@ const Logo = ({
   onClick = null,
   showText = true 
 }) => {
-  const { theme, resolvedTheme } = useTheme();
+  // const { theme, resolvedTheme } = useTheme(); // Temporarily disabled for testing
   const [mounted, setMounted] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -46,14 +46,7 @@ const Logo = ({
 
   // Logo variant mapping based on theme and preferences
   const getLogoVariant = () => {
-    // Use the transparent background logos based on theme
-    const isDarkMode = resolvedTheme === 'dark';
-    
-    if (isDarkMode) {
-      // Use gold logo with transparent background for dark mode
-      return 'bookedbarber-logo-transparent.png';
-    }
-    // Use green logo with transparent background for light mode
+    // Temporarily use green logo for testing
     return 'bookedbarber-logo-green.png';
   };
 

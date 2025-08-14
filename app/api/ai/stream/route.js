@@ -168,8 +168,8 @@ async function simulateStreaming(message, onChunk) {
   const words = selectedResponse.split(' ')
   for (const word of words) {
     onChunk(word + ' ')
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 30 + Math.random() * 70))
+    // Simulate network delay - NO RANDOM
+    await new Promise(resolve => setTimeout(resolve, 50))
   }
 }
 

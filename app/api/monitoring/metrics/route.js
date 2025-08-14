@@ -65,13 +65,16 @@ export async function GET(request) {
 }
 
 async function getSystemMetrics() {
-  // In production, these would come from actual system monitoring
+  // Real system metrics would come from monitoring services
+  // For now return zeros instead of mock data - follow NO MOCK DATA policy
   return {
-    uptime: 99.95,
-    cpu: Math.floor(Math.random() * 30) + 20, // 20-50%
-    memory: Math.floor(Math.random() * 40) + 30, // 30-70%
-    disk: Math.floor(Math.random() * 20) + 40, // 40-60%
-    connections: Math.floor(Math.random() * 50) + 10
+    uptime: 0,
+    cpu: 0,
+    memory: 0,
+    disk: 0,
+    connections: 0,
+    data_available: false,
+    message: 'System metrics require monitoring service integration'
   }
 }
 
@@ -96,12 +99,12 @@ async function getPerformanceMetrics(startTime, endTime) {
     console.error('Failed to fetch performance metrics:', error)
   }
   
-  // Return simulated data if database fetch fails
-  const points = 12
+  // Return empty arrays instead of mock data - follow NO MOCK DATA policy
   return {
-    responseTime: Array.from({ length: points }, () => Math.random() * 200 + 50),
-    throughput: Array.from({ length: 7 }, () => Math.floor(Math.random() * 1000) + 500),
-    errorRate: Array.from({ length: points }, () => Math.random() * 5)
+    responseTime: [],
+    throughput: [],
+    errorRate: [],
+    data_available: false
   }
 }
 
@@ -127,12 +130,13 @@ async function getErrorMetrics(startTime, endTime) {
     console.error('Failed to fetch error metrics:', error)
   }
   
-  // Return simulated data if database fetch fails
+  // Return zeros instead of mock data - follow NO MOCK DATA policy
   return {
-    total: Math.floor(Math.random() * 50),
-    critical: Math.floor(Math.random() * 5),
-    warnings: Math.floor(Math.random() * 20),
-    recent: []
+    total: 0,
+    critical: 0,
+    warnings: 0,
+    recent: [],
+    data_available: false
   }
 }
 
@@ -161,17 +165,16 @@ async function getServiceStatus() {
           status = 'critical'
         }
       } else {
-        // Simulate status for services without endpoints
-        const random = Math.random()
-        status = random > 0.95 ? 'critical' : random > 0.85 ? 'degraded' : 'healthy'
-        responseTime = Math.floor(Math.random() * 100) + 10
+        // No endpoint available - return unknown status instead of mock data
+        status = 'unknown'
+        responseTime = 0
       }
       
       return {
         ...service,
         status,
         responseTime,
-        uptime: status === 'healthy' ? 99.9 + Math.random() * 0.09 : 95 + Math.random() * 3
+        uptime: status === 'healthy' ? 100 : status === 'degraded' ? 95 : 0
       }
     })
   )

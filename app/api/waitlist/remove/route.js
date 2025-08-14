@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '../../../lib/supabase/client';
 export const runtime = 'edge'
 
 /**
@@ -54,22 +55,37 @@ export async function DELETE(request) {
             );
         }
         
-        // Simulate removal (in production, this would call the Python service)
+        // Real database operation - remove from waitlist
+        const supabase = createClient();
+        
+        const { data, error } = await supabase
+            .from('waitlist')
+            .delete()
+            .eq('id', body.waitlist_id)
+            .select();
+        
+        if (error) {
+            console.error('Database error removing from waitlist:', error);
+            return NextResponse.json({
+                success: false,
+                error: 'Failed to remove from waitlist',
+                details: error.message
+            }, { status: 500 });
+        }
+        
+        if (!data || data.length === 0) {
+            return NextResponse.json({
+                success: false,
+                error: 'Waitlist entry not found'
+            }, { status: 404 });
+        }
+        
         const result = {
             success: true,
             waitlist_id: body.waitlist_id,
-            message: 'Successfully removed from waitlist'
+            message: 'Successfully removed from waitlist',
+            removed_entry: data[0]
         };
-        
-        // In production, this would call:
-        // const result = await waitlist_cancellation_service.remove_from_waitlist(
-        //     body.waitlist_id,
-        //     body.reason || 'customer_request'
-        // );
-        
-        if (!result.success) {
-            return NextResponse.json(result, { status: 400 });
-        }
         
         return NextResponse.json(result, { status: 200 });
         

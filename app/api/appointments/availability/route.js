@@ -72,7 +72,7 @@ export async function GET(request) {
     }
     
     // Try bookings table first, then appointments table
-    let appointmentsResult = await supabase
+    let bookingsResult = await supabase
       .from('bookings')
       .select('id, start_time, end_time, status')
       .eq('barber_id', validBarberId)
@@ -81,9 +81,9 @@ export async function GET(request) {
       .in('status', ['pending', 'confirmed', 'completed'])
       .neq('id', exclude_appointment_id || 'none')
     
-    // If bookings fails, try appointments table
-    if (appointmentsResult.error) {
-      appointmentsResult = await supabase
+    // Fallback if bookings query fails
+    if (bookingsResult.error) {
+      bookingsResult = await supabase
         .from('bookings')
         .select('id, scheduled_at, duration_minutes, status')
         .eq('barber_id', validBarberId)
@@ -98,9 +98,9 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Barber not found' }, { status: 404 })
     }
 
-    if (appointmentsResult.error) {
-      console.error('Error fetching appointments:', appointmentsResult.error)
-      return NextResponse.json({ error: 'Failed to fetch appointments' }, { status: 500 })
+    if (bookingsResult.error) {
+      console.error('Error fetching bookings:', bookingsResult.error)
+      return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 })
     }
 
     // Get business hours for the specific day
@@ -139,23 +139,23 @@ export async function GET(request) {
       const slotStartDate = new Date(`${validDate}T${slotStart}:00`)
       const slotEndDate = new Date(`${validDate}T${slotEnd}:00`)
       
-      const hasConflict = appointmentsResult.data.some(appointment => {
+      const hasConflict = bookingsResult.data.some(booking => {
         // Handle both bookings (start_time/end_time) and appointments (scheduled_at/duration_minutes)
-        let appointmentStart, appointmentEnd
+        let bookingStart, bookingEnd
         
-        if (appointment.start_time && appointment.end_time) {
+        if (booking.start_time && booking.end_time) {
           // Bookings table format
-          appointmentStart = new Date(appointment.start_time)
-          appointmentEnd = new Date(appointment.end_time)
-        } else if (appointment.scheduled_at) {
+          bookingStart = new Date(booking.start_time)
+          bookingEnd = new Date(booking.end_time)
+        } else if (booking.scheduled_at) {
           // Appointments table format
-          appointmentStart = new Date(appointment.scheduled_at)
-          appointmentEnd = new Date(appointmentStart.getTime() + (appointment.duration_minutes || 30) * 60000)
+          bookingStart = new Date(booking.scheduled_at)
+          bookingEnd = new Date(bookingStart.getTime() + (booking.duration_minutes || 30) * 60000)
         } else {
           return false // Skip if no valid time data
         }
         
-        return (slotStartDate < appointmentEnd && slotEndDate > appointmentStart)
+        return (slotStartDate < bookingEnd && slotEndDate > bookingStart)
       })
 
       slots.push({
@@ -170,7 +170,7 @@ export async function GET(request) {
       available_slots: slots,
       is_business_day: true,
       business_hours: currentDayHours,
-      existing_appointments: appointmentsResult.data.length,
+      existing_bookings: bookingsResult.data.length,
       barber: {
         id: barberResult.data.id || barberResult.data.user?.id,
         name: barberResult.data.name || barberResult.data.user?.name || 'Unknown Barber'

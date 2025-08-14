@@ -118,30 +118,92 @@ export async function POST(request) {
             preferred_dates = body.preferred_dates.map(date => new Date(date));
         }
         
-        // Call Python service (in real implementation, this would use a proper Python bridge)
-        // For now, we'll simulate the response structure
-        const result = {
-            success: true,
-            waitlist_id: `wl_${Date.now()}`,
-            position: body.priority === 'urgent' ? 1 : Math.floor(Math.random() * 10) + 1,
-            estimated_wait_time: '2-4 days',
-            expires_at: new Date(Date.now() + (body.max_wait_days || 14) * 24 * 60 * 60 * 1000).toISOString(),
-            message: `Successfully added to waitlist`
-        };
+        // Use real database operations for waitlist - NO MOCK DATA
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
         
-        // In production, this would call:
-        // const result = await waitlist_cancellation_service.join_waitlist(
-        //     body.customer_id,
-        //     body.barbershop_id,
-        //     body.service_id,
-        //     body.barber_id,
-        //     preferred_dates,
-        //     body.preferred_times,
-        //     body.priority || 'medium',
-        //     body.max_wait_days || 14,
-        //     body.notes,
-        //     body.notification_preferences
-        // );
+        try {
+            // Check if customer is already on waitlist for this service
+            const { data: existingEntry } = await supabase
+                .from('waitlist')
+                .select('id, position')
+                .eq('customer_id', body.customer_id)
+                .eq('barbershop_id', body.barbershop_id)
+                .eq('service_id', body.service_id)
+                .eq('status', 'active')
+                .single();
+            
+            if (existingEntry) {
+                return NextResponse.json({
+                    success: false,
+                    error: 'Customer already on waitlist for this service',
+                    existing_position: existingEntry.position
+                }, { status: 400 });
+            }
+            
+            // Get current waitlist count to determine position
+            const { count: currentCount } = await supabase
+                .from('waitlist')
+                .select('id', { count: 'exact', head: true })
+                .eq('barbershop_id', body.barbershop_id)
+                .eq('service_id', body.service_id)
+                .eq('status', 'active');
+            
+            // Calculate position (urgent priority goes first)
+            const position = body.priority === 'urgent' ? 1 : (currentCount || 0) + 1;
+            
+            // Create waitlist entry
+            const { data: waitlistEntry, error } = await supabase
+                .from('waitlist')
+                .insert([{
+                    customer_id: body.customer_id,
+                    barbershop_id: body.barbershop_id,
+                    service_id: body.service_id,
+                    barber_id: body.barber_id || null,
+                    preferred_dates: preferred_dates ? JSON.stringify(preferred_dates) : null,
+                    preferred_times: body.preferred_times ? JSON.stringify(body.preferred_times) : null,
+                    priority: body.priority || 'medium',
+                    max_wait_days: body.max_wait_days || 14,
+                    notes: body.notes || '',
+                    notification_preferences: body.notification_preferences || {
+                        email: true,
+                        sms: false,
+                        immediate_notify: true
+                    },
+                    position: position,
+                    status: 'active',
+                    expires_at: new Date(Date.now() + (body.max_wait_days || 14) * 24 * 60 * 60 * 1000).toISOString()
+                }])
+                .select()
+                .single();
+            
+            if (error) {
+                throw error;
+            }
+            
+            // Calculate estimated wait time based on position and historical data
+            const estimated_wait_time = position <= 3 ? '1-2 days' : position <= 7 ? '2-4 days' : '5-7 days';
+            
+            const result = {
+                success: true,
+                waitlist_id: waitlistEntry.id,
+                position: waitlistEntry.position,
+                estimated_wait_time: estimated_wait_time,
+                expires_at: waitlistEntry.expires_at,
+                message: `Successfully added to waitlist at position ${waitlistEntry.position}`
+            };
+            
+        } catch (dbError) {
+            console.error('Database error in waitlist join:', dbError);
+            return NextResponse.json({
+                success: false,
+                error: 'Failed to join waitlist',
+                details: 'Database operation failed'
+            }, { status: 500 });
+        }
         
         if (!result.success) {
             return NextResponse.json(result, { status: 400 });

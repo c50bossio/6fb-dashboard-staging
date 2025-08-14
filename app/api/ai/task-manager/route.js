@@ -343,7 +343,7 @@ function generateRoutineTasks() {
  */
 function createTask(template_id, taskData) {
   return {
-    id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    id: `task_${Date.now()}_${process.hrtime.bigint().toString(36)}`, // NO RANDOM
     template_id,
     title: taskData.title,
     description: taskData.description,
@@ -371,7 +371,8 @@ function generateCompletionReward(priority) {
   }
   
   const rewardList = rewards[priority] || rewards.medium
-  return rewardList[Math.floor(Math.random() * rewardList.length)]
+  // NO RANDOM - use first reward consistently
+  return rewardList[0]
 }
 
 /**

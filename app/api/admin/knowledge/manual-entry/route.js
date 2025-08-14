@@ -16,7 +16,7 @@ export async function POST(request) {
 
     // Create knowledge entry object
     const knowledgeEntry = {
-      id: `manual_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      id: `manual_${Date.now()}_${process.hrtime.bigint().toString(36)}`,
       title: title.trim(),
       content: content.trim(),
       domain: domain || 'barbershop_operations',

@@ -147,14 +147,16 @@ async function getAIActivityMetrics(startDate, endDate) {
       conversations_per_day: Math.round(totalConversations / Math.max(1, Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000))))
     }
   } catch (error) {
-    console.warn('AI activity metrics fallback:', error.message)
+    console.warn('AI activity metrics error:', error.message)
+    // Return empty metrics instead of mock data - follow NO MOCK DATA policy
     return {
-      total_conversations: 42,
-      unique_sessions: 15,
-      avg_confidence: 0.87,
-      provider_usage: { openai: 25, anthropic: 12, fallback: 5 },
-      active_agents: 3,
-      conversations_per_day: 6
+      total_conversations: 0,
+      unique_sessions: 0,
+      avg_confidence: 0,
+      provider_usage: {},
+      active_agents: 0,
+      conversations_per_day: 0,
+      error: 'Unable to fetch AI activity metrics'
     }
   }
 }
@@ -199,14 +201,16 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
     }
   } catch (error) {
     console.error('Business insights metrics error:', error)
+    // Return empty metrics instead of mock data - follow NO MOCK DATA policy
     return {
-      active_barbershops: 1,
+      active_barbershops: 0,
       total_ai_recommendations: 0,
-      avg_session_duration_minutes: 8.5,
-      user_satisfaction_score: 4.7,
+      avg_session_duration_minutes: 0,
+      user_satisfaction_score: 0,
       cost_savings_generated: 0,
       time_saved_hours: 0,
       efficiency_improvement_percent: 0,
+      error: 'Unable to fetch business insights'
     }
   }
 }
@@ -263,12 +267,34 @@ async function getUserEngagementMetrics(startDate, endDate) {
 }
 
 async function getPerformanceMetrics() {
-  return {
-    avg_response_time_ms: 127,
-    api_success_rate: 99.2,
-    uptime_percent: 99.8,
-    memory_usage_mb: 0, // Not available in Edge Runtime
-    cpu_usage_percent: Math.round(Math.random() * 15 + 5), // Simulated CPU usage
+  // Real performance metrics would come from monitoring services
+  // For now return minimal real data instead of mock - follow NO MOCK DATA policy
+  try {
+    const startTime = Date.now()
+    const supabase = createClient()
+    
+    // Measure a simple database query for response time
+    await supabase.from('profiles').select('count').limit(1)
+    const responseTime = Date.now() - startTime
+    
+    return {
+      avg_response_time_ms: responseTime,
+      api_success_rate: 0, // Would need to track actual API calls
+      uptime_percent: 0, // Would need uptime monitoring
+      memory_usage_mb: 0, // Not available in Edge Runtime
+      cpu_usage_percent: 0, // Not available without monitoring
+      data_available: false,
+      message: 'Performance metrics require monitoring service integration'
+    }
+  } catch (error) {
+    return {
+      avg_response_time_ms: 0,
+      api_success_rate: 0,
+      uptime_percent: 0,
+      memory_usage_mb: 0,
+      cpu_usage_percent: 0,
+      error: 'Unable to measure performance'
+    }
   }
 }
 
@@ -301,39 +327,143 @@ async function checkDatabaseHealth() {
 }
 
 async function getDailyStatsBreakdown(startDate, endDate) {
-  // Generate daily stats for the requested range
-  const days = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000))
-  const dailyStats = []
-  
-  for (let i = 0; i < days; i++) {
-    const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000)
-    dailyStats.push({
-      date: date.toISOString().split('T')[0],
-      conversations: Math.round(Math.random() * 15 + 5),
-      users: Math.round(Math.random() * 8 + 3),
-      ai_responses: Math.round(Math.random() * 25 + 10),
-      avg_confidence: Math.round((Math.random() * 0.3 + 0.7) * 100) / 100
-    })
+  // Get real daily stats from database - NO MOCK DATA
+  try {
+    const supabase = createClient()
+    const days = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000))
+    const dailyStats = []
+    
+    for (let i = 0; i < days; i++) {
+      const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000)
+      const nextDate = new Date(date.getTime() + 24 * 60 * 60 * 1000)
+      
+      // Get real stats for each day
+      const { data: chatData } = await supabase
+        .from('chat_history')
+        .select('session_id, confidence')
+        .gte('created_at', date.toISOString())
+        .lt('created_at', nextDate.toISOString())
+      
+      const conversations = chatData?.length || 0
+      const uniqueUsers = new Set(chatData?.map(c => c.session_id) || []).size
+      const avgConfidence = chatData?.length > 0 ? 
+        chatData.reduce((sum, c) => sum + (c.confidence || 0), 0) / chatData.length : 0
+      
+      dailyStats.push({
+        date: date.toISOString().split('T')[0],
+        conversations: conversations,
+        users: uniqueUsers,
+        ai_responses: conversations, // Each conversation has at least one response
+        avg_confidence: Math.round(avgConfidence * 100) / 100
+      })
+    }
+    
+    return dailyStats
+  } catch (error) {
+    console.error('Daily stats breakdown error:', error)
+    // Return empty array instead of mock data
+    return []
   }
-  
-  return dailyStats
 }
 
 async function getAIProviderUsageStats(startDate, endDate) {
-  return {
-    openai: { requests: 156, success_rate: 98.7, avg_response_time: 1200 },
-    anthropic: { requests: 89, success_rate: 96.6, avg_response_time: 1800 },
-    gemini: { requests: 45, success_rate: 94.4, avg_response_time: 2100 },
-    fallback: { requests: 12, success_rate: 100, avg_response_time: 150 }
+  // Get real AI provider usage from database - NO MOCK DATA
+  try {
+    const supabase = createClient()
+    
+    const { data: chatHistory } = await supabase
+      .from('chat_history')
+      .select('provider, response_time_ms, success')
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString())
+    
+    // Aggregate by provider
+    const providerStats = {}
+    
+    chatHistory?.forEach(chat => {
+      const provider = chat.provider || 'unknown'
+      if (!providerStats[provider]) {
+        providerStats[provider] = {
+          requests: 0,
+          successful: 0,
+          total_response_time: 0
+        }
+      }
+      
+      providerStats[provider].requests++
+      if (chat.success) providerStats[provider].successful++
+      providerStats[provider].total_response_time += (chat.response_time_ms || 0)
+    })
+    
+    // Format the results
+    const formattedStats = {}
+    Object.keys(providerStats).forEach(provider => {
+      const stats = providerStats[provider]
+      formattedStats[provider] = {
+        requests: stats.requests,
+        success_rate: stats.requests > 0 ? Math.round((stats.successful / stats.requests) * 100 * 10) / 10 : 0,
+        avg_response_time: stats.requests > 0 ? Math.round(stats.total_response_time / stats.requests) : 0
+      }
+    })
+    
+    return formattedStats
+    
+  } catch (error) {
+    console.error('AI provider usage stats error:', error)
+    // Return empty object instead of mock data
+    return {}
   }
 }
 
 async function getUserSessionStats(startDate, endDate) {
-  return {
-    avg_session_duration: 8.5,
-    bounce_rate: 12.3,
-    pages_per_session: 4.2,
-    returning_users: 67.8
+  // Get real user session stats from database - NO MOCK DATA
+  try {
+    const supabase = createClient()
+    
+    // Get session data
+    const { data: sessions } = await supabase
+      .from('user_sessions')
+      .select('duration_minutes, page_views, is_returning')
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString())
+    
+    if (sessions && sessions.length > 0) {
+      const avgDuration = sessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) / sessions.length
+      const avgPageViews = sessions.reduce((sum, s) => sum + (s.page_views || 0), 0) / sessions.length
+      const returningCount = sessions.filter(s => s.is_returning).length
+      const returningPercentage = (returningCount / sessions.length) * 100
+      
+      // Calculate bounce rate (sessions with only 1 page view)
+      const bouncedSessions = sessions.filter(s => s.page_views === 1).length
+      const bounceRate = (bouncedSessions / sessions.length) * 100
+      
+      return {
+        avg_session_duration: Math.round(avgDuration * 10) / 10,
+        bounce_rate: Math.round(bounceRate * 10) / 10,
+        pages_per_session: Math.round(avgPageViews * 10) / 10,
+        returning_users: Math.round(returningPercentage * 10) / 10
+      }
+    }
+    
+    // Return zeros if no data
+    return {
+      avg_session_duration: 0,
+      bounce_rate: 0,
+      pages_per_session: 0,
+      returning_users: 0,
+      data_available: false
+    }
+    
+  } catch (error) {
+    console.error('User session stats error:', error)
+    // Return empty stats instead of mock data
+    return {
+      avg_session_duration: 0,
+      bounce_rate: 0,
+      pages_per_session: 0,
+      returning_users: 0,
+      error: 'Unable to fetch session stats'
+    }
   }
 }
 

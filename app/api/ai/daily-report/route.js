@@ -478,5 +478,5 @@ function getWeatherImpact() {
     'No significant weather impact expected today'
   ]
   
-  return impacts[Math.floor(Math.random() * impacts.length)]
+  return impacts[0] // NO RANDOM - use first impact for consistency
 }

@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const { signUp, signInWithGoogle, loading: authLoading } = useAuth()
   const registrationTracking = useRegistrationTracking()
   const [currentStep, setCurrentStep] = useState(1)
+  const [planInfo, setPlanInfo] = useState(null) // Store plan data if passed via URL
   const [formData, setFormData] = useState({
     // Personal Info
     firstName: '',
@@ -47,7 +48,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({})
   const [touched, setTouched] = useState({})
 
-  // Clear any leftover CAPTCHA errors on component mount
+  // Clear any leftover CAPTCHA errors on component mount and check for plan data
   useEffect(() => {
     setErrors(prev => {
       const newErrors = { ...prev }
@@ -58,6 +59,20 @@ export default function RegisterPage() {
       }
       return newErrors
     })
+
+    // Check URL parameters for plan selection (from subscribe page)
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const planId = urlParams.get('plan') || urlParams.get('planId')
+      const billingPeriod = urlParams.get('billing') || urlParams.get('billingPeriod')
+      
+      if (planId && billingPeriod) {
+        console.log('📋 Plan data found in URL:', { planId, billingPeriod })
+        setPlanInfo({ planId, billingPeriod })
+      } else {
+        console.log('📋 No plan data in URL - user will need to select plan after registration')
+      }
+    }
   }, [])
 
   // Validation functions
@@ -378,7 +393,15 @@ export default function RegisterPage() {
       // Track OAuth attempt
       registrationTracking.trackOAuthAttempt('google')
       
-      const result = await signInWithGoogle()
+      // Check if we have plan data to pass to OAuth
+      let result
+      if (planInfo && planInfo.planId && planInfo.billingPeriod) {
+        console.log('🎯 Using plan data for OAuth:', planInfo)
+        result = await signInWithGoogle(planInfo.planId, planInfo.billingPeriod)
+      } else {
+        console.log('🔓 No plan data - using standard OAuth')
+        result = await signInWithGoogle()
+      }
       
       // If signInWithGoogle returns without error, the redirect should happen
       console.log('🔐 Google OAuth initiated successfully:', result)
@@ -787,6 +810,15 @@ export default function RegisterPage() {
         <h2 className="text-center text-3xl font-bold text-foreground gradient-text">
           Create your barbershop account
         </h2>
+        {planInfo && (
+          <div className="mt-3 text-center">
+            <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-moss-100 text-moss-800 border border-moss-200">
+              <span className="text-xs mr-1">📋</span>
+              Plan selected: <span className="font-medium ml-1 capitalize">{planInfo.planId}</span>
+              {planInfo.billingPeriod === 'yearly' && <span className="ml-1">(Yearly)</span>}
+            </div>
+          </div>
+        )}
         <p className="mt-2 text-center text-sm text-muted-foreground">
           Already have an account?{' '}
           <Link href="/login" className="font-medium text-primary hover:text-primary/80 transition-colors duration-200">

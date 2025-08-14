@@ -53,17 +53,11 @@ export async function GET(request) {
       )
     }
 
-    // In a real implementation, process the OAuth callback
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // result = service.handle_outlook_callback(code, state)
-    
-    // For demo purposes, simulate successful connection
+    // NO MOCK DATA - Real implementation would process OAuth callback
+    // This requires backend Outlook Calendar integration service
     const result = {
-      success: true,
-      account_id: 'outlook_demo_123',
-      email: 'demo@outlook.com',
-      name: 'Demo User'
+      success: false,
+      error: 'Outlook Calendar integration requires backend service implementation'
     }
 
     if (result.success) {

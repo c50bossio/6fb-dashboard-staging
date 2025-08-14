@@ -39,51 +39,20 @@ export default function BookingsPage() {
         setServices(servicesData.services || [])
       }
 
-      // Mock bookings data for demonstration
-      setBookings([
-        {
-          id: 'booking_001',
-          service_id: 'haircut_premium',
-          service_name: 'Premium Haircut & Style',
-          customer_id: user?.id,
-          customer_name: user?.user_metadata?.full_name || 'Demo Customer',
-          barber_id: 'barber_001',
-          barber_name: 'Mike Johnson',
-          appointment_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-          start_time: '14:00',
-          end_time: '14:45',
-          payment_status: 'pending',
-          status: 'confirmed'
-        },
-        {
-          id: 'booking_002',
-          service_id: 'full_service',
-          service_name: 'Full Service (Cut + Beard)',
-          customer_id: user?.id,
-          customer_name: user?.user_metadata?.full_name || 'Demo Customer',
-          barber_id: 'barber_002',
-          barber_name: 'Alex Rodriguez',
-          appointment_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days
-          start_time: '16:30',
-          end_time: '17:30',
-          payment_status: 'deposit_paid',
-          status: 'confirmed'
-        },
-        {
-          id: 'booking_003',
-          service_id: 'hot_towel_shave',
-          service_name: 'Hot Towel Shave',
-          customer_id: user?.id,
-          customer_name: user?.user_metadata?.full_name || 'Demo Customer',
-          barber_id: 'barber_001',
-          barber_name: 'Mike Johnson',
-          appointment_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week
-          start_time: '11:00',
-          end_time: '11:45',
-          payment_status: 'paid',
-          status: 'confirmed'
+      // Load user's bookings from database
+      if (user?.id) {
+        const bookingsResponse = await fetch(`/api/appointments?client_id=${user.id}`)
+        const bookingsData = await bookingsResponse.json()
+        
+        if (bookingsData.appointments) {
+          setBookings(bookingsData.appointments)
+        } else if (bookingsData.error) {
+          console.error('Failed to load bookings:', bookingsData.error)
+          setBookings([])
         }
-      ])
+      } else {
+        setBookings([])
+      }
 
     } catch (error) {
       console.error('Failed to load data:', error)
@@ -175,7 +144,7 @@ export default function BookingsPage() {
             <div className="p-6 space-y-4">
               <div className="flex items-center space-x-2 text-gray-600">
                 <CalendarDaysIcon className="h-4 w-4" />
-                <span className="text-sm">{new Date(booking.appointment_date).toLocaleDateString()}</span>
+                <span className="text-sm">{new Date(booking.scheduled_at).toLocaleDateString()}</span>
               </div>
               
               <div className="flex items-center space-x-2 text-gray-600">
@@ -185,7 +154,7 @@ export default function BookingsPage() {
 
               <div className="flex items-center space-x-2 text-gray-600">
                 <UserIcon className="h-4 w-4" />
-                <span className="text-sm">{booking.customer_name}</span>
+                <span className="text-sm">{booking.client_name || booking.customer_name || 'Customer'}</span>
               </div>
 
               {/* Payment Status */}

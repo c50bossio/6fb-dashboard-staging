@@ -178,7 +178,8 @@ async function generateBookingFallback(message, intent, context) {
     suggestions.unshift("For urgent bookings, call or text your clients directly")
   }
   
-  const baseResponse = responses[Math.floor(Math.random() * responses.length)]
+  // NO RANDOM SELECTION - use first response consistently
+  const baseResponse = responses[0]
   
   return {
     content: `${baseResponse}\n\n• ${suggestions.slice(0, 3).join('\n• ')}\n\nMy full booking intelligence should return shortly. In the meantime, these manual options will help you manage appointments.`,
@@ -307,7 +308,8 @@ async function generateGeneralFallback(message, intent, context) {
     "Wait a few minutes and try again for full AI capabilities"
   ]
   
-  const response = generalResponses[Math.floor(Math.random() * generalResponses.length)]
+  // NO RANDOM SELECTION - use first response consistently
+  const response = generalResponses[0]
   
   return {
     content: `${response}\n\nHere's what you can do:\n\n• ${suggestions.join('\n• ')}\n\nI should be back to full capability shortly!`,

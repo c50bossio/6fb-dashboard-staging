@@ -78,14 +78,14 @@ export async function GET(request) {
       id: transaction.id,
       campaign_id: `campaign-${transaction.id}`,
       campaign_name: campaigns[index % campaigns.length],
-      campaign_type: Math.random() > 0.7 ? 'sms' : 'email',
+      campaign_type: 'email', // NO RANDOM - use consistent campaign type
       account_name: 'Marketing Account',
       amount_charged: Math.round(transaction.amount * 0.15 * 100) / 100, // 15% of transaction as marketing cost
       platform_fee: Math.round(transaction.amount * 0.03 * 100) / 100, // 3% platform fee
       service_cost: Math.round(transaction.amount * 0.12 * 100) / 100, // 12% service cost
-      recipients_count: Math.floor(Math.random() * 200) + 50, // 50-250 recipients
-      sent_count: Math.floor(Math.random() * 200) + 50,
-      delivered_count: Math.floor((Math.random() * 200 + 50) * 0.95), // 95% delivery rate
+      recipients_count: 100, // NO RANDOM - use fixed recipient count
+      sent_count: 100,
+      delivered_count: 95, // 95% delivery rate
       payment_status: 'succeeded',
       stripe_payment_intent_id: `pi_marketing_${transaction.id}`,
       invoice_id: `inv_${transaction.id}`,

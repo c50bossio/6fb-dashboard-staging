@@ -92,8 +92,9 @@ export default function SubscribePage() {
   const [error, setError] = useState('')
   const [hoveredPlans, setHoveredPlans] = useState(new Set())
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, signInWithGoogle } = useAuth()
   const pricingTracking = usePricingTracking()
+
 
   useEffect(() => {
     // Only check subscription after auth has loaded
@@ -127,11 +128,7 @@ export default function SubscribePage() {
   }
 
   const handleSelectPlan = async (tierId) => {
-    // Don't do anything while auth is still loading
-    if (authLoading) {
-      console.log('Auth still loading, please wait...')
-      return
-    }
+    console.log('🎯 Plan selected:', { tierId, billingPeriod, hasUser: !!user })
 
     // Track plan selection
     pricingTracking.trackPlanClick(tierId)
@@ -141,51 +138,115 @@ export default function SubscribePage() {
     setSelectedTier(tierId)
     setError('')
 
-    // If auth has loaded and no user, redirect to login after brief delay
-    if (!user) {
-      // Show "Redirecting to login..." for better UX
-      setTimeout(() => {
-        router.push('/login?redirect=/subscribe')
-      }, 500)
-      return
-    }
-
     try {
-      const response = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tierId,
-          billingPeriod,
-          userId: user.id,
-          userEmail: user.email
+      // PROGRESSIVE DISCLOSURE PATTERN:
+      // If user is already authenticated, go directly to checkout
+      if (user && !authLoading) {
+        console.log('✅ User authenticated - proceeding to checkout')
+        
+        const response = await fetch('/api/stripe/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tierId,
+            billingPeriod,
+            userId: user.id,
+            userEmail: user.email
+          })
         })
-      })
 
-      const data = await response.json()
+        const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session')
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create checkout session')
+        }
+
+        // Track checkout redirect
+        pricingTracking.trackCheckoutRedirect(tierId, billingPeriod)
+
+        // Redirect to Stripe Checkout
+        if (data.checkoutUrl) {
+          console.log('🚀 Redirecting to Stripe checkout')
+          window.location.href = data.checkoutUrl
+        } else {
+          throw new Error('No checkout URL received')
+        }
+        return
       }
 
-      // Track checkout redirect
-      pricingTracking.trackCheckoutRedirect(tierId, billingPeriod)
-
-      // Redirect to Stripe Checkout
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl
-      } else {
-        throw new Error('No checkout URL received')
-      }
+      // NEW FLOW: User not authenticated - start OAuth with plan data
+      console.log('🔒 Starting OAuth with plan selection')
+      
+      // Start OAuth with plan data using the auth function from context
+      await startOAuthWithPlan(tierId, billingPeriod)
+      
+      // The OAuth flow will handle the rest:
+      // 1. OAuth completes with state parameter
+      // 2. Callback redirects to /subscribe/oauth-complete
+      // 3. oauth-complete validates state and creates checkout
+      
     } catch (err) {
-      console.error('Checkout error:', err)
+      console.error('❌ Plan selection error:', err)
       setError(err.message || 'Something went wrong. Please try again.')
       setLoading(false)
       setSelectedTier(null)
     }
   }
+
+  // Helper function to start OAuth with plan data
+  const startOAuthWithPlan = async (tierId, billingPeriod) => {
+    try {
+      console.log('🔐 Starting OAuth with plan data:', { tierId, billingPeriod })
+      console.log('📊 Plan details - ID:', tierId, 'Period:', billingPeriod)
+      
+      // Use the signInWithGoogle function from auth context with plan data
+      // This will handle the OAuth flow properly with PKCE and state parameter
+      console.log('🔄 Calling signInWithGoogle with plan data...')
+      const result = await signInWithGoogle(tierId, billingPeriod)
+      
+      console.log('📋 signInWithGoogle returned:', result)
+      
+      if (result?.error) {
+        console.error('❌ OAuth error:', result.error)
+        throw result.error
+      }
+      
+      console.log('🚀 OAuth initiated successfully')
+      // The OAuth flow will redirect automatically
+      
+    } catch (error) {
+      console.error('❌ OAuth redirect error:', error)
+      throw new Error('Failed to start authentication process')
+    }
+  }
+
+  // Handle URL parameters for backward compatibility (optional)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const planFromUrl = urlParams.get('plan')
+      const billingFromUrl = urlParams.get('billing')
+      const sourceFromUrl = urlParams.get('source')
+      
+      // Set UI state from URL params but don't auto-proceed
+      // The new flow requires explicit user action (progressive disclosure)
+      if (planFromUrl) {
+        setSelectedTier(planFromUrl)
+        console.log('📋 Plan pre-selected from URL:', planFromUrl)
+      }
+      if (billingFromUrl) {
+        setBillingPeriod(billingFromUrl)
+        console.log('📋 Billing period set from URL:', billingFromUrl)
+      }
+      
+      // Show message if user came from OAuth callback
+      if (sourceFromUrl === 'oauth_callback') {
+        console.log('👋 User returned from OAuth - showing pricing')
+      }
+    }
+  }, [])
 
   const getPrice = (tier) => {
     return billingPeriod === 'monthly' 

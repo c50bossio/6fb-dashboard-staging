@@ -45,7 +45,7 @@ export default function BarberDashboard() {
       if (appointmentsData.appointments) {
         const today = new Date().toDateString()
         const todayAppointments = appointmentsData.appointments.filter(apt => 
-          new Date(apt.appointment_date).toDateString() === today
+          new Date(apt.scheduled_at).toDateString() === today
         )
         
         setAppointments(todayAppointments)
@@ -55,10 +55,12 @@ export default function BarberDashboard() {
         const upcoming = todayAppointments.filter(apt => apt.status === 'confirmed').length
         const cancelled = todayAppointments.filter(apt => apt.status === 'cancelled').length
         
-        // Calculate earnings (mock data)
-        const todayEarnings = completed * 45
-        const weekEarnings = todayEarnings * 5
-        const monthEarnings = weekEarnings * 4
+        // Calculate real earnings from completed appointments
+        const todayEarnings = todayAppointments
+          .filter(apt => apt.status === 'completed')
+          .reduce((total, apt) => total + (apt.service_price || apt.total_amount || 0), 0)
+        const weekEarnings = todayEarnings * 7 // Estimate weekly from daily
+        const monthEarnings = weekEarnings * 4 // Estimate monthly from weekly
         
         setStats({
           todayAppointments: todayAppointments.length,
@@ -68,7 +70,7 @@ export default function BarberDashboard() {
           weekEarnings,
           monthEarnings,
           cancelledToday: cancelled,
-          newClients: Math.floor(Math.random() * 5) + 1
+          newClients: todayAppointments.filter(apt => apt.is_new_client || apt.client?.is_new).length
         })
       }
     } catch (error) {

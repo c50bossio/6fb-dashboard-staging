@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '../../../../lib/supabase/client'
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
@@ -14,18 +14,8 @@ export async function POST(request) {
       )
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json(
-        { error: 'Supabase configuration missing' },
-        { status: 500 }
-      )
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    // Initialize Supabase client using standard lib
+    const supabase = createClient()
 
     // Soft delete: Update status to 'cancelled' instead of deleting
     // First get the current appointment

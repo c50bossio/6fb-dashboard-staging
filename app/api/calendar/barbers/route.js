@@ -29,17 +29,10 @@ export async function GET(request) {
       
       if (profileError) {
         console.error('Error fetching profiles:', profileError)
-        
-        // Return mock data if no database tables exist
-        return NextResponse.json({
-          barbers: [
-            { id: 'barber-1', name: 'John Smith', color: '#10b981', active: true },
-            { id: 'barber-2', name: 'Sarah Johnson', color: '#546355', active: true },
-            { id: 'barber-3', name: 'Mike Brown', color: '#f59e0b', active: true },
-            { id: 'barber-4', name: 'Lisa Davis', color: '#D4B878', active: true }
-          ],
-          source: 'mock'
-        })
+        return NextResponse.json({ 
+          error: 'Failed to fetch barbers',
+          details: profileError.message 
+        }, { status: 500 })
       }
       
       // Transform profiles to barber format

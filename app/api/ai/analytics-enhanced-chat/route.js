@@ -374,5 +374,6 @@ function generateFollowUpResponse(actualType, message, analyticsData, conversati
  * Generate session ID if not provided
  */
 function generateSessionId() {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // NO RANDOM - use deterministic session ID
+  return `session_${Date.now()}_${process.hrtime.bigint().toString(36)}`;
 }

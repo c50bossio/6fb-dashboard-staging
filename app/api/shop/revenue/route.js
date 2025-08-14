@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
+
 export const runtime = 'edge'
 
 export async function GET(request) {
@@ -7,192 +10,273 @@ export async function GET(request) {
     const period = searchParams.get('period') || 'month' // 'day', 'week', 'month', 'year'
     const barber_id = searchParams.get('barber_id')
     
-    const today = new Date()
-    const currentHour = today.getHours()
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     
-    // Generate realistic revenue data
-    const generateRevenueData = (days = 30) => {
-      const data = []
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today)
-        date.setDate(date.getDate() - i)
-        
-        // Simulate higher revenue on weekends and evenings
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6
-        const baseRevenue = isWeekend ? 800 : 600
-        const variation = (Math.random() - 0.5) * 200
-        const dailyRevenue = Math.max(200, baseRevenue + variation)
-        
-        data.push({
-          date: date.toISOString().split('T')[0],
-          revenue: Math.round(dailyRevenue * 100) / 100,
-          appointments: Math.floor(dailyRevenue / 50), // Roughly $50 per appointment
-          barber_commissions: Math.round(dailyRevenue * 0.65 * 100) / 100,
-          shop_revenue: Math.round(dailyRevenue * 0.35 * 100) / 100
-        })
-      }
-      return data
+    // Get the current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
     
-    // Mock revenue breakdown by service
-    const serviceBreakdown = [
-      {
-        service_name: 'Classic Haircut',
-        appointments: 89,
-        total_revenue: 3115.00,
-        average_price: 35.00,
-        percentage: 35.2
-      },
-      {
-        service_name: 'Fade Cut',
-        total_revenue: 2680.00,
-        appointments: 67,
-        average_price: 40.00,
-        percentage: 30.3
-      },
-      {
-        service_name: 'Full Service Package',
-        total_revenue: 1725.00,
-        appointments: 23,
-        average_price: 75.00,
-        percentage: 19.5
-      },
-      {
-        service_name: 'Beard Trim',
-        total_revenue: 1125.00,
-        appointments: 45,
-        average_price: 25.00,
-        percentage: 12.7
-      },
-      {
-        service_name: 'Hot Towel Shave',
-        total_revenue: 225.00,
-        appointments: 5,
-        average_price: 45.00,
-        percentage: 2.3
-      }
-    ]
+    // Get the user's barbershop
+    const { data: shop } = await supabase
+      .from('barbershops')
+      .select('id')
+      .eq('owner_id', user.id)
+      .single()
     
-    // Mock barber revenue breakdown
-    const barberBreakdown = [
-      {
-        barber_id: 'barber-alex-123',
-        barber_name: 'Alex Rodriguez',
-        total_revenue: 3280.00,
-        commission_earned: 2132.00,
-        appointments_completed: 94,
-        average_ticket: 34.89,
-        commission_rate: 65.0
-      },
-      {
-        barber_id: 'barber-jamie-123',
-        barber_name: 'Jamie Chen',
-        total_revenue: 2890.00,
-        commission_earned: 1965.20,
-        appointments_completed: 78,
-        average_ticket: 37.05,
-        commission_rate: 68.0
-      },
-      {
-        barber_id: 'barber-mike-123',
-        barber_name: 'Mike Thompson',
-        total_revenue: 3700.00,
-        commission_earned: 2590.00,
-        appointments_completed: 67,
-        average_ticket: 55.22,
-        commission_rate: 70.0
-      }
-    ]
+    if (!shop) {
+      return NextResponse.json({
+        error: 'No barbershop found',
+        message: 'Please create or link a barbershop first',
+        period,
+        time_series: [],
+        summary: {
+          total_revenue: 0,
+          total_appointments: 0,
+          average_ticket: 0,
+          commission_paid: 0,
+          shop_revenue: 0,
+          tips_collected: 0
+        },
+        breakdown: {
+          services: [],
+          barbers: []
+        },
+        trends: {
+          revenue_change: 0,
+          appointments_change: 0,
+          ticket_size_change: 0
+        }
+      }, { status: 404 })
+    }
     
-    let timeSeriesData
-    let periodLabel
+    const today = new Date()
+    let startDate, endDate
     
+    // Calculate date ranges based on period
     switch (period) {
       case 'day':
-        // Hourly data for today
-        timeSeriesData = Array.from({ length: 24 }, (_, hour) => {
-          const isBusinessHours = hour >= 9 && hour <= 19
-          const isPeak = hour >= 14 && hour <= 18
-          let revenue = 0
-          
-          if (isBusinessHours) {
-            revenue = isPeak ? 120 + Math.random() * 80 : 60 + Math.random() * 40
-          }
-          
-          return {
-            time: `${hour}:00`,
-            revenue: Math.round(revenue * 100) / 100,
-            appointments: isBusinessHours ? Math.floor(revenue / 50) : 0
-          }
-        })
-        periodLabel = 'Today'
+        startDate = new Date(today.setHours(0, 0, 0, 0))
+        endDate = new Date(today.setHours(23, 59, 59, 999))
         break
-        
       case 'week':
-        timeSeriesData = generateRevenueData(7)
-        periodLabel = 'This Week'
+        startDate = new Date(today)
+        startDate.setDate(today.getDate() - 7)
+        endDate = new Date()
         break
-        
       case 'year':
-        // Monthly data for the year
-        timeSeriesData = Array.from({ length: 12 }, (_, month) => {
-          const date = new Date(today.getFullYear(), month, 1)
-          const monthlyRevenue = 15000 + (Math.random() - 0.5) * 5000
-          
-          return {
-            date: date.toISOString().split('T')[0],
-            revenue: Math.round(monthlyRevenue * 100) / 100,
-            appointments: Math.floor(monthlyRevenue / 50)
-          }
-        })
-        periodLabel = 'This Year'
+        startDate = new Date(today.getFullYear(), 0, 1)
+        endDate = new Date(today.getFullYear(), 11, 31)
         break
-        
       default: // month
-        timeSeriesData = generateRevenueData(30)
-        periodLabel = 'This Month'
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1)
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
     }
     
-    // Calculate totals
-    const totalRevenue = timeSeriesData.reduce((sum, item) => sum + item.revenue, 0)
-    const totalAppointments = timeSeriesData.reduce((sum, item) => sum + item.appointments, 0)
-    const averageTicket = totalAppointments > 0 ? totalRevenue / totalAppointments : 0
+    // Build query for transactions/bookings
+    let query = supabase
+      .from('transactions')
+      .select(`
+        id,
+        amount,
+        type,
+        status,
+        created_at,
+        service_id,
+        barber_id,
+        services(name, price)
+      `)
+      .eq('barbershop_id', shop.id)
+      .eq('status', 'completed')
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString())
     
     // Filter by barber if specified
-    let filteredData = { serviceBreakdown, barberBreakdown }
     if (barber_id) {
-      const barber = barberBreakdown.find(b => b.barber_id === barber_id)
-      if (barber) {
-        filteredData.barberBreakdown = [barber]
-        // Adjust time series for single barber (roughly 1/3 of total)
-        timeSeriesData = timeSeriesData.map(item => ({
-          ...item,
-          revenue: Math.round(item.revenue * 0.33 * 100) / 100,
-          appointments: Math.floor(item.appointments * 0.33)
-        }))
+      query = query.eq('barber_id', barber_id)
+    }
+    
+    const { data: transactions, error: txError } = await query
+    
+    if (txError) {
+      console.error('Error fetching transactions:', txError)
+      return NextResponse.json({
+        error: 'Failed to fetch revenue data',
+        details: txError.message
+      }, { status: 500 })
+    }
+    
+    // Process time series data based on period
+    let timeSeriesData = []
+    
+    if (period === 'day') {
+      // Hourly breakdown for today
+      for (let hour = 0; hour < 24; hour++) {
+        const hourStart = new Date(today)
+        hourStart.setHours(hour, 0, 0, 0)
+        const hourEnd = new Date(today)
+        hourEnd.setHours(hour, 59, 59, 999)
+        
+        const hourTransactions = transactions?.filter(t => {
+          const txDate = new Date(t.created_at)
+          return txDate >= hourStart && txDate <= hourEnd
+        }) || []
+        
+        const revenue = hourTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
+        
+        timeSeriesData.push({
+          time: `${hour}:00`,
+          revenue: revenue,
+          appointments: hourTransactions.length
+        })
+      }
+    } else {
+      // Daily breakdown for other periods
+      const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+      
+      for (let i = 0; i < days; i++) {
+        const dayStart = new Date(startDate)
+        dayStart.setDate(startDate.getDate() + i)
+        dayStart.setHours(0, 0, 0, 0)
+        
+        const dayEnd = new Date(dayStart)
+        dayEnd.setHours(23, 59, 59, 999)
+        
+        const dayTransactions = transactions?.filter(t => {
+          const txDate = new Date(t.created_at)
+          return txDate >= dayStart && txDate <= dayEnd
+        }) || []
+        
+        const revenue = dayTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
+        
+        timeSeriesData.push({
+          date: dayStart.toISOString().split('T')[0],
+          revenue: revenue,
+          appointments: dayTransactions.length,
+          barber_commissions: revenue * 0.65, // Assuming 65% commission rate
+          shop_revenue: revenue * 0.35
+        })
       }
     }
+    
+    // Calculate service breakdown from real data
+    const serviceBreakdown = {}
+    transactions?.forEach(t => {
+      const serviceName = t.services?.name || 'Unknown Service'
+      if (!serviceBreakdown[serviceName]) {
+        serviceBreakdown[serviceName] = {
+          service_name: serviceName,
+          appointments: 0,
+          total_revenue: 0,
+          prices: []
+        }
+      }
+      serviceBreakdown[serviceName].appointments++
+      serviceBreakdown[serviceName].total_revenue += t.amount || 0
+      serviceBreakdown[serviceName].prices.push(t.amount || 0)
+    })
+    
+    // Convert to array and calculate percentages
+    const totalRevenue = transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
+    const serviceBreakdownArray = Object.values(serviceBreakdown).map(service => ({
+      ...service,
+      average_price: service.appointments > 0 ? service.total_revenue / service.appointments : 0,
+      percentage: totalRevenue > 0 ? (service.total_revenue / totalRevenue) * 100 : 0,
+      prices: undefined // Remove raw prices array from response
+    }))
+    
+    // Get barber breakdown
+    const { data: barbers } = await supabase
+      .from('barbershop_staff')
+      .select('user_id, first_name, last_name, commission_rate')
+      .eq('barbershop_id', shop.id)
+    
+    const barberBreakdown = []
+    for (const barber of barbers || []) {
+      const barberTransactions = transactions?.filter(t => t.barber_id === barber.user_id) || []
+      const barberRevenue = barberTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
+      const commissionRate = barber.commission_rate || 65
+      
+      if (barberRevenue > 0) {
+        barberBreakdown.push({
+          barber_id: barber.user_id,
+          barber_name: `${barber.first_name} ${barber.last_name}`,
+          total_revenue: barberRevenue,
+          commission_earned: barberRevenue * (commissionRate / 100),
+          appointments_completed: barberTransactions.length,
+          average_ticket: barberRevenue / Math.max(1, barberTransactions.length),
+          commission_rate: commissionRate
+        })
+      }
+    }
+    
+    // Calculate summary
+    const totalAppointments = transactions?.length || 0
+    const averageTicket = totalAppointments > 0 ? totalRevenue / totalAppointments : 0
+    const totalCommissions = barberBreakdown.reduce((sum, b) => sum + b.commission_earned, 0)
+    const totalTips = transactions?.filter(t => t.type === 'tip').reduce((sum, t) => sum + (t.amount || 0), 0) || 0
+    
+    // Calculate trends by comparing with previous period
+    const previousStartDate = new Date(startDate)
+    const previousEndDate = new Date(endDate)
+    
+    if (period === 'day') {
+      previousStartDate.setDate(previousStartDate.getDate() - 1)
+      previousEndDate.setDate(previousEndDate.getDate() - 1)
+    } else if (period === 'week') {
+      previousStartDate.setDate(previousStartDate.getDate() - 7)
+      previousEndDate.setDate(previousEndDate.getDate() - 7)
+    } else if (period === 'month') {
+      previousStartDate.setMonth(previousStartDate.getMonth() - 1)
+      previousEndDate.setMonth(previousEndDate.getMonth() - 1)
+    } else { // year
+      previousStartDate.setFullYear(previousStartDate.getFullYear() - 1)
+      previousEndDate.setFullYear(previousEndDate.getFullYear() - 1)
+    }
+    
+    const { data: previousTransactions } = await supabase
+      .from('transactions')
+      .select('amount')
+      .eq('barbershop_id', shop.id)
+      .eq('status', 'completed')
+      .gte('created_at', previousStartDate.toISOString())
+      .lte('created_at', previousEndDate.toISOString())
+    
+    const previousRevenue = previousTransactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
+    const previousAppointments = previousTransactions?.length || 0
+    const previousTicket = previousAppointments > 0 ? previousRevenue / previousAppointments : 0
+    
+    // Calculate percentage changes
+    const revenueChange = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : 0
+    const appointmentsChange = previousAppointments > 0 ? ((totalAppointments - previousAppointments) / previousAppointments) * 100 : 0
+    const ticketSizeChange = previousTicket > 0 ? ((averageTicket - previousTicket) / previousTicket) * 100 : 0
     
     const result = {
       period,
-      period_label: periodLabel,
+      period_label: period === 'day' ? 'Today' : period === 'week' ? 'This Week' : period === 'month' ? 'This Month' : 'This Year',
       time_series: timeSeriesData,
       summary: {
-        total_revenue: Math.round(totalRevenue * 100) / 100,
+        total_revenue: totalRevenue,
         total_appointments: totalAppointments,
         average_ticket: Math.round(averageTicket * 100) / 100,
-        commission_paid: Math.round(totalRevenue * 0.67 * 100) / 100,
-        shop_revenue: Math.round(totalRevenue * 0.33 * 100) / 100,
-        tips_collected: Math.round(totalRevenue * 0.15 * 100) / 100
+        commission_paid: totalCommissions,
+        shop_revenue: totalRevenue - totalCommissions,
+        tips_collected: totalTips
       },
       breakdown: {
-        services: serviceBreakdown,
-        barbers: filteredData.barberBreakdown
+        services: serviceBreakdownArray.sort((a, b) => b.total_revenue - a.total_revenue),
+        barbers: barberBreakdown.sort((a, b) => b.total_revenue - a.total_revenue)
       },
       trends: {
-        revenue_change: 12.5, // % change from previous period
-        appointments_change: 8.3,
-        ticket_size_change: 3.7
+        revenue_change: Math.round(revenueChange * 10) / 10,
+        appointments_change: Math.round(appointmentsChange * 10) / 10,
+        ticket_size_change: Math.round(ticketSizeChange * 10) / 10
       }
     }
     
@@ -200,9 +284,10 @@ export async function GET(request) {
     
   } catch (error) {
     console.error('Error in /api/shop/revenue:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: error.message
+    }, { status: 500 })
   }
 }

@@ -81,53 +81,91 @@ export async function GET(request, { params }) {
             );
         }
         
-        // Simulate waitlist status data (in production, this would call the Python service)
-        const waitlist_entries = [
-            {
-                waitlist_id: 'wl_12345678',
-                barbershop_id: 'barbershop_456',
-                service_id: 'haircut_premium',
-                service_name: 'Premium Haircut & Style',
-                barber_name: 'John Smith',
-                position: 3,
-                estimated_wait_minutes: 4320, // 3 days
-                estimated_available: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-                created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                expires_at: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000).toISOString(),
-                status: 'active',
-                notification_count: 2
-            },
-            {
-                waitlist_id: 'wl_87654321',
-                barbershop_id: 'barbershop_789',
-                service_id: 'full_service',
-                service_name: 'Full Service (Cut + Beard)',
-                barber_name: 'Any Available Barber',
-                position: 1,
-                estimated_wait_minutes: 1440, // 1 day
-                estimated_available: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
-                created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-                expires_at: new Date(Date.now() + 13 * 24 * 60 * 60 * 1000).toISOString(),
-                status: 'active',
-                notification_count: 1
+        // Use real database operations for waitlist status - NO MOCK DATA
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+        
+        try {
+            // Build query for waitlist entries
+            let query = supabase
+                .from('waitlist')
+                .select(`
+                    id,
+                    barbershop_id,
+                    service_id,
+                    barber_id,
+                    position,
+                    status,
+                    created_at,
+                    expires_at,
+                    estimated_wait_time,
+                    notification_preferences,
+                    services(name),
+                    barbershops(name),
+                    barbers(name)
+                `)
+                .eq('customer_id', customer_id)
+                .eq('status', 'active')
+                .order('created_at', { ascending: false });
+            
+            // Filter by barbershop if specified
+            if (barbershop_id) {
+                query = query.eq('barbershop_id', barbershop_id);
             }
-        ];
-        
-        // Filter by barbershop if specified
-        const filtered_entries = barbershop_id 
-            ? waitlist_entries.filter(entry => entry.barbershop_id === barbershop_id)
-            : waitlist_entries;
-        
-        // In production, this would call:
-        // const waitlist_entries = await waitlist_cancellation_service.get_waitlist_status(
-        //     customer_id,
-        //     barbershop_id
-        // );
+            
+            const { data: waitlistData, error } = await query;
+            
+            if (error) {
+                console.error('Database error fetching waitlist status:', error);
+                return NextResponse.json({
+                    success: false,
+                    error: 'Failed to fetch waitlist status',
+                    waitlist_entries: []
+                }, { status: 500 });
+            }
+            
+            // Transform database results to API format
+            const waitlist_entries = waitlistData?.map(entry => {
+                // Calculate estimated wait time in minutes
+                const position = entry.position || 1;
+                const estimated_wait_minutes = position <= 1 ? 1440 : position * 1440; // 1 day per position
+                
+                // Calculate estimated available time
+                const estimated_available = new Date(Date.now() + estimated_wait_minutes * 60 * 1000).toISOString();
+                
+                return {
+                    waitlist_id: entry.id,
+                    barbershop_id: entry.barbershop_id,
+                    service_id: entry.service_id,
+                    service_name: entry.services?.name || 'Unknown Service',
+                    barber_name: entry.barbers?.name || (entry.barber_id ? 'Specific Barber' : 'Any Available Barber'),
+                    barbershop_name: entry.barbershops?.name || 'Unknown Shop',
+                    position: entry.position || 1,
+                    estimated_wait_minutes: estimated_wait_minutes,
+                    estimated_available: estimated_available,
+                    created_at: entry.created_at,
+                    expires_at: entry.expires_at,
+                    status: entry.status,
+                    notification_count: 0 // Could be tracked in separate table if needed
+                };
+            }) || [];
+            
+        } catch (dbError) {
+            console.error('Database connection error in waitlist status:', dbError);
+            return NextResponse.json({
+                success: false,
+                error: 'Database unavailable',
+                waitlist_entries: []
+            }, { status: 500 });
+        }
         
         return NextResponse.json({
             success: true,
-            waitlist_entries: filtered_entries,
-            total_entries: filtered_entries.length
+            waitlist_entries: waitlist_entries,
+            total_entries: waitlist_entries.length
         }, { status: 200 });
         
     } catch (error) {

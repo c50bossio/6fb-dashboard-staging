@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
+
 export const runtime = 'edge'
 
 /**
@@ -83,6 +86,9 @@ export const runtime = 'edge'
  */
 export async function GET(request) {
     try {
+        const cookieStore = cookies();
+        const supabase = createClient(cookieStore);
+        
         const { searchParams } = new URL(request.url);
         const service_id = searchParams.get('service_id');
         const booking_id = searchParams.get('booking_id');
@@ -95,56 +101,62 @@ export async function GET(request) {
             );
         }
         
-        // Simulate policy retrieval (in production, this would call the Python service)
-        const policies = {
-            'haircut_classic': {
-                policy_type: 'flexible',
-                full_refund_hours: 2,
-                partial_refund_hours: 1,
-                partial_refund_percentage: 100.0,
-                cancellation_fee: 0.0,
-                no_show_fee: 15.0
-            },
-            'haircut_premium': {
-                policy_type: 'standard',
-                full_refund_hours: 24,
-                partial_refund_hours: 2,
-                partial_refund_percentage: 50.0,
-                cancellation_fee: 5.0,
-                no_show_fee: 25.0
-            },
-            'full_service': {
-                policy_type: 'standard',
-                full_refund_hours: 24,
-                partial_refund_hours: 4,
-                partial_refund_percentage: 50.0,
-                cancellation_fee: 10.0,
-                no_show_fee: 35.0
-            },
-            'hot_towel_shave': {
-                policy_type: 'strict',
-                full_refund_hours: 48,
-                partial_refund_hours: 4,
-                partial_refund_percentage: 25.0,
-                cancellation_fee: 15.0,
-                no_show_fee: 45.0
-            }
-        };
+        // Get service details from database - NO MOCK DATA
+        const { data: service, error: serviceError } = await supabase
+            .from('services')
+            .select('*')
+            .eq('id', service_id)
+            .single();
         
-        const policy = policies[service_id] || policies['haircut_premium']; // default
-        policy.service_id = service_id;
+        if (serviceError || !service) {
+            return NextResponse.json(
+                { 
+                    success: false, 
+                    error: 'Service not found',
+                    service_id: service_id,
+                    data_available: false,
+                    message: 'Please check service ID and ensure service exists in database.'
+                },
+                { status: 404 }
+            );
+        }
         
-        // Simulate service pricing
-        const service_prices = {
-            'haircut_classic': 35.00,
-            'haircut_premium': 55.00,
-            'beard_trim': 25.00,
-            'full_service': 75.00,
-            'hot_towel_shave': 45.00,
-            'kids_cut': 25.00
-        };
+        // Get barbershop's cancellation policy from database
+        const { data: shopPolicy, error: policyError } = await supabase
+            .from('cancellation_policies')
+            .select('*')
+            .eq('barbershop_id', service.barbershop_id)
+            .single();
         
-        const service_price = service_prices[service_id] || 50.00;
+        // Use shop policy if exists, otherwise use defaults based on service type
+        let policy;
+        if (shopPolicy) {
+            policy = {
+                service_id: service_id,
+                policy_type: shopPolicy.policy_type || 'standard',
+                full_refund_hours: shopPolicy.full_refund_hours || 24,
+                partial_refund_hours: shopPolicy.partial_refund_hours || 2,
+                partial_refund_percentage: shopPolicy.partial_refund_percentage || 50.0,
+                cancellation_fee: shopPolicy.cancellation_fee || 5.0,
+                no_show_fee: shopPolicy.no_show_fee || 25.0
+            };
+        } else {
+            // Default policy based on service price and duration
+            const isExpensive = service.price > 60;
+            const isLongService = service.duration_minutes > 60;
+            
+            policy = {
+                service_id: service_id,
+                policy_type: isExpensive || isLongService ? 'strict' : 'standard',
+                full_refund_hours: isExpensive || isLongService ? 48 : 24,
+                partial_refund_hours: isExpensive || isLongService ? 4 : 2,
+                partial_refund_percentage: isExpensive || isLongService ? 25.0 : 50.0,
+                cancellation_fee: isExpensive ? 10.0 : 5.0,
+                no_show_fee: isExpensive ? 35.0 : 25.0
+            };
+        }
+        
+        const service_price = service.price || 50.00;
         
         // Generate refund scenarios for different timing
         const scenarios = [
@@ -193,10 +205,49 @@ export async function GET(request) {
         let current_refund = null;
         
         // Calculate current refund if booking_id is provided or simulate_hours is specified
-        if (booking_id || simulate_hours > 0) {
-            const hours_until = booking_id ? 
-                Math.random() * 48 + 1 : // Simulate random hours for demo
-                simulate_hours;
+        if (booking_id) {
+            // Get actual booking from database
+            const { data: booking } = await supabase
+                .from('bookings')
+                .select('scheduled_at, total_amount')
+                .eq('id', booking_id)
+                .single();
+            
+            if (booking) {
+                const scheduledAt = new Date(booking.scheduled_at);
+                const now = new Date();
+                const hours_until = (scheduledAt - now) / (1000 * 60 * 60);
+                const booking_amount = booking.total_amount || service_price;
+                
+                let refund_amount, cancellation_fee, reason;
+                
+                if (hours_until >= policy.full_refund_hours) {
+                    refund_amount = booking_amount - policy.cancellation_fee;
+                    cancellation_fee = policy.cancellation_fee;
+                    reason = `Full refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
+                } else if (hours_until >= policy.partial_refund_hours) {
+                    refund_amount = (booking_amount * policy.partial_refund_percentage / 100) - policy.cancellation_fee;
+                    cancellation_fee = policy.cancellation_fee;
+                    reason = `${policy.partial_refund_percentage}% refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
+                } else {
+                    refund_amount = 0;
+                    cancellation_fee = booking_amount;
+                    reason = `No refund (cancelled ${hours_until.toFixed(1)}h in advance, policy requires ${policy.partial_refund_hours}h)`;
+                }
+                
+                current_refund = {
+                    hours_until_appointment: parseFloat(hours_until.toFixed(1)),
+                    original_amount: booking_amount,
+                    refund_amount: Math.max(0, refund_amount),
+                    cancellation_fee: cancellation_fee,
+                    net_loss: booking_amount - Math.max(0, refund_amount),
+                    reason: reason,
+                    policy_applied: policy.policy_type
+                };
+            }
+        } else if (simulate_hours > 0) {
+            // Simulate refund calculation
+            const hours_until = simulate_hours;
             
             let refund_amount, cancellation_fee, reason;
             
@@ -230,7 +281,9 @@ export async function GET(request) {
             policy: policy,
             service_details: {
                 service_id: service_id,
+                service_name: service.name || 'Service',
                 base_price: service_price,
+                duration_minutes: service.duration_minutes || 30,
                 currency: 'USD'
             },
             refund_scenarios: refund_scenarios,
@@ -247,9 +300,6 @@ export async function GET(request) {
                 ]
             }
         };
-        
-        // In production, this would call:
-        // const policy = await waitlist_cancellation_service.get_cancellation_policy(service_id);
         
         return NextResponse.json(response, { status: 200 });
         

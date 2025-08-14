@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+import { createClient } from '@/lib/supabase/server'
 
 // Get sync settings
 export async function GET(request) {
   try {
+    const supabase = createClient()
     const { searchParams } = new URL(request.url)
     const barber_id = searchParams.get('barber_id')
     
@@ -11,13 +12,29 @@ export async function GET(request) {
       return NextResponse.json({ success: false, error: 'Missing barber_id' }, { status: 400 })
     }
 
-    // In a real implementation, get settings from database
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // settings = service.get_sync_settings(barber_id)
-    
-    // Mock settings data
-    const Settings = {
+    // Get user session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get settings from database (calendar_settings table)
+    const { data: settings, error } = await supabase
+      .from('calendar_settings')
+      .select('*')
+      .eq('barber_id', barber_id)
+      .single()
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      console.error('Error fetching calendar settings:', error)
+      return NextResponse.json({ 
+        error: 'Failed to fetch settings',
+        details: error.message 
+      }, { status: 500 })
+    }
+
+    // Default settings if none exist
+    const defaultSettings = {
       autoCreateEvents: true,
       syncDirection: 'both',
       eventTitleTemplate: '{customer_name} - {service_name}',
@@ -30,7 +47,7 @@ export async function GET(request) {
 
     return NextResponse.json({
       success: true,
-      settings: mockSettings
+      settings: settings || defaultSettings
     })
   } catch (error) {
     console.error('Error getting sync settings:', error)
@@ -44,6 +61,7 @@ export async function GET(request) {
 // Update sync settings
 export async function POST(request) {
   try {
+    const supabase = createClient()
     const data = await request.json()
     const { barber_id, ...settings } = data
     
@@ -51,18 +69,35 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: 'Missing barber_id' }, { status: 400 })
     }
 
-    // In a real implementation, save settings to database
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // service.update_sync_settings(barber_id, settings)
-    
-    // Mock successful save
-    console.log('Updating sync settings for barber:', barber_id, 'Settings:', settings)
+    // Get user session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Save settings to database using upsert
+    const { data: savedSettings, error } = await supabase
+      .from('calendar_settings')
+      .upsert({
+        barber_id,
+        ...settings,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error saving calendar settings:', error)
+      return NextResponse.json({ 
+        error: 'Failed to save settings',
+        details: error.message 
+      }, { status: 500 })
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Sync settings updated successfully',
-      settings: settings
+      settings: savedSettings
     })
   } catch (error) {
     console.error('Error updating sync settings:', error)

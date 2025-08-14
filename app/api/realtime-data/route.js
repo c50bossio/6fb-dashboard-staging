@@ -54,17 +54,15 @@ export async function GET(request) {
     } catch (error) {
       console.error('Real-time data service error:', error)
       
-      // Fallback to simulated real-time data
-      const fallbackData = await generateRealtimeDataFallback(action, feedId, limit, effectiveUser)
-      
+      // NO MOCK DATA - Return error when service unavailable
       return NextResponse.json({
-        success: true,
+        success: false,
+        error: 'Real-time data service unavailable',
         action: action,
-        data: fallbackData,
-        realtime_system: 'fallback_simulation',
-        fallback: true,
+        message: 'Backend real-time data service is required for this feature',
+        service_required: 'Python FastAPI backend on port 8001',
         timestamp: new Date().toISOString()
-      })
+      }, { status: 503 })
     }
 
   } catch (error) {
@@ -118,207 +116,8 @@ export async function POST(request) {
   }
 }
 
-async function generateRealtimeDataFallback(action, feedId, limit, user) {
-  const currentTime = new Date()
-  const timestamp = currentTime.toISOString()
-  
-  if (action === 'status') {
-    return {
-      service_status: 'running',
-      total_feeds: 6,
-      active_feeds: 6,
-      total_subscribers: 3,
-      last_update: timestamp,
-      feeds: {
-        'appointments_realtime': {
-          source: 'appointments',
-          type: 'real_time',
-          enabled: true,
-          update_interval: 30,
-          last_update: timestamp,
-          buffer_size: 45,
-          subscribers: 1,
-          status: 'active'
-        },
-        'revenue_realtime': {
-          source: 'revenue',
-          type: 'real_time',
-          enabled: true,
-          update_interval: 60,
-          last_update: timestamp,
-          buffer_size: 32,
-          subscribers: 1,
-          status: 'active'
-        },
-        'customer_activity': {
-          source: 'customer_activity',
-          type: 'real_time',
-          enabled: true,
-          update_interval: 45,
-          last_update: timestamp,
-          buffer_size: 28,
-          subscribers: 1,
-          status: 'active'
-        },
-        'staff_performance': {
-          source: 'staff_performance',
-          type: 'batch_hourly',
-          enabled: true,
-          update_interval: 3600,
-          last_update: timestamp,
-          buffer_size: 12,
-          subscribers: 0,
-          status: 'active'
-        },
-        'inventory_status': {
-          source: 'inventory',
-          type: 'batch_hourly',
-          enabled: true,
-          update_interval: 1800,
-          last_update: timestamp,
-          buffer_size: 15,
-          subscribers: 0,
-          status: 'active'
-        },
-        'marketing_metrics': {
-          source: 'marketing_metrics',
-          type: 'batch_hourly',
-          enabled: true,
-          update_interval: 900,
-          last_update: timestamp,
-          buffer_size: 22,
-          subscribers: 0,
-          status: 'active'
-        }
-      },
-      system_health: {
-        uptime: '2h 34m',
-        memory_usage: '156MB',
-        data_points_processed: 1247,
-        errors_last_hour: 0
-      }
-    }
-  }
-  
-  if (action === 'metrics') {
-    const hour = currentTime.getHours()
-    const dayOfWeek = currentTime.getDay()
-    
-    // Business-realistic metrics based on time
-    const isBusinessHours = hour >= 9 && hour <= 19
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-    
-    const revenueToday = isBusinessHours ? 
-      (isWeekend ? Math.random() * 1200 + 800 : Math.random() * 1000 + 600) : 
-      Math.random() * 300
-    
-    const appointmentsToday = isBusinessHours ?
-      (isWeekend ? Math.floor(Math.random() * 18 + 12) : Math.floor(Math.random() * 15 + 8)) :
-      Math.floor(Math.random() * 5)
-    
-    return {
-      timestamp: timestamp,
-      revenue_today: Math.round(revenueToday),
-      appointments_today: appointmentsToday,
-      customer_satisfaction: Number((Math.random() * 0.7 + 4.2).toFixed(1)),
-      staff_utilization: Number((Math.random() * 0.2 + 0.75).toFixed(2)),
-      inventory_status: {
-        overall: 'good',
-        low_stock_items: Math.floor(Math.random() * 3),
-        reorder_needed: Math.random() < 0.2
-      },
-      marketing_conversion: Number((Math.random() * 0.08 + 0.08).toFixed(3)),
-      external_factors: {
-        weather: Math.random() > 0.7 ? 'rainy' : (Math.random() > 0.5 ? 'sunny' : 'cloudy'),
-        local_events: Math.random() > 0.8 ? 'festival' : 'none',
-        competition: 'moderate',
-        foot_traffic: isBusinessHours ? 'high' : 'low'
-      },
-      trends: {
-        revenue_trend: Math.random() > 0.3 ? 'increasing' : 'stable',
-        booking_trend: Math.random() > 0.4 ? 'increasing' : 'stable',
-        customer_sentiment: 'positive'
-      }
-    }
-  }
-  
-  if (action === 'feed-data' && feedId) {
-    const dataPoints = []
-    
-    for (let i = 0; i < Math.min(limit, 10); i++) {
-      const pointTime = new Date(currentTime.getTime() - (i * 30000)) // 30 seconds apart
-      
-      let value
-      
-      switch (feedId) {
-        case 'appointments_realtime':
-          value = {
-            type: Math.random() > 0.5 ? 'new_booking' : 'check_in',
-            service: ['haircut', 'beard_trim', 'styling'][Math.floor(Math.random() * 3)],
-            time: `${Math.floor(Math.random() * 8) + 10}:${Math.floor(Math.random() * 6)}0`
-          }
-          break
-          
-        case 'revenue_realtime':
-          value = {
-            transaction_amount: Math.round((Math.random() * 60 + 25) * 100) / 100,
-            payment_method: Math.random() > 0.7 ? 'cash' : 'card',
-            service_type: ['haircut', 'haircut_beard', 'styling'][Math.floor(Math.random() * 3)]
-          }
-          break
-          
-        case 'customer_activity':
-          value = {
-            type: ['website_visit', 'phone_inquiry', 'social_engagement'][Math.floor(Math.random() * 3)],
-            customer_segment: ['new', 'returning', 'vip'][Math.floor(Math.random() * 3)],
-            engagement_score: Math.round((Math.random() * 10 + 1) * 10) / 10
-          }
-          break
-          
-        default:
-          value = {
-            metric: Math.round((Math.random() * 100) * 10) / 10,
-            status: 'normal'
-          }
-      }
-      
-      dataPoints.push({
-        timestamp: pointTime.toISOString(),
-        source: feedId.split('_')[0],
-        data_type: `${feedId}_update`,
-        value: value,
-        metadata: {
-          feed_id: feedId,
-          confidence: Math.round((Math.random() * 0.2 + 0.8) * 100) / 100
-        },
-        confidence: Math.round((Math.random() * 0.2 + 0.8) * 100) / 100
-      })
-    }
-    
-    return {
-      feed_id: feedId,
-      data_points: dataPoints,
-      total_points: dataPoints.length,
-      time_range: {
-        start: dataPoints[dataPoints.length - 1]?.timestamp,
-        end: dataPoints[0]?.timestamp
-      }
-    }
-  }
-  
-  return {
-    message: 'Real-time data fallback active',
-    available_actions: ['status', 'metrics', 'feed-data'],
-    available_feeds: [
-      'appointments_realtime',
-      'revenue_realtime', 
-      'customer_activity',
-      'staff_performance',
-      'inventory_status',
-      'marketing_metrics'
-    ]
-  }
-}
+// NO MOCK DATA - Real-time data function removed
+// Real-time data must come from actual backend service
 
 async function handleRealtimeDataAction(action, feedId, parameters, userId) {
   switch (action) {

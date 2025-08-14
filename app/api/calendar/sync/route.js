@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+
 export const runtime = 'edge'
 
 // Sync appointment to external calendar
@@ -14,45 +16,96 @@ export async function POST(request) {
       )
     }
 
-    // In a real implementation, sync the appointment
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // result = service.sync_appointment_to_external_calendar(booking_id, account_id)
+    // Check authentication
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
     
-    // Mock sync result - simulate success most of the time
-    const success = Math.random() > 0.1 // 90% success rate
-    
-    if (success) {
-      const result = {
-        success: true,
-        external_event_id: `ext_event_${Date.now()}`,
-        event_url: 'https://calendar.google.com/calendar/event?eid=demo',
-        sync_time: new Date().toISOString(),
-        provider: account_id.startsWith('google') ? 'Google Calendar' : 'Outlook Calendar'
-      }
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-      console.log('Mock sync successful:', result)
+    // Get booking details from database
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .select(`
+        id,
+        start_time,
+        end_time,
+        customer_id,
+        service_id,
+        barber_id,
+        barbershop_id,
+        services (name, duration_minutes),
+        customers (full_name, email)
+      `)
+      .eq('id', booking_id)
+      .single()
 
-      return NextResponse.json(result)
-    } else {
-      // Mock occasional sync failure
-      const errorMessages = [
-        'Calendar API rate limit exceeded',
-        'Invalid calendar permissions',
-        'Network connection timeout',
-        'Event conflicts with existing appointment'
-      ]
-      
-      const error = errorMessages[Math.floor(Math.random() * errorMessages.length)]
-      
-      console.log('Mock sync failed:', error)
-
+    if (bookingError || !booking) {
       return NextResponse.json({
         success: false,
-        error: error,
-        retry_after: 300 // Suggest retry after 5 minutes
-      })
+        error: 'Booking not found',
+        details: bookingError?.message
+      }, { status: 404 })
     }
+
+    // Get calendar account details
+    const { data: calendarAccount, error: accountError } = await supabase
+      .from('calendar_accounts')
+      .select('*')
+      .eq('id', account_id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (accountError || !calendarAccount) {
+      return NextResponse.json({
+        success: false,
+        error: 'Calendar account not found or not authorized',
+        details: accountError?.message
+      }, { status: 404 })
+    }
+
+    // Store sync record in database
+    const { data: syncRecord, error: syncError } = await supabase
+      .from('calendar_syncs')
+      .insert({
+        booking_id,
+        account_id,
+        user_id: user.id,
+        sync_status: 'pending',
+        provider: calendarAccount.provider,
+        sync_requested_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (syncError) {
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to create sync record',
+        details: syncError.message
+      }, { status: 500 })
+    }
+
+    // NO MOCK DATA - Return real sync request status
+    return NextResponse.json({
+      success: true,
+      sync_id: syncRecord.id,
+      sync_status: 'pending',
+      message: 'Calendar sync request received. External calendar integration requires backend service.',
+      booking_details: {
+        id: booking.id,
+        service: booking.services?.name,
+        customer: booking.customers?.full_name,
+        start_time: booking.start_time,
+        end_time: booking.end_time
+      },
+      instructions: [
+        'Implement Google Calendar API integration in backend service',
+        'Implement Outlook Calendar API integration in backend service',
+        'Process pending sync records with background job'
+      ]
+    })
   } catch (error) {
     console.error('Error syncing appointment:', error)
     return NextResponse.json(
@@ -69,61 +122,90 @@ export async function GET(request) {
     const barber_id = searchParams.get('barber_id')
     const account_id = searchParams.get('account_id')
     
-    if (!barber_id) {
-      return NextResponse.json({ success: false, error: 'Missing barber_id' }, { status: 400 })
+    // Check authentication
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // In a real implementation, get sync history from database
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // sync_history = service.get_sync_history(barber_id, account_id)
-    
-    // Mock sync history
-    const SyncHistory = [
-      {
-        sync_id: 'sync_1',
-        booking_id: 'booking_123',
-        account_id: 'google_demo_123',
-        external_event_id: 'ext_event_123',
-        sync_status: 'synced',
-        sync_time: '2024-01-15 10:30:00',
-        provider: 'Google Calendar'
-      },
-      {
-        sync_id: 'sync_2',
-        booking_id: 'booking_124',
-        account_id: 'outlook_demo_456',
-        external_event_id: 'ext_event_124',
-        sync_status: 'synced',
-        sync_time: '2024-01-15 09:15:00',
-        provider: 'Outlook Calendar'
-      },
-      {
-        sync_id: 'sync_3',
-        booking_id: 'booking_125',
-        account_id: 'google_demo_123',
-        external_event_id: null,
-        sync_status: 'failed',
-        sync_time: '2024-01-15 08:45:00',
-        sync_error: 'Calendar API rate limit exceeded',
-        provider: 'Google Calendar'
-      }
-    ]
+    // Build query for sync history
+    let query = supabase
+      .from('calendar_syncs')
+      .select(`
+        id,
+        booking_id,
+        account_id,
+        external_event_id,
+        sync_status,
+        sync_requested_at,
+        sync_completed_at,
+        sync_error,
+        provider,
+        bookings (
+          start_time,
+          end_time,
+          services (name),
+          customers (full_name)
+        )
+      `)
+      .order('sync_requested_at', { ascending: false })
+      .limit(100)
+
+    // Filter by barber_id if provided (through bookings relation)
+    if (barber_id) {
+      query = query.eq('bookings.barber_id', barber_id)
+    }
 
     // Filter by account_id if provided
-    const filteredHistory = account_id 
-      ? mockSyncHistory.filter(sync => sync.account_id === account_id)
-      : mockSyncHistory
+    if (account_id) {
+      query = query.eq('account_id', account_id)
+    } else {
+      // Only show syncs for user's accounts
+      query = query.eq('user_id', user.id)
+    }
 
+    const { data: syncHistory, error } = await query
+
+    if (error) {
+      console.error('Error fetching sync history:', error)
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to fetch sync history',
+        details: error.message
+      }, { status: 500 })
+    }
+
+    // NO MOCK DATA - Return real sync history or empty state
+    const history = syncHistory || []
+    
     return NextResponse.json({
       success: true,
-      sync_history: filteredHistory,
+      sync_history: history.map(sync => ({
+        sync_id: sync.id,
+        booking_id: sync.booking_id,
+        account_id: sync.account_id,
+        external_event_id: sync.external_event_id,
+        sync_status: sync.sync_status,
+        sync_time: sync.sync_completed_at || sync.sync_requested_at,
+        sync_error: sync.sync_error,
+        provider: sync.provider,
+        booking_details: sync.bookings ? {
+          service: sync.bookings.services?.name,
+          customer: sync.bookings.customers?.full_name,
+          start_time: sync.bookings.start_time,
+          end_time: sync.bookings.end_time
+        } : null
+      })),
       summary: {
-        total_syncs: filteredHistory.length,
-        successful_syncs: filteredHistory.filter(s => s.sync_status === 'synced').length,
-        failed_syncs: filteredHistory.filter(s => s.sync_status === 'failed').length,
-        pending_syncs: filteredHistory.filter(s => s.sync_status === 'pending').length
-      }
+        total_syncs: history.length,
+        successful_syncs: history.filter(s => s.sync_status === 'synced').length,
+        failed_syncs: history.filter(s => s.sync_status === 'failed').length,
+        pending_syncs: history.filter(s => s.sync_status === 'pending').length
+      },
+      data_available: history.length > 0,
+      message: history.length === 0 ? 'No calendar sync history found. Start by connecting your external calendar.' : null
     })
   } catch (error) {
     console.error('Error getting sync status:', error)

@@ -210,15 +210,15 @@ export async function GET(request) {
     })
     
     return NextResponse.json({ 
-      appointments: events, 
+      bookings: events, 
       source: 'bookings_table_with_rrule',
       count: events.length 
     })
     
   } catch (error) {
-    console.error('Error fetching appointments:', error)
+    console.error('Error fetching bookings:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch appointments', details: error.message },
+      { error: 'Failed to fetch bookings', details: error.message },
       { status: 500 }
     )
   }

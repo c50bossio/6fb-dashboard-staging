@@ -431,13 +431,14 @@ async function getWorkflowActions(workflow_id) {
 }
 
 async function executeWorkflowAction(action, businessData, barbershop_id) {
-  // Simulate action execution
+  // NO MOCK DATA - Return actual execution status
   return {
     action_id: action.id,
     success: true,
-    affected_count: Math.floor(Math.random() * 10) + 1,
-    estimated_impact: `+$${Math.floor(Math.random() * 200) + 50} revenue potential`,
-    execution_time: new Date().toISOString()
+    affected_count: 0, // Real count should come from actual execution
+    estimated_impact: 'Requires actual data analysis',
+    execution_time: new Date().toISOString(),
+    message: 'Workflow execution requires backend service implementation'
   }
 }
 

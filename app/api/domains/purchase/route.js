@@ -81,20 +81,22 @@ export async function POST(request) {
 }
 
 async function checkDomainAvailability(domain) {
-  // Simplified example - in production, use actual domain registrar API
-  // This would connect to Namecheap, GoDaddy, or other registrar APIs
+  // Check if domain registrar API is configured
+  if (!DOMAIN_PROVIDERS.namecheap.apiKey && !DOMAIN_PROVIDERS.godaddy.apiKey) {
+    throw new Error('Domain registrar API not configured. Please add API keys to environment variables.')
+  }
   
   try {
-    // Example with mock data - replace with actual API call
-    const mockAvailability = {
-      available: !domain.includes('google') && !domain.includes('facebook'),
-      price: domain.endsWith('.com') ? 12.00 : 
-             domain.endsWith('.shop') ? 35.00 :
-             domain.endsWith('.hair') ? 45.00 : 15.00,
-      currency: 'USD'
+    // Use actual domain registrar API if configured
+    if (DOMAIN_PROVIDERS.namecheap.apiKey) {
+      // Implement Namecheap API call
+      throw new Error('Namecheap API integration not yet implemented')
     }
     
-    return mockAvailability
+    if (DOMAIN_PROVIDERS.godaddy.apiKey) {
+      // Implement GoDaddy API call  
+      throw new Error('GoDaddy API integration not yet implemented')
+    }
     
     // Real implementation example with Namecheap:
     /*

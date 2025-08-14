@@ -10,7 +10,7 @@ import {
   ScissorsIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Logo from '../ui/Logo'
 
@@ -26,6 +26,7 @@ export default function ModernSidebar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user, profile, signOut } = useAuth()
   const pathname = usePathname()
+  const router = useRouter()
 
   // Don't show on auth-related pages
   const authPaths = ['/login', '/register', '/', '/login-v2', '/login-simple', '/login-api', '/login-options', '/test-auth']
@@ -51,11 +52,10 @@ export default function ModernSidebar() {
   }
 
   const handleSignOut = async () => {
-    try {
-      await signOut()
-    } catch (error) {
-      console.error('Sign out error:', error)
-    }
+    console.log('🚪 Sidebar: Starting sign out...')
+    const result = await signOut()
+    console.log('📤 Sidebar sign out result:', result)
+    // Let the auth provider handle the redirect to avoid conflicts
   }
 
   const sidebarWidth = collapsed ? 'w-16' : 'w-72'

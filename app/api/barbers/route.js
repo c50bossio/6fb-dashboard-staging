@@ -19,77 +19,7 @@ export async function GET(request) {
     const barbershop_id = searchParams.get('barbershop_id')
     const active_only = searchParams.get('active_only') !== 'false'
 
-    // For demo/development, return mock data when database tables don't exist
-    const Barbers = [
-      {
-        id: 'barber-001',
-        name: 'John Smith',
-        email: 'john@barbershop.com',
-        phone: '555-0101',
-        avatar_url: null,
-        role: 'BARBER',
-        barbershop_id: barbershop_id || 'demo-shop-001',
-        specialties: ['Haircut', 'Beard Trim', 'Shave'],
-        is_active: true,
-        rating: 4.8,
-        business_hours: {
-          monday: { start: '09:00', end: '18:00' },
-          tuesday: { start: '09:00', end: '18:00' },
-          wednesday: { start: '09:00', end: '18:00' },
-          thursday: { start: '09:00', end: '18:00' },
-          friday: { start: '09:00', end: '18:00' },
-          saturday: { start: '10:00', end: '16:00' },
-          sunday: null
-        }
-      },
-      {
-        id: 'barber-002',
-        name: 'Mike Johnson',
-        email: 'mike@barbershop.com',
-        phone: '555-0102',
-        avatar_url: null,
-        role: 'BARBER',
-        barbershop_id: barbershop_id || 'demo-shop-001',
-        specialties: ['Fade', 'Design', 'Color'],
-        is_active: true,
-        rating: 4.9,
-        business_hours: {
-          monday: { start: '10:00', end: '19:00' },
-          tuesday: { start: '10:00', end: '19:00' },
-          wednesday: { start: '10:00', end: '19:00' },
-          thursday: { start: '10:00', end: '19:00' },
-          friday: { start: '10:00', end: '19:00' },
-          saturday: { start: '09:00', end: '17:00' },
-          sunday: null
-        }
-      },
-      {
-        id: 'barber-003',
-        name: 'Sarah Williams',
-        email: 'sarah@barbershop.com',
-        phone: '555-0103',
-        avatar_url: null,
-        role: 'BARBER',
-        barbershop_id: barbershop_id || 'demo-shop-001',
-        specialties: ['Style', 'Coloring', 'Extensions'],
-        is_active: true,
-        rating: 5.0,
-        business_hours: {
-          monday: null,
-          tuesday: { start: '11:00', end: '19:00' },
-          wednesday: { start: '11:00', end: '19:00' },
-          thursday: { start: '11:00', end: '19:00' },
-          friday: { start: '11:00', end: '20:00' },
-          saturday: { start: '10:00', end: '18:00' },
-          sunday: { start: '12:00', end: '17:00' }
-        }
-      }
-    ]
-
-    // Filter by active status
-    const barbers = active_only ? mockBarbers.filter(b => b.is_active) : mockBarbers
-    
-    // Try to fetch from database, fallback to mock data
+    // Fetch from database
     let query = supabase
       .from('barbershop_staff')
       .select(`
@@ -111,8 +41,11 @@ export async function GET(request) {
     const { data: staff, error } = await query
 
     if (error) {
-      console.warn('Database query failed, using mock data:', error.message)
-      return NextResponse.json({ barbers }, { status: 200 })
+      console.error('Database query failed:', error.message)
+      return NextResponse.json({ 
+        error: 'Failed to fetch barbers',
+        details: error.message 
+      }, { status: 500 })
     }
 
     // Format the response to make it easier to work with
@@ -132,8 +65,8 @@ export async function GET(request) {
     }))
 
     return NextResponse.json({
-      barbers,
-      total: barbers.length
+      barbers: formattedBarbers,
+      total: formattedBarbers.length
     })
 
   } catch (error) {

@@ -239,8 +239,8 @@ export async function POST(request) {
       .insert([{
         ...bookingData,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        rating: Math.floor(Math.random() * 20) + 80 // Simulate rating
+        updated_at: new Date().toISOString()
+        // NO MOCK DATA - rating should come from actual customer feedback
       }])
       .select()
       .single()

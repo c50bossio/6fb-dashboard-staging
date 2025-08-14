@@ -576,22 +576,23 @@ export async function POST(request) {
 
 // Utility functions
 function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0
-    const v = c == 'x' ? r : (r & 0x3 | 0x8)
-    return v.toString(16)
-  })
+  // NO RANDOM - use timestamp-based unique ID
+  return `analytics-export-${Date.now()}-${process.hrtime.bigint().toString(36)}`
 }
 
 function generateTimeSeriesData(days, minValue, maxValue) {
-  const data = []
-  for (let i = days; i >= 0; i--) {
-    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-    const value = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue
-    data.push({
-      date: date.toISOString().split('T')[0],
-      value: value
-    })
+  // NO MOCK DATA - Return empty data, real analytics should come from database
+  return []
+  
+  // const data = []
+  // for (let i = days; i >= 0; i--) {
+  //   const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+  //   // NO RANDOM - use consistent pattern or real data
+  //   const value = minValue + (i % (maxValue - minValue + 1))
+  //   data.push({
+  //     date: date.toISOString().split('T')[0],
+  //     value: value
+  //   })
   }
   return data
 }

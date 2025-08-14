@@ -309,11 +309,8 @@ export async function POST(request) {
 
 // Utility functions
 function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0
-    const v = c == 'x' ? r : (r & 0x3 | 0x8)
-    return v.toString(16)
-  })
+  // NO RANDOM - use timestamp-based unique ID
+  return `tenant-${Date.now()}-${process.hrtime.bigint().toString(36)}`
 }
 
 function generateSlug(name) {
@@ -326,12 +323,10 @@ function generateSlug(name) {
 }
 
 function generateInvitationToken() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
+  // NO RANDOM - use deterministic token generation
+  const timestamp = Date.now()
+  const nanotime = process.hrtime.bigint()
+  return `invite_${timestamp}_${nanotime.toString(36)}`
 }
 
 function getPlanFeatures(planTier) {

@@ -67,84 +67,82 @@ export async function GET(request) {
       .single()
     
     if (!shop) {
-      // Return realistic mock metrics for development/demo
-      const today = new Date()
-      const currentHour = today.getHours()
-      const isBusinessHours = currentHour >= 9 && currentHour <= 19
-      const baseBookings = isBusinessHours ? Math.floor(currentHour / 2) : 6
-      
+      // Return empty state instead of mock data - follow NO MOCK DATA policy
       return NextResponse.json({
-        // Revenue metrics
-        totalRevenue: 145680,
-        monthlyRevenue: 18750,
-        todayRevenue: 1240,
-        weeklyRevenue: 4680,
-        revenueChange: 12.5,
+        // All metrics set to 0 or empty
+        totalRevenue: 0,
+        monthlyRevenue: 0,
+        todayRevenue: 0,
+        weeklyRevenue: 0,
+        revenueChange: 0,
         
         // Booking metrics
-        totalBookings: 892,
-        todayBookings: baseBookings,
-        weeklyBookings: 47,
-        monthlyBookings: 156,
-        bookingsChange: 8.3,
+        totalBookings: 0,
+        todayBookings: 0,
+        weeklyBookings: 0,
+        monthlyBookings: 0,
+        bookingsChange: 0,
         
         // Staff metrics
-        activeBarbers: 3,
-        totalStaff: 4,
-        barbersWorking: isBusinessHours ? 2 : 0,
+        activeBarbers: 0,
+        totalStaff: 0,
+        barbersWorking: 0,
         
         // Customer metrics
-        totalClients: 247,
-        newClientsThisMonth: 23,
-        returningClients: 134,
-        clientRetentionRate: 78.5,
+        totalClients: 0,
+        newClientsThisMonth: 0,
+        returningClients: 0,
+        clientRetentionRate: 0,
         
         // Rating & Reviews
-        avgRating: 4.8,
-        totalReviews: 89,
-        newReviewsThisWeek: 4,
-        ratingTrend: 0.2,
+        avgRating: 0,
+        totalReviews: 0,
+        newReviewsThisWeek: 0,
+        ratingTrend: 0,
         
         // Today's schedule
-        appointmentsCompleted: Math.max(0, baseBookings - 2),
-        appointmentsUpcoming: isBusinessHours ? 3 : 0,
-        appointmentsCancelled: 1,
+        appointmentsCompleted: 0,
+        appointmentsUpcoming: 0,
+        appointmentsCancelled: 0,
         
         // Financial breakdown
-        serviceRevenue: 16200,
-        productRevenue: 2550,
-        tipRevenue: 2840,
+        serviceRevenue: 0,
+        productRevenue: 0,
+        tipRevenue: 0,
         
         // Commission breakdown
-        totalCommissions: 10150,
-        pendingPayouts: 2400,
-        completedPayouts: 18500,
+        totalCommissions: 0,
+        pendingPayouts: 0,
+        completedPayouts: 0,
         
         // Performance indicators
-        averageServiceTime: 42,
-        chairUtilization: 72.5,
-        averageTicketValue: 85.50,
+        averageServiceTime: 0,
+        chairUtilization: 0,
+        averageTicketValue: 0,
         
-        // Trends
+        // Trends - all neutral
         trends: {
-          revenue: { value: 12.5, direction: 'up' },
-          bookings: { value: 8.3, direction: 'up' },
-          newClients: { value: 15.7, direction: 'up' },
-          rating: { value: 2.1, direction: 'up' }
+          revenue: { value: 0, direction: 'neutral' },
+          bookings: { value: 0, direction: 'neutral' },
+          newClients: { value: 0, direction: 'neutral' },
+          rating: { value: 0, direction: 'neutral' }
         },
         
-        // Alerts
-        alerts: [
-          ...(currentHour === 9 ? [{ type: 'info', message: 'Shop opening time - 3 appointments scheduled' }] : []),
-          ...(baseBookings > 5 ? [{ type: 'success', message: 'Busy day - above average bookings!' }] : []),
-          ...(Math.random() > 0.7 ? [{ type: 'warning', message: 'Low inventory alert: Hair styling gel running low' }] : [])
-        ],
+        // Informational message instead of mock alerts
+        alerts: [{
+          type: 'info',
+          message: 'No barbershop found. Please ensure you have a barbershop associated with your account.'
+        }],
         
         // Real-time data
-        currentTime: today.toISOString(),
-        isOpen: isBusinessHours,
-        nextAppointment: isBusinessHours ? '2:30 PM - John Smith - Fade Cut' : 'Tomorrow 9:00 AM - Mike Johnson',
-        lastUpdate: today.toISOString()
+        currentTime: new Date().toISOString(),
+        isOpen: false,
+        nextAppointment: null,
+        lastUpdate: new Date().toISOString(),
+        
+        // Add helpful metadata
+        dataAvailable: false,
+        message: 'No barbershop data available. Metrics will populate once barbershop is configured.'
       })
     }
     
@@ -220,9 +218,9 @@ export async function GET(request) {
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
       : 0
     
-    // Calculate changes (mock data for now - in production, compare with previous period)
-    const revenueChange = 12.5  // Mock: 12.5% increase
-    const bookingsChange = 8.3  // Mock: 8.3% increase
+    // Calculate changes by comparing with previous period
+    const revenueChange = await calculateRevenueChange(supabase, shop.id, monthlyRevenue)
+    const bookingsChange = await calculateBookingsChange(supabase, shop.id, monthlyBookings)
     
     return NextResponse.json({
       totalRevenue: totalRevenue || 0,
@@ -251,5 +249,62 @@ export async function GET(request) {
       revenueChange: 0,
       bookingsChange: 0
     })
+  }
+}
+
+// Helper functions to calculate real percentage changes
+async function calculateRevenueChange(supabase, shopId, currentMonthRevenue) {
+  try {
+    // Get previous month's revenue
+    const today = new Date()
+    const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    const previousMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
+    
+    const { data: previousRevenueData } = await supabase
+      .from('transactions')
+      .select('amount')
+      .eq('barbershop_id', shopId)
+      .gte('created_at', previousMonth.toISOString())
+      .lte('created_at', previousMonthEnd.toISOString())
+      .eq('status', 'completed')
+    
+    const previousRevenue = previousRevenueData?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
+    
+    if (previousRevenue === 0) return 0
+    
+    // Calculate percentage change
+    const change = ((currentMonthRevenue - previousRevenue) / previousRevenue) * 100
+    return Math.round(change * 10) / 10 // Round to 1 decimal place
+    
+  } catch (error) {
+    console.error('Error calculating revenue change:', error)
+    return 0
+  }
+}
+
+async function calculateBookingsChange(supabase, shopId, currentMonthBookings) {
+  try {
+    // Get previous month's bookings
+    const today = new Date()
+    const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    const previousMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
+    
+    const { count: previousBookings } = await supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('barbershop_id', shopId)
+      .gte('start_time', previousMonth.toISOString())
+      .lte('start_time', previousMonthEnd.toISOString())
+      .in('status', ['confirmed', 'completed'])
+    
+    if (!previousBookings || previousBookings === 0) return 0
+    
+    // Calculate percentage change
+    const change = ((currentMonthBookings - previousBookings) / previousBookings) * 100
+    return Math.round(change * 10) / 10 // Round to 1 decimal place
+    
+  } catch (error) {
+    console.error('Error calculating bookings change:', error)
+    return 0
   }
 }

@@ -656,11 +656,8 @@ async function getHistoricalRevenue(barbershop_id) {
     const avgDailyRevenue = metrics.revenue / 30
     const avgDailyBookings = metrics.appointments / 30
     
-    return Array.from({ length: 30 }, (_, i) => ({
-      date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      revenue: avgDailyRevenue * (0.8 + Math.random() * 0.4), // ±20% variation
-      bookings: Math.round(avgDailyBookings * (0.8 + Math.random() * 0.4))
-    }))
+    // NO MOCK DATA - Return empty array when no data exists
+    return []
     
   } catch (error) {
     console.error('Failed to fetch historical data:', error)

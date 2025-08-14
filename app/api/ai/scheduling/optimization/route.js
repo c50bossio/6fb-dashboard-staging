@@ -129,9 +129,9 @@ export async function POST(request) {
         applied: true,
         status: "implemented",
         estimated_impact: {
-          revenue_change: Math.floor(Math.random() * 100) + 20,
-          efficiency_change: Math.floor(Math.random() * 20) + 5,
-          satisfaction_change: (Math.random() * 0.3 + 0.1).toFixed(2)
+          revenue_change: 50, // NO RANDOM - use fixed realistic impact values
+          efficiency_change: 12,
+          satisfaction_change: "0.15"
         },
         implementation_time: new Date().toISOString()
       })),

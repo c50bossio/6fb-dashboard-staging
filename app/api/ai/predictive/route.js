@@ -459,7 +459,7 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
         .map(([service, count]) => ({
           service,
           demandTrend: count > (totalBookings * 0.2) ? 'increasing' : count > (totalBookings * 0.1) ? 'stable' : 'decreasing',
-          growth: count > (totalBookings * 0.2) ? Math.random() * 0.2 + 0.1 : Math.random() * 0.1,
+          growth: count > (totalBookings * 0.2) ? 0.15 : 0.05, // NO RANDOM - use fixed growth rates
           bookingCount: count
         }))
 

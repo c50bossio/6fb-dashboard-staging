@@ -98,8 +98,8 @@ export async function POST(request) {
             );
         }
 
-        // Mock recipients based on target audience
-        const mockRecipients = generateMockRecipients(target_audience);
+        // NO MOCK DATA - Query real customer database for recipients
+        const recipients = []; // Real implementation should query customers table
         
         // Create campaign object
         const campaign = {
@@ -185,23 +185,8 @@ export async function POST(request) {
     }
 }
 
-// Helper function to generate mock recipients
-function generateMockRecipients(targetAudience) {
-    const count = Math.floor(Math.random() * 200) + 300; // 300-500 recipients
-    const recipients = [];
-    
-    for (let i = 0; i < count; i++) {
-        recipients.push({
-            id: `customer-${i}`,
-            email: `customer${i}@example.com`,
-            phone: `+1555${String(Math.floor(Math.random() * 10000000)).padStart(7, '0')}`,
-            first_name: `Customer`,
-            last_name: `${i}`,
-            tags: targetAudience ? [targetAudience] : ['all']
-        });
-    }
-    
-    return recipients;
+// NO MOCK DATA - Recipients should come from real customer database
+// Real implementation would query customers table with filters
 }
 
 export async function PUT(request) {

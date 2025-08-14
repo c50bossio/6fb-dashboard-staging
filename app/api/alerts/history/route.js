@@ -593,15 +593,18 @@ function generateHistoryRecommendations(historyData) {
 // Utility functions
 
 function generateExportId() {
-  return `export_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // NO RANDOM - use timestamp and counter for unique IDs
+  return `export_${Date.now()}_${process.hrtime.bigint().toString(36)}`;
 }
 
 function generateReportId() {
-  return `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // NO RANDOM - use timestamp and counter for unique IDs
+  return `report_${Date.now()}_${process.hrtime.bigint().toString(36)}`;
 }
 
 function generateAnalysisId() {
-  return `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // NO RANDOM - use timestamp and counter for unique IDs
+  return `analysis_${Date.now()}_${process.hrtime.bigint().toString(36)}`;
 }
 
 function getWeekKey(date) {

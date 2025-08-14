@@ -38,8 +38,8 @@ function checkRateLimit(clientIP) {
   
   rateLimitStore.set(key, requests + 1);
   
-  // Clean old entries (simple cleanup)
-  if (Math.random() < 0.01) { // 1% chance to clean
+  // Clean old entries (deterministic cleanup)
+  if ((requests % 100) === 0) { // Clean every 100 requests
     for (const [k, v] of rateLimitStore.entries()) {
       const keyMinute = k.split('-')[1];
       if (minute - parseInt(keyMinute) > 5) { // Remove entries older than 5 minutes
@@ -165,105 +165,87 @@ export async function GET(request) {
 }
 
 /**
- * Get unified business metrics that match both dashboard and AI expectations
+ * Get unified business metrics - NO MOCK DATA POLICY
  */
 function getUnifiedBusinessMetrics(format) {
+  // NO MOCK DATA - return empty state with helpful instructions
   const baseMetrics = {
-    // Core Revenue Metrics (matches dashboard exactly)
-    monthly_revenue: 12500.00,
-    daily_revenue: 450.00,
-    weekly_revenue: 2800.00,
-    total_revenue: 45000.00,
-    service_revenue: 38250.00,
-    tip_revenue: 6750.00,
-    revenue_growth: 8.5,
-    average_service_price: 68.50,
+    // Core Revenue Metrics - all zeros until real data exists
+    monthly_revenue: 0,
+    daily_revenue: 0,
+    weekly_revenue: 0,
+    total_revenue: 0,
+    service_revenue: 0,
+    tip_revenue: 0,
+    revenue_growth: 0,
+    average_service_price: 0,
     
-    // Appointment Analytics (matches dashboard exactly)
-    total_appointments: 287,
-    completed_appointments: 264,
-    cancelled_appointments: 15,
-    no_show_appointments: 8,
-    pending_appointments: 12,
-    confirmed_appointments: 34,
-    appointment_completion_rate: 92.0,
-    average_appointments_per_day: 9.6,
+    // Appointment Analytics - all zeros
+    total_appointments: 0,
+    completed_appointments: 0,
+    cancelled_appointments: 0,
+    no_show_appointments: 0,
+    pending_appointments: 0,
+    confirmed_appointments: 0,
+    appointment_completion_rate: 0,
+    average_appointments_per_day: 0,
     
-    // Customer Metrics (matches dashboard exactly)
-    total_customers: 156,
-    new_customers_this_month: 23,
-    returning_customers: 133,
-    customer_retention_rate: 85.3,
-    average_customer_lifetime_value: 288.46,
+    // Customer Metrics - all zeros
+    total_customers: 0,
+    new_customers_this_month: 0,
+    returning_customers: 0,
+    customer_retention_rate: 0,
+    average_customer_lifetime_value: 0,
     
-    // Staff Performance (matches dashboard exactly)
-    total_barbers: 4,
-    active_barbers: 3,
-    top_performing_barber: "Mike Johnson",
-    average_service_duration: 45.0,
+    // Staff Performance - empty data
+    total_barbers: 0,
+    active_barbers: 0,
+    top_performing_barber: "No data",
+    average_service_duration: 0,
     
-    // Business Intelligence (matches dashboard exactly)
-    peak_booking_hours: [10, 11, 14, 15, 16],
-    most_popular_services: [
-      { name: "Classic Cut", bookings: 89, revenue: 5340.00 },
-      { name: "Beard Trim", bookings: 67, revenue: 2010.00 },
-      { name: "Full Service", bookings: 45, revenue: 4050.00 }
-    ],
-    busiest_days: ["Friday", "Saturday", "Thursday"],
-    occupancy_rate: 74.5,
+    // Business Intelligence - empty arrays and zeros
+    peak_booking_hours: [],
+    most_popular_services: [],
+    busiest_days: [],
+    occupancy_rate: 0,
     
-    // Financial Health
-    payment_success_rate: 96.8,
-    outstanding_payments: 245.00,
+    // Financial Health - zeros
+    payment_success_rate: 0,
+    outstanding_payments: 0,
     
     // Metadata
     last_updated: new Date().toISOString(),
-    data_source: 'unified_fallback',
-    data_freshness: 'live'
+    data_source: 'no_data',
+    data_freshness: 'empty',
+    data_available: false,
+    message: 'Backend service unavailable. Please ensure Python backend is running on port 8001.',
+    instructions: [
+      'Start the Python backend service',
+      'Ensure database connection is configured',
+      'Create bookings and services in the database',
+      'Wait for data to populate'
+    ]
   };
 
   if (format === 'ai') {
     const aiSummary = `
-LIVE BUSINESS METRICS (Updated: ${baseMetrics.last_updated})
+BUSINESS METRICS STATUS
 
-💰 REVENUE PERFORMANCE
-• Monthly Revenue: $${baseMetrics.monthly_revenue.toLocaleString()}
-• Daily Revenue: $${baseMetrics.daily_revenue.toLocaleString()}  
-• Weekly Revenue: $${baseMetrics.weekly_revenue.toLocaleString()}
-• Total Revenue: $${baseMetrics.total_revenue.toLocaleString()}
-• Revenue Growth: ${baseMetrics.revenue_growth > 0 ? '+' : ''}${baseMetrics.revenue_growth}%
-• Average Service Price: $${baseMetrics.average_service_price}
+⚠️ NO DATA AVAILABLE
 
-📅 APPOINTMENT ANALYTICS  
-• Total Appointments: ${baseMetrics.total_appointments}
-• Completed: ${baseMetrics.completed_appointments} (${baseMetrics.appointment_completion_rate}% success rate)
-• Pending Confirmation: ${baseMetrics.pending_appointments}
-• Confirmed Upcoming: ${baseMetrics.confirmed_appointments}
-• Cancelled: ${baseMetrics.cancelled_appointments}
-• No-Shows: ${baseMetrics.no_show_appointments}
-• Average Daily Appointments: ${baseMetrics.average_appointments_per_day}
+The backend service is currently unavailable. Business metrics cannot be retrieved at this time.
 
-👥 CUSTOMER BASE
-• Total Customers: ${baseMetrics.total_customers}
-• New This Month: ${baseMetrics.new_customers_this_month}
-• Returning Customers: ${baseMetrics.returning_customers}
-• Customer Retention: ${baseMetrics.customer_retention_rate}%
-• Average Customer Value: $${baseMetrics.average_customer_lifetime_value}
+REQUIRED ACTIONS:
+${baseMetrics.instructions.map(instruction => `• ${instruction}`).join('\n')}
 
-👨‍💼 STAFF & OPERATIONS
-• Total Staff: ${baseMetrics.total_barbers} barbers
-• Currently Active: ${baseMetrics.active_barbers} barbers  
-• Top Performer: ${baseMetrics.top_performing_barber}
-• Chair Utilization: ${baseMetrics.occupancy_rate}%
-• Average Service Time: ${baseMetrics.average_service_duration} minutes
+Once the backend service is running and database contains booking data, real-time metrics will be available including:
+• Revenue performance tracking
+• Appointment analytics
+• Customer base insights
+• Staff performance metrics
+• Business intelligence reports
 
-🔥 BUSINESS INSIGHTS
-• Peak Hours: ${baseMetrics.peak_booking_hours.slice(0, 3).map(h => `${h}:00`).join(', ')}
-• Busiest Days: ${baseMetrics.busiest_days.join(', ')}
-• Top Services: ${baseMetrics.most_popular_services.slice(0, 3).map(s => s.name).join(', ')}
-• Payment Success: ${baseMetrics.payment_success_rate}%
-
-Data Source: ${baseMetrics.data_source.toUpperCase()} | Freshness: ${baseMetrics.data_freshness.toUpperCase()}
+Data Source: ${baseMetrics.data_source.toUpperCase()} | Status: ${baseMetrics.data_freshness.toUpperCase()}
 `;
 
     return {

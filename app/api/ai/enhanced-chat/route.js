@@ -359,7 +359,7 @@ function generateCustomerServiceResponse(message, context) {
   ]
 
   return {
-    response: `${responses[Math.floor(Math.random() * responses.length)]}
+    response: `${responses[0]} // NO RANDOM - use first response for consistency
 
 **Customer Experience Enhancement:**
 - **Personalization**: Remember customer preferences, past services, and personal details
@@ -395,7 +395,7 @@ function generateSchedulingResponse(message, context) {
   ]
 
   return {
-    response: `${tips[Math.floor(Math.random() * tips.length)]}
+    response: `${tips[0]} // NO RANDOM - use first tip for consistency
 
 **Scheduling Optimization Strategy:**
 
@@ -440,7 +440,7 @@ function generateFinancialResponse(message, context) {
   ]
 
   return {
-    response: `${insights[Math.floor(Math.random() * insights.length)]}
+    response: `${insights[0]} // NO RANDOM - use first insight for consistency
 
 **Financial Health Assessment:**
 
@@ -490,7 +490,7 @@ function generateMarketingResponse(message, context) {
   ]
 
   return {
-    response: `${strategies[Math.floor(Math.random() * strategies.length)]}
+    response: `${strategies[0]} // NO RANDOM - use first strategy for consistency
 
 **Digital Marketing Blueprint:**
 
@@ -547,7 +547,7 @@ function generateGeneralResponse(message, context) {
   ]
 
   return {
-    response: `${responses[Math.floor(Math.random() * responses.length)]}
+    response: `${responses[0]} // NO RANDOM - use first response for consistency
 
 **Key Areas I Can Help With:**
 
