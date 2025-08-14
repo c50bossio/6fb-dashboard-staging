@@ -537,7 +537,7 @@ export default function CalendarPage() {
       })
     }
     
-    // STEP 6: Status filter
+    // STEP 5: Status filter
     if (filterStatus !== 'all') {
       currentEvents = currentEvents.filter(event => {
         const eventStatus = event.extendedProps?.status || 'confirmed'
@@ -548,7 +548,7 @@ export default function CalendarPage() {
     const filteredResult = currentEvents
     
     return filteredResult
-  }, [events, realtimeAppointments, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources, showTestData])
+  }, [events, realtimeAppointments, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources])
   
   // Filter resources (barbers) based on location AND barber filters
   const filteredResources = useMemo(() => {
@@ -1327,76 +1327,9 @@ export default function CalendarPage() {
               <option value="cancelled">Cancelled</option>
             </select>
             
-            {/* Test Data Toggle */}
-            <div className="flex items-center space-x-2 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 flex-shrink-0 min-h-[44px]">
-              <input
-                type="checkbox"
-                id="test-data-toggle"
-                checked={showTestData}
-                onChange={(e) => setShowTestData(e.target.checked)}
-                className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
-              />
-              <label htmlFor="test-data-toggle" className="text-gray-700 font-medium whitespace-nowrap text-sm">
-                <span className="hidden sm:inline">Show Test Data</span>
-                <span className="sm:hidden">Test</span>
-              </label>
-            </div>
-            
-            {/* Test Edit Modal Button - Temporary for testing */}
-            <button
-              onClick={() => {
-                // Use an actual appointment from the database
-                if (filteredEvents.length > 0) {
-                  const firstEvent = filteredEvents[0]
-                  const testEvent = {
-                    id: firstEvent.id,
-                    title: firstEvent.title,
-                    scheduled_at: firstEvent.start,
-                    end_time: firstEvent.end,
-                    barber_id: firstEvent.resourceId || firstEvent.extendedProps?.barber_id,
-                    service_id: firstEvent.extendedProps?.service_id,
-                    service: firstEvent.extendedProps?.service,
-                    client_name: firstEvent.extendedProps?.customer || 'Test Customer',
-                    client_phone: firstEvent.extendedProps?.customerPhone || '555-1234',
-                    client_email: firstEvent.extendedProps?.customerEmail || 'test@example.com',
-                    duration_minutes: firstEvent.extendedProps?.duration || 30,
-                    service_price: firstEvent.extendedProps?.price || 35,
-                    client_notes: firstEvent.extendedProps?.notes || 'Test appointment',
-                    status: firstEvent.extendedProps?.status || 'confirmed'
-                  }
-                  console.log('🧪 Testing with real appointment:', testEvent)
-                  setSelectedEvent(testEvent)
-                  setShowAppointmentModal(true)
-                } else {
-                  // Fallback to fake appointment if no real appointments exist
-                  const testEvent = {
-                    id: 'test-1',
-                    title: 'Test Customer - Haircut',
-                    scheduled_at: new Date().toISOString(),
-                    end_time: new Date(Date.now() + 30 * 60000).toISOString(),
-                    barber_id: resources[0]?.id || 'test-barber-1',
-                    service_id: services[0]?.id || 'test-service-1',
-                    service: services[0]?.name || 'Haircut',
-                    client_name: 'Test Customer',
-                    client_phone: '555-1234',
-                    client_email: 'test@example.com',
-                    duration_minutes: 30,
-                    service_price: services[0]?.price || 35,
-                    client_notes: 'Test appointment to verify dropdowns work',
-                    status: 'confirmed'
-                  }
-                  console.log('🧪 Testing with fake appointment (no real appointments found):', testEvent)
-                  setSelectedEvent(testEvent)
-                  setShowAppointmentModal(true)
-                }
-              }}
-              className="px-3 py-1.5 text-sm bg-gold-700 text-white rounded-lg hover:bg-gold-700"
-            >
-              Test Edit
-            </button>
             
             {/* Clear Filters Button */}
-            {(searchTerm || filterLocation !== 'all' || filterBarber !== 'all' || filterService !== 'all' || filterStatus !== 'all' || !showTestData) && (
+            {(searchTerm || filterLocation !== 'all' || filterBarber !== 'all' || filterService !== 'all' || filterStatus !== 'all') && (
               <button
                 onClick={() => {
                   setSearchTerm('')
@@ -1404,7 +1337,6 @@ export default function CalendarPage() {
                   setFilterBarber('all')
                   setFilterService('all')
                   setFilterStatus('all')
-                  setShowTestData(true)
                 }}
                 className="flex-shrink-0 px-2 sm:px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm flex items-center space-x-1 min-h-[44px]"
               >
