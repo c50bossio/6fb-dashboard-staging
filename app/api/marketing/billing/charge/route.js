@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-})
+// Initialize Stripe conditionally
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    })
+  : null
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -100,6 +102,13 @@ export async function POST(request) {
 
     // Process payment via Stripe if immediate charge is requested
     if (immediate_charge && account.stripe_customer_id && paymentMethod.stripe_payment_method_id) {
+      if (!stripe) {
+        return NextResponse.json(
+          { error: 'Stripe not configured - add STRIPE_SECRET_KEY to environment variables' },
+          { status: 503 }
+        )
+      }
+      
       try {
         // Create payment intent
         const paymentIntent = await stripe.paymentIntents.create({

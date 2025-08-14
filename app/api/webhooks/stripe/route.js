@@ -4,9 +4,11 @@ import Stripe from 'stripe'
 
 export const runtime = 'nodejs'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_demo', {
-  apiVersion: '2023-10-16',
-})
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    })
+  : null
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_demo'
 
@@ -19,6 +21,13 @@ export async function POST(request) {
     let event
 
     try {
+      if (!stripe) {
+        return NextResponse.json(
+          { error: 'Stripe not configured - webhook processing unavailable' },
+          { status: 503 }
+        )
+      }
+      
       event = stripe.webhooks.constructEvent(body, sig, endpointSecret)
     } catch (err) {
       console.error('Webhook signature verification failed:', err.message)

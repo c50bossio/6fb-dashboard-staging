@@ -3,10 +3,12 @@ import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 import { isDevBypassEnabled, getTestBillingData, TEST_USER_UUID } from '@/lib/auth/dev-bypass'
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-})
+// Initialize Stripe conditionally
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    })
+  : null
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -169,6 +171,13 @@ export async function POST(request) {
     let stripeCustomerId = account.stripe_customer_id
 
     if (!stripeCustomerId) {
+      if (!stripe) {
+        return NextResponse.json(
+          { error: 'Stripe not configured - add STRIPE_SECRET_KEY to environment variables' },
+          { status: 503 }
+        )
+      }
+      
       // Create new Stripe customer
       const customer = await stripe.customers.create({
         email: account.billing_email,
@@ -193,6 +202,13 @@ export async function POST(request) {
     }
 
     // Create Stripe Checkout session for adding payment method
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe not configured - add STRIPE_SECRET_KEY to environment variables' },
+        { status: 503 }
+      )
+    }
+    
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
       payment_method_types: ['card'],
@@ -274,7 +290,7 @@ export async function DELETE(request) {
     }
 
     // Detach payment method from Stripe customer
-    if (paymentMethod.stripe_payment_method_id) {
+    if (paymentMethod.stripe_payment_method_id && stripe) {
       try {
         await stripe.paymentMethods.detach(paymentMethod.stripe_payment_method_id)
       } catch (stripeError) {

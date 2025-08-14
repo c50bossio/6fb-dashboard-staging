@@ -91,32 +91,38 @@ export default function ActionCenter({ data }) {
     if (realtime.available_barbers > 0) {
       status.push(`${realtime.available_barbers} barbers available`)
     }
-    return status.length > 0 ? status.join(' • ') : 'All systems operational'
+    return status.length > 0 ? status.join(' • ') : 'No current activity'
+  }
+
+  const hasCurrentActivity = () => {
+    return realtime.active_appointments > 0 || realtime.waiting_customers > 0 || realtime.available_barbers > 0
   }
 
   return (
     <div className="space-y-6">
-      {/* Real-time Status Bar */}
-      <div className="bg-gradient-to-r from-green-50 to-olive-50 border border-green-200 rounded-xl p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Live Operations Status</h3>
-              <p className="text-sm text-gray-600 mt-1">{getRealtimeStatus()}</p>
+      {/* Current Activity - Only show if there's actual business activity */}
+      {hasCurrentActivity() && (
+        <div className="bg-gradient-to-r from-green-50 to-olive-50 border border-green-200 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Current Activity</h3>
+                <p className="text-sm text-gray-600 mt-1">{getRealtimeStatus()}</p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <ClockIcon className="h-4 w-4 text-gray-500" />
-              <span className="text-gray-600">Next available: {realtime.next_available || '11:30 AM'}</span>
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <ClockIcon className="h-4 w-4 text-gray-500" />
+                <span className="text-gray-600">Next available: {realtime.next_available || '11:30 AM'}</span>
+              </div>
+              <button className="p-2 rounded-lg bg-white text-gray-600 hover:bg-gray-50 transition-colors">
+                <ArrowPathIcon className="h-5 w-5" />
+              </button>
             </div>
-            <button className="p-2 rounded-lg bg-white text-gray-600 hover:bg-gray-50 transition-colors">
-              <ArrowPathIcon className="h-5 w-5" />
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Priority Actions */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

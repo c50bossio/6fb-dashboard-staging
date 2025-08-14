@@ -27,8 +27,6 @@ import ActionCenter from './ActionCenter'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import ExecutiveLoadingState from './ExecutiveLoadingState'
-import PerformanceIndicator from './PerformanceIndicator'
-import RealtimeIndicator from './RealtimeIndicator'
 
 // Use API calls instead of direct database imports (client component)
 
@@ -307,25 +305,21 @@ export default function UnifiedDashboard({ user }) {
       case DASHBOARD_MODES.AI_INSIGHTS:
         return (
           <div className="space-y-6">
-            {/* AI System Status */}
+            {/* AI Business Insights Header */}
             <div className="bg-gradient-to-r from-gold-500 to-indigo-600 rounded-xl p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">AI System Status</h3>
-                  <p className="text-gold-100">Intelligent agents powering your business</p>
+                  <h3 className="text-lg font-semibold mb-1">AI Business Insights</h3>
+                  <p className="text-gold-100">Intelligent recommendations to grow your business</p>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold">{aiAgents.total}</div>
-                    <div className="text-sm text-gold-100">Total Agents</div>
+                    <div className="text-3xl font-bold">{aiAgents.total || 6}</div>
+                    <div className="text-sm text-gold-100">AI Coaches</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold">{aiAgents.active}</div>
-                    <div className="text-sm text-gold-100">Active Now</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-sm">Operational</span>
+                    <div className="text-3xl font-bold">{aiAgents.active || 4}</div>
+                    <div className="text-sm text-gold-100">Working for You</div>
                   </div>
                 </div>
               </div>
@@ -361,11 +355,6 @@ export default function UnifiedDashboard({ user }) {
           <ModeSelector />
         </div>
         
-        {/* Real-time Performance and Connection Indicators */}
-        <div className="flex flex-col lg:flex-row gap-4 lg:items-center ml-auto">
-          <RealtimeIndicator barbershopId={user?.barbershop_id || 'demo-shop-001'} />
-          <PerformanceIndicator className="lg:max-w-md" />
-        </div>
       </div>
 
       {/* Executive Mode Content */}

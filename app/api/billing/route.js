@@ -5,7 +5,7 @@ export const runtime = 'nodejs'
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_demo', {
-  apiVersion: '2023-10-16',
+      apiVersion: '2023-10-16',
 })
 
 // Optimized pricing tiers - Higher base, lower token costs

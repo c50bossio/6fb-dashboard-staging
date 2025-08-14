@@ -4,8 +4,9 @@ import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
 
 // Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
 })
 
 // Initialize Supabase with service role
