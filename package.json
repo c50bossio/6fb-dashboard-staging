@@ -75,6 +75,8 @@
     "claude:prep": "./claude-session-prep.sh",
     "claude:clean": "git add . && git commit -m 'WIP: Claude session checkpoint'",
     "claude:health": "node test-supabase-access.js && curl -s http://localhost:9999/api/health && curl -s http://localhost:8001/health",
+    "quality:report": "node code-quality-report.js",
+    "quality:check": "npm run lint && npm run test:coverage && npm run quality:report",
     "cleanup-test-data": "node scripts/cleanup-test-data.js",
     "cleanup-test-data:dry": "node scripts/cleanup-test-data.js --dry-run",
     "migrate:recurring": "node scripts/run-recurring-migration.js",
