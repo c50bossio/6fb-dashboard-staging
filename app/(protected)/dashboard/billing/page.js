@@ -218,7 +218,7 @@ export default function BillingPage() {
                     <span className="font-semibold text-gray-900">${billingData.usage.ai.cost}</span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    <p>{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens × $0.06/1K = ${billingData.usage.ai.cost}</p>
+                    <p>{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens × $0.04/1K = ${billingData.usage.ai.cost}</p>
                   </div>
                 </div>
 
@@ -231,7 +231,7 @@ export default function BillingPage() {
                     <span className="font-semibold text-gray-900">${billingData.usage.sms.cost}</span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    <p>{billingData.usage.sms.messages} messages × $0.02/msg = ${billingData.usage.sms.cost}</p>
+                    <p>{billingData.usage.sms.messages} messages × $0.01/msg = ${billingData.usage.sms.cost}</p>
                   </div>
                 </div>
 

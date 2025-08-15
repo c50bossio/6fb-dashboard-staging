@@ -15,7 +15,7 @@ export function middleware(request) {
     '/config.ts',
     '/.config',
     '/debug',
-    '/debug.js',
+    '/debug.js', 
     '/debug.json',
     '/secrets',
     '/secrets.json',

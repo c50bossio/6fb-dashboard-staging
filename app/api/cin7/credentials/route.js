@@ -1,19 +1,109 @@
-import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { encrypt, decrypt } from '@/lib/cin7-client'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+async function registerCin7Webhooks(accountId, apiKey, webhookUrl) {
+  try {
+    console.log('🔗 Registering Cin7 webhooks for real-time updates...')
+    
+    // Define webhook events we want to subscribe to
+    const webhookEvents = [
+      {
+        Type: 'Stock.Updated',
+        URL: `${webhookUrl}/stock-updated`,
+        Description: 'Inventory stock level changes'
+      },
+      {
+        Type: 'Product.Modified', 
+        URL: `${webhookUrl}/product-modified`,
+        Description: 'Product information updates'
+      },
+      {
+        Type: 'Sale.Completed',
+        URL: `${webhookUrl}/sale-completed`, 
+        Description: 'Sale transaction completed'
+      }
+    ]
+    
+    const registeredWebhooks = []
+    
+    for (const webhook of webhookEvents) {
+      try {
+        const response = await fetch('https://inventory.dearsystems.com/ExternalAPI/v2/webhooks', {
+          method: 'POST',
+          headers: {
+            'api-auth-accountid': accountId,
+            'api-auth-applicationkey': apiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(webhook)
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          registeredWebhooks.push({
+            type: webhook.Type,
+            url: webhook.URL,
+            id: result.ID
+          })
+          console.log(`✅ Registered webhook: ${webhook.Type}`)
+        } else {
+          console.warn(`⚠️ Failed to register ${webhook.Type}: ${response.status}`)
+        }
+      } catch (hookError) {
+        console.warn(`⚠️ Error registering ${webhook.Type}:`, hookError.message)
+      }
+    }
+    
+    return {
+      success: registeredWebhooks.length > 0,
+      registered: registeredWebhooks,
+      count: registeredWebhooks.length
+    }
+    
+  } catch (error) {
+    console.error('Webhook registration failed:', error)
+    return {
+      success: false,
+      error: error.message
+    }
+  }
+}
 
 export async function GET() {
   try {
-    const barbershopId = '550e8400-e29b-41d4-a716-446655440000' // Hardcoded for demo
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      )
+    }
+    
+    // Get user's barbershop
+    const { data: barbershop, error: shopError } = await supabase
+      .from('barbershops')
+      .select('id, name')
+      .eq('owner_id', user.id)
+      .single()
+    
+    if (shopError || !barbershop) {
+      return NextResponse.json({
+        hasCredentials: false,
+        message: 'No barbershop found for user'
+      })
+    }
+    
+    // Get credentials for this barbershop
     const { data: credentials, error } = await supabase
       .from('cin7_credentials')
-      .select('barbershop_id, api_version, last_tested, updated_at, is_active, created_at')
-      .eq('barbershop_id', barbershopId)
+      .select('barbershop_id, api_version, last_tested, updated_at, is_active, created_at, encrypted_account_id')
+      .eq('barbershop_id', barbershop.id)
       .eq('is_active', true)
       .single()
     
@@ -24,24 +114,27 @@ export async function GET() {
       })
     }
     
-    const { data: credWithAccountId } = await supabase
-      .from('cin7_credentials')
-      .select('encrypted_account_id')
-      .eq('barbershop_id', barbershopId)
-      .single()
-    
-    const accountId = credWithAccountId 
-      ? Buffer.from(credWithAccountId.encrypted_account_id, 'base64').toString('utf-8')
-      : null
-    
-    const maskedAccountId = accountId 
-      ? accountId.substring(0, 8) + '...' + accountId.slice(-4)
-      : null
+    // Decrypt and mask account ID for display
+    let maskedAccountId = null
+    if (credentials.encrypted_account_id) {
+      try {
+        const decryptedAccountId = decrypt(JSON.parse(credentials.encrypted_account_id))
+        maskedAccountId = decryptedAccountId.substring(0, 8) + '...' + decryptedAccountId.slice(-4)
+      } catch (decryptError) {
+        console.warn('Failed to decrypt account ID for masking:', decryptError)
+        maskedAccountId = 'Hidden'
+      }
+    }
     
     return NextResponse.json({
       hasCredentials: true,
       credentials: {
-        ...credentials,
+        barbershop_id: credentials.barbershop_id,
+        api_version: credentials.api_version,
+        last_tested: credentials.last_tested,
+        updated_at: credentials.updated_at,
+        is_active: credentials.is_active,
+        created_at: credentials.created_at,
         maskedAccountId,
         lastTested: credentials.last_tested,
         lastSynced: credentials.updated_at,
@@ -60,14 +153,38 @@ export async function GET() {
 
 export async function DELETE() {
   try {
-    const barbershopId = '550e8400-e29b-41d4-a716-446655440000' // Hardcoded for demo
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     
-    console.log('🗑️ Deleting Cin7 credentials for barbershop:', barbershopId)
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      )
+    }
+    
+    // Get user's barbershop
+    const { data: barbershop, error: shopError } = await supabase
+      .from('barbershops')
+      .select('id, name')
+      .eq('owner_id', user.id)
+      .single()
+    
+    if (shopError || !barbershop) {
+      return NextResponse.json({
+        error: 'No barbershop found',
+        message: 'No barbershop found for user'
+      }, { status: 404 })
+    }
+    
+    console.log('🗑️ Deleting Cin7 credentials for barbershop:', barbershop.id)
     
     const { data: existingCreds, error: checkError } = await supabase
       .from('cin7_credentials')
       .select('barbershop_id')
-      .eq('barbershop_id', barbershopId)
+      .eq('barbershop_id', barbershop.id)
       .single()
     
     if (checkError || !existingCreds) {
@@ -80,7 +197,7 @@ export async function DELETE() {
     const { error: deleteError } = await supabase
       .from('cin7_credentials')
       .delete()
-      .eq('barbershop_id', barbershopId)
+      .eq('barbershop_id', barbershop.id)
     
     if (deleteError) {
       console.error('Error deleting credentials:', deleteError)
@@ -109,9 +226,34 @@ export async function DELETE() {
 
 export async function PUT(request) {
   try {
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
+    
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'User not authenticated' },
+        { status: 401 }
+      )
+    }
+    
+    // Get user's barbershop
+    const { data: barbershop, error: shopError } = await supabase
+      .from('barbershops')
+      .select('id, name')
+      .eq('owner_id', user.id)
+      .single()
+    
+    if (shopError || !barbershop) {
+      return NextResponse.json({
+        error: 'No barbershop found',
+        message: 'No barbershop found for user'
+      }, { status: 404 })
+    }
+    
     const body = await request.json()
     const { apiKey, accountId } = body
-    const barbershopId = '550e8400-e29b-41d4-a716-446655440000' // Hardcoded for demo
     
     if (!apiKey || !accountId) {
       return NextResponse.json({
@@ -120,9 +262,10 @@ export async function PUT(request) {
       }, { status: 400 })
     }
     
-    console.log('🔄 Updating Cin7 credentials...')
+    console.log('🔄 Updating Cin7 credentials for barbershop:', barbershop.id)
     
-    const testResponse = await fetch('https://inventory.dearsystems.com/externalapi/products?limit=1', {
+    // Test credentials with Cin7 API v2
+    const testResponse = await fetch('https://inventory.dearsystems.com/ExternalAPI/v2/me', {
       method: 'GET',
       headers: {
         'api-auth-accountid': accountId,
@@ -131,24 +274,42 @@ export async function PUT(request) {
       }
     })
     
-    if (!testResponse.ok && testResponse.status !== 403) {
+    if (!testResponse.ok) {
+      console.error('Cin7 API test failed:', testResponse.status, testResponse.statusText)
       return NextResponse.json({
         error: 'Invalid credentials',
-        message: 'Could not connect to Cin7 with provided credentials'
+        message: 'Could not connect to Cin7 with provided credentials. Please verify your Account ID and API Key.'
       }, { status: 400 })
     }
     
-    const encryptedApiKey = Buffer.from(apiKey).toString('base64')
-    const encryptedAccountId = Buffer.from(accountId).toString('base64')
+    // Get company info for validation
+    const companyInfo = await testResponse.json()
+    
+    // Encrypt credentials using AES encryption
+    const encryptedApiKey = encrypt(apiKey)
+    const encryptedAccountId = encrypt(accountId)
+    
+    // Register webhooks for real-time updates
+    let webhookRegistered = false
+    try {
+      const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/cin7/webhook`
+      const webhookResult = await registerCin7Webhooks(accountId, apiKey, webhookUrl)
+      webhookRegistered = webhookResult.success
+      console.log('Webhook registration result:', webhookResult)
+    } catch (webhookError) {
+      console.warn('Failed to register webhooks (non-critical):', webhookError.message)
+    }
     
     const { error: updateError } = await supabase
       .from('cin7_credentials')
       .upsert({
-        barbershop_id: barbershopId,
-        encrypted_api_key: encryptedApiKey,
-        encrypted_account_id: encryptedAccountId,
-        api_version: 'v1',
+        barbershop_id: barbershop.id,
+        encrypted_api_key: JSON.stringify(encryptedApiKey),
+        encrypted_account_id: JSON.stringify(encryptedAccountId),
+        api_version: 'v2',
+        account_name: companyInfo.Company || 'Connected Account',
         last_tested: new Date().toISOString(),
+        webhook_registered: webhookRegistered,
         is_active: true,
         updated_at: new Date().toISOString()
       }, { onConflict: 'barbershop_id' })
@@ -166,6 +327,7 @@ export async function PUT(request) {
     return NextResponse.json({
       success: true,
       message: 'Cin7 credentials updated successfully',
+      accountName: companyInfo.Company || 'Connected Account',
       timestamp: new Date().toISOString()
     })
     

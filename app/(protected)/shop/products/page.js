@@ -151,8 +151,9 @@ export default function ProductInventory() {
 
   const handleCin7Connect = async (credentials) => {
     try {
-      const response = await fetch('/api/cin7/test-sync', {
-        method: 'POST',
+      // First, save the credentials
+      const credentialResponse = await fetch('/api/cin7/credentials', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           apiKey: credentials.apiKey,
@@ -160,30 +161,49 @@ export default function ProductInventory() {
         })
       })
       
-      if (response.ok) {
-        const data = await response.json()
+      if (!credentialResponse.ok) {
+        const credError = await credentialResponse.json()
+        throw new Error(credError.message || 'Failed to save credentials')
+      }
+      
+      const credData = await credentialResponse.json()
+      console.log('✅ Credentials saved successfully:', credData.accountName)
+      
+      // Then, sync the inventory
+      const syncResponse = await fetch('/api/cin7/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (syncResponse.ok) {
+        const syncData = await syncResponse.json()
         setCin7Connected(true)
         setCin7Status('synced')
         setHasCredentials(true)
         setShowCin7Modal(false)
         
-        const sampleProducts = data.sample?.map(p => `• ${p.name} - $${p.retail_price} (Stock: ${p.stock})`).join('\n') || ''
-        alert(`🎉 Success! Synchronized ${data.count} products from your Cin7 warehouse!\n\nCredentials saved for quick sync.\n\n${sampleProducts ? 'Sample products:\n' + sampleProducts : ''}`)
+        // Update credential info for UI
+        await checkCin7Connection()
+        
+        alert(`🎉 Success! \n\n✅ Credentials saved for ${credData.accountName}\n✅ Synchronized ${syncData.count} products from Cin7\n\n📊 Summary:\n• Low Stock: ${syncData.lowStockCount || 0}\n• Out of Stock: ${syncData.outOfStockCount || 0}`)
         
         loadProducts() // Reload to show synced products
       } else {
-        const error = await response.json()
-        console.error('Sync error details:', error)
+        const syncError = await syncResponse.json()
+        console.error('Sync error details:', syncError)
         
-        let errorMessage = `❌ Sync failed: ${error.message || error.error || 'Unknown error'}`
-        if (error.suggestions && error.suggestions.length > 0) {
-          errorMessage += '\n\nSuggestions:\n' + error.suggestions.map(s => `• ${s}`).join('\n')
-        }
-        alert(errorMessage)
+        // Credentials were saved but sync failed
+        setCin7Connected(true)
+        setHasCredentials(true)
+        setShowCin7Modal(false)
+        
+        alert(`✅ Credentials saved successfully!\n❌ Initial sync failed: ${syncError.error}\n\nYou can try syncing again using the "Refresh Inventory" button.`)
+        
+        await checkCin7Connection()
       }
     } catch (error) {
-      console.error('Error syncing with Cin7:', error)
-      alert('❌ Sync failed. Please try again.')
+      console.error('Error connecting to Cin7:', error)
+      alert(`❌ Connection failed: ${error.message}\n\nPlease check your credentials and try again.`)
     }
   }
 
@@ -192,7 +212,7 @@ export default function ProductInventory() {
       setIsQuickSyncing(true)
       setCin7Status('syncing')
       
-      const response = await fetch('/api/cin7/quick-sync', {
+      const response = await fetch('/api/cin7/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -201,24 +221,26 @@ export default function ProductInventory() {
         const data = await response.json()
         setCin7Status('synced')
         
-        alert(`✅ Quick sync complete! Updated ${data.insertedCount} products from Cin7.`)
+        alert(`✅ Inventory refreshed successfully!\n\n📊 Summary:\n• Products synced: ${data.count}\n• Low Stock: ${data.lowStockCount || 0}\n• Out of Stock: ${data.outOfStockCount || 0}\n\nLast sync: ${new Date().toLocaleTimeString()}`)
         loadProducts() // Reload to show updated products
       } else {
         const error = await response.json()
-        if (error.needsSetup) {
+        
+        // Check if it's a credentials issue
+        if (error.error?.includes('credentials') || response.status === 404) {
           setCin7Connected(false)
           setHasCredentials(false)
           setShowCin7Modal(true)
           alert('❌ No saved credentials found. Please set up your Cin7 connection first.')
         } else {
           setCin7Status('error')
-          alert(`❌ Quick sync failed: ${error.message}`)
+          alert(`❌ Sync failed: ${error.error || error.message}\n\nPlease check your Cin7 connection and try again.`)
         }
       }
     } catch (error) {
-      console.error('Error during quick sync:', error)
+      console.error('Error during sync:', error)
       setCin7Status('error')
-      alert('❌ Quick sync failed. Please try again.')
+      alert('❌ Sync failed. Please check your internet connection and try again.')
     } finally {
       setIsQuickSyncing(false)
     }
@@ -284,21 +306,25 @@ export default function ProductInventory() {
   const handleCin7Sync = async () => {
     try {
       setCin7Status('syncing')
-      const response = await fetch('/api/cin7/sync', { method: 'POST' })
+      const response = await fetch('/api/cin7/sync', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
       
       if (response.ok) {
         const data = await response.json()
-        setCin7Status(`synced`)
-        alert(`✅ Synchronized ${data.count} products from Cin7!`)
+        setCin7Status('synced')
+        alert(`✅ Synchronized ${data.count} products from Cin7!\n\n📊 Summary:\n• Low Stock: ${data.lowStockCount || 0}\n• Out of Stock: ${data.outOfStockCount || 0}`)
         loadProducts()
       } else {
+        const error = await response.json()
         setCin7Status('error')
-        alert('❌ Sync failed. Please try again.')
+        alert(`❌ Sync failed: ${error.error || error.message}\n\nPlease check your Cin7 connection and try again.`)
       }
     } catch (error) {
       console.error('Error syncing with Cin7:', error)
       setCin7Status('error')
-      alert('❌ Sync failed. Please try again.')
+      alert('❌ Sync failed. Please check your internet connection and try again.')
     }
   }
 

@@ -1,63 +1,76 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import crypto from 'crypto'
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 )
+
+function verifyWebhookSignature(payload, signature, secret) {
+  if (!signature || !secret) {
+    console.warn('⚠️ No webhook signature or secret provided')
+    return true // Allow for now if signature verification not set up
+  }
+  
+  try {
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(payload, 'utf8')
+      .digest('hex')
+    
+    const providedSignature = signature.replace('sha256=', '')
+    
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSignature, 'hex'),
+      Buffer.from(providedSignature, 'hex')
+    )
+  } catch (error) {
+    console.error('Signature verification error:', error)
+    return false
+  }
+}
 
 export async function POST(request) {
   try {
-    console.log('🔔 Cin7 webhook received')
+    const url = new URL(request.url)
+    const webhookPath = url.pathname.split('/').pop()
     
-    const body = await request.json().catch(() => ({}))
+    console.log(`🔔 Cin7 webhook received: ${webhookPath}`)
+    
+    // Get raw body for signature verification
+    const rawBody = await request.text()
+    const signature = request.headers.get('X-Cin7-Signature') || request.headers.get('X-Hub-Signature-256')
+    
+    // Parse JSON body
+    let body
+    try {
+      body = JSON.parse(rawBody)
+    } catch (parseError) {
+      console.error('Invalid JSON in webhook payload')
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+    }
+    
     console.log('📦 Webhook payload:', JSON.stringify(body, null, 2))
     
-    const eventType = body.EventType || body.event_type || 'unknown'
-    const productData = body.Product || body.product || body.data
-    
-    console.log(`🎯 Processing webhook event: ${eventType}`)
-    
-    if (!productData) {
-      console.log('⚠️ No product data in webhook payload')
-      return NextResponse.json({ status: 'no_data' })
+    // Verify webhook signature (if configured)
+    const webhookSecret = process.env.CIN7_WEBHOOK_SECRET
+    if (!verifyWebhookSignature(rawBody, signature, webhookSecret)) {
+      console.error('❌ Webhook signature verification failed')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    const updatedProduct = mapCin7ProductData(productData)
-    
-    const { data: existingProduct } = await supabase
-      .from('products')
-      .select('id, barbershop_id')
-      .eq('sku', updatedProduct.sku)
-      .single()
-    
-    if (existingProduct) {
-      const { error: updateError } = await supabase
-        .from('products')
-        .update({
-          ...updatedProduct,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingProduct.id)
-      
-      if (updateError) {
-        console.error('❌ Error updating product:', updateError)
-        return NextResponse.json({ error: 'Update failed' }, { status: 500 })
-      }
-      
-      console.log(`✅ Updated product: ${updatedProduct.name}`)
-      
-      await logProductChange('updated', existingProduct.id, updatedProduct, existingProduct.barbershop_id)
-      
-    } else {
-      console.log(`ℹ️ Product not found in database: ${updatedProduct.sku}`)
+    // Route to appropriate handler based on webhook path
+    switch (webhookPath) {
+      case 'stock-updated':
+        return await handleStockUpdated(body)
+      case 'product-modified':
+        return await handleProductModified(body)
+      case 'sale-completed':
+        return await handleSaleCompleted(body)
+      default:
+        return await handleGenericWebhook(body)
     }
-    
-    return NextResponse.json({ 
-      status: 'success',
-      action: existingProduct ? 'updated' : 'not_found',
-      product: updatedProduct.name
-    })
     
   } catch (error) {
     console.error('❌ Webhook processing error:', error)
@@ -66,6 +79,164 @@ export async function POST(request) {
       message: error.message
     }, { status: 500 })
   }
+}
+
+async function handleStockUpdated(body) {
+  console.log('📊 Handling stock update webhook')
+  
+  const productData = body.Product || body.data
+  if (!productData) {
+    return NextResponse.json({ status: 'no_data' })
+  }
+  
+  // Update stock levels only
+  const stockUpdate = {
+    current_stock: parseInt(productData.AvailableQuantity || productData.QtyOnHand || 0),
+    cin7_last_sync: new Date().toISOString()
+  }
+  
+  const { data: updatedProducts, error } = await supabase
+    .from('products')
+    .update(stockUpdate)
+    .or(`cin7_product_id.eq.${productData.ID},sku.eq.${productData.SKU}`)
+    .select()
+  
+  if (error) {
+    console.error('❌ Error updating stock:', error)
+    return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+  }
+  
+  console.log(`✅ Updated stock for ${updatedProducts.length} products`)
+  return NextResponse.json({ 
+    status: 'success',
+    action: 'stock_updated',
+    updated: updatedProducts.length
+  })
+}
+
+async function handleProductModified(body) {
+  console.log('📝 Handling product modification webhook')
+  
+  const productData = body.Product || body.data
+  if (!productData) {
+    return NextResponse.json({ status: 'no_data' })
+  }
+  
+  const updatedProduct = mapCin7ProductData(productData)
+  
+  const { data: existingProducts, error } = await supabase
+    .from('products')
+    .update({
+      ...updatedProduct,
+      cin7_last_sync: new Date().toISOString()
+    })
+    .or(`cin7_product_id.eq.${productData.ID},sku.eq.${productData.SKU}`)
+    .select()
+  
+  if (error) {
+    console.error('❌ Error updating product:', error)
+    return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+  }
+  
+  console.log(`✅ Updated ${existingProducts.length} products`)
+  return NextResponse.json({ 
+    status: 'success',
+    action: 'product_modified',
+    updated: existingProducts.length
+  })
+}
+
+async function handleSaleCompleted(body) {
+  console.log('💰 Handling sale completion webhook')
+  
+  // Update stock levels after sale
+  const saleData = body.Sale || body.data
+  if (!saleData || !saleData.Lines) {
+    return NextResponse.json({ status: 'no_sale_data' })
+  }
+  
+  let updatedCount = 0
+  
+  for (const line of saleData.Lines) {
+    if (line.ProductID && line.Quantity) {
+      const { data: product } = await supabase
+        .from('products')
+        .select('id, current_stock')
+        .eq('cin7_product_id', line.ProductID)
+        .single()
+      
+      if (product) {
+        const newStock = Math.max(0, product.current_stock - line.Quantity)
+        
+        await supabase
+          .from('products')
+          .update({ 
+            current_stock: newStock,
+            cin7_last_sync: new Date().toISOString()
+          })
+          .eq('id', product.id)
+        
+        updatedCount++
+      }
+    }
+  }
+  
+  console.log(`✅ Updated stock for ${updatedCount} products after sale`)
+  return NextResponse.json({ 
+    status: 'success',
+    action: 'sale_completed',
+    updated: updatedCount
+  })
+}
+
+async function handleGenericWebhook(body) {
+  console.log('🔄 Handling generic webhook')
+  
+  const eventType = body.EventType || body.event_type || 'unknown'
+  const productData = body.Product || body.product || body.data
+  
+  console.log(`🎯 Processing webhook event: ${eventType}`)
+  
+  if (!productData) {
+    console.log('⚠️ No product data in webhook payload')
+    return NextResponse.json({ status: 'no_data' })
+  }
+  
+  const updatedProduct = mapCin7ProductData(productData)
+  
+  const { data: existingProduct } = await supabase
+    .from('products')
+    .select('id, barbershop_id')
+    .eq('sku', updatedProduct.sku)
+    .single()
+  
+  if (existingProduct) {
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({
+        ...updatedProduct,
+        cin7_last_sync: new Date().toISOString()
+      })
+      .eq('id', existingProduct.id)
+    
+    if (updateError) {
+      console.error('❌ Error updating product:', updateError)
+      return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+    }
+    
+    console.log(`✅ Updated product: ${updatedProduct.name}`)
+    
+    await logProductChange('updated', existingProduct.id, updatedProduct, existingProduct.barbershop_id)
+    
+  } else {
+    console.log(`ℹ️ Product not found in database: ${updatedProduct.sku}`)
+  }
+  
+  return NextResponse.json({ 
+    status: 'success',
+    action: existingProduct ? 'updated' : 'not_found',
+    product: updatedProduct.name
+  })
 }
 
 function mapCin7ProductData(productData) {
@@ -129,6 +300,3 @@ async function logProductChange(action, productId, newData, barbershopId) {
   }
 }
 
-function verifyWebhookSignature(payload, signature, secret) {
-  return true
-}

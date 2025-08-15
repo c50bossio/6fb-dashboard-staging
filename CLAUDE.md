@@ -244,5 +244,50 @@ curl http://localhost:8001/health
 - Memory persistence across sessions
 - Multi-agent collaboration
 
+## Freemium Strategy & Billing Model
+
+### Pricing Philosophy: "Insights Free, Agents Paid"
+The platform uses a strategic freemium model to maximize customer acquisition while generating revenue from AI agent actions.
+
+### Free Tier (Customer Acquisition)
+**Always Included (No Billing Setup Required):**
+- Appointment confirmations & reminders (SMS/Email)
+- AI Business Insights Dashboard
+- AI Performance Analytics & Recommendations
+- AI Alerts & Monitoring
+- Basic booking system & staff scheduling
+
+**Goal**: Hook users with valuable AI insights, create desire for AI agents to act on those insights.
+
+### Paid Tiers (Revenue Generation)
+**Usage-Based Billing (Just-in-Time Setup):**
+- **AI Agents**: $0.04/1K tokens (Marketing, Revenue, Operations agents)
+- **SMS Campaigns**: $0.01/message (competitive with Textedly)
+- **Email Campaigns**: $0.001/message (66% cheaper than Mailchimp)
+- **AI Automation**: Content generation, auto-responses, analysis requests
+
+### Competitive Advantages
+- **No monthly minimums** (vs competitors' $25-175/month base costs)
+- **Smart Caching™** reduces AI costs by 60-70% automatically
+- **Pay-per-use model** eliminates subscription friction
+- **Industry-leading rates** for SMS/email
+- **Unique AI features** no competitor offers
+
+### Implementation Strategy
+1. **Remove billing from onboarding** - Focus on value delivery
+2. **Just-in-time billing modals** - Trigger when users want premium features
+3. **Strategic upgrade CTAs** - "Launch Agent" buttons throughout dashboard
+4. **Value-first messaging** - Show ROI before asking for payment
+
+### Natural Upgrade Funnels
+- **AI Dashboard**: Free insights → "Launch Agent" CTAs with cost estimates
+- **Campaign Page**: Basic campaigns → AI-powered campaign agents
+- **Throughout App**: "Let AI do this" suggestions trigger billing setup
+
+### Revenue Model
+- **Customer acquisition**: Free AI insights remove signup friction
+- **Revenue generation**: AI agents that take action and drive business results
+- **Expansion revenue**: More success → more AI usage → higher revenue
+
 ---
 **Production system**: Test all changes, no shortcuts, real data only.

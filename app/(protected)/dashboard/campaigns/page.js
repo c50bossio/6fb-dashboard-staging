@@ -7,10 +7,12 @@ import {
   EyeIcon,
   CalendarIcon,
   UserGroupIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import BillingSetupModal from '@/components/billing/BillingSetupModal'
 
 export default function CampaignsPage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -26,6 +28,7 @@ export default function CampaignsPage() {
     emailCampaigns: 0,
     smsCampaigns: 0
   })
+  const [billingModal, setBillingModal] = useState({ isOpen: false, feature: null, estimatedCost: null })
 
   useEffect(() => {
     console.log('🔄 useEffect triggered - authLoading:', authLoading, 'user:', user?.id, 'profile:', profile?.email)
@@ -89,6 +92,25 @@ export default function CampaignsPage() {
   const handleCreateCampaign = async (type) => {
     setSelectedCampaignType(type)
     setShowCreateModal(true)
+  }
+
+  const handleLaunchAICampaign = (campaignType, estimatedTokens, estimatedCost) => {
+    setBillingModal({
+      isOpen: true,
+      feature: {
+        type: 'ai-agent',
+        agentType: `${campaignType} campaign`
+      },
+      estimatedCost: {
+        tokens: estimatedTokens,
+        cost: estimatedCost
+      }
+    })
+  }
+
+  const handleBillingSetupComplete = () => {
+    setBillingModal({ isOpen: false, feature: null, estimatedCost: null })
+    alert('Billing setup complete! AI campaign agent will launch shortly.')
   }
 
   const executeCampaign = async (formData) => {
@@ -315,7 +337,7 @@ export default function CampaignsPage() {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Starting at $0.02/SMS</span>
+              <span className="text-sm text-gray-600">Starting at $0.01/SMS</span>
               <PlusIcon className="h-5 w-5 text-gray-400" />
             </div>
           </div>
@@ -333,6 +355,82 @@ export default function CampaignsPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Combined pricing</span>
               <PlusIcon className="h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* AI-Powered Campaign Upgrade Section */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6 mb-8">
+          <div className="text-center mb-6">
+            <SparklesIcon className="h-10 w-10 text-blue-600 mx-auto mb-3" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">AI-Powered Campaign Intelligence</h3>
+            <p className="text-gray-600">Let AI create, optimize, and send campaigns for maximum impact</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Smart Email Campaign */}
+            <div className="bg-white rounded-lg border border-green-200 p-4">
+              <div className="flex items-center mb-3">
+                <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <EnvelopeIcon className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Smart Email Agent</h4>
+                  <p className="text-xs text-gray-600">AI writes and sends personalized emails</p>
+                </div>
+              </div>
+              <div className="bg-green-50 rounded-md p-3 mb-3">
+                <p className="text-sm text-green-800">
+                  <span className="font-medium">AI will:</span> Analyze customer data, write personalized content, 
+                  optimize send times, and track results automatically
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">~3K tokens ($0.12) + email costs</span>
+                <button 
+                  onClick={() => handleLaunchAICampaign('smart email', '3', '$0.12')}
+                  className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                >
+                  Launch AI Agent
+                </button>
+              </div>
+            </div>
+
+            {/* Smart SMS Campaign */}
+            <div className="bg-white rounded-lg border border-purple-200 p-4">
+              <div className="flex items-center mb-3">
+                <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  <PhoneIcon className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Smart SMS Agent</h4>
+                  <p className="text-xs text-gray-600">AI creates targeted SMS campaigns</p>
+                </div>
+              </div>
+              <div className="bg-purple-50 rounded-md p-3 mb-3">
+                <p className="text-sm text-purple-800">
+                  <span className="font-medium">AI will:</span> Segment customers, craft compelling messages, 
+                  schedule optimal delivery, and track engagement
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">~2K tokens ($0.08) + SMS costs</span>
+                <button 
+                  onClick={() => handleLaunchAICampaign('smart SMS', '2', '$0.08')}
+                  className="px-3 py-1 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700"
+                >
+                  Launch AI Agent
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 text-center">
+            <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 inline-block">
+              <div className="flex items-center space-x-2">
+                <SparklesIcon className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">Smart Caching™ reduces AI costs by 60-70%</span>
+              </div>
             </div>
           </div>
         </div>
@@ -528,6 +626,15 @@ export default function CampaignsPage() {
             </div>
           </div>
         )}
+
+        {/* Billing Setup Modal */}
+        <BillingSetupModal
+          isOpen={billingModal.isOpen}
+          onClose={() => setBillingModal({ isOpen: false, feature: null, estimatedCost: null })}
+          feature={billingModal.feature}
+          estimatedCost={billingModal.estimatedCost}
+          onSetupComplete={handleBillingSetupComplete}
+        />
       </div>
     </div>
   )

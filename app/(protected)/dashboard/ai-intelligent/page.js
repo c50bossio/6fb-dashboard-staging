@@ -21,6 +21,7 @@ import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { Card } from '../../../../components/ui'
 import { useTenant } from '../../../../contexts/TenantContext'
+import BillingSetupModal from '../../../../components/billing/BillingSetupModal'
 
 function StrategicPricingWidget({ onRefresh, loading }) {
   const [pricingInsights, setPricingInsights] = useState(null)
@@ -823,11 +824,32 @@ function IntelligentDashboardContent() {
   const { tenant } = useTenant()
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [globalLoading, setGlobalLoading] = useState(false)
+  const [billingModal, setBillingModal] = useState({ isOpen: false, feature: null, estimatedCost: null })
 
   const handleGlobalRefresh = useCallback(() => {
     setGlobalLoading(true)
     setRefreshTrigger(prev => prev + 1)
     setTimeout(() => setGlobalLoading(false), 2000)
+  }, [])
+
+  const handleLaunchAgent = useCallback((agentType, estimatedTokens, estimatedCost) => {
+    setBillingModal({
+      isOpen: true,
+      feature: {
+        type: 'ai-agent',
+        agentType: agentType
+      },
+      estimatedCost: {
+        tokens: estimatedTokens,
+        cost: estimatedCost
+      }
+    })
+  }, [])
+
+  const handleBillingSetupComplete = useCallback(() => {
+    setBillingModal({ isOpen: false, feature: null, estimatedCost: null })
+    // Here you would trigger the actual AI agent launch
+    alert('Billing setup complete! AI agent will launch shortly.')
   }, [])
 
   return (
@@ -923,6 +945,98 @@ function IntelligentDashboardContent() {
           </button>
         </div>
       </div>
+
+      {/* Strategic AI Agent Upgrade CTAs */}
+      <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 p-6">
+        <div className="text-center mb-6">
+          <SparklesIcon className="h-12 w-12 text-blue-600 mx-auto mb-3" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Ready to Take Action?</h3>
+          <p className="text-gray-600">Let AI agents execute these insights and optimize your business automatically</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Marketing Agent CTA */}
+          <div className="bg-white rounded-lg border border-blue-200 p-4">
+            <div className="flex items-center mb-3">
+              <MegaphoneIcon className="h-6 w-6 text-blue-600 mr-2" />
+              <h4 className="font-semibold text-gray-900">Marketing Agent</h4>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">
+              Create and send targeted campaigns to the customers most likely to book again
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">~2K tokens ($0.08)</span>
+              <button 
+                onClick={() => handleLaunchAgent('marketing', '2', '$0.08')}
+                className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+              >
+                Launch Agent
+              </button>
+            </div>
+          </div>
+
+          {/* Revenue Optimization Agent CTA */}
+          <div className="bg-white rounded-lg border border-green-200 p-4">
+            <div className="flex items-center mb-3">
+              <ArrowTrendingUpIcon className="h-6 w-6 text-green-600 mr-2" />
+              <h4 className="font-semibold text-gray-900">Revenue Agent</h4>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">
+              Implement pricing recommendations and optimize your service packages
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">~1.5K tokens ($0.06)</span>
+              <button 
+                onClick={() => handleLaunchAgent('revenue', '1.5', '$0.06')}
+                className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+              >
+                Launch Agent
+              </button>
+            </div>
+          </div>
+
+          {/* Operations Agent CTA */}
+          <div className="bg-white rounded-lg border border-orange-200 p-4">
+            <div className="flex items-center mb-3">
+              <CogIcon className="h-6 w-6 text-orange-600 mr-2" />
+              <h4 className="font-semibold text-gray-900">Operations Agent</h4>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">
+              Optimize staff schedules and identify capacity planning opportunities
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">~1K tokens ($0.04)</span>
+              <button 
+                onClick={() => handleLaunchAgent('operations', '1', '$0.04')}
+                className="px-3 py-1 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700"
+              >
+                Launch Agent
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 text-center">
+          <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 inline-block">
+            <div className="flex items-center space-x-2">
+              <SparklesIcon className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-900">Smart Caching™ Active</span>
+            </div>
+            <p className="text-xs text-blue-800 mt-1">
+              Our intelligent caching reduces your AI costs by 60-70% automatically
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Billing Setup Modal */}
+      <BillingSetupModal
+        isOpen={billingModal.isOpen}
+        onClose={() => setBillingModal({ isOpen: false, feature: null, estimatedCost: null })}
+        feature={billingModal.feature}
+        estimatedCost={billingModal.estimatedCost}
+        onSetupComplete={handleBillingSetupComplete}
+      />
     </div>
   )
 }

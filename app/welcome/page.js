@@ -22,6 +22,8 @@ import ProgressTracker from '../../components/onboarding/ProgressTracker'
 import RoleSelector from '../../components/onboarding/RoleSelector'
 import ServiceSetup from '../../components/onboarding/ServiceSetup'
 import { useAuth } from '../../components/SupabaseAuthProvider'
+import SessionRecovery from '../../lib/auth/session-recovery'
+import { createClient } from '../../lib/supabase/browser-client'
 
 export default function WelcomePage() {
   const router = useRouter()
@@ -34,6 +36,8 @@ export default function WelcomePage() {
   const [errorType, setErrorType] = useState(null)
   const [showOAuthError, setShowOAuthError] = useState(false)
   const [stripeSessionId, setStripeSessionId] = useState(null)
+  const [sessionRecovery, setSessionRecovery] = useState(null)
+  const [recoveryProgress, setRecoveryProgress] = useState(null)
   
   const planFromUrl = searchParams.get('plan')
   const getRoleFromPlan = (plan) => {
@@ -86,36 +90,31 @@ export default function WelcomePage() {
       { id: 'preview', label: 'Preview', sublabel: 'See your page', timeEstimate: 1 }
     ]
     
-    const currentRole = onboardingData.role
-    const planRole = getRoleFromPlan(planFromUrl)
-    const needsFinancialStep = currentRole === 'shop_owner' || 
-                               currentRole === 'enterprise_owner' ||
-                               planRole === 'shop_owner' || 
-                               planRole === 'enterprise_owner' ||
-                               planFromUrl === 'shop' ||
-                               planFromUrl === 'enterprise'
-    
-    if (needsFinancialStep) {
-      baseSteps.splice(-1, 0, {
-        id: 'financial',
-        label: 'Financials',
-        sublabel: 'Payment setup',
-        timeEstimate: 2
-      })
-    }
+    // Removed operational billing from onboarding - now handled just-in-time
+    // when users want to use premium features (AI agents, marketing campaigns)
+    // This improves conversion rates and follows freemium best practices
     
     return baseSteps
   }
 
   const steps = getSteps()
 
+  // Initialize session recovery system
   useEffect(() => {
+    const supabase = createClient()
+    const recovery = new SessionRecovery(supabase)
+    setSessionRecovery(recovery)
+  }, [])
+
+  useEffect(() => {
+    if (!sessionRecovery) return
+
     const error = searchParams.get('error')
     const from = searchParams.get('from')
     const stripeSession = searchParams.get('stripe_session')
     const setup = searchParams.get('setup')
     
-    console.log('👋 Welcome page loaded, error:', error, 'from:', from, 'stripe_session:', stripeSession)
+    console.log('👋 Welcome page loaded with enhanced recovery, error:', error, 'from:', from, 'stripe_session:', stripeSession)
     
     if (stripeSession && setup === 'initial') {
       console.log('💳 Stripe session detected, user paid but needs account setup')
@@ -134,7 +133,49 @@ export default function WelcomePage() {
       console.log('✅ User completed payment, allowing onboarding')
       return
     }
+
+    // Enhanced session recovery for OAuth flows
+    const isOAuthFlow = sessionRecovery.isOAuthRedirect()
+    const maxWaitTime = isOAuthFlow ? 8000 : 3000 // Extended timeout for OAuth
     
+    console.log(`🔄 Starting enhanced session detection (OAuth: ${isOAuthFlow}, timeout: ${maxWaitTime}ms)`)
+
+    if (isOAuthFlow && !user) {
+      console.log('🔍 OAuth flow detected, starting session polling...')
+      
+      sessionRecovery.pollForSession({
+        maxAttempts: isOAuthFlow ? 6 : 3,
+        isOAuthFlow,
+        onProgress: (progress) => {
+          setRecoveryProgress(progress)
+          console.log('📊 Session recovery progress:', progress)
+        },
+        onError: (error) => {
+          console.warn('⚠️ Session recovery error:', error)
+        }
+      }).then((result) => {
+        if (result.success) {
+          console.log('✅ Session recovered successfully via polling')
+          // Force a re-render by updating the auth context
+          window.location.reload()
+        } else {
+          console.warn('❌ Session recovery failed, trying manual recovery...')
+          return sessionRecovery.recoverSession({ strategy: 'auto' })
+        }
+      }).then((recoveryResult) => {
+        if (recoveryResult && !recoveryResult.success) {
+          console.error('💥 All session recovery attempts failed')
+          setErrorType('session_recovery_failed')
+          setShowOAuthError(true)
+        }
+      }).catch((error) => {
+        console.error('💥 Session recovery error:', error)
+        setErrorType('session_recovery_error')
+        setShowOAuthError(true)
+      })
+    }
+    
+    // Fallback timer with extended timeout
     const timer = setTimeout(() => {
       if ((from === 'payment_success' || stripeSession) && !user) {
         console.log('💳 Payment successful but no auth - allowing onboarding anyway')
@@ -142,13 +183,13 @@ export default function WelcomePage() {
       }
       
       if (!user && !profile && !showOAuthError && !stripeSession && from !== 'payment_success') {
-        console.log('⚠️ No user found after waiting, redirecting to login')
+        console.log(`⚠️ No user found after waiting ${maxWaitTime}ms, redirecting to login`)
         router.push('/login')
       }
-    }, 2000) // Wait 2 seconds for auth to load
+    }, maxWaitTime)
     
     return () => clearTimeout(timer)
-  }, [user, profile, router, searchParams, showOAuthError])
+  }, [user, profile, router, searchParams, showOAuthError, sessionRecovery])
 
   useEffect(() => {
     if (user?.id) {
@@ -313,18 +354,83 @@ export default function WelcomePage() {
     router.push('/login')
   }
 
-  if (showOAuthError && errorType === 'session_timeout') {
+  // Show session recovery progress
+  if (recoveryProgress && !user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
           <div className="bg-white rounded-2xl shadow-xl p-8">
-            <ExclamationTriangleIcon className="h-16 w-16 text-yellow-500 mx-auto mb-6" />
+            <div className="animate-spin h-16 w-16 mx-auto mb-6">
+              <svg className="h-16 w-16 text-blue-500" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              OAuth Session Issue
+              Completing Sign-In...
+            </h1>
+            <p className="text-gray-600 mb-4">
+              We're synchronizing your Google account session.
+            </p>
+            <div className="bg-blue-50 rounded-lg p-4 mb-4">
+              <p className="text-blue-800 text-sm">
+                Attempt {recoveryProgress.attempt} of {recoveryProgress.maxAttempts}
+              </p>
+              <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(recoveryProgress.attempt / recoveryProgress.maxAttempts) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500">
+              This usually takes just a few seconds...
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (showOAuthError) {
+    const getErrorContent = () => {
+      switch (errorType) {
+        case 'session_recovery_failed':
+          return {
+            title: 'Session Recovery Failed',
+            message: 'Your Google sign-in was successful, but we encountered issues synchronizing your session. This can happen due to browser security settings.',
+            icon: ExclamationTriangleIcon,
+            iconColor: 'text-red-500'
+          }
+        case 'session_recovery_error':
+          return {
+            title: 'Session Sync Error',
+            message: 'We encountered a technical issue while setting up your session. Please try signing in again.',
+            icon: ExclamationTriangleIcon,
+            iconColor: 'text-red-500'
+          }
+        default:
+          return {
+            title: 'OAuth Session Issue',
+            message: 'Your Google sign-in was successful, but we had trouble loading your session in the browser. This can happen due to browser security settings or network issues.',
+            icon: ExclamationTriangleIcon,
+            iconColor: 'text-yellow-500'
+          }
+      }
+    }
+
+    const { title, message, icon: Icon, iconColor } = getErrorContent()
+
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <Icon className={`h-16 w-16 ${iconColor} mx-auto mb-6`} />
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              {title}
             </h1>
             <p className="text-gray-600 mb-6">
-              Your Google sign-in was successful, but we had trouble loading your session in the browser. 
-              This can happen due to browser security settings or network issues.
+              {message}
             </p>
             <div className="space-y-3">
               <button
@@ -607,13 +713,8 @@ export default function WelcomePage() {
               />
             )}
 
-            {steps[currentStep]?.id === 'financial' && (
-              <FinancialSetup
-                onComplete={(data) => handleStepComplete(data)}
-                initialData={onboardingData}
-                subscriptionTier={planFromUrl || 'shop'}
-              />
-            )}
+            {/* Financial setup removed from onboarding - now handled just-in-time
+                when users access premium features like AI agents or marketing campaigns */}
 
             {steps[currentStep]?.id === 'preview' && (
               <div className="space-y-6">
