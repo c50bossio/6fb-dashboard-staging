@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import dynamic from 'next/dynamic'
 import { 
   CalendarIcon, 
   PlusCircleIcon,
@@ -21,17 +19,19 @@ import {
   FunnelIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import dynamic from 'next/dynamic'
 import QRCode from 'qrcode'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
+import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
+import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
 import { useToast } from '../../../../components/ToastContainer'
+import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
 import { 
   DEFAULT_RESOURCES, 
   DEFAULT_SERVICES, 
   formatAppointment 
 } from '../../../../lib/calendar-data'
-import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
-import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
-import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
-import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
@@ -432,6 +432,7 @@ export default function CalendarPage() {
     const combinedEvents = [...safeEvents, ...safeRealtimeAppointments]
     const uniqueEvents = deduplicateAppointments(combinedEvents)
     
+    console.log('Events debug:', {
       eventsCount: events.length,
       realtimeAppointmentsCount: realtimeAppointments.length,
       combinedCount: combinedEvents.length,

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -134,6 +134,7 @@ export async function GET(request) {
 async function exchangeCodeForTokens(code) {
   const tokenUrl = 'https://oauth2.googleapis.com/token'
   
+  console.log('OAuth debug:', {
     has_client_id: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
     has_client_secret: !!process.env.GOOGLE_CLIENT_SECRET,
     client_id_value: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.substring(0, 20) + '...',
