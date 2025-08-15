@@ -138,7 +138,6 @@ async function main() {
   console.log('  Deploy staging:    git push origin staging');
 }
 
-// Run if called directly
 if (require.main === module) {
   main().catch(console.error);
 }

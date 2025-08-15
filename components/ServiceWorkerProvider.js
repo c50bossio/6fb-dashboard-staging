@@ -9,12 +9,10 @@ export default function ServiceWorkerProvider({ children }) {
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false)
 
   useEffect(() => {
-    // Check if service workers are supported
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       registerServiceWorker()
     }
 
-    // Online/offline detection
     const handleOnline = () => {
       setIsOnline(true)
       toast({
@@ -36,7 +34,6 @@ export default function ServiceWorkerProvider({ children }) {
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
-    // Initial online status
     setIsOnline(navigator.onLine)
 
     return () => {
@@ -54,13 +51,11 @@ export default function ServiceWorkerProvider({ children }) {
       setSwRegistration(registration)
       console.log('Service Worker registered:', registration)
 
-      // Check for updates
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing
 
         newWorker?.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New service worker available
             setSwUpdateAvailable(true)
             
             toast({
@@ -80,7 +75,6 @@ export default function ServiceWorkerProvider({ children }) {
         })
       })
 
-      // Check for updates every hour
       setInterval(() => {
         registration.update()
       }, 60 * 60 * 1000)
@@ -98,17 +92,13 @@ export default function ServiceWorkerProvider({ children }) {
     })
   }
 
-  // Add install prompt handling
   useEffect(() => {
     let deferredPrompt = null
 
     const handleBeforeInstallPrompt = (e) => {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault()
-      // Stash the event so it can be triggered later
       deferredPrompt = e
       
-      // Show custom install button/banner
       showInstallPromotion(deferredPrompt)
     }
 

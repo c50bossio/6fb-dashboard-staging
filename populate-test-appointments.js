@@ -16,7 +16,6 @@ async function populateTestAppointments() {
   
   const shopId = 'demo-shop-001'
   
-  // Test customers
   const testCustomers = [
     { name: await getUserFromDatabase(), email: 'john@test.com', phone: '555-0101' },
     { name: 'Jane Smith', email: 'jane@test.com', phone: '555-0102' },
@@ -25,7 +24,6 @@ async function populateTestAppointments() {
     { name: 'Charlie Davis', email: 'charlie@test.com', phone: '555-0105' }
   ]
   
-  // Available barber IDs from the system
   const barberIds = [
     '56ddbef1-fc3b-4f86-b841-88a8e72e166e', // John Smith
     '610110ac-cc59-4a13-86f5-2803232c211b', // Lisa Davis  
@@ -33,7 +31,6 @@ async function populateTestAppointments() {
     '8c1939eb-7474-4993-88e5-64f6ff6939a9'  // Sarah Johnson
   ]
   
-  // Available service IDs
   const serviceIds = [
     'cc438e84-fc35-49ec-903d-4ba4e7e2bc65', // Haircut
     '9df7c2fd-c476-4d9e-8634-0575c09efc2b', // Beard Trim
@@ -46,7 +43,6 @@ async function populateTestAppointments() {
   const durations = [30, 20, 45, 25]
   
   try {
-    // Clear existing test appointments first
     console.log('🧹 Clearing existing test appointments...')
     const { error: deleteError } = await supabase
       .from('bookings')
@@ -58,7 +54,6 @@ async function populateTestAppointments() {
       console.error('Error clearing test data:', deleteError)
     }
     
-    // Generate test appointments for the next 7 days
     const appointments = []
     const now = new Date()
     
@@ -67,7 +62,6 @@ async function populateTestAppointments() {
       appointmentDate.setDate(appointmentDate.getDate() + dayOffset)
       appointmentDate.setHours(9, 0, 0, 0) // Start at 9 AM
       
-      // Create 3-4 appointments per day
       const appointmentsPerDay = 3 + Math.floor(Math.random() * 2)
       
       for (let i = 0; i < appointmentsPerDay; i++) {
@@ -76,14 +70,12 @@ async function populateTestAppointments() {
         const serviceIndex = Math.floor(Math.random() * serviceIds.length)
         const serviceId = serviceIds[serviceIndex]
         
-        // Set appointment time (spread throughout the day)
         const startTime = new Date(appointmentDate)
         startTime.setHours(9 + (i * 2), Math.random() > 0.5 ? 0 : 30, 0, 0)
         
         const endTime = new Date(startTime)
         endTime.setMinutes(endTime.getMinutes() + durations[serviceIndex])
         
-        // Some appointments should be cancelled for testing
         const statuses = ['confirmed', 'confirmed', 'confirmed', 'pending', 'cancelled']
         const status = statuses[Math.floor(Math.random() * statuses.length)]
         
@@ -108,7 +100,6 @@ async function populateTestAppointments() {
     
     console.log(`📝 Creating ${appointments.length} test appointments...`)
     
-    // Insert appointments in batches
     const batchSize = 10
     let created = 0
     
@@ -133,7 +124,6 @@ async function populateTestAppointments() {
     console.log(`🎉 Successfully created ${created} test appointments!`)
     console.log('\n📊 Test Data Summary:')
     
-    // Count appointments by status
     const statusCounts = {}
     appointments.forEach(apt => {
       statusCounts[apt.status] = (statusCounts[apt.status] || 0) + 1

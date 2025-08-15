@@ -7,12 +7,10 @@ export async function GET(request) {
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0]
     const barberId = searchParams.get('barber_id')
     
-    // Generate realistic schedule data based on current time
     const today = new Date()
     const isToday = date === today.toISOString().split('T')[0]
     const currentHour = today.getHours()
     
-    // Mock schedule data for Elite Cuts Barbershop
     const baseSchedule = [
       {
         id: 'apt-001',
@@ -112,13 +110,11 @@ export async function GET(request) {
       }
     ]
     
-    // Filter by barber if specified
     let filteredSchedule = baseSchedule
     if (barberId) {
       filteredSchedule = baseSchedule.filter(apt => apt.barber_id === barberId)
     }
     
-    // Add summary statistics
     const summary = {
       total_appointments: filteredSchedule.length,
       completed: filteredSchedule.filter(apt => apt.status === 'completed').length,
@@ -150,7 +146,6 @@ export async function POST(request) {
   try {
     const appointmentData = await request.json()
     
-    // Mock creating a new appointment
     const newAppointment = {
       id: `apt-${Date.now()}`,
       ...appointmentData,

@@ -18,7 +18,6 @@ async function setupMarketingSystem() {
     console.log('🚀 MARKETING SYSTEM FINAL SETUP');
     console.log('================================\n');
     
-    // Step 1: Check current database status
     console.log('📊 Step 1: Checking Database Status...');
     const tables = [
         'marketing_campaigns',
@@ -57,13 +56,11 @@ async function setupMarketingSystem() {
         console.log('   5. Paste and click "Run"\n');
     }
     
-    // Step 2: Test SendGrid Configuration
     console.log('📧 Step 2: Testing SendGrid Configuration...');
     const sgMail = require('@sendgrid/mail');
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     
     try {
-        // Test with sandbox mode
         await sgMail.send({
             to: 'test@example.com',
             from: process.env.SENDGRID_FROM_EMAIL,
@@ -77,7 +74,6 @@ async function setupMarketingSystem() {
         console.log('  ❌ SendGrid error:', error.message);
     }
     
-    // Step 3: Test Twilio Configuration
     console.log('\n📱 Step 3: Testing Twilio Configuration...');
     if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID !== 'your_twilio_account_sid_here') {
         console.log('  ✅ Twilio Account SID configured');
@@ -86,7 +82,6 @@ async function setupMarketingSystem() {
         console.log('  ⚠️  Twilio not configured (optional)');
     }
     
-    // Step 4: Test Redis Queue Service
     console.log('\n🔄 Step 4: Testing Queue Service...');
     try {
         const queueService = require('./services/queue-service.js');
@@ -102,7 +97,6 @@ async function setupMarketingSystem() {
         console.log('  ❌ Queue service error:', error.message);
     }
     
-    // Step 5: Calculate System Readiness
     console.log('\n📊 Step 5: System Readiness Assessment...');
     
     const components = {
@@ -128,7 +122,6 @@ async function setupMarketingSystem() {
     
     const readiness = Math.round((readyCount / totalCount) * 100);
     
-    // Final Summary
     console.log('\n================================');
     console.log('📊 FINAL SYSTEM STATUS');
     console.log('================================\n');
@@ -176,7 +169,6 @@ async function setupMarketingSystem() {
         }
     }
     
-    // Provide helpful commands
     console.log('\n📋 Useful Commands:');
     console.log('  • Test system: node validate-marketing-system.js');
     console.log('  • Run demo: node demo-marketing-campaign.js');
@@ -187,5 +179,4 @@ async function setupMarketingSystem() {
     console.log('Setup check complete!');
 }
 
-// Run setup
 setupMarketingSystem().catch(console.error);

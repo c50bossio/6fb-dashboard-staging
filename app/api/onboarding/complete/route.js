@@ -6,7 +6,6 @@ export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -15,7 +14,6 @@ export async function POST(request) {
     const body = await request.json()
     const { onboardingData } = body
     
-    // Start a transaction-like operation
     const results = {
       profile: null,
       barbershop: null,
@@ -48,7 +46,6 @@ export async function POST(request) {
     // 2. Create or update barbershop
     let barbershopId = null
     
-    // Check if barbershop already exists for this user
     const { data: existingShop } = await supabase
       .from('barbershops')
       .select('id')
@@ -56,7 +53,6 @@ export async function POST(request) {
       .single()
     
     if (existingShop) {
-      // Update existing barbershop
       const { data: shopData, error: shopError } = await supabase
         .from('barbershops')
         .update({
@@ -78,7 +74,6 @@ export async function POST(request) {
         barbershopId = shopData.id
       }
     } else {
-      // Create new barbershop
       const shopSlug = generateSlug(onboardingData.businessName)
       
       const { data: shopData, error: shopError } = await supabase
@@ -113,13 +108,11 @@ export async function POST(request) {
     
     // 3. Add services if barbershop was created/updated successfully
     if (barbershopId && onboardingData.services && onboardingData.services.length > 0) {
-      // Delete existing services to avoid duplicates
       await supabase
         .from('services')
         .delete()
         .eq('shop_id', barbershopId)
       
-      // Insert new services
       const servicesData = onboardingData.services.map(service => ({
         shop_id: barbershopId,
         name: service.name,
@@ -154,7 +147,6 @@ export async function POST(request) {
         onConflict: 'user_id,step_name'
       })
     
-    // Return results
     if (results.errors.length > 0) {
       return NextResponse.json(
         { 

@@ -11,7 +11,6 @@ import '@testing-library/jest-dom'
 import NuclearInput from '../../components/NuclearInput'
 import React from 'react'
 
-// Mock console methods to test protection logging
 const Console = {
   log: jest.fn(),
   warn: jest.fn()
@@ -128,7 +127,6 @@ describe('NuclearInput Component - Unit Tests', () => {
       render(<NuclearInput onBlur={onBlur} />)
       const input = screen.getByRole('textbox')
       
-      // Simulate rapid typing
       const rapidText = 'thisisrapidtypingtest'
       await user.type(input, rapidText, { delay: 1 }) // Very fast typing
       
@@ -143,13 +141,11 @@ describe('NuclearInput Component - Unit Tests', () => {
       
       input.focus()
       
-      // Simulate paste with clipboard data
       const pasteData = 'pasted content from clipboard'
       fireEvent.paste(input, {
         clipboardData: { getData: () => pasteData }
       })
       
-      // Since we can't easily test actual paste, simulate setting value
       fireEvent.change(input, { target: { value: pasteData } })
       
       expect(input.value).toBe(pasteData)
@@ -228,14 +224,12 @@ describe('NuclearInput Component - Unit Tests', () => {
       const input = screen.getByRole('textbox')
       const otherInput = screen.getByTestId('other-input')
       
-      // First cycle
       input.focus()
       await user.type(input, 'first')
       otherInput.focus() // Trigger blur
       
       expect(onBlur).toHaveBeenCalledTimes(1)
       
-      // Second cycle
       input.focus()
       await user.type(input, ' second')
       otherInput.focus() // Trigger blur
@@ -263,16 +257,13 @@ describe('NuclearInput Component - Unit Tests', () => {
       input.focus()
       await user.type(input, 'user typed')
       
-      // Attempt external value change while focused
       act(() => {
         try {
           input.value = 'external change'
         } catch (e) {
-          // Expected to be blocked
         }
       })
       
-      // Value should remain user-typed content
       expect(input.value).toBe('user typed')
     })
 
@@ -280,7 +271,6 @@ describe('NuclearInput Component - Unit Tests', () => {
       render(<NuclearInput />)
       const input = screen.getByRole('textbox')
       
-      // Set value when not focused (should be allowed)
       act(() => {
         input.value = 'allowed external change'
       })
@@ -297,12 +287,10 @@ describe('NuclearInput Component - Unit Tests', () => {
       input.focus()
       await user.type(input, 'protected')
       
-      // Attempt to manipulate value attribute externally
       act(() => {
         input.setAttribute('value', 'malicious change')
       })
       
-      // Should be blocked and logged
       expect(mockConsole.warn).toHaveBeenCalledWith(
         'BLOCKED external value modification:',
         expect.any(Object)
@@ -312,7 +300,6 @@ describe('NuclearInput Component - Unit Tests', () => {
     test('mutation observer is properly cleaned up', () => {
       const { unmount } = render(<NuclearInput />)
       
-      // Component should unmount without errors
       expect(() => unmount()).not.toThrow()
     })
   })
@@ -380,7 +367,6 @@ describe('NuclearInput Component - Unit Tests', () => {
       input.focus()
       await user.type(input, 'typing...')
       
-      // Should unmount without errors even during interaction
       expect(() => unmount()).not.toThrow()
     })
 
@@ -390,7 +376,6 @@ describe('NuclearInput Component - Unit Tests', () => {
       
       await user.type(input, 'test')
       
-      // Should not throw when blur is triggered without onBlur prop
       expect(() => user.tab()).not.toThrow()
     })
   })
@@ -399,7 +384,6 @@ describe('NuclearInput Component - Unit Tests', () => {
     test('properly cleans up mutation observer on unmount', () => {
       const { unmount } = render(<NuclearInput />)
       
-      // Spy on MutationObserver disconnect
       const disconnectSpy = jest.spyOn(MutationObserver.prototype, 'disconnect')
       
       unmount()
@@ -442,7 +426,6 @@ describe('NuclearInput Component - Unit Tests', () => {
     test('handles property descriptor edge cases', () => {
       const input = document.createElement('input')
       
-      // Test the property descriptor logic directly
       const originalValueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
       
       expect(originalValueSetter).toBeDefined()

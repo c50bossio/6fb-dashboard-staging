@@ -5,11 +5,9 @@
  * Verifies all required environment variables are set
  */
 
-// Using built-in terminal colors instead of chalk for zero dependencies
 const fs = require('fs')
 const path = require('path')
 
-// Color codes for terminal output
 const colors = {
   reset: '\x1b[0m',
   red: '\x1b[31m',
@@ -25,11 +23,9 @@ function log(message, color = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`)
 }
 
-// Read .env.local.example to get all required variables
 const examplePath = path.join(__dirname, '..', '.env.local.example')
 const envPath = path.join(__dirname, '..', '.env.local')
 
-// Required environment variables by category
 const requiredVars = {
   core: [
     'NEXT_PUBLIC_APP_URL',
@@ -72,7 +68,6 @@ const requiredVars = {
   ],
 }
 
-// Optional but recommended
 const optionalVars = [
   'NEXT_PUBLIC_POSTHOG_HOST',
   'POSTHOG_API_KEY', 
@@ -83,7 +78,6 @@ const optionalVars = [
 log('🔍 6FB AI Agent System - Environment Configuration Checker', 'bold')
 log('='.repeat(60), 'bold')
 
-// Check if .env.local exists
 const envFiles = ['.env.local', '.env.production', '.env']
 let foundEnvFile = null
 
@@ -102,7 +96,6 @@ if (!foundEnvFile) {
   process.exit(1)
 }
 
-// Load environment variables
 const dotenv = require('dotenv')
 dotenv.config({ path: path.join(__dirname, '..', foundEnvFile) })
 
@@ -111,7 +104,6 @@ let missingOptional = []
 let configured = []
 let errors = []
 
-// Check required variables by category
 log('\n📋 Checking Required Environment Variables:', 'bold')
 
 for (const [category, vars] of Object.entries(requiredVars)) {
@@ -130,7 +122,6 @@ for (const [category, vars] of Object.entries(requiredVars)) {
   }
 }
 
-// Check optional variables
 log('\n📋 Checking Optional Environment Variables:', 'bold')
 optionalVars.forEach(varName => {
   const value = process.env[varName]
@@ -144,7 +135,6 @@ optionalVars.forEach(varName => {
   }
 })
 
-// Validate URL formats
 log('\n🔗 Validating URLs:', 'bold')
 const urlVars = ['NEXT_PUBLIC_APP_URL', 'NEXT_PUBLIC_API_URL', 'NEXT_PUBLIC_SUPABASE_URL']
 
@@ -161,7 +151,6 @@ urlVars.forEach(varName => {
   }
 })
 
-// Validate API key formats
 log('\n🔑 Validating API Key Formats:', 'bold')
 const keyValidations = {
   'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY': /^pk_(test|live)_/,
@@ -185,7 +174,6 @@ for (const [varName, pattern] of Object.entries(keyValidations)) {
   }
 }
 
-// Generate final report
 log('\n' + '='.repeat(60), 'bold')
 log('🎯 ENVIRONMENT CONFIGURATION REPORT', 'bold')
 log('='.repeat(60), 'bold')
@@ -195,7 +183,6 @@ log(`⚠️  Optional Missing: ${missingOptional.length} variables`, 'yellow')
 log(`❌ Required Missing: ${missingRequired.length} variables`, 'red')
 log(`🚨 Validation Errors: ${errors.length} issues`, 'red')
 
-// Service status
 log('\n📊 Service Configuration Status:', 'bold')
 const services = {
   'Database (Supabase)': requiredVars.database,
@@ -215,7 +202,6 @@ Object.entries(services).forEach(([service, vars]) => {
   log(`  ${allConfigured ? '✅' : '❌'} ${service}`, allConfigured ? 'green' : 'red')
 })
 
-// Show issues if any
 if (missingRequired.length > 0) {
   log('\n❌ MISSING REQUIRED VARIABLES:', 'red')
   missingRequired.forEach(v => log(`  • ${v}`, 'red'))
@@ -231,7 +217,6 @@ if (missingOptional.length > 0) {
   missingOptional.forEach(v => log(`  • ${v}`, 'yellow'))
 }
 
-// Final verdict and next steps
 const totalErrors = missingRequired.length + errors.length
 
 if (totalErrors === 0) {
@@ -250,5 +235,4 @@ if (totalErrors === 0) {
   log('  • Test connection: npm run check-env --test-connections', 'cyan')
 }
 
-// Exit with appropriate code
 process.exit(totalErrors === 0 ? 0 : 1)

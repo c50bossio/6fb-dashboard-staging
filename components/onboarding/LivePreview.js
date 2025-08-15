@@ -24,7 +24,6 @@ export default function LivePreview({
   
   const bookingUrl = `https://bookedbarber.com/${slug || 'your-business'}`
   
-  // Generate QR code
   useEffect(() => {
     const generateQR = async () => {
       try {
@@ -66,7 +65,6 @@ export default function LivePreview({
     }
   }
 
-  // Get colors with defaults
   const primaryColor = brandingData.primaryColor || '#3B82F6'
   const secondaryColor = brandingData.secondaryColor || '#1F2937'
   

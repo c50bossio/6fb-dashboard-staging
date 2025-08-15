@@ -36,7 +36,6 @@ export default function BarberSchedule() {
     try {
       setLoading(true)
       
-      // Load appointments for selected date range
       const response = await fetch(`/api/appointments?barber_id=${user?.id || 'demo'}&date=${selectedDate.toISOString()}`)
       const data = await response.json()
       
@@ -59,7 +58,6 @@ export default function BarberSchedule() {
       })
       
       if (response.ok) {
-        // Reload appointments
         loadScheduleData()
       }
     } catch (error) {
@@ -77,7 +75,6 @@ export default function BarberSchedule() {
     }
     setAvailability(newAvailability)
     
-    // Save to backend
     try {
       await fetch('/api/barber/availability', {
         method: 'POST',

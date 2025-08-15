@@ -50,7 +50,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
       
-      // Events are already formatted from the expand endpoint
       setEvents(data.events || []);
       
       console.log(`Loaded ${data.meta?.total || 0} events (${data.meta?.recurring_count || 0} recurring, ${data.meta?.single_count || 0} single)`);
@@ -89,7 +88,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
       
-      // Process events for calendar display
       const processedEvents = processCalendarEvents(data.appointments || [], timezone);
       setEvents(processedEvents);
       
@@ -105,10 +103,8 @@ export const useCalendarEvents = (options = {}) => {
    * Main fetch function that chooses the appropriate method
    */
   const fetchEvents = useCallback(async (startDate, endDate) => {
-    // Update date range
     setDateRange({ start: startDate, end: endDate });
 
-    // Use server expansion if enabled
     if (useServerExpansion) {
       await fetchEventsWithExpansion(startDate, endDate);
     } else {
@@ -124,7 +120,6 @@ export const useCalendarEvents = (options = {}) => {
       setLoading(true);
       setError(null);
 
-      // Determine endpoint based on whether it's recurring
       const endpoint = appointmentData.is_recurring 
         ? '/api/calendar/recurring/create'
         : '/api/calendar/appointments';
@@ -148,7 +143,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
 
-      // Refresh events after creation
       if (dateRange.start && dateRange.end) {
         await fetchEvents(dateRange.start, dateRange.end);
       }
@@ -171,7 +165,6 @@ export const useCalendarEvents = (options = {}) => {
       setLoading(true);
       setError(null);
 
-      // Check if this is a recurring appointment modification
       const isRecurringModification = modificationOptions.modification_type && 
         ['this_only', 'this_and_future', 'all'].includes(modificationOptions.modification_type);
 
@@ -206,7 +199,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
 
-      // Refresh events after update
       if (dateRange.start && dateRange.end) {
         await fetchEvents(dateRange.start, dateRange.end);
       }
@@ -229,7 +221,6 @@ export const useCalendarEvents = (options = {}) => {
       setLoading(true);
       setError(null);
 
-      // Check if this is a recurring appointment deletion
       const isRecurringDeletion = deletionOptions.deletion_type && 
         ['this_only', 'this_and_future', 'all'].includes(deletionOptions.deletion_type);
 
@@ -255,7 +246,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
 
-      // Refresh events after deletion
       if (dateRange.start && dateRange.end) {
         await fetchEvents(dateRange.start, dateRange.end);
       }
@@ -296,7 +286,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
 
-      // Refresh events after conversion
       if (dateRange.start && dateRange.end) {
         await fetchEvents(dateRange.start, dateRange.end);
       }

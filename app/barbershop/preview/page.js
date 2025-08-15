@@ -15,7 +15,6 @@ export default function BarbershopPreviewPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load settings from localStorage
     const savedSettings = localStorage.getItem('preview-barbershop')
     if (savedSettings) {
       try {

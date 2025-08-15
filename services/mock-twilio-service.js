@@ -1,5 +1,3 @@
-// Mock Twilio Service for Development
-// This mock service simulates Twilio API calls without actually sending SMS messages
 
 class MockTwilioService {
   constructor() {
@@ -9,7 +7,6 @@ class MockTwilioService {
     this.isDevelopment = process.env.NODE_ENV === 'development'
   }
 
-  // Mock SMS sending
   async sendSMS(to, message, options = {}) {
     console.log('📱 [MOCK] Twilio: Simulating SMS send', {
       to: Array.isArray(to) ? `${to.length} recipients` : to,
@@ -17,10 +14,8 @@ class MockTwilioService {
       segments: Math.ceil(message.length / 160)
     })
 
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300))
 
-    // Return mock response
     return {
       success: true,
       messageId: `mock-sms-${Date.now()}`,
@@ -34,7 +29,6 @@ class MockTwilioService {
     }
   }
 
-  // Mock SMS campaign
   async sendSMSCampaign(campaign, recipients) {
     console.log('📱 [MOCK] Twilio: Sending SMS campaign', {
       campaign: campaign.name,
@@ -42,7 +36,6 @@ class MockTwilioService {
       message: campaign.message.substring(0, 50) + '...'
     })
 
-    // Simulate processing time
     const processingTime = Math.min(recipients.length * 20, 3000)
     await new Promise(resolve => setTimeout(resolve, processingTime))
 
@@ -69,7 +62,6 @@ class MockTwilioService {
     }
   }
 
-  // Mock white-label SMS campaign
   async sendWhiteLabelSMSCampaign(campaign, barbershop, recipients) {
     console.log('📱 [MOCK] Twilio: White-label SMS campaign', {
       shop: barbershop.name,
@@ -77,7 +69,6 @@ class MockTwilioService {
       recipients: recipients.length
     })
 
-    // Add shop identifier to message
     const brandedMessage = `${barbershop.name}: ${campaign.message}`
 
     return {
@@ -89,11 +80,9 @@ class MockTwilioService {
     }
   }
 
-  // Mock phone number validation
   async validatePhoneNumber(phoneNumber) {
     console.log('📱 [MOCK] Twilio: Validating phone number', { phoneNumber })
 
-    // Basic validation
     const cleaned = phoneNumber.replace(/\D/g, '')
     const isValid = cleaned.length === 10 || cleaned.length === 11
 
@@ -106,7 +95,6 @@ class MockTwilioService {
     }
   }
 
-  // Mock opt-out management
   async addOptOut(phoneNumber) {
     console.log('📱 [MOCK] Twilio: Adding opt-out', { phoneNumber })
     
@@ -130,7 +118,6 @@ class MockTwilioService {
   async checkOptOut(phoneNumber) {
     console.log('📱 [MOCK] Twilio: Checking opt-out status', { phoneNumber })
     
-    // Mock: randomly determine opt-out status for testing
     const isOptedOut = Math.random() < 0.05 // 5% opted out
 
     return {
@@ -140,7 +127,6 @@ class MockTwilioService {
     }
   }
 
-  // Mock analytics
   async getSMSAnalytics(campaignId) {
     console.log('📱 [MOCK] Twilio: Getting SMS analytics', { campaignId })
 
@@ -166,7 +152,6 @@ class MockTwilioService {
     }
   }
 
-  // Calculate SMS billing
   calculateSMSBilling(recipientCount, messageLength = 160, accountType = 'shop') {
     const segments = Math.ceil(messageLength / 160)
     
@@ -193,7 +178,6 @@ class MockTwilioService {
     }
   }
 
-  // Mock scheduling
   async scheduleSMS(to, message, sendAt) {
     console.log('📱 [MOCK] Twilio: Scheduling SMS', {
       to: Array.isArray(to) ? `${to.length} recipients` : to,
@@ -211,7 +195,6 @@ class MockTwilioService {
   }
 }
 
-// Export singleton instance
 const mockTwilioService = new MockTwilioService()
 
 module.exports = {

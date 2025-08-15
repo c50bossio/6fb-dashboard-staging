@@ -6,13 +6,11 @@
 import React, { useState } from 'react';
 import { useSendNotifications, createNotificationData } from '../hooks/useSendNotifications';
 
-// Example 1: Booking Confirmation Component
 export function BookingConfirmationExample() {
   const { sendAppointmentConfirmation, loading, error } = useSendNotifications();
   const [sent, setSent] = useState(false);
 
   const handleBookingConfirmed = async () => {
-    // Sample booking data (would come from your booking system)
     const appointment = {
       id: 'apt_12345',
       date: '2025-08-07',
@@ -38,14 +36,12 @@ export function BookingConfirmationExample() {
     };
 
     try {
-      // Create notification data
       const notificationData = createNotificationData.appointmentConfirmation(
         appointment,
         customer,
         shop
       );
 
-      // Send confirmation
       const result = await sendAppointmentConfirmation(notificationData);
       console.log('Confirmation sent:', result);
       setSent(true);
@@ -81,12 +77,10 @@ export function BookingConfirmationExample() {
   );
 }
 
-// Example 2: Payment Processing Integration
 export function PaymentConfirmationExample() {
   const { sendPaymentConfirmation, loading, error } = useSendNotifications();
 
   const handlePaymentProcessed = async (paymentResult) => {
-    // This would be called after Stripe/payment processing
     const payment = {
       amount: paymentResult.amount_received / 100, // Convert from cents
       method: `${paymentResult.payment_method.card.brand} ****${paymentResult.payment_method.card.last4}`,
@@ -139,7 +133,6 @@ export function PaymentConfirmationExample() {
   );
 }
 
-// Example 3: Reminder Scheduling System
 export function ReminderSchedulingExample() {
   const { scheduleReminder, loading, error } = useSendNotifications();
   const [scheduled, setScheduled] = useState([]);
@@ -224,13 +217,11 @@ export function ReminderSchedulingExample() {
   );
 }
 
-// Example 4: Batch Notifications for Daily Operations
 export function BatchNotificationExample() {
   const { sendBatchNotifications, loading, error } = useSendNotifications();
   const [results, setResults] = useState(null);
 
   const handleSendDailyNotifications = async () => {
-    // Example: Send confirmations and reminders for tomorrow's appointments
     const tomorrowAppointments = [
       {
         type: 'appointment-confirmation',
@@ -310,7 +301,6 @@ export function BatchNotificationExample() {
   );
 }
 
-// Example 5: Complete Booking Flow Integration
 export function CompleteBookingFlowExample() {
   const { 
     sendAppointmentConfirmation, 
@@ -349,21 +339,18 @@ export function CompleteBookingFlowExample() {
     };
 
     try {
-      // Step 1: Send appointment confirmation
       setFlowStatus('sending-confirmation');
       const confirmationData = createNotificationData.appointmentConfirmation(
         appointment, customer, shop
       );
       await sendAppointmentConfirmation(confirmationData);
 
-      // Step 2: Schedule 24h reminder
       setFlowStatus('scheduling-reminder');
       const reminderData = createNotificationData.bookingReminder(
         appointment, customer, shop
       );
       await scheduleReminder(reminderData, 24);
 
-      // Step 3: Send payment confirmation (if paid)
       setFlowStatus('sending-payment-confirmation');
       const payment = {
         amount: '$45.00',
@@ -430,7 +417,6 @@ export function CompleteBookingFlowExample() {
   );
 }
 
-// Main demo component
 export default function NotificationExamplesDemo() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">

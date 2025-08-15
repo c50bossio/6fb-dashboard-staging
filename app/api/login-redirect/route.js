@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
 export async function GET() {
-  // Simple HTML login form that posts directly to API
   const html = `
 <!DOCTYPE html>
 <html>
@@ -203,7 +202,6 @@ export async function GET() {
             }
         }
         
-        // Check if JavaScript is working
         console.log('Login page loaded successfully');
     </script>
 </body>

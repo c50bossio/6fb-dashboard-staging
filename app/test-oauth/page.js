@@ -21,21 +21,18 @@ export default function TestOAuthPage() {
       const supabase = createClient()
       addLog('Supabase client created')
       
-      // Check current session
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       if (currentSession) {
         addLog(`Already signed in as: ${currentSession.user.email}`, 'success')
         return
       }
       
-      // Clear any stale auth data
       const keys = Object.keys(localStorage).filter(k => k.includes('sb-'))
       keys.forEach(key => {
         localStorage.removeItem(key)
         addLog(`Cleared localStorage: ${key}`)
       })
       
-      // Start OAuth
       addLog('Initiating OAuth with Google...')
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -50,7 +47,6 @@ export default function TestOAuthPage() {
       } else {
         addLog('OAuth initiated successfully', 'success')
         addLog(`Redirect URL: ${data.url}`)
-        // Browser will redirect
       }
       
     } catch (err) {
@@ -63,7 +59,6 @@ export default function TestOAuthPage() {
     addLog('Starting OAuth with plan data test...')
     
     try {
-      // Store plan data
       const planData = {
         planId: 'price_1Rvec7EzoIvSRPoD2pNplqi0',
         billingPeriod: 'monthly',
@@ -76,7 +71,6 @@ export default function TestOAuthPage() {
       const supabase = createClient()
       addLog('Supabase client created')
       
-      // Start OAuth
       addLog('Initiating OAuth with plan data...')
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -100,7 +94,6 @@ export default function TestOAuthPage() {
     setLogs([])
     addLog('Checking browser storage...')
     
-    // Check localStorage
     const localKeys = Object.keys(localStorage)
     const supabaseKeys = localKeys.filter(k => k.includes('sb-') || k.includes('supabase'))
     
@@ -125,7 +118,6 @@ export default function TestOAuthPage() {
       }
     })
     
-    // Check sessionStorage
     const sessionKeys = Object.keys(sessionStorage)
     addLog(`SessionStorage keys: ${sessionKeys.length}`)
     
@@ -136,7 +128,6 @@ export default function TestOAuthPage() {
       }
     })
     
-    // Check for PKCE verifier
     const pkceKey = 'sb-dfhqjdoydihajmjxniee-auth-token-code-verifier'
     const verifier = localStorage.getItem(pkceKey)
     if (verifier) {

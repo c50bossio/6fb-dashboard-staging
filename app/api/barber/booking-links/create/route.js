@@ -28,7 +28,6 @@ export async function POST(request) {
       sendReminders
     } = body
 
-    // Validate required fields
     if (!barberId || !name || !url || !services) {
       return NextResponse.json(
         { error: 'Missing required fields: barberId, name, url, services' },
@@ -36,7 +35,6 @@ export async function POST(request) {
       )
     }
 
-    // Validate services array
     if (!Array.isArray(services) || services.length === 0) {
       return NextResponse.json(
         { error: 'Services must be a non-empty array' },
@@ -44,7 +42,6 @@ export async function POST(request) {
       )
     }
 
-    // Insert booking link into database
     const { data: bookingLink, error: insertError } = await supabase
       .from('booking_links')
       .insert({
@@ -76,7 +73,6 @@ export async function POST(request) {
       )
     }
 
-    // Track the link creation event
     await supabase
       .from('link_analytics')
       .insert({
@@ -134,7 +130,6 @@ export async function GET(request) {
     let useFallback = false
 
     try {
-      // Fetch all booking links for the barber
       const { data, error: fetchError } = await supabase
         .from('booking_links')
         .select('*')
@@ -146,7 +141,6 @@ export async function GET(request) {
         useFallback = true
       } else {
         bookingLinks = data || []
-        // Don't use fallback if table exists but is empty
         useFallback = false
       }
     } catch (dbError) {
@@ -154,7 +148,6 @@ export async function GET(request) {
       useFallback = true
     }
 
-    // NO MOCK DATA - return empty state with instructions if table doesn't exist
     if (useFallback) {
       return NextResponse.json({
         success: false,
@@ -169,7 +162,6 @@ export async function GET(request) {
       })
     }
 
-    // Transform data for frontend
     const transformedLinks = bookingLinks.map(link => ({
       id: link.id,
       name: link.name,

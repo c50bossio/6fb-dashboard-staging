@@ -7,15 +7,12 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Database configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTIxMjUzMiwiZXhwIjoyMDUwNzg4NTMyfQ.VwP1RlHkKwMqNl0XDLPabxJZKgMkGRBu84hvOeLI8gQ'
 
 console.log('🌱 Seeding Marketing Test Data...')
 
-// Test data for realistic campaigns
 const testData = {
-  // Test barbershops
   barbershops: [
     {
       id: 'test-shop-001',
@@ -40,7 +37,6 @@ const testData = {
     }
   ],
 
-  // Test customers (use your real email/phone for testing)
   customers: [
     {
       name: 'John Smith',
@@ -77,7 +73,6 @@ const testData = {
     }
   ],
 
-  // Test marketing accounts
   marketingAccounts: [
     {
       owner_id: 'test-shop-owner-1',
@@ -97,7 +92,6 @@ const testData = {
     }
   ],
 
-  // Test segments
   customerSegments: [
     {
       created_by: 'test-shop-owner-1',
@@ -122,7 +116,6 @@ const testData = {
     }
   ],
 
-  // Test campaigns
   campaigns: [
     {
       created_by: 'test-shop-owner-1',
@@ -154,11 +147,9 @@ async function seedMarketingData() {
   try {
     console.log('📊 Connecting to Supabase...')
     
-    // Test connection
     const { data: test } = await supabase.from('profiles').select('id').limit(1)
     console.log('✅ Connected to Supabase successfully')
     
-    // Seed customers (most important for testing)
     console.log('\n👥 Seeding test customers...')
     for (const customer of testData.customers) {
       try {
@@ -176,7 +167,6 @@ async function seedMarketingData() {
       }
     }
     
-    // Seed marketing accounts
     console.log('\n💳 Seeding marketing accounts...')
     for (const account of testData.marketingAccounts) {
       try {
@@ -194,7 +184,6 @@ async function seedMarketingData() {
       }
     }
     
-    // Seed customer segments  
     console.log('\n🎯 Seeding customer segments...')
     for (const segment of testData.customerSegments) {
       try {
@@ -212,7 +201,6 @@ async function seedMarketingData() {
       }
     }
     
-    // Seed test campaigns
     console.log('\n📧 Seeding test campaigns...')
     for (const campaign of testData.campaigns) {
       try {
@@ -245,7 +233,6 @@ async function seedMarketingData() {
   }
 }
 
-// Run the seeding
 if (require.main === module) {
   seedMarketingData()
     .then(success => {

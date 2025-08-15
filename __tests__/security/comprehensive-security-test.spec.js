@@ -7,7 +7,6 @@ import { test, expect } from '@playwright/test';
 import SecurityTestOrchestrator from './security-test-orchestrator.js';
 import { SECURITY_CONFIG } from './config/security-config.js';
 
-// Test configuration
 const TEST_CONFIG = {
   timeout: 30 * 60 * 1000, // 30 minutes for complete suite
   retries: 1,
@@ -21,7 +20,6 @@ test.describe('Comprehensive Security Testing Suite', () => {
     console.log('🚀 Initializing comprehensive security testing suite...');
     console.log(`📋 Target environment: ${SECURITY_CONFIG.environments.development.baseUrl}`);
     
-    // Validate environment
     const response = await fetch(`${SECURITY_CONFIG.environments.development.baseUrl}/api/health`);
     if (!response.ok) {
       throw new Error(`Application not available at ${SECURITY_CONFIG.environments.development.baseUrl}`);
@@ -51,13 +49,11 @@ test.describe('Comprehensive Security Testing Suite', () => {
 
     const results = await orchestrator.runCompleteSuite(page, ['all']);
 
-    // Validate results structure
     expect(results).toBeDefined();
     expect(results.results).toBeDefined();
     expect(results.finalReport).toBeDefined();
     expect(results.securityPosture).toBeDefined();
 
-    // Log summary results
     console.log('\n📊 Security Testing Summary:');
     console.log(`🔒 Overall Security Score: ${results.securityPosture.overallScore}/100`);
     console.log(`⚠️ Risk Level: ${results.securityPosture.riskLevel}`);
@@ -68,23 +64,19 @@ test.describe('Comprehensive Security Testing Suite', () => {
     console.log(`🟢 Low: ${results.securityPosture.low}`);
     console.log(`⏱️ Execution Time: ${Math.round(results.executionTime / 60000)} minutes`);
 
-    // Security posture assertions
     expect(results.securityPosture.overallScore).toBeGreaterThan(0);
     expect(results.securityPosture.riskLevel).toMatch(/^(LOW|MEDIUM|HIGH|CRITICAL)$/);
     
-    // Critical issues should be flagged
     if (results.securityPosture.critical > 0) {
       console.warn(`⚠️ WARNING: ${results.securityPosture.critical} critical security issues found!`);
       console.warn('These issues require immediate attention.');
     }
 
-    // High priority issues should be noted
     if (results.securityPosture.high > 0) {
       console.warn(`⚠️ NOTICE: ${results.securityPosture.high} high-severity security issues found.`);
       console.warn('These issues should be addressed within 7 days.');
     }
 
-    // Security score thresholds
     if (results.securityPosture.overallScore < 50) {
       console.error('❌ CRITICAL: Security score below acceptable threshold (50)');
       throw new Error(`Security score too low: ${results.securityPosture.overallScore}/100`);
@@ -94,7 +86,6 @@ test.describe('Comprehensive Security Testing Suite', () => {
       console.log('✅ EXCELLENT: Security score meets excellent standards (90+)');
     }
 
-    // Final validation
     expect(results.finalReport.metadata.scanId).toBeDefined();
     expect(results.finalReport.executiveSummary).toBeDefined();
     expect(results.finalReport.recommendations).toBeDefined();
@@ -191,7 +182,6 @@ test.describe('Comprehensive Security Testing Suite', () => {
 
     console.log('\n⚡ Running quick security health check...');
     
-    // Basic security headers check
     const response = await page.request.get('/');
     const headers = response.headers();
     
@@ -209,7 +199,6 @@ test.describe('Comprehensive Security Testing Suite', () => {
       console.log('✅ Basic security headers present');
     }
 
-    // Check for basic vulnerabilities
     const testUrls = [
       '/.env',
       '/config.json',
@@ -227,7 +216,6 @@ test.describe('Comprehensive Security Testing Suite', () => {
           exposedEndpoints++;
         }
       } catch (error) {
-        // Expected for most URLs
       }
     }
 
@@ -247,11 +235,9 @@ test.describe('Comprehensive Security Testing Suite', () => {
   });
 });
 
-// Additional utility tests for development
 test.describe('Security Test Utilities', () => {
   
   test('Validate Security Configuration', async () => {
-    // Validate security configuration is properly loaded
     expect(SECURITY_CONFIG).toBeDefined();
     expect(SECURITY_CONFIG.environments).toBeDefined();
     expect(SECURITY_CONFIG.authentication).toBeDefined();
@@ -266,10 +252,8 @@ test.describe('Security Test Utilities', () => {
   });
 
   test('Test Security Tools Availability', async () => {
-    // This test would check if security tools are available in CI/CD environment
     console.log('🔧 Checking security tools availability...');
     
-    // In a real environment, you would check for:
     // - semgrep --version
     // - nuclei -version
     // - bandit --version
@@ -280,7 +264,6 @@ test.describe('Security Test Utilities', () => {
   });
 
   test('Performance Baseline', async ({ page }) => {
-    // Measure performance impact of security measures
     const startTime = Date.now();
     
     await page.goto('/');
@@ -290,10 +273,8 @@ test.describe('Security Test Utilities', () => {
     
     console.log(`📊 Page load time: ${loadTime}ms`);
     
-    // Security measures shouldn't significantly impact performance
     expect(loadTime).toBeLessThan(10000); // 10 seconds max
   });
 });
 
-// Export configuration for external use
 export { TEST_CONFIG, SECURITY_CONFIG };

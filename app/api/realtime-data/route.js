@@ -6,11 +6,9 @@ export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
-    // Temporary bypass for development
     const isDevelopment = process.env.NODE_ENV === 'development'
     const effectiveUser = user || { id: 'demo-user-' + Date.now(), email: 'demo@example.com' }
     
@@ -24,7 +22,6 @@ export async function GET(request) {
     const action = searchParams.get('action') || 'status'
 
     try {
-      // Call Python Real-time Data Service
       let response
       
       if (action === 'status') {
@@ -54,7 +51,6 @@ export async function GET(request) {
     } catch (error) {
       console.error('Real-time data service error:', error)
       
-      // NO MOCK DATA - Return error when service unavailable
       return NextResponse.json({
         success: false,
         error: 'Real-time data service unavailable',
@@ -76,11 +72,9 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
-    // Temporary bypass for development
     const isDevelopment = process.env.NODE_ENV === 'development'
     const effectiveUser = user || { id: 'demo-user-' + Date.now(), email: 'demo@example.com' }
     
@@ -116,8 +110,6 @@ export async function POST(request) {
   }
 }
 
-// NO MOCK DATA - Real-time data function removed
-// Real-time data must come from actual backend service
 
 async function handleRealtimeDataAction(action, feedId, parameters, userId) {
   switch (action) {

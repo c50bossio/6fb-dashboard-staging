@@ -12,18 +12,15 @@ const sqlite3 = require('sqlite3').verbose()
 const { promisify } = require('util')
 require('dotenv').config({ path: '.env.local' })
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-// Initialize SQLite database
 const db = new sqlite3.Database('./data/agent_system.db')
 const dbAll = promisify(db.all.bind(db))
 const dbGet = promisify(db.get.bind(db))
 
-// Migration statistics
 const stats = {
   appointments: { migrated: 0, skipped: 0, errors: 0 },
   customers: { migrated: 0, skipped: 0, errors: 0 },
@@ -55,11 +52,9 @@ async function testConnections() {
   log('🔌 Testing database connections...', 'info')
   
   try {
-    // Test SQLite
     const sqliteCount = await dbGet("SELECT COUNT(*) as count FROM sqlite_master WHERE type='table'")
     log(`✅ SQLite connected - ${sqliteCount.count} tables found`, 'success')
     
-    // Test Supabase
     const { data, error } = await supabase.from('appointments').select('id').limit(1)
     if (error && !error.message.includes('does not exist')) {
       throw error
@@ -80,7 +75,6 @@ async function createSupabaseTables() {
   log('🏗️  Creating Supabase tables if needed...', 'info')
   
   const tableQueries = [
-    // Customers table
     `
     CREATE TABLE IF NOT EXISTS customers (
       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -93,7 +87,6 @@ async function createSupabaseTables() {
     );
     `,
     
-    // Services table
     `
     CREATE TABLE IF NOT EXISTS services (
       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -107,7 +100,6 @@ async function createSupabaseTables() {
     );
     `,
     
-    // Barbers table
     `
     CREATE TABLE IF NOT EXISTS barbers (
       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -122,7 +114,6 @@ async function createSupabaseTables() {
     );
     `,
     
-    // Appointments table
     `
     CREATE TABLE IF NOT EXISTS appointments (
       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -139,7 +130,6 @@ async function createSupabaseTables() {
     );
     `,
     
-    // Payments table
     `
     CREATE TABLE IF NOT EXISTS payments (
       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -188,7 +178,6 @@ async function migrateCustomers() {
     
     for (const customer of customers) {
       try {
-        // Check if customer already exists (by email if available, or name)
         const identifier = customer.email || customer.name
         const { data: existing } = await supabase
           .from('customers')
@@ -201,7 +190,6 @@ async function migrateCustomers() {
           continue
         }
         
-        // Insert new customer
         const { error } = await supabase.from('customers').insert({
           name: customer.name,
           email: customer.email,
@@ -249,7 +237,6 @@ async function migrateServices() {
     
     for (const service of services) {
       try {
-        // Check if service already exists
         const { data: existing } = await supabase
           .from('services')
           .select('id')
@@ -261,7 +248,6 @@ async function migrateServices() {
           continue
         }
         
-        // Insert new service
         const { error } = await supabase.from('services').insert({
           name: service.name,
           description: service.description,
@@ -309,7 +295,6 @@ async function migrateBarbers() {
     
     for (const barber of barbers) {
       try {
-        // Check if barber already exists
         const { data: existing } = await supabase
           .from('barbers')
           .select('id')
@@ -321,7 +306,6 @@ async function migrateBarbers() {
           continue
         }
         
-        // Insert new barber
         const { error } = await supabase.from('barbers').insert({
           name: barber.name,
           email: barber.email,
@@ -371,7 +355,6 @@ async function getSupabaseId(table, nameOrEmail, fallbackName = null) {
       return data[0].id
     }
     
-    // Fallback to name search if email didn't work
     if (fallbackName) {
       const { data: fallbackData } = await supabase
         .from(table)
@@ -410,7 +393,6 @@ async function migrateAppointments() {
     
     for (const appointment of appointments) {
       try {
-        // Check if appointment already exists (by time slot and customer)
         const { data: existing } = await supabase
           .from('appointments')
           .select('id')
@@ -422,12 +404,10 @@ async function migrateAppointments() {
           continue
         }
         
-        // Look up related records in Supabase
         const customerId = await getSupabaseId('customers', appointment.customer_email || appointment.customer_name, appointment.customer_name)
         const barberId = await getSupabaseId('barbers', appointment.barber_name)
         const serviceId = await getSupabaseId('services', appointment.service_name)
         
-        // Insert appointment (even if some references are null)
         const { error } = await supabase.from('appointments').insert({
           customer_id: customerId,
           barber_id: barberId,
@@ -481,11 +461,9 @@ async function migratePayments() {
     
     for (const payment of payments) {
       try {
-        // Look up customer and appointment in Supabase
         const customerId = payment.customer_email ? 
           await getSupabaseId('customers', payment.customer_email) : null
         
-        // For appointment, we might need to find it by customer and time
         let appointmentId = null
         if (customerId) {
           const { data: appointments } = await supabase
@@ -499,7 +477,6 @@ async function migratePayments() {
           }
         }
         
-        // Insert payment
         const { error } = await supabase.from('payments').insert({
           appointment_id: appointmentId,
           customer_id: customerId,
@@ -567,23 +544,19 @@ async function main() {
   log('Following SUPABASE_PRODUCTION_RULE.md - Real database only!', 'info')
   
   try {
-    // Test connections first
     const connectionsOk = await testConnections()
     if (!connectionsOk) {
       process.exit(1)
     }
     
-    // Create tables in Supabase
     await createSupabaseTables()
     
-    // Migrate data in dependency order
     await migrateCustomers()
     await migrateServices() 
     await migrateBarbers()
     await migrateAppointments()
     await migratePayments()
     
-    // Print summary
     printSummary()
     
   } catch (error) {
@@ -594,7 +567,6 @@ async function main() {
   }
 }
 
-// Run migration
 if (require.main === module) {
   main()
 }

@@ -22,7 +22,6 @@ export function usePusherNotifications() {
 
     async function setupPusher() {
       try {
-        // Get Supabase user ID
         const { data: supabaseUser } = await supabase
           .from('users')
           .select('id')
@@ -31,7 +30,6 @@ export function usePusherNotifications() {
 
         if (!supabaseUser) return
 
-        // Load existing notifications
         const { data: existingNotifications } = await supabase
           .from('notifications')
           .select('*')
@@ -44,7 +42,6 @@ export function usePusherNotifications() {
           setUnreadCount(existingNotifications.filter(n => !n.read).length)
         }
 
-        // Subscribe to user's private channel
         const channelName = CHANNELS.USER_NOTIFICATIONS(supabaseUser.id)
         
         channel = subscribeToChannel(channelName, {
@@ -66,7 +63,6 @@ export function usePusherNotifications() {
 
     setupPusher()
 
-    // Cleanup
     return () => {
       if (channel) {
         unsubscribeFromChannel(channel.name)
@@ -78,7 +74,6 @@ export function usePusherNotifications() {
     setNotifications(prev => [data, ...prev])
     setUnreadCount(prev => prev + 1)
 
-    // Show browser notification if permitted
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(data.title, {
         body: data.message,
@@ -97,13 +92,11 @@ export function usePusherNotifications() {
 
   const markAsRead = useCallback(async (notificationId) => {
     try {
-      // Update in database
       await supabase
         .from('notifications')
         .update({ read: true })
         .eq('id', notificationId)
 
-      // Update local state
       handleNotificationRead({ notificationId })
     } catch (error) {
       console.error('Error marking notification as read:', error)
@@ -118,13 +111,11 @@ export function usePusherNotifications() {
 
       if (unreadIds.length === 0) return
 
-      // Update in database
       await supabase
         .from('notifications')
         .update({ read: true })
         .in('id', unreadIds)
 
-      // Update local state
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
       setUnreadCount(0)
     } catch (error) {

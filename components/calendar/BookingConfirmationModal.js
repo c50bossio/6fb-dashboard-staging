@@ -15,7 +15,6 @@ export default function BookingConfirmationModal({
   const [showCheckmark, setShowCheckmark] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // Animate checkmark when modal opens
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => setShowCheckmark(true), 300)
@@ -28,7 +27,6 @@ export default function BookingConfirmationModal({
 
   if (!appointmentData) return null
 
-  // Format appointment date/time
   const formatDateTime = (dateString) => {
     const date = new Date(dateString)
     const options = {
@@ -62,7 +60,6 @@ export default function BookingConfirmationModal({
     })
   }
 
-  // Copy appointment details to clipboard
   const handleCopyDetails = async () => {
     const details = `
 Appointment Confirmation

@@ -5,7 +5,6 @@
 import dynamic from 'next/dynamic'
 import { LoadingSkeleton } from '@/lib/lazy-load'
 
-// Dashboard components with lazy loading
 export const DashboardMetrics = dynamic(
   () => import('@/components/dashboard/metrics'),
   {
@@ -30,7 +29,6 @@ export const BookingCalendar = dynamic(
   }
 )
 
-// Analytics components with heavy charting libraries
 export const AnalyticsChart = dynamic(
   () => import('recharts').then(mod => mod.LineChart),
   {
@@ -47,7 +45,6 @@ export const PerformanceChart = dynamic(
   }
 )
 
-// AI components
 export const AIChat = dynamic(
   () => import('@/components/ai/AIChat'),
   {
@@ -65,7 +62,6 @@ export const AIRecommendations = dynamic(
   }
 )
 
-// Settings and configuration components
 export const SettingsPanel = dynamic(
   () => import('@/components/settings/SettingsPanel'),
   {
@@ -82,7 +78,6 @@ export const ProfileSettings = dynamic(
   }
 )
 
-// Notification components
 export const NotificationCenter = dynamic(
   () => import('@/components/notifications/NotificationCenter'),
   {
@@ -91,7 +86,6 @@ export const NotificationCenter = dynamic(
   }
 )
 
-// Heavy third-party integrations
 export const StripeCheckout = dynamic(
   () => import('@/components/payments/StripeCheckout'),
   {
@@ -108,7 +102,6 @@ export const GoogleMapsWidget = dynamic(
   }
 )
 
-// Table components
 export const DataTable = dynamic(
   () => import('@/components/ui/DataTable'),
   {
@@ -125,7 +118,6 @@ export const BookingTable = dynamic(
   }
 )
 
-// Modal components
 export const BookingModal = dynamic(
   () => import('@/components/modals/BookingModal'),
   {
@@ -142,7 +134,6 @@ export const PaymentModal = dynamic(
   }
 )
 
-// PDF generation components
 export const InvoiceGenerator = dynamic(
   () => import('@/components/pdf/InvoiceGenerator'),
   {
@@ -159,7 +150,6 @@ export const ReportGenerator = dynamic(
   }
 )
 
-// Export all lazy components
 export default {
   DashboardMetrics,
   DashboardActions,

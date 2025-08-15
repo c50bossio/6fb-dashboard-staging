@@ -13,7 +13,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
   test.beforeEach(async ({ browser }) => {
     page = await browser.newPage()
     
-    // Mock API responses
     await page.route('/api/v1/settings/barbershop', async (route) => {
       if (route.request().method() === 'GET') {
         await route.fulfill({
@@ -61,31 +60,26 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       })
     })
 
-    // Navigate to settings page
     await page.goto('http://localhost:9999/dashboard/settings')
     await page.waitForSelector('[data-testid="settings-loaded"]', { timeout: 10000 })
       .catch(() => {
-        // Alternative: wait for specific content to appear
         return page.waitForSelector('text=E2E Test Barbershop', { timeout: 10000 })
       })
   })
 
   test.describe('Nuclear Input Character-by-Character Typing', () => {
     test('phone input maintains value during slow typing', async () => {
-      // Enter edit mode
       await page.click('button:has-text("Edit")')
       await expect(page.locator('button:has-text("Save")')).toBeVisible()
 
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.clear()
       
-      // Type slowly character by character
       const testPhone = '+1 (555) 999-8888'
       for (const char of testPhone) {
         await phoneInput.type(char, { delay: 100 })
         await page.waitForTimeout(50)
         
-        // Verify value hasn't been corrupted
         const currentValue = await phoneInput.inputValue()
         expect(currentValue).toBe(testPhone.substring(0, testPhone.indexOf(char) + 1))
       }
@@ -99,7 +93,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.clear()
       
-      // Type very rapidly (no delay between characters)
       const rapidPhone = '+1-555-RAPID-TEST-12345'
       await phoneInput.type(rapidPhone, { delay: 1 })
       
@@ -112,7 +105,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       const emailInput = page.locator('input[placeholder="Enter email address"]')
       await emailInput.clear()
       
-      // Type email with special characters slowly
       const specialEmail = 'test+tag.name_123@domain-test.co.uk'
       for (const char of specialEmail) {
         await emailInput.type(char, { delay: 80 })
@@ -129,16 +121,12 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await phoneInput.click()
       await phoneInput.clear()
       
-      // Start typing
       await phoneInput.type('+1 555', { delay: 100 })
       
-      // Verify focus is maintained
       await expect(phoneInput).toBeFocused()
       
-      // Continue typing
       await phoneInput.type(' 123-4567', { delay: 100 })
       
-      // Focus should still be maintained
       await expect(phoneInput).toBeFocused()
       expect(await phoneInput.inputValue()).toBe('+1 555 123-4567')
     })
@@ -151,7 +139,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.clear()
       
-      // Simulate paste operation
       const pastedContent = '+1 (555) PASTED-123'
       await phoneInput.fill(pastedContent) // fill simulates paste
       
@@ -209,13 +196,10 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await phoneInput.clear()
       await phoneInput.type('+1 555 BLUR TEST')
       
-      // Focus should still be on phone input
       await expect(phoneInput).toBeFocused()
       
-      // Click on email input to trigger blur on phone
       await emailInput.click()
       
-      // Phone input should no longer be focused
       await expect(phoneInput).not.toBeFocused()
       await expect(emailInput).toBeFocused()
     })
@@ -226,7 +210,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       const emailInput = page.locator('input[placeholder="Enter email address"]')
       
-      // Rapid switching
       for (let i = 0; i < 5; i++) {
         await phoneInput.click()
         await phoneInput.type(`${i}`, { delay: 10 })
@@ -242,24 +225,20 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
     test('maintains proper tab order in edit mode', async () => {
       await page.click('button:has-text("Edit")')
       
-      // Test tab navigation
       await page.keyboard.press('Tab') // Should focus first input
       let focused = await page.locator(':focus').getAttribute('placeholder')
       
       await page.keyboard.press('Tab') // Move to next input
       let nextFocused = await page.locator(':focus').getAttribute('placeholder')
       
-      // Should move through inputs in proper order
       expect(focused).not.toBe(nextFocused)
     })
   })
 
   test.describe('Real Browser Stress Tests', () => {
     test('handles concurrent typing in multiple browser tabs', async ({ browser }) => {
-      // Create second tab
       const page2 = await browser.newPage()
       
-      // Set up same mocks for second page
       await page2.route('/api/v1/settings/**', async (route) => {
         if (route.request().method() === 'GET') {
           await route.fulfill({
@@ -283,11 +262,9 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await page2.goto('http://localhost:9999/dashboard/settings')
       await page2.waitForSelector('text=Tab 2 Barbershop', { timeout: 10000 })
       
-      // Enter edit mode in both tabs
       await page.click('button:has-text("Edit")')
       await page2.click('button:has-text("Edit")')
       
-      // Type simultaneously in both tabs
       const phoneInput1 = page.locator('input[placeholder="Enter phone number"]')
       const phoneInput2 = page2.locator('input[placeholder="Enter phone number"]')
       
@@ -309,11 +286,9 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await phoneInput.clear()
       await phoneInput.type('+1 555 BEFORE-REFRESH')
       
-      // Refresh page
       await page.reload()
       await page.waitForSelector('text=E2E Test Barbershop', { timeout: 10000 })
       
-      // Should return to default values after refresh
       expect(await page.textContent('body')).toContain('+1 (555) 123-4567')
     })
 
@@ -324,54 +299,42 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await phoneInput.clear()
       await phoneInput.type('+1 555 NAVIGATION-TEST')
       
-      // Navigate away and back
       await page.goto('http://localhost:9999')
       await page.goBack()
       
-      // Should reload form with original values
       await page.waitForSelector('text=E2E Test Barbershop', { timeout: 10000 })
     })
   })
 
   test.describe('Complete User Workflows', () => {
     test('complete edit-save workflow with nuclear inputs', async () => {
-      // Enter edit mode
       await page.click('button:has-text("Edit")')
       await expect(page.locator('button:has-text("Save")')).toBeVisible()
       
-      // Update phone field
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.clear()
       await phoneInput.type('+1 (555) 777-9999')
       
-      // Update email field
       const emailInput = page.locator('input[placeholder="Enter email address"]')
       await emailInput.clear()
       await emailInput.type('updated@workflow.com')
       
-      // Trigger blur by clicking away
       await page.click('body')
       
-      // Save changes
       await page.click('button:has-text("Save")')
       
-      // Should show success message
       await expect(page.locator('text=Settings saved successfully!')).toBeVisible()
       
-      // Should exit edit mode
       await expect(page.locator('button:has-text("Edit")')).toBeVisible()
       await expect(page.locator('button:has-text("Save")')).not.toBeVisible()
     })
 
     test('complete edit-cancel workflow preserves original values', async () => {
-      // Record original values
       const originalPhone = await page.textContent('text=+1 (555) 123-4567')
       const originalEmail = await page.textContent('text=e2e@test.com')
       
-      // Enter edit mode
       await page.click('button:has-text("Edit")')
       
-      // Make changes
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.clear()
       await phoneInput.type('+1 (555) CANCEL-TEST')
@@ -380,13 +343,10 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await emailInput.clear()
       await emailInput.type('cancel@test.com')
       
-      // Cancel changes
       await page.click('button:has-text("Cancel")')
       
-      // Should exit edit mode
       await expect(page.locator('button:has-text("Edit")')).toBeVisible()
       
-      // Should display original values
       await expect(page.locator('text=+1 (555) 123-4567')).toBeVisible()
       await expect(page.locator('text=e2e@test.com')).toBeVisible()
     })
@@ -398,24 +358,18 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await emailInput.clear()
       await emailInput.type('invalid-email-format')
       
-      // Trigger blur
       await page.click('body')
       
-      // Try to save
       await page.click('button:has-text("Save")')
       
-      // Should show validation error
       await expect(page.locator('text=Invalid email format')).toBeVisible()
       
-      // Should remain in edit mode
       await expect(page.locator('button:has-text("Save")')).toBeVisible()
       
-      // Fix the email
       await emailInput.clear()
       await emailInput.type('valid@email.com')
       await page.click('body') // Trigger blur
       
-      // Save should now work
       await page.click('button:has-text("Save")')
       await expect(page.locator('text=Settings saved successfully!')).toBeVisible()
     })
@@ -428,7 +382,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.clear()
       
-      // Type very long phone number
       const longPhone = '+1 (555) 123-4567 ext 1234567890 additional-info-that-is-very-long'
       const startTime = Date.now()
       
@@ -439,7 +392,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       
       expect(await phoneInput.inputValue()).toBe(longPhone)
       
-      // Should complete within reasonable time (less than 10 seconds)
       expect(typingTime).toBeLessThan(10000)
     })
 
@@ -449,7 +401,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       const emailInput = page.locator('input[placeholder="Enter email address"]')
       
-      // Perform extended typing session
       for (let i = 0; i < 100; i++) {
         await phoneInput.clear()
         await phoneInput.type(`+1 555 ${i.toString().padStart(3, '0')}-TEST`)
@@ -457,13 +408,11 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
         await emailInput.clear()
         await emailInput.type(`test${i}@extended.test`)
         
-        // Small delay to prevent overwhelming
         if (i % 10 === 0) {
           await page.waitForTimeout(100)
         }
       }
       
-      // Final values should be correct
       expect(await phoneInput.inputValue()).toBe('+1 555 099-TEST')
       expect(await emailInput.inputValue()).toBe('test99@extended.test')
     })
@@ -476,12 +425,10 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       const emailInput = page.locator('input[placeholder="Enter email address"]')
       
-      // Try to trigger autofill by focusing and typing
       await phoneInput.focus()
       await page.keyboard.press('Tab')
       await emailInput.focus()
       
-      // Type actual values
       await phoneInput.clear()
       await phoneInput.type('+1 555 AUTOFILL-RESISTANT')
       
@@ -499,7 +446,6 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await phoneInput.clear()
       await phoneInput.type('+1 555 PROTECTED')
       
-      // Try to manipulate via JavaScript
       await page.evaluate(() => {
         const inputs = document.querySelectorAll('input[placeholder="Enter phone number"]')
         inputs.forEach(input => {
@@ -507,12 +453,10 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
             input.value = 'MALICIOUS CHANGE'
             input.setAttribute('value', 'ATTRIBUTE CHANGE')
           } catch (e) {
-            // Expected to fail due to nuclear protection
           }
         })
       })
       
-      // Value should remain protected
       expect(await phoneInput.inputValue()).toBe('+1 555 PROTECTED')
     })
   })

@@ -10,7 +10,6 @@ export function useRealtimeAppointments(barbershopId) {
   const [isConnected, setIsConnected] = useState(false)
   const [lastUpdate, setLastUpdate] = useState(null)
   
-  // Debug info
   if (typeof window !== 'undefined') {
     window.realtimeHookDebug = {
       called: true,
@@ -22,7 +21,6 @@ export function useRealtimeAppointments(barbershopId) {
   useEffect(() => {
     console.log('🔥 WORKING HOOK: Starting real-time connection for shop:', barbershopId)
     
-    // Store debug info
     if (typeof window !== 'undefined') {
       window.realtimeHookDebug = {
         ...window.realtimeHookDebug,
@@ -31,7 +29,6 @@ export function useRealtimeAppointments(barbershopId) {
       }
     }
     
-    // Get environment variables
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
@@ -48,10 +45,8 @@ export function useRealtimeAppointments(barbershopId) {
       return
     }
 
-    // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
     
-    // Function to fetch appointments
     const fetchAppointments = async () => {
       try {
         console.log('📡 Fetching appointments for shop:', barbershopId)
@@ -73,10 +68,8 @@ export function useRealtimeAppointments(barbershopId) {
       }
     }
 
-    // Fetch initial data
     fetchAppointments()
 
-    // Set up real-time subscription
     console.log('🔄 Setting up real-time subscription...')
     
     const channel = supabase
@@ -100,7 +93,6 @@ export function useRealtimeAppointments(barbershopId) {
           if (payload.eventType === 'UPDATE') {
             console.log('🔄 Processing UPDATE event for appointment:', payload.new?.id)
             
-            // Update the appointment in our state
             setAppointments(prev => {
               const updated = prev.map(appointment => {
                 if (appointment.id === payload.new.id) {
@@ -162,7 +154,6 @@ export function useRealtimeAppointments(barbershopId) {
         }
       })
 
-    // Cleanup function
     return () => {
       console.log('🔌 Cleaning up real-time subscription')
       supabase.removeChannel(channel)

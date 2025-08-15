@@ -9,7 +9,6 @@ const supabase = createClient(
 
 async function runMigration() {
   try {
-    // First check if customers table already exists
     const { data: existingTable } = await supabase
       .from('customers')
       .select('id')
@@ -18,16 +17,13 @@ async function runMigration() {
     if (existingTable) {
       console.log('✅ Customers table already exists. Checking for missing columns...');
       
-      // Check if we need to add missing columns
       const { data, error } = await supabase.rpc('get_table_columns', {
         table_name: 'customers'
       }).single();
       
       if (error) {
-        // RPC function might not exist, try a different approach
         console.log('Checking table structure...');
         
-        // Try to query with the columns we expect
         const { error: queryError } = await supabase
           .from('customers')
           .select('barbershop_id, last_visit_at')
@@ -36,7 +32,6 @@ async function runMigration() {
         if (queryError && queryError.message.includes('column')) {
           console.log('Some columns are missing. Adding them...');
           
-          // Add missing columns
           const alterTableSQL = `
             ALTER TABLE customers 
             ADD COLUMN IF NOT EXISTS barbershop_id VARCHAR(255),
@@ -46,8 +41,6 @@ async function runMigration() {
             UPDATE customers SET barbershop_id = shop_id WHERE barbershop_id IS NULL AND shop_id IS NOT NULL;
           `;
           
-          // Note: Direct SQL execution might not be available via Supabase client
-          // We'll need to handle this differently
           console.log('⚠️  Manual migration needed. Please run the following SQL in Supabase SQL Editor:');
           console.log(alterTableSQL);
         } else {
@@ -65,7 +58,6 @@ async function runMigration() {
       console.log('\nFull migration is in: database/migrations/002_add_customers_table.sql');
     }
     
-    // Also check the bookings table for required columns
     console.log('\n📊 Checking bookings table...');
     const { error: bookingsError } = await supabase
       .from('bookings')

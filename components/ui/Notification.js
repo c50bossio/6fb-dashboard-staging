@@ -126,7 +126,6 @@ export function NotificationProvider({ children }) {
     const newNotification = { ...notification, id }
     setNotifications(prev => [...prev, newNotification])
     
-    // Auto-remove after delay
     if (notification.autoClose !== false) {
       setTimeout(() => {
         removeNotification(id)

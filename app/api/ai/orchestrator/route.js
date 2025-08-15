@@ -7,18 +7,15 @@ export const maxDuration = 30
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
-    // Allow demo access in development mode
     const isDemoMode = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEV_MODE === 'true'
     
     if (!user && !isDemoMode) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Use demo user in development if no real user
     const effectiveUser = user || { id: 'demo-user', email: 'demo@barbershop.com' }
 
     const { message, sessionId, businessContext } = await request.json()
@@ -27,14 +24,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
     }
 
-    // Generate session ID if not provided
     const currentSession = sessionId || `session_${Date.now()}_${effectiveUser.id}`
 
     try {
-      // Call Python AI Orchestrator Service
       const orchestratorResponse = await callPythonAIOrchestrator(message, currentSession, businessContext)
       
-      // Store conversation in Supabase (skip in demo mode)
       if (user) {
         await storeConversation(supabase, effectiveUser.id, currentSession, message, orchestratorResponse)
       }
@@ -45,17 +39,14 @@ export async function POST(request) {
         message: orchestratorResponse.response, // Compatibility with frontend
         sessionId: currentSession,
         
-        // Agent information
         agent_name: orchestratorResponse.agent_name,
         agent_personality: orchestratorResponse.agent_personality,
         
-        // Enhanced response data
         recommendations: orchestratorResponse.recommendations || [],
         action_items: orchestratorResponse.action_items || [],
         follow_up_questions: orchestratorResponse.follow_up_questions || [],
         executed_actions: orchestratorResponse.executed_actions || [],
         
-        // System information
         provider: orchestratorResponse.provider || 'rag_enhanced_agents',
         confidence: orchestratorResponse.confidence,
         messageType: orchestratorResponse.message_type,
@@ -69,7 +60,6 @@ export async function POST(request) {
     } catch (aiError) {
       console.error('AI Orchestrator error:', aiError)
       
-      // Fallback to JavaScript AI providers
       const fallbackResponse = await generateFallbackResponse(message, currentSession, businessContext)
       
       return NextResponse.json({
@@ -97,7 +87,6 @@ async function callPythonAIOrchestrator(message, sessionId, businessContext = {}
   const fastAPIUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8001'
   
   try {
-    // Enhanced orchestrator with RAG-powered agents and executable actions
     const response = await fetch(`${fastAPIUrl}/api/v1/ai/enhanced-chat`, {
       method: 'POST',
       headers: {
@@ -109,7 +98,6 @@ async function callPythonAIOrchestrator(message, sessionId, businessContext = {}
         session_id: sessionId,
         business_context: {
           ...businessContext,
-          // Enhanced business context
           business_name: businessContext.business_name || 'Elite Cuts Barbershop',
           user_preferences: businessContext.user_preferences || {},
           conversation_history: businessContext.conversation_history || [],
@@ -138,7 +126,6 @@ async function callPythonAIOrchestrator(message, sessionId, businessContext = {}
 
     return {
       ...data,
-      // Enhanced response format
       agent_name: data.agent_name || 'AI Agent',
       agent_personality: data.agent_personality || 'strategic_mindset',
       recommendations: data.recommendations || [],
@@ -155,12 +142,10 @@ async function callPythonAIOrchestrator(message, sessionId, businessContext = {}
   }
 }
 
-// Helper function to detect executable actions
 function detectExecutableActions(message) {
   const messageLower = message.toLowerCase()
   const actions = []
   
-  // SMS/Email campaigns
   if (messageLower.includes('send text') || messageLower.includes('sms') || messageLower.includes('text blast')) {
     actions.push({ type: 'sms_campaign', priority: 'high' })
   }
@@ -168,12 +153,10 @@ function detectExecutableActions(message) {
     actions.push({ type: 'email_campaign', priority: 'high' })
   }
   
-  // Follow-up actions
   if (messageLower.includes('follow up') || messageLower.includes('contact customer')) {
     actions.push({ type: 'customer_followup', priority: 'medium' })
   }
   
-  // Social media
   if (messageLower.includes('post on social') || messageLower.includes('social media')) {
     actions.push({ type: 'social_media_post', priority: 'medium' })
   }
@@ -185,7 +168,6 @@ async function generateFallbackResponse(message, sessionId, businessContext) {
   console.log('🔄 Generating enhanced fallback response for:', message)
   
   try {
-    // Enhanced fallback with agent routing logic
     const agentResponse = routeAndGenerateFallback(message, businessContext)
     
     return {
@@ -202,7 +184,6 @@ async function generateFallbackResponse(message, sessionId, businessContext) {
   } catch (fallbackError) {
     console.error('Enhanced fallback generation failed:', fallbackError)
     
-    // Final emergency fallback with agent personality
     return {
       response: `🤖 **AI Command Center - Temporary Service Mode**
 
@@ -237,11 +218,9 @@ Please try rephrasing your question, and I'll do my best to help!`,
   }
 }
 
-// Enhanced fallback routing with intelligent responses
 function routeAndGenerateFallback(message, businessContext) {
   const messageLower = message.toLowerCase()
   
-  // Financial fallback - Check if Stripe is configured
   if (['revenue', 'money', 'profit', 'pricing', 'cost'].some(keyword => messageLower.includes(keyword))) {
     const stripeConfigured = process.env.STRIPE_SECRET_KEY && 
                             process.env.STRIPE_SECRET_KEY.startsWith('sk_')
@@ -284,7 +263,6 @@ Would you like me to help you calculate specific revenue targets or pricing stra
     }
   }
   
-  // Marketing fallback
   if (['marketing', 'customers', 'social', 'instagram', 'promotion'].some(keyword => messageLower.includes(keyword))) {
     return {
       agent_name: 'Sophia (Fallback Mode)',
@@ -323,7 +301,6 @@ I'm in fallback mode but can provide core marketing guidance:
     }
   }
   
-  // Operations fallback
   if (['schedule', 'staff', 'operations', 'efficiency', 'appointment'].some(keyword => messageLower.includes(keyword))) {
     return {
       agent_name: 'David (Fallback Mode)', 
@@ -362,7 +339,6 @@ I'm operating in fallback mode but can share operational best practices:
     }
   }
   
-  // General business fallback
   return {
     agent_name: 'Emma (Fallback Mode)',
     agent_personality: 'strategic_mindset',
@@ -424,6 +400,5 @@ async function storeConversation(supabase, userId, sessionId, message, response)
       })
   } catch (error) {
     console.error('Failed to store conversation:', error)
-    // Don't fail the request if storage fails
   }
 }

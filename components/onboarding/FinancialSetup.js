@@ -13,12 +13,10 @@ import {
 export default function FinancialSetup({ onComplete, initialData = {}, subscriptionTier = 'shop' }) {
   const [currentSection, setCurrentSection] = useState('payment')
   const [formData, setFormData] = useState({
-    // Payment Processing
     stripeConnected: initialData.stripeConnected || false,
     depositSchedule: initialData.depositSchedule || 'daily',
     acceptedPayments: initialData.acceptedPayments || ['card', 'cash'],
     
-    // Payout Model
     payoutModel: initialData.payoutModel || 'commission', // commission, booth_rent, hybrid
     commissionRate: initialData.commissionRate || 60,
     weeklyBoothRent: initialData.weeklyBoothRent || 150,
@@ -26,18 +24,15 @@ export default function FinancialSetup({ onComplete, initialData = {}, subscript
     hybridBoothRent: initialData.hybridBoothRent || 75,
     tipDistribution: initialData.tipDistribution || 'barber_keeps_all',
     
-    // Pricing Structure
     hairCutPrice: initialData.hairCutPrice || 35,
     beardTrimPrice: initialData.beardTrimPrice || 20,
     washAndStylePrice: initialData.washAndStylePrice || 45,
     premiumServiceRate: initialData.premiumServiceRate || 1.5,
     
-    // Business Details
     businessTaxId: initialData.businessTaxId || '',
     salesTaxRate: initialData.salesTaxRate || 8.25,
     staffClassification: initialData.staffClassification || 'contractor',
     
-    // Banking (optional)
     bankingSetup: initialData.bankingSetup || 'later',
     accountingIntegration: initialData.accountingIntegration || 'none'
   })

@@ -8,7 +8,6 @@ export async function POST() {
     const cookieStore = cookies()
     const supabase = createServerComponentClient({ cookies: () => cookieStore })
 
-    // Check if tables already exist
     const { data: existingTable, error: checkError } = await supabase
       .from('booking_links')
       .select('id')
@@ -22,8 +21,6 @@ export async function POST() {
       })
     }
 
-    // If tables don't exist, they need to be created via Supabase Dashboard
-    // because we can't execute CREATE TABLE via the Supabase client directly
     
     return NextResponse.json({ 
       success: false,

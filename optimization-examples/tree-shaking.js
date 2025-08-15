@@ -8,7 +8,6 @@ import Settings from 'lucide-react/dist/esm/icons/settings'
 import Home from 'lucide-react/dist/esm/icons/home'
 
 // ✅ BETTER: Create icon barrel file for centralized management
-// lib/icons.js
 export { 
   User,
   Settings, 
@@ -17,11 +16,9 @@ export {
   Mail 
 } from 'lucide-react'
 
-// Usage in components
 import { User, Settings } from '@/lib/icons'
 
 // ✅ NEXT.JS 14: Use experimental.optimizePackageImports
-// next.config.js
 const nextConfig = {
   experimental: {
     optimizePackageImports: [
@@ -32,4 +29,3 @@ const nextConfig = {
   }
 }
 
-// Result: ~300KB → ~20KB for icons (95% reduction)

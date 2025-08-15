@@ -4,13 +4,11 @@ import { cookies } from 'next/headers'
 
 export const runtime = 'edge'
 
-// Main AI SEO Orchestrator API endpoint
 export async function POST(request) {
   try {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -22,7 +20,6 @@ export async function POST(request) {
     
     const { action, barbershop_id, ...params } = await request.json()
     
-    // Verify user has access to this barbershop
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, name, location, services')
@@ -37,7 +34,6 @@ export async function POST(request) {
       }, { status: 404 })
     }
     
-    // Process actions with real database operations - NO MOCK DATA
     switch (action) {
       case 'generate_seo_plan':
         return NextResponse.json({
@@ -86,9 +82,7 @@ export async function POST(request) {
   }
 }
 
-// Generate SEO plan from real data
 async function generateSEOPlan(supabase, barbershop, params) {
-  // Check if an SEO plan already exists
   const { data: existingPlan } = await supabase
     .from('seo_plans')
     .select('*')
@@ -101,7 +95,6 @@ async function generateSEOPlan(supabase, barbershop, params) {
     return existingPlan
   }
   
-  // If no plan exists, create a basic structure that requires AI service
   const newPlan = {
     barbershop_id: barbershop.id,
     generated_at: new Date().toISOString(),
@@ -116,7 +109,6 @@ async function generateSEOPlan(supabase, barbershop, params) {
     ]
   }
   
-  // Save to database for future reference
   const { data: savedPlan, error } = await supabase
     .from('seo_plans')
     .insert(newPlan)
@@ -134,11 +126,9 @@ async function generateSEOPlan(supabase, barbershop, params) {
   return savedPlan || newPlan
 }
 
-// Perform keyword research using real data
 async function performKeywordResearch(supabase, barbershop, params) {
   const { location, services, business_name } = params
   
-  // Check for existing keyword research
   const { data: existingResearch } = await supabase
     .from('keyword_research')
     .select('*')
@@ -156,7 +146,6 @@ async function performKeywordResearch(supabase, barbershop, params) {
     }
   }
   
-  // Return empty state with instructions
   return {
     barbershop_id: barbershop.id,
     location: location || barbershop.location,
@@ -173,11 +162,9 @@ async function performKeywordResearch(supabase, barbershop, params) {
   }
 }
 
-// Generate content calendar from real data
 async function generateContentCalendar(supabase, barbershop, params) {
   const { start_date, end_date, frequency } = params
   
-  // Check for existing content calendar
   const { data: existingContent } = await supabase
     .from('content_calendar')
     .select('*')
@@ -196,7 +183,6 @@ async function generateContentCalendar(supabase, barbershop, params) {
     }
   }
   
-  // Return empty calendar with guidance
   return {
     barbershop_id: barbershop.id,
     content_items: [],
@@ -215,11 +201,9 @@ async function generateContentCalendar(supabase, barbershop, params) {
   }
 }
 
-// Perform competitor analysis using real data
 async function performCompetitorAnalysis(supabase, barbershop, params) {
   const { radius, limit } = params
   
-  // Check for existing competitor analysis
   const { data: competitors } = await supabase
     .from('competitor_analysis')
     .select('*')
@@ -236,7 +220,6 @@ async function performCompetitorAnalysis(supabase, barbershop, params) {
     }
   }
   
-  // Return empty analysis with instructions
   return {
     barbershop_id: barbershop.id,
     competitors: [],
@@ -253,11 +236,9 @@ async function performCompetitorAnalysis(supabase, barbershop, params) {
   }
 }
 
-// Generate GMB content from real data
 async function generateGMBContent(supabase, barbershop, params) {
   const { content_type, count } = params
   
-  // Check for existing GMB content templates
   const { data: gmbContent } = await supabase
     .from('gmb_content')
     .select('*')
@@ -275,7 +256,6 @@ async function generateGMBContent(supabase, barbershop, params) {
     }
   }
   
-  // Check if barbershop has GMB integration
   const { data: gmbAccount } = await supabase
     .from('gmb_accounts')
     .select('*')
@@ -299,7 +279,6 @@ async function generateGMBContent(supabase, barbershop, params) {
     }
   }
   
-  // Return basic template structure
   return {
     barbershop_id: barbershop.id,
     content_type: content_type,

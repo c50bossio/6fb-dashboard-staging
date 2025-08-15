@@ -52,7 +52,6 @@ export class GDPRComplianceTester {
       }
     }
 
-    // Cleanup test data
     await this.cleanupTestData();
 
     return this.generateGDPRComplianceReport();
@@ -64,7 +63,6 @@ export class GDPRComplianceTester {
   async testConsentManagement() {
     console.log('✅ Testing consent management...');
 
-    // Test initial consent banner
     await this.page.goto('/');
     
     const consentBanner = this.page.locator('[data-testid="cookie-consent"], [data-testid="consent-banner"]');
@@ -76,13 +74,11 @@ export class GDPRComplianceTester {
         { url: '/', recommendation: 'Implement consent banner for cookie and data processing consent' });
     }
 
-    // Test granular consent options
     if (hasBanner) {
       const necessaryConsent = this.page.locator('[data-testid="necessary-cookies"], [data-testid="essential-consent"]');
       const analyticsConsent = this.page.locator('[data-testid="analytics-cookies"], [data-testid="analytics-consent"]');
       const marketingConsent = this.page.locator('[data-testid="marketing-cookies"], [data-testid="marketing-consent"]');
 
-      // Necessary cookies should be pre-checked and disabled
       if (await necessaryConsent.isVisible()) {
         const isChecked = await necessaryConsent.isChecked();
         const isDisabled = await necessaryConsent.isDisabled();
@@ -94,7 +90,6 @@ export class GDPRComplianceTester {
         }
       }
 
-      // Optional consents should be unchecked by default
       for (const consent of [analyticsConsent, marketingConsent]) {
         if (await consent.isVisible()) {
           const isChecked = await consent.isChecked();
@@ -106,11 +101,9 @@ export class GDPRComplianceTester {
         }
       }
 
-      // Test consent withdrawal
       await this.testConsentWithdrawal();
     }
 
-    // Test consent for data processing during registration
     await this.testRegistrationConsent();
   }
 
@@ -118,7 +111,6 @@ export class GDPRComplianceTester {
    * Test consent withdrawal functionality
    */
   async testConsentWithdrawal() {
-    // Look for consent management page
     const consentManagementPaths = ['/privacy/consent', '/settings/privacy', '/cookies', '/consent'];
     let consentPageFound = false;
 
@@ -130,7 +122,6 @@ export class GDPRComplianceTester {
         if (pageContent.toLowerCase().includes('consent') && pageContent.toLowerCase().includes('withdraw')) {
           consentPageFound = true;
           
-          // Test if user can withdraw consent
           const withdrawButton = this.page.locator('[data-testid="withdraw-consent"], button:has-text("withdraw"), button:has-text("revoke")');
           
           if (await withdrawButton.isVisible()) {
@@ -145,7 +136,6 @@ export class GDPRComplianceTester {
           break;
         }
       } catch (error) {
-        // Page might not exist, continue checking
       }
     }
 
@@ -187,7 +177,6 @@ export class GDPRComplianceTester {
     }
 
     if (await privacyLink.isVisible()) {
-      // Test if privacy policy is accessible
       const href = await privacyLink.getAttribute('href');
       if (href) {
         try {
@@ -218,11 +207,9 @@ export class GDPRComplianceTester {
 
     const testSubject = this.testSubjects[0];
     
-    // Create test user first
     const userId = await this.createTestUser(testSubject);
     if (!userId) return;
 
-    // Test data access functionality
     const dataAccessPaths = ['/profile/data', '/settings/data', '/account/export', '/gdpr/access'];
     let accessFunctionFound = false;
 
@@ -241,13 +228,11 @@ export class GDPRComplianceTester {
               `Data access functionality found at ${path}`,
               { path, userId });
 
-            // Test the download functionality
             await this.testDataDownload(downloadButton, userId);
           }
           break;
         }
       } catch (error) {
-        // Expected for non-existent paths
       }
     }
 
@@ -257,7 +242,6 @@ export class GDPRComplianceTester {
         { userId, recommendation: 'Implement data export functionality per GDPR Article 15' });
     }
 
-    // Test data completeness in profile view
     await this.testDataCompleteness(userId);
   }
 
@@ -266,7 +250,6 @@ export class GDPRComplianceTester {
    */
   async testDataDownload(downloadButton, userId) {
     try {
-      // Set up download event listener
       const downloadPromise = this.page.waitForEvent('download');
       
       await downloadButton.click();
@@ -276,19 +259,16 @@ export class GDPRComplianceTester {
       
       await download.saveAs(downloadPath);
       
-      // Verify download contents
       const stats = await fs.stat(downloadPath);
       if (stats.size === 0) {
         this.addResult('MEDIUM', 'empty-data-export',
           'Data export file is empty',
           { userId, downloadPath });
       } else {
-        // Try to parse the file (assuming JSON format)
         try {
           const content = await fs.readFile(downloadPath, 'utf8');
           const data = JSON.parse(content);
           
-          // Verify essential data categories are present
           const requiredCategories = ['profile', 'personal_data'];
           const missingCategories = requiredCategories.filter(cat => !data[cat]);
           
@@ -308,7 +288,6 @@ export class GDPRComplianceTester {
         }
       }
       
-      // Cleanup
       await fs.unlink(downloadPath).catch(() => {});
       
     } catch (error) {
@@ -328,7 +307,6 @@ export class GDPRComplianceTester {
     const userId = await this.createTestUser(testSubject);
     if (!userId) return;
 
-    // Test profile editing functionality
     await this.page.goto('/profile/edit');
     
     const editableFields = [
@@ -345,7 +323,6 @@ export class GDPRComplianceTester {
       if (await input.isVisible() && await input.isEditable()) {
         rectificationAvailable = true;
         
-        // Test updating the field
         const originalValue = await input.inputValue();
         const newValue = `updated_${Date.now()}`;
         
@@ -356,7 +333,6 @@ export class GDPRComplianceTester {
           await saveButton.click();
           await this.page.waitForTimeout(1000);
           
-          // Verify the change was saved
           const updatedValue = await input.inputValue();
           if (updatedValue === newValue) {
             this.addResult('PASS', 'data-rectification-working',
@@ -388,7 +364,6 @@ export class GDPRComplianceTester {
     const userId = await this.createTestUser(testSubject);
     if (!userId) return;
 
-    // Test account deletion functionality
     const deletionPaths = ['/account/delete', '/settings/delete', '/profile/delete'];
     let deletionFunctionFound = false;
 
@@ -407,13 +382,11 @@ export class GDPRComplianceTester {
               `Account deletion functionality found at ${path}`,
               { path, userId });
 
-            // Test deletion process (but don't actually delete)
             await this.testDeletionProcess(deleteButton, userId);
           }
           break;
         }
       } catch (error) {
-        // Expected for non-existent paths
       }
     }
 
@@ -423,7 +396,6 @@ export class GDPRComplianceTester {
         { userId, recommendation: 'Implement account deletion functionality per GDPR Article 17' });
     }
 
-    // Test data retention information
     await this.testDataRetentionInformation();
   }
 
@@ -434,13 +406,11 @@ export class GDPRComplianceTester {
     try {
       await deleteButton.click();
       
-      // Should show confirmation dialog
       const confirmDialog = this.page.locator('[data-testid="delete-confirmation"], .confirmation-dialog, .modal');
       
       if (await confirmDialog.isVisible()) {
         const dialogText = await confirmDialog.textContent();
         
-        // Check for important deletion information
         const hasRetentionInfo = dialogText.toLowerCase().includes('day') || dialogText.toLowerCase().includes('retain');
         const hasConsequenceWarning = dialogText.toLowerCase().includes('permanent') || dialogText.toLowerCase().includes('cannot be undone');
         
@@ -456,7 +426,6 @@ export class GDPRComplianceTester {
             { userId, recommendation: 'Warn users about irreversible nature of deletion' });
         }
         
-        // Look for cancel button (don't actually delete)
         const cancelButton = this.page.locator('[data-testid="cancel-delete"], button:has-text("cancel")');
         if (await cancelButton.isVisible()) {
           await cancelButton.click();
@@ -486,7 +455,6 @@ export class GDPRComplianceTester {
     const userId = await this.createTestUser(testSubject);
     if (!userId) return;
 
-    // Data portability should provide data in structured, commonly used formats
     const exportFormats = ['JSON', 'CSV', 'XML'];
     let portabilityFound = false;
 
@@ -505,7 +473,6 @@ export class GDPRComplianceTester {
           if (await selector.isVisible()) {
             portabilityFound = true;
             
-            // Check available formats
             const options = await selector.locator('option').allTextContents();
             const availableFormats = options.filter(opt => 
               exportFormats.some(format => opt.toLowerCase().includes(format.toLowerCase()))
@@ -526,7 +493,6 @@ export class GDPRComplianceTester {
         
         if (portabilityFound) break;
       } catch (error) {
-        // Expected for non-existent paths
       }
     }
 
@@ -543,7 +509,6 @@ export class GDPRComplianceTester {
   async testDataMinimization() {
     console.log('📊 Testing Data Minimization...');
 
-    // Test registration form for excessive data collection
     await this.page.goto('/register');
     
     const formInputs = await this.page.locator('input, select, textarea').all();
@@ -565,7 +530,6 @@ export class GDPRComplianceTester {
       }
     }
 
-    // Check for potentially excessive data collection
     const excessiveFields = [
       'ssn', 'social_security', 'national_id',
       'salary', 'income', 'financial',
@@ -587,7 +551,6 @@ export class GDPRComplianceTester {
         { foundExcessiveFields, recommendation: 'Remove unnecessary data collection fields' });
     }
 
-    // Check for required vs optional fields balance
     const requiredFields = collectedFields.filter(f => f.required);
     const optionalFields = collectedFields.filter(f => !f.required);
     
@@ -617,7 +580,6 @@ export class GDPRComplianceTester {
   async testLawfulBasisTracking() {
     console.log('⚖️ Testing Lawful Basis Tracking...');
 
-    // Check privacy policy for lawful basis information
     const privacyPaths = ['/privacy', '/privacy-policy', '/legal/privacy'];
     let lawfulBasisFound = false;
 
@@ -643,7 +605,6 @@ export class GDPRComplianceTester {
           break;
         }
       } catch (error) {
-        // Expected for non-existent paths
       }
     }
 
@@ -662,7 +623,6 @@ export class GDPRComplianceTester {
 
     await this.page.goto('/');
     
-    // Check for cookie policy
     const cookiePolicyLink = this.page.locator('a:has-text("cookie"), a[href*="cookie"]');
     
     if (await cookiePolicyLink.isVisible()) {
@@ -685,7 +645,6 @@ export class GDPRComplianceTester {
         { recommendation: 'Provide accessible cookie policy' });
     }
 
-    // Test cookie categorization
     await this.testCookieCategorization();
   }
 
@@ -731,7 +690,6 @@ export class GDPRComplianceTester {
       await this.page.fill('[data-testid="email-input"], input[name="email"]', testSubject.email);
       await this.page.fill('[data-testid="password-input"], input[name="password"]', 'TestPassword123!');
       
-      // Accept terms if present
       const termsCheckbox = this.page.locator('input[type="checkbox"]');
       if (await termsCheckbox.isVisible()) {
         await termsCheckbox.check();
@@ -740,7 +698,6 @@ export class GDPRComplianceTester {
       await this.page.click('[data-testid="register-button"], button[type="submit"]');
       await this.page.waitForTimeout(2000);
       
-      // Check if registration was successful
       const currentUrl = this.page.url();
       if (currentUrl.includes('/dashboard') || currentUrl.includes('/profile')) {
         const userId = `test_${Date.now()}`;
@@ -763,8 +720,6 @@ export class GDPRComplianceTester {
     
     for (const testData of this.createdTestData) {
       try {
-        // Attempt to delete test user account
-        // This would depend on the specific API implementation
         await this.page.request.delete(`${this.baseUrl}/api/users/test/${testData.userId}`);
       } catch (error) {
         console.log(`Could not cleanup test user ${testData.userId}: ${error.message}`);
@@ -852,7 +807,6 @@ export class GDPRComplianceTester {
   generateGDPRRecommendations() {
     const recommendations = [];
     
-    // Analyze results and generate targeted recommendations
     const categoryRecommendations = {
       'missing-consent-banner': 'Implement cookie consent banner with granular options',
       'missing-data-access': 'Implement data access/export functionality (Article 15)',
@@ -861,7 +815,6 @@ export class GDPRComplianceTester {
       'missing-lawful-basis-documentation': 'Document lawful basis for all data processing activities'
     };
 
-    // Count issues by category
     const categoryCounts = {};
     this.results.forEach(result => {
       if (result.severity !== 'PASS' && result.severity !== 'INFO') {
@@ -869,7 +822,6 @@ export class GDPRComplianceTester {
       }
     });
 
-    // Generate recommendations
     Object.entries(categoryCounts).forEach(([category, count]) => {
       const recommendation = categoryRecommendations[category];
       if (recommendation) {

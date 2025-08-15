@@ -2,10 +2,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 
-// Force Node.js runtime to support Supabase dependencies
 export const runtime = 'nodejs'
 
-// Validation schemas
 const bookingSchema = z.object({
   barbershop_id: z.string().uuid(),
   client_id: z.string().uuid().optional(),
@@ -25,19 +23,16 @@ const bookingSchema = z.object({
 
 const updateBookingSchema = bookingSchema.partial()
 
-// GET /api/bookings - Fetch bookings with filters
 export async function GET(request) {
   try {
     const supabase = createClient()
     const { searchParams } = new URL(request.url)
     
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Extract query parameters
     const barbershop_id = searchParams.get('barbershop_id')
     const barber_id = searchParams.get('barber_id')
     const client_id = searchParams.get('client_id')
@@ -48,7 +43,6 @@ export async function GET(request) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
     const offset = (page - 1) * limit
 
-    // Build query
     let query = supabase
       .from('bookings')
       .select(`
@@ -61,7 +55,6 @@ export async function GET(request) {
       .order('scheduled_at', { ascending: true })
       .range(offset, offset + limit - 1)
 
-    // Apply filters
     if (barbershop_id) {
       query = query.eq('barbershop_id', barbershop_id)
     }
@@ -91,12 +84,10 @@ export async function GET(request) {
       }, { status: 500 })
     }
 
-    // Get total count for pagination
     let countQuery = supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
 
-    // Apply same filters for count
     if (barbershop_id) countQuery = countQuery.eq('barbershop_id', barbershop_id)
     if (barber_id) countQuery = countQuery.eq('barber_id', barber_id)
     if (client_id) countQuery = countQuery.eq('client_id', client_id)
@@ -126,12 +117,10 @@ export async function GET(request) {
   }
 }
 
-// POST /api/bookings - Create new booking
 export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -139,7 +128,6 @@ export async function POST(request) {
 
     const body = await request.json()
     
-    // Validate request body
     const validationResult = bookingSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json({
@@ -150,10 +138,8 @@ export async function POST(request) {
 
     const appointmentData = validationResult.data
 
-    // Calculate total amount
     const total_amount = appointmentData.service_price + (appointmentData.tip_amount || 0)
 
-    // Check for time conflicts
     const conflictCheck = await supabase
       .from('bookings')
       .select('id, scheduled_at, duration_minutes')
@@ -166,7 +152,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to check time conflicts' }, { status: 500 })
     }
 
-    // Check for overlapping appointments
     const newStart = new Date(appointmentData.scheduled_at)
     const newEnd = new Date(newStart.getTime() + appointmentData.duration_minutes * 60000)
 
@@ -184,7 +169,6 @@ export async function POST(request) {
       }, { status: 409 })
     }
 
-    // Create appointment
     const { data: appointment, error } = await supabase
       .from('bookings')
       .insert({

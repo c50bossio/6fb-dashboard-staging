@@ -343,7 +343,6 @@ export default function TestSentimentPage() {
   )
 }
 
-// Component to check API health
 function APIHealthCheck() {
   const [health, setHealth] = useState(null)
   const [loading, setLoading] = useState(true)

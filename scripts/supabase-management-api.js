@@ -2,7 +2,6 @@
 
 import 'dotenv/config';
 
-// Use Supabase Management API with the access token
 const SUPABASE_ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 const PROJECT_ID = 'dfhqjdoydihajmjxniee'; // From the URL
 
@@ -90,7 +89,6 @@ INSERT INTO public.barbershops (
   `;
 
   try {
-    // Try Supabase Management API
     console.log('📋 Trying Management API...');
     
     const response = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_ID}/database/query`, {
@@ -201,7 +199,6 @@ async function tryDirectInsert() {
 async function main() {
   console.log('🚀 Attempting automated Supabase setup...\n');
 
-  // Try Management API first
   let success = await executeViaMgmtAPI();
   
   if (!success) {

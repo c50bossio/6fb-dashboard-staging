@@ -4,7 +4,6 @@ import { google } from 'googleapis'
 import { GoogleAuth } from 'google-auth-library'
 
 // ✅ OPTIMIZED: Server Component for Google APIs
-// app/components/ServerGoogleData.jsx
 import { google } from 'googleapis' // Server-side only - 0KB client impact
 
 export default async function GoogleAnalytics() {
@@ -21,7 +20,6 @@ export default async function GoogleAnalytics() {
     metrics: 'ga:sessions,ga:users'
   })
 
-  // Return only serializable data to client
   return (
     <div className="analytics-widget">
       <h3>Analytics Data</h3>
@@ -38,7 +36,6 @@ export async function fetchGoogleAnalytics() {
   const analytics = google.analytics('v3')
   
   const result = await analytics.data.ga.get({
-    // Server-side call - no client bundle impact
   })
   
   return result.data // Only send data, not library code

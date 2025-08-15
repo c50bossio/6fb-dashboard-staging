@@ -3,7 +3,6 @@ export const runtime = 'edge'
 
 export async function GET() {
   try {
-    // Skip health checks during build time
     if (process.env.NODE_ENV === 'build' || process.env.NEXT_PHASE === 'phase-production-build') {
       return NextResponse.json({
         status: 'build-mode',
@@ -12,19 +11,15 @@ export async function GET() {
       })
     }
     
-    // Dynamic import to avoid build-time issues
     const { checkAIProvidersHealth } = await import('@/lib/ai-providers')
     
     const startTime = Date.now()
     
-    // Check all AI providers
     const aiHealth = await checkAIProvidersHealth()
     
-    // Count healthy providers
     const healthyCount = Object.values(aiHealth).filter(p => p.healthy).length
     const availableCount = Object.values(aiHealth).filter(p => p.available).length
     
-    // Determine overall AI system status
     let status = 'healthy'
     if (healthyCount === 0) {
       status = 'unhealthy'
@@ -45,7 +40,6 @@ export async function GET() {
       recommendations: generateHealthRecommendations(aiHealth, status)
     }
     
-    // Return appropriate HTTP status
     const httpStatus = status === 'unhealthy' ? 503 : status === 'degraded' ? 206 : 200
     
     return NextResponse.json(response, { 

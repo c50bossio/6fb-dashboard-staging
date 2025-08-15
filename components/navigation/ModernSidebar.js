@@ -18,7 +18,6 @@ import { useAuth } from '../SupabaseAuthProvider'
 
 
 import { BARBERSHOP_NAVIGATION, getActiveNavItem } from './BarbershopNavigationConfig'
-// import MobileHeader from './MobileHeader'
 
 export default function ModernSidebar() {
   const [collapsed, setCollapsed] = useState(false)
@@ -28,7 +27,6 @@ export default function ModernSidebar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  // Don't show on auth-related pages
   const authPaths = ['/login', '/register', '/', '/login-v2', '/login-simple', '/login-api', '/login-options', '/test-auth']
   if (authPaths.includes(pathname) || pathname.startsWith('/login') || pathname.startsWith('/auth')) {
     return null
@@ -55,7 +53,6 @@ export default function ModernSidebar() {
     console.log('🚪 Sidebar: Starting sign out...')
     const result = await signOut()
     console.log('📤 Sidebar sign out result:', result)
-    // Let the auth provider handle the redirect to avoid conflicts
   }
 
   const sidebarWidth = collapsed ? 'w-16' : 'w-72'

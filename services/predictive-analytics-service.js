@@ -79,10 +79,8 @@ export class PredictiveAnalyticsService {
   async generatePredictions(barbershopId, timeframe = 30) {
     console.log(`📊 Generating predictions for next ${timeframe} days`)
 
-    // Fetch historical data
     const historicalData = await this.fetchHistoricalData(barbershopId)
     
-    // Generate predictions for each model
     const predictions = {
       timestamp: Date.now(),
       barbershopId,
@@ -90,48 +88,39 @@ export class PredictiveAnalyticsService {
       forecasts: {}
     }
 
-    // Revenue prediction
     predictions.forecasts.revenue = await this.predictRevenue(
       historicalData,
       timeframe
     )
 
-    // Booking volume prediction
     predictions.forecasts.bookings = await this.predictBookings(
       historicalData,
       timeframe
     )
 
-    // Customer churn prediction
     predictions.forecasts.churn = await this.predictCustomerChurn(
       historicalData
     )
 
-    // Service demand prediction
     predictions.forecasts.demand = await this.predictServiceDemand(
       historicalData,
       timeframe
     )
 
-    // Staff utilization prediction
     predictions.forecasts.staffing = await this.predictStaffUtilization(
       historicalData,
       Math.min(timeframe, 7)
     )
 
-    // Inventory needs prediction
     predictions.forecasts.inventory = await this.predictInventoryNeeds(
       historicalData,
       timeframe
     )
 
-    // Generate actionable insights
     predictions.insights = this.generateInsights(predictions.forecasts)
     
-    // Calculate overall confidence
     predictions.confidence = this.calculateOverallConfidence(predictions.forecasts)
 
-    // Store forecast for tracking
     this.forecasts.set(`${barbershopId}_${Date.now()}`, predictions)
 
     return predictions
@@ -143,16 +132,12 @@ export class PredictiveAnalyticsService {
   async predictRevenue(historicalData, days) {
     const model = this.models.revenue
     
-    // Analyze historical patterns
     const patterns = this.analyzeRevenuePatterns(historicalData)
     
-    // Calculate trend
     const trend = this.calculateTrend(historicalData.revenue || [])
     
-    // Apply seasonality
     const seasonalFactors = this.getSeasonalFactors(new Date(), days)
     
-    // Generate daily predictions
     const predictions = []
     const baseRevenue = historicalData.avgDailyRevenue || 400
     
@@ -185,7 +170,6 @@ export class PredictiveAnalyticsService {
       })
     }
     
-    // Calculate summary statistics
     const totalPredicted = predictions.reduce((sum, p) => sum + p.revenue, 0)
     const avgPredicted = Math.round(totalPredicted / predictions.length)
     
@@ -250,11 +234,9 @@ export class PredictiveAnalyticsService {
   async predictCustomerChurn(historicalData) {
     const model = this.models.customer_churn
     
-    // Analyze customer patterns
     const customers = historicalData.customers || []
     const churnRisk = []
     
-    // Simulate customer analysis
     const sampleCustomers = [
       { id: 'c1', lastVisit: 45, frequency: 0.5, satisfaction: 4.2, risk: 'high' },
       { id: 'c2', lastVisit: 14, frequency: 2.1, satisfaction: 4.8, risk: 'low' },
@@ -470,7 +452,6 @@ export class PredictiveAnalyticsService {
   calculateTrend(data) {
     if (!data || data.length < 2) return 0
     
-    // Simple linear trend calculation
     const n = data.length
     const sumX = (n * (n + 1)) / 2
     const sumY = data.reduce((sum, val) => sum + val, 0)
@@ -559,18 +540,15 @@ export class PredictiveAnalyticsService {
   calculateChurnRisk(customer) {
     let risk = 0
     
-    // Days since last visit
     if (customer.lastVisit > 60) risk += 0.4
     else if (customer.lastVisit > 45) risk += 0.3
     else if (customer.lastVisit > 30) risk += 0.2
     else if (customer.lastVisit > 15) risk += 0.1
     
-    // Visit frequency (visits per month)
     if (customer.frequency < 0.5) risk += 0.3
     else if (customer.frequency < 1.0) risk += 0.2
     else if (customer.frequency < 1.5) risk += 0.1
     
-    // Satisfaction score
     if (customer.satisfaction < 3.5) risk += 0.3
     else if (customer.satisfaction < 4.0) risk += 0.2
     else if (customer.satisfaction < 4.5) risk += 0.1
@@ -657,7 +635,6 @@ export class PredictiveAnalyticsService {
   generateRevenueInsights(predictions, patterns) {
     const insights = []
     
-    // Identify growth opportunities
     const avgRevenue = predictions.reduce((sum, p) => sum + p.revenue, 0) / predictions.length
     const peakDays = predictions.filter(p => p.revenue > avgRevenue * 1.2)
     
@@ -665,13 +642,11 @@ export class PredictiveAnalyticsService {
       insights.push(`${peakDays.length} high-revenue days predicted - ensure full staffing`)
     }
     
-    // Weekly patterns
     const fridays = predictions.filter(p => new Date(p.date).getDay() === 5)
     if (fridays.length > 0) {
       insights.push(`Fridays show ${Math.round(fridays[0].factors.weekday * 100 - 100)}% higher revenue potential`)
     }
     
-    // Growth trend
     const firstWeekAvg = predictions.slice(0, 7).reduce((sum, p) => sum + p.revenue, 0) / 7
     const lastWeekAvg = predictions.slice(-7).reduce((sum, p) => sum + p.revenue, 0) / 7
     const growthRate = ((lastWeekAvg - firstWeekAvg) / firstWeekAvg * 100).toFixed(1)
@@ -694,7 +669,6 @@ export class PredictiveAnalyticsService {
       optimizations: []
     }
     
-    // Revenue insights
     if (forecasts.revenue?.summary.growth) {
       const growth = parseFloat(forecasts.revenue.summary.growth)
       if (growth > 10) {
@@ -704,30 +678,25 @@ export class PredictiveAnalyticsService {
       }
     }
     
-    // Booking insights
     if (forecasts.bookings?.summary.peakDays) {
       insights.immediate_actions.push(`Ensure full staffing on peak days: ${forecasts.bookings.summary.peakDays.map(d => d.date).join(', ')}`)
     }
     
-    // Churn insights
     if (forecasts.churn?.summary.totalAtRisk > 0) {
       insights.immediate_actions.push(`Contact ${forecasts.churn.summary.totalAtRisk} at-risk customers immediately`)
       insights.risks.push(`Potential revenue loss of $${forecasts.churn.summary.preventionValue} from customer churn`)
     }
     
-    // Demand insights
     if (forecasts.demand?.summary.topGrowth) {
       insights.opportunities.push(`${forecasts.demand.summary.topGrowth.service} showing ${forecasts.demand.summary.topGrowth.change} growth - focus marketing here`)
     }
     
-    // Staffing insights
     if (forecasts.staffing?.summary.avgUtilization > 85) {
       insights.optimizations.push(`Staff utilization at ${forecasts.staffing.summary.avgUtilization}% - consider hiring`)
     } else if (forecasts.staffing?.summary.avgUtilization < 60) {
       insights.optimizations.push(`Staff underutilized at ${forecasts.staffing.summary.avgUtilization}% - optimize scheduling`)
     }
     
-    // Inventory insights
     if (forecasts.inventory?.summary.itemsNeedingReorder > 0) {
       insights.immediate_actions.push(`Reorder ${forecasts.inventory.summary.itemsNeedingReorder} inventory items - total cost $${forecasts.inventory.summary.totalOrderValue}`)
     }
@@ -756,8 +725,6 @@ export class PredictiveAnalyticsService {
    * Fetch historical data for analysis
    */
   async fetchHistoricalData(barbershopId) {
-    // In production, this would fetch from database
-    // For now, return mock historical data
     return {
       revenue: [380, 420, 395, 450, 480, 520, 490, 510, 530, 560],
       bookings: [10, 12, 11, 13, 14, 15, 14, 15, 16, 17],
@@ -796,7 +763,6 @@ export class PredictiveAnalyticsService {
       timestamp: Date.now()
     })
     
-    // Update model accuracy scores
     if (prediction.model) {
       this.accuracy.accuracy_scores[prediction.model].push(accuracy)
     }
@@ -815,7 +781,6 @@ export class PredictiveAnalyticsService {
       return Math.max(0, 1 - error)
     }
     
-    // For more complex predictions, implement appropriate accuracy metrics
     return 0.75
   }
 
@@ -839,6 +804,5 @@ export class PredictiveAnalyticsService {
   }
 }
 
-// Export singleton instance
 export const predictiveAnalytics = new PredictiveAnalyticsService()
 export default predictiveAnalytics

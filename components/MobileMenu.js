@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react'
 export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false)
 
-  // Prevent body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'

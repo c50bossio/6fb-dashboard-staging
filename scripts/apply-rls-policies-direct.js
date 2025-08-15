@@ -8,7 +8,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables
 const envPath = join(__dirname, '../.env.local')
 try {
   const envContent = readFileSync(envPath, 'utf8')
@@ -38,7 +37,6 @@ async function applyRLSPolicies() {
   const sqlPath = join(__dirname, '../database/setup-rls-policies.sql')
   const sql = readFileSync(sqlPath, 'utf8')
   
-  // Split SQL into individual statements
   const statements = sql
     .split(';')
     .map(stmt => stmt.trim())
@@ -55,7 +53,6 @@ async function applyRLSPolicies() {
   for (let i = 0; i < statements.length; i++) {
     const statement = statements[i]
     
-    // Skip pure comments
     if (!statement || statement.startsWith('--') || statement.startsWith('/*')) {
       continue
     }
@@ -63,7 +60,6 @@ async function applyRLSPolicies() {
     try {
       console.log(`⚡ Executing statement ${i + 1}/${statements.length}...`)
       
-      // Use the SQL execution endpoint
       const response = await fetch(`${supabaseUrl}/rest/v1/rpc/sql`, {
         method: 'POST',
         headers: {
@@ -81,7 +77,6 @@ async function applyRLSPolicies() {
         const errorText = await response.text()
         console.log(`   ⚠️  Warning: ${response.status} - ${errorText}`)
         
-        // Some statements might fail due to existing policies - this is often okay
         if (errorText.includes('already exists') || errorText.includes('does not exist')) {
           console.log(`   └─ 📝 Expected: Policy already exists or needs cleanup`)
           results.success++

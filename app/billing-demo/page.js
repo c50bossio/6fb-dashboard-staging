@@ -102,7 +102,6 @@ export default function BillingDemoPage() {
     console.log('✅ Complete test suite finished!')
   }
 
-  // Auto-run tests on component mount
   useEffect(() => {
     const runInitialTests = async () => {
       await new Promise(resolve => setTimeout(resolve, 1000))

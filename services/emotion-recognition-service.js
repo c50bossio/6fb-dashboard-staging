@@ -16,7 +16,6 @@ class EmotionRecognitionService {
       NEUTRAL: 'neutral'
     }
 
-    // Emotion keywords and patterns
     this.emotionPatterns = {
       happy: {
         keywords: ['great', 'awesome', 'love', 'perfect', 'amazing', 'excellent', 'wonderful', 'fantastic', 'pleased', 'delighted'],
@@ -62,7 +61,6 @@ class EmotionRecognitionService {
       }
     }
 
-    // Voice emotion indicators (for future voice analysis)
     this.voiceIndicators = {
       pitch: { high: ['excited', 'anxious'], low: ['sad', 'frustrated'] },
       tempo: { fast: ['excited', 'anxious'], slow: ['confused', 'sad'] },
@@ -84,49 +82,40 @@ class EmotionRecognitionService {
     const normalizedText = text.toLowerCase().trim();
     const emotionScores = {};
 
-    // Initialize scores
     Object.keys(this.emotionPatterns).forEach(emotion => {
       emotionScores[emotion] = 0;
     });
 
-    // Analyze keywords
     Object.entries(this.emotionPatterns).forEach(([emotion, pattern]) => {
       let score = 0;
 
-      // Check keywords
       pattern.keywords.forEach(keyword => {
         const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
         const matches = (normalizedText.match(regex) || []).length;
         score += matches * 0.3;
       });
 
-      // Check phrases
       pattern.phrases.forEach(phrase => {
         if (normalizedText.includes(phrase)) {
           score += 0.5;
         }
       });
 
-      // Check punctuation and emojis
       pattern.punctuation.forEach(punct => {
         const count = (text.match(new RegExp(punct.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
         score += count * 0.2;
       });
 
-      // Apply emotion weight
       emotionScores[emotion] = score * pattern.weight;
     });
 
-    // Contextual adjustments
     if (context.previousEmotion) {
       this.applyContextualAdjustments(emotionScores, context);
     }
 
-    // Find dominant emotion
     const dominantEmotion = this.getDominantEmotion(emotionScores);
     const confidence = this.calculateConfidence(emotionScores, dominantEmotion);
 
-    // Additional analysis
     const analysis = {
       textLength: text.length,
       wordCount: text.split(/\s+/).length,
@@ -148,8 +137,6 @@ class EmotionRecognitionService {
    * @returns {Object} Voice emotion analysis
    */
   async analyzeVoiceEmotion(voiceData) {
-    // Placeholder for voice emotion detection
-    // In a real implementation, this would analyze:
     // - Pitch patterns
     // - Speaking rate
     // - Volume variations
@@ -229,7 +216,6 @@ class EmotionRecognitionService {
 
     const strategy = responseStrategies[emotion] || responseStrategies.neutral;
     
-    // Adjust based on business context
     let contextualAdjustments = '';
     if (businessContext.isOwner) {
       contextualAdjustments = 'As a business owner, ';
@@ -276,16 +262,13 @@ class EmotionRecognitionService {
       metadata: emotionResult.metadata || {}
     };
 
-    // In a real implementation, this would save to database
     console.log('📊 Sentiment tracked:', sentimentRecord);
     
-    // For now, we'll store in memory/localStorage for demo purposes
     try {
       const existingData = localStorage.getItem('sentiment_tracking') || '[]';
       const sentimentHistory = JSON.parse(existingData);
       sentimentHistory.push(sentimentRecord);
       
-      // Keep only last 100 records to prevent storage bloat
       if (sentimentHistory.length > 100) {
         sentimentHistory.splice(0, sentimentHistory.length - 100);
       }
@@ -319,7 +302,6 @@ class EmotionRecognitionService {
     }
   }
 
-  // Helper methods
   getDominantEmotion(scores) {
     const entries = Object.entries(scores);
     const maxEntry = entries.reduce((max, current) => current[1] > max[1] ? current : max);
@@ -370,12 +352,10 @@ class EmotionRecognitionService {
   }
 
   applyContextualAdjustments(scores, context) {
-    // If user was previously frustrated and now neutral, boost satisfaction
     if (context.previousEmotion === 'frustrated' && scores.frustrated < 0.5) {
       scores.satisfied += 0.3;
     }
     
-    // If conversation is getting more negative, amplify negative emotions
     if (context.sentimentTrend === 'declining') {
       ['frustrated', 'angry', 'anxious'].forEach(emotion => {
         scores[emotion] *= 1.2;
@@ -433,6 +413,5 @@ class EmotionRecognitionService {
   }
 }
 
-// Export singleton instance
 const emotionService = new EmotionRecognitionService();
 export default emotionService;

@@ -9,7 +9,6 @@ export async function GET(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -19,7 +18,6 @@ export async function GET(request) {
       )
     }
     
-    // Get the user's barbershop
     const { data: shop } = await supabase
       .from('barbershops')
       .select('id, name')
@@ -54,7 +52,6 @@ export async function GET(request) {
     const currentHour = today.getHours()
     const isBusinessHours = currentHour >= 9 && currentHour <= 19
     
-    // Fetch real alerts from notifications table
     const { data: notifications, error: notifError } = await supabase
       .from('notifications')
       .select('*')
@@ -66,7 +63,6 @@ export async function GET(request) {
       console.error('Error fetching notifications:', notifError)
     }
     
-    // Convert notifications to alerts format
     const alerts = (notifications || []).map(notif => ({
       id: notif.id,
       type: notif.type || 'info',
@@ -80,10 +76,8 @@ export async function GET(request) {
       action_url: notif.action_url || null
     }))
     
-    // Check for real-time conditions and add system-generated alerts
     const systemAlerts = []
     
-    // Check for upcoming appointments
     const nextHour = new Date(today.getTime() + 60 * 60 * 1000)
     const { data: upcomingBookings } = await supabase
       .from('bookings')
@@ -120,7 +114,6 @@ export async function GET(request) {
       })
     }
     
-    // Check for low inventory (if inventory table exists)
     const { data: lowInventory } = await supabase
       .from('inventory')
       .select('product_name, current_stock, reorder_level')
@@ -143,7 +136,6 @@ export async function GET(request) {
       })
     })
     
-    // Check for recent performance metrics
     const { data: todayBookings } = await supabase
       .from('bookings')
       .select('id', { count: 'exact', head: true })
@@ -162,7 +154,6 @@ export async function GET(request) {
     
     const totalRevenue = todayRevenue?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
     
-    // Add daily summary if it's evening
     if (currentHour >= 17 && totalRevenue > 0) {
       systemAlerts.push({
         id: 'daily-summary',
@@ -177,7 +168,6 @@ export async function GET(request) {
       })
     }
     
-    // Check for customers who haven't visited recently
     const sixtyDaysAgo = new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000)
     const { data: inactiveCustomers, count } = await supabase
       .from('customers')
@@ -200,10 +190,8 @@ export async function GET(request) {
       })
     }
     
-    // Combine all alerts
     const allAlerts = [...alerts, ...systemAlerts]
     
-    // Sort alerts by priority and time
     const priorityOrder = { high: 3, medium: 2, low: 1 }
     allAlerts.sort((a, b) => {
       if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
@@ -212,7 +200,6 @@ export async function GET(request) {
       return new Date(b.created_at) - new Date(a.created_at)
     })
     
-    // Calculate summary statistics
     const summary = {
       total_alerts: allAlerts.length,
       unread_alerts: allAlerts.filter(a => !a.is_read).length,

@@ -1,9 +1,7 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 
-// Simple paywall tests without authentication setup dependency
 test.describe('BookedBarber Paywall Tests - Direct', () => {
-  // Skip the auth setup completely
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('1. Register page - Google OAuth button check', async ({ page }) => {
@@ -12,7 +10,6 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
     await page.goto('https://bookedbarber.com/register');
     await page.waitForLoadState('networkidle');
     
-    // Take screenshot for visual verification
     await page.screenshot({ path: 'test-results/register-page.png' });
     
     const googleButton = await page.locator('button:has-text("Sign up with Google")');
@@ -35,10 +32,8 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
     await page.goto('https://bookedbarber.com/subscribe');
     await page.waitForLoadState('networkidle');
     
-    // Take screenshot
     await page.screenshot({ path: 'test-results/subscribe-page.png' });
     
-    // Check for tier buttons
     const tiers = [
       { name: 'Individual', price: '$35' },
       { name: 'Shop Owner', price: '$99' },
@@ -67,7 +62,6 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
     await page.goto('https://bookedbarber.com/login');
     await page.waitForLoadState('networkidle');
     
-    // Take screenshot
     await page.screenshot({ path: 'test-results/login-page.png' });
     
     const googleButton = await page.locator('button:has-text("Sign in with Google")');
@@ -108,7 +102,6 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
     
     const individualButton = await page.locator('button:has-text("Start as Individual")');
     
-    // Monitor network for redirect
     let redirected = false;
     page.on('framenavigated', (frame) => {
       if (frame === page.mainFrame() && page.url().includes('/login')) {
@@ -116,10 +109,8 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
       }
     });
     
-    // Click button
     await individualButton.click();
     
-    // Wait for potential redirect
     await page.waitForTimeout(3000);
     
     const currentUrl = page.url();
@@ -146,20 +137,16 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
     
     const googleButton = await page.locator('button:has-text("Sign up with Google")');
     
-    // Monitor for popup or navigation
     let popupDetected = false;
     const popupPromise = page.waitForEvent('popup', { timeout: 5000 }).catch(() => null);
     
-    // Click Google button
     await googleButton.click();
     
-    // Check button state after click
     await page.waitForTimeout(1000);
     const buttonTextAfterClick = await googleButton.textContent();
     
     console.log(`  Button text after click: "${buttonTextAfterClick}"`);
     
-    // Check for popup
     const popup = await popupPromise;
     if (popup) {
       popupDetected = true;
@@ -168,7 +155,6 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
       await popup.close();
     }
     
-    // Check if button got stuck
     if (buttonTextAfterClick?.includes('Signing up...')) {
       await page.waitForTimeout(3000);
       const buttonTextAfterWait = await googleButton.textContent();
@@ -191,7 +177,6 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
     
     await page.goto('https://bookedbarber.com/dashboard');
     
-    // Wait for potential redirect
     await page.waitForTimeout(3000);
     
     const currentUrl = page.url();
@@ -205,7 +190,6 @@ test.describe('BookedBarber Paywall Tests - Direct', () => {
   });
 });
 
-// Summary test
 test('📊 Test Summary', async ({ page }) => {
   console.log('\n' + '='.repeat(60));
   console.log('PAYWALL TESTING COMPLETE');

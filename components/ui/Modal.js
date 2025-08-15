@@ -26,7 +26,6 @@ export function Modal({
     full: 'max-w-full mx-4'
   }
 
-  // Handle escape key press
   useEffect(() => {
     if (!isOpen) return
 
@@ -40,7 +39,6 @@ export function Modal({
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'

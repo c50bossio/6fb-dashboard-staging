@@ -8,7 +8,6 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables manually
 const envPath = join(__dirname, '../.env.local')
 const envContent = readFileSync(envPath, 'utf8')
 const envLines = envContent.split('\n')
@@ -31,22 +30,18 @@ console.log('🚀 Setting up calendar database schema...')
 
 async function setupDatabase() {
   try {
-    // Read the SQL schema file
     const schemaPath = join(__dirname, '../database/setup-calendar-tables.sql')
     const schema = readFileSync(schemaPath, 'utf8')
     
     console.log('📄 Loaded schema file')
     console.log('🗄️ Executing SQL schema...')
     
-    // Execute the schema SQL
     const { data, error } = await supabase.rpc('exec_sql', { sql: schema })
     
     if (error) {
       console.error('❌ Error executing schema:', error)
-      // Try alternative approach - execute in smaller chunks
       console.log('🔄 Trying alternative approach - executing statements individually...')
       
-      // Split SQL into individual statements
       const statements = schema
         .split(';')
         .map(stmt => stmt.trim())
@@ -66,7 +61,6 @@ async function setupDatabase() {
           const { error: stmtError } = await supabase.rpc('exec_sql', { sql: statement })
           
           if (stmtError && stmtError.code !== '42P07' && stmtError.code !== '42710') {
-            // Ignore "already exists" errors
             console.error(`❌ Error in statement ${i + 1}: ${stmtError.message}`)
             errorCount++
           } else {
@@ -85,7 +79,6 @@ async function setupDatabase() {
       console.log('✅ Schema executed successfully!')
     }
     
-    // Test the tables
     console.log('\n🧪 Testing table creation...')
     
     const tables = ['barbershops', 'barbers', 'services', 'clients', 'appointments']

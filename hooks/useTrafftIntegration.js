@@ -186,13 +186,11 @@ export function useTrafftIntegration(barbershopId = 'default') {
     }
   }, [sync])
 
-  // Initialize integration status on mount
   useEffect(() => {
     checkIntegrationStatus()
     getSyncHistory()
   }, [checkIntegrationStatus, getSyncHistory])
 
-  // Auto-refresh integration status every 5 minutes
   useEffect(() => {
     if (!integration) return
 
@@ -204,18 +202,15 @@ export function useTrafftIntegration(barbershopId = 'default') {
   }, [integration, checkIntegrationStatus])
 
   return {
-    // State
     integration,
     loading,
     error,
     syncHistory,
     businessAnalytics,
     
-    // Computed values
     isConnected: integration?.status === 'active',
     lastSync: syncHistory[0]?.syncedAt || integration?.lastSyncAt,
     
-    // Actions
     authenticate,
     disconnect,
     sync,
@@ -223,7 +218,6 @@ export function useTrafftIntegration(barbershopId = 'default') {
     getAnalytics,
     checkIntegrationStatus,
     
-    // Utilities
     clearError: () => setError(null)
   }
 }
@@ -253,7 +247,6 @@ export function useTrafftRealtimeData(barbershopId = 'default') {
 
     const pollForUpdates = async () => {
       try {
-        // Sync today's data only for real-time updates
         const today = new Date().toISOString().split('T')[0]
         const result = await sync('appointments', today, today)
         
@@ -275,10 +268,8 @@ export function useTrafftRealtimeData(barbershopId = 'default') {
       }
     }
 
-    // Initial load
     pollForUpdates()
 
-    // Poll every 2 minutes for real-time updates
     const interval = setInterval(pollForUpdates, 2 * 60 * 1000)
 
     return () => clearInterval(interval)
@@ -332,12 +323,10 @@ export function useTrafftBusinessInsights(barbershopId = 'default') {
       },
       recommendations: [
         ...(analyticsData.businessInsights?.revenueGrowthPotential?.recommendations || []),
-        // Add AI-generated recommendations based on patterns
         generateSmartRecommendations(analyticsData)
       ].flat().filter(Boolean).slice(0, 5)
     }
 
-    // Generate alerts
     const newAlerts = []
     
     if (insights.performance.capacity.utilization < 50) {
@@ -377,17 +366,14 @@ export function useTrafftBusinessInsights(barbershopId = 'default') {
   const generateSmartRecommendations = (analyticsData) => {
     const recommendations = []
 
-    // Revenue-based recommendations
     if (analyticsData.revenue?.avgTicket < 60) {
       recommendations.push('Consider introducing premium services to increase average ticket value')
     }
 
-    // Client-based recommendations
     if (analyticsData.clients?.new > analyticsData.clients?.returning) {
       recommendations.push('Focus on client retention strategies to build a loyal customer base')
     }
 
-    // Scheduling recommendations
     if (analyticsData.scheduling?.peakHours?.length > 0) {
       const peakHour = analyticsData.scheduling.peakHours[0]?.hour
       if (peakHour) {
@@ -398,7 +384,6 @@ export function useTrafftBusinessInsights(barbershopId = 'default') {
     return recommendations
   }
 
-  // Update insights when analytics data changes
   useEffect(() => {
     if (businessAnalytics) {
       setLoading(true)

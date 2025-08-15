@@ -21,7 +21,6 @@ export async function GET(request) {
       })
     }
 
-    // Search customers by name, phone, or email
     const { data: customers, error } = await supabase
       .from('customers')
       .select(`
@@ -42,7 +41,6 @@ export async function GET(request) {
 
     if (error) {
       console.error('Error searching customers:', error)
-      // Return empty results if table doesn't exist
       if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return NextResponse.json({
           customers: [],
@@ -57,7 +55,6 @@ export async function GET(request) {
       )
     }
 
-    // Enhance results with additional info
     const enhancedCustomers = customers.map(customer => ({
       ...customer,
       display_name: customer.name,
@@ -88,7 +85,6 @@ export async function GET(request) {
   }
 }
 
-// Quick customer lookup by phone or email for exact matches
 export async function POST(request) {
   try {
     const { phone, email, barbershop_id = 'demo-shop-001' } = await request.json()
@@ -129,7 +125,6 @@ export async function POST(request) {
 
     if (error) {
       console.error('Error looking up customer:', error)
-      // Return empty result if table doesn't exist
       if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return NextResponse.json({
           customer: null,
@@ -151,7 +146,6 @@ export async function POST(request) {
       })
     }
 
-    // Return first match (should be unique based on constraints)
     const customer = customers[0]
 
     return NextResponse.json({

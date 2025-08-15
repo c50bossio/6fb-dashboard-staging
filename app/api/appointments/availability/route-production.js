@@ -9,7 +9,6 @@ import { withAuth, withRateLimit, createAuthenticatedClient } from '@/middleware
 import { DateTime } from 'luxon'
 export const runtime = 'edge'
 
-// Validation schemas
 const availabilityQuerySchema = z.object({
   barber_id: z.string().uuid('Invalid barber ID format'),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD format'),
@@ -35,7 +34,6 @@ async function handleGet(request) {
     const supabase = await createAuthenticatedClient()
     const { searchParams } = new URL(request.url)
     
-    // Parse and validate query parameters
     const params = {
       barber_id: searchParams.get('barber_id'),
       date: searchParams.get('date'),
@@ -54,7 +52,6 @@ async function handleGet(request) {
     
     const { barber_id, date, duration_minutes, service_id, timezone } = validation.data
     
-    // If service_id provided, get actual duration from service
     let actualDuration = duration_minutes
     if (service_id) {
       const { data: service } = await supabase
@@ -68,7 +65,6 @@ async function handleGet(request) {
       }
     }
     
-    // Get barber information and working hours
     const { data: barber, error: barberError } = await supabase
       .from('barbers')
       .select(`
@@ -93,12 +89,10 @@ async function handleGet(request) {
       }, { status: 404 })
     }
     
-    // Use shop timezone if available
     const shopTimezone = barber.shops?.timezone || timezone
     const requestedDate = DateTime.fromISO(date, { zone: shopTimezone })
     const dayOfWeek = requestedDate.toFormat('EEEE')
     
-    // Get business hours for the day
     const businessHours = barber.working_hours?.[dayOfWeek] || 
                           barber.shops?.business_hours?.[dayOfWeek] ||
                           { start: '09:00', end: '18:00', isOpen: true }
@@ -111,7 +105,6 @@ async function handleGet(request) {
       })
     }
     
-    // Get existing appointments for the date
     const startOfDay = requestedDate.startOf('day').toUTC().toISO()
     const endOfDay = requestedDate.endOf('day').toUTC().toISO()
     
@@ -137,7 +130,6 @@ async function handleGet(request) {
       }, { status: 500 })
     }
     
-    // Generate time slots
     const slots = generateTimeSlots({
       date: requestedDate,
       businessHours,
@@ -147,7 +139,6 @@ async function handleGet(request) {
       timezone: shopTimezone
     })
     
-    // Calculate statistics
     const availableCount = slots.filter(s => s.available).length
     const totalSlots = slots.length
     const utilizationRate = totalSlots > 0 ? 
@@ -206,7 +197,6 @@ async function handlePost(request) {
       check_recurring 
     } = validation.data
     
-    // Build conflict query
     let query = supabase
       .from('bookings')
       .select('id, start_time, end_time, customer_id, service_id')
@@ -226,7 +216,6 @@ async function handlePost(request) {
       }, { status: 500 })
     }
     
-    // Check for overlaps
     const requestedStart = new Date(start_time)
     const requestedEnd = new Date(end_time)
     
@@ -234,11 +223,9 @@ async function handlePost(request) {
       const aptStart = new Date(apt.start_time)
       const aptEnd = new Date(apt.end_time)
       
-      // Check if there's any overlap
       return (requestedStart < aptEnd && requestedEnd > aptStart)
     })
     
-    // Check barber working hours
     const requestedDateTime = DateTime.fromISO(start_time)
     const dayOfWeek = requestedDateTime.toFormat('EEEE')
     
@@ -299,20 +286,17 @@ function generateTimeSlots(options) {
   const slots = []
   const slotInterval = 15 // 15-minute intervals
   
-  // Parse business hours
   const [startHour, startMin] = businessHours.start.split(':').map(Number)
   const [endHour, endMin] = businessHours.end.split(':').map(Number)
   
   const dayStart = date.set({ hour: startHour, minute: startMin, second: 0 })
   const dayEnd = date.set({ hour: endHour, minute: endMin, second: 0 })
   
-  // Generate slots
   let currentSlot = dayStart
   
   while (currentSlot.plus({ minutes: duration }) <= dayEnd) {
     const slotEnd = currentSlot.plus({ minutes: duration })
     
-    // Check if slot overlaps with break times
     const isDuringBreak = breakTimes.some(breakTime => {
       const [breakStartHour, breakStartMin] = breakTime.start.split(':').map(Number)
       const [breakEndHour, breakEndMin] = breakTime.end.split(':').map(Number)
@@ -323,7 +307,6 @@ function generateTimeSlots(options) {
       return currentSlot < breakEnd && slotEnd > breakStart
     })
     
-    // Check if slot conflicts with appointments
     const hasConflict = appointments.some(apt => {
       const aptStart = DateTime.fromISO(apt.start_time, { zone: 'utc' }).setZone(timezone)
       const aptEnd = DateTime.fromISO(apt.end_time, { zone: 'utc' }).setZone(timezone)
@@ -346,7 +329,6 @@ function generateTimeSlots(options) {
   return slots
 }
 
-// Export with authentication and rate limiting
 export const GET = withRateLimit(
   withAuth(handleGet, {
     requiredRoles: [], // Allow any authenticated user

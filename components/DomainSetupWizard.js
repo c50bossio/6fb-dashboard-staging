@@ -9,7 +9,6 @@ export default function DomainSetupWizard({ domain, onComplete }) {
   const [dnsProvider, setDnsProvider] = useState('')
   const [copied, setCopied] = useState({ a: false, cname: false })
   
-  // DNS records the user needs to add
   const dnsRecords = {
     a: {
       type: 'A',
@@ -36,7 +35,6 @@ export default function DomainSetupWizard({ domain, onComplete }) {
   const verifyDomain = async () => {
     setVerificationStatus('checking')
     
-    // Simulate DNS verification
     setTimeout(() => {
       const random = Math.random()
       if (random > 0.3) {

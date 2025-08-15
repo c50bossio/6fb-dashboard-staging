@@ -3,14 +3,12 @@ import Stripe from 'stripe'
 
 export const runtime = 'nodejs'
 
-// Initialize Stripe conditionally
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2023-10-16',
     })
   : null
 
-// Optimized pricing tiers - Higher base, lower token costs
 const PRICING_PLANS = {
   starter: {
     name: 'Starter',
@@ -62,7 +60,6 @@ const PRICING_PLANS = {
   }
 }
 
-// GET - Retrieve billing information
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -84,8 +81,6 @@ export async function GET(request) {
           )
         }
 
-        // For demo purposes, return mock subscription data
-        // In production, this would query the token_billing_service
         const Subscription = {
           tenant_id: tenantId,
           tier: 'starter',
@@ -114,7 +109,6 @@ export async function GET(request) {
           )
         }
 
-        // Mock usage analytics
         const Usage = {
           tenant_id: tenantId,
           period_days: 30,
@@ -167,7 +161,6 @@ export async function GET(request) {
   }
 }
 
-// POST - Handle billing actions
 export async function POST(request) {
   try {
     const body = await request.json()
@@ -175,7 +168,6 @@ export async function POST(request) {
 
     switch (action) {
       case 'start_trial':
-        // Start 14-day free trial
         const trialSubscription = {
           tenant_id,
           tier: plan || 'starter',
@@ -188,7 +180,6 @@ export async function POST(request) {
           features: PRICING_PLANS[plan || 'starter'].features
         }
 
-        // In production, save to database via token_billing_service
         
         return NextResponse.json({
           success: true,
@@ -206,9 +197,7 @@ export async function POST(request) {
 
         const selectedPlan = PRICING_PLANS[plan]
 
-        // Check if we have valid Stripe keys
         if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe')) {
-          // Return mock checkout session for testing
           return NextResponse.json({
             success: true,
             checkout_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/billing/success?session_id=cs_test_mock_session_123`,
@@ -217,7 +206,6 @@ export async function POST(request) {
           })
         }
 
-        // Create Stripe Checkout Session with 14-day trial
         const session = await stripe.checkout.sessions.create({
           mode: 'subscription',
           payment_method_types: ['card'],
@@ -260,7 +248,6 @@ export async function POST(request) {
         })
 
       case 'create_portal':
-        // Create Stripe Customer Portal session for subscription management
         if (!tenant_id) {
           return NextResponse.json(
             { error: 'tenant_id required' },
@@ -268,9 +255,7 @@ export async function POST(request) {
           )
         }
 
-        // Check if we have valid Stripe keys
         if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe')) {
-          // Return mock portal session for testing
           return NextResponse.json({
             success: true,
             portal_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/billing/portal-demo`,
@@ -278,7 +263,6 @@ export async function POST(request) {
           })
         }
 
-        // In production, get stripe_customer_id from database
         const CustomerId = 'cus_demo_customer'
 
         const portalSession = await stripe.billingPortal.sessions.create({
@@ -301,7 +285,6 @@ export async function POST(request) {
           )
         }
 
-        // Update Stripe subscription
         if (stripe_subscription_id && stripe_subscription_id !== 'demo') {
           const subscription = await stripe.subscriptions.retrieve(stripe_subscription_id)
           
@@ -366,7 +349,6 @@ export async function POST(request) {
   }
 }
 
-// PUT - Update billing settings
 export async function PUT(request) {
   try {
     const body = await request.json()
@@ -374,7 +356,6 @@ export async function PUT(request) {
 
     switch (action) {
       case 'update_payment_method':
-        // Handle payment method updates through Stripe
         return NextResponse.json({
           success: true,
           message: 'Payment method updated successfully'
@@ -383,7 +364,6 @@ export async function PUT(request) {
       case 'update_billing_email':
         const { billing_email } = settings
 
-        // Update billing email in Stripe and database
         return NextResponse.json({
           success: true,
           message: 'Billing email updated successfully',
@@ -393,7 +373,6 @@ export async function PUT(request) {
       case 'update_usage_alerts':
         const { alert_thresholds } = settings
 
-        // Save usage alert preferences
         return NextResponse.json({
           success: true,
           message: 'Usage alert preferences updated',

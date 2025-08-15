@@ -9,20 +9,16 @@ export const runtime = 'edge'
 
 export async function GET(request) {
   try {
-    // Get CORS configuration status
     const corsStatus = getCorsStatus()
     
-    // Get current time for reference
     const timestamp = new Date().toISOString()
     
-    // Determine health status
     const hasValidOrigins = corsStatus.configuration.totalAllowedOrigins > 0
     const isProperlyConfigured = corsStatus.configuration.envOriginsConfigured || 
                                 corsStatus.environment.nodeEnv === 'development'
     
     const healthStatus = hasValidOrigins && isProperlyConfigured ? 'healthy' : 'warning'
     
-    // Check for potential issues
     const warnings = []
     const recommendations = []
     
@@ -41,7 +37,6 @@ export async function GET(request) {
       recommendations.push('Review and minimize allowed origins for better security')
     }
     
-    // Security analysis
     const securityAnalysis = {
       strictValidation: corsStatus.security.strictValidation,
       developmentMode: corsStatus.security.developmentMode,
@@ -106,7 +101,6 @@ export async function GET(request) {
   }
 }
 
-// Support HEAD requests for basic health checks
 export async function HEAD(request) {
   try {
     const corsStatus = getCorsStatus()
@@ -132,7 +126,6 @@ export async function HEAD(request) {
   }
 }
 
-// Support OPTIONS for CORS testing
 export async function OPTIONS(request) {
   const origin = request.headers.get('origin')
   

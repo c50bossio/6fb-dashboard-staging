@@ -34,7 +34,6 @@ export default function AppointmentsPage() {
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedAppointment, setSelectedAppointment] = useState(null)
 
-  // Mock statistics for now
   useEffect(() => {
     setStats({
       total: 3,
@@ -62,8 +61,6 @@ export default function AppointmentsPage() {
 
   const handleSaveAppointment = (appointmentData, existingId) => {
     console.log('Saving appointment:', appointmentData, existingId)
-    // In production, this would save to the database
-    // For now, just close the modal
     setModalOpen(false)
   }
 

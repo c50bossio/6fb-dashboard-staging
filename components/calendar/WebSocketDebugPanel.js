@@ -21,12 +21,10 @@ export default function WebSocketDebugPanel() {
     
     console.log('🔑 Creating Supabase client with:', { supabaseUrl })
     
-    // Use service role key for realtime (anon key doesn't receive events due to RLS)
     const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
     
     const supabase = createClient(supabaseUrl, serviceRoleKey)
     
-    console.log('📡 Setting up debug channel...')
     
     const channel = supabase
       .channel('debug-channel')
@@ -35,7 +33,6 @@ export default function WebSocketDebugPanel() {
           event: '*', 
           schema: 'public', 
           table: 'bookings'
-          // Remove filter to test if any events come through
         }, 
         (payload) => {
           console.log('📦 Debug panel received event:', payload)
@@ -51,7 +48,6 @@ export default function WebSocketDebugPanel() {
         console.log('🔔 Debug panel subscription status:', subscriptionStatus)
         setStatus(subscriptionStatus)
         
-        // Store in window for debugging
         if (typeof window !== 'undefined') {
           window.debugPanelStatus = subscriptionStatus
           window.debugPanelConnected = subscriptionStatus === 'SUBSCRIBED'
@@ -59,7 +55,6 @@ export default function WebSocketDebugPanel() {
       })
     
     return () => {
-      console.log('🧹 Cleaning up debug channel')
       supabase.removeChannel(channel)
     }
   }, [])

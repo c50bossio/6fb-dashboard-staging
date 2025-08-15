@@ -6,7 +6,6 @@ export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -21,7 +20,6 @@ export async function GET(request) {
     const includeProjections = searchParams.get('projections') === 'true'
 
     try {
-      // Generate seasonal and trend analysis
       const trendAnalysis = await generateSeasonalTrendAnalysis(
         barbershopId, 
         analysisType, 
@@ -38,7 +36,6 @@ export async function GET(request) {
     } catch (analysisError) {
       console.error('Trend analysis error:', analysisError)
       
-      // Return fallback analysis
       const fallbackAnalysis = generateFallbackTrendAnalysis(
         barbershopId, 
         analysisType, 
@@ -64,7 +61,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -121,14 +117,12 @@ export async function POST(request) {
 async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timeframe, includeProjections) {
   const currentTime = new Date()
   
-  // Generate comprehensive seasonal and trend analysis
   const historicalData = generateHistoricalBusinessData(timeframe)
   const seasonalPatterns = analyzeSeasonalPatterns(historicalData, timeframe)
   const trendAnalysis = analyzeLongTermTrends(historicalData)
   const anomalyDetection = detectAnomalies(historicalData)
   const cyclicalPatterns = identifyCyclicalPatterns(historicalData)
   
-  // Future projections if requested
   const projections = includeProjections ? generateTrendProjections(trendAnalysis, seasonalPatterns) : null
   
   return {
@@ -138,7 +132,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
     generated_at: currentTime.toISOString(),
     analysis_confidence: 0.87,
     
-    // Seasonal analysis
     seasonal_patterns: {
       monthly_seasonality: seasonalPatterns.monthly,
       weekly_seasonality: seasonalPatterns.weekly,
@@ -149,7 +142,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       low_seasons: seasonalPatterns.lowSeasons
     },
     
-    // Trend analysis
     trend_analysis: {
       overall_trend: trendAnalysis.overall,
       revenue_trend: trendAnalysis.revenue,
@@ -161,7 +153,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       inflection_points: trendAnalysis.inflectionPoints
     },
     
-    // Cyclical patterns
     cyclical_analysis: {
       identified_cycles: cyclicalPatterns.cycles,
       cycle_strength: cyclicalPatterns.strength,
@@ -169,7 +160,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       cycle_drivers: cyclicalPatterns.drivers
     },
     
-    // Anomaly detection
     anomaly_detection: {
       detected_anomalies: anomalyDetection.anomalies,
       anomaly_types: anomalyDetection.types,
@@ -177,7 +167,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       anomaly_patterns: anomalyDetection.patterns
     },
     
-    // Business insights
     business_insights: [
       {
         type: 'seasonal_opportunity',
@@ -230,7 +219,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       }
     ],
     
-    // Future projections (if requested)
     projections: projections ? {
       next_3_months: projections.shortTerm,
       next_6_months: projections.mediumTerm,
@@ -240,7 +228,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       risk_factors: projections.risks
     } : null,
     
-    // Performance benchmarks
     performance_benchmarks: {
       industry_comparison: {
         revenue_growth: { your_business: trendAnalysis.revenue.growthRate, industry_average: 0.045, percentile: 78 },
@@ -255,7 +242,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       ]
     },
     
-    // Risk assessment
     risk_analysis: {
       seasonal_risks: identifySeasonalRisks(seasonalPatterns),
       trend_risks: assessTrendRisks(trendAnalysis),
@@ -263,7 +249,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       mitigation_strategies: generateRiskMitigationStrategies()
     },
     
-    // Actionable recommendations
     strategic_recommendations: [
       {
         category: 'seasonal_optimization',
@@ -300,7 +285,6 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
       }
     ],
     
-    // Data quality and model performance
     analysis_quality: {
       data_completeness: 0.92,
       data_accuracy_score: 0.88,
@@ -329,18 +313,14 @@ function generateHistoricalBusinessData(timeframe) {
     const date = new Date(baseDate)
     date.setDate(baseDate.getDate() + i)
     
-    // Simulate realistic business data with trends and seasonality
     const month = date.getMonth() + 1
     const dayOfWeek = date.getDay()
     
-    // Base values with growth trend
     const trendFactor = 1 + (i / (months * 30)) * 0.20 // 20% growth over period
     
-    // Seasonal factors
     const monthlySeasonality = getMonthlySeasonalityFactor(month)
     const weeklySeasonality = getWeeklySeasonalityFactor(dayOfWeek)
     
-    // NO RANDOM - use consistent noise factor
     const noise = 1.0
     
     const baseRevenue = 450
@@ -394,7 +374,6 @@ function getWeeklySeasonalityFactor(dayOfWeek) {
 }
 
 function analyzeSeasonalPatterns(historicalData, timeframe) {
-  // Monthly seasonality analysis
   const monthlyData = {}
   historicalData.forEach(day => {
     if (!monthlyData[day.month]) {
@@ -413,7 +392,6 @@ function analyzeSeasonalPatterns(historicalData, timeframe) {
     }
   })
   
-  // Weekly seasonality analysis
   const weeklyData = {}
   historicalData.forEach(day => {
     if (!weeklyData[day.day_of_week]) {
@@ -431,7 +409,6 @@ function analyzeSeasonalPatterns(historicalData, timeframe) {
     }
   })
   
-  // Identify peak and low seasons
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const sortedMonths = Object.entries(monthlyAverages)
     .sort(([,a], [,b]) => b.revenue - a.revenue)
@@ -462,7 +439,6 @@ function analyzeSeasonalPatterns(historicalData, timeframe) {
 }
 
 function analyzeLongTermTrends(historicalData) {
-  // Calculate overall trend
   const dataPoints = historicalData.map((day, index) => ({
     x: index,
     revenue: day.revenue,
@@ -470,7 +446,6 @@ function analyzeLongTermTrends(historicalData) {
     customers: day.customers
   }))
   
-  // Simple linear regression for trend analysis
   const revenueSlope = calculateSlope(dataPoints.map(d => d.x), dataPoints.map(d => d.revenue))
   const bookingsSlope = calculateSlope(dataPoints.map(d => d.x), dataPoints.map(d => d.bookings))
   const customersSlope = calculateSlope(dataPoints.map(d => d.x), dataPoints.map(d => d.customers))
@@ -512,7 +487,6 @@ function detectAnomalies(historicalData) {
   const anomalies = []
   const revenueData = historicalData.map(d => d.revenue)
   
-  // Calculate rolling mean and standard deviation
   const windowSize = 7 // 7-day window
   
   for (let i = windowSize; i < revenueData.length - windowSize; i++) {
@@ -546,10 +520,8 @@ function detectAnomalies(historicalData) {
 }
 
 function identifyCyclicalPatterns(historicalData) {
-  // Look for cyclical patterns in the data
   const cycles = []
   
-  // Monthly cycles
   const monthlyPattern = analyzeMonthlyPattern(historicalData)
   if (monthlyPattern.strength > 0.6) {
     cycles.push({
@@ -561,7 +533,6 @@ function identifyCyclicalPatterns(historicalData) {
     })
   }
   
-  // Weekly cycles
   const weeklyPattern = analyzeWeeklyPattern(historicalData)
   if (weeklyPattern.strength > 0.7) {
     cycles.push({
@@ -623,7 +594,6 @@ function generateTrendProjections(trendAnalysis, seasonalPatterns) {
   }
 }
 
-// Helper functions
 function calculateSlope(xValues, yValues) {
   const n = xValues.length
   const sumX = xValues.reduce((a, b) => a + b, 0)
@@ -652,7 +622,6 @@ function calculateAcceleration(values) {
 }
 
 function calculateTrendPersistence(values) {
-  // Calculate how consistently the trend persists
   const windows = []
   const windowSize = Math.min(30, Math.floor(values.length / 3))
   
@@ -665,7 +634,6 @@ function calculateTrendPersistence(values) {
     windows.push(slope > 0 ? 1 : slope < 0 ? -1 : 0)
   }
   
-  // Calculate consistency
   const positiveWindows = windows.filter(w => w > 0).length
   const negativeWindows = windows.filter(w => w < 0).length
   
@@ -689,7 +657,6 @@ function identifyInflectionPoints(values) {
       after
     )
     
-    // Significant change in slope direction
     if (Math.abs(beforeSlope - afterSlope) > 5) {
       points.push({
         index: i,
@@ -716,7 +683,6 @@ function calculatePreparationDate(targetDate, daysOffset) {
 }
 
 function calculateDailySeasonality(historicalData) {
-  // Simplified daily seasonality - would need more sophisticated analysis for real implementation
   return {
     pattern: 'weekday_weekend',
     strength: 0.72,
@@ -726,7 +692,6 @@ function calculateDailySeasonality(historicalData) {
 }
 
 function identifyHolidayImpacts(historicalData) {
-  // Simplified holiday impact analysis
   return [
     { holiday: 'Christmas', impact: 1.25, period: 'December 20-31' },
     { holiday: 'Valentines Day', impact: 1.15, period: 'February 10-14' },
@@ -744,7 +709,6 @@ function calculateSeasonalStrength(monthlyAverages) {
 }
 
 function analyzeServiceDemandTrends(historicalData) {
-  // Simplified service demand trend analysis
   return {
     'Classic Haircut': { trend: 'stable', growth_rate: 0.02 },
     'Beard Trim': { trend: 'increasing', growth_rate: 0.08 },
@@ -772,7 +736,6 @@ function identifyPotentialCauses(value, expected, dayData) {
     causes.push('System downtime')
   }
   
-  // Day-specific causes
   if (dayData.day_of_week === 1 && value > expected) {
     causes.push('Monday special promotion')
   }
@@ -799,10 +762,8 @@ function calculateAnomalyImpacts(anomalies) {
 }
 
 function identifyAnomalyPatterns(anomalies) {
-  // Look for patterns in anomalies
   const patterns = []
   
-  // Monthly clustering
   const monthlyCount = anomalies.reduce((acc, anomaly) => {
     const month = new Date(anomaly.date).getMonth()
     acc[month] = (acc[month] || 0) + 1
@@ -825,7 +786,6 @@ function identifyAnomalyPatterns(anomalies) {
 }
 
 function analyzeMonthlyPattern(historicalData) {
-  // Simplified monthly pattern analysis
   return {
     strength: 0.78,
     phase: 6, // Peak in June
@@ -834,7 +794,6 @@ function analyzeMonthlyPattern(historicalData) {
 }
 
 function analyzeWeeklyPattern(historicalData) {
-  // Simplified weekly pattern analysis
   return {
     strength: 0.85,
     phase: 5, // Peak on Friday
@@ -880,7 +839,6 @@ function identifyCycleDrivers(cycles) {
 }
 
 function applySeasonalAdjustments(months, seasonalPatterns) {
-  // Apply seasonal adjustments to projections
   const adjustments = {}
   const currentMonth = new Date().getMonth() + 1
   
@@ -1026,7 +984,6 @@ function generateFallbackTrendAnalysis(barbershopId, analysisType, timeframe) {
   }
 }
 
-// Action handlers
 async function detectBusinessAnomalies(barbershopId, parameters) {
   return {
     action: 'anomalies_detected',

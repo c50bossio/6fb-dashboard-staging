@@ -9,14 +9,12 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     
-    // Extract query parameters
     const barbershopId = searchParams.get('barbershop_id');
     const userId = searchParams.get('user_id');
     const priority = searchParams.get('priority');
     const category = searchParams.get('category');
     const limit = parseInt(searchParams.get('limit') || '50');
     
-    // Validate required parameters
     if (!barbershopId || !userId) {
       return NextResponse.json(
         { error: 'barbershop_id and user_id are required parameters' },
@@ -24,7 +22,6 @@ export async function GET(request) {
       );
     }
     
-    // Call Python alert service
     const pythonResponse = await fetch('http://localhost:8001/intelligent-alerts/active', {
       method: 'POST',
       headers: {
@@ -45,7 +42,6 @@ export async function GET(request) {
     
     const alertsData = await pythonResponse.json();
     
-    // Enrich with real-time context
     const enrichedAlerts = alertsData.map(alert => ({
       ...alert,
       real_time_context: {
@@ -56,7 +52,6 @@ export async function GET(request) {
       }
     }));
     
-    // Apply client-side intelligent grouping
     const groupedAlerts = groupSimilarAlerts(enrichedAlerts);
     
     return NextResponse.json({
@@ -107,7 +102,6 @@ export async function POST(request) {
       metadata = {} 
     } = body;
     
-    // Validate required fields
     if (!barbershop_id || !title || !message || !category || !source_data) {
       return NextResponse.json(
         { error: 'Missing required fields: barbershop_id, title, message, category, source_data' },
@@ -115,7 +109,6 @@ export async function POST(request) {
       );
     }
     
-    // Validate category
     const validCategories = [
       'business_metric', 'system_health', 'customer_behavior', 
       'revenue_anomaly', 'operational_issue', 'opportunity', 
@@ -129,7 +122,6 @@ export async function POST(request) {
       );
     }
     
-    // Call Python intelligent alert service
     const pythonResponse = await fetch('http://localhost:8001/intelligent-alerts/create', {
       method: 'POST',
       headers: {
@@ -155,7 +147,6 @@ export async function POST(request) {
     
     const newAlert = await pythonResponse.json();
     
-    // Send real-time notification to connected clients
     try {
       await fetch('http://localhost:8001/realtime/alert-notification', {
         method: 'POST',
@@ -170,7 +161,6 @@ export async function POST(request) {
       });
     } catch (realtimeError) {
       console.error('Real-time notification failed:', realtimeError);
-      // Don't fail the request if real-time notification fails
     }
     
     return NextResponse.json({
@@ -195,7 +185,6 @@ export async function POST(request) {
   }
 }
 
-// Helper functions
 function calculateTimeSince(createdAt) {
   const now = new Date();
   const created = new Date(createdAt);
@@ -216,7 +205,6 @@ function calculateUrgencyIndicator(alert) {
   const timeSinceCreated = new Date() - new Date(alert.created_at);
   const hoursOld = timeSinceCreated / (1000 * 60 * 60);
   
-  // Increase urgency for older unresolved alerts
   let adjustedUrgency = urgencyScore;
   if (alert.status === 'active') {
     if (alert.priority === 'critical' && hoursOld > 1) {
@@ -253,14 +241,12 @@ function groupSimilarAlerts(alerts) {
     groups[groupKey].alerts.push(alert);
     groups[groupKey].business_impact_sum += alert.business_impact || 0;
     
-    // Keep track of most recent alert in group
     if (!groups[groupKey].latest_alert || 
         new Date(alert.created_at) > new Date(groups[groupKey].latest_alert.created_at)) {
       groups[groupKey].latest_alert = alert;
     }
   });
   
-  // Convert to array and sort by priority and impact
   return Object.values(groups)
     .sort((a, b) => {
       const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
@@ -286,24 +272,18 @@ function generateAlertSummary(alerts) {
   let totalConfidence = 0;
   
   alerts.forEach(alert => {
-    // Count by priority
     summary.by_priority[alert.priority] = (summary.by_priority[alert.priority] || 0) + 1;
     
-    // Count by category
     summary.by_category[alert.category] = (summary.by_category[alert.category] || 0) + 1;
     
-    // Count by status
     summary.by_status[alert.status] = (summary.by_status[alert.status] || 0) + 1;
     
-    // Sum business impact
     summary.total_business_impact += alert.business_impact || 0;
     
-    // Count critical alerts
     if (alert.priority === 'critical' && alert.status === 'active') {
       summary.requires_immediate_attention++;
     }
     
-    // Sum confidence for average
     totalConfidence += alert.confidence_score || 0;
   });
   

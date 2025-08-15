@@ -12,7 +12,6 @@ export async function GET(request) {
     const barbershopId = searchParams.get('barbershop_id');
     const userId = searchParams.get('user_id');
     
-    // Validate required parameters
     if (!barbershopId || !userId) {
       return NextResponse.json(
         { error: 'barbershop_id and user_id are required parameters' },
@@ -20,7 +19,6 @@ export async function GET(request) {
       );
     }
     
-    // Get user alert preferences
     const preferencesResponse = await fetch('http://localhost:8001/intelligent-alerts/preferences', {
       method: 'POST',
       headers: {
@@ -35,7 +33,6 @@ export async function GET(request) {
     
     const preferences = preferencesResponse.ok ? await preferencesResponse.json() : getDefaultPreferences();
     
-    // Get alert rules configuration
     const rulesResponse = await fetch('http://localhost:8001/intelligent-alerts/rules', {
       method: 'POST',
       headers: {
@@ -49,7 +46,6 @@ export async function GET(request) {
     
     const rules = rulesResponse.ok ? await rulesResponse.json() : [];
     
-    // Get system configuration
     const systemConfig = {
       available_categories: [
         { id: 'business_metric', name: 'Business Metrics', description: 'Revenue, bookings, and KPIs' },
@@ -123,7 +119,6 @@ export async function POST(request) {
       action = 'update_preferences'
     } = body;
     
-    // Validate required fields
     if (!barbershop_id || !user_id) {
       return NextResponse.json(
         { error: 'barbershop_id and user_id are required' },
@@ -133,7 +128,6 @@ export async function POST(request) {
     
     const response = { updates: [] };
     
-    // Update user preferences
     if (action === 'update_preferences' && preferences) {
       const preferencesResponse = await fetch('http://localhost:8001/intelligent-alerts/preferences', {
         method: 'POST',
@@ -167,7 +161,6 @@ export async function POST(request) {
       }
     }
     
-    // Update alert rules
     if (action === 'update_rules' && rules) {
       const rulesResponse = await fetch('http://localhost:8001/intelligent-alerts/rules', {
         method: 'POST',
@@ -200,7 +193,6 @@ export async function POST(request) {
       }
     }
     
-    // Create new alert rule
     if (action === 'create_rule' && body.rule_config) {
       const createRuleResponse = await fetch('http://localhost:8001/intelligent-alerts/rules', {
         method: 'POST',
@@ -234,7 +226,6 @@ export async function POST(request) {
       }
     }
     
-    // Test alert configuration
     if (action === 'test_configuration') {
       const testResponse = await fetch('http://localhost:8001/intelligent-alerts/test', {
         method: 'POST',
@@ -305,7 +296,6 @@ export async function PUT(request) {
       configuration 
     } = body;
     
-    // Validate required fields
     if (!barbershop_id || !user_id || !configuration) {
       return NextResponse.json(
         { error: 'barbershop_id, user_id, and configuration are required' },
@@ -313,7 +303,6 @@ export async function PUT(request) {
       );
     }
     
-    // Bulk update via Python service
     const updateResponse = await fetch('http://localhost:8001/intelligent-alerts/bulk-configure', {
       method: 'POST',
       headers: {
@@ -335,7 +324,6 @@ export async function PUT(request) {
     
     const result = await updateResponse.json();
     
-    // Trigger ML model retraining if preferences significantly changed
     if (configuration.preferences && 
         (configuration.preferences.learning_preferences || 
          configuration.preferences.category_preferences)) {
@@ -353,7 +341,6 @@ export async function PUT(request) {
         });
       } catch (retrainError) {
         console.error('Model retraining trigger failed:', retrainError);
-        // Don't fail the request
       }
     }
     
@@ -379,7 +366,6 @@ export async function PUT(request) {
   }
 }
 
-// Helper function for default preferences
 function getDefaultPreferences() {
   return {
     email_enabled: true,

@@ -11,7 +11,6 @@
 
 const Stripe = require('stripe');
 
-// Load environment variables
 require('dotenv').config({ path: '.env.local' });
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -28,7 +27,6 @@ async function setupStripeProducts() {
   console.log('🚀 Setting up Stripe products for BookedBarber...\n');
 
   try {
-    // Create Individual Barber Product
     console.log('Creating Individual Barber product...');
     const barberProduct = await stripe.products.create({
       name: 'Individual Barber',
@@ -47,7 +45,6 @@ async function setupStripeProducts() {
       }
     });
 
-    // Create prices for Individual Barber
     const barberMonthly = await stripe.prices.create({
       product: barberProduct.id,
       unit_amount: 3500, // $35.00
@@ -80,7 +77,6 @@ async function setupStripeProducts() {
     console.log(`   Monthly Price ID: ${barberMonthly.id}`);
     console.log(`   Yearly Price ID: ${barberYearly.id}\n`);
 
-    // Create Barbershop Product
     console.log('Creating Barbershop product...');
     const shopProduct = await stripe.products.create({
       name: 'Barbershop',
@@ -101,7 +97,6 @@ async function setupStripeProducts() {
       }
     });
 
-    // Create prices for Barbershop
     const shopMonthly = await stripe.prices.create({
       product: shopProduct.id,
       unit_amount: 9900, // $99.00
@@ -134,7 +129,6 @@ async function setupStripeProducts() {
     console.log(`   Monthly Price ID: ${shopMonthly.id}`);
     console.log(`   Yearly Price ID: ${shopYearly.id}\n`);
 
-    // Create Multi-Location Enterprise Product
     console.log('Creating Multi-Location Enterprise product...');
     const enterpriseProduct = await stripe.products.create({
       name: 'Multi-Location Enterprise',
@@ -156,7 +150,6 @@ async function setupStripeProducts() {
       }
     });
 
-    // Create prices for Enterprise
     const enterpriseMonthly = await stripe.prices.create({
       product: enterpriseProduct.id,
       unit_amount: 24900, // $249.00
@@ -189,7 +182,6 @@ async function setupStripeProducts() {
     console.log(`   Monthly Price ID: ${enterpriseMonthly.id}`);
     console.log(`   Yearly Price ID: ${enterpriseYearly.id}\n`);
 
-    // Create Customer Portal Configuration
     console.log('Configuring Customer Portal...');
     const portalConfig = await stripe.billingPortal.configurations.create({
       business_profile: {
@@ -253,7 +245,6 @@ async function setupStripeProducts() {
     console.log('✅ Customer Portal configured');
     console.log(`   Portal Config ID: ${portalConfig.id}\n`);
 
-    // Output environment variables
     console.log('========================================');
     console.log('🎉 SUCCESS! Stripe products created');
     console.log('========================================\n');
@@ -273,7 +264,6 @@ async function setupStripeProducts() {
     console.log(`# Customer Portal`);
     console.log(`STRIPE_PORTAL_CONFIG_ID=${portalConfig.id}\n`);
 
-    // Create webhook endpoint
     console.log('Next Step: Configure webhook endpoint in Stripe Dashboard');
     console.log('=========================================================');
     console.log('1. Go to: https://dashboard.stripe.com/webhooks');
@@ -295,5 +285,4 @@ async function setupStripeProducts() {
   }
 }
 
-// Run the setup
 setupStripeProducts();

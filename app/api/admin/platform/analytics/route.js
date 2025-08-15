@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 
-// Admin middleware to check for platform admin permissions
 async function verifyAdminAccess(request) {
   try {
     const supabase = createClient()
@@ -14,7 +13,6 @@ async function verifyAdminAccess(request) {
       return { authorized: false, error: 'Authentication required' }
     }
 
-    // In production, check if user has platform admin role
     const adminEmails = ['admin@6fb.ai', 'platform@6fb.ai']
     const isAdmin = adminEmails.includes(user.email) || user.email?.endsWith('@6fb.ai')
     
@@ -30,7 +28,6 @@ async function verifyAdminAccess(request) {
 
 export async function GET(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -45,7 +42,6 @@ export async function GET(request) {
     const granularity = searchParams.get('granularity') || 'daily'
 
     if (metric === 'overview') {
-      // Platform overview analytics
       const overviewData = {
         timeframe: timeframe,
         key_metrics: {
@@ -136,7 +132,6 @@ export async function GET(request) {
     }
 
     if (metric === 'revenue') {
-      // Revenue analytics
       const revenueData = {
         timeframe: timeframe,
         granularity: granularity,
@@ -205,7 +200,6 @@ export async function GET(request) {
     }
 
     if (metric === 'usage') {
-      // Platform usage analytics
       const usageData = {
         timeframe: timeframe,
         api_analytics: {
@@ -308,7 +302,6 @@ export async function GET(request) {
     }
 
     if (metric === 'performance') {
-      // Platform performance analytics
       const performanceData = {
         timeframe: timeframe,
         response_times: {
@@ -386,7 +379,6 @@ export async function GET(request) {
     }
 
     if (metric === 'security') {
-      // Security analytics
       const securityData = {
         timeframe: timeframe,
         threat_overview: {
@@ -475,7 +467,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -498,7 +489,6 @@ export async function POST(request) {
 
       const reportId = generateUUID()
       
-      // Log admin action
       console.log('Admin generated report:', {
         admin_user_id: authCheck.user.id,
         report_id: reportId,
@@ -535,7 +525,6 @@ export async function POST(request) {
 
       const exportId = generateUUID()
       
-      // Log admin action
       console.log('Admin exported data:', {
         admin_user_id: authCheck.user.id,
         export_id: exportId,
@@ -574,25 +563,14 @@ export async function POST(request) {
   }
 }
 
-// Utility functions
 function generateUUID() {
-  // NO RANDOM - use timestamp-based unique ID
   return `analytics-export-${Date.now()}-${process.hrtime.bigint().toString(36)}`
 }
 
 function generateTimeSeriesData(days, minValue, maxValue) {
-  // NO MOCK DATA - Return empty data, real analytics should come from database
   return []
   
-  // const data = []
-  // for (let i = days; i >= 0; i--) {
-  //   const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
   //   // NO RANDOM - use consistent pattern or real data
-  //   const value = minValue + (i % (maxValue - minValue + 1))
-  //   data.push({
-  //     date: date.toISOString().split('T')[0],
-  //     value: value
   //   })
   // }
-  // return data
 }

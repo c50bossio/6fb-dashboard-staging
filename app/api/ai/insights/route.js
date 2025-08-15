@@ -7,7 +7,6 @@ export const maxDuration = 10 // Reduced from 30 seconds - database operations a
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -21,7 +20,6 @@ export async function GET(request) {
     const barbershopId = user.barbershop_id || 'demo-shop-001'
 
     try {
-      // Get insights from database - NO EXTERNAL SERVICE CALLS
       const insights = await getDatabaseInsights(barbershopId, { limit, type })
       
       return NextResponse.json({
@@ -35,7 +33,6 @@ export async function GET(request) {
     } catch (dbError) {
       console.error('Database insights error:', dbError)
       
-      // Return empty array instead of mock data - follow NO MOCK DATA policy
       return NextResponse.json({
         success: true,
         insights: [],
@@ -57,7 +54,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -69,7 +65,6 @@ export async function POST(request) {
     const barbershopId = user.barbershop_id || 'demo-shop-001'
 
     try {
-      // Generate new insights by inserting into database
       const insights = await generateInsightsToDatabase(barbershopId, businessContext, forceRefresh)
       
       return NextResponse.json({
@@ -99,15 +94,12 @@ export async function POST(request) {
   }
 }
 
-// REAL DATABASE OPERATIONS - NO EXTERNAL SERVICE CALLS
 async function getDatabaseInsights(barbershopId, options = {}) {
   const { limit = 10, type } = options
   
   try {
-    // Use the existing dashboard-data function
     const insights = await getAIInsights(barbershopId, limit)
     
-    // Filter by type if specified
     if (type) {
       return insights.filter(insight => insight.category === type || insight.type === type)
     }
@@ -124,7 +116,6 @@ async function generateInsightsToDatabase(barbershopId, businessContext = {}, fo
   const supabase = createClient()
   
   try {
-    // If forceRefresh, mark old insights as inactive
     if (forceRefresh) {
       await supabase
         .from('ai_insights')
@@ -132,13 +123,9 @@ async function generateInsightsToDatabase(barbershopId, businessContext = {}, fo
         .eq('barbershop_id', barbershopId)
     }
     
-    // Generate new insights based on business context
-    // In a real implementation, this would use AI to analyze business data
-    // For now, create context-aware insights based on the business context provided
     
     const newInsights = await generateContextualInsights(barbershopId, businessContext)
     
-    // Insert new insights into database
     const { data, error } = await supabase
       .from('ai_insights')
       .insert(newInsights)
@@ -155,11 +142,9 @@ async function generateInsightsToDatabase(barbershopId, businessContext = {}, fo
 }
 
 async function generateContextualInsights(barbershopId, businessContext) {
-  // Generate insights based on business context and recent metrics
   const supabase = createClient()
   
   try {
-    // Get recent business metrics to inform insights
     const { data: metrics } = await supabase
       .from('business_metrics')
       .select('*')
@@ -169,7 +154,6 @@ async function generateContextualInsights(barbershopId, businessContext) {
     
     const insights = []
     
-    // Revenue opportunity insights
     if (metrics && metrics.length > 0) {
       const avgRevenue = metrics.reduce((sum, m) => sum + parseFloat(m.total_revenue || 0), 0) / metrics.length
       const latestRevenue = parseFloat(metrics[0]?.total_revenue || 0)
@@ -190,7 +174,6 @@ async function generateContextualInsights(barbershopId, businessContext) {
         })
       }
       
-      // Utilization insights
       const avgUtilization = metrics.reduce((sum, m) => sum + parseFloat(m.chair_utilization_rate || 0), 0) / metrics.length
       if (avgUtilization < 0.75) {
         insights.push({
@@ -208,7 +191,6 @@ async function generateContextualInsights(barbershopId, businessContext) {
         })
       }
       
-      // Satisfaction insights
       const avgSatisfaction = metrics.reduce((sum, m) => sum + parseFloat(m.avg_satisfaction_score || 0), 0) / metrics.length
       if (avgSatisfaction > 4.5) {
         insights.push({
@@ -227,7 +209,6 @@ async function generateContextualInsights(barbershopId, businessContext) {
       }
     }
     
-    // If no metrics-based insights, create default operational insights
     if (insights.length === 0) {
       insights.push({
         barbershop_id: barbershopId,
@@ -248,10 +229,7 @@ async function generateContextualInsights(barbershopId, businessContext) {
     
   } catch (error) {
     console.error('Failed to generate contextual insights:', error)
-    // Return empty array instead of mock data
     return []
   }
 }
 
-// ALL MOCK DATA GENERATORS REMOVED - USING REAL DATABASE OPERATIONS ONLY
-// See functions above for actual database-driven insight generation

@@ -2,7 +2,6 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Initialize Supabase client with service role key for admin operations
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
 
@@ -17,7 +16,6 @@ async function setupDemoUser() {
   console.log('🔧 Setting up demo user...')
   
   try {
-    // First, check if user exists
     const { data: existingUser, error: checkError } = await supabase.auth.admin.getUserByEmail('demo@barbershop.com')
     
     if (existingUser?.user) {
@@ -25,7 +23,6 @@ async function setupDemoUser() {
       console.log('User ID:', existingUser.user.id)
       console.log('Email:', existingUser.user.email)
       
-      // Update password to ensure it's correct
       const { data: updateData, error: updateError } = await supabase.auth.admin.updateUserById(
         existingUser.user.id,
         { password: 'demo123' }
@@ -40,7 +37,6 @@ async function setupDemoUser() {
       return existingUser.user
     }
     
-    // Create user if doesn't exist
     console.log('📝 Creating new demo user...')
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: 'demo@barbershop.com',
@@ -61,7 +57,6 @@ async function setupDemoUser() {
     console.log('User ID:', newUser.user.id)
     console.log('Email:', newUser.user.email)
     
-    // Create profile record
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
@@ -87,7 +82,6 @@ async function setupDemoUser() {
   }
 }
 
-// Test login after setup
 async function testLogin() {
   console.log('\n🧪 Testing login with demo credentials...')
   
@@ -105,7 +99,6 @@ async function testLogin() {
   }
 }
 
-// Run setup
 async function main() {
   console.log('🚀 Supabase Demo User Setup')
   console.log('URL:', supabaseUrl)

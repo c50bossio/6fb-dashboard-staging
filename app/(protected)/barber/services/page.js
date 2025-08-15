@@ -28,7 +28,6 @@ export default function BarberServices() {
     try {
       setLoading(true)
       
-      // Get barber's associated barbershop
       const shopId = await getBarberBarbershop()
       if (!shopId) {
         setError('No barbershop association found. Please contact your shop owner.')
@@ -37,7 +36,6 @@ export default function BarberServices() {
       
       setBarbershopId(shopId)
       
-      // Load permissions
       const perms = await getBarberPermissions(user.id, shopId)
       setPermissions(perms)
       
@@ -50,16 +48,11 @@ export default function BarberServices() {
   }
 
   const getBarberBarbershop = async () => {
-    // This would typically come from a barbershop_staff table or similar
-    // For now, we'll use a placeholder - this should be implemented based on your auth system
     
-    // Try to get from profile or user metadata
     if (profile?.barbershop_id) {
       return profile.barbershop_id
     }
     
-    // If no association found, we need to handle this case
-    // In a real app, you'd query the barbershop_staff table
     return null
   }
 

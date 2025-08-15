@@ -24,7 +24,6 @@ export default function AICoachPanel({ data }) {
   const insights = data?.insights || []
   const recommendations = data?.recommendations || []
 
-  // AI Coach configurations
   const coaches = [
     {
       id: 'financial',
@@ -85,7 +84,6 @@ export default function AICoachPanel({ data }) {
     setIsLoadingInsight(true)
     
     try {
-      // Fetch specific insights from the selected AI coach
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,7 +95,6 @@ export default function AICoachPanel({ data }) {
       
       if (response.ok) {
         const data = await response.json()
-        // Handle the AI response
         console.log('AI Coach response:', data)
       }
     } catch (error) {
@@ -202,7 +199,6 @@ export default function AICoachPanel({ data }) {
   )
 }
 
-// Coach Card Component
 const CoachCard = ({ coach, onInteract, isSelected, isLoading }) => {
   const Icon = coach.icon
   const statusColors = {
@@ -264,7 +260,6 @@ const CoachCard = ({ coach, onInteract, isSelected, isLoading }) => {
   )
 }
 
-// Recommendation Card Component
 const RecommendationCard = ({ recommendation }) => {
   const impactColors = {
     high: 'bg-red-50 border-red-200',

@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
-// Inline notification handler (can be moved to external service later)
 const sendBookingNotification = async (appointmentData, customerData, preferences) => {
   try {
     console.log('📱 Booking notification would be sent:', {
@@ -21,7 +20,6 @@ const sendBookingNotification = async (appointmentData, customerData, preference
   }
 }
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -43,16 +41,13 @@ export async function GET(request) {
       allParams: Object.fromEntries(searchParams.entries())
     })
     
-    // Use bookings table with new recurring fields
     let query = supabase.from('bookings').select('*')
     
     // 🚨 CRITICAL FIX: Add shop_id filter to prevent returning entire database
-    // Default to demo shop if no shop_id provided
     const filterShopId = shopId || 'demo-shop-001'
     query = query.eq('shop_id', filterShopId)
     console.log('🔒 FILTERED by shop_id:', filterShopId)
     
-    // Add other filters
     if (startDate) {
       query = query.gte('start_time', startDate)
     }
@@ -63,7 +58,6 @@ export async function GET(request) {
       query = query.eq('barber_id', barberId)
     }
     
-    // Execute query
     const { data: bookings, error } = await query.order('start_time')
     
     if (error) {
@@ -74,12 +68,10 @@ export async function GET(request) {
       )
     }
     
-    // Fetch related data for better display
     const serviceIds = [...new Set(bookings.map(b => b.service_id).filter(Boolean))]
     const customerIds = [...new Set(bookings.map(b => b.customer_id).filter(Boolean))]
     const barberIds = [...new Set(bookings.map(b => b.barber_id).filter(Boolean))]
     
-    // Fetch services
     let servicesMap = {}
     if (serviceIds.length > 0) {
       const { data: services } = await supabase
@@ -94,7 +86,6 @@ export async function GET(request) {
       }
     }
     
-    // Fetch customers
     let customersMap = {}
     if (customerIds.length > 0) {
       const { data: customers } = await supabase
@@ -109,7 +100,6 @@ export async function GET(request) {
       }
     }
     
-    // Fetch barbers
     let barbersMap = {}
     if (barberIds.length > 0) {
       const { data: barbers } = await supabase
@@ -124,22 +114,17 @@ export async function GET(request) {
       }
     }
     
-    // Transform bookings to FullCalendar event format with RRule support
     const events = bookings.map(booking => {
-      // Get related data
       const customer = customersMap[booking.customer_id] || {}
       const service = servicesMap[booking.service_id] || {}
       const barber = barbersMap[booking.barber_id] || {}
       
-      // Build title with actual names
       const customerName = customer.name || booking.customer_name || 'Customer'
       const serviceName = service.name || booking.service_name || 'Unknown Service'
       
-      // Check if appointment is cancelled or blocked for proper styling
       const isCancelled = booking.status === 'cancelled'
       const isBlocked = booking.status === 'blocked' || booking.customer_id === null
       
-      // Build title based on appointment type
       let title = ''
       if (isBlocked) {
         title = `🚫 ${booking.notes || 'Blocked'}`
@@ -149,7 +134,6 @@ export async function GET(request) {
         title = `${customerName} - ${serviceName}`
       }
       
-      // Build event object with RRule support at the top level
       const event = {
         id: booking.id,
         resourceId: booking.barber_id,
@@ -178,18 +162,13 @@ export async function GET(request) {
         }
       }
       
-      // Add RRule at the top level for FullCalendar native support
       if (booking.is_recurring && booking.recurring_pattern && booking.recurring_pattern.rrule) {
-        // Keep the original start and end times
         event.start = booking.recurring_pattern.dtstart || booking.start_time
         event.end = booking.recurring_pattern.dtend || booking.end_time
         
-        // Parse the RRule and add explicit DTSTART for FullCalendar compatibility
-        // This ensures the time is preserved in recurring instances
         const startDate = new Date(event.start)
         const dtstart = startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
         
-        // If RRule doesn't have DTSTART, add it as a separate line (RFC 5545 format)
         if (!booking.recurring_pattern.rrule.includes('DTSTART')) {
           event.rrule = `DTSTART:${dtstart}\n${booking.recurring_pattern.rrule}`
         } else {
@@ -230,10 +209,8 @@ export async function POST(request) {
     
     console.log('Creating new appointment:', body)
     
-    // Check if this is a blocked time slot
     const isBlockedTime = body.status === 'blocked' || body.is_blocked_time || body.customer_id === 'BLOCKED'
     
-    // Calculate end_time from scheduled_at and duration_minutes if not provided
     if (!body.end_time && body.scheduled_at && body.duration_minutes) {
       const startDate = new Date(body.scheduled_at)
       const endDate = new Date(startDate.getTime() + body.duration_minutes * 60000)
@@ -241,7 +218,6 @@ export async function POST(request) {
       body.start_time = body.scheduled_at
     }
     
-    // Validate required fields (relaxed for blocked time)
     if (!body.barber_id || (!body.start_time && !body.scheduled_at) || (!body.end_time && !body.duration_minutes)) {
       return NextResponse.json(
         { error: 'Missing required fields: barber_id, start_time/scheduled_at, end_time/duration_minutes' },
@@ -249,7 +225,6 @@ export async function POST(request) {
       )
     }
     
-    // Validate date format
     const startTime = new Date(body.start_time || body.scheduled_at)
     const endTime = new Date(body.end_time || new Date(startTime.getTime() + (body.duration_minutes || 30) * 60000))
     
@@ -260,16 +235,13 @@ export async function POST(request) {
       )
     }
     
-    // Handle customer creation/linking
     let customerId = body.customer_id
     let customerData = null
     
-    // Skip customer handling for blocked time slots
     if (isBlockedTime) {
       customerId = null  // Set to null instead of 'BLOCKED' to avoid foreign key constraint
       customerData = { name: 'BLOCKED', email: '', phone: '' }
     } else if (customerId) {
-      // If customer_id provided, fetch existing customer data
       const { data: existingCustomer, error: fetchError } = await supabase
         .from('customers')
         .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
@@ -280,7 +252,6 @@ export async function POST(request) {
         customerData = existingCustomer
       }
     } else if (body.customer_mode === 'new' && (body.client_name || body.customer_name)) {
-      // Create new customer for new customer mode
       const newCustomerData = {
         name: body.client_name || body.customer_name,
         email: body.client_email || body.customer_email,
@@ -305,11 +276,9 @@ export async function POST(request) {
         customerData = customer
       } else {
         console.error('Error creating customer:', customerError)
-        // Continue without customer_id if creation fails
       }
     }
     
-    // Prepare booking data for new schema
     const bookingData = {
       shop_id: body.shop_id || body.barbershop_id || 'demo-shop-001',
       barber_id: body.barber_id,
@@ -321,20 +290,15 @@ export async function POST(request) {
       price: isBlockedTime ? 0 : (body.service_price || body.price),
       notes: isBlockedTime ? (body.notes || 'Time blocked') : (body.client_notes || body.notes),
       is_test: body.is_test || false
-      // Note: customer_name, customer_phone, customer_email columns don't exist in bookings table
-      // Customer data is stored in the customers table and linked via customer_id
     }
     
-    // Handle recurring appointments with native RRule support
     if (body.is_recurring && body.recurrence_rule) {
-      // Add DTSTART to RRule for FullCalendar compatibility
       const dtstart = startTime.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
       let enhancedRRule = body.recurrence_rule
       if (!body.recurrence_rule.includes('DTSTART')) {
         enhancedRRule = `DTSTART:${dtstart}\n${body.recurrence_rule}`
       }
       
-      // Build the recurring pattern object
       const recurringPattern = {
         rrule: enhancedRRule,
         dtstart: startTime.toISOString(),
@@ -347,7 +311,6 @@ export async function POST(request) {
       bookingData.recurring_pattern = recurringPattern
     }
     
-    // Insert the single booking record (FullCalendar will handle recurring instances)
     const { data: newBooking, error: bookingError } = await supabase
       .from('bookings')
       .insert([bookingData])
@@ -362,13 +325,11 @@ export async function POST(request) {
       )
     }
 
-    // Handle notifications if requested
     let notificationResults = null
     const notificationPreferences = body.notification_preferences || {}
     
     if ((notificationPreferences.sms || notificationPreferences.email) && notificationPreferences.confirmations) {
       try {
-        // Prepare appointment data for notifications
         const appointmentDataForNotification = {
           id: newBooking.id,
           scheduled_at: newBooking.start_time,
@@ -379,21 +340,18 @@ export async function POST(request) {
           service_name: body.service_name || 'Your Service'
         }
 
-        // Use customer data if available, otherwise use data from request body
         const customerDataForNotification = customerData || {
           name: body.client_name || body.customer_name,
           phone: body.client_phone || body.customer_phone,
           email: body.client_email || body.customer_email
         }
 
-        // Send booking confirmation
         notificationResults = await sendBookingNotification(
           appointmentDataForNotification,
           customerDataForNotification,
           notificationPreferences
         )
 
-        // Schedule reminder if enabled (placeholder for now)
         if (notificationPreferences.reminders) {
           console.log('⏰ Reminder scheduling requested for:', {
             customer: customerDataForNotification.name,
@@ -404,11 +362,9 @@ export async function POST(request) {
         console.log('📱 Notifications sent:', notificationResults)
       } catch (notificationError) {
         console.error('Notification failed:', notificationError)
-        // Don't fail the appointment creation if notifications fail
       }
     }
     
-    // Return success response
     const response = {
       appointment: newBooking,
       message: bookingData.is_recurring 
@@ -424,7 +380,6 @@ export async function POST(request) {
       response.recurring_pattern = bookingData.recurring_pattern
     }
 
-    // Include notification results if applicable
     if (notificationResults) {
       response.notifications = {
         success: notificationResults.success,

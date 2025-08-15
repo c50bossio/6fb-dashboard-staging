@@ -18,7 +18,6 @@ export default function TabbedPageLayout({
   const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id)
 
-  // Sync active tab with URL parameter
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab')
     if (tabFromUrl && tabs.find(tab => tab.id === tabFromUrl)) {
@@ -184,7 +183,6 @@ export default function TabbedPageLayout({
   )
 }
 
-// Helper component for tab content that needs loading states
 export function TabContent({ loading, error, children, emptyState = null }) {
   if (loading) {
     return (
@@ -239,7 +237,6 @@ export function TabContent({ loading, error, children, emptyState = null }) {
   return children
 }
 
-// Pre-built empty state components
 export const EmptyStates = {
   NoData: ({ title = "No data available", description = "Get started by creating your first item.", action = null }) => (
     <div>

@@ -3,7 +3,6 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: '.env.local' });
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -22,7 +21,6 @@ async function resetUserPassword() {
   console.log(`🔐 Resetting password for ${email}...\n`);
 
   try {
-    // List users to find by email
     const { data: usersData, error: getUsersError } = await supabase.auth.admin.listUsers();
     
     if (getUsersError) {
@@ -38,7 +36,6 @@ async function resetUserPassword() {
     
     console.log(`✅ Found user: ${email} (ID: ${user.id})`);
     
-    // Update the user's password
     const { data: updateData, error: updateError } = await supabase.auth.admin.updateUserById(
       user.id,
       { password: newPassword }
@@ -65,5 +62,4 @@ async function resetUserPassword() {
   }
 }
 
-// Run the script
 resetUserPassword();

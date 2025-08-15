@@ -71,13 +71,10 @@ class BusinessContextEngine {
         includeRecommendations = true
       } = options
 
-      // Get base business data
       const baseData = await this.getBaseBusinessData(barbershopId, timeframe)
       
-      // Calculate key insights
       const insights = await this.calculateAllInsights(barbershopId, timeframe)
       
-      // Generate agent-specific context
       const agentContext = await this.generateAgentSpecificContext(
         barbershopId, 
         agentType, 
@@ -85,19 +82,16 @@ class BusinessContextEngine {
         insights
       )
       
-      // Add comparisons if requested
       let comparisons = {}
       if (includeComparisons) {
         comparisons = await this.generateComparisons(barbershopId, timeframe)
       }
       
-      // Add predictions if requested
       let predictions = {}
       if (includePredictions) {
         predictions = await this.generatePredictions(barbershopId, baseData, insights)
       }
       
-      // Add recommendations if requested
       let recommendations = []
       if (includeRecommendations) {
         recommendations = await this.generateRecommendations(
@@ -108,7 +102,6 @@ class BusinessContextEngine {
         )
       }
 
-      // Compile final context
       const businessContext = {
         barbershopId,
         agentType,
@@ -124,7 +117,6 @@ class BusinessContextEngine {
         platforms: await this.getConnectedPlatforms(barbershopId)
       }
 
-      // Store context in database for future reference
       await this.storeBusinessContext(barbershopId, agentType, businessContext)
 
       return businessContext
@@ -142,7 +134,6 @@ class BusinessContextEngine {
     const db = this.initDatabase()
     const dateFilter = this.getDateFilter(timeframe)
     
-    // Get appointment statistics
     const appointmentStats = await db.getAsync(`
       SELECT 
         COUNT(*) as total_appointments,
@@ -158,7 +149,6 @@ class BusinessContextEngine {
         AND datetime(json_extract(scheduling_data, '$.dateTime')) >= datetime('now', ?)
     `, [barbershopId, dateFilter])
 
-    // Get service breakdown
     const serviceBreakdown = await db.allAsync(`
       SELECT 
         json_extract(service_data, '$.category') as service_category,
@@ -174,7 +164,6 @@ class BusinessContextEngine {
       ORDER BY booking_count DESC
     `, [barbershopId, dateFilter])
 
-    // Get client data
     const clientStats = await db.allAsync(`
       SELECT 
         json_extract(client_data, '$.email') as client_email,
@@ -191,7 +180,6 @@ class BusinessContextEngine {
       ORDER BY visit_count DESC
     `, [barbershopId, dateFilter])
 
-    // Get staff performance
     const staffStats = await db.allAsync(`
       SELECT 
         json_extract(staff_data, '$.name') as staff_name,
@@ -293,7 +281,6 @@ class BusinessContextEngine {
     const { summary, services, clients } = baseData
     const { revenue_trends, pricing_optimization, capacity_utilization } = insights
     
-    // Calculate financial health metrics
     const revenuePerClient = summary.uniqueClients > 0 
       ? summary.totalRevenue / summary.uniqueClients 
       : 0
@@ -481,7 +468,6 @@ class BusinessContextEngine {
   async calculateRevenueTrends(barbershopId, timeframe) {
     const db = this.initDatabase()
     
-    // Get daily revenue for trend analysis
     const dailyRevenue = await db.allAsync(`
       SELECT 
         DATE(json_extract(scheduling_data, '$.dateTime')) as appointment_date,
@@ -499,7 +485,6 @@ class BusinessContextEngine {
       return { growthRate: 0, trend: 'insufficient_data' }
     }
 
-    // Calculate growth rate
     const firstWeekRevenue = dailyRevenue.slice(0, 7).reduce((sum, day) => sum + (day.daily_revenue || 0), 0)
     const lastWeekRevenue = dailyRevenue.slice(-7).reduce((sum, day) => sum + (day.daily_revenue || 0), 0)
     
@@ -558,7 +543,6 @@ class BusinessContextEngine {
    * Additional insight calculators (simplified implementations)
    */
   async calculateServicePerformance(barbershopId, timeframe) {
-    // Implementation would analyze service booking trends, profitability, etc.
     return { topPerformingServices: [], underperformingServices: [] }
   }
 
@@ -592,12 +576,10 @@ class BusinessContextEngine {
   }
 
   async calculatePricingOpportunities(barbershopId, timeframe) {
-    // Implementation would analyze pricing vs demand, competitor pricing, etc.
     return { underpriced_services: [], overpriced_services: [] }
   }
 
   async calculateCapacityUtilization(barbershopId, timeframe) {
-    // Implementation would analyze booking capacity vs actual bookings
     return { utilizationRate: 75, bottleneckPeriods: [], lowUtilizationPeriods: [] }
   }
 
@@ -623,7 +605,6 @@ class BusinessContextEngine {
   }
 
   calculateScalabilityScore(baseData) {
-    // Simplified scalability scoring
     const factors = [
       baseData.summary.avgRevenuePerAppointment > 50 ? 20 : 10,
       baseData.clients.filter(c => c.visitCount > 1).length / baseData.clients.length * 30,
@@ -634,7 +615,6 @@ class BusinessContextEngine {
   }
 
   calculateBusinessHealthScore(baseData, insights) {
-    // Simplified business health scoring
     const factors = [
       baseData.summary.totalRevenue > 5000 ? 25 : 15,
       baseData.summary.cancellationRate < 10 ? 25 : 15,
@@ -743,12 +723,10 @@ class BusinessContextEngine {
    * Additional helper methods
    */
   async generateComparisons(barbershopId, timeframe) {
-    // Implementation would compare with previous periods, industry benchmarks, etc.
     return { previousPeriod: {}, industryBenchmark: {} }
   }
 
   async generatePredictions(barbershopId, baseData, insights) {
-    // Implementation would use trend analysis for predictions
     return { nextMonth: {}, nextQuarter: {} }
   }
 
@@ -809,6 +787,5 @@ class BusinessContextEngine {
   }
 }
 
-// Export singleton instance
 const businessContextEngine = new BusinessContextEngine()
 export default businessContextEngine

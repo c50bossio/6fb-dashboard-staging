@@ -101,7 +101,6 @@ export async function GET(request) {
             );
         }
         
-        // Get service details from database - NO MOCK DATA
         const { data: service, error: serviceError } = await supabase
             .from('services')
             .select('*')
@@ -121,14 +120,12 @@ export async function GET(request) {
             );
         }
         
-        // Get barbershop's cancellation policy from database
         const { data: shopPolicy, error: policyError } = await supabase
             .from('cancellation_policies')
             .select('*')
             .eq('barbershop_id', service.barbershop_id)
             .single();
         
-        // Use shop policy if exists, otherwise use defaults based on service type
         let policy;
         if (shopPolicy) {
             policy = {
@@ -141,7 +138,6 @@ export async function GET(request) {
                 no_show_fee: shopPolicy.no_show_fee || 25.0
             };
         } else {
-            // Default policy based on service price and duration
             const isExpensive = service.price > 60;
             const isLongService = service.duration_minutes > 60;
             
@@ -158,7 +154,6 @@ export async function GET(request) {
         
         const service_price = service.price || 50.00;
         
-        // Generate refund scenarios for different timing
         const scenarios = [
             { hours: 72, description: "3+ days before" },
             { hours: 48, description: "2 days before" },
@@ -174,19 +169,15 @@ export async function GET(request) {
             let refund_amount, refund_percentage;
             
             if (scenario.hours === 0) {
-                // No-show
                 refund_amount = Math.max(0, service_price - policy.no_show_fee);
                 refund_percentage = Math.round((refund_amount / service_price) * 100);
             } else if (scenario.hours >= policy.full_refund_hours) {
-                // Full refund
                 refund_amount = service_price - policy.cancellation_fee;
                 refund_percentage = Math.round((refund_amount / service_price) * 100);
             } else if (scenario.hours >= policy.partial_refund_hours) {
-                // Partial refund
                 refund_amount = (service_price * policy.partial_refund_percentage / 100) - policy.cancellation_fee;
                 refund_percentage = policy.partial_refund_percentage;
             } else {
-                // No refund
                 refund_amount = 0;
                 refund_percentage = 0;
             }
@@ -204,9 +195,7 @@ export async function GET(request) {
         
         let current_refund = null;
         
-        // Calculate current refund if booking_id is provided or simulate_hours is specified
         if (booking_id) {
-            // Get actual booking from database
             const { data: booking } = await supabase
                 .from('bookings')
                 .select('scheduled_at, total_amount')
@@ -246,7 +235,6 @@ export async function GET(request) {
                 };
             }
         } else if (simulate_hours > 0) {
-            // Simulate refund calculation
             const hours_until = simulate_hours;
             
             let refund_amount, cancellation_fee, reason;

@@ -18,7 +18,6 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001';
 
-    // Use intelligent caching for alert analysis
     const alerts = await cacheQuery('intelligent-alerts', { barbershopId }, async () => {
       return await generateIntelligentAlerts(barbershopId);
     });
@@ -48,7 +47,6 @@ export async function POST(request) {
 
     switch (action) {
       case 'update_thresholds':
-        // In a real system, this would update user preferences in database
         return NextResponse.json({
           success: true,
           message: 'Alert thresholds updated',
@@ -56,7 +54,6 @@ export async function POST(request) {
         });
 
       case 'dismiss_alert':
-        // In a real system, this would mark alert as dismissed
         return NextResponse.json({
           success: true,
           message: 'Alert dismissed',
@@ -91,7 +88,6 @@ export async function POST(request) {
  */
 async function generateIntelligentAlerts(barbershopId) {
   try {
-    // Fetch real business data for alert analysis
     const { data: bookings } = await supabase
       .from('bookings')
       .select('*')
@@ -103,18 +99,14 @@ async function generateIntelligentAlerts(barbershopId) {
       .select('*')
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
 
-    // Calculate current metrics
     const currentMetrics = calculateCurrentMetrics(bookings, customers);
     
-    // Define configurable thresholds
     const thresholds = getAlertThresholds();
     
-    // Generate alerts based on metrics vs thresholds
     const alerts = [];
     const priorityActions = [];
     const insights = [];
 
-    // Revenue Performance Alerts
     if (currentMetrics.dailyRevenue < thresholds.minDailyRevenue) {
       alerts.push({
         id: `revenue-low-${Date.now()}`,
@@ -133,7 +125,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Booking Volume Alerts
     if (currentMetrics.dailyBookings < thresholds.minDailyBookings) {
       alerts.push({
         id: `bookings-low-${Date.now()}`,
@@ -152,7 +143,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Customer Retention Alerts
     if (currentMetrics.newCustomerRatio > thresholds.maxNewCustomerRatio) {
       alerts.push({
         id: `retention-concern-${Date.now()}`,
@@ -171,7 +161,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Capacity Utilization Alerts
     if (currentMetrics.capacityUtilization > thresholds.maxCapacityUtilization) {
       alerts.push({
         id: `capacity-high-${Date.now()}`,
@@ -190,7 +179,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Performance Insights
     if (currentMetrics.weeklyGrowth > 0.1) {
       insights.push({
         type: 'positive',
@@ -209,7 +197,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Priority Actions based on alerts
     if (alerts.length > 0) {
       priorityActions.push({
         id: 'review-performance',
@@ -221,7 +208,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Seasonal recommendations
     const currentMonth = new Date().getMonth();
     if (currentMonth === 11) { // December
       priorityActions.push({
@@ -263,14 +249,12 @@ function calculateCurrentMetrics(bookings = [], customers = []) {
   const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const last14Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-  // Filter bookings for different periods
   const recentBookings = bookings.filter(b => new Date(b.created_at) >= last7Days);
   const previousWeekBookings = bookings.filter(b => {
     const date = new Date(b.created_at);
     return date >= last14Days && date < last7Days;
   });
 
-  // Calculate metrics
   const totalRevenue = recentBookings.reduce((sum, b) => sum + (b.price || 0), 0);
   const totalBookings = recentBookings.length;
   
@@ -284,7 +268,6 @@ function calculateCurrentMetrics(bookings = [], customers = []) {
   const newCustomers = customers.filter(c => new Date(c.created_at) >= last7Days).length;
   const newCustomerRatio = uniqueCustomers > 0 ? newCustomers / uniqueCustomers : 0;
   
-  // Estimate capacity utilization (assuming 8 hours/day, 6 services/hour)
   const maxCapacity = 7 * 8 * 6; // 7 days * 8 hours * 6 services per hour
   const capacityUtilization = totalBookings / maxCapacity;
 

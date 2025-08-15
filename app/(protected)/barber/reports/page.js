@@ -34,7 +34,6 @@ export default function BarberReports() {
   const { user, profile } = useAuth()
   const supabase = createClient()
   
-  // Start with loading false to avoid infinite loading state
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [dateRange, setDateRange] = useState('week') // day, week, month, year
@@ -69,12 +68,10 @@ export default function BarberReports() {
   })
 
   useEffect(() => {
-    // Add a small delay to ensure component is mounted
     const timer = setTimeout(() => {
       loadReportData()
     }, 100)
     
-    // Failsafe: Force loading to false after 5 seconds
     const failsafeTimer = setTimeout(() => {
       if (loading) {
         console.warn('Reports loading timeout - forcing completion')
@@ -90,14 +87,12 @@ export default function BarberReports() {
   }, [dateRange, user])
 
   const loadReportData = async () => {
-    // For development, if no user, create a mock one
     const currentUser = user || { id: 'dev-user-123', email: 'dev@localhost.com' }
     
     try {
       console.log('Loading report data for user:', currentUser.id)
       setError(null)
       
-      // Calculate date range
       const endDate = new Date()
       const startDate = new Date()
       
@@ -116,11 +111,9 @@ export default function BarberReports() {
           break
       }
 
-      // Fetch appointments from database (try appointments table first, then bookings)
       let appointments = null
       let apptError = null
       
-      // Try bookings table first  
       const appointmentsResult = await supabase
         .from('bookings')
         .select('*')
@@ -129,7 +122,6 @@ export default function BarberReports() {
         .lte('created_at', endDate.toISOString())
       
       if (appointmentsResult.error && appointmentsResult.error.message.includes('does not exist')) {
-        // If appointments table doesn't exist, try bookings table
         console.log('Appointments table not found, trying bookings table...')
         const bookingsResult = await supabase
           .from('bookings')
@@ -152,7 +144,6 @@ export default function BarberReports() {
       
       if (!appointments) appointments = []
 
-      // Fetch transactions from database
       let { data: transactions, error: transError } = await supabase
         .from('transactions')
         .select('*')
@@ -170,13 +161,11 @@ export default function BarberReports() {
       
       if (!transactions) transactions = []
 
-      // Process the data
       const processedData = processReportData(appointments || [], transactions || [], dateRange)
       setReportData(processedData)
       
     } catch (error) {
       console.error('Error loading report data:', error)
-      // Set empty data on error - no mock fallback
       setReportData({
         earnings: { total: 0, services: 0, products: 0, tips: 0, commission: 0 },
         appointments: { total: 0, completed: 0, cancelled: 0, noShow: 0 },
@@ -190,7 +179,6 @@ export default function BarberReports() {
   }
 
   const processReportData = (appointments, transactions, range) => {
-    // Calculate earnings
     const earnings = {
       total: transactions.reduce((sum, t) => sum + (t.total_amount || 0), 0),
       services: transactions.filter(t => t.type === 'service').reduce((sum, t) => sum + (t.amount || 0), 0),
@@ -199,7 +187,6 @@ export default function BarberReports() {
       commission: transactions.reduce((sum, t) => sum + (t.commission_amount || 0), 0)
     }
 
-    // Calculate appointment stats
     const appointmentStats = {
       total: appointments.length,
       completed: appointments.filter(a => a.status === 'completed').length,
@@ -207,7 +194,6 @@ export default function BarberReports() {
       noShow: appointments.filter(a => a.status === 'no_show').length
     }
 
-    // Calculate client stats
     const uniqueClients = [...new Set(appointments.map(a => a.customer_id))].filter(Boolean)
     const clientStats = {
       total: uniqueClients.length,
@@ -216,7 +202,6 @@ export default function BarberReports() {
       topClients: [] // Would need customer table join
     }
 
-    // Calculate service popularity
     const serviceCounts = {}
     appointments.forEach(apt => {
       const service = apt.service_name || 'Unknown'
@@ -228,7 +213,6 @@ export default function BarberReports() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
 
-    // Generate trend data
     const trends = generateTrendData(appointments, transactions, range)
 
     return {
@@ -247,11 +231,9 @@ export default function BarberReports() {
   }
 
   const generateTrendData = (appointments, transactions, range) => {
-    // Calculate daily trends from real data
     const dailyData = {}
     const hourlyData = {}
     
-    // Group appointments by date
     appointments.forEach(apt => {
       const date = new Date(apt.created_at)
       const dateKey = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -268,7 +250,6 @@ export default function BarberReports() {
       hourlyData[hour] += 1
     })
     
-    // Add revenue data from transactions
     transactions.forEach(trans => {
       const date = new Date(trans.created_at)
       const dateKey = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
@@ -278,7 +259,6 @@ export default function BarberReports() {
       }
     })
     
-    // Convert to arrays
     const daily = Object.entries(dailyData).map(([date, data]) => ({
       date,
       appointments: data.appointments,
@@ -297,7 +277,6 @@ export default function BarberReports() {
   const COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#C5A35B']
 
   const downloadReport = () => {
-    // Generate CSV data
     const csvData = [
       ['Barber Performance Report'],
       [`Period: ${dateRange}`],

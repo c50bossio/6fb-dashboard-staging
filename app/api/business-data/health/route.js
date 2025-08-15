@@ -10,7 +10,6 @@ export async function GET(request) {
   try {
     const startTime = Date.now();
     
-    // Check Python backend availability
     let pythonBackendStatus = 'unknown';
     let pythonBackendResponseTime = null;
     
@@ -34,12 +33,10 @@ export async function GET(request) {
       pythonBackendResponseTime = null;
     }
 
-    // Check unified business data service availability
     let businessServiceStatus = 'unknown';
     let cacheStatus = null;
     
     try {
-      // Try to get cache status from the Python service
       const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
       const cacheResponse = await fetch(`${pythonServiceUrl}/business-data/cache-status`, {
         method: 'GET',
@@ -65,14 +62,12 @@ export async function GET(request) {
       };
     }
 
-    // Test data fetch capability
     let dataFetchStatus = 'unknown';
     let dataFetchTime = null;
     
     try {
       const dataStartTime = Date.now();
       
-      // Test the unified business data endpoint
       const dataResponse = await fetch(`${request.nextUrl.origin}/api/business-data/metrics?format=json`, {
         method: 'GET',
         timeout: 10000,
@@ -86,7 +81,6 @@ export async function GET(request) {
       dataFetchTime = null;
     }
 
-    // Calculate overall health status
     let overallStatus = 'healthy';
     let statusReason = [];
     
@@ -179,7 +173,6 @@ export async function POST(request) {
     const { deep_check } = body;
 
     if (deep_check) {
-      // Perform deep health checks
       const deepChecks = {
         data_validation: false,
         cache_refresh: false,
@@ -187,7 +180,6 @@ export async function POST(request) {
       };
 
       try {
-        // Test data validation
         const dataResponse = await fetch(`${request.nextUrl.origin}/api/business-data/metrics?force_refresh=true`, {
           method: 'GET',
           timeout: 15000,
@@ -202,7 +194,6 @@ export async function POST(request) {
       }
 
       try {
-        // Test cache refresh
         const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
         const refreshResponse = await fetch(`${pythonServiceUrl}/business-data/refresh`, {
           method: 'POST',
@@ -217,7 +208,6 @@ export async function POST(request) {
       }
 
       try {
-        // Test endpoint connectivity
         const connectivityResponse = await fetch(`${request.nextUrl.origin}/api/health`, {
           method: 'GET',
           timeout: 5000,

@@ -31,11 +31,9 @@ export default function PublicBarbershopPage() {
   const [galleryIndex, setGalleryIndex] = useState(0)
   const [showBookingWidget, setShowBookingWidget] = useState(false)
 
-  // Demo shop data - in production this would be fetched from API
   useEffect(() => {
     const loadShopData = async () => {
       try {
-        // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 800))
         
         const demoData = {
@@ -45,7 +43,6 @@ export default function PublicBarbershopPage() {
           description: 'Premier barbershop offering classic cuts and modern styles in the heart of Los Angeles.',
           slug: shopSlug,
           
-          // Contact & Location
           phone: '(555) 123-4567',
           email: 'info@elitecuts.com',
           address: '123 Main Street',
@@ -53,7 +50,6 @@ export default function PublicBarbershopPage() {
           state: 'CA',
           zip_code: '90001',
           
-          // Branding
           logo_url: '',
           cover_image_url: '',
           primary_color: '#1E40AF',
@@ -64,7 +60,6 @@ export default function PublicBarbershopPage() {
           heading_font: 'Montserrat',
           body_font: 'Inter',
           
-          // Content
           hero_title: 'Welcome to Elite Cuts',
           hero_subtitle: 'Experience the perfect blend of traditional barbering and modern style',
           hero_cta_text: 'Book Your Appointment',
@@ -75,7 +70,6 @@ export default function PublicBarbershopPage() {
           team_title: 'Meet Our Barbers',
           team_description: 'Our skilled team of professional barbers are here to give you the perfect look',
           
-          // Business Hours
           business_hours: {
             monday: { open: '09:00', close: '19:00' },
             tuesday: { open: '09:00', close: '19:00' },
@@ -86,7 +80,6 @@ export default function PublicBarbershopPage() {
             sunday: { open: '10:00', close: '16:00' }
           },
           
-          // Services
           services: [
             {
               id: 1,
@@ -135,7 +128,6 @@ export default function PublicBarbershopPage() {
             }
           ],
           
-          // Team
           barbers: [
             {
               id: 1,
@@ -175,7 +167,6 @@ export default function PublicBarbershopPage() {
             }
           ],
           
-          // Gallery
           gallery: [
             {
               url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600',
@@ -199,7 +190,6 @@ export default function PublicBarbershopPage() {
             }
           ],
           
-          // Reviews/Testimonials
           testimonials: [
             {
               id: 1,
@@ -227,7 +217,6 @@ export default function PublicBarbershopPage() {
             }
           ],
           
-          // Settings
           show_pricing: true,
           show_portfolio: true,
           show_team: true,
@@ -235,12 +224,10 @@ export default function PublicBarbershopPage() {
           enable_online_booking: true,
           booking_widget_position: 'bottom-right',
           
-          // Stats
           rating: 4.8,
           total_reviews: 342,
           founded_year: 2010,
           
-          // Social
           instagram_url: 'https://instagram.com/elitecuts',
           facebook_url: 'https://facebook.com/elitecuts',
           google_business_url: 'https://g.page/elitecuts'

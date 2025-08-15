@@ -8,7 +8,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// Set environment variables for testing
 process.env.NODE_ENV = 'development';
 process.env.NEXT_PUBLIC_DEV_MODE = 'true';
 
@@ -16,11 +15,9 @@ console.log('🚀 Starting Campaign & Billing E2E Tests');
 console.log('📦 Environment: Development with Mock Services');
 console.log('🔐 Authentication: Test User (UUID: 11111111-1111-1111-1111-111111111111)\n');
 
-// Function to run tests
 function runTests() {
   const testFile = path.join(__dirname, 'e2e', 'campaigns-billing.spec.js');
   
-  // Run Playwright tests
   const playwright = spawn('npx', [
     'playwright',
     'test',
@@ -54,7 +51,6 @@ function runTests() {
   });
 }
 
-// Check if Playwright is installed
 const checkPlaywright = spawn('npx', ['playwright', '--version'], {
   stdio: 'pipe'
 });

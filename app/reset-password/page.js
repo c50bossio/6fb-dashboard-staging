@@ -25,7 +25,6 @@ function ResetPasswordContent() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState('')
 
-  // Check if we have the required tokens/session
   useEffect(() => {
     const accessToken = searchParams.get('access_token')
     const refreshToken = searchParams.get('refresh_token')
@@ -47,7 +46,6 @@ function ResetPasswordContent() {
     setIsLoading(true)
     setError('')
 
-    // Validate passwords
     const passwordError = validatePassword(password)
     if (passwordError) {
       setError(passwordError)
@@ -65,7 +63,6 @@ function ResetPasswordContent() {
       await updatePassword(password)
       setIsSuccess(true)
       
-      // Redirect to login after success
       setTimeout(() => {
         router.push('/login')
       }, 3000)

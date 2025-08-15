@@ -81,7 +81,6 @@ export async function GET(request, { params }) {
             );
         }
         
-        // Use real database operations for waitlist status - NO MOCK DATA
         const { createClient } = await import('@supabase/supabase-js');
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -89,7 +88,6 @@ export async function GET(request, { params }) {
         );
         
         try {
-            // Build query for waitlist entries
             let query = supabase
                 .from('waitlist')
                 .select(`
@@ -111,7 +109,6 @@ export async function GET(request, { params }) {
                 .eq('status', 'active')
                 .order('created_at', { ascending: false });
             
-            // Filter by barbershop if specified
             if (barbershop_id) {
                 query = query.eq('barbershop_id', barbershop_id);
             }
@@ -127,13 +124,10 @@ export async function GET(request, { params }) {
                 }, { status: 500 });
             }
             
-            // Transform database results to API format
             const waitlist_entries = waitlistData?.map(entry => {
-                // Calculate estimated wait time in minutes
                 const position = entry.position || 1;
                 const estimated_wait_minutes = position <= 1 ? 1440 : position * 1440; // 1 day per position
                 
-                // Calculate estimated available time
                 const estimated_available = new Date(Date.now() + estimated_wait_minutes * 60 * 1000).toISOString();
                 
                 return {

@@ -9,7 +9,6 @@ export async function PUT(request, { params }) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -19,17 +18,14 @@ export async function PUT(request, { params }) {
       )
     }
     
-    // Get the request body
     const updates = await request.json()
     
-    // Get the user's profile to check role
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
     
-    // Check permissions
     if (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
@@ -37,7 +33,6 @@ export async function PUT(request, { params }) {
       )
     }
     
-    // Get the shop owned by this user
     const { data: shop } = await supabase
       .from('barbershops')
       .select('id')
@@ -51,7 +46,6 @@ export async function PUT(request, { params }) {
       )
     }
     
-    // Verify the product belongs to this shop
     const { data: existingProduct } = await supabase
       .from('products')
       .select('barbershop_id')
@@ -65,7 +59,6 @@ export async function PUT(request, { params }) {
       )
     }
     
-    // Update the product
     const { data: updatedProduct, error: updateError } = await supabase
       .from('products')
       .update({
@@ -102,7 +95,6 @@ export async function DELETE(request, { params }) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -112,14 +104,12 @@ export async function DELETE(request, { params }) {
       )
     }
     
-    // Get the user's profile to check role
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
     
-    // Check permissions
     if (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
@@ -127,7 +117,6 @@ export async function DELETE(request, { params }) {
       )
     }
     
-    // Get the shop owned by this user
     const { data: shop } = await supabase
       .from('barbershops')
       .select('id')
@@ -141,7 +130,6 @@ export async function DELETE(request, { params }) {
       )
     }
     
-    // Verify the product belongs to this shop
     const { data: existingProduct } = await supabase
       .from('products')
       .select('barbershop_id')
@@ -155,7 +143,6 @@ export async function DELETE(request, { params }) {
       )
     }
     
-    // Soft delete by setting is_active to false
     const { error: deleteError } = await supabase
       .from('products')
       .update({ 

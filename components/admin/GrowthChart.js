@@ -17,7 +17,6 @@ export default function GrowthChart({ data, period }) {
     )
   }
 
-  // Process data for visualization
   const processedData = data.map(item => ({
     ...item,
     date: new Date(item.date),
@@ -27,14 +26,12 @@ export default function GrowthChart({ data, period }) {
     })
   }))
 
-  // Calculate chart dimensions and scales
   const chartWidth = 800
   const chartHeight = 300
   const padding = { top: 20, right: 20, bottom: 40, left: 60 }
   const innerWidth = chartWidth - padding.left - padding.right
   const innerHeight = chartHeight - padding.top - padding.bottom
 
-  // Get min/max values for scaling
   const getMinMax = (key) => {
     const values = processedData.map(d => d[key])
     return {
@@ -46,11 +43,9 @@ export default function GrowthChart({ data, period }) {
   const { min, max } = getMinMax(chartType)
   const range = max - min || 1
 
-  // Scale functions
   const xScale = (index) => (index / (processedData.length - 1)) * innerWidth
   const yScale = (value) => innerHeight - ((value - min) / range) * innerHeight
 
-  // Generate path for line chart
   const generatePath = (key) => {
     return processedData.map((d, i) => {
       const x = xScale(i)
@@ -59,7 +54,6 @@ export default function GrowthChart({ data, period }) {
     }).join(' ')
   }
 
-  // Generate area path
   const generateAreaPath = (key) => {
     const linePath = generatePath(key)
     const baseline = yScale(0)
@@ -77,7 +71,6 @@ export default function GrowthChart({ data, period }) {
 
   const currentColor = chartColors[chartType]
 
-  // Calculate summary statistics
   const totalNew = processedData.reduce((sum, d) => sum + d.new, 0)
   const totalCanceled = processedData.reduce((sum, d) => sum + d.canceled, 0)
   const netGrowth = totalNew - totalCanceled

@@ -26,7 +26,6 @@ export default function AIAgentChat() {
   const [businessContext, setBusinessContext] = useState(null)
   const [selectedModel, setSelectedModel] = useState('gpt-5')
 
-  // Check API connection on mount
   useEffect(() => {
     checkAPIConnection()
   }, [])
@@ -36,7 +35,6 @@ export default function AIAgentChat() {
       const response = await fetch('/api/health')
       if (response.ok) {
         setApiConnected(true)
-        // Update initial message to show connection status
         setMessages(prev => prev.map(msg => 
           msg.id === 1 
             ? { ...msg, content: "✅ Internal API connection detected! I can access your live booking calendar, appointments, and analytics. What business insights can I help you with?" }
@@ -64,7 +62,6 @@ export default function AIAgentChat() {
     setIsLoading(true)
 
     try {
-      // Call the real AI API with business context
       const response = await fetch('/api/ai/unified-chat', {
         method: 'POST',
         headers: {
@@ -111,7 +108,6 @@ export default function AIAgentChat() {
     } catch (error) {
       console.error('AI response error:', error)
       
-      // Fallback response with connection status
       const errorResponse = {
         id: Date.now() + 1,
         type: 'assistant',

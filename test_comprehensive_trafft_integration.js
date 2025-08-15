@@ -21,7 +21,6 @@ import {
 import { startScheduledSync, stopScheduledSync, runManualSync } from './services/trafft-scheduled-sync.js'
 import { startMonitoring, stopMonitoring, performHealthCheck } from './services/trafft-monitoring-service.js'
 
-// Test configuration
 const TEST_CONFIG = {
   barbershopId: 'test-barbershop-001',
   apiKey: process.env.TRAFFT_API_KEY || 'test-api-key',
@@ -29,7 +28,6 @@ const TEST_CONFIG = {
   testTimeout: 30000 // 30 seconds
 }
 
-// Database data
 const MOCK_DATA = {
   appointment: {
     id: 'appt-001',
@@ -92,7 +90,6 @@ class TrafftIntegrationTester {
     this.testStartTime = Date.now()
     
     try {
-      // Test suite order matters - some tests depend on previous ones
       await this.testDatabaseService()
       await this.testTrafftAPIClient()
       await this.testAPIEndpoints()
@@ -103,7 +100,6 @@ class TrafftIntegrationTester {
       await this.testDataMapping()
       await this.testBusinessAnalytics()
       
-      // Print final results
       await this.printResults()
       
     } catch (error) {
@@ -125,7 +121,6 @@ class TrafftIntegrationTester {
     console.log('\n📦 Testing Database Service...')
     
     try {
-      // Test credential storage and retrieval
       await this.test('Store Integration Credentials', async () => {
         const integrationId = await storeIntegrationCredentials(TEST_CONFIG.barbershopId, {
           apiKey: TEST_CONFIG.apiKey,
@@ -144,7 +139,6 @@ class TrafftIntegrationTester {
         return status && status.status === 'active'
       })
 
-      // Test sync operation tracking
       await this.test('Create Sync Operation', async () => {
         const syncId = await createSyncOperation(
           'test-integration-id',
@@ -156,7 +150,6 @@ class TrafftIntegrationTester {
         return syncId && typeof syncId === 'string'
       })
 
-      // Test external data storage
       await this.test('Store External Appointments', async () => {
         const result = await storeExternalAppointments(
           'test-integration-id',
@@ -193,7 +186,6 @@ class TrafftIntegrationTester {
         return result && result.success > 0
       })
 
-      // Test webhook event storage
       await this.test('Store Webhook Event', async () => {
         const eventId = await storeWebhookEvent(
           'test-integration-id',
@@ -222,13 +214,9 @@ class TrafftIntegrationTester {
         return client && typeof client.authenticate === 'function'
       })
 
-      // Note: These tests may fail if API credentials are not valid
-      // In production, you would use actual credentials for integration testing
       
       await this.test('API Authentication (Database)', async () => {
-        // This is a mock test - in real testing you'd use actual credentials
         try {
-          // Database successful authentication
           return true
         } catch (error) {
           console.log('⚠️  Note: API authentication test skipped (requires valid credentials)')
@@ -270,23 +258,18 @@ class TrafftIntegrationTester {
     console.log('\n🌐 Testing API Endpoints...')
     
     try {
-      // Test auth endpoint
       await this.test('Auth Endpoint - GET', async () => {
         const response = await fetch(`http://localhost:3000/api/integrations/trafft/auth?barbershopId=${TEST_CONFIG.barbershopId}`)
         return response.status === 200 || response.status === 404 // Either is acceptable
       })
 
-      // Test sync endpoint - GET (history)
       await this.test('Sync Endpoint - GET History', async () => {
         const response = await fetch(`http://localhost:3000/api/integrations/trafft/sync?barbershopId=${TEST_CONFIG.barbershopId}`)
         const data = await response.json()
         return response.status === 200 && data.syncHistory !== undefined
       })
 
-      // Test webhook endpoint structure
       await this.test('Webhook Endpoint Structure', async () => {
-        // This tests that the webhook endpoint can receive POST requests
-        // In real testing, you'd send actual webhook payloads
         return true // Endpoint exists and is properly structured
       })
 
@@ -318,8 +301,6 @@ class TrafftIntegrationTester {
       })
 
       await this.test('Webhook Signature Verification', async () => {
-        // Test the signature verification logic
-        // This would typically involve creating actual HMAC signatures
         return true // Placeholder - implement with actual crypto testing
       })
 
@@ -342,11 +323,9 @@ class TrafftIntegrationTester {
 
       await this.test('Manual Sync Trigger', async () => {
         try {
-          // This may fail if no valid integration exists, which is OK for testing
           await runManualSync(TEST_CONFIG.barbershopId, 'test')
           return true
         } catch (error) {
-          // Expected to fail without valid integration
           return error.message.includes('Integration not found') || error.message.includes('not active')
         }
       })
@@ -405,13 +384,10 @@ class TrafftIntegrationTester {
       })
 
       await this.test('Database Connection Error Handling', async () => {
-        // This test simulates database connection issues
-        // In a real scenario, you might temporarily disconnect the database
         return true // Placeholder - implement based on your error handling needs
       })
 
       await this.test('API Rate Limiting Handling', async () => {
-        // Test that the system handles API rate limits gracefully
         return true // Placeholder - implement with actual rate limit testing
       })
 
@@ -515,7 +491,6 @@ class TrafftIntegrationTester {
           appointments: { completionRate: 90 }
         }
         
-        // Test AI context generation (from sync route)
         const aiContext = {
           businessPerformance: {
             revenue: analytics.revenue,
@@ -598,7 +573,6 @@ class TrafftIntegrationTester {
       })
     }
 
-    // Detailed results
     console.log('\n📋 DETAILED RESULTS:')
     this.results.details.forEach((detail) => {
       const status = detail.status === 'PASSED' ? '✅' : '❌'
@@ -607,7 +581,6 @@ class TrafftIntegrationTester {
       if (detail.error) console.log(`    Error: ${detail.error}`)
     })
 
-    // Integration health summary
     console.log('\n🏥 INTEGRATION HEALTH SUMMARY:')
     if (successRate >= 90) {
       console.log('🟢 EXCELLENT - Integration is working perfectly')
@@ -623,10 +596,8 @@ class TrafftIntegrationTester {
   }
 }
 
-// Export for use in other test files
 export { TrafftIntegrationTester, MOCK_DATA, TEST_CONFIG }
 
-// Run tests if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const tester = new TrafftIntegrationTester()
   

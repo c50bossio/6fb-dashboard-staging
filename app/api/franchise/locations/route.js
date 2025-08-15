@@ -1,22 +1,14 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
-// TODO: These are Python services, need JavaScript implementations
-// import { FranchiseManagementService } from '../../../../services/franchise_management_service'
-// import { MultiTenantAuthService } from '../../../../services/multi_tenant_authentication'
 
 export async function GET(request) {
   try {
-    // Temporary mock response
     return NextResponse.json({
       error: "Franchise services not implemented in JavaScript yet",
       message: "This endpoint requires Python services to be ported to JavaScript"
     }, { status: 501 })
     
-    // Initialize services - TODO: Implement JavaScript versions
-    // const franchiseService = new FranchiseManagementService()
-    // const authService = new MultiTenantAuthService()
     
-    // Get session token from headers
     const authorization = request.headers.get('authorization')
     const sessionToken = authorization?.replace('Bearer ', '')
     
@@ -27,7 +19,6 @@ export async function GET(request) {
       )
     }
     
-    // Validate user session
     const authResult = await authService.validate_session(sessionToken)
     
     if (!authResult.success) {
@@ -39,7 +30,6 @@ export async function GET(request) {
     
     const userSession = authResult.user_session
     
-    // Check permissions
     const permissionCheck = await authService.check_permission(
       userSession,
       'locations',
@@ -55,10 +45,8 @@ export async function GET(request) {
       )
     }
     
-    // Get franchise ID
     const franchiseId = userSession.primary_franchise_id
     
-    // Fetch franchise locations
     const locationsResult = await franchiseService.get_franchise_locations(franchiseId)
     
     if (!locationsResult.success) {
@@ -81,11 +69,9 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Initialize services
     const franchiseService = new FranchiseManagementService()
     const authService = new MultiTenantAuthService()
     
-    // Get session token from headers
     const authorization = request.headers.get('authorization')
     const sessionToken = authorization?.replace('Bearer ', '')
     
@@ -96,7 +82,6 @@ export async function POST(request) {
       )
     }
     
-    // Validate user session
     const authResult = await authService.validate_session(sessionToken)
     
     if (!authResult.success) {
@@ -108,7 +93,6 @@ export async function POST(request) {
     
     const userSession = authResult.user_session
     
-    // Check permissions
     const permissionCheck = await authService.check_permission(
       userSession,
       'locations',
@@ -124,10 +108,8 @@ export async function POST(request) {
       )
     }
     
-    // Parse request body
     const locationData = await request.json()
     
-    // Validate required fields
     const requiredFields = [
       'location_name',
       'shop_owner_id', 
@@ -146,7 +128,6 @@ export async function POST(request) {
       }
     }
     
-    // Create location
     const createResult = await franchiseService.create_location(
       userSession.primary_franchise_id,
       locationData.location_name,

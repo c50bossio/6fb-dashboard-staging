@@ -11,10 +11,8 @@ export async function POST(request) {
   try {
     const body = await request.json()
     
-    // For development, allow anonymous onboarding
     const userId = body.userId || 'anonymous-' + Date.now()
     
-    // Store onboarding data
     console.log('Onboarding completed:', {
       userId,
       data: body,

@@ -46,11 +46,9 @@ export default function StaffPermissions() {
       setLoading(true)
       const supabase = createClient()
 
-      // Get user's barbershop (this should be properly implemented based on your auth system)
       const shopId = await getUserBarbershop()
       setBarbershopId(shopId)
 
-      // Check if user can manage permissions
       const canManagePerms = await canManagePermissions(user.id, shopId)
       setCanManage(canManagePerms)
 
@@ -59,7 +57,6 @@ export default function StaffPermissions() {
         return
       }
 
-      // Load staff members for this barbershop
       const { data: staffData, error: staffError } = await supabase
         .from('barbershop_staff')
         .select(`
@@ -76,7 +73,6 @@ export default function StaffPermissions() {
         setStaff(staffData || [])
       }
 
-      // Load permission templates
       const templatesData = await getPermissionTemplates(true) // System templates only
       setTemplates(templatesData)
 
@@ -88,8 +84,6 @@ export default function StaffPermissions() {
   }
 
   const getUserBarbershop = async () => {
-    // This should be implemented based on your actual auth/user system
-    // For now, returning a placeholder
     return 'placeholder-barbershop-id'
   }
 
@@ -98,9 +92,7 @@ export default function StaffPermissions() {
       const result = await applyPermissionTemplate(barberId, barbershopId, templateId, user.id)
       
       if (result.success) {
-        // Refresh staff data
         await loadStaffData()
-        // Show success message
         console.log('Template applied successfully')
       } else {
         console.error('Failed to apply template:', result.error)

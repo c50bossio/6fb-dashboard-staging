@@ -26,7 +26,6 @@ describe('AI Performance Benchmarks', () => {
   }
 
   beforeAll(() => {
-    // Setup performance monitoring
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
         performanceMetrics[entry.name] = entry.duration
@@ -36,7 +35,6 @@ describe('AI Performance Benchmarks', () => {
   })
 
   afterAll(() => {
-    // Generate performance report
     generatePerformanceReport()
   })
 
@@ -135,7 +133,6 @@ describe('AI Performance Benchmarks', () => {
         const currentModel = models[i]
         const nextModel = models[(i + 1) % models.length]
         
-        // First request
         await fetch('http://localhost:8001/api/ai/unified-chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -147,7 +144,6 @@ describe('AI Performance Benchmarks', () => {
           })
         })
         
-        // Switch to next model
         const switchStart = performance.now()
         
         const switchResponse = await fetch('http://localhost:8001/api/ai/unified-chat', {
@@ -174,7 +170,6 @@ describe('AI Performance Benchmarks', () => {
         })
       }
       
-      // Average switching time should be reasonable
       const avgSwitchTime = switchingTimes.reduce((sum, item) => sum + item.switchTime, 0) / switchingTimes.length
       expect(avgSwitchTime).toBeLessThan(PERFORMANCE_THRESHOLDS.AI_RESPONSE_MAX)
     })
@@ -278,7 +273,6 @@ describe('AI Performance Benchmarks', () => {
     test('comprehensive analytics compilation performance', async () => {
       const startTime = performance.now()
       
-      // Simulate loading all analytics components simultaneously
       const requests = [
         fetch('http://localhost:8001/api/ai/predictive?barbershop_id=perf-test-001'),
         fetch('http://localhost:8001/api/ai/predictive-analytics', {
@@ -371,7 +365,6 @@ describe('AI Performance Benchmarks', () => {
     test('AI processing memory efficiency', async () => {
       const initialMemory = process.memoryUsage()
       
-      // Perform multiple AI operations
       const aiOperations = []
       for (let i = 0; i < 10; i++) {
         aiOperations.push(
@@ -390,7 +383,6 @@ describe('AI Performance Benchmarks', () => {
       
       await Promise.all(aiOperations)
       
-      // Force garbage collection if available
       if (global.gc) {
         global.gc()
       }
@@ -410,7 +402,6 @@ describe('AI Performance Benchmarks', () => {
     test('analytics processing memory efficiency', async () => {
       const initialMemory = process.memoryUsage()
       
-      // Perform multiple analytics operations
       const analyticsOperations = []
       for (let i = 0; i < 5; i++) {
         analyticsOperations.push(
@@ -476,7 +467,6 @@ describe('AI Performance Benchmarks', () => {
     test('complex analytics query performance', async () => {
       const startTime = performance.now()
       
-      // Complex query combining multiple data sources
       const response = await fetch('http://localhost:8001/api/ai/predictive-analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -505,21 +495,18 @@ describe('AI Performance Benchmarks', () => {
     test('API response caching effectiveness', async () => {
       const cacheKey = 'perf-test-cache-001'
       
-      // First request (should populate cache)
       const firstRequestStart = performance.now()
       const firstResponse = await fetch(`http://localhost:8001/api/ai/predictive?barbershop_id=${cacheKey}`)
       const firstRequestTime = performance.now() - firstRequestStart
       
       expect(firstResponse.ok).toBe(true)
       
-      // Second request (should use cache)
       const secondRequestStart = performance.now()
       const secondResponse = await fetch(`http://localhost:8001/api/ai/predictive?barbershop_id=${cacheKey}`)
       const secondRequestTime = performance.now() - secondRequestStart
       
       expect(secondResponse.ok).toBe(true)
       
-      // Cached request should be significantly faster
       expect(secondRequestTime).toBeLessThan(firstRequestTime * 0.5)
       
       performanceMetrics.apiResponseTimes.push({
@@ -534,7 +521,6 @@ describe('AI Performance Benchmarks', () => {
     test('AI model response caching', async () => {
       const cacheTestMessage = 'Performance test caching question'
       
-      // First AI request
       const firstStart = performance.now()
       const firstResponse = await fetch('http://localhost:8001/api/ai/unified-chat', {
         method: 'POST',
@@ -549,7 +535,6 @@ describe('AI Performance Benchmarks', () => {
       })
       const firstTime = performance.now() - firstStart
       
-      // Second identical request (should be cached)
       const secondStart = performance.now()
       const secondResponse = await fetch('http://localhost:8001/api/ai/unified-chat', {
         method: 'POST',
@@ -588,7 +573,6 @@ describe('AI Performance Benchmarks', () => {
     console.log('\n=== AI PERFORMANCE BENCHMARK REPORT ===')
     console.log(JSON.stringify(report, null, 2))
     
-    // Write to file for CI/CD systems
     require('fs').writeFileSync(
       'performance-report.json',
       JSON.stringify(report, null, 2)

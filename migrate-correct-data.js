@@ -12,7 +12,6 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -20,7 +19,6 @@ const supabase = createClient(
 
 const SHOP_ID = "demo-shop-001" // Use existing barbershop
 
-// Migration statistics
 const stats = {
   customers: { created: 0, errors: 0 },
   services: { created: 0, errors: 0 },
@@ -81,7 +79,6 @@ async function checkCurrentData() {
 async function addMoreCustomers() {
   log('👥 Adding more customers for realistic data...', 'info')
   
-  // Add 20 more customers to get closer to the 942 appointments (need more customers for that volume)
   const newCustomers = [
     { name: 'Carlos Rodriguez', email: 'carlos.rodriguez@gmail.com', phone: '(555) 200-0001' },
     { name: 'Antonio Martinez', email: 'antonio.martinez@yahoo.com', phone: '(555) 200-0002' },
@@ -288,15 +285,12 @@ async function setupBusinessMetrics() {
   log('📊 Setting up business metrics for dashboard...', 'info')
   
   try {
-    // Create some historical business metrics to simulate appointment/payment data
     const metrics = []
     const now = new Date()
     
-    // Generate 6 months of daily metrics
     for (let days = 180; days >= 0; days--) {
       const date = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000))
       
-      // Weekend has less business
       const isWeekend = date.getDay() === 0 || date.getDay() === 6
       const baseAppointments = isWeekend ? Math.floor(Math.random() * 8) + 2 : Math.floor(Math.random() * 15) + 8
       const avgPrice = 35 + Math.floor(Math.random() * 20) // $35-$55 average
@@ -311,7 +305,6 @@ async function setupBusinessMetrics() {
       })
     }
     
-    // Insert metrics in batches
     const batchSize = 50
     let totalCreated = 0
     
@@ -332,7 +325,6 @@ async function setupBusinessMetrics() {
     
     log(`✅ Created ${totalCreated} business metrics records`, 'success')
     
-    // Calculate totals for summary
     const totalRevenue = metrics.reduce((sum, m) => sum + m.revenue, 0)
     const totalAppointments = metrics.reduce((sum, m) => sum + m.appointments_count, 0)
     const totalCustomers = Math.max(...metrics.map(m => m.new_customers + m.returning_customers))
@@ -387,22 +379,18 @@ async function main() {
   log('Adding realistic data to existing barbershop for production readiness!', 'info')
   
   try {
-    // Check current data
     const initialCounts = await checkCurrentData()
     if (!initialCounts) {
       process.exit(1)
     }
     
-    // Add more data for realistic volume
     await addMoreCustomers()
     await addMoreServices()
     await addMoreBarbers()
     await setupBusinessMetrics()
     
-    // Check final counts
     const finalCounts = await checkCurrentData()
     
-    // Print summary
     printSummary(initialCounts, finalCounts)
     
   } catch (error) {
@@ -412,7 +400,6 @@ async function main() {
   }
 }
 
-// Run migration
 if (require.main === module) {
   main()
 }

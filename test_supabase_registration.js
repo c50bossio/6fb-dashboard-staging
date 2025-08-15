@@ -6,7 +6,6 @@
 
 const { createClient } = require('@supabase/supabase-js');
 
-// Load environment variables from .env.local
 require('dotenv').config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -46,7 +45,6 @@ async function testRegistration() {
     if (error) {
       console.error('❌ Registration failed:', error.message);
       
-      // Check for specific SMTP-related errors
       if (error.message.includes('SMTP') || error.message.includes('email')) {
         console.error('🚨 Email/SMTP related error detected!');
         console.error('This indicates the verified domain fix may not be working.');
@@ -58,7 +56,6 @@ async function testRegistration() {
     console.log('✅ Registration API call successful');
     console.log('Data received:', JSON.stringify(data, null, 2));
     
-    // Check if email verification is required
     if (data.user && !data.session) {
       console.log('📧 Email verification required - this is expected');
       console.log('✅ User created but not confirmed - verification email should be sent');

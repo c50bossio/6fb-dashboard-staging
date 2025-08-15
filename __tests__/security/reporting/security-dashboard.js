@@ -24,7 +24,6 @@ export class SecurityReportingDashboard {
 
     const dashboardData = await this.aggregateSecurityData(scanResults);
     
-    // Generate different dashboard formats
     await this.generateHTMLDashboard(dashboardData);
     await this.generateJSONReport(dashboardData);
     await this.generateSARIFReport(dashboardData);
@@ -66,7 +65,6 @@ export class SecurityReportingDashboard {
       }
     };
 
-    // Process scan results
     if (scanResults.sast) {
       await this.processSASTResults(scanResults.sast, aggregatedData);
     }
@@ -87,7 +85,6 @@ export class SecurityReportingDashboard {
       await this.processPenetrationResults(scanResults.penetration, aggregatedData);
     }
 
-    // Calculate overall metrics
     this.calculateOverallMetrics(aggregatedData);
 
     return aggregatedData;
@@ -365,7 +362,6 @@ export class SecurityReportingDashboard {
     </div>
 
     <script>
-        // Vulnerability Distribution Chart
         const ctx1 = document.getElementById('vulnerabilityChart').getContext('2d');
         new Chart(ctx1, {
             type: 'doughnut',
@@ -392,7 +388,6 @@ export class SecurityReportingDashboard {
             }
         });
 
-        // Security Score Trend Chart
         const ctx2 = document.getElementById('trendChart').getContext('2d');
         new Chart(ctx2, {
             type: 'line',
@@ -494,7 +489,6 @@ export class SecurityReportingDashboard {
       runs: []
     };
 
-    // Convert vulnerabilities to SARIF format
     const allVulns = [
       ...data.vulnerabilities.critical,
       ...data.vulnerabilities.high,
@@ -651,7 +645,6 @@ export class SecurityReportingDashboard {
   calculateOverallMetrics(data) {
     const totalVulns = Object.values(data.vulnerabilities).reduce((sum, vulns) => sum + vulns.length, 0);
     
-    // Calculate security score based on vulnerability severity
     const criticalPenalty = data.vulnerabilities.critical.length * 20;
     const highPenalty = data.vulnerabilities.high.length * 10;
     const mediumPenalty = data.vulnerabilities.medium.length * 5;
@@ -663,7 +656,6 @@ export class SecurityReportingDashboard {
     data.overview.securityScore = securityScore;
     data.overview.riskLevel = this.calculateRiskLevel(securityScore);
     
-    // Calculate compliance score (placeholder)
     data.overview.complianceScore = Math.max(0, 100 - (data.vulnerabilities.critical.length * 15) - (data.vulnerabilities.high.length * 8));
   }
 
@@ -735,14 +727,12 @@ export class SecurityReportingDashboard {
       const latest = historicalData[historicalData.length - 1];
       const previous = historicalData[historicalData.length - 2];
       
-      // Security score trend
       if (latest.securityScore > previous.securityScore + 5) {
         trends.securityScoreTrend = 'improving';
       } else if (latest.securityScore < previous.securityScore - 5) {
         trends.securityScoreTrend = 'declining';
       }
       
-      // Vulnerability trend
       if (latest.totalFindings < previous.totalFindings) {
         trends.vulnerabilityTrend = 'improving';
       } else if (latest.totalFindings > previous.totalFindings) {

@@ -7,7 +7,6 @@ export default function SubscribeRedirect() {
   const router = useRouter()
   
   useEffect(() => {
-    // Redirect to the new pricing page
     router.replace('/pricing')
   }, [router])
   

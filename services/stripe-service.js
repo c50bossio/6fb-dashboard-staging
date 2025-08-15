@@ -15,7 +15,6 @@ class StripeService {
     }
   }
 
-  // Create a checkout session
   async createCheckoutSession(options = {}) {
     if (!this.initialized) {
       throw new Error('Stripe not initialized - missing API key');
@@ -63,7 +62,6 @@ class StripeService {
     }
   }
 
-  // Verify a payment session
   async verifySession(sessionId) {
     if (!this.initialized) {
       throw new Error('Stripe not initialized - missing API key');
@@ -88,7 +86,6 @@ class StripeService {
     }
   }
 
-  // Handle webhook events
   constructEvent(body, signature) {
     if (!this.initialized) {
       throw new Error('Stripe not initialized - missing API key');
@@ -107,7 +104,6 @@ class StripeService {
     }
   }
 
-  // Create a subscription
   async createSubscription(options = {}) {
     if (!this.initialized) {
       throw new Error('Stripe not initialized - missing API key');
@@ -145,7 +141,6 @@ class StripeService {
     }
   }
 
-  // Get subscription status
   async getSubscription(subscriptionId) {
     if (!this.initialized) {
       throw new Error('Stripe not initialized - missing API key');
@@ -170,7 +165,6 @@ class StripeService {
     }
   }
 
-  // Health check
   async healthCheck() {
     if (!this.initialized) {
       return {
@@ -180,7 +174,6 @@ class StripeService {
     }
 
     try {
-      // Simple API test - list products (limited to 1 for efficiency)
       await this.stripe.products.list({ limit: 1 });
       
       return {
@@ -196,7 +189,6 @@ class StripeService {
   }
 }
 
-// Create singleton instance
 const stripeService = new StripeService();
 
 module.exports = {

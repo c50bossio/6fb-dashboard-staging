@@ -13,7 +13,6 @@
 const twilio = require('twilio');
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -21,13 +20,11 @@ const supabase = createClient(
 
 class TwilioSMSService {
     constructor() {
-        // Platform master account configuration
         this.accountSid = process.env.TWILIO_ACCOUNT_SID;
         this.authToken = process.env.TWILIO_AUTH_TOKEN;
         this.platformPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
         this.client = null;
         
-        // Business model configuration - Platform markup percentages
         this.markupRates = {
             barber: 2.5,      // 250% markup for individual barbers
             shop: 2.0,        // 200% markup for shop owners  
@@ -38,7 +35,6 @@ class TwilioSMSService {
         this.maxRetries = 3;
         this.isInitialized = false;
         
-        // Base Twilio SMS costs (in dollars)
         this.smsCosts = {
             'US': 0.0075,    // $0.0075 per SMS
             'CA': 0.0075,    // $0.0075 per SMS
@@ -46,7 +42,6 @@ class TwilioSMSService {
             'DEFAULT': 0.015  // $0.015 per SMS
         };
         
-        // MMS cost estimates (in cents)
         this.mmsCosts = {
             'US': 2.0,     // $0.02 per MMS
             'CA': 2.0,     // $0.02 per MMS
@@ -72,7 +67,6 @@ class TwilioSMSService {
                 process.env.TWILIO_AUTH_TOKEN
             );
 
-            // Verify phone number configuration
             if (!this.platformPhoneNumber) {
                 console.warn('Twilio phone number not configured');
                 return false;
@@ -109,17 +103,14 @@ class TwilioSMSService {
         const startTime = Date.now();
         
         try {
-            // Calculate platform costs and markup
             const billing = this.calculateSMSBilling(
                 recipients.length, 
                 barbershop.account_type || 'shop',
                 barbershop.country || 'US'
             );
             
-            // Build white-label SMS message with barbershop branding
             const smsMessage = this.buildWhiteLabelSMSMessage(campaign, barbershop);
             
-            // Send SMS messages with throttling
             const sendResults = await this.sendBatchedSMS({
                 recipients,
                 message: smsMessage,
@@ -127,7 +118,6 @@ class TwilioSMSService {
                 mediaUrls: campaign.media_urls || []
             });
             
-            // Store campaign analytics
             const analytics = {
                 campaignId: campaign.id,
                 totalRecipients: recipients.length,
@@ -179,7 +169,6 @@ class TwilioSMSService {
     buildWhiteLabelSMSMessage(campaign, barbershop) {
         const baseMessage = campaign.message;
         
-        // Add barbershop branding and compliance footer
         return `${baseMessage}
 
 - ${barbershop.name}
@@ -201,7 +190,6 @@ Reply STOP to opt out`;
                     to: recipient.phone
                 };
                 
-                // Add media URLs for MMS if provided
                 if (mediaUrls.length > 0) {
                     messageData.mediaUrl = mediaUrls;
                 }
@@ -211,7 +199,6 @@ Reply STOP to opt out`;
                 if (result.sid) {
                     results.sent++;
                     
-                    // Store delivery tracking
                     await this.storeSMSDeliveryTracking({
                         recipient: recipient,
                         messageSid: result.sid,
@@ -226,7 +213,6 @@ Reply STOP to opt out`;
                 results.failed++;
                 results.errors.push(`Error sending to ${recipient.phone}: ${error.message}`);
                 
-                // Store failed delivery
                 await this.storeSMSDeliveryTracking({
                     recipient: recipient,
                     status: 'failed',
@@ -234,7 +220,6 @@ Reply STOP to opt out`;
                 });
             }
             
-            // Carrier-compliant throttling (1 SMS per second)
             if (recipients.indexOf(recipient) < recipients.length - 1) {
                 await this.delay(this.rateLimitDelay);
             }
@@ -262,7 +247,6 @@ Reply STOP to opt out`;
         console.log(`   Message: ${campaign.message.substring(0, 50)}...`);
         console.log(`   Type: White-label platform send`);
         
-        // Simulate delivery metrics (SMS has higher delivery rates than email)
         const sent = Math.floor(recipients.length * 0.99); // 99% delivery rate
         const failed = recipients.length - sent;
         
@@ -297,7 +281,6 @@ Reply STOP to opt out`;
         }
 
         try {
-            // Get customers in segment
             const { data: customers, error: segmentError } = await supabase
                 .from('customer_segments')
                 .select(`
@@ -324,7 +307,6 @@ Reply STOP to opt out`;
                 };
             }
 
-            // Process messages with throttling
             const results = await this.sendBulkSMS({
                 campaignId,
                 recipients: customers.map(c => c.customers),
@@ -334,7 +316,6 @@ Reply STOP to opt out`;
                 linkTracking
             });
 
-            // Update campaign analytics
             await this.updateCampaignAnalytics(campaignId, results);
 
             return results;
@@ -370,7 +351,6 @@ Reply STOP to opt out`;
             const customer = recipients[i];
             
             try {
-                // Check if customer is opted out
                 if (!customer.sms_opt_in) {
                     results.failed++;
                     results.errors.push({
@@ -380,7 +360,6 @@ Reply STOP to opt out`;
                     continue;
                 }
 
-                // Personalize message
                 let personalizedMessage = message;
                 if (personalizeMessage && customer.first_name) {
                     personalizedMessage = message.replace(
@@ -393,7 +372,6 @@ Reply STOP to opt out`;
                     );
                 }
 
-                // Add link tracking
                 if (linkTracking) {
                     personalizedMessage = await this.addLinkTracking(
                         personalizedMessage, 
@@ -402,7 +380,6 @@ Reply STOP to opt out`;
                     );
                 }
 
-                // Calculate costs
                 const isMediaMessage = mediaUrls && mediaUrls.length > 0;
                 const countryCode = customer.country_code || 'US';
                 const baseCost = isMediaMessage 
@@ -411,7 +388,6 @@ Reply STOP to opt out`;
                 
                 const platformCost = baseCost * (this.platformMarkupPercent / 100);
                 
-                // Send SMS
                 const messageOptions = {
                     body: personalizedMessage,
                     from: this.platformPhoneNumber,
@@ -426,13 +402,11 @@ Reply STOP to opt out`;
 
                 const twilioMessage = await this.client.messages.create(messageOptions);
 
-                // Record successful send
                 results.sent++;
                 results.estimatedCost += baseCost;
                 results.platformRevenue += platformCost;
                 results.messageIds.push(twilioMessage.sid);
 
-                // Store message record
                 await this.storeSMSRecord({
                     campaignId,
                     customerId: customer.id,
@@ -445,7 +419,6 @@ Reply STOP to opt out`;
                     status: 'queued'
                 });
 
-                // Throttle to respect carrier limits (1 SMS/second)
                 if (i < recipients.length - 1) {
                     await new Promise(resolve => setTimeout(resolve, this.rateLimitDelay));
                 }
@@ -494,14 +467,12 @@ Reply STOP to opt out`;
 
             const twilioMessage = await this.client.messages.create(messageOptions);
 
-            // Calculate costs
             const isMediaMessage = mediaUrls && mediaUrls.length > 0;
             const baseCost = isMediaMessage 
                 ? (this.mmsCosts.DEFAULT)
                 : (this.smsCosts.DEFAULT);
             const platformCost = baseCost * (this.platformMarkupPercent / 100);
 
-            // Store message record if campaign context provided
             if (campaignId && customerId) {
                 await this.storeSMSRecord({
                     campaignId,
@@ -549,7 +520,6 @@ Reply STOP to opt out`;
             const { From: phone, Body: message, MessageSid: messageSid } = twilioWebhook;
             const messageBody = message.trim().toLowerCase();
 
-            // Check for opt-out keywords (TCPA compliance)
             const optOutKeywords = [
                 'stop', 'stopall', 'unsubscribe', 'cancel', 'end', 'quit'
             ];
@@ -561,7 +531,6 @@ Reply STOP to opt out`;
             if (isOptOut) {
                 await this.processOptOut(phone);
                 
-                // Send confirmation response
                 await this.sendSMS({
                     to: phone,
                     message: 'You have been unsubscribed from SMS notifications. Reply START to opt back in.'
@@ -570,7 +539,6 @@ Reply STOP to opt out`;
                 return { action: 'opt_out', phone };
             }
 
-            // Check for opt-in keywords
             const optInKeywords = ['start', 'yes', 'subscribe'];
             const isOptIn = optInKeywords.some(keyword => 
                 messageBody.includes(keyword)
@@ -587,7 +555,6 @@ Reply STOP to opt out`;
                 return { action: 'opt_in', phone };
             }
 
-            // Store incoming message for future processing
             await this.storeIncomingMessage({
                 phone,
                 messageBody: message,
@@ -615,7 +582,6 @@ Reply STOP to opt out`;
                 ErrorMessage: errorMessage
             } = statusWebhook;
 
-            // Update SMS record with delivery status
             const { error } = await supabase
                 .from('sms_records')
                 .update({
@@ -631,7 +597,6 @@ Reply STOP to opt out`;
                 return;
             }
 
-            // Update campaign analytics if delivered
             if (status === 'delivered') {
                 const { data: smsRecord } = await supabase
                     .from('sms_records')
@@ -656,11 +621,9 @@ Reply STOP to opt out`;
      * Add link tracking to message content
      */
     async addLinkTracking(message, campaignId, customerId) {
-        // Simple URL regex
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         
         return message.replace(urlRegex, (url) => {
-            // Create tracked URL with campaign and customer context
             const trackingParams = new URLSearchParams({
                 utm_source: 'sms',
                 utm_medium: 'marketing',
@@ -690,7 +653,6 @@ Reply STOP to opt out`;
             throw error;
         }
 
-        // Log opt-out event
         await supabase
             .from('customer_activity')
             .insert({
@@ -719,7 +681,6 @@ Reply STOP to opt out`;
             throw error;
         }
 
-        // Log opt-in event
         await supabase
             .from('customer_activity')
             .insert({
@@ -840,7 +801,6 @@ Reply STOP to opt out`;
             return null;
         }
 
-        // Calculate summary metrics
         const summary = {
             total_sent: metrics.length,
             delivered: metrics.filter(m => m.status === 'delivered').length,
@@ -890,7 +850,6 @@ Reply STOP to opt out`;
      */
     async storeSMSCampaignAnalytics(analytics) {
         try {
-            // Log analytics for now - could store in database
             console.log('📊 SMS Campaign Analytics:', analytics);
         } catch (error) {
             console.error('Failed to store SMS analytics:', error);
@@ -902,7 +861,6 @@ Reply STOP to opt out`;
      */
     async storeSMSDeliveryTracking(trackingData) {
         try {
-            // Log delivery tracking for now
             console.log('📱 SMS Delivery:', trackingData);
         } catch (error) {
             console.error('Failed to store SMS delivery tracking:', error);
@@ -917,7 +875,6 @@ Reply STOP to opt out`;
     }
 }
 
-// Export singleton instance
 const twilioSMSService = new TwilioSMSService();
 
 module.exports = {

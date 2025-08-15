@@ -3,7 +3,6 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('BookedBarber Paywall Tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Clear all cookies and storage to ensure clean state
     await page.context().clearCookies();
     await page.context().clearPermissions();
   });
@@ -11,14 +10,11 @@ test.describe('BookedBarber Paywall Tests', () => {
   test('Register page loads and shows Google OAuth button', async ({ page }) => {
     await page.goto('https://bookedbarber.com/register');
     
-    // Wait for page to load
     await page.waitForLoadState('networkidle');
     
-    // Check if Google sign-up button exists
     const googleButton = await page.locator('button:has-text("Sign up with Google")');
     await expect(googleButton).toBeVisible();
     
-    // Verify button is not stuck in loading state
     const buttonText = await googleButton.textContent();
     expect(buttonText).not.toContain('Signing up...');
     
@@ -29,10 +25,8 @@ test.describe('BookedBarber Paywall Tests', () => {
   test('Subscribe page shows pricing tiers', async ({ page }) => {
     await page.goto('https://bookedbarber.com/subscribe');
     
-    // Wait for page to load
     await page.waitForLoadState('networkidle');
     
-    // Check for pricing tier buttons
     const individualButton = await page.locator('button:has-text("Start as Individual")');
     const shopButton = await page.locator('button:has-text("Start as Shop Owner")');
     const enterpriseButton = await page.locator('button:has-text("Start Enterprise")');
@@ -41,7 +35,6 @@ test.describe('BookedBarber Paywall Tests', () => {
     await expect(shopButton).toBeVisible();
     await expect(enterpriseButton).toBeVisible();
     
-    // Check pricing is displayed
     await expect(page.locator('text=$35')).toBeVisible();
     await expect(page.locator('text=$99')).toBeVisible();
     await expect(page.locator('text=$249')).toBeVisible();
@@ -53,14 +46,11 @@ test.describe('BookedBarber Paywall Tests', () => {
   test('Login page loads and shows Google sign-in', async ({ page }) => {
     await page.goto('https://bookedbarber.com/login');
     
-    // Wait for page to load
     await page.waitForLoadState('networkidle');
     
-    // Check if Google sign-in button exists
     const googleButton = await page.locator('button:has-text("Sign in with Google")');
     await expect(googleButton).toBeVisible();
     
-    // Verify button is not stuck in loading state
     const buttonText = await googleButton.textContent();
     expect(buttonText).not.toContain('Signing in...');
     
@@ -71,14 +61,11 @@ test.describe('BookedBarber Paywall Tests', () => {
   test('Protected route redirects to login when not authenticated', async ({ page }) => {
     await page.goto('https://bookedbarber.com/dashboard');
     
-    // Should redirect to login (but with middleware disabled, it won't server-side)
-    // Instead, check if we're on dashboard or if client-side redirect happened
     await page.waitForTimeout(3000); // Wait for client-side redirect
     
     const url = page.url();
     console.log('Current URL after navigating to dashboard:', url);
     
-    // With middleware disabled, the page loads but client-side JS should redirect
     if (url.includes('/login')) {
       console.log('✅ Successfully redirected to login (client-side protection working)');
     } else {
@@ -104,27 +91,21 @@ test.describe('BookedBarber Paywall Tests', () => {
     await page.goto('https://bookedbarber.com/subscribe');
     await page.waitForLoadState('networkidle');
     
-    // Get the "Start as Individual" button
     const individualButton = await page.locator('button:has-text("Start as Individual")');
     
-    // Check initial state
     const initialText = await individualButton.textContent();
     expect(initialText).toBe('Start as Individual');
     
-    // Click the button
     await individualButton.click();
     
-    // Check if button shows loading state (should show "Verifying..." or "Processing...")
     await page.waitForTimeout(500); // Brief wait to see state change
     
     const clickedText = await individualButton.textContent();
     console.log('Button text after click:', clickedText);
     
-    // With no auth, it should either show "Verifying..." briefly or redirect to login
     if (clickedText?.includes('Verifying')) {
       console.log('✅ Button shows "Verifying..." state (auth loading check working)');
     } else {
-      // Check if we got redirected to login
       await page.waitForTimeout(2000);
       const currentUrl = page.url();
       if (currentUrl.includes('/login')) {
@@ -143,20 +124,16 @@ test.describe('OAuth Flow Simulation', () => {
     
     const googleButton = await page.locator('button:has-text("Sign up with Google")');
     
-    // Set up listener for popup
     const popupPromise = page.waitForEvent('popup');
     
-    // Click the Google button
     await googleButton.click();
     
-    // Check if button shows loading state
     await page.waitForTimeout(500);
     const buttonTextAfterClick = await googleButton.textContent();
     
     if (buttonTextAfterClick?.includes('Signing up')) {
       console.log('✅ OAuth button shows loading state after click');
       
-      // Wait a bit more to see if it gets stuck
       await page.waitForTimeout(3000);
       const buttonTextAfterWait = await googleButton.textContent();
       
@@ -167,7 +144,6 @@ test.describe('OAuth Flow Simulation', () => {
       }
     }
     
-    // Check if OAuth popup was triggered
     try {
       const popup = await popupPromise;
       console.log('✅ OAuth popup window opened');

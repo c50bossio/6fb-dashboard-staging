@@ -15,13 +15,11 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config()
 
-// Initialize Supabase with service role for admin operations
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Test account configuration
 const TEST_ACCOUNT_CONFIGS = [
   {
     role: 'barber',
@@ -67,7 +65,6 @@ const TEST_ACCOUNT_CONFIGS = [
   }
 ]
 
-// Command line argument parsing
 const args = process.argv.slice(2)
 const options = {
   cleanupOnly: args.includes('--cleanup-only'),
@@ -95,7 +92,6 @@ async function cleanupOldTestAccounts() {
   console.log('🧹 Cleaning up old test accounts...')
   
   try {
-    // Delete test users (this will cascade to related tables)
     const { data: testUsers, error: fetchError } = await supabase
       .from('users')
       .select('id, email')
@@ -112,7 +108,6 @@ async function cleanupOldTestAccounts() {
 
     console.log(`   Found ${testUsers.length} test accounts to remove`)
     
-    // Delete in batches to avoid overwhelming the database
     const batchSize = 10
     for (let i = 0; i < testUsers.length; i += batchSize) {
       const batch = testUsers.slice(i, i + batchSize)
@@ -120,7 +115,6 @@ async function cleanupOldTestAccounts() {
       
       console.log(`   Deleting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(testUsers.length/batchSize)}`)
       
-      // Delete from auth.users (Supabase Auth)
       for (const user of batch) {
         try {
           const { error } = await supabase.auth.admin.deleteUser(user.id)
@@ -132,7 +126,6 @@ async function cleanupOldTestAccounts() {
         }
       }
       
-      // Delete from profiles and users tables
       const { error: deleteError } = await supabase
         .from('users')
         .delete()
@@ -145,7 +138,6 @@ async function cleanupOldTestAccounts() {
       }
     }
     
-    // Clean up related test data
     await cleanupTestData()
     
     console.log('✅ Cleanup completed successfully')
@@ -171,14 +163,12 @@ async function cleanupTestData() {
   
   for (const table of tables) {
     try {
-      // Check if table exists first
       const { data, error } = await supabase
         .from(table)
         .select('count', { count: 'exact', head: true })
         .limit(1)
       
       if (!error) {
-        // Delete test data - be careful with this in production!
         const { error: deleteError } = await supabase
           .from(table)
           .delete()
@@ -204,7 +194,6 @@ async function createTestAccount(config, timestamp) {
   console.log(`   Creating: ${config.name} (${email})`)
   
   try {
-    // Create auth user
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: email,
       password: config.password,
@@ -223,7 +212,6 @@ async function createTestAccount(config, timestamp) {
       throw new Error('No user returned from auth creation')
     }
     
-    // Create user profile
     const userProfile = {
       id: authUser.user.id,
       email: email,
@@ -235,7 +223,6 @@ async function createTestAccount(config, timestamp) {
       updated_at: new Date().toISOString()
     }
     
-    // Add subscription fields if active subscription
     if (config.subscription_tier && config.subscription_status === 'active') {
       const now = new Date()
       const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
@@ -254,12 +241,10 @@ async function createTestAccount(config, timestamp) {
       .insert(userProfile)
     
     if (profileError) {
-      // Clean up auth user if profile creation fails
       await supabase.auth.admin.deleteUser(authUser.user.id)
       throw new Error(`Profile creation failed: ${profileError.message}`)
     }
     
-    // Create associated barbershop if needed
     if (config.shop_name && (config.role === 'shop_owner' || config.role === 'enterprise_owner' || config.role === 'barber')) {
       await createTestBarbershop(authUser.user.id, config.shop_name, timestamp)
     }
@@ -329,7 +314,6 @@ async function createTestAccounts() {
       createdAccounts.push(account)
     } catch (error) {
       console.error(`Failed to create account for ${config.name}:`, error.message)
-      // Continue with other accounts
     }
   }
   
@@ -409,7 +393,6 @@ async function main() {
   console.log('🚀 Payment Flow Test Data Setup')
   console.log('================================')
   
-  // Verify environment variables
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error('❌ Missing required environment variables:')
     console.error('   NEXT_PUBLIC_SUPABASE_URL')
@@ -417,7 +400,6 @@ async function main() {
     process.exit(1)
   }
   
-  // Verify database connection
   console.log('🔌 Verifying database connection...')
   const connected = await verifyConnection()
   if (!connected) {
@@ -426,10 +408,8 @@ async function main() {
   console.log('✅ Database connection verified')
   
   try {
-    // Always clean up first
     await cleanupOldTestAccounts()
     
-    // Create new accounts unless cleanup-only
     if (!options.cleanupOnly) {
       const accounts = await createTestAccounts()
       await generateTestCredentials(accounts)
@@ -450,7 +430,6 @@ async function main() {
   }
 }
 
-// Run the script
 if (require.main === module) {
   main()
 }

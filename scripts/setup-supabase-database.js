@@ -8,7 +8,6 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load environment variables
 import 'dotenv/config';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -24,18 +23,15 @@ console.log('🚀 Setting up Supabase database for 6FB AI Agent System...');
 console.log(`📍 Supabase URL: ${SUPABASE_URL}`);
 console.log(`🔑 Service Role Key: ${SUPABASE_SERVICE_ROLE_KEY.substring(0, 30)}...`);
 
-// Create Supabase client with service role key for admin operations
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 async function executeSQLFile() {
   try {
-    // Read the SQL setup file
     const sqlFilePath = join(__dirname, '../database/supabase-setup.sql');
     const sqlContent = readFileSync(sqlFilePath, 'utf8');
     
     console.log('📄 SQL file loaded, executing commands...');
     
-    // Split SQL into individual statements (simple approach)
     const statements = sqlContent
       .split(';')
       .map(stmt => stmt.trim())
@@ -50,13 +46,11 @@ async function executeSQLFile() {
       try {
         console.log(`\n⏳ Executing statement ${index + 1}/${statements.length}...`);
         
-        // For complex statements, we'll use RPC to execute raw SQL
         const { data, error } = await supabase.rpc('exec_sql', { 
           sql_statement: statement + ';' 
         });
         
         if (error) {
-          // Try direct query execution as fallback
           const { error: directError } = await supabase
             .from('information_schema.tables')
             .select('*')
@@ -64,7 +58,6 @@ async function executeSQLFile() {
           
           if (directError && directError.message?.includes('relation "information_schema.tables"')) {
             console.log('⚠️ Using alternative execution method...');
-            // Skip this for now and try manual table creation
           } else {
             throw error;
           }
@@ -96,7 +89,6 @@ async function createTablesDirectly() {
   console.log('🔧 Creating tables directly using Supabase client...');
   
   try {
-    // Test connection first
     const { data: testData, error: testError } = await supabase
       .from('information_schema.tables')
       .select('table_name')
@@ -110,10 +102,8 @@ async function createTablesDirectly() {
     
     console.log('✅ Supabase connection successful');
     
-    // Create barbershops table directly
     console.log('📋 Creating barbershops table...');
     
-    // We'll use the SQL editor approach instead
     console.log('📋 Please execute the SQL manually in Supabase dashboard:');
     console.log('1. Go to https://supabase.com/dashboard/project/' + SUPABASE_URL.split('//')[1].split('.')[0]);
     console.log('2. Click "SQL Editor"');
@@ -133,7 +123,6 @@ async function verifySetup() {
   console.log('🔍 Verifying database setup...');
   
   try {
-    // Check if barbershops table exists and has data
     const { data: barbershops, error } = await supabase
       .from('barbershops')
       .select('id, name, shop_slug, website_enabled')
@@ -154,7 +143,6 @@ async function verifySetup() {
       });
     }
     
-    // Check for our specific demo barbershop
     const { data: demoShop, error: demoError } = await supabase
       .from('barbershops')
       .select('*')
@@ -186,13 +174,11 @@ async function verifySetup() {
 async function main() {
   console.log('🚀 Starting Supabase database setup...\n');
   
-  // First verify if we can connect
   const setupSuccess = await verifySetup();
   
   if (!setupSuccess) {
     console.log('\n📋 Database setup required. Attempting automatic setup...');
     
-    // Try SQL file execution first
     const sqlSuccess = await executeSQLFile();
     
     if (!sqlSuccess) {
@@ -200,7 +186,6 @@ async function main() {
       await createTablesDirectly();
     }
     
-    // Verify again
     console.log('\n🔍 Final verification...');
     const finalSuccess = await verifySetup();
     
@@ -222,5 +207,4 @@ async function main() {
   console.log('3. Verify the data persists after page reload');
 }
 
-// Run the setup
 main().catch(console.error);

@@ -18,7 +18,6 @@ async function testAuthentication() {
   };
 
   try {
-    // Launch browser
     browser = await puppeteer.launch({ 
       headless: false, 
       slowMo: 100,
@@ -27,7 +26,6 @@ async function testAuthentication() {
     
     const page = await browser.newPage();
     
-    // Monitor console for errors
     page.on('console', msg => {
       if (msg.type() === 'error') {
         console.log('❌ Console Error:', msg.text());
@@ -35,7 +33,6 @@ async function testAuthentication() {
       }
     });
 
-    // Monitor network requests for 500 errors
     page.on('response', response => {
       if (response.status() >= 500) {
         console.log(`❌ HTTP ${response.status()} Error:`, response.url());
@@ -47,7 +44,6 @@ async function testAuthentication() {
       }
     });
 
-    // Test 1: Navigate to login page
     console.log('🧪 Test 1: Loading login page...');
     try {
       await page.goto('http://localhost:9999/login', { waitUntil: 'networkidle2' });
@@ -61,7 +57,6 @@ async function testAuthentication() {
     }
     results.summary.total++;
 
-    // Test 2: Check if login form elements exist
     console.log('\n🧪 Test 2: Checking login form elements...');
     try {
       await page.waitForSelector('#email', { timeout: 5000 });
@@ -77,7 +72,6 @@ async function testAuthentication() {
     }
     results.summary.total++;
 
-    // Test 3: Attempt login with demo credentials
     console.log('\n🧪 Test 3: Testing login with demo credentials...');
     try {
       await page.type('#email', 'demo@barbershop.com');
@@ -86,7 +80,6 @@ async function testAuthentication() {
       console.log('📝 Form filled, clicking submit...');
       await page.click('button[type="submit"]');
       
-      // Wait for either redirect or error
       await Promise.race([
         page.waitForNavigation({ timeout: 10000 }),
         page.waitForSelector('.bg-red-50', { timeout: 10000 }) // Error message
@@ -100,7 +93,6 @@ async function testAuthentication() {
         results.tests.push({ name: 'Demo Login', status: 'passed' });
         results.summary.passed++;
       } else {
-        // Check for error messages
         const errorMessage = await page.$eval('.bg-red-50', el => el.textContent).catch(() => null);
         if (errorMessage) {
           console.log('❌ Login failed with error:', errorMessage);
@@ -118,7 +110,6 @@ async function testAuthentication() {
     }
     results.summary.total++;
 
-    // Test 4: Test registration page
     console.log('\n🧪 Test 4: Testing registration page...');
     try {
       await page.goto('http://localhost:9999/register', { waitUntil: 'networkidle2' });
@@ -133,7 +124,6 @@ async function testAuthentication() {
     }
     results.summary.total++;
 
-    // Test 5: Test registration form submission (first step)
     console.log('\n🧪 Test 5: Testing registration form...');
     try {
       const testEmail = `test${Date.now()}@example.com`;
@@ -147,7 +137,6 @@ async function testAuthentication() {
       
       console.log('📝 Registration form filled, proceeding to next step...');
       
-      // Click next button (not submit yet)
       const nextButton = await page.$('button:contains("Next")') || await page.$('.btn-primary');
       if (nextButton) {
         await nextButton.click();
@@ -167,7 +156,6 @@ async function testAuthentication() {
     }
     results.summary.total++;
 
-    // Test 6: Test Google OAuth (just check if button exists and is clickable)
     console.log('\n🧪 Test 6: Testing Google OAuth button...');
     try {
       await page.goto('http://localhost:9999/login', { waitUntil: 'networkidle2' });
@@ -200,7 +188,6 @@ async function testAuthentication() {
     }
   }
 
-  // Print comprehensive results
   console.log('\n' + '='.repeat(60));
   console.log('📊 AUTHENTICATION TEST RESULTS');
   console.log('='.repeat(60));
@@ -228,7 +215,6 @@ async function testAuthentication() {
 
   console.log('\n' + '='.repeat(60));
   
-  // Identify critical issues
   const criticalIssues = results.errors.filter(error => 
     error.type === 'network' && error.status >= 500 ||
     error.type === 'critical'
@@ -249,7 +235,6 @@ async function testAuthentication() {
   return results;
 }
 
-// Run the test
 if (require.main === module) {
   testAuthentication()
     .then(results => {

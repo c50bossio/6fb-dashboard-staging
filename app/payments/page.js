@@ -15,7 +15,6 @@ import { useState, useEffect } from 'react'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
-// Mock payment data
 const Payments = [
   {
     id: 1,

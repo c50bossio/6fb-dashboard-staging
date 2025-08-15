@@ -18,7 +18,6 @@ export default function CustomerSearchModal({
   const [error, setError] = useState('')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
 
-  // Debounced search
   const searchCustomers = useCallback(async (query) => {
     if (!query || query.length < 2) {
       setCustomers([])
@@ -46,7 +45,6 @@ export default function CustomerSearchModal({
     }
   }, [barbershopId])
 
-  // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       searchCustomers(searchQuery)
@@ -66,7 +64,6 @@ export default function CustomerSearchModal({
     onClose()
   }
 
-  // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
       setSearchQuery('')

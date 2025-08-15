@@ -13,7 +13,6 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline'
 
-// Goals organized by subscription tier
 const goalsByTier = {
   barber: [
     {
@@ -117,7 +116,6 @@ export default function GoalsSelector({ onComplete, initialData = {}, subscripti
   const [selectedGoals, setSelectedGoals] = useState(initialData.goals || [])
   const [businessSize, setBusinessSize] = useState(initialData.businessSize || '')
   
-  // Get goals specific to the subscription tier
   const availableGoals = goalsByTier[subscriptionTier] || goalsByTier.shop
   const tierLabel = tierLabels[subscriptionTier] || 'Shop Owner'
 

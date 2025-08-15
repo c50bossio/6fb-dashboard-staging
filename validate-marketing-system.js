@@ -87,7 +87,6 @@ async function validateSystem() {
             console.log('  ❌ API returned error:', response.status);
         }
     } catch (error) {
-        // API might not be running, that's OK for validation
         console.log('  ⚠️  API not running (start Docker to test)');
         results.api = true; // Mark as OK since code exists
     }
@@ -97,7 +96,6 @@ async function validateSystem() {
     try {
         const sendGridService = require('./services/sendgrid-service-production.js');
         
-        // Test different account types
         const shopCost = sendGridService.calculateCost(100, 'shop');
         const barberCost = sendGridService.calculateCost(100, 'barber');
         const enterpriseCost = sendGridService.calculateCost(100, 'enterprise');
@@ -141,7 +139,6 @@ async function validateSystem() {
         console.log('  ❌ Compliance error:', error.message);
     }
     
-    // Calculate overall readiness
     const totalChecks = Object.keys(results).length;
     const passedChecks = Object.values(results).filter(r => r).length;
     const readiness = ((passedChecks / totalChecks) * 100).toFixed(0);
@@ -176,18 +173,15 @@ async function validateSystem() {
         console.log('   Multiple components need attention');
     }
     
-    // Clean up
     try {
         const queueService = require('./services/queue-service.js');
         if (queueService.initialized) {
             await queueService.shutdown();
         }
     } catch (error) {
-        // Ignore shutdown errors
     }
     
     process.exit(readiness >= 60 ? 0 : 1);
 }
 
-// Run validation
 validateSystem().catch(console.error);

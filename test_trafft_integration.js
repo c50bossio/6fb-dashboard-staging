@@ -5,12 +5,10 @@
 
 import { createTrafftClient } from './lib/trafft-api.js'
 
-// Test configuration
 const TEST_CONFIG = {
   baseUrl: 'http://localhost:3000',
   barbershopId: 'test_barbershop_001',
   trafft: {
-    // These would be real credentials in production
     apiKey: process.env.TRAFFT_API_KEY || 'demo_api_key',
     apiSecret: process.env.TRAFFT_API_SECRET || 'demo_api_secret'
   }
@@ -64,31 +62,25 @@ class TrafftIntegrationTester {
         this.config.trafft.apiSecret
       )
 
-      // Test authentication
       await this.trafftClient.authenticate()
       this.addResult('Trafft API Authentication', true, 'Successfully authenticated with Trafft API')
 
-      // Test customers endpoint
       const customers = await this.trafftClient.getCustomers({ limit: 10 })
       this.addResult('Trafft Customer Retrieval', true, `Retrieved ${customers.data?.length || customers.length || 0} customers`)
 
-      // Test appointments endpoint
       const appointments = await this.trafftClient.getAppointments({
         dateFrom: '2024-01-01',
         dateTo: '2024-01-31'
       })
       this.addResult('Trafft Appointment Retrieval', true, `Retrieved ${appointments.data?.length || appointments.length || 0} appointments`)
 
-      // Test services endpoint
       const services = await this.trafftClient.getServices()
       this.addResult('Trafft Service Retrieval', true, `Retrieved ${services.data?.length || services.length || 0} services`)
 
-      // Test employees endpoint
       const employees = await this.trafftClient.getEmployees()
       this.addResult('Trafft Employee Retrieval', true, `Retrieved ${employees.data?.length || employees.length || 0} employees`)
 
     } catch (error) {
-      // For demo purposes, simulate successful API responses
       console.log('📝 Note: Using mock data as Trafft API credentials not available')
       this.addResult('Trafft API Client (Database)', true, 'Database API client working correctly')
     }
@@ -100,7 +92,6 @@ class TrafftIntegrationTester {
   async testAuthenticationEndpoint() {
     console.log('🔐 Testing Authentication Endpoint...')
 
-    // Test POST /api/integrations/trafft/auth
     const authResponse = await fetch(`${this.config.baseUrl}/api/integrations/trafft/auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -119,7 +110,6 @@ class TrafftIntegrationTester {
       this.addResult('Authentication Endpoint POST', false, authData.error || 'Authentication failed')
     }
 
-    // Test GET /api/integrations/trafft/auth
     const statusResponse = await fetch(`${this.config.baseUrl}/api/integrations/trafft/auth?barbershopId=${this.config.barbershopId}`)
     const statusData = await statusResponse.json()
 
@@ -136,7 +126,6 @@ class TrafftIntegrationTester {
   async testSyncEndpoint() {
     console.log('🔄 Testing Sync Endpoint...')
 
-    // Test full sync
     const syncResponse = await fetch(`${this.config.baseUrl}/api/integrations/trafft/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -153,12 +142,10 @@ class TrafftIntegrationTester {
     if (syncResponse.ok && syncData.success) {
       this.addResult('Full Data Sync', true, `Synced ${syncData.summary?.appointments || 0} appointments, ${syncData.summary?.customers || 0} customers`)
       
-      // Verify analytics were generated
       if (syncData.analytics) {
         this.addResult('Business Analytics Generation', true, 'Analytics successfully generated from sync data')
       }
 
-      // Test AI context generation
       if (syncData.aiContext) {
         this.addResult('AI Context Generation', true, 'AI context successfully generated')
       }
@@ -166,7 +153,6 @@ class TrafftIntegrationTester {
       this.addResult('Full Data Sync', false, syncData.error || 'Sync failed')
     }
 
-    // Test sync history retrieval
     const historyResponse = await fetch(`${this.config.baseUrl}/api/integrations/trafft/sync?barbershopId=${this.config.barbershopId}&limit=5`)
     const historyData = await historyResponse.json()
 
@@ -183,7 +169,6 @@ class TrafftIntegrationTester {
   async testWebhooksEndpoint() {
     console.log('🪝 Testing Webhooks Endpoint...')
 
-    // Simulate webhook payload for appointment creation
     const webhookPayload = {
       barbershopId: this.config.barbershopId,
       data: {
@@ -227,7 +212,6 @@ class TrafftIntegrationTester {
     console.log('📊 Testing Business Analytics...')
 
     try {
-      // Test direct analytics calculation
       const Appointments = [
         { id: '1', price: 65.00, customerId: 'c1', serviceId: 's1', employeeId: 'e1', dateTime: '2024-01-15T10:00:00Z' },
         { id: '2', price: 85.00, customerId: 'c2', serviceId: 's2', employeeId: 'e1', dateTime: '2024-01-15T14:00:00Z' },
@@ -260,7 +244,6 @@ class TrafftIntegrationTester {
           '2024-01-31'
         )
 
-        // Verify analytics calculations
         const expectedRevenue = 195.00
         const expectedAvgTicket = 65.00
         const expectedClients = 2
@@ -283,7 +266,6 @@ class TrafftIntegrationTester {
           this.addResult('Client Count Calculation', false, `Expected ${expectedClients}, got ${analytics.clients.total}`)
         }
 
-        // Test business insights
         if (analytics.businessInsights) {
           this.addResult('Business Insights Generation', true, 'Generated growth potential and capacity analysis')
         }
@@ -303,7 +285,6 @@ class TrafftIntegrationTester {
     console.log('🤖 Testing AI Context Generation...')
 
     try {
-      // Test the AI chat endpoint with business context
       const chatResponse = await fetch(`${this.config.baseUrl}/api/agents/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -320,7 +301,6 @@ class TrafftIntegrationTester {
       if (chatResponse.ok) {
         this.addResult('AI Context Integration', true, 'AI agents successfully receive business context')
         
-        // Check if response includes business-specific insights
         if (chatData.response && (
           chatData.response.includes('revenue') || 
           chatData.response.includes('appointment') || 
@@ -344,11 +324,9 @@ class TrafftIntegrationTester {
     console.log('⚡ Testing Real-time Updates...')
 
     try {
-      // Simulate a webhook event and check if analytics update
       const beforeSync = await fetch(`${this.config.baseUrl}/api/integrations/trafft/sync?barbershopId=${this.config.barbershopId}&limit=1`)
       const beforeData = await beforeSync.json()
 
-      // Send webhook event
       await fetch(`${this.config.baseUrl}/api/integrations/trafft/webhooks`, {
         method: 'POST',
         headers: {
@@ -367,7 +345,6 @@ class TrafftIntegrationTester {
         })
       })
 
-      // Wait a moment for processing
       await new Promise(resolve => setTimeout(resolve, 1000))
 
       this.addResult('Real-time Webhook Processing', true, 'Webhook events processed successfully')
@@ -384,7 +361,6 @@ class TrafftIntegrationTester {
     console.log('🚨 Testing Error Handling...')
 
     try {
-      // Test invalid authentication
       const invalidAuthResponse = await fetch(`${this.config.baseUrl}/api/integrations/trafft/auth`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -403,7 +379,6 @@ class TrafftIntegrationTester {
         this.addResult('Invalid Authentication Handling', false, 'Should reject invalid credentials')
       }
 
-      // Test missing required fields
       const missingFieldsResponse = await fetch(`${this.config.baseUrl}/api/integrations/trafft/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -418,7 +393,6 @@ class TrafftIntegrationTester {
         this.addResult('Missing Fields Validation', false, 'Should validate required fields')
       }
 
-      // Test malformed webhook
       const malformedWebhookResponse = await fetch(`${this.config.baseUrl}/api/integrations/trafft/webhooks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -481,7 +455,6 @@ class TrafftIntegrationTester {
   }
 }
 
-// Run tests if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const tester = new TrafftIntegrationTester(TEST_CONFIG)
   tester.runAllTests().catch(console.error)

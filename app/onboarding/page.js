@@ -70,7 +70,6 @@ export default function OnboardingPage() {
     }
   })
 
-  // Redirect if already onboarded
   useEffect(() => {
     if (tenant?.onboarding_completed) {
       router.push('/dashboard')
@@ -91,7 +90,6 @@ export default function OnboardingPage() {
 
   const handleComplete = async () => {
     try {
-      // Create tenant with onboarding data
       const newTenant = {
         id: tenantId || `barbershop_${Date.now()}`,
         name: onboardingData.businessName,
@@ -119,10 +117,8 @@ export default function OnboardingPage() {
         updated_at: new Date().toISOString()
       }
 
-      // Update tenant context
       setTenant(newTenant)
 
-      // Track onboarding completion
       if (typeof window !== 'undefined' && window.posthog) {
         window.posthog.capture('onboarding_completed', {
           tenant_id: newTenant.id,
@@ -133,7 +129,6 @@ export default function OnboardingPage() {
         })
       }
 
-      // Redirect to dashboard
       router.push('/dashboard?welcome=true')
     } catch (error) {
       console.error('Onboarding completion error:', error)
@@ -248,7 +243,6 @@ export default function OnboardingPage() {
   )
 }
 
-// Welcome Step Component
 function WelcomeStep({ onNext }) {
   return (
     <div className="p-8 text-center">
@@ -293,7 +287,6 @@ function WelcomeStep({ onNext }) {
   )
 }
 
-// Business Details Step Component
 function BusinessDetailsStep({ data, updateData, onNext, onPrevious }) {
   const [errors, setErrors] = useState({})
 
@@ -445,7 +438,6 @@ function BusinessDetailsStep({ data, updateData, onNext, onPrevious }) {
   )
 }
 
-// AI Preferences Step Component
 function AIPreferencesStep({ data, updateData, onNext, onPrevious }) {
   const coachingStyles = [
     { value: 'encouraging', label: 'Encouraging', description: 'Positive and motivational approach' },
@@ -600,7 +592,6 @@ function AIPreferencesStep({ data, updateData, onNext, onPrevious }) {
   )
 }
 
-// Complete Step Component
 function CompleteStep({ data, onComplete, onPrevious }) {
   return (
     <div className="p-8 text-center">

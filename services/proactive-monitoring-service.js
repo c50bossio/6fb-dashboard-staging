@@ -58,15 +58,12 @@ export class ProactiveMonitoringService {
   async startMonitoring(userId, barbershopId) {
     console.log('🤖 Starting Proactive AI Monitoring...')
     
-    // Initial check
     await this.checkMetrics(userId, barbershopId)
     
-    // Set up recurring checks
     this.monitoringInterval = setInterval(async () => {
       await this.checkMetrics(userId, barbershopId)
     }, this.checkInterval)
     
-    // Also monitor for real-time critical events
     this.setupRealtimeMonitoring(userId, barbershopId)
     
     return {
@@ -96,19 +93,14 @@ export class ProactiveMonitoringService {
    */
   async checkMetrics(userId, barbershopId) {
     try {
-      // Fetch current business metrics
       const metrics = await this.fetchBusinessMetrics(barbershopId)
       
-      // Analyze metrics with AI
       const analysis = await this.analyzeMetricsWithAI(metrics, userId)
       
-      // Generate alerts based on analysis
       const alerts = this.generateAlerts(metrics, analysis)
       
-      // Process and dispatch alerts
       await this.processAlerts(alerts, userId, barbershopId)
       
-      // Store metrics for trend analysis
       this.lastMetrics = metrics
       
       return {
@@ -131,15 +123,12 @@ export class ProactiveMonitoringService {
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:9999'
     
     try {
-      // Fetch analytics data
       const analyticsRes = await fetch(`${baseUrl}/api/analytics/live-data?barbershop_id=${barbershopId}`)
       const analyticsData = await analyticsRes.json()
       
-      // Fetch appointment data
       const appointmentsRes = await fetch(`${baseUrl}/api/appointments?barbershop_id=${barbershopId}`)
       const appointmentsData = await appointmentsRes.json()
       
-      // Compile metrics
       return {
         revenue: {
           daily: analyticsData.data?.daily_revenue || 0,
@@ -214,7 +203,6 @@ export class ProactiveMonitoringService {
     const now = new Date()
     const hour = now.getHours()
     
-    // Revenue alerts
     if (metrics.revenue.daily < this.alertThresholds.revenue.critical_low) {
       alerts.push({
         type: 'critical',
@@ -247,7 +235,6 @@ export class ProactiveMonitoringService {
       })
     }
     
-    // Booking alerts
     if (metrics.bookings.today < this.alertThresholds.bookings.critical_low && hour < 14) {
       alerts.push({
         type: 'critical',
@@ -260,7 +247,6 @@ export class ProactiveMonitoringService {
       })
     }
     
-    // Utilization alerts
     if (metrics.utilization.current < this.alertThresholds.utilization.critical_low && hour >= 10 && hour <= 18) {
       alerts.push({
         type: 'warning',
@@ -273,7 +259,6 @@ export class ProactiveMonitoringService {
       })
     }
     
-    // Customer retention alerts
     if (metrics.customers.retention_rate < 60) {
       alerts.push({
         type: 'warning',
@@ -286,7 +271,6 @@ export class ProactiveMonitoringService {
       })
     }
     
-    // Opportunity alerts (time-based)
     if (hour === 9 && metrics.bookings.today < this.alertThresholds.bookings.optimal) {
       alerts.push({
         type: 'opportunity',
@@ -311,7 +295,6 @@ export class ProactiveMonitoringService {
       })
     }
     
-    // Add AI-generated insights as alerts
     if (analysis && analysis.suggestions.length > 0) {
       analysis.suggestions.forEach(suggestion => {
         alerts.push({
@@ -338,24 +321,20 @@ export class ProactiveMonitoringService {
     for (const alert of alerts) {
       const alertKey = `${alert.category}_${alert.type}`
       
-      // Check if we've already sent this alert recently
       if (this.activeAlerts.has(alertKey)) {
         const lastAlert = this.activeAlerts.get(alertKey)
         const timeSinceLastAlert = Date.now() - lastAlert.timestamp
         
-        // Don't repeat same alert within 2 hours
         if (timeSinceLastAlert < 2 * 60 * 60 * 1000) {
           continue
         }
       }
       
-      // Store alert
       this.activeAlerts.set(alertKey, {
         ...alert,
         timestamp: Date.now()
       })
       
-      // Send notification
       try {
         await fetch(`${baseUrl}/api/notifications`, {
           method: 'POST',
@@ -387,7 +366,6 @@ export class ProactiveMonitoringService {
     const lines = aiResponse.split('\n').filter(line => line.trim())
     
     lines.forEach(line => {
-      // Look for actionable patterns
       if (line.includes('recommend') || 
           line.includes('suggest') || 
           line.includes('should') ||
@@ -404,22 +382,17 @@ export class ProactiveMonitoringService {
    * Setup real-time monitoring for critical events
    */
   setupRealtimeMonitoring(userId, barbershopId) {
-    // This would connect to real-time data sources
-    // For now, we'll simulate with more frequent checks for critical metrics
     
     console.log('🔴 Real-time monitoring activated for critical events')
     
-    // Check critical metrics more frequently (every minute)
     setInterval(async () => {
       const metrics = await this.fetchBusinessMetrics(barbershopId)
       
       if (metrics) {
-        // Check for sudden drops or critical situations
         if (this.lastMetrics) {
           const revenueDrop = this.lastMetrics.revenue.daily - metrics.revenue.daily
           
           if (revenueDrop > 50) {
-            // Sudden revenue drop detected
             const alert = {
               type: 'critical',
               category: 'anomaly',
@@ -451,6 +424,5 @@ export class ProactiveMonitoringService {
   }
 }
 
-// Export singleton instance
 export const proactiveMonitor = new ProactiveMonitoringService()
 export default proactiveMonitor

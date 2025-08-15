@@ -7,7 +7,6 @@ export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) {
       return NextResponse.json(
@@ -16,7 +15,6 @@ export async function POST(request) {
       )
     }
 
-    // Check if user already has TOTP setup
     const { data: existingMFA } = await supabase
       .from('user_mfa_methods')
       .select('*')
@@ -31,18 +29,14 @@ export async function POST(request) {
       )
     }
 
-    // Generate TOTP secret
     const secret = authenticator.generateSecret()
     const userEmail = user.email
     const serviceName = '6FB AI Agent System'
     
-    // Create TOTP URI for QR code
     const otpauthUrl = authenticator.keyuri(userEmail, serviceName, secret)
     
-    // Generate QR code
     const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl)
 
-    // Store or update MFA method (unverified initially)
     const { data: mfaMethod, error: mfaError } = await supabase
       .from('user_mfa_methods')
       .upsert({
@@ -64,7 +58,6 @@ export async function POST(request) {
       )
     }
 
-    // Log security event
     await supabase.rpc('log_security_event', {
       p_user_id: user.id,
       p_event_type: 'mfa_setup_initiated',

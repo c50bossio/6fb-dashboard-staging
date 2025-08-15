@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
-// Remove edge runtime to use Node.js APIs
-// export const runtime = 'edge'
 
 export async function GET(request) {
   try {
@@ -13,7 +11,6 @@ export async function GET(request) {
     
     const supabase = createClient()
     
-    // Get current timestamp for calculations
     const now = new Date()
     const ranges = {
       '1d': new Date(now.getTime() - 24 * 60 * 60 * 1000),
@@ -23,12 +20,10 @@ export async function GET(request) {
     }
     const startDate = ranges[timeRange] || ranges['7d']
     
-    // Handle specific metric types
     if (type === 'trending_services') {
       return getTrendingServices(supabase, startDate, now)
     }
     
-    // Initialize metrics object
     const metrics = {
       timestamp: now.toISOString(),
       time_range: timeRange,
@@ -39,7 +34,6 @@ export async function GET(request) {
       performance: await getPerformanceMetrics(),
     }
     
-    // Add detailed breakdown if requested
     if (detailed) {
       metrics.detailed_breakdown = {
         daily_stats: await getDailyStatsBreakdown(startDate, now),
@@ -57,7 +51,6 @@ export async function GET(request) {
   } catch (error) {
     console.error('Dashboard metrics error:', error)
     
-    // Return empty metrics instead of mock data - follow NO MOCK DATA policy
     return NextResponse.json({
       error: 'Metrics temporarily unavailable',
       timestamp: new Date().toISOString(),
@@ -72,7 +65,6 @@ export async function GET(request) {
 
 async function getSystemHealthMetrics() {
   try {
-    // Fast health check - just check if clients are configured, don't make real API calls
     const aiHealth = {
       openai: { 
         available: !!process.env.OPENAI_API_KEY, 
@@ -116,7 +108,6 @@ async function getAIActivityMetrics(startDate, endDate) {
   try {
     const supabase = createClient()
     
-    // Get chat history from the time range
     const { data: chatHistory, error } = await supabase
       .from('chat_history')
       .select('*')
@@ -125,13 +116,11 @@ async function getAIActivityMetrics(startDate, endDate) {
     
     if (error) throw error
     
-    // Calculate metrics from actual data
     const totalConversations = chatHistory?.length || 0
     const uniqueSessions = new Set(chatHistory?.map(chat => chat.session_id) || []).size
     const avgConfidence = chatHistory?.length > 0 ? 
       chatHistory.reduce((sum, chat) => sum + (chat.confidence || 0), 0) / chatHistory.length : 0
     
-    // Provider usage breakdown
     const providerStats = {}
     chatHistory?.forEach(chat => {
       const provider = chat.provider || 'unknown'
@@ -148,7 +137,6 @@ async function getAIActivityMetrics(startDate, endDate) {
     }
   } catch (error) {
     console.warn('AI activity metrics error:', error.message)
-    // Return empty metrics instead of mock data - follow NO MOCK DATA policy
     return {
       total_conversations: 0,
       unique_sessions: 0,
@@ -165,13 +153,11 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
   try {
     const supabase = createClient()
     
-    // Use customers and business data to match Analytics API consistency
     const { data: customers } = await supabase
       .from('customers')
       .select('total_spent, total_visits')
       .eq('shop_id', 'demo-shop-001')
     
-    // Get services data for pricing insights
     const { data: services } = await supabase
       .from('services')
       .select('price')
@@ -182,7 +168,6 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
     const totalAppointments = customers?.reduce((sum, c) => sum + (c.total_visits || 0), 0) || 0
     const avgServicePrice = services?.reduce((sum, s) => sum + (s.price || 0), 0) / Math.max(1, services?.length || 1) || 0
     
-    // Calculate meaningful business insights from real data
     return {
       active_barbershops: 1, // Single shop in demo
       total_ai_recommendations: Math.round(totalCustomers * 0.3), // 30% of customers get recommendations
@@ -191,7 +176,6 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
       cost_savings_generated: Math.round(totalRevenue * 0.1), // 10% cost savings
       time_saved_hours: Math.round(totalAppointments * 0.25), // 15 min saved per appointment
       efficiency_improvement_percent: Math.min(50, Math.round((totalAppointments / Math.max(1, totalCustomers)) * 10)),
-      // Include raw metrics for reference
       raw_metrics: {
         total_customers: totalCustomers,
         total_revenue: totalRevenue,
@@ -201,7 +185,6 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
     }
   } catch (error) {
     console.error('Business insights metrics error:', error)
-    // Return empty metrics instead of mock data - follow NO MOCK DATA policy
     return {
       active_barbershops: 0,
       total_ai_recommendations: 0,
@@ -219,7 +202,6 @@ async function getUserEngagementMetrics(startDate, endDate) {
   try {
     const supabase = createClient()
     
-    // Use customers data to match Analytics API for consistency
     const { data: customers } = await supabase
       .from('customers')
       .select('created_at, last_visit_at, shop_id')
@@ -246,7 +228,6 @@ async function getUserEngagementMetrics(startDate, endDate) {
       }
     }
     
-    // Fallback if no customer data
     return {
       active_users: 0,
       total_users: 0,
@@ -267,13 +248,10 @@ async function getUserEngagementMetrics(startDate, endDate) {
 }
 
 async function getPerformanceMetrics() {
-  // Real performance metrics would come from monitoring services
-  // For now return minimal real data instead of mock - follow NO MOCK DATA policy
   try {
     const startTime = Date.now()
     const supabase = createClient()
     
-    // Measure a simple database query for response time
     await supabase.from('profiles').select('count').limit(1)
     const responseTime = Date.now() - startTime
     
@@ -303,7 +281,6 @@ async function checkDatabaseHealth() {
     const supabase = createClient()
     const startTime = Date.now()
     
-    // Simple health check query
     const { data, error } = await supabase
       .from('profiles')
       .select('count')
@@ -327,7 +304,6 @@ async function checkDatabaseHealth() {
 }
 
 async function getDailyStatsBreakdown(startDate, endDate) {
-  // Get real daily stats from database - NO MOCK DATA
   try {
     const supabase = createClient()
     const days = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000))
@@ -337,7 +313,6 @@ async function getDailyStatsBreakdown(startDate, endDate) {
       const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000)
       const nextDate = new Date(date.getTime() + 24 * 60 * 60 * 1000)
       
-      // Get real stats for each day
       const { data: chatData } = await supabase
         .from('chat_history')
         .select('session_id, confidence')
@@ -361,13 +336,11 @@ async function getDailyStatsBreakdown(startDate, endDate) {
     return dailyStats
   } catch (error) {
     console.error('Daily stats breakdown error:', error)
-    // Return empty array instead of mock data
     return []
   }
 }
 
 async function getAIProviderUsageStats(startDate, endDate) {
-  // Get real AI provider usage from database - NO MOCK DATA
   try {
     const supabase = createClient()
     
@@ -377,7 +350,6 @@ async function getAIProviderUsageStats(startDate, endDate) {
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
     
-    // Aggregate by provider
     const providerStats = {}
     
     chatHistory?.forEach(chat => {
@@ -395,7 +367,6 @@ async function getAIProviderUsageStats(startDate, endDate) {
       providerStats[provider].total_response_time += (chat.response_time_ms || 0)
     })
     
-    // Format the results
     const formattedStats = {}
     Object.keys(providerStats).forEach(provider => {
       const stats = providerStats[provider]
@@ -410,17 +381,14 @@ async function getAIProviderUsageStats(startDate, endDate) {
     
   } catch (error) {
     console.error('AI provider usage stats error:', error)
-    // Return empty object instead of mock data
     return {}
   }
 }
 
 async function getUserSessionStats(startDate, endDate) {
-  // Get real user session stats from database - NO MOCK DATA
   try {
     const supabase = createClient()
     
-    // Get session data
     const { data: sessions } = await supabase
       .from('user_sessions')
       .select('duration_minutes, page_views, is_returning')
@@ -433,7 +401,6 @@ async function getUserSessionStats(startDate, endDate) {
       const returningCount = sessions.filter(s => s.is_returning).length
       const returningPercentage = (returningCount / sessions.length) * 100
       
-      // Calculate bounce rate (sessions with only 1 page view)
       const bouncedSessions = sessions.filter(s => s.page_views === 1).length
       const bounceRate = (bouncedSessions / sessions.length) * 100
       
@@ -445,7 +412,6 @@ async function getUserSessionStats(startDate, endDate) {
       }
     }
     
-    // Return zeros if no data
     return {
       avg_session_duration: 0,
       bounce_rate: 0,
@@ -456,7 +422,6 @@ async function getUserSessionStats(startDate, endDate) {
     
   } catch (error) {
     console.error('User session stats error:', error)
-    // Return empty stats instead of mock data
     return {
       avg_session_duration: 0,
       bounce_rate: 0,
@@ -467,12 +432,9 @@ async function getUserSessionStats(startDate, endDate) {
   }
 }
 
-// FALLBACK MOCK DATA REMOVED - USING REAL DATABASE OPERATIONS ONLY
-// All metrics now come from actual database queries with empty states for unavailable data
 
 async function getTrendingServices(supabase, startDate, endDate) {
   try {
-    // Try to fetch from trending_services table if it exists
     const { data: services, error } = await supabase
       .from('trending_services')
       .select('*')
@@ -482,7 +444,6 @@ async function getTrendingServices(supabase, startDate, endDate) {
       .limit(10)
     
     if (!error && services && services.length > 0) {
-      // Return real data from database
       return NextResponse.json({
         success: true,
         services: services,
@@ -491,7 +452,6 @@ async function getTrendingServices(supabase, startDate, endDate) {
       })
     }
     
-    // If table doesn't exist or is empty, return empty state
     console.log('Trending services table not available or empty')
     return NextResponse.json({
       success: true,

@@ -7,7 +7,6 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
 
@@ -25,7 +24,6 @@ async function createTables() {
   console.log('🚀 Setting up token-based billing system...')
   
   try {
-    // Test the connection first
     console.log('🔍 Testing Supabase connection...')
     const { data: connectionTest, error: connectionError } = await supabase
       .from('tenants')
@@ -39,10 +37,8 @@ async function createTables() {
     
     console.log('✅ Supabase connection successful')
     
-    // Since we can't execute DDL through the client, let's verify if tables exist
     console.log('🔍 Checking existing tables...')
     
-    // Try to query each table to see if it exists
     const tables = ['tenants', 'token_usage', 'tenant_subscriptions', 'usage_analytics']
     const existingTables = []
     
@@ -85,11 +81,9 @@ async function createTables() {
       if (existingTables.length === tables.length) {
         console.log('✅ All tables exist - database migration complete!')
         
-        // Test basic functionality
         console.log('')
         console.log('🧪 Testing basic functionality...')
         
-        // Test tenant creation
         const testTenant = {
           name: 'Test Barbershop',
           slug: 'test-barbershop-' + Date.now(),
@@ -105,7 +99,6 @@ async function createTables() {
         if (!tenantError && tenantData.length > 0) {
           console.log('✅ Tenant creation successful')
           
-          // Clean up test data
           await supabase
             .from('tenants')
             .delete()
@@ -136,5 +129,4 @@ async function createTables() {
   }
 }
 
-// Run the setup
 createTables()

@@ -48,7 +48,6 @@ export default function TestAuthPage() {
       addLog('✅ SignIn returned successfully', 'success')
       addLog(`Result: ${JSON.stringify(result?.user?.email)}`, 'success')
       
-      // Wait a bit to see if redirect happens
       setTimeout(() => {
         addLog(`Still on page after 2s - Path: ${window.location.pathname}`, 'warning')
       }, 2000)

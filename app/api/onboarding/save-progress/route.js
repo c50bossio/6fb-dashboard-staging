@@ -6,7 +6,6 @@ export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -15,7 +14,6 @@ export async function POST(request) {
     const body = await request.json()
     const { step, stepData } = body
     
-    // Save progress to onboarding_progress table
     const { data, error } = await supabase
       .from('onboarding_progress')
       .upsert({
@@ -34,7 +32,6 @@ export async function POST(request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
     
-    // Update profile with current step
     await supabase
       .from('profiles')
       .update({
@@ -62,13 +59,11 @@ export async function GET(request) {
   try {
     const supabase = createClient()
     
-    // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Get all saved progress for the user
     const { data: progress, error } = await supabase
       .from('onboarding_progress')
       .select('*')
@@ -80,14 +75,12 @@ export async function GET(request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
     
-    // Get profile data
     const { data: profile } = await supabase
       .from('profiles')
       .select('onboarding_completed, onboarding_step, user_goals, business_size')
       .eq('id', user.id)
       .single()
     
-    // Combine all progress data
     const combinedData = {
       completed: profile?.onboarding_completed || false,
       currentStep: profile?.onboarding_step || 0,

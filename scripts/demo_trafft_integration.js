@@ -14,7 +14,6 @@ import {
 import { startScheduledSync, getScheduledSyncStatus } from '../services/trafft-scheduled-sync.js'
 import { startMonitoring, getMonitoringStatus } from '../services/trafft-monitoring-service.js'
 
-// Demo configuration
 const DEMO_CONFIG = {
   barbershopId: 'demo-elite-cuts',
   barbershopName: 'Elite Cuts Barbershop',
@@ -22,7 +21,6 @@ const DEMO_CONFIG = {
   apiSecret: process.env.TRAFFT_API_SECRET || 'demo-secret-67890'
 }
 
-// Sample business data for demonstration
 const DEMO_DATA = {
   appointments: [
     {
@@ -350,7 +348,6 @@ class TrafftIntegrationDemo {
       })
     }
 
-    // Store analytics in database
     await storeIntegrationAnalytics(this.integrationId, DEMO_CONFIG.barbershopId, analytics)
     console.log('✅ Analytics stored in database')
 
@@ -423,7 +420,6 @@ class TrafftIntegrationDemo {
 
     console.log('📨 Simulating webhook events...')
 
-    // Simulate appointment created webhook
     const newAppointment = {
       id: 'appt-webhook-001',
       customerName: 'New Customer via Webhook',
@@ -443,7 +439,6 @@ class TrafftIntegrationDemo {
     console.log(`   Time: ${new Date(newAppointment.dateTime).toLocaleString()}`)
     console.log(`   Revenue Impact: $${newAppointment.price}`)
 
-    // Store webhook appointment
     await storeExternalAppointments(
       this.integrationId,
       DEMO_CONFIG.barbershopId,
@@ -614,10 +609,8 @@ class TrafftIntegrationDemo {
   }
 }
 
-// Export for use in other files
 export { TrafftIntegrationDemo, DEMO_CONFIG, DEMO_DATA }
 
-// Run demo if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const demo = new TrafftIntegrationDemo()
   

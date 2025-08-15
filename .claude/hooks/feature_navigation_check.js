@@ -10,14 +10,12 @@
 const fs = require('fs')
 const path = require('path')
 
-// Navigation files to check
 const NAVIGATION_FILES = [
   'components/Navigation.js',
   'components/MobileNavigation.js',
   'components/DashboardNavigation.js'
 ]
 
-// Dashboard files to check
 const DASHBOARD_FILES = [
   'app/(protected)/dashboard/page.js',
   'components/dashboard/'
@@ -25,7 +23,6 @@ const DASHBOARD_FILES = [
 
 function checkForNewPages(changedFiles) {
   const newPages = changedFiles.filter(file => {
-    // Check for new pages in app directory
     return file.match(/app\/.*\/page\.(js|jsx|ts|tsx)$/) && 
            !file.includes('api/') // Exclude API routes
   })
@@ -41,27 +38,23 @@ function checkNavigationIntegration(pagePath) {
     suggestions: []
   }
 
-  // Extract route from page path
   const route = pagePath
     .replace(/^app/, '')
     .replace(/\/page\.(js|jsx|ts|tsx)$/, '')
     .replace(/\(protected\)\//, '/') // Remove Next.js route groups
 
-  // Check main navigation
   const navFile = path.join(process.cwd(), 'components/Navigation.js')
   if (fs.existsSync(navFile)) {
     const navContent = fs.readFileSync(navFile, 'utf8')
     results.hasNavigation = navContent.includes(`'${route}'`) || navContent.includes(`"${route}"`)
   }
 
-  // Check mobile navigation
   const mobileNavFile = path.join(process.cwd(), 'components/MobileNavigation.js')
   if (fs.existsSync(mobileNavFile)) {
     const mobileNavContent = fs.readFileSync(mobileNavFile, 'utf8')
     results.hasMobileNav = mobileNavContent.includes(`'${route}'`) || mobileNavContent.includes(`"${route}"`)
   }
 
-  // Generate suggestions
   if (!results.hasNavigation) {
     results.suggestions.push(`Add navigation link for ${route} to components/Navigation.js`)
   }
@@ -87,7 +80,6 @@ function generateNavigationCode(pagePath) {
     .join(' ')
 
   return `
-// Add this to components/Navigation.js in the appropriate section:
 {
   name: '${featureName}',
   href: '${route}',
@@ -96,7 +88,6 @@ function generateNavigationCode(pagePath) {
   badge: 'New' // Optional: 'Core', 'AI Enhanced', etc.
 }
 
-// Don't forget to:
 // 1. Import the icon: import { SomeIcon } from '@heroicons/react/24/outline'
 // 2. Add role-based filtering if needed
 // 3. Test the navigation on mobile devices
@@ -171,7 +162,6 @@ function main(changedFiles = []) {
   return { success: true }
 }
 
-// Export for use in other scripts
 module.exports = {
   main,
   checkForNewPages,
@@ -179,9 +169,7 @@ module.exports = {
   generateNavigationCode
 }
 
-// Run if called directly
 if (require.main === module) {
-  // Get changed files from command line args or git
   const changedFiles = process.argv.slice(2)
   const result = main(changedFiles)
   

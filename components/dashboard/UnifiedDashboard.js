@@ -20,7 +20,6 @@ import {
   PresentationChartLineIcon as PresentationChartSolid
 } from '@heroicons/react/24/solid'
 
-// Import existing components we'll integrate
 import AICoachPanel from './AICoachPanel'
 import AnalyticsPanel from './AnalyticsPanel'
 import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
@@ -29,9 +28,7 @@ import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import ExecutiveLoadingState from './ExecutiveLoadingState'
 
-// Use API calls instead of direct database imports (client component)
 
-// Dashboard modes for different user needs
 const DASHBOARD_MODES = {
   EXECUTIVE: 'executive',
   AI_INSIGHTS: 'ai_insights', 
@@ -40,7 +37,6 @@ const DASHBOARD_MODES = {
   OPERATIONS: 'operations'
 }
 
-// Mode configurations
 const modeConfigs = {
   [DASHBOARD_MODES.EXECUTIVE]: {
     label: 'Executive Overview',
@@ -94,35 +90,27 @@ export default function UnifiedDashboard({ user }) {
   const [cacheTimestamp, setCacheTimestamp] = useState(null)
   const [showOnboardingBanner, setShowOnboardingBanner] = useState(false)
 
-  // Load dashboard data based on current mode - API CALLS ONLY
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
-    // Get barbershop ID from user or use demo
     const barbershopId = user?.barbershop_id || 'demo-shop-001'
     
-    // CACHE DISABLED: Always fetch fresh data for consistency between Executive/Analytics modes
-    // Previously cached data was causing inconsistencies with Analytics panel
     
     setIsLoading(true)
     try {
       console.log(`Loading dashboard data for mode: ${currentMode}`)
       
-      // Use faster analytics API for executive mode to avoid slow AI health checks
       if (currentMode === DASHBOARD_MODES.EXECUTIVE) {
         const response = await fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json&force_refresh=true`)
         const result = await response.json()
         
         if (response.ok && result.success) {
-          // Transform analytics data for executive dashboard - FIX DATA MAPPING
           const apiData = result.data
           const transformedData = {
-            // Executive Summary expects metrics in this format
             metrics: {
               revenue: apiData.total_revenue || 0,
               customers: apiData.total_customers || 0,
               appointments: apiData.total_appointments || 0,
               satisfaction: 4.5 // Default satisfaction score
             },
-            // Today's snapshot data
             todayMetrics: {
               revenue: apiData.daily_revenue || 0,
               bookings: Math.round((apiData.total_appointments || 0) / 30), // Estimated daily bookings
@@ -149,17 +137,14 @@ export default function UnifiedDashboard({ user }) {
               api_success_rate: 99.2,
               uptime_percent: 99.8
             },
-            // Include raw analytics data for other components
             analytics_data: apiData
           }
           setDashboardData(transformedData)
-          // Cache removed for data consistency between Executive/Analytics modes
         } else {
           console.warn('Analytics API error:', result)
           setDashboardData({})
         }
       } else {
-        // Use full dashboard metrics for other modes
         const response = await fetch(`/api/dashboard/metrics?mode=${currentMode}&barbershop_id=${barbershopId}`)
         const processedData = await response.json()
         
@@ -169,7 +154,6 @@ export default function UnifiedDashboard({ user }) {
           return
         }
         
-        // Update AI agent counts for AI_INSIGHTS mode
         if (currentMode === DASHBOARD_MODES.AI_INSIGHTS && processedData.agents) {
           setAiAgents({
             total: processedData.agents.length,
@@ -184,7 +168,6 @@ export default function UnifiedDashboard({ user }) {
       
     } catch (error) {
       console.error('Failed to load dashboard data:', error)
-      // Show empty state instead of mock data
       setDashboardData({})
     } finally {
       setIsLoading(false)
@@ -200,26 +183,21 @@ export default function UnifiedDashboard({ user }) {
     router.push('/welcome')
   }
 
-  // Handle URL parameter for mode with executive as default
   useEffect(() => {
     if (modeParam && Object.values(DASHBOARD_MODES).includes(modeParam)) {
       setCurrentMode(modeParam)
     } else if (!modeParam) {
-      // Load saved mode from localStorage if no URL param, default to executive
       const savedMode = localStorage.getItem('preferredDashboardMode')
       if (savedMode && Object.values(DASHBOARD_MODES).includes(savedMode)) {
         setCurrentMode(savedMode)
-        // Update URL to reflect the saved mode
         router.replace(`/dashboard?mode=${savedMode}`)
       } else {
-        // Default to executive mode
         setCurrentMode(DASHBOARD_MODES.EXECUTIVE)
         router.replace(`/dashboard?mode=${DASHBOARD_MODES.EXECUTIVE}`)
       }
     }
   }, [modeParam, router])
 
-  // Check for incomplete onboarding
   useEffect(() => {
     const checkOnboardingStatus = () => {
       const showOnboardingChecklist = localStorage.getItem('show_onboarding_checklist')
@@ -228,16 +206,13 @@ export default function UnifiedDashboard({ user }) {
     
     checkOnboardingStatus()
     
-    // Listen for storage changes in case user completes onboarding in another tab
     window.addEventListener('storage', checkOnboardingStatus)
     return () => window.removeEventListener('storage', checkOnboardingStatus)
   }, [])
 
-  // Load data on mount and mode change
   useEffect(() => {
     loadDashboardData()
     
-    // Set up auto-refresh every 30 seconds for operations mode
     if (currentMode === DASHBOARD_MODES.OPERATIONS) {
       const interval = setInterval(loadDashboardData, 30000)
       return () => clearInterval(interval)
@@ -247,14 +222,11 @@ export default function UnifiedDashboard({ user }) {
   const handleModeChange = (mode) => {
     setCurrentMode(mode)
     localStorage.setItem('preferredDashboardMode', mode)
-    // Update URL to reflect the mode change
     router.push(`/dashboard?mode=${mode}`)
   }
 
-  // Prefetch data when hovering over executive mode button
   const handleExecutiveModeHover = useCallback(() => {
     if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
-      // Prefetch analytics data for executive mode
       const barbershopId = user?.barbershop_id || 'demo-shop-001'
       fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
         .then(response => response.json())
@@ -267,7 +239,6 @@ export default function UnifiedDashboard({ user }) {
     }
   }, [currentMode, user])
 
-  // Mode selector component
   const ModeSelector = () => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex flex-wrap gap-2">
       {Object.entries(DASHBOARD_MODES).map(([key, value]) => {
@@ -309,7 +280,6 @@ export default function UnifiedDashboard({ user }) {
     </div>
   )
 
-  // Render content based on current mode
   const renderModeContent = () => {
     if (isLoading && !dashboardData) {
       return (
@@ -324,7 +294,6 @@ export default function UnifiedDashboard({ user }) {
 
     switch (currentMode) {
       case DASHBOARD_MODES.EXECUTIVE:
-        // Executive Summary is now rendered directly in the main component above
         return null
         
       case DASHBOARD_MODES.AI_INSIGHTS:
@@ -441,5 +410,3 @@ export default function UnifiedDashboard({ user }) {
   )
 }
 
-// ALL MOCK DATA GENERATORS REMOVED - USING REAL DATABASE OPERATIONS ONLY
-// See /lib/dashboard-data.js for actual database queries

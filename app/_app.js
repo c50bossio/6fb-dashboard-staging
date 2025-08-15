@@ -4,7 +4,6 @@
 
 import { reportWebVitals as reportToAnalytics } from '@/lib/performance-monitor'
 
-// Report web vitals
 export function reportWebVitals(metric) {
   reportToAnalytics(metric)
 }

@@ -10,7 +10,6 @@ export default function DevLoginPage() {
   const handleDevLogin = () => {
     setLoading(true)
     
-    // Set development session in localStorage
     const devSession = {
       user: {
         id: 'dev-user-001',
@@ -25,11 +24,9 @@ export default function DevLoginPage() {
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
     }
     
-    // Store in multiple places for persistence
     localStorage.setItem('dev_session', JSON.stringify(devSession))
     sessionStorage.setItem('dev_session', JSON.stringify(devSession))
     
-    // Set a cookie as well
     document.cookie = `dev_auth=true; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`
     
     setTimeout(() => {

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server-client'
 
-// Domain registrar API integration (examples with popular providers)
 const DOMAIN_PROVIDERS = {
   namecheap: {
     apiUrl: 'https://api.namecheap.com/xml.response',
@@ -26,7 +25,6 @@ export async function POST(request) {
     
     const { domain, registrationYears = 1, autoRenew = true } = await request.json()
     
-    // Step 1: Check domain availability
     const availability = await checkDomainAvailability(domain)
     
     if (!availability.available) {
@@ -36,7 +34,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    // Step 2: Calculate pricing
     const pricing = {
       domainCost: availability.price || 12.00,
       setupFee: 0, // We cover setup
@@ -44,7 +41,6 @@ export async function POST(request) {
       total: (availability.price || 12.00) * 1.08
     }
     
-    // Step 3: Create Stripe checkout session for domain purchase
     const checkoutSession = await createDomainCheckout({
       userId: user.id,
       domain,
@@ -53,7 +49,6 @@ export async function POST(request) {
       autoRenew
     })
     
-    // Step 4: Store pending domain purchase
     await supabase.from('domain_purchases').insert({
       user_id: user.id,
       domain,
@@ -81,24 +76,19 @@ export async function POST(request) {
 }
 
 async function checkDomainAvailability(domain) {
-  // Check if domain registrar API is configured
   if (!DOMAIN_PROVIDERS.namecheap.apiKey && !DOMAIN_PROVIDERS.godaddy.apiKey) {
     throw new Error('Domain registrar API not configured. Please add API keys to environment variables.')
   }
   
   try {
-    // Use actual domain registrar API if configured
     if (DOMAIN_PROVIDERS.namecheap.apiKey) {
-      // Implement Namecheap API call
       throw new Error('Namecheap API integration not yet implemented')
     }
     
     if (DOMAIN_PROVIDERS.godaddy.apiKey) {
-      // Implement GoDaddy API call  
       throw new Error('GoDaddy API integration not yet implemented')
     }
     
-    // Real implementation example with Namecheap:
     /*
     const response = await fetch(`${DOMAIN_PROVIDERS.namecheap.apiUrl}`, {
       method: 'POST',
@@ -110,7 +100,6 @@ async function checkDomainAvailability(domain) {
       })
     })
     const data = await response.text()
-    // Parse XML response and return availability
     */
     
   } catch (error) {
@@ -120,7 +109,6 @@ async function checkDomainAvailability(domain) {
 }
 
 async function getDomainSuggestions(originalDomain) {
-  // Generate alternative domain suggestions
   const base = originalDomain.split('.')[0]
   const suggestions = [
     `${base}shop.com`,
@@ -133,7 +121,6 @@ async function getDomainSuggestions(originalDomain) {
     `${base}studio.com`
   ]
   
-  // Check availability for each suggestion
   const availableSuggestions = []
   for (const domain of suggestions) {
     const availability = await checkDomainAvailability(domain)
@@ -150,8 +137,6 @@ async function getDomainSuggestions(originalDomain) {
 }
 
 async function createDomainCheckout({ userId, domain, pricing, registrationYears, autoRenew }) {
-  // Create Stripe checkout session for domain purchase
-  // This is a simplified example - implement actual Stripe integration
   
   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
   
@@ -189,11 +174,9 @@ async function createDomainCheckout({ userId, domain, pricing, registrationYears
   return session
 }
 
-// Webhook handler for successful domain purchase
 export async function handleDomainPurchaseSuccess(sessionId) {
   const supabase = createClient()
   
-  // Get the purchase record
   const { data: purchase } = await supabase
     .from('domain_purchases')
     .select('*')
@@ -201,16 +184,12 @@ export async function handleDomainPurchaseSuccess(sessionId) {
     .single()
   
   if (purchase) {
-    // Step 1: Register the domain with registrar
     await registerDomain(purchase.domain, purchase.registration_years)
     
-    // Step 2: Configure DNS automatically
     await configureDNS(purchase.domain)
     
-    // Step 3: Provision SSL certificate
     await provisionSSL(purchase.domain)
     
-    // Step 4: Update purchase status
     await supabase
       .from('domain_purchases')
       .update({
@@ -220,7 +199,6 @@ export async function handleDomainPurchaseSuccess(sessionId) {
       })
       .eq('id', purchase.id)
     
-    // Step 5: Update barbershop with custom domain
     await supabase
       .from('barbershops')
       .update({
@@ -230,30 +208,22 @@ export async function handleDomainPurchaseSuccess(sessionId) {
       })
       .eq('owner_id', purchase.user_id)
     
-    // Step 6: Send confirmation email
     await sendDomainActivationEmail(purchase.user_id, purchase.domain)
   }
 }
 
 async function registerDomain(domain, years) {
-  // Actual domain registration via registrar API
   console.log(`Registering domain ${domain} for ${years} years`)
-  // Implementation depends on chosen registrar
 }
 
 async function configureDNS(domain) {
-  // Configure DNS records to point to our servers
   console.log(`Configuring DNS for ${domain}`)
-  // Set A records, CNAME records, etc.
 }
 
 async function provisionSSL(domain) {
-  // Provision SSL certificate (e.g., via Let's Encrypt)
   console.log(`Provisioning SSL for ${domain}`)
-  // Use Vercel API or Certbot
 }
 
 async function sendDomainActivationEmail(userId, domain) {
-  // Send confirmation email to user
   console.log(`Sending activation email for ${domain}`)
 }

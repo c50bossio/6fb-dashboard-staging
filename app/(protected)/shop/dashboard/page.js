@@ -41,7 +41,6 @@ export default function ShopDashboard() {
 
   const loadShopData = async () => {
     try {
-      // Load comprehensive demo data
       const demoResponse = await fetch('/api/shop/demo-data')
       if (demoResponse.ok) {
         const demoData = await demoResponse.json()
@@ -49,22 +48,18 @@ export default function ShopDashboard() {
         setBarbers(demoData.barbers)
         setMetrics(demoData.metrics)
       } else {
-        // Fallback to individual API calls
-        // Load shop information
         const shopResponse = await fetch('/api/shop/info')
         if (shopResponse.ok) {
           const shop = await shopResponse.json()
           setShopData(shop)
         }
 
-        // Load barbers
         const barbersResponse = await fetch('/api/shop/barbers')
         if (barbersResponse.ok) {
           const { barbers } = await barbersResponse.json()
           setBarbers(barbers)
         }
 
-        // Load metrics
         const metricsResponse = await fetch('/api/shop/metrics')
         if (metricsResponse.ok) {
           const metricsData = await metricsResponse.json()

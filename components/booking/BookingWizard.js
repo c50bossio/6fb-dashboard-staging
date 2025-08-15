@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 
-// Step Components
 import LocationStep from './steps/LocationStep'
 import BarberStep from './steps/BarberStep'
 import ServiceStep from './steps/ServiceStep'
@@ -21,12 +20,10 @@ export default function BookingWizard({
   const router = useRouter()
   const supabase = createClient()
   
-  // Wizard state
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   
-  // Booking data
   const [bookingData, setBookingData] = useState({
     location: initialLocation,
     locationDetails: null,
@@ -43,7 +40,6 @@ export default function BookingWizard({
     addOns: []
   })
   
-  // Shop settings
   const [shopSettings, setShopSettings] = useState({
     acceptOnlinePayment: true,
     acceptInPersonPayment: true,
@@ -55,7 +51,6 @@ export default function BookingWizard({
     ...settings
   })
   
-  // Load shop settings
   useEffect(() => {
     loadShopSettings()
   }, [bookingData.location])
@@ -64,8 +59,6 @@ export default function BookingWizard({
     if (!bookingData.location) return
     
     try {
-      // In production, fetch from database
-      // For now, use mock settings
       const Settings = {
         acceptOnlinePayment: true,
         acceptInPersonPayment: true,
@@ -91,7 +84,6 @@ export default function BookingWizard({
     }
   }
   
-  // Step configuration
   const steps = [
     { number: 1, title: 'Location', component: LocationStep },
     { number: 2, title: 'Barber', component: BarberStep },
@@ -101,11 +93,9 @@ export default function BookingWizard({
     { number: 6, title: 'Confirmation', component: ConfirmationStep }
   ]
   
-  // Navigation handlers
   const handleNext = useCallback((stepData) => {
     setBookingData(prev => ({ ...prev, ...stepData }))
     
-    // Skip payment step if only in-person payment is accepted
     if (currentStep === 4 && !shopSettings.acceptOnlinePayment && shopSettings.acceptInPersonPayment) {
       setBookingData(prev => ({ ...prev, paymentMethod: 'in-person' }))
       setCurrentStep(6)
@@ -115,7 +105,6 @@ export default function BookingWizard({
   }, [currentStep, shopSettings])
   
   const handleBack = useCallback(() => {
-    // Handle skip back from confirmation if payment was skipped
     if (currentStep === 6 && !shopSettings.acceptOnlinePayment) {
       setCurrentStep(4)
     } else {
@@ -124,7 +113,6 @@ export default function BookingWizard({
   }, [currentStep, shopSettings])
   
   const handleStepClick = useCallback((stepNumber) => {
-    // Only allow going back to completed steps
     if (stepNumber < currentStep) {
       setCurrentStep(stepNumber)
     }
@@ -135,7 +123,6 @@ export default function BookingWizard({
     setError(null)
     
     try {
-      // Create booking through API
       const response = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,10 +135,8 @@ export default function BookingWizard({
         throw new Error(result.error || 'Failed to create booking')
       }
       
-      // Call completion handler
       onComplete(result.booking)
       
-      // Redirect to booking details
       router.push(`/bookings/${result.booking.id}/success`)
       
     } catch (err) {
@@ -162,7 +147,6 @@ export default function BookingWizard({
     }
   }
   
-  // Get current step component
   const CurrentStepComponent = steps[currentStep - 1].component
   
   return (

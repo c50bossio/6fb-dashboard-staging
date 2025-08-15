@@ -25,7 +25,6 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Calculate customer segment based on visit data
   const calculateSegment = (customer) => {
     const daysSinceLastVisit = customer.last_visit_at 
       ? Math.floor((Date.now() - new Date(customer.last_visit_at).getTime()) / (1000 * 60 * 60 * 24))
@@ -37,7 +36,6 @@ export default function CustomersPage() {
     return 'regular'
   }
 
-  // Format customer data from API response
   const formatCustomerData = (apiCustomers) => {
     return apiCustomers.map(customer => ({
       id: customer.id,
@@ -56,7 +54,6 @@ export default function CustomersPage() {
     }))
   }
 
-  // Fetch customers from API
   const fetchCustomers = async () => {
     try {
       setLoading(true)
@@ -154,7 +151,6 @@ export default function CustomersPage() {
         throw new Error(data.error || 'Failed to add customer')
       }
 
-      // Refresh customer list
       await fetchCustomers()
       
       setShowAddModal(false)
@@ -178,8 +174,6 @@ export default function CustomersPage() {
     const customer = customers.find(c => c.id === customerId)
     if (!customer) return
 
-    // For now, show edit modal with customer data
-    // TODO: Implement full edit modal UI
     const newName = prompt('Edit customer name:', customer.name)
     if (!newName || newName === customer.name) return
 
@@ -201,7 +195,6 @@ export default function CustomersPage() {
         throw new Error(data.error || 'Failed to update customer')
       }
 
-      // Refresh customer list
       await fetchCustomers()
       
       setNotification({
@@ -229,7 +222,6 @@ export default function CustomersPage() {
     }
 
     try {
-      // Soft delete by marking as inactive
       const response = await fetch('/api/customers', {
         method: 'PATCH',
         headers: {
@@ -247,7 +239,6 @@ export default function CustomersPage() {
         throw new Error(data.error || 'Failed to delete customer')
       }
 
-      // Refresh customer list
       await fetchCustomers()
       
       setNotification({

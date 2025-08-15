@@ -14,7 +14,6 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 console.log('🚀 Fixing barbershop schema for calendar API...');
 
-// Create Supabase client with service role key for admin operations
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     autoRefreshToken: false,
@@ -49,7 +48,6 @@ async function addMissingColumns() {
     try {
       console.log(`Adding column: ${column.split(' ')[0]}...`);
       
-      // Use SQL query directly
       const { data, error } = await supabase.rpc('exec', {
         sql: `ALTER TABLE barbershops ADD COLUMN IF NOT EXISTS ${column};`
       });
@@ -224,20 +222,16 @@ async function testConnection() {
 async function main() {
   console.log('🚀 Starting barbershop schema fix...\n');
   
-  // Test connection first
   const connected = await testConnection();
   if (!connected) {
     console.error('❌ Cannot connect to database. Exiting...');
     process.exit(1);
   }
   
-  // Add missing columns
   await addMissingColumns();
   
-  // Create related tables
   await createRelatedTables();
   
-  // Test the fixed schema
   console.log('\n🔍 Testing fixed schema...');
   try {
     const { data, error } = await supabase

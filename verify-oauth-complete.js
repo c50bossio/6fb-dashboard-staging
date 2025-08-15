@@ -1,4 +1,3 @@
-// Comprehensive OAuth verification script
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 
@@ -31,7 +30,6 @@ async function verifyOAuthComplete() {
       method: 'GET',
       redirect: 'manual'
     });
-    // Should redirect (302/307) when no code is present
     checks.callbackReady = response.status === 307 || response.status === 302;
     console.log(`✅ OAuth callback endpoint ready: ${checks.callbackReady ? 'Yes' : 'No'}`);
   } catch (error) {
@@ -65,7 +63,6 @@ async function verifyOAuthComplete() {
     console.log('❌ Subscription page error:', error.message);
   }
   
-  // Summary
   console.log('\n📊 OAUTH FLOW STATUS');
   console.log('====================');
   

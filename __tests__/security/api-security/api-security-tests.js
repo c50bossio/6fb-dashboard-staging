@@ -25,10 +25,8 @@ export class APISecurityTester {
   async runAPISecurityTests() {
     console.log('🛡️ Starting comprehensive API security testing...');
 
-    // Discover all API endpoints
     await this.discoverAPIEndpoints();
     
-    // Run security tests
     await this.testAPIAuthentication();
     await this.testAPIAuthorization();
     await this.testInputValidation();
@@ -49,11 +47,9 @@ export class APISecurityTester {
   async discoverAPIEndpoints() {
     console.log('🔍 Discovering API endpoints...');
 
-    // Static endpoint discovery from filesystem
     const apiDir = path.join(process.cwd(), 'app/api');
     await this.discoverEndpointsFromFilesystem(apiDir);
 
-    // Dynamic endpoint discovery from application
     await this.discoverEndpointsDynamically();
 
     console.log(`📋 Discovered ${this.discoveredEndpoints.size} API endpoints`);
@@ -73,10 +69,8 @@ export class APISecurityTester {
         if (entry.isDirectory()) {
           await this.discoverEndpointsFromFilesystem(fullPath, urlPath);
         } else if (entry.name === 'route.js' || entry.name === 'route.ts') {
-          // This is a Next.js API route
           this.discoveredEndpoints.add(basePath);
           
-          // Analyze the route file for HTTP methods
           try {
             const content = await fs.readFile(fullPath, 'utf8');
             const methods = this.extractHTTPMethods(content);
@@ -137,7 +131,6 @@ export class APISecurityTester {
         if (response.ok()) {
           this.discoveredEndpoints.add(endpoint);
           
-          // Extract allowed methods from OPTIONS response
           const allowHeader = response.headers()['allow'];
           if (allowHeader) {
             allowHeader.split(',').forEach(method => {
@@ -146,7 +139,6 @@ export class APISecurityTester {
           }
         }
       } catch (error) {
-        // Endpoint might not exist or might not support OPTIONS
       }
     }
   }
@@ -231,7 +223,6 @@ export class APISecurityTester {
               { endpoint, headers: authTest.headers });
           }
         } catch (error) {
-          // Expected for most weak auth attempts
         }
       }
     }
@@ -252,7 +243,6 @@ export class APISecurityTester {
    * Test role-based access control
    */
   async testRoleBasedAccess() {
-    // First, get tokens for different user roles
     await this.obtainTestTokens();
 
     const roleTests = [
@@ -278,7 +268,6 @@ export class APISecurityTester {
         continue;
       }
 
-      // Test forbidden endpoints
       for (const endpoint of roleTest.forbiddenEndpoints) {
         try {
           const response = await this.page.request.get(`${this.baseUrl}${endpoint}`, {
@@ -291,7 +280,6 @@ export class APISecurityTester {
               { role: roleTest.role, endpoint });
           }
         } catch (error) {
-          // Expected for proper authorization
         }
       }
     }
@@ -333,7 +321,6 @@ export class APISecurityTester {
 
           const responseText = await response.text();
           
-          // Check for SQL error exposure
           const sqlErrorPatterns = [
             /SQL syntax/i,
             /mysql/i,
@@ -351,7 +338,6 @@ export class APISecurityTester {
               { endpoint: test.endpoint, payload, response: responseText.substring(0, 200) });
           }
 
-          // Check for successful injection (data returned that shouldn't be)
           if (response.ok() && responseText.includes('admin') && payload.includes('admin')) {
             this.addResult('CRITICAL', 'sql-injection-success',
               `Potential SQL injection success: ${test.endpoint}`,
@@ -359,7 +345,6 @@ export class APISecurityTester {
           }
 
         } catch (error) {
-          // Expected for secure implementations
         }
       }
     }
@@ -388,7 +373,6 @@ export class APISecurityTester {
 
           const responseText = await response.text();
           
-          // Check if XSS payload is reflected without proper encoding
           if (responseText.includes('<script>') || responseText.includes('javascript:')) {
             this.addResult('HIGH', 'xss-reflection',
               `XSS payload reflected in API response: ${test.endpoint}`,
@@ -396,7 +380,6 @@ export class APISecurityTester {
           }
 
         } catch (error) {
-          // Expected for secure implementations
         }
       }
     }
@@ -426,7 +409,6 @@ export class APISecurityTester {
       const startTime = Date.now();
       const promises = [];
 
-      // Send concurrent requests to test rate limiting
       for (let i = 0; i < rateLimitConfig.testRequestCount; i++) {
         const promise = this.page.request.post(`${this.baseUrl}${endpoint}`, {
           data: { test: `request_${i}` },
@@ -455,7 +437,6 @@ export class APISecurityTester {
       await Promise.all(promises);
       const endTime = Date.now();
 
-      // Analyze rate limiting effectiveness
       const isEffective = results.rateLimitedRequests > 0;
       const requestsPerSecond = results.totalRequests / ((endTime - startTime) / 1000);
 
@@ -511,12 +492,10 @@ export class APISecurityTester {
           }
 
         } catch (error) {
-          // Some endpoints might not support OPTIONS
         }
       }
     }
 
-    // Test for overly permissive CORS
     try {
       const response = await this.page.request.options(`${this.baseUrl}/api/health`);
       const accessControlOrigin = response.headers()['access-control-allow-origin'];
@@ -527,7 +506,6 @@ export class APISecurityTester {
           { header: accessControlOrigin });
       }
     } catch (error) {
-      // Expected if endpoint doesn't exist
     }
   }
 
@@ -585,7 +563,6 @@ export class APISecurityTester {
         }
 
       } catch (error) {
-        // Expected for good validation
       }
     }
   }
@@ -608,7 +585,6 @@ export class APISecurityTester {
 
         const responseHeaders = response.headers();
 
-        // Check for missing required headers
         Object.entries(requiredHeaders).forEach(([headerName, expectedValue]) => {
           const actualValue = responseHeaders[headerName.toLowerCase()];
           
@@ -619,7 +595,6 @@ export class APISecurityTester {
           }
         });
 
-        // Check for forbidden headers (information disclosure)
         forbiddenHeaders.forEach(headerName => {
           if (responseHeaders[headerName.toLowerCase()]) {
             this.addResult('LOW', 'information-disclosure-header',
@@ -629,7 +604,6 @@ export class APISecurityTester {
         });
 
       } catch (error) {
-        // Expected for some endpoints
       }
     }
   }
@@ -738,7 +712,6 @@ export class APISecurityTester {
   generateAPIRecommendations() {
     const recommendations = [];
     
-    // Generate recommendations based on findings
     const categoryRecommendations = {
       'missing-authentication': {
         priority: 'HIGH',
@@ -762,13 +735,11 @@ export class APISecurityTester {
       }
     };
 
-    // Count occurrences of each category
     const categoryCounts = {};
     this.results.forEach(result => {
       categoryCounts[result.category] = (categoryCounts[result.category] || 0) + 1;
     });
 
-    // Generate recommendations for categories with findings
     Object.entries(categoryCounts).forEach(([category, count]) => {
       const recTemplate = categoryRecommendations[category];
       if (recTemplate) {

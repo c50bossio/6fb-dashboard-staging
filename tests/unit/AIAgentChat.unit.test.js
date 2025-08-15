@@ -11,10 +11,8 @@ import '@testing-library/jest-dom'
 import AIAgentChat from '../../components/ai/AIAgentChat'
 import fetch from 'jest-fetch-mock'
 
-// Mock fetch for API calls
 fetch.enableMocks()
 
-// Mock ModelSelector component
 jest.mock('../../components/ai/ModelSelector', () => {
   return function MockModelSelector({ onModelChange, selectedModel }) {
     return (
@@ -37,7 +35,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
   beforeEach(() => {
     user = userEvent.setup()
     fetch.resetMocks()
-    // Mock successful health check by default
     fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ status: 'healthy' })
@@ -120,7 +117,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
       const sendButton = screen.getByRole('button')
       const modelSelector = screen.getByTestId('model-selector')
       
-      // Switch to Claude model
       await user.selectOptions(modelSelector, 'claude-opus-4.1')
       
       await user.type(input, 'Test message')
@@ -191,10 +187,8 @@ describe('AIAgentChat Component - Unit Tests', () => {
       
       await user.click(sendButton)
       
-      // Input should be cleared after sending
       expect(input).toHaveValue('')
       
-      // User message should appear
       expect(screen.getByText('Test message for AI')).toBeInTheDocument()
     })
 
@@ -205,7 +199,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
       
       await user.click(sendButton)
       
-      // Should not make API call for empty message
       expect(fetch).not.toHaveBeenCalledWith('/api/ai/unified-chat', expect.any(Object))
     })
 
@@ -306,7 +299,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
       const input = screen.getByRole('textbox')
       const sendButton = screen.getByRole('button')
       
-      // Send first message
       await user.type(input, 'First message')
       await user.click(sendButton)
       
@@ -314,7 +306,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
         expect(screen.getByText('First response')).toBeInTheDocument()
       })
 
-      // Mock second API call
       fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ 
@@ -323,12 +314,10 @@ describe('AIAgentChat Component - Unit Tests', () => {
         })
       })
 
-      // Send second message
       await user.type(input, 'Follow-up question')
       await user.click(sendButton)
       
       await waitFor(() => {
-        // Should include previous messages in the conversation
         const lastCall = fetch.mock.calls[fetch.mock.calls.length - 1]
         const requestBody = JSON.parse(lastCall[1].body)
         expect(requestBody.messages.length).toBeGreaterThan(2) // System + previous messages + new message
@@ -338,7 +327,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
 
   describe('Loading States and Error Handling', () => {
     test('shows loading state during API calls', async () => {
-      // Delay the API response
       fetch.mockImplementationOnce(() => 
         new Promise(resolve => 
           setTimeout(() => resolve({
@@ -356,8 +344,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
       await user.type(input, 'Test message')
       await user.click(sendButton)
       
-      // Check loading state (you might need to add loading indicators to the component)
-      // This test assumes the component disables input during loading
       expect(input).toBeDisabled()
       
       await waitFor(() => {
@@ -378,7 +364,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
       await user.click(sendButton)
       
       await waitFor(() => {
-        // Should show error message or handle gracefully
         expect(input).toBeEnabled() // Input should be re-enabled
       })
     })
@@ -399,7 +384,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
       await user.click(sendButton)
       
       await waitFor(() => {
-        // Should handle HTTP errors gracefully
         expect(input).toBeEnabled()
       })
     })
@@ -409,7 +393,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
     test('displays messages with correct timestamps', async () => {
       render(<AIAgentChat />)
       
-      // Check initial message has timestamp
       const messages = screen.getAllByText(/Marcus/)
       expect(messages.length).toBeGreaterThan(0)
     })
@@ -471,7 +454,6 @@ describe('AIAgentChat Component - Unit Tests', () => {
       const input = screen.getByRole('textbox')
       const sendButton = screen.getByRole('button')
       
-      // Send multiple messages rapidly
       for (let i = 0; i < 5; i++) {
         await user.type(input, `Message ${i}`)
         await user.click(sendButton)

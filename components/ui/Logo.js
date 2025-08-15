@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-// import { useTheme } from 'next-themes'; // Temporarily disabled for testing
 
 /**
  * BookedBarber Logo Component
@@ -26,10 +25,8 @@ const Logo = ({
   onClick = null,
   showText = true 
 }) => {
-  // const { theme, resolvedTheme } = useTheme(); // Temporarily disabled for testing
   const [imageError, setImageError] = useState(false);
 
-  // Size configurations for responsive design - optimized for BookedBarber logos
   const sizeConfig = {
     xsmall: { width: 100, height: 24, textClass: 'text-xs' }, // Mobile header/sidebar
     small: { width: 120, height: 32, textClass: 'text-sm' },   // Compact navigation
@@ -39,16 +36,13 @@ const Logo = ({
     hero: { width: 300, height: 75, textClass: 'text-2xl' }    // Landing pages
   };
 
-  // Logo variant mapping based on theme and preferences
   const getLogoVariant = () => {
-    // Use the new BookedBarber transparent logo by default
     return 'bookedbarber-transparent.png';
   };
 
   const config = sizeConfig[size] || sizeConfig.medium;
   const logoSrc = `/assets/logos/${getLogoVariant()}`;
 
-  // Loading fallback component
   const LoadingLogo = () => (
     <div 
       className={`
@@ -63,7 +57,6 @@ const Logo = ({
     </div>
   );
 
-  // Error fallback component with barber pole design
   const ErrorLogo = () => (
     <div 
       className={`
@@ -75,24 +68,19 @@ const Logo = ({
       style={{ width: showText === false || size === 'small' || size === 'xsmall' ? config.width : 180, height: showText === false || size === 'small' || size === 'xsmall' ? config.height : 60 }}
     >
       {showText === false || size === 'small' || size === 'xsmall' ? (
-        // Icon only - show barber pole stripes
         <div className="w-6 h-8 bg-white/20 rounded relative overflow-hidden">
           <div className="absolute inset-0 bg-repeating-linear-gradient(45deg, #C5A35B 0px, #C5A35B 4px, white 4px, white 8px)"></div>
         </div>
       ) : (
-        // Full text fallback
         <span>BookedBarber</span>
       )}
     </div>
   );
 
-  // Show error fallback if image failed to load
   if (imageError) {
     return <ErrorLogo />;
   }
 
-  // During SSR and after hydration, show the actual image
-  // The Next.js Image component handles its own loading states
   return (
     <div 
       className={`
@@ -123,7 +111,6 @@ const Logo = ({
   );
 };
 
-// Convenience components for common use cases
 export const LogoIcon = (props) => (
   <Logo {...props} showText={false} size={props.size || 'medium'} />
 );

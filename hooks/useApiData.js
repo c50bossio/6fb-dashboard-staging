@@ -30,7 +30,6 @@ export function useApiData(endpoint, options = {}) {
     setError(null)
 
     try {
-      // Timeout fallback
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), timeout)
 
@@ -57,7 +56,6 @@ export function useApiData(endpoint, options = {}) {
     } catch (error) {
       console.error(`API fetch error for ${endpoint}:`, error)
       
-      // Retry logic
       if (attempt < retries && error.name !== 'AbortError') {
         console.log(`Retrying ${endpoint} (attempt ${attempt + 1}/${retries})`)
         setTimeout(() => fetchData(attempt + 1), 1000 * (attempt + 1))
@@ -99,7 +97,6 @@ export function useAuthenticatedApiData(endpoint, user, options = {}) {
   const [authReady, setAuthReady] = useState(false)
 
   useEffect(() => {
-    // Consider auth ready when we have a user or when auth explicitly failed
     setAuthReady(!!user?.id || options.allowUnauthenticated)
   }, [user?.id, options.allowUnauthenticated])
 

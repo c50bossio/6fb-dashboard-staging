@@ -35,7 +35,6 @@ export default function FinancialArrangements() {
 
   const loadFinancialData = async () => {
     try {
-      // Load financial arrangements
       const arrangementsResponse = await fetch('/api/shop/financial/arrangements')
       if (arrangementsResponse.ok) {
         const data = await arrangementsResponse.json()
@@ -48,7 +47,6 @@ export default function FinancialArrangements() {
         })
       }
 
-      // Load barbers for the dropdown
       const barbersResponse = await fetch('/api/shop/barbers')
       if (barbersResponse.ok) {
         const { barbers } = await barbersResponse.json()

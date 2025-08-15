@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(req) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -15,9 +14,7 @@ export async function POST(req) {
 
     const { socket_id, channel_name } = await req.json()
 
-    // Validate channel access
     if (channel_name.startsWith('private-')) {
-      // Check if user has access to this private channel
       const userIdFromChannel = channel_name.match(/private-user-(.+)/)?.[1]
       const dashboardIdFromChannel = channel_name.match(/private-dashboard-(.+)/)?.[1]
       const agentIdFromChannel = channel_name.match(/private-agent-(.+)/)?.[1]
@@ -31,7 +28,6 @@ export async function POST(req) {
       }
     }
 
-    // For presence channels, include user data
     if (channel_name.startsWith('presence-')) {
       const { data: profile } = await supabase
         .from('profiles')
@@ -57,7 +53,6 @@ export async function POST(req) {
       return NextResponse.json(authResponse)
     }
 
-    // For private channels
     const authResponse = pusherServer.authorizeChannel(socket_id, channel_name)
     
     return NextResponse.json(authResponse)

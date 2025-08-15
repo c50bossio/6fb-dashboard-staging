@@ -9,7 +9,6 @@ export async function POST(request) {
   try {
     const { provider, model, messages, stream = false } = await request.json()
     
-    // Validate input
     if (!provider || !model || !messages) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: provider, model, messages' }),
@@ -46,7 +45,6 @@ export async function POST(request) {
   }
 }
 
-// Lightweight OpenAI API call using fetch
 async function fetchOpenAI(model, messages, stream) {
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
@@ -88,14 +86,12 @@ async function fetchOpenAI(model, messages, stream) {
   })
 }
 
-// Lightweight Anthropic API call using fetch
 async function fetchAnthropic(model, messages, stream) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     throw new Error('Anthropic API key not configured')
   }
 
-  // Convert OpenAI format to Anthropic format
   const systemMessage = messages.find(m => m.role === 'system')
   const userMessages = messages.filter(m => m.role !== 'system')
 
@@ -135,14 +131,12 @@ async function fetchAnthropic(model, messages, stream) {
   })
 }
 
-// Lightweight Google AI call using fetch
 async function fetchGoogle(model, messages, stream) {
   const apiKey = process.env.GOOGLE_AI_API_KEY
   if (!apiKey) {
     throw new Error('Google AI API key not configured')
   }
 
-  // Convert to Google format
   const contents = messages.map(msg => ({
     role: msg.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: msg.content }]

@@ -6,7 +6,6 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Real Supabase credentials
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
 
@@ -17,7 +16,6 @@ async function examineBookingsTable() {
   console.log('=' .repeat(50))
   
   try {
-    // Get sample data from bookings table
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
@@ -42,7 +40,6 @@ async function examineBookingsTable() {
     } else {
       console.log('No data in bookings table, fetching schema...')
       
-      // Try to get column info even with no data
       const { data, error: schemaError } = await supabase
         .from('bookings')
         .select('*')
@@ -53,7 +50,6 @@ async function examineBookingsTable() {
       }
     }
 
-    // Count total bookings
     const { count, error: countError } = await supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
@@ -62,7 +58,6 @@ async function examineBookingsTable() {
       console.log(`\n📈 Total bookings in table: ${count || 0}`)
     }
 
-    // Check if bookings table has the fields we need for appointments
     console.log('\n🔎 Checking if bookings table can replace appointments:')
     const requiredFields = [
       'barbershop_id',
@@ -81,7 +76,6 @@ async function examineBookingsTable() {
         if (existingColumns.includes(field)) {
           console.log(`   ✅ ${field} - EXISTS`)
         } else {
-          // Check for similar fields
           const similar = existingColumns.filter(col => 
             col.toLowerCase().includes(field.toLowerCase().replace('_', '')) ||
             field.toLowerCase().includes(col.toLowerCase().replace('_', ''))
@@ -100,5 +94,4 @@ async function examineBookingsTable() {
   }
 }
 
-// Run examination
 examineBookingsTable()

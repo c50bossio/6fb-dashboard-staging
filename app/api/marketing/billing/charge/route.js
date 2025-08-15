@@ -2,32 +2,27 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
-// Initialize Stripe conditionally
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2023-10-16',
     })
   : null
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Platform fee percentages
 const PLATFORM_FEES = {
   email: 0.20, // 20% markup on email campaigns
   sms: 0.25    // 25% markup on SMS campaigns
 }
 
-// Base costs per unit
 const BASE_COSTS = {
   email: 0.002,  // $0.002 per email (SendGrid pricing)
   sms: 0.01      // $0.01 per SMS (Twilio pricing)
 }
 
-// POST - Process campaign charge
 export async function POST(request) {
   try {
     const data = await request.json()
@@ -47,7 +42,6 @@ export async function POST(request) {
       )
     }
 
-    // Fetch billing account
     const { data: account, error: accountError } = await supabase
       .from('marketing_accounts')
       .select('*')
@@ -61,13 +55,11 @@ export async function POST(request) {
       )
     }
 
-    // Calculate costs
     const baseCost = BASE_COSTS[campaign_type] || 0.01
     const serviceCost = baseCost * recipients_count
     const platformFee = serviceCost * PLATFORM_FEES[campaign_type]
     const totalAmount = serviceCost + platformFee
 
-    // Check spending limit
     if (account.monthly_spend_limit && account.total_spent + totalAmount > account.monthly_spend_limit) {
       return NextResponse.json(
         { 
@@ -80,7 +72,6 @@ export async function POST(request) {
       )
     }
 
-    // Get default payment method
     const { data: paymentMethod, error: methodError } = await supabase
       .from('marketing_payment_methods')
       .select('*')
@@ -100,7 +91,6 @@ export async function POST(request) {
     let chargeId = null
     let paymentStatus = 'pending'
 
-    // Process payment via Stripe if immediate charge is requested
     if (immediate_charge && account.stripe_customer_id && paymentMethod.stripe_payment_method_id) {
       if (!stripe) {
         return NextResponse.json(
@@ -110,7 +100,6 @@ export async function POST(request) {
       }
       
       try {
-        // Create payment intent
         const paymentIntent = await stripe.paymentIntents.create({
           amount: Math.round(totalAmount * 100), // Convert to cents
           currency: 'usd',
@@ -147,7 +136,6 @@ export async function POST(request) {
       }
     }
 
-    // Create billing record in database
     const { data: billingRecord, error: billingError } = await supabase
       .from('marketing_billing_records')
       .insert({
@@ -174,7 +162,6 @@ export async function POST(request) {
     if (billingError) {
       console.error('Error creating billing record:', billingError)
       
-      // If payment was successful but record creation failed, we need to refund
       if (paymentIntentId && paymentStatus === 'succeeded') {
         try {
           await stripe.refunds.create({
@@ -192,7 +179,6 @@ export async function POST(request) {
       )
     }
 
-    // Update account usage statistics
     if (paymentStatus === 'succeeded' || !immediate_charge) {
       await supabase
         .from('marketing_accounts')

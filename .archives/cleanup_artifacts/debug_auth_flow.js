@@ -12,9 +12,7 @@ async function debugAuthStateFlow() {
     const context = await browser.newContext();
     const page = await context.newPage();
     
-    // Monitor all auth state changes and navigation
     await page.addInitScript(() => {
-      // Override console methods to capture auth logs
       const originalLog = console.log;
       console.log = (...args) => {
         if (args.some(arg => typeof arg === 'string' && 
@@ -24,7 +22,6 @@ async function debugAuthStateFlow() {
         originalLog(...args);
       };
       
-      // Monitor navigation attempts
       const originalPushState = history.pushState;
       const originalReplaceState = history.replaceState;
       
@@ -38,37 +35,29 @@ async function debugAuthStateFlow() {
         return originalReplaceState.apply(this, args);
       };
       
-      // Monitor router push calls if Next.js router is available
       window.addEventListener('beforeunload', () => {
         console.log('🧭 NAVIGATION: Page unloading');
       });
     });
     
-    console.log('=== AUTH FLOW DEBUG SESSION ===');
     
-    // Navigate to login
     await page.goto('http://localhost:9999/login');
     console.log('1. Navigated to login page');
     
-    // Fill credentials
     await page.fill('input[name="email"]', 'demo@barbershop.com');
     await page.fill('input[name="password"]', 'demo123');
     console.log('2. Filled credentials');
     
-    // Monitor all console messages
     page.on('console', msg => {
       console.log(`BROWSER: ${msg.text()}`);
     });
     
-    // Submit and watch closely
     await page.click('button[type="submit"]');
     console.log('3. Clicked submit button');
     
-    // Wait for either redirect or timeout
     let finalState = 'unknown';
     
     try {
-      // Race between redirect success and timeout
       await Promise.race([
         page.waitForURL('**/dashboard', { timeout: 10000 }).then(() => {
           finalState = 'redirected';
@@ -81,7 +70,6 @@ async function debugAuthStateFlow() {
       finalState = 'error';
     }
     
-    // Check final state
     const url = page.url();
     const buttonText = await page.locator('button[type="submit"]').textContent();
     
@@ -93,7 +81,6 @@ async function debugAuthStateFlow() {
     if (finalState === 'timeout') {
       console.log('\n🚨 ISSUE DETECTED: Login stuck, attempting manual navigation...');
       
-      // Try manual navigation to dashboard
       try {
         await page.goto('http://localhost:9999/dashboard');
         await page.waitForLoadState('networkidle', { timeout: 5000 });
@@ -110,7 +97,6 @@ async function debugAuthStateFlow() {
       }
     }
     
-    // Wait a bit more to capture any delayed redirects
     await page.waitForTimeout(3000);
     
     return {
@@ -127,7 +113,6 @@ async function debugAuthStateFlow() {
   }
 }
 
-// Run the debug
 if (require.main === module) {
   debugAuthStateFlow().then(result => {
     console.log('\n=== ANALYSIS ===');

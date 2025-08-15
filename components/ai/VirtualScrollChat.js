@@ -47,7 +47,6 @@ export default function VirtualScrollChat({
   const streamingClient = useMemo(() => getStreamingClient(), [])
   const resizeObserverRef = useRef(null)
 
-  // Virtual scrolling calculations
   const { visibleItems, totalHeight, scrollTop } = useMemo(() => {
     const totalMessages = messages.length + (streamingMessage ? 1 : 0)
     const containerPixelHeight = containerHeight
@@ -59,7 +58,6 @@ export default function VirtualScrollChat({
     
     const visibleMessages = []
     
-    // Add regular messages
     for (let i = startIndex; i < Math.min(endIndex, messages.length); i++) {
       visibleMessages.push({
         ...messages[i],
@@ -68,7 +66,6 @@ export default function VirtualScrollChat({
       })
     }
     
-    // Add streaming message if visible
     if (streamingMessage && endIndex > messages.length) {
       visibleMessages.push({
         role: 'assistant',
@@ -86,7 +83,6 @@ export default function VirtualScrollChat({
     }
   }, [messages, streamingMessage, scrollPosition, containerHeight, itemHeight, overscan])
 
-  // Initialize session and container height observer
   useEffect(() => {
     const storedSessionId = localStorage.getItem('ai_chat_session')
     if (storedSessionId && persistConversation) {
@@ -100,7 +96,6 @@ export default function VirtualScrollChat({
       }
     }
 
-    // Set up resize observer for container
     if (messagesContainerRef.current && !resizeObserverRef.current) {
       resizeObserverRef.current = new ResizeObserver((entries) => {
         for (const entry of entries) {
@@ -117,13 +112,11 @@ export default function VirtualScrollChat({
     }
   }, [persistConversation])
 
-  // Handle scroll events
   const handleScroll = useCallback((e) => {
     const container = e.target
     const newScrollPosition = container.scrollTop
     setScrollPosition(newScrollPosition)
     
-    // Check if user is at bottom
     const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100
     setIsAtBottom(isNearBottom)
     
@@ -132,7 +125,6 @@ export default function VirtualScrollChat({
     }
   }, [unreadCount])
 
-  // Auto-scroll to bottom for new messages
   useEffect(() => {
     if (isAtBottom && messagesContainerRef.current) {
       const container = messagesContainerRef.current
@@ -142,7 +134,6 @@ export default function VirtualScrollChat({
     }
   }, [messages, streamingMessage, isAtBottom])
 
-  // Load conversation history
   const loadConversationHistory = async (sessionId) => {
     try {
       const stored = localStorage.getItem(`ai_conversation_${sessionId}`)
@@ -155,7 +146,6 @@ export default function VirtualScrollChat({
     }
   }
 
-  // Save conversation
   const saveConversation = useCallback(() => {
     if (!persistConversation || !sessionId) return
     
@@ -174,7 +164,6 @@ export default function VirtualScrollChat({
     saveConversation()
   }, [messages, saveConversation])
 
-  // Handle message submission
   const handleSubmit = async (e) => {
     e?.preventDefault()
     
@@ -207,11 +196,9 @@ export default function VirtualScrollChat({
             previousMessages: messages.slice(-5)
           }
         },
-        // On chunk callback
         (chunk) => {
           setStreamingMessage(prev => prev + chunk)
         },
-        // On complete callback
         ({ response, fromCache }) => {
           const aiMessage = {
             id: aiMessageId,
@@ -229,7 +216,6 @@ export default function VirtualScrollChat({
           onMessage?.(aiMessage)
           trackUsage('message_sent', { agent: selectedAgent, fromCache })
         },
-        // On error callback
         (error) => {
           console.error('Streaming error:', error)
           setError('Failed to get response. Please try again.')
@@ -246,7 +232,6 @@ export default function VirtualScrollChat({
     }
   }
 
-  // Stop streaming
   const stopStreaming = () => {
     if (streamControllerRef.current) {
       streamControllerRef.current.abort()
@@ -267,7 +252,6 @@ export default function VirtualScrollChat({
     }
   }
 
-  // Track usage analytics
   const trackUsage = async (event, data) => {
     try {
       await fetch('/api/ai/analytics/usage', {
@@ -287,7 +271,6 @@ export default function VirtualScrollChat({
     }
   }
 
-  // Scroll to bottom
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
       const container = messagesContainerRef.current
@@ -297,7 +280,6 @@ export default function VirtualScrollChat({
     }
   }
 
-  // Agent options
   const agents = [
     { id: 'auto', name: 'Auto Select', icon: SparklesIcon },
     { id: 'marcus', name: 'Marcus (Strategy)', icon: SparklesIcon },

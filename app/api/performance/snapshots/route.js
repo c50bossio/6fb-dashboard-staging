@@ -25,7 +25,6 @@ export async function GET(request) {
   } catch (error) {
     console.error('Error fetching model snapshots:', error)
     
-    // Return mock data for development/testing
     const mockSnapshots = {
       'openai_gpt-5': {
         model: 'gpt-5',

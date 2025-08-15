@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 
-// import { useChat } from 'ai/react'  // Temporarily disabled for testing
 import ModelSelector from './ModelSelector'
 
 export default function StreamingChat() {
@@ -11,7 +10,6 @@ export default function StreamingChat() {
     provider: 'openai'
   })
 
-  // Mock chat functionality for testing
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -25,11 +23,9 @@ export default function StreamingChat() {
     e.preventDefault()
     if (!input.trim()) return
     
-    // Add user message
     const userMessage = { id: Date.now(), content: input, role: 'user' }
     setMessages(prev => [...prev, userMessage])
     
-    // Mock AI response
     setTimeout(() => {
       const aiMessage = { 
         id: Date.now() + 1, 

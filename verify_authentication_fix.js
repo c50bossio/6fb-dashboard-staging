@@ -84,7 +84,6 @@ async function verifyAuthenticationSystem() {
         method: endpoint.method
       };
       
-      // Log response for failed endpoints
       if (!isSuccess) {
         const errorText = await response.text();
         console.log(`      Error: ${errorText.substring(0, 100)}...`);
@@ -251,7 +250,6 @@ async function verifyAuthenticationSystem() {
     if (!sessionOK) console.log('   • Configure session management properly');
   }
 
-  // Save results to file
   fs.writeFileSync(
     path.join(__dirname, 'authentication_verification_results.json'),
     JSON.stringify(results, null, 2)
@@ -263,7 +261,6 @@ async function verifyAuthenticationSystem() {
   return results;
 }
 
-// Run verification if called directly
 if (require.main === module) {
   verifyAuthenticationSystem()
     .then(results => {

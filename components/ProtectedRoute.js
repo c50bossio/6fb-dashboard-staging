@@ -14,7 +14,6 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     setIsClient(true)
     
-    // Development mode bypass for calendar and analytics testing
     const isDevelopment = process.env.NODE_ENV === 'development'
     const isCalendarPage = window.location.pathname.includes('/calendar')
     const isAnalyticsPage = window.location.pathname.includes('/analytics')
@@ -23,7 +22,6 @@ export default function ProtectedRoute({ children }) {
     const isSeoPage = window.location.pathname.includes('/seo')
     const isDashboardPage = window.location.pathname.includes('/dashboard')
     
-    // Check for explicit sign out flag to force redirect
     const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
     if (forceSignOut) {
       sessionStorage.removeItem('force_sign_out')
@@ -31,10 +29,8 @@ export default function ProtectedRoute({ children }) {
       return
     }
     
-    // Check for dev session or development mode bypass
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
-    // TEMPORARY: Direct bypass for barber pages, SEO dashboard, and main dashboard in development
     const enableDevBypass = isBarberPage || isSeoPage || isDashboardPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
     
     if (devAuth || devSession || enableDevBypass) {
@@ -47,7 +43,6 @@ export default function ProtectedRoute({ children }) {
     }
   }, [loading, user, router])
 
-  // Always show loading state during SSR to ensure consistent HTML structure
   if (!isClient) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -61,7 +56,6 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
-  // Development mode bypass for calendar and analytics testing
   const isDevelopment = process.env.NODE_ENV === 'development'
   const isCalendarPage = window.location.pathname.includes('/calendar')
   const isAnalyticsPage = window.location.pathname.includes('/analytics')
@@ -70,24 +64,19 @@ export default function ProtectedRoute({ children }) {
   const isSeoPage = window.location.pathname.includes('/seo')
   const isDashboardPage = window.location.pathname.includes('/dashboard')
   
-  // Check for explicit sign out flag to force redirect - HIGHEST PRIORITY
   const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
   if (forceSignOut) {
     sessionStorage.removeItem('force_sign_out')
     console.log('🚪 Force sign out detected, redirecting to login...')
-    // Force immediate redirect without rendering anything
     if (typeof window !== 'undefined') {
       window.location.href = '/login'
     }
     return null
   }
   
-  // Check for dev session or development bypass
   const devAuth = document.cookie.includes('dev_auth=true')
   const devSession = localStorage.getItem('dev_session')
   
-  // TEMPORARY: Direct bypass for barber pages, SEO dashboard, and main dashboard during development
-  // But ONLY if not in a forced sign out state
   const enableDevBypass = isBarberPage || isSeoPage || isDashboardPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
   
   if (devAuth || devSession || enableDevBypass) {

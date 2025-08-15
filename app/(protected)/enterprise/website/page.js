@@ -26,16 +26,13 @@ export default function EnterpriseWebsiteManagement() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   
-  // Enterprise website settings
   const [settings, setSettings] = useState({
-    // Basic Info
     name: 'Elite Barber Group',
     tagline: 'Excellence Across Every Location',
     description: 'Premier barbershop chain with locations throughout the city',
     slug: 'elite-group',
     custom_domain: '',
     
-    // Branding
     logo_url: '',
     favicon_url: '',
     cover_image_url: '',
@@ -47,36 +44,30 @@ export default function EnterpriseWebsiteManagement() {
     heading_font: 'Montserrat',
     body_font: 'Inter',
     
-    // Content
     hero_title: 'Find Your Perfect Barbershop',
     hero_subtitle: 'With 12 locations across the city, excellence is always nearby',
     about_content: 'Elite Barber Group has been setting the standard for premium grooming services since 2010.',
     mission_statement: 'To provide exceptional grooming experiences that make every client look and feel their best.',
     
-    // Features
     show_location_map: true,
     show_location_directory: true,
     enable_online_booking: true,
     enable_shop_comparison: true,
     
-    // Social
     instagram_url: 'https://instagram.com/elitebarbergroup',
     facebook_url: 'https://facebook.com/elitebarbergroup',
     twitter_url: '',
     youtube_url: '',
     tiktok_url: '',
     
-    // SEO
     seo_title: 'Elite Barber Group - Premium Barbershops Across the City',
     seo_description: 'Visit any of our 12 barbershop locations for exceptional haircuts and grooming services.',
     seo_keywords: 'barbershop chain, haircut, grooming, multiple locations',
     google_analytics_id: '',
     
-    // Status
     is_published: true
   })
 
-  // Locations data
   const [locations, setLocations] = useState([
     {
       id: '1',
@@ -143,7 +134,6 @@ export default function EnterpriseWebsiteManagement() {
     }
   ])
 
-  // Analytics data
   const [analytics, setAnalytics] = useState({
     total_locations: 12,
     total_barbers: 84,
@@ -157,7 +147,6 @@ export default function EnterpriseWebsiteManagement() {
     conversion_rate: 12.5
   })
 
-  // Tabs
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
     { id: 'locations', name: 'Locations', icon: MapPinIcon },

@@ -47,7 +47,6 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
   }
   
   const formatPhoneNumber = (phone) => {
-    // Simple formatting for display
     return phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')
   }
   

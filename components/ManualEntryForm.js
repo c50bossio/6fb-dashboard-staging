@@ -5,7 +5,6 @@ import { useState } from 'react'
 import { Button, Badge, Alert } from "@/components/ui"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
-// Using emoji alternatives instead of lucide-react for Node.js compatibility
 const Brain = () => <span>🧠</span>
 const Plus = () => <span>➕</span>
 const CheckCircle = () => <span>✅</span>
@@ -67,7 +66,6 @@ export default function ManualEntryForm() {
           type: 'success',
           message: `Knowledge entry added successfully! Entry ID: ${result.entry_id}`
         })
-        // Reset form
         setFormData({
           title: '',
           content: '',

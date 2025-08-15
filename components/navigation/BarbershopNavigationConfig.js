@@ -19,7 +19,6 @@ import {
   LinkIcon
 } from '@heroicons/react/24/outline'
 
-// Barbershop-focused navigation structure
 export const BARBERSHOP_NAVIGATION = [
   {
     id: 'dashboard',
@@ -193,7 +192,6 @@ export const BARBERSHOP_NAVIGATION = [
   }
 ]
 
-// Quick Actions for the navigation
 export const QUICK_ACTIONS = [
   {
     name: 'Book Walk-in',
@@ -225,15 +223,12 @@ export const QUICK_ACTIONS = [
   }
 ]
 
-// Navigation utility functions
 export function getActiveNavItem(pathname) {
-  // Find main nav item
   for (const item of BARBERSHOP_NAVIGATION) {
     if (pathname === item.href) {
       return { main: item, sub: null }
     }
     
-    // Check children
     if (item.children) {
       for (const child of item.children) {
         if (pathname === child.href || pathname.startsWith(child.href + '/')) {
@@ -242,7 +237,6 @@ export function getActiveNavItem(pathname) {
       }
     }
     
-    // Check if path starts with main item
     if (pathname.startsWith(item.href + '/')) {
       return { main: item, sub: null }
     }
@@ -267,7 +261,6 @@ export function getBreadcrumbs(pathname) {
   return breadcrumbs
 }
 
-// Color themes for different sections
 export const NAVIGATION_THEMES = {
   dashboard: {
     bg: 'bg-amber-50',

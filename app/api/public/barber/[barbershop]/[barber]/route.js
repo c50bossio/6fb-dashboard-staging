@@ -7,11 +7,9 @@ export async function GET(request, { params }) {
   try {
     const { barbershop, barber } = params
     
-    // Create Supabase client (no auth required for public endpoint)
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // First, find the barbershop by slug
     const { data: shopData, error: shopError } = await supabase
       .from('barbershops')
       .select(`
@@ -34,7 +32,6 @@ export async function GET(request, { params }) {
       )
     }
     
-    // Find the barber by slug within this barbershop
     const { data: barberCustomization, error: barberError } = await supabase
       .from('barber_customizations')
       .select(`
@@ -52,7 +49,6 @@ export async function GET(request, { params }) {
       .single()
     
     if (barberError || !barberCustomization) {
-      // Try finding by user name if custom_url doesn't match
       const { data: staffData, error: staffError } = await supabase
         .from('barbershop_staff')
         .select(`
@@ -76,7 +72,6 @@ export async function GET(request, { params }) {
         )
       }
       
-      // Find matching barber by name slug
       const matchingBarber = staffData.find(staff => {
         const nameSlug = staff.users?.full_name?.toLowerCase().replace(/\s+/g, '-')
         return nameSlug === barber.toLowerCase()
@@ -89,10 +84,8 @@ export async function GET(request, { params }) {
         )
       }
       
-      // Use found barber's customization if available
       const customization = matchingBarber.barber_customizations?.[0] || {}
       
-      // Get barber's services
       const { data: services } = await supabase
         .from('barber_services')
         .select('*')
@@ -100,13 +93,11 @@ export async function GET(request, { params }) {
         .eq('is_active', true)
         .order('display_order', { ascending: true })
       
-      // Get barber's availability
       const { data: availability } = await supabase
         .from('barber_availability')
         .select('*')
         .eq('user_id', matchingBarber.user_id)
       
-      // Get recent reviews
       const { data: reviews } = await supabase
         .from('reviews')
         .select(`
@@ -123,7 +114,6 @@ export async function GET(request, { params }) {
         .order('created_at', { ascending: false })
         .limit(10)
       
-      // Format availability data
       const formattedAvailability = {}
       const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
       
@@ -136,11 +126,9 @@ export async function GET(request, { params }) {
         }
       })
       
-      // Calculate rating stats
       const totalRating = reviews?.reduce((sum, r) => sum + r.rating, 0) || 0
       const avgRating = reviews?.length > 0 ? totalRating / reviews.length : 0
       
-      // Format response
       return NextResponse.json({
         id: matchingBarber.user_id,
         name: matchingBarber.users?.full_name || 'Barber',
@@ -177,10 +165,8 @@ export async function GET(request, { params }) {
       })
     }
     
-    // If we found the barber by custom_url
     const userId = barberCustomization.user_id
     
-    // Get barber's services
     const { data: services } = await supabase
       .from('barber_services')
       .select('*')
@@ -188,13 +174,11 @@ export async function GET(request, { params }) {
       .eq('is_active', true)
       .order('display_order', { ascending: true })
     
-    // Get barber's availability  
     const { data: availability } = await supabase
       .from('barber_availability')
       .select('*')
       .eq('user_id', userId)
     
-    // Get recent reviews
     const { data: reviews } = await supabase
       .from('reviews')
       .select(`
@@ -211,7 +195,6 @@ export async function GET(request, { params }) {
       .order('created_at', { ascending: false })
       .limit(10)
     
-    // Format availability data
     const formattedAvailability = {}
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     
@@ -224,11 +207,9 @@ export async function GET(request, { params }) {
       }
     })
     
-    // Calculate rating stats
     const totalRating = reviews?.reduce((sum, r) => sum + r.rating, 0) || 0
     const avgRating = reviews?.length > 0 ? totalRating / reviews.length : 0
     
-    // Format response
     return NextResponse.json({
       id: userId,
       name: barberCustomization.profiles?.full_name || barberCustomization.display_name,

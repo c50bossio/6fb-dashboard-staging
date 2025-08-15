@@ -5,24 +5,20 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { Fragment } from 'react'
 
 const models = [
-  // Recommended Model (High Performance + Reasonable Cost)
   { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', description: '🏆 RECOMMENDED: Premium performance with multimodal capabilities', recommended: true },
   
-  // OpenAI Models (Latest 2 Generations)
   { id: 'o3', name: 'OpenAI o3', provider: 'openai', description: 'Smartest reasoning model - pushes frontier in coding, math, science (Jan 2025)' },
   { id: 'o4-mini', name: 'OpenAI o4-mini', provider: 'openai', description: 'Fast, cost-efficient reasoning model - best on AIME 2024/2025' },
   { id: 'gpt-4.1', name: 'GPT-4.1', provider: 'openai', description: 'Specialized model that excels at coding tasks (2025)' },
   { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', provider: 'openai', description: 'Fast, capable model - significant improvements over GPT-4o mini' },
   { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', description: 'Budget-friendly option for simple tasks' },
   
-  // Anthropic Models (Latest 2 Generations)
   { id: 'claude-opus-4', name: 'Claude Opus 4', provider: 'anthropic', description: 'Most advanced Claude model with superior reasoning and analysis (May 2025)' },
   { id: 'claude-sonnet-4', name: 'Claude Sonnet 4', provider: 'anthropic', description: 'Enhanced coding excellence - improved on Claude 3.7 across all areas (May 2025)' },
   { id: 'claude-3-7-sonnet', name: 'Claude 3.7 Sonnet', provider: 'anthropic', description: 'First hybrid reasoning model - can think step-by-step or give instant responses (Feb 2025)' },
   { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet V2', provider: 'anthropic', description: 'Enhanced Claude 3.5 with improved capabilities (Oct 2024)' },
   { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', provider: 'anthropic', description: 'Fastest Claude 3.5 model' },
   
-  // Google Gemini Models (Latest 2 Generations)  
   { id: 'gemini-2.5-pro-exp', name: 'Gemini 2.5 Pro Experimental', provider: 'google', description: 'Most advanced Gemini - thinking model with enhanced reasoning (2025)' },
   { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash Experimental', provider: 'google', description: 'Latest Gemini 2.0 experimental (Dec 2024)' },
   { id: 'gemini-1.5-pro-002', name: 'Gemini 1.5 Pro 002', provider: 'google', description: 'Enhanced Gemini 1.5 Pro (Nov 2024)' },
@@ -34,7 +30,6 @@ function classNames(...classes) {
 }
 
 export default function ModelSelector({ selectedModel, onModelChange }) {
-  // Default to the recommended model if none selected
   const defaultModel = models.find(m => m.recommended) || models[0]
   const selected = models.find(m => m.id === selectedModel) || defaultModel
 

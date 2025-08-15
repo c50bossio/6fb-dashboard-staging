@@ -6,7 +6,6 @@ require('dotenv').config({ path: '.env.local' });
 console.log('🔧 Fixing Authentication Callback Issues\n');
 console.log('=' .repeat(60));
 
-// Check environment variables
 console.log('📋 Environment Configuration:');
 console.log('─'.repeat(60));
 console.log(`SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`);

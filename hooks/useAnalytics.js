@@ -7,7 +7,6 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 export function useAnalytics() {
   const { user } = useAuth()
 
-  // Track booking events
   const trackBooking = useCallback((action, bookingData) => {
     const eventMap = {
       created: EVENTS.BOOKING_CREATED,
@@ -26,7 +25,6 @@ export function useAnalytics() {
     })
   }, [user])
 
-  // Track payment events
   const trackPayment = useCallback((action, paymentData) => {
     const eventMap = {
       initiated: EVENTS.PAYMENT_INITIATED,
@@ -42,7 +40,6 @@ export function useAnalytics() {
       user_id: user?.id,
     })
 
-    // Track revenue for completed payments
     if (action === 'completed') {
       trackEvent('revenue', {
         revenue: paymentData.amount,
@@ -51,7 +48,6 @@ export function useAnalytics() {
     }
   }, [user])
 
-  // Track chat interactions
   const trackChat = useCallback((action, chatData = {}) => {
     const eventMap = {
       message_sent: EVENTS.CHAT_MESSAGE_SENT,
@@ -64,7 +60,6 @@ export function useAnalytics() {
     })
   }, [user])
 
-  // Track feature usage
   const trackFeature = useCallback((featureName, properties = {}) => {
     trackEvent(EVENTS.FEATURE_USED, {
       feature_name: featureName,
@@ -73,7 +68,6 @@ export function useAnalytics() {
     })
   }, [user])
 
-  // Track user properties
   const updateUserProfile = useCallback((properties) => {
     if (user?.id) {
       setUserProperties({
@@ -83,7 +77,6 @@ export function useAnalytics() {
     }
   }, [user])
 
-  // Check feature flags
   const checkFeatureFlag = useCallback((flagName) => {
     return isFeatureEnabled(flagName)
   }, [])

@@ -14,13 +14,11 @@ import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import path from 'path'
 
-// Load environment variables
 dotenv.config({ path: '.env.local' })
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -29,7 +27,6 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1)
 }
 
-// Create Supabase client with service role key
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
@@ -37,9 +34,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
-// Test data
 const testData = {
-  // Test barbershop
   barbershop: {
     name: "Premium Cuts Barbershop",
     slug: "premium-cuts",
@@ -68,7 +63,6 @@ const testData = {
     }
   },
 
-  // Test services
   services: [
     {
       name: "Classic Haircut",
@@ -107,7 +101,6 @@ const testData = {
     }
   ],
 
-  // Test products
   products: [
     {
       name: "Premium Pomade",
@@ -166,7 +159,6 @@ const testData = {
     }
   ],
 
-  // Test users (will be created with auth.users)
   users: [
     {
       email: "owner@premiumcuts.com",
@@ -210,12 +202,10 @@ async function seedDatabase() {
   console.log('🌱 Starting database seeding...\n')
   
   try {
-    // Step 1: Create test users
     console.log('👤 Creating test users...')
     const createdUsers = {}
     
     for (const userData of testData.users) {
-      // Create auth user
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: userData.email,
         password: userData.password,
@@ -229,7 +219,6 @@ async function seedDatabase() {
       
       if (authError) {
         console.log(`   ⚠️  User ${userData.email} might already exist:`, authError.message)
-        // Try to get existing user
         const { data: users } = await supabase
           .from('profiles')
           .select('id, email')
@@ -243,7 +232,6 @@ async function seedDatabase() {
       } else if (authData?.user) {
         createdUsers[userData.role] = authData.user.id
         
-        // Update profile
         await supabase
           .from('profiles')
           .upsert({
@@ -258,7 +246,6 @@ async function seedDatabase() {
       }
     }
     
-    // Step 2: Create barbershop
     console.log('\n🏪 Creating barbershop...')
     
     const { data: barbershop, error: shopError } = await supabase
@@ -272,7 +259,6 @@ async function seedDatabase() {
     
     if (shopError) {
       console.error('   ❌ Error creating barbershop:', shopError)
-      // Try to get existing barbershop
       const { data: existingShop } = await supabase
         .from('barbershops')
         .select('*')
@@ -289,7 +275,6 @@ async function seedDatabase() {
       console.log('   ✓ Created barbershop:', barbershop.name)
     }
     
-    // Step 3: Create services
     console.log('\n✂️  Creating services...')
     
     for (const service of testData.services) {
@@ -307,7 +292,6 @@ async function seedDatabase() {
       }
     }
     
-    // Step 4: Create products
     console.log('\n📦 Creating products...')
     
     for (const product of testData.products) {
@@ -325,12 +309,10 @@ async function seedDatabase() {
       }
     }
     
-    // Step 5: Link barbers to barbershop
     console.log('\n👥 Linking barbers to barbershop...')
     
     const barberIds = ['BARBER'].map(role => createdUsers[role]).filter(Boolean)
     
-    // First, add all barbers to barbershop_staff
     for (const barberId of Object.entries(createdUsers)) {
       const [role, userId] = barberId
       if (role === 'BARBER' && userId) {
@@ -348,7 +330,6 @@ async function seedDatabase() {
           console.log(`   ✓ Linked barber to barbershop`)
         }
         
-        // Create barber customization
         const { error: customError } = await supabase
           .from('barber_customizations')
           .insert({
@@ -365,7 +346,6 @@ async function seedDatabase() {
       }
     }
     
-    // Step 6: Create financial arrangements
     console.log('\n💰 Creating financial arrangements...')
     
     for (const barberId of barberIds) {
@@ -390,7 +370,6 @@ async function seedDatabase() {
       }
     }
     
-    // Step 7: Create sample customers
     console.log('\n👤 Creating sample customers...')
     
     const sampleCustomers = [
@@ -433,5 +412,4 @@ async function seedDatabase() {
   }
 }
 
-// Run the seeding
 seedDatabase().catch(console.error)

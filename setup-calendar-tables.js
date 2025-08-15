@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Initialize Supabase client with service role key
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -27,7 +26,6 @@ async function setupCalendarTables() {
   console.log('🚀 Setting up calendar tables in Supabase...\n')
   
   try {
-    // Read the SQL schema file
     const schemaPath = path.join(__dirname, 'database', 'calendar-schema.sql')
     const schema = fs.readFileSync(schemaPath, 'utf8')
     
@@ -41,7 +39,6 @@ async function setupCalendarTables() {
     console.log('='.repeat(60))
     console.log('\n✅ After running the SQL above in Supabase, your calendar tables will be ready!')
     
-    // Test if tables exist
     console.log('\n🔍 Checking current table status...')
     
     const { data: services, error: servicesError } = await supabase
@@ -82,5 +79,4 @@ async function setupCalendarTables() {
   }
 }
 
-// Run setup
 setupCalendarTables().catch(console.error)

@@ -3,7 +3,6 @@ import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 
-// Validation schema for services
 const serviceSchema = z.object({
   barbershop_id: z.string().uuid(),
   name: z.string().min(1).max(255),
@@ -14,12 +13,10 @@ const serviceSchema = z.object({
   is_active: z.boolean().optional().default(true)
 })
 
-// GET /api/services - Fetch services
 export async function GET(request) {
   try {
     const supabase = createClient()
     
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -61,10 +58,8 @@ export async function GET(request) {
       }, { status: 500 })
     }
 
-    // Use services from database
     const finalServices = services
 
-    // Group services by category
     const servicesByCategory = finalServices.reduce((acc, service) => {
       const category = service.category || 'General'
       if (!acc[category]) {
@@ -86,12 +81,10 @@ export async function GET(request) {
   }
 }
 
-// POST /api/services - Create new service
 export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -99,7 +92,6 @@ export async function POST(request) {
 
     const body = await request.json()
     
-    // Validate request body
     const validationResult = serviceSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json({
@@ -110,7 +102,6 @@ export async function POST(request) {
 
     const serviceData = validationResult.data
 
-    // Create service
     const { data: service, error } = await supabase
       .from('services')
       .insert({

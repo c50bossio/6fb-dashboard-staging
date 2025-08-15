@@ -9,7 +9,6 @@ const stripe = process.env.STRIPE_SECRET_KEY
 
 export async function POST(request) {
   try {
-    // Check if Stripe is configured
     if (!stripe) {
       return NextResponse.json({
         success: false,
@@ -19,7 +18,6 @@ export async function POST(request) {
 
     const { payment_intent_id } = await request.json()
 
-    // Validate required parameters
     if (!payment_intent_id) {
       return NextResponse.json({
         success: false,
@@ -27,7 +25,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Retrieve payment intent from Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent_id)
 
     if (!paymentIntent) {
@@ -37,10 +34,7 @@ export async function POST(request) {
       }, { status: 404 })
     }
 
-    // Update database with payment status (optional)
     try {
-      // For now, just log the payment confirmation
-      // Future: Update database when Supabase client is properly configured
       console.log('Payment confirmed:', {
         payment_intent_id,
         status: paymentIntent.status,

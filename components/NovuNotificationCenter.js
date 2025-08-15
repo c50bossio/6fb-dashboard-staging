@@ -10,7 +10,6 @@ export default function NovuNotificationCenter() {
     return null
   }
 
-  // Custom notification bell component
   function CustomBell({ unseenCount }) {
     return (
       <div className="relative">
@@ -24,20 +23,16 @@ export default function NovuNotificationCenter() {
     )
   }
 
-  // Handle notification clicks
   const handleNotificationClick = (notification) => {
-    // Navigate to relevant page based on notification type
     if (notification.cta?.type === 'redirect' && notification.cta?.data?.url) {
       window.location.href = notification.cta.data.url
     }
     
-    // Track notification interaction
     if (window.analytics) {
       window.analytics.events.notificationInteracted(notification.templateIdentifier)
     }
   }
 
-  // Handle action clicks within notifications
   const handleActionClick = (templateIdentifier, actionType, notification) => {
     switch (actionType) {
       case 'primary':
@@ -46,7 +41,6 @@ export default function NovuNotificationCenter() {
         }
         break
       case 'secondary':
-        // Handle secondary actions (e.g., dismiss, remind later)
         console.log('Secondary action clicked:', templateIdentifier)
         break
     }
@@ -68,7 +62,6 @@ export default function NovuNotificationCenter() {
         onActionClick={handleActionClick}
         popoverArrow={true}
         
-        // Customization
         theme={{
           dark: {
             loaderColor: '#546355',
@@ -84,7 +77,6 @@ export default function NovuNotificationCenter() {
           },
         }}
         
-        // Custom components
         listItem={(notification, handleActionButtonClick, handleNotificationClick) => (
           <div
             className={`p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 ${
@@ -145,7 +137,6 @@ export default function NovuNotificationCenter() {
           </div>
         )}
         
-        // Empty state
         emptyState={
           <div className="p-8 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -158,7 +149,6 @@ export default function NovuNotificationCenter() {
           </div>
         }
         
-        // Footer
         footer={
           <div className="p-3 border-t bg-gray-50 text-center">
             <a

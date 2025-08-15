@@ -17,19 +17,16 @@ export const useAuth = () => {
 function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
-  // Start with loading false - especially important for OAuth buttons on public pages
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
-    // Check initial session
     const checkUser = async () => {
       const publicPaths = ['/login', '/register', '/forgot-password', '/subscribe', '/success', '/pricing', '/']
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
       const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams()
       
-      // Check if current path matches any public path
       const isPublicPage = publicPaths.some(path => {
         if (path === '/') {
           return currentPath === '/'  // Only exact match for root
@@ -37,14 +34,12 @@ function SupabaseAuthProvider({ children }) {
         return currentPath === path || currentPath.startsWith(path + '/') || currentPath.startsWith(path + '?')
       })
       
-      // Consolidated development mode check
       const isDevelopment = typeof window !== 'undefined' && (
         window.location.hostname === 'localhost' || 
         window.location.hostname === '127.0.0.1' ||
         process.env.NODE_ENV === 'development'
       )
       
-      // SINGLE development mode bypass for campaigns page
       if (isDevelopment && currentPath.includes('/dashboard/campaigns')) {
         console.log('🚀 DEVELOPMENT MODE: Direct bypass for campaigns page')
         const mockUser = {
@@ -65,7 +60,6 @@ function SupabaseAuthProvider({ children }) {
         return
       }
       
-      // OAuth session synchronization fix - detect OAuth redirects and be more patient
       const isOAuthRedirect = urlParams.get('from') === 'oauth_success' || 
                              currentPath === '/welcome' ||
                              currentPath.includes('auth/callback')
@@ -77,14 +71,12 @@ function SupabaseAuthProvider({ children }) {
       }
       
       try {
-        // For OAuth redirects, add retry logic to handle session sync delay
         let authAttempts = isOAuthRedirect ? 3 : 1
         let sessionData = null
         
         for (let attempt = 1; attempt <= authAttempts; attempt++) {
           console.log(`Auth attempt ${attempt}/${authAttempts}${isOAuthRedirect ? ' (OAuth redirect detected)' : ''}`)
           
-          // Use getUser for secure authentication check
           const { data: { user }, error } = await supabase.auth.getUser()
           
           if (error) {
@@ -100,7 +92,6 @@ function SupabaseAuthProvider({ children }) {
           } else {
             console.log(`No authenticated user (attempt ${attempt})`)
             if (isOAuthRedirect && attempt < authAttempts) {
-              // Wait 1 second before retry for OAuth redirects
               await new Promise(resolve => setTimeout(resolve, 1000))
             } else if (attempt === authAttempts) {
               setUser(null)
@@ -109,11 +100,9 @@ function SupabaseAuthProvider({ children }) {
           }
         }
         
-        // Process successful authentication
         if (sessionData?.user) {
           setUser(sessionData.user)
           
-          // Fetch profile
           const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
@@ -130,7 +119,6 @@ function SupabaseAuthProvider({ children }) {
         setUser(null)
         setProfile(null)
       } finally {
-        // Always set loading to false after checking
         setLoading(false)
         console.log('✅ Auth check complete - loading set to false')
       }
@@ -138,14 +126,12 @@ function SupabaseAuthProvider({ children }) {
     
     checkUser()
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth event:', event)
       
       if (event === 'SIGNED_IN' && session) {
         setUser(session.user)
         
-        // Fetch profile
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
@@ -156,7 +142,6 @@ function SupabaseAuthProvider({ children }) {
           setProfile(profileData)
         }
         
-        // Redirect if on login page
         if (window.location.pathname === '/login') {
           router.push('/dashboard')
         }
@@ -164,7 +149,6 @@ function SupabaseAuthProvider({ children }) {
         setUser(null)
         setProfile(null)
         
-        // Redirect to login if on protected page
         const publicPaths = ['/login', '/register', '/forgot-password', '/success', '/pricing', '/', '/clear-all']
         if (!publicPaths.includes(window.location.pathname)) {
           router.push('/login')
@@ -226,19 +210,14 @@ function SupabaseAuthProvider({ children }) {
     try {
       console.log('🔐 Starting sign out process...')
       
-      // Clear development session indicators FIRST
-      // This ensures the ProtectedRoute bypass is disabled
       if (typeof window !== 'undefined') {
         console.log('🧹 Clearing dev session...')
         localStorage.removeItem('dev_session')
         
-        // Set force sign out flag to ensure redirect even with dev bypass
         sessionStorage.setItem('force_sign_out', 'true')
         
-        // Clear dev_auth cookie
         document.cookie = 'dev_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
         
-        // Clear critical auth items only (faster than scanning all localStorage)
         const criticalKeys = ['sb-access-token', 'sb-refresh-token', 'supabase.auth.token', 'auth-token']
         let clearedCount = 0
         criticalKeys.forEach(key => {
@@ -250,17 +229,14 @@ function SupabaseAuthProvider({ children }) {
         console.log('✅ Cleared critical auth items:', clearedCount)
       }
       
-      // Start Supabase sign out in background (don't wait for it)
       console.log('🔄 Starting Supabase signOut in background...')
       supabase.auth.signOut().catch(error => {
         console.error('⚠️ Supabase signOut error (non-blocking):', error)
       })
       
-      // Immediate redirect - don't wait for Supabase since we cleared all local data
       console.log('✅ Local session cleared, redirecting immediately...')
       
       if (typeof window !== 'undefined') {
-        // Instant redirect - no waiting for network calls
         window.location.href = '/login'
       }
       
@@ -268,7 +244,6 @@ function SupabaseAuthProvider({ children }) {
     } catch (error) {
       console.error('❌ Sign out error:', error)
       
-      // Still try to redirect even on error
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }

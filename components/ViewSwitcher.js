@@ -17,10 +17,8 @@ export default function ViewSwitcher() {
   const [availableContexts, setAvailableContexts] = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Get the user's role from either profile or user metadata
   const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
 
-  // Load available contexts based on role
   useEffect(() => {
     if (userRole) {
       loadAvailableContexts()
@@ -32,13 +30,11 @@ export default function ViewSwitcher() {
       const contexts = []
       
       if (userRole === 'SHOP_OWNER') {
-        // Fetch actual barbers from the API
         const response = await fetch('/api/shop/barbers')
         
         if (response.ok) {
           const { barbers } = await response.json()
           
-          // Format barbers as contexts
           if (barbers && barbers.length > 0) {
             barbers.forEach(barber => {
               if (barber.users) {
@@ -57,13 +53,11 @@ export default function ViewSwitcher() {
           console.error('Failed to fetch barbers:', response.status)
         }
       } else if (userRole === 'ENTERPRISE_OWNER') {
-        // Fetch actual shops from the API
         const response = await fetch('/api/enterprise/shops')
         
         if (response.ok) {
           const { shops } = await response.json()
           
-          // Format shops as contexts
           if (shops && shops.length > 0) {
             shops.forEach(shop => {
               contexts.push({
@@ -91,7 +85,6 @@ export default function ViewSwitcher() {
     setLoading(true)
     
     try {
-      // Call the API to switch context
       const response = await fetch('/api/auth/switch-context', {
         method: 'POST',
         headers: {
@@ -108,20 +101,15 @@ export default function ViewSwitcher() {
         console.log('Context switch result:', result)
         
         if (context === 'primary') {
-          // Return to primary view
           setActiveContext(null)
           localStorage.removeItem('activeContext')
         } else {
-          // Switch to different context
           setActiveContext(context)
           localStorage.setItem('activeContext', JSON.stringify(context))
         }
         
-        // Show success message
         console.log('Switched context to:', context === 'primary' ? 'Primary View' : context.name)
         
-        // Optional: Reload the page to reflect the new context
-        // window.location.reload()
       } else {
         console.error('Failed to switch context:', response.status)
         const error = await response.json()
@@ -134,7 +122,6 @@ export default function ViewSwitcher() {
     }
   }
 
-  // Load saved context on mount
   useEffect(() => {
     const savedContext = localStorage.getItem('activeContext')
     if (savedContext) {
@@ -146,12 +133,10 @@ export default function ViewSwitcher() {
     }
   }, [])
 
-  // Don't show for basic users (check both profile and user metadata for role)
   if (!user || userRole === 'CLIENT' || userRole === 'BARBER') {
     return null
   }
 
-  // Don't show if no contexts available
   if (availableContexts.length === 0) {
     return null
   }

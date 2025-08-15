@@ -27,7 +27,6 @@ class CoderAutomation {
     console.log(`✅ [Coder Automation] ${message}`);
   }
 
-  // Check if Coder CLI is authenticated
   async checkAuth() {
     try {
       execSync('coder list', { stdio: 'pipe' });
@@ -37,7 +36,6 @@ class CoderAutomation {
     }
   }
 
-  // Authenticate with Coder
   async authenticate() {
     this.log('Checking Coder authentication...');
     
@@ -55,7 +53,6 @@ class CoderAutomation {
     return false;
   }
 
-  // Create the template directory and files
   createTemplateFiles() {
     this.log('Creating template files...');
     
@@ -206,7 +203,6 @@ resource "docker_container" "workspace" {
     return templateDir;
   }
 
-  // Upload template to Coder
   async uploadTemplate() {
     this.log('Uploading template to Coder...');
     
@@ -215,15 +211,12 @@ resource "docker_container" "workspace" {
     try {
       process.chdir(templateDir);
       
-      // Initialize Terraform
       this.log('Initializing Terraform...');
       execSync('terraform init', { stdio: 'inherit' });
       
-      // Validate Terraform configuration
       this.log('Validating Terraform configuration...');
       execSync('terraform validate', { stdio: 'inherit' });
       
-      // Push template to Coder
       this.log('Pushing template to Coder...');
       execSync(`coder templates push ${this.templateName} --yes`, { stdio: 'inherit' });
       this.success('Template uploaded successfully!');
@@ -234,7 +227,6 @@ resource "docker_container" "workspace" {
     }
   }
 
-  // Create workspace from template
   async createWorkspace(workspaceName = 'my-6fb-workspace') {
     this.log(`Creating workspace: ${workspaceName}`);
     
@@ -248,22 +240,18 @@ resource "docker_container" "workspace" {
     }
   }
 
-  // Main automation workflow
   async run() {
     console.log('🚀 Starting Coder Setup Automation');
     console.log('==================================');
     
-    // Check authentication
     if (!(await this.authenticate())) {
       return;
     }
 
-    // Upload template
     if (!(await this.uploadTemplate())) {
       return;
     }
 
-    // Ask if user wants to create a workspace
     console.log('\\n📋 Template uploaded successfully!');
     console.log(`Visit: ${this.coderUrl}/templates to see your template`);
     console.log('\\n🚀 To create a workspace, run:');
@@ -271,7 +259,6 @@ resource "docker_container" "workspace" {
   }
 }
 
-// CLI handling
 const automation = new CoderAutomation();
 
 if (process.argv.includes('--create-workspace')) {

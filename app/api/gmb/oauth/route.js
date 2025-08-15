@@ -6,31 +6,24 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Determine the base URL based on environment
 const getBaseUrl = (request) => {
-  // Check if we're in production
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL_URL) {
     return 'https://bookedbarber.com'
   }
   
-  // Use the request URL if available
   if (request && request.headers) {
     const host = request.headers.get('host')
     if (host && host.includes('bookedbarber.com')) {
       return `https://${host}`
     }
-    // Fix for Docker environment - never use internal backend URL
     if (host && (host.includes('backend') || host.includes(':8000') || host.includes(':8001'))) {
       return 'http://localhost:9999'
     }
   }
   
-  // Default to environment variable or localhost
-  // Always use frontend URL for OAuth redirects
   return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'
 }
 
-// Google OAuth 2.0 configuration for Google My Business API
 const getGoogleOAuthConfig = (request) => ({
   client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
   client_secret: process.env.GOOGLE_CLIENT_SECRET,
@@ -51,7 +44,6 @@ export async function GET(request) {
     const barbershopId = searchParams.get('barbershop_id')
     const userId = searchParams.get('user_id')
     
-    // Get OAuth config with proper redirect URI
     const GOOGLE_OAUTH_CONFIG = getGoogleOAuthConfig(request)
     
     if (!barbershopId || !userId) {
@@ -61,7 +53,6 @@ export async function GET(request) {
       }, { status: 400 })
     }
     
-    // Verify user has permission to connect GMB for this barbershop
     const { data: permission, error: permissionError } = await supabase
       .from('barbershop_staff')
       .select('role, barbershop_id')
@@ -70,7 +61,6 @@ export async function GET(request) {
       .single()
     
     if (permissionError || !permission) {
-      // Check if user is the barbershop owner
       const { data: ownership, error: ownershipError } = await supabase
         .from('barbershops')
         .select('id, owner_id')
@@ -86,14 +76,12 @@ export async function GET(request) {
       }
     }
     
-    // Generate state parameter for CSRF protection
     const state = generateSecureState({
       barbershop_id: barbershopId,
       user_id: userId,
       timestamp: Date.now()
     })
     
-    // Try to store state in database for verification (skip if table doesn't exist)
     try {
       await supabase
         .from('oauth_states')
@@ -106,10 +94,8 @@ export async function GET(request) {
         })
     } catch (error) {
       console.log('Could not store OAuth state (table may not exist):', error.message)
-      // Continue anyway for development
     }
     
-    // Check if Google OAuth credentials are configured
     if (!GOOGLE_OAUTH_CONFIG.client_id || GOOGLE_OAUTH_CONFIG.client_id === 'your-google-client-id') {
       console.error('Google OAuth Client ID not configured')
       return NextResponse.json({
@@ -129,7 +115,6 @@ export async function GET(request) {
       }
     })
     
-    // Build Google OAuth URL
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
     authUrl.searchParams.append('client_id', GOOGLE_OAUTH_CONFIG.client_id)
     authUrl.searchParams.append('redirect_uri', GOOGLE_OAUTH_CONFIG.redirect_uri)

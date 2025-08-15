@@ -14,7 +14,6 @@ async function testLoginFunctionality() {
     
     console.log('🧪 TESTING LOGIN FUNCTIONALITY');
     
-    // Test 1: Navigate to login page
     console.log('\n1️⃣ Testing login page access...');
     await page.goto('http://localhost:9999/login');
     const loginFormExists = await page.locator('form').count() > 0;
@@ -24,7 +23,6 @@ async function testLoginFunctionality() {
       throw new Error('Login form not found');
     }
     
-    // Test 2: Fill and submit credentials
     console.log('\n2️⃣ Testing credential submission...');
     await page.fill('input[name="email"]', 'demo@barbershop.com');
     await page.fill('input[name="password"]', 'demo123');
@@ -34,17 +32,14 @@ async function testLoginFunctionality() {
     console.log(`   Email filled: ${emailValue === 'demo@barbershop.com' ? '✅' : '❌'}`);
     console.log(`   Password filled: ${passwordValue === 'demo123' ? '✅' : '❌'}`);
     
-    // Test 3: Submit and monitor loading state
     console.log('\n3️⃣ Testing form submission and loading state...');
     await page.click('button[type="submit"]');
     
-    // Check immediate loading state
     await page.waitForTimeout(500);
     const loadingText = await page.locator('button[type="submit"]').textContent();
     const showsLoading = loadingText.includes('Signing in...');
     console.log(`   Shows loading state: ${showsLoading ? '✅' : '❌'}`);
     
-    // Test 4: Wait for redirect and verify dashboard access
     console.log('\n4️⃣ Testing redirect to dashboard...');
     
     let redirectSuccess = false;
@@ -60,13 +55,11 @@ async function testLoginFunctionality() {
     console.log(`   Redirected to dashboard: ${isDashboard ? '✅' : '❌'}`);
     console.log(`   Final URL: ${finalUrl}`);
     
-    // Test 5: Verify dashboard content loads
     if (isDashboard) {
       console.log('\n5️⃣ Testing dashboard content...');
       try {
         await page.waitForLoadState('networkidle', { timeout: 5000 });
         
-        // Check for dashboard elements
         const hasDashboardTitle = await page.locator('text=Dashboard').count() > 0;
         const hasContent = await page.locator('main, .dashboard, [data-testid*="dashboard"]').count() > 0;
         
@@ -77,10 +70,8 @@ async function testLoginFunctionality() {
       }
     }
     
-    // Test 6: Verify authentication state
     console.log('\n6️⃣ Testing authentication state...');
     try {
-      // Try to access a protected page to verify auth
       await page.goto('http://localhost:9999/dashboard/settings');
       await page.waitForLoadState('networkidle', { timeout: 3000 });
       const settingsAccessible = !page.url().includes('/login');
@@ -89,7 +80,6 @@ async function testLoginFunctionality() {
       console.log('   Authentication state check inconclusive');
     }
     
-    // Overall test result
     const overallSuccess = isDashboard && redirectSuccess;
     
     console.log('\n🎯 TEST RESULTS SUMMARY');
@@ -121,7 +111,6 @@ async function testLoginFunctionality() {
   }
 }
 
-// Run the test
 if (require.main === module) {
   testLoginFunctionality().then(result => {
     if (result.success) {

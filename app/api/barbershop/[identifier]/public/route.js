@@ -2,18 +2,15 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
-// GET - Fetch public barbershop data for website display
 export async function GET(request, { params }) {
   try {
     const supabase = createClient()
     const { identifier } = params
 
-    // Validate identifier (can be shopId or shop_slug)
     if (!identifier) {
       return NextResponse.json({ error: 'Shop identifier is required' }, { status: 400 })
     }
 
-    // Try to find barbershop by ID first, then by slug
     let query = supabase
       .from('barbershops')
       .select(`
@@ -24,7 +21,6 @@ export async function GET(request, { params }) {
         customer_testimonials(*)
       `)
 
-    // Check if identifier is UUID format (for direct ID lookup)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identifier)
     
     if (isUUID) {
@@ -40,19 +36,16 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Barbershop not found' }, { status: 404 })
     }
 
-    // Check if website is enabled
     if (!barbershop.website_enabled) {
       return NextResponse.json({ error: 'Website not available' }, { status: 403 })
     }
 
-    // Fetch business hours
     const { data: businessHours } = await supabase
       .from('business_hours')
       .select('*')
       .eq('barbershop_id', barbershop.id)
       .order('day_of_week')
 
-    // Fetch services
     const { data: services } = await supabase
       .from('services')
       .select('*')
@@ -60,25 +53,20 @@ export async function GET(request, { params }) {
       .eq('is_active', true)
       .order('name')
 
-    // Format business hours for display
     const formattedHours = formatBusinessHours(businessHours || [])
     
-    // Format website sections
     const sectionsById = {}
     barbershop.website_sections?.forEach(section => {
       sectionsById[section.section_type] = section
     })
 
-    // Build public website data
     const websiteData = {
-      // Basic Information
       id: barbershop.id,
       name: barbershop.name,
       description: barbershop.description,
       tagline: barbershop.tagline || 'Professional Barbering Services',
       slug: barbershop.shop_slug,
       
-      // Contact Information
       phone: barbershop.phone,
       email: barbershop.email,
       address: {
@@ -88,7 +76,6 @@ export async function GET(request, { params }) {
         full: `${barbershop.address}${barbershop.city ? ', ' + barbershop.city : ''}${barbershop.state ? ', ' + barbershop.state : ''}`
       },
       
-      // Visual Branding
       logo_url: barbershop.logo_url,
       cover_image_url: barbershop.cover_image_url,
       brand_colors: barbershop.brand_colors || {
@@ -105,7 +92,6 @@ export async function GET(request, { params }) {
       theme_preset: barbershop.theme_preset || 'default',
       custom_css: barbershop.custom_css,
       
-      // Hero Section
       hero: {
         title: barbershop.hero_title || sectionsById.hero?.content?.title || `Welcome to ${barbershop.name}`,
         subtitle: barbershop.hero_subtitle || sectionsById.hero?.content?.subtitle || barbershop.description || 'Professional barbering services',
@@ -113,24 +99,19 @@ export async function GET(request, { params }) {
         cta_text: sectionsById.hero?.content?.cta_text || 'Book Appointment'
       },
       
-      // About Section
       about: {
         title: sectionsById.about?.title || 'About Us',
         content: barbershop.about_text || sectionsById.about?.content?.content || 'We provide professional barbering services with attention to detail and customer satisfaction.'
       },
       
-      // Business Details
       business_hours: formattedHours,
       rating: barbershop.avg_rating || 4.5,
       total_reviews: barbershop.total_clients || 0,
       
-      // Social Links
       social_links: barbershop.social_links || {},
       
-      // Services
       services: services || [],
       
-      // Content Sections
       gallery: (barbershop.barbershop_gallery || [])
         .filter(img => img.is_featured || true)
         .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
@@ -170,7 +151,6 @@ export async function GET(request, { params }) {
           date: testimonial.date_received
         })),
       
-      // SEO Data
       seo: {
         title: barbershop.seo_title || `${barbershop.name} | Professional Barbering Services`,
         description: barbershop.seo_description || barbershop.description || `Experience professional barbering at ${barbershop.name}. Expert cuts, styling, and grooming services.`,
@@ -178,7 +158,6 @@ export async function GET(request, { params }) {
         canonical_url: barbershop.custom_domain || `/${barbershop.shop_slug || barbershop.id}`
       },
       
-      // Website Configuration
       website_sections: barbershop.website_sections?.reduce((acc, section) => {
         acc[section.section_type] = {
           title: section.title,
@@ -189,7 +168,6 @@ export async function GET(request, { params }) {
         return acc
       }, {}) || {},
       
-      // Booking Integration
       booking_enabled: barbershop.booking_enabled,
       online_booking_enabled: barbershop.online_booking_enabled
     }
@@ -205,7 +183,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// Helper function to format business hours for display
 function formatBusinessHours(businessHours) {
   const daysOfWeek = [
     'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
@@ -217,13 +194,11 @@ function formatBusinessHours(businessHours) {
     const dayName = daysOfWeek[hour.day_of_week].toLowerCase()
     
     if (hour.is_open && hour.open_time && hour.close_time) {
-      // Format times to display format
       const openTime = formatTime(hour.open_time)
       const closeTime = formatTime(hour.close_time)
       
       let timeString = `${openTime} - ${closeTime}`
       
-      // Add break time if exists
       if (hour.break_start_time && hour.break_end_time) {
         const breakStart = formatTime(hour.break_start_time)
         const breakEnd = formatTime(hour.break_end_time)
@@ -239,7 +214,6 @@ function formatBusinessHours(businessHours) {
   return formatted
 }
 
-// Helper function to format time from 24-hour to 12-hour format
 function formatTime(timeString) {
   if (!timeString) return ''
   

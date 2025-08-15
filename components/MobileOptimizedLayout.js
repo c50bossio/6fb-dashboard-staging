@@ -10,7 +10,6 @@ export default function MobileOptimizedLayout({ children }) {
   const touchStartY = useRef(0)
   const scrollContainerRef = useRef(null)
 
-  // Pull-to-refresh functionality
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY
   }
@@ -22,7 +21,6 @@ export default function MobileOptimizedLayout({ children }) {
     const deltaY = currentY - touchStartY.current
     const scrollTop = scrollContainerRef.current.scrollTop
 
-    // Only trigger pull-to-refresh when at the top
     if (scrollTop === 0 && deltaY > 0) {
       e.preventDefault()
       const distance = Math.min(deltaY * 0.5, 100) // Dampen the pull distance
@@ -33,12 +31,10 @@ export default function MobileOptimizedLayout({ children }) {
   const handleTouchEnd = () => {
     if (pullToRefreshDistance > 60) {
       setIsRefreshing(true)
-      // Simulate refresh
       setTimeout(() => {
         setIsRefreshing(false)
         setPullToRefreshDistance(0)
         
-        // Trigger a custom refresh event
         window.dispatchEvent(new CustomEvent('pullToRefresh'))
       }, 1500)
     } else {
@@ -115,7 +111,6 @@ export default function MobileOptimizedLayout({ children }) {
                 description="Get business advice from specialized AI agents"
                 onClick={() => {
                   setShowBottomSheet(false)
-                  // Navigate to AI agents
                 }}
               />
               <QuickAction 
@@ -138,7 +133,6 @@ export default function MobileOptimizedLayout({ children }) {
   )
 }
 
-// Quick action component for bottom sheet
 function QuickAction({ icon, title, description, onClick }) {
   const [isPressed, setIsPressed] = useState(false)
 
@@ -165,7 +159,6 @@ function QuickAction({ icon, title, description, onClick }) {
   )
 }
 
-// Swipe gesture handler hook
 export function useSwipeGesture(onSwipeLeft, onSwipeRight, threshold = 50) {
   const [touchStart, setTouchStart] = useState(null)
   const [touchEnd, setTouchEnd] = useState(null)
@@ -201,7 +194,6 @@ export function useSwipeGesture(onSwipeLeft, onSwipeRight, threshold = 50) {
   }
 }
 
-// Mobile-friendly card with swipe actions
 export function SwipeCard({ children, onSwipeLeft, onSwipeRight, leftAction, rightAction, className = '' }) {
   const [swipeOffset, setSwipeOffset] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -219,7 +211,6 @@ export function SwipeCard({ children, onSwipeLeft, onSwipeRight, leftAction, rig
     const currentX = e.touches[0].clientX
     const deltaX = currentX - touchStartX.current
     
-    // Limit swipe distance
     const maxSwipe = 120
     const limitedDelta = Math.max(-maxSwipe, Math.min(maxSwipe, deltaX))
     setSwipeOffset(limitedDelta)
@@ -236,7 +227,6 @@ export function SwipeCard({ children, onSwipeLeft, onSwipeRight, leftAction, rig
       }
     }
     
-    // Reset position
     setSwipeOffset(0)
   }
 

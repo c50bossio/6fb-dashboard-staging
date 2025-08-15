@@ -17,7 +17,6 @@ async function inspectTableSchema(tableName) {
   console.log('=' .repeat(50))
   
   try {
-    // Try to get one record to see the structure
     const { data, error } = await supabase
       .from(tableName)
       .select('*')
@@ -37,7 +36,6 @@ async function inspectTableSchema(tableName) {
         console.log(`   - ${key}: ${type} = ${JSON.stringify(value)}`)
       })
     } else {
-      // No data, try to insert a test record to see required fields
       console.log('📋 No existing data, attempting test insert to discover required fields...')
       
       const testData = {}

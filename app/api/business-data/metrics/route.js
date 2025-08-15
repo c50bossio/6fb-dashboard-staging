@@ -6,17 +6,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'edge'
 
-// Simple rate limiting store (in production, use Redis or database)
 const rateLimitStore = new Map();
 
-// Input validation helper
 function validateInput(barbershopId, format) {
-  // Validate barbershop_id (should be alphanumeric or null)
   if (barbershopId && !/^[a-zA-Z0-9_-]+$/.test(barbershopId)) {
     throw new Error('Invalid barbershop_id format');
   }
   
-  // Validate format parameter
   const validFormats = ['dashboard', 'ai', 'json'];
   if (!validFormats.includes(format)) {
     throw new Error('Invalid format parameter');
@@ -25,7 +21,6 @@ function validateInput(barbershopId, format) {
   return true;
 }
 
-// Simple rate limiting (100 requests per minute per IP)
 function checkRateLimit(clientIP) {
   const now = Date.now();
   const minute = Math.floor(now / 60000);
@@ -38,7 +33,6 @@ function checkRateLimit(clientIP) {
   
   rateLimitStore.set(key, requests + 1);
   
-  // Clean old entries (deterministic cleanup)
   if ((requests % 100) === 0) { // Clean every 100 requests
     for (const [k, v] of rateLimitStore.entries()) {
       const keyMinute = k.split('-')[1];
@@ -51,7 +45,6 @@ function checkRateLimit(clientIP) {
 
 export async function GET(request) {
   try {
-    // Rate limiting
     const clientIP = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
     checkRateLimit(clientIP);
     
@@ -60,10 +53,8 @@ export async function GET(request) {
     const forceRefresh = searchParams.get('force_refresh') === 'true';
     const format = searchParams.get('format') || 'dashboard'; // dashboard, ai, json
     
-    // Input validation
     validateInput(barbershopId, format);
 
-    // Try to get data from Python backend unified business service
     let businessData;
     
     try {
@@ -90,11 +81,9 @@ export async function GET(request) {
     } catch (pythonError) {
       console.warn('Python business data service unavailable, using consistent fallback:', pythonError.message);
       
-      // Use consistent fallback data that matches UnifiedBusinessMetrics
       businessData = getUnifiedBusinessMetrics(format);
     }
 
-    // Handle different response formats
     if (format === 'ai') {
       return NextResponse.json({
         success: true,
@@ -121,7 +110,6 @@ export async function GET(request) {
       });
     }
     
-    // Default JSON format
     return NextResponse.json({
       success: true,
       data: businessData,
@@ -136,7 +124,6 @@ export async function GET(request) {
   } catch (error) {
     console.error('Unified business data error:', error);
     
-    // Handle specific error types
     if (error.message === 'Rate limit exceeded') {
       return NextResponse.json({
         success: false,
@@ -168,9 +155,7 @@ export async function GET(request) {
  * Get unified business metrics - NO MOCK DATA POLICY
  */
 function getUnifiedBusinessMetrics(format) {
-  // NO MOCK DATA - return empty state with helpful instructions
   const baseMetrics = {
-    // Core Revenue Metrics - all zeros until real data exists
     monthly_revenue: 0,
     daily_revenue: 0,
     weekly_revenue: 0,
@@ -180,7 +165,6 @@ function getUnifiedBusinessMetrics(format) {
     revenue_growth: 0,
     average_service_price: 0,
     
-    // Appointment Analytics - all zeros
     total_appointments: 0,
     completed_appointments: 0,
     cancelled_appointments: 0,
@@ -190,30 +174,25 @@ function getUnifiedBusinessMetrics(format) {
     appointment_completion_rate: 0,
     average_appointments_per_day: 0,
     
-    // Customer Metrics - all zeros
     total_customers: 0,
     new_customers_this_month: 0,
     returning_customers: 0,
     customer_retention_rate: 0,
     average_customer_lifetime_value: 0,
     
-    // Staff Performance - empty data
     total_barbers: 0,
     active_barbers: 0,
     top_performing_barber: "No data",
     average_service_duration: 0,
     
-    // Business Intelligence - empty arrays and zeros
     peak_booking_hours: [],
     most_popular_services: [],
     busiest_days: [],
     occupancy_rate: 0,
     
-    // Financial Health - zeros
     payment_success_rate: 0,
     outstanding_payments: 0,
     
-    // Metadata
     last_updated: new Date().toISOString(),
     data_source: 'no_data',
     data_freshness: 'empty',
@@ -277,7 +256,6 @@ export async function POST(request) {
     const body = await request.json();
     const { barbershop_id, refresh_cache, format } = body;
 
-    // Try to trigger refresh in Python unified business service
     try {
       const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
       const response = await fetch(`${pythonServiceUrl}/business-data/refresh`, {

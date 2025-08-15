@@ -22,7 +22,6 @@ export function useSubscription() {
 
   const loadSubscriptionData = async () => {
     try {
-      // Get user's subscription info from Supabase
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('subscription_plan, subscription_status, stripe_customer_id')
@@ -31,7 +30,6 @@ export function useSubscription() {
 
       if (userError) throw userError
 
-      // Get current month's usage
       const startOfMonth = new Date()
       startOfMonth.setDate(1)
       startOfMonth.setHours(0, 0, 0, 0)
@@ -92,7 +90,6 @@ export function useSubscription() {
   const upgradeRequired = (feature) => {
     if (canUseFeature(feature)) return null
 
-    // Recommend appropriate plan
     if (feature === 'ai_chat' && usage.sessionsUsed >= usage.sessionsLimit) {
       if (subscription.plan.id === 'free') return 'starter'
       if (subscription.plan.id === 'starter') return 'professional'
@@ -126,7 +123,6 @@ export function useSubscription() {
         }
       })
 
-      // Refresh usage data
       await loadSubscriptionData()
     } catch (error) {
       console.error('Error tracking usage:', error)

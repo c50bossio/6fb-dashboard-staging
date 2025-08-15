@@ -25,7 +25,6 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate loading appointment details
     setTimeout(() => {
       setAppointment({
         id: params.id,
@@ -42,7 +41,6 @@ export default function ReviewPage() {
     e.preventDefault()
     if (rating === 0) return
 
-    // In production, this would send to the backend
     console.log('Review submitted:', {
       rating,
       reviewText,

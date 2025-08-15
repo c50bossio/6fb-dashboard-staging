@@ -36,12 +36,10 @@ export default function VoiceEnabledAIChat() {
   const [lastAIResponse, setLastAIResponse] = useState(null)
   const messagesEndRef = useRef(null)
 
-  // Check API connection on mount
   useEffect(() => {
     checkAPIConnection()
   }, [])
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -64,11 +62,9 @@ export default function VoiceEnabledAIChat() {
   }
 
   const handleVoiceTranscript = async (transcript, confidence) => {
-    // Detect which agent should respond based on the command
     const detectedAgent = detectAgentFromCommand(transcript)
     setCurrentAgent(detectedAgent)
     
-    // Add user message to chat
     const voiceMessage = {
       id: Date.now(),
       type: 'user',
@@ -80,7 +76,6 @@ export default function VoiceEnabledAIChat() {
     
     setMessages(prev => [...prev, voiceMessage])
     
-    // Process the message
     await processMessage(transcript, detectedAgent)
   }
 
@@ -88,7 +83,6 @@ export default function VoiceEnabledAIChat() {
     setIsLoading(true)
 
     try {
-      // Call the real AI API with business context
       const response = await fetch('/api/ai/agents', {
         method: 'POST',
         headers: {
@@ -108,7 +102,6 @@ export default function VoiceEnabledAIChat() {
 
       const data = await response.json()
 
-      // Map agent response
       const agentName = data.primary_agent || data.agent_id || getAgentName(agentType)
       
       const aiResponse = {
@@ -125,7 +118,6 @@ export default function VoiceEnabledAIChat() {
 
       setMessages(prev => [...prev, aiResponse])
       
-      // Store for voice synthesis
       if (autoSpeak) {
         const speechText = formatForSpeech(aiResponse.content, agentType)
         setLastAIResponse(speechText)

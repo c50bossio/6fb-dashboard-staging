@@ -15,7 +15,6 @@ export async function POST(request) {
 
     const supabase = createClient()
     
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) {
       return NextResponse.json(
@@ -24,7 +23,6 @@ export async function POST(request) {
       )
     }
 
-    // Check rate limiting
     const { data: rateLimitCheck } = await supabase.rpc('check_mfa_rate_limit', {
       p_user_id: user.id
     })
@@ -42,7 +40,6 @@ export async function POST(request) {
       )
     }
 
-    // Get user's MFA method
     const { data: mfaMethod, error: mfaError } = await supabase
       .from('user_mfa_methods')
       .select('*')
@@ -60,7 +57,6 @@ export async function POST(request) {
     let isValidToken = false
     let isBackupCode = false
 
-    // First try TOTP verification
     if (mfaMethod.secret_key) {
       isValidToken = authenticator.verify({
         token,
@@ -68,7 +64,6 @@ export async function POST(request) {
       })
     }
 
-    // If TOTP fails, try backup code (only if MFA is already verified)
     if (!isValidToken && mfaMethod.is_verified) {
       const { data: backupResult } = await supabase.rpc('verify_backup_code', {
         p_user_id: user.id,
@@ -81,7 +76,6 @@ export async function POST(request) {
       }
     }
 
-    // Log verification attempt
     await supabase
       .from('mfa_verification_attempts')
       .insert({
@@ -105,10 +99,8 @@ export async function POST(request) {
       )
     }
 
-    // If this is initial setup verification, mark as verified and generate backup codes
     let backupCodes = null
     if (isSetup && !mfaMethod.is_verified) {
-      // Mark TOTP method as verified
       await supabase
         .from('user_mfa_methods')
         .update({ 
@@ -118,14 +110,12 @@ export async function POST(request) {
         })
         .eq('id', mfaMethod.id)
 
-      // Generate backup codes
       const { data: generatedCodes } = await supabase.rpc('generate_backup_codes', {
         p_user_id: user.id
       })
       
       backupCodes = generatedCodes
 
-      // Update user profile
       await supabase
         .from('profiles')
         .update({ 
@@ -140,7 +130,6 @@ export async function POST(request) {
         p_details: { method_type: 'totp' }
       })
     } else {
-      // Regular MFA verification
       await supabase.rpc('log_security_event', {
         p_user_id: user.id,
         p_event_type: 'mfa_verify_success',

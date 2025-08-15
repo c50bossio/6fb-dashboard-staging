@@ -27,7 +27,6 @@ import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { Card } from '../../../../components/ui'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
-// Achievement Badge Component
 function AchievementBadge({ achievement, earned = false, size = 'medium' }) {
   const sizeClasses = {
     small: 'w-8 h-8 text-xs',
@@ -56,7 +55,6 @@ function AchievementBadge({ achievement, earned = false, size = 'medium' }) {
   )
 }
 
-// Leaderboard Rank Component
 function LeaderboardRank({ rank, barber, category, showDetails = false }) {
   const getRankIcon = (position) => {
     switch (position) {
@@ -134,7 +132,6 @@ function LeaderboardRank({ rank, barber, category, showDetails = false }) {
   )
 }
 
-// AI Coaching Insights Widget
 function AICoachingInsights({ selectedBarber }) {
   const [insights, setInsights] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -261,7 +258,6 @@ function AICoachingInsights({ selectedBarber }) {
   )
 }
 
-// Gamification Progress Component  
 function GamificationProgress({ barber }) {
   const achievements = [
     { name: 'Revenue Rockstar', icon: '💰', description: '$15K+ monthly revenue', earned: barber.revenue >= 15000 },
@@ -347,12 +343,10 @@ function GamificationProgress({ barber }) {
   )
 }
 
-// Main Leaderboard Component
 function GamifiedLeaderboard() {
   const [activeCategory, setActiveCategory] = useState('overall')
   const [selectedBarber, setSelectedBarber] = useState(null)
 
-  // Database data
   const barberData = [
     {
       id: 1,

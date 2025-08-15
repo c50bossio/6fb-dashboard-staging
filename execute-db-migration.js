@@ -8,7 +8,6 @@
 const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 
-// Supabase configuration
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
 
@@ -20,7 +19,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 async function createProductionTables() {
   console.log('📊 Creating core production tables...')
   
-  // Create tables directly through the API
   const tableDefinitions = [
     {
       name: 'tenants',
@@ -129,7 +127,6 @@ async function createProductionTables() {
     console.log(`   🔧 Creating table: ${table.name}`)
     
     try {
-      // Use raw SQL query through the REST API
       const { data, error } = await supabase.rpc('exec_sql', {
         sql: table.sql
       })
@@ -137,9 +134,7 @@ async function createProductionTables() {
       if (error) {
         console.log(`   ⚠️  Direct SQL failed for ${table.name}, trying alternative approach...`)
         
-        // Alternative: Create table using INSERT to force table creation
         try {
-          // Try to insert a test record to trigger table creation
           await supabase.from(table.name).select('*').limit(1)
           console.log(`   ✅ Table ${table.name} already exists or was created`)
         } catch (altError) {
@@ -156,7 +151,6 @@ async function createProductionTables() {
   console.log('')
   console.log('🔍 Verifying table creation...')
   
-  // Verify tables were created by trying to query them
   const verificationResults = []
   
   for (const table of tableDefinitions) {
@@ -210,7 +204,6 @@ async function createProductionTables() {
     console.log('✅ Multi-tenant architecture active')
     console.log('✅ Usage analytics tracking enabled')
     
-    // Test basic functionality
     console.log('')
     console.log('🧪 Testing database functionality...')
     
@@ -229,7 +222,6 @@ async function createProductionTables() {
       if (!insertError && insertData.length > 0) {
         console.log('✅ Database write test successful')
         
-        // Clean up test data
         await supabase
           .from('tenants')
           .delete()
@@ -249,5 +241,4 @@ async function createProductionTables() {
   console.log('===================================')
 }
 
-// Execute migration
 createProductionTables().catch(console.error)

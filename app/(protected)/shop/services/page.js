@@ -38,13 +38,10 @@ export default function ShopServicesAndPricing() {
   }, [])
 
   const getUserBarbershop = async () => {
-    // This should be properly implemented based on your auth system
-    // For now, return a placeholder or get from user profile
     if (profile?.barbershop_id) {
       return profile.barbershop_id
     }
     
-    // Fallback for demo - in real app this would be properly resolved
     return 'demo-barbershop-id'
   }
 
@@ -70,7 +67,6 @@ export default function ShopServicesAndPricing() {
     try {
       const supabase = createClient()
       
-      // Get user's barbershop ID (this should be properly implemented based on your auth system)
       const barbershopId = await getUserBarbershop()
       
       if (!barbershopId) {
@@ -79,7 +75,6 @@ export default function ShopServicesAndPricing() {
         return
       }
 
-      // Load shop services with barber customizations
       const { data: servicesData, error: servicesError } = await supabase
         .from('services')
         .select(`
@@ -101,7 +96,6 @@ export default function ShopServicesAndPricing() {
 
       if (servicesError) {
         console.error('Error loading services:', servicesError)
-        // Fallback to mock data for demo
         const mockServices = [
         {
           id: 'service-1',
@@ -218,7 +212,6 @@ export default function ShopServicesAndPricing() {
       setServices(mockServices)
       setCategories(mockCategories)
       } else {
-        // Process real Supabase data
         const enhancedServices = servicesData.map(service => ({
           ...service,
           hasCustomizations: service.barber_customizations?.length > 0,
@@ -228,7 +221,6 @@ export default function ShopServicesAndPricing() {
 
         setServices(enhancedServices)
 
-        // Generate categories from actual data
         const uniqueCategories = [...new Set(enhancedServices.map(s => s.category).filter(Boolean))]
         const categoryData = uniqueCategories.map(cat => ({
           id: cat,

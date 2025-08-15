@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Cin7Client } from '../../../../lib/cin7-client.js'
 
-// Direct Supabase connection with service role
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
@@ -52,7 +51,6 @@ export async function POST(request) {
       forceFieldDiscovery = false 
     } = body
 
-    // Validate required parameters
     if (!barbershopId || !userId) {
       return NextResponse.json({
         error: 'Missing required parameters',
@@ -62,10 +60,8 @@ export async function POST(request) {
 
     console.log(`🔄 Starting Production Sync for barbershop: ${barbershopId}`)
 
-    // Initialize sync operation record
     syncOperation = await initializeSyncOperation(barbershopId, userId, syncMode, options)
     
-    // Get Cin7 connection and credentials
     const connectionData = await getCin7Connection(barbershopId, userId)
     if (!connectionData.success) {
       await updateSyncOperation(syncOperation.id, SYNC_STATES.FAILED, {
@@ -75,10 +71,8 @@ export async function POST(request) {
       return NextResponse.json(connectionData, { status: 400 })
     }
 
-    // Initialize Cin7 client
     const cin7Client = new Cin7Client(connectionData.accountId, connectionData.apiKey)
 
-    // Test connection before proceeding
     const connectionTest = await cin7Client.testConnection()
     if (!connectionTest.success) {
       await updateSyncOperation(syncOperation.id, SYNC_STATES.FAILED, {
@@ -88,7 +82,6 @@ export async function POST(request) {
       return NextResponse.json(connectionTest, { status: 400 })
     }
 
-    // Phase 1: Field Discovery and Mapping Validation
     await updateSyncOperation(syncOperation.id, SYNC_STATES.DISCOVERING_FIELDS)
     const fieldMapping = await getOrDiscoverFieldMapping(
       barbershopId, 
@@ -105,7 +98,6 @@ export async function POST(request) {
       return NextResponse.json(fieldMapping, { status: 400 })
     }
 
-    // Phase 2: Validate mapping strategy
     await updateSyncOperation(syncOperation.id, SYNC_STATES.VALIDATING_MAPPING)
     const mappingValidation = await validateFieldMapping(fieldMapping.mappingStrategy)
     if (!mappingValidation.valid) {
@@ -120,7 +112,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Phase 3: Production sync with batch processing
     const syncResult = await executeProductionSync(
       syncOperation.id,
       cin7Client,
@@ -129,7 +120,6 @@ export async function POST(request) {
       options
     )
 
-    // Handle partial failures
     if (syncResult.successRate < SYNC_CONSTANTS.PARTIAL_FAILURE_THRESHOLD) {
       if (SYNC_CONSTANTS.ROLLBACK_ENABLED && options.allowRollback !== false) {
         console.log('⚠️ Success rate below threshold, initiating rollback')
@@ -151,7 +141,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Success - finalize sync operation
     const duration = Date.now() - startTime
     await updateSyncOperation(syncOperation.id, SYNC_STATES.COMPLETED, {
       itemsSynced: syncResult.totalProcessed,
@@ -162,10 +151,8 @@ export async function POST(request) {
       phase: 'completed'
     })
 
-    // Update connection last sync info
     await updateConnectionSyncStatus(connectionData.connectionId, 'success', syncResult.totalProcessed)
 
-    // Generate low stock alerts if enabled
     if (options.generateAlerts !== false) {
       await generateLowStockAlerts(barbershopId)
     }
@@ -221,13 +208,11 @@ export async function GET(request) {
     const barbershopId = searchParams.get('barbershopId')
 
     if (operationId) {
-      // Get specific operation status
       const operation = await getSyncOperationStatus(operationId)
       return NextResponse.json(operation)
     }
 
     if (barbershopId) {
-      // Get recent sync operations for barbershop
       const operations = await getRecentSyncOperations(barbershopId)
       return NextResponse.json({ operations })
     }
@@ -319,7 +304,6 @@ async function updateSyncOperation(operationId, status, details = {}) {
     updateData.completed_at = new Date().toISOString()
   }
 
-  // Update operation_data with phase information
   const { data: currentOp } = await supabase
     .from('bulk_operations')
     .select('operation_data')
@@ -367,7 +351,6 @@ async function getCin7Connection(barbershopId, userId) {
       }
     }
 
-    // Decrypt API key (assuming it's stored encrypted)
     let apiKey
     try {
       const encryptedData = JSON.parse(data.api_key_encrypted)
@@ -400,7 +383,6 @@ async function getCin7Connection(barbershopId, userId) {
  */
 async function getOrDiscoverFieldMapping(barbershopId, accountId, apiKey, forceDiscovery = false) {
   try {
-    // Check for existing field mapping
     if (!forceDiscovery) {
       const { data } = await supabase
         .from('cin7_field_mappings')
@@ -419,7 +401,6 @@ async function getOrDiscoverFieldMapping(barbershopId, accountId, apiKey, forceD
       }
     }
 
-    // Perform field discovery
     console.log('🔍 Performing field discovery...')
     const discoveryResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/cin7/field-discovery`, {
       method: 'POST',
@@ -456,7 +437,6 @@ async function getOrDiscoverFieldMapping(barbershopId, accountId, apiKey, forceD
 async function validateFieldMapping(mappingStrategy) {
   const issues = []
   
-  // Check critical field mappings
   const criticalMappings = [
     { field: mappingStrategy.identifierMapping?.productId, name: 'Product ID' },
     { field: mappingStrategy.identifierMapping?.name, name: 'Product Name' },
@@ -470,7 +450,6 @@ async function validateFieldMapping(mappingStrategy) {
     }
   })
 
-  // Check for duplicate mappings
   const allMappings = [
     ...Object.values(mappingStrategy.identifierMapping || {}),
     ...Object.values(mappingStrategy.priceMapping || {}),
@@ -502,7 +481,6 @@ async function executeProductionSync(operationId, cin7Client, mappingStrategy, b
   }
 
   try {
-    // Get total count for progress tracking
     console.log('📊 Fetching product count from Cin7...')
     const initialData = await retryWithBackoff(() => cin7Client.getProducts(1, 1))
     const totalItems = initialData.total
@@ -539,12 +517,10 @@ async function executeProductionSync(operationId, cin7Client, mappingStrategy, b
         failed: batchResult.failed
       })
 
-      // Rate limiting between batches
       if (page < totalPages) {
         await sleep(SYNC_CONSTANTS.RATE_LIMIT_DELAY)
       }
 
-      // Check for cancellation
       const operation = await getSyncOperationStatus(operationId)
       if (operation.status === SYNC_STATES.CANCELLED) {
         throw new Error('Sync operation was cancelled')
@@ -577,7 +553,6 @@ async function processBatch(cin7Client, page, batchSize, mappingStrategy, barber
   try {
     console.log(`🔄 Processing batch ${page}...`)
     
-    // Fetch batch from Cin7
     const batchData = await retryWithBackoff(() => 
       cin7Client.getProducts(page, batchSize)
     )
@@ -589,12 +564,10 @@ async function processBatch(cin7Client, page, batchSize, mappingStrategy, barber
       return batchResult
     }
 
-    // Transform products using field mapping
     const transformedProducts = products.map(product => 
       transformProduct(product, mappingStrategy, barbershopId)
     ).filter(Boolean)
 
-    // Batch upsert to database
     if (transformedProducts.length > 0) {
       const { successCount, failedCount, errors } = await batchUpsertProducts(
         transformedProducts, 
@@ -605,7 +578,6 @@ async function processBatch(cin7Client, page, batchSize, mappingStrategy, barber
       batchResult.failed = failedCount
       batchResult.errors = errors
 
-      // Log successful batch processing
       await logSyncBatch(operationId, page, batchResult)
     }
 
@@ -664,7 +636,6 @@ function transformProduct(cin7Product, mappingStrategy, barbershopId) {
       updated_at: new Date().toISOString()
     }
 
-    // Validate critical fields
     if (!transformed.cin7_product_id || !transformed.name) {
       console.warn(`Skipping product due to missing critical fields:`, {
         cin7_product_id: transformed.cin7_product_id,
@@ -692,7 +663,6 @@ async function batchUpsertProducts(products, barbershopId) {
   }
 
   try {
-    // Use upsert with conflict resolution on cin7_product_id
     const { data, error } = await supabase
       .from('products')
       .upsert(products, { 
@@ -707,7 +677,6 @@ async function batchUpsertProducts(products, barbershopId) {
 
     results.successCount = data?.length || 0
     
-    // Log to product change logs
     if (data && data.length > 0) {
       const changeLogs = data.map(product => ({
         product_id: product.id,
@@ -824,7 +793,6 @@ async function updateConnectionSyncStatus(connectionId, status, itemsSynced) {
       })
       .eq('id', connectionId)
 
-    // Also log to sync history
     await supabase
       .from('cin7_sync_logs')
       .insert({
@@ -847,8 +815,6 @@ async function executeRollback(operationId, rollbackData, barbershopId) {
   try {
     console.log('🔄 Executing sync rollback...')
     
-    // Implementation depends on rollback strategy
-    // For now, just mark products as requiring re-sync
     await supabase
       .from('products')
       .update({

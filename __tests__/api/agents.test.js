@@ -1,10 +1,8 @@
 import { POST } from '@/app/api/agents/chat/route'
 import { NextRequest } from 'next/server'
 
-// Mock fetch globally
 global.fetch = jest.fn()
 
-// Mock environment variables
 process.env.FASTAPI_BASE_URL = 'http://localhost:8000'
 process.env.NEXT_PUBLIC_BASE_URL = 'http://localhost:3000'
 
@@ -35,7 +33,6 @@ describe('/api/agents/chat', () => {
         confidence: 0.95
       }
 
-      // Mock successful FastAPI response
       fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockFastApiResponse
@@ -75,7 +72,6 @@ describe('/api/agents/chat', () => {
         })
       })
 
-      // Verify FastAPI was called with correct parameters
       expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/ai-agents/chat',
         expect.objectContaining({
@@ -103,7 +99,6 @@ describe('/api/agents/chat', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          // Missing agentId and message
           userId: 'test-user-123'
         })
       })
@@ -120,7 +115,6 @@ describe('/api/agents/chat', () => {
     })
 
     it('falls back to mock response when FastAPI is unavailable', async () => {
-      // Mock FastAPI failure
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 500
@@ -157,7 +151,6 @@ describe('/api/agents/chat', () => {
     })
 
     it('handles network errors gracefully', async () => {
-      // Mock network error
       fetch.mockRejectedValueOnce(new Error('Network error'))
 
       const request = new NextRequest('http://localhost:3000/api/agents/chat', {
@@ -202,14 +195,12 @@ describe('/api/agents/chat', () => {
         body: JSON.stringify({
           agentId: 'operations',
           message: 'Optimize my schedule'
-          // Missing userId and barbershopId
         })
       })
 
       const response = await POST(request)
       expect(response.status).toBe(200)
 
-      // Verify default values were used
       expect(fetch).toHaveBeenCalledWith(
         'http://localhost:8000/api/v1/ai-agents/chat',
         expect.objectContaining({
@@ -235,12 +226,10 @@ describe('/api/agents/chat', () => {
       }
 
       fetch
-        // Mock Trafft integration check (successful)
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({ isConnected: true })
         })
-        // Mock Trafft sync data
         .mockResolvedValueOnce({
           ok: true,
           json: async () => ({
@@ -257,7 +246,6 @@ describe('/api/agents/chat', () => {
             }]
           })
         })
-        // Mock FastAPI response
         .mockResolvedValueOnce({
           ok: true,
           json: async () => mockFastApiResponse
@@ -276,7 +264,6 @@ describe('/api/agents/chat', () => {
       const response = await POST(request)
       expect(response.status).toBe(200)
 
-      // Verify business context was included
       const fastApiCall = fetch.mock.calls.find(call => 
         call[0] === 'http://localhost:8000/api/v1/ai-agents/chat'
       )

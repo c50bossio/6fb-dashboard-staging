@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 
-// Admin middleware to check for platform admin permissions
 async function verifyAdminAccess(request) {
   try {
     const supabase = createClient()
@@ -14,7 +13,6 @@ async function verifyAdminAccess(request) {
       return { authorized: false, error: 'Authentication required' }
     }
 
-    // In production, check if user has platform admin role
     const adminEmails = ['admin@6fb.ai', 'platform@6fb.ai']
     const isAdmin = adminEmails.includes(user.email) || user.email?.endsWith('@6fb.ai')
     
@@ -30,7 +28,6 @@ async function verifyAdminAccess(request) {
 
 export async function GET(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -44,7 +41,6 @@ export async function GET(request) {
     const timeframe = searchParams.get('timeframe') || '24h'
 
     if (component === 'overview') {
-      // System overview health status
       const healthData = {
         overall_status: 'healthy',
         uptime_percentage: 99.97,
@@ -115,7 +111,6 @@ export async function GET(request) {
     }
 
     if (component === 'metrics') {
-      // Detailed system metrics
       const metricsData = {
         timeframe: timeframe,
         api_metrics: {
@@ -207,7 +202,6 @@ export async function GET(request) {
     }
 
     if (component === 'alerts') {
-      // System alerts and incidents
       const alertsData = {
         active_alerts: [
           {
@@ -302,7 +296,6 @@ export async function GET(request) {
     }
 
     if (component === 'logs') {
-      // System logs and events
       const logsData = {
         timeframe: timeframe,
         log_levels: {
@@ -402,7 +395,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -423,7 +415,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       console.log('Admin acknowledged alert:', {
         admin_user_id: authCheck.user.id,
         alert_id: alert_id,
@@ -453,7 +444,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       console.log('Admin resolved alert:', {
         admin_user_id: authCheck.user.id,
         alert_id: alert_id,
@@ -478,7 +468,6 @@ export async function POST(request) {
     if (action === 'trigger_health_check') {
       const { component } = data
 
-      // Log admin action
       console.log('Admin triggered health check:', {
         admin_user_id: authCheck.user.id,
         component: component || 'all',
@@ -512,8 +501,6 @@ export async function POST(request) {
   }
 }
 
-// Utility functions
 function generateUUID() {
-  // NO RANDOM - use timestamp-based unique ID
   return `health-check-${Date.now()}-${process.hrtime.bigint().toString(36)}`
 }

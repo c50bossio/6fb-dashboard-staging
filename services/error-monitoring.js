@@ -1,9 +1,6 @@
-// Error Monitoring and Alerting Service
-// Tracks errors, performance issues, and sends alerts
 
 const { config } = require('./production-config');
 
-// Error severity levels
 const ErrorSeverity = {
   LOW: 'low',
   MEDIUM: 'medium',
@@ -11,7 +8,6 @@ const ErrorSeverity = {
   CRITICAL: 'critical'
 };
 
-// Error categories
 const ErrorCategory = {
   API: 'api',
   DATABASE: 'database',
@@ -38,24 +34,19 @@ class ErrorMonitor {
     this.initialized = false;
   }
 
-  // Initialize monitoring (connect to Sentry, etc.)
   async initialize() {
     if (this.initialized) return;
 
-    // Initialize Sentry if configured
     if (config.monitoring.sentry.enabled && config.monitoring.sentry.dsn) {
       try {
-        // In production, you would import and initialize Sentry here
         console.log('🔍 Sentry monitoring initialized');
       } catch (error) {
         console.error('Failed to initialize Sentry:', error);
       }
     }
 
-    // Initialize PostHog if configured
     if (config.monitoring.posthog.enabled && config.monitoring.posthog.apiKey) {
       try {
-        // In production, you would import and initialize PostHog here
         console.log('📊 PostHog analytics initialized');
       } catch (error) {
         console.error('Failed to initialize PostHog:', error);
@@ -66,47 +57,38 @@ class ErrorMonitor {
     console.log('✅ Error monitoring service initialized');
   }
 
-  // Categorize error automatically
   categorizeError(error) {
     const message = error.message || error.toString();
     const code = error.code || error.statusCode;
 
-    // Payment errors
     if (message.includes('stripe') || message.includes('payment') || code === 402) {
       return ErrorCategory.PAYMENT;
     }
 
-    // Email errors
     if (message.includes('sendgrid') || message.includes('email')) {
       return ErrorCategory.EMAIL;
     }
 
-    // SMS errors
     if (message.includes('twilio') || message.includes('sms')) {
       return ErrorCategory.SMS;
     }
 
-    // Database errors
     if (message.includes('database') || message.includes('supabase') || message.includes('sql')) {
       return ErrorCategory.DATABASE;
     }
 
-    // Auth errors
     if (message.includes('auth') || message.includes('token') || code === 401) {
       return ErrorCategory.AUTHENTICATION;
     }
 
-    // Rate limit errors
     if (message.includes('rate') || code === 429) {
       return ErrorCategory.RATE_LIMIT;
     }
 
-    // Validation errors
     if (message.includes('validation') || message.includes('invalid') || code === 400) {
       return ErrorCategory.VALIDATION;
     }
 
-    // API errors
     if (code >= 400 && code < 600) {
       return ErrorCategory.API;
     }
@@ -114,11 +96,9 @@ class ErrorMonitor {
     return ErrorCategory.UNKNOWN;
   }
 
-  // Determine error severity
   determineSeverity(error, category) {
     const code = error.code || error.statusCode;
 
-    // Critical errors
     if (
       category === ErrorCategory.PAYMENT ||
       category === ErrorCategory.DATABASE ||
@@ -127,7 +107,6 @@ class ErrorMonitor {
       return ErrorSeverity.CRITICAL;
     }
 
-    // High severity
     if (
       category === ErrorCategory.AUTHENTICATION ||
       code === 403 ||
@@ -136,7 +115,6 @@ class ErrorMonitor {
       return ErrorSeverity.HIGH;
     }
 
-    // Medium severity
     if (
       category === ErrorCategory.EMAIL ||
       category === ErrorCategory.SMS ||
@@ -148,7 +126,6 @@ class ErrorMonitor {
     return ErrorSeverity.LOW;
   }
 
-  // Log error
   async logError(error, context = {}) {
     const category = this.categorizeError(error);
     const severity = this.determineSeverity(error, category);
@@ -166,26 +143,20 @@ class ErrorMonitor {
       resolved: false
     };
 
-    // Store error
     this.errors.push(errorRecord);
     
-    // Update metrics
     this.metrics.total++;
     this.metrics.byCategory[category] = (this.metrics.byCategory[category] || 0) + 1;
     this.metrics.bySeverity[severity] = (this.metrics.bySeverity[severity] || 0) + 1;
 
-    // Send to external monitoring if configured
     if (this.initialized && config.monitoring.sentry.enabled) {
-      // In production, send to Sentry
       console.log(`🚨 [${severity.toUpperCase()}] ${category}: ${error.message}`);
     }
 
-    // Check if alert needed
     if (severity === ErrorSeverity.CRITICAL) {
       await this.sendAlert(errorRecord);
     }
 
-    // Clean up old errors (keep last 1000)
     if (this.errors.length > 1000) {
       this.errors = this.errors.slice(-1000);
     }
@@ -193,7 +164,6 @@ class ErrorMonitor {
     return errorRecord;
   }
 
-  // Send alert for critical errors
   async sendAlert(errorRecord) {
     const alert = {
       id: `alert-${Date.now()}`,
@@ -207,10 +177,8 @@ class ErrorMonitor {
 
     this.alerts.push(alert);
 
-    // In production, send actual alerts (email, Slack, PagerDuty, etc.)
     if (config.environment.isProduction) {
       console.error('🚨 CRITICAL ALERT:', alert.message);
-      // Implement actual alert sending here
       alert.sent = true;
     } else {
       console.log('🔔 [DEV] Alert triggered:', alert.message);
@@ -219,7 +187,6 @@ class ErrorMonitor {
     return alert;
   }
 
-  // Get error metrics
   getMetrics(timeRange = '24h') {
     const now = Date.now();
     const ranges = {
@@ -253,7 +220,6 @@ class ErrorMonitor {
     };
   }
 
-  // Get recent errors
   getRecentErrors(limit = 10, category = null, severity = null) {
     let filtered = [...this.errors];
 
@@ -270,7 +236,6 @@ class ErrorMonitor {
       .slice(0, limit);
   }
 
-  // Mark error as resolved
   resolveError(errorId) {
     const error = this.errors.find(e => e.id === errorId);
     if (error) {
@@ -281,26 +246,22 @@ class ErrorMonitor {
     return false;
   }
 
-  // Get health status
   getHealthStatus() {
     const metrics = this.getMetrics('1h');
     
     let status = 'healthy';
     let issues = [];
 
-    // Check critical errors
     if (metrics.criticalCount > 0) {
       status = 'critical';
       issues.push(`${metrics.criticalCount} critical errors in the last hour`);
     }
 
-    // Check error rate
     if (metrics.errorRate > 10) {
       status = status === 'healthy' ? 'degraded' : status;
       issues.push(`High error rate: ${metrics.errorRate.toFixed(2)} errors/hour`);
     }
 
-    // Check specific categories
     if (metrics.byCategory[ErrorCategory.PAYMENT] > 5) {
       status = 'critical';
       issues.push('Multiple payment processing errors');
@@ -319,7 +280,6 @@ class ErrorMonitor {
     };
   }
 
-  // Clean up old data
   cleanup() {
     const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 days
     
@@ -333,7 +293,6 @@ class ErrorMonitor {
   }
 }
 
-// Performance monitoring
 class PerformanceMonitor {
   constructor() {
     this.metrics = [];
@@ -345,7 +304,6 @@ class PerformanceMonitor {
     };
   }
 
-  // Track performance metric
   track(operation, duration, metadata = {}) {
     const metric = {
       id: `perf-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -358,12 +316,10 @@ class PerformanceMonitor {
 
     this.metrics.push(metric);
 
-    // Clean up old metrics (keep last 1000)
     if (this.metrics.length > 1000) {
       this.metrics = this.metrics.slice(-1000);
     }
 
-    // Log slow operations
     if (metric.slow) {
       console.warn(`⚠️ Slow operation: ${operation} took ${duration}ms`);
     }
@@ -371,7 +327,6 @@ class PerformanceMonitor {
     return metric;
   }
 
-  // Get performance statistics
   getStats(operation = null, timeRange = '1h') {
     const now = Date.now();
     const ranges = {
@@ -424,7 +379,6 @@ class PerformanceMonitor {
     };
   }
 
-  // Start timing an operation
   startTimer(operation) {
     const startTime = Date.now();
     return {
@@ -436,13 +390,10 @@ class PerformanceMonitor {
   }
 }
 
-// Create singleton instances
 const errorMonitor = new ErrorMonitor();
 const performanceMonitor = new PerformanceMonitor();
 
-// Express/Next.js error handling middleware
 const errorHandler = (err, req, res, next) => {
-  // Log error
   errorMonitor.logError(err, {
     url: req.url,
     method: req.method,
@@ -451,7 +402,6 @@ const errorHandler = (err, req, res, next) => {
     userId: req.headers['x-user-id'] || req.body?.user_id
   });
 
-  // Determine response
   const statusCode = err.statusCode || err.code || 500;
   const message = config.environment.isProduction 
     ? 'An error occurred processing your request'

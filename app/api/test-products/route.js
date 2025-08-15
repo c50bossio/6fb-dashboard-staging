@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Direct Supabase connection bypassing auth
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
@@ -9,10 +8,8 @@ const supabase = createClient(
 
 export async function GET() {
   try {
-    // Hardcode the Elite Cuts barbershop that has products
     const barbershopId = '550e8400-e29b-41d4-a716-446655440000'
     
-    // Get all products for this shop
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
@@ -24,7 +21,6 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
     
-    // Calculate metrics
     const metrics = {
       totalProducts: products?.length || 0,
       totalValue: products?.reduce((sum, p) => sum + (p.current_stock * p.retail_price), 0) || 0,

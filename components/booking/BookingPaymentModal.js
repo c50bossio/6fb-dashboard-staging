@@ -74,7 +74,6 @@ export default function BookingPaymentModal({
 
   const handlePaymentSuccess = async (paymentIntent) => {
     try {
-      // Confirm payment on backend
       const response = await fetch('/api/payments/confirm', {
         method: 'POST',
         headers: {
@@ -185,7 +184,6 @@ export default function BookingPaymentModal({
                 <div className="bg-gray-200 rounded-lg h-12"></div>
               </div>
             ) : clientSecret && amount > 0 ? (
-              /* Payment Form */
               <PaymentForm
                 clientSecret={clientSecret}
                 amount={amount}

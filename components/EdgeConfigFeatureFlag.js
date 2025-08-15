@@ -4,10 +4,8 @@ import { useState, useEffect, useContext, createContext } from 'react'
 
 import { edgeConfig } from '../lib/edgeConfig'
 
-// Create context for feature flags
 const FeatureFlagContext = createContext({})
 
-// Feature Flag Provider Component
 export function EdgeConfigProvider({ children }) {
   const [featureFlags, setFeatureFlags] = useState({})
   const [aiConfig, setAiConfig] = useState({})
@@ -21,7 +19,6 @@ export function EdgeConfigProvider({ children }) {
       try {
         setLoading(true)
         
-        // Load all configurations in parallel
         const [flags, ai, limits, maintenance] = await Promise.all([
           edgeConfig.config.getFeatureFlags(),
           edgeConfig.config.getAIConfig(),
@@ -40,7 +37,6 @@ export function EdgeConfigProvider({ children }) {
         console.error('Edge Config loading error:', err)
         setError(err.message)
         
-        // Set fallback values
         setFeatureFlags({
           aiInsightsV2: false,
           advancedCalendar: false,
@@ -74,7 +70,6 @@ export function EdgeConfigProvider({ children }) {
     loading,
     error,
     
-    // Helper functions
     isFeatureEnabled: (featureName) => {
       return featureFlags[featureName] || false
     },
@@ -84,7 +79,6 @@ export function EdgeConfigProvider({ children }) {
     },
     
     refreshConfig: async () => {
-      // Refresh configuration from Edge Config
       try {
         const flags = await edgeConfig.config.getFeatureFlags()
         setFeatureFlags(flags)
@@ -103,7 +97,6 @@ export function EdgeConfigProvider({ children }) {
   )
 }
 
-// Hook to use feature flags
 export function useFeatureFlags() {
   const context = useContext(FeatureFlagContext)
   if (!context) {
@@ -112,7 +105,6 @@ export function useFeatureFlags() {
   return context
 }
 
-// Individual Feature Flag Component
 export function FeatureFlag({ 
   flag, 
   children, 
@@ -122,12 +114,10 @@ export function FeatureFlag({
 }) {
   const { isFeatureEnabled, loading, error } = useFeatureFlags()
 
-  // Show loading state
   if (loading) {
     return fallback || <div className="animate-pulse bg-gray-200 h-4 w-24 rounded" />
   }
 
-  // Show error state
   if (error) {
     console.warn(`Feature flag "${flag}" error:`, error)
     return fallback || null
@@ -135,21 +125,17 @@ export function FeatureFlag({
 
   const isEnabled = isFeatureEnabled(flag)
 
-  // Return enabled component if provided
   if (isEnabled && enabledComponent) {
     return enabledComponent
   }
 
-  // Return disabled component if provided
   if (!isEnabled && disabledComponent) {
     return disabledComponent
   }
 
-  // Default behavior - render children if enabled
   return isEnabled ? children : (fallback || null)
 }
 
-// Conditional Rendering Components
 export function WhenFeatureEnabled({ flag, children, fallback = null }) {
   return (
     <FeatureFlag flag={flag} fallback={fallback}>
@@ -168,7 +154,6 @@ export function WhenFeatureDisabled({ flag, children, fallback = null }) {
   return !isFeatureEnabled(flag) ? children : (fallback || null)
 }
 
-// AI Configuration Component
 export function AIConfigProvider({ children }) {
   const { aiConfig, loading } = useFeatureFlags()
   
@@ -176,7 +161,6 @@ export function AIConfigProvider({ children }) {
     return children // Don't block rendering while loading
   }
   
-  // Make AI config available to child components
   return (
     <div data-ai-provider={aiConfig.provider} data-ai-model={aiConfig.model}>
       {children}
@@ -184,7 +168,6 @@ export function AIConfigProvider({ children }) {
   )
 }
 
-// Maintenance Mode Component
 export function MaintenanceModeGuard({ children }) {
   const { isMaintenanceMode, loading } = useFeatureFlags()
   
@@ -224,7 +207,6 @@ export function MaintenanceModeGuard({ children }) {
   return children
 }
 
-// Rate Limit Display Component
 export function RateLimitInfo({ endpoint = 'api' }) {
   const { rateLimits, loading } = useFeatureFlags()
   
@@ -241,11 +223,9 @@ export function RateLimitInfo({ endpoint = 'api' }) {
   )
 }
 
-// Feature Flag Debug Panel (only in development)
 export function FeatureFlagDebugPanel() {
   const { featureFlags, aiConfig, rateLimits, error, loading } = useFeatureFlags()
   
-  // Only show in development
   if (process.env.NODE_ENV === 'production') {
     return null
   }
@@ -276,7 +256,6 @@ export function FeatureFlagDebugPanel() {
   )
 }
 
-// Export default
 export default {
   EdgeConfigProvider,
   useFeatureFlags,

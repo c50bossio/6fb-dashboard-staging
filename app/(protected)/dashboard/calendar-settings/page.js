@@ -69,14 +69,12 @@ export default function CalendarSettings() {
       const data = await response.json()
       
       if (data.success && data.auth_url) {
-        // Open OAuth flow in popup
         const popup = window.open(
           data.auth_url,
           'google-auth',
           'width=500,height=600,scrollbars=yes,resizable=yes'
         )
         
-        // Listen for popup messages
         const handleMessage = (event) => {
           if (event.origin !== window.location.origin) return
           
@@ -93,7 +91,6 @@ export default function CalendarSettings() {
         
         window.addEventListener('message', handleMessage)
         
-        // Cleanup listener when popup closes
         const checkClosed = setInterval(() => {
           if (popup.closed) {
             clearInterval(checkClosed)
@@ -115,14 +112,12 @@ export default function CalendarSettings() {
       const data = await response.json()
       
       if (data.success && data.auth_url) {
-        // Open OAuth flow in popup
         const popup = window.open(
           data.auth_url,
           'outlook-auth',
           'width=500,height=600,scrollbars=yes,resizable=yes'
         )
         
-        // Listen for popup messages
         const handleMessage = (event) => {
           if (event.origin !== window.location.origin) return
           
@@ -139,7 +134,6 @@ export default function CalendarSettings() {
         
         window.addEventListener('message', handleMessage)
         
-        // Cleanup listener when popup closes
         const checkClosed = setInterval(() => {
           if (popup.closed) {
             clearInterval(checkClosed)
@@ -196,7 +190,6 @@ export default function CalendarSettings() {
   }
 
   const syncAppointment = async (accountId) => {
-    // Demo sync - in real implementation this would sync a specific appointment
     try {
       const response = await fetch('/api/calendar/sync', {
         method: 'POST',

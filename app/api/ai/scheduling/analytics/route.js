@@ -6,7 +6,6 @@
 import { NextResponse } from 'next/server';
 export const runtime = 'edge'
 
-// GET: Get scheduling analytics and insights
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -21,7 +20,6 @@ export async function GET(request) {
       );
     }
     
-    // Mock comprehensive scheduling analytics
     const Analytics = {
       success: true,
       barbershop_id: barbershopId,
@@ -29,7 +27,6 @@ export async function GET(request) {
       analytics_type: analyticsType,
       generated_at: new Date().toISOString(),
       
-      // Overall Performance Summary
       performance_summary: {
         ai_optimization_score: 87.3,
         revenue_optimization: 92.1,
@@ -39,7 +36,6 @@ export async function GET(request) {
         grade: "A"
       },
       
-      // Machine Learning Insights
       ml_insights: {
         prediction_accuracy: 0.891,
         pattern_recognition_strength: 0.924,
@@ -49,7 +45,6 @@ export async function GET(request) {
         data_quality_score: 0.912
       },
       
-      // Revenue Analytics
       revenue_analytics: {
         total_revenue_influenced: 14650.00,
         ai_generated_revenue: 3420.00,
@@ -65,7 +60,6 @@ export async function GET(request) {
         }
       },
       
-      // Efficiency Metrics
       efficiency_analytics: {
         schedule_utilization_rate: 0.834,
         booking_time_reduction: 0.43, // minutes saved per booking
@@ -80,7 +74,6 @@ export async function GET(request) {
         }
       },
       
-      // Customer Experience Analytics
       customer_analytics: {
         booking_satisfaction_score: 4.7,
         preferred_time_accuracy: 0.883,
@@ -96,7 +89,6 @@ export async function GET(request) {
         }
       },
       
-      // Booking Pattern Analysis
       pattern_analysis: {
         strongest_patterns: [
           {
@@ -131,7 +123,6 @@ export async function GET(request) {
         ]
       },
       
-      // Predictive Analytics
       predictive_insights: {
         next_week_demand_forecast: {
           monday: { demand_score: 0.72, confidence: 0.88 },
@@ -163,7 +154,6 @@ export async function GET(request) {
         ]
       },
       
-      // Barber Performance Analytics
       barber_analytics: [
         {
           barber_id: "barber_001",
@@ -193,7 +183,6 @@ export async function GET(request) {
         }
       ],
       
-      // AI Model Performance
       model_performance: {
         recommendation_accuracy_by_category: {
           time_slot_recommendations: 0.887,
@@ -214,7 +203,6 @@ export async function GET(request) {
         }
       },
       
-      // Recommendations for Improvement
       improvement_recommendations: [
         {
           category: "schedule_optimization",
@@ -243,7 +231,6 @@ export async function GET(request) {
       ]
     };
     
-    // Filter based on analytics type if not comprehensive
     if (analyticsType !== 'comprehensive') {
       const filteredAnalytics = { 
         success: true,
@@ -285,7 +272,6 @@ export async function GET(request) {
   }
 }
 
-// POST: Generate custom analytics report
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -298,7 +284,6 @@ export async function POST(request) {
       );
     }
     
-    // Mock custom report generation
     const CustomReport = {
       success: true,
       report_id: `report_${Date.now()}`,

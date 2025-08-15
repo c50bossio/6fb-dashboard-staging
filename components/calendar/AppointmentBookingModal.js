@@ -21,12 +21,9 @@ export default function AppointmentBookingModal({
   const { user } = useAuth()
   const isEditing = !!editingAppointment
   
-  // Form state - Initialize with selectedSlot data
   const getInitialDateTime = () => {
     if (selectedSlot?.start) {
-      // Handle both Date objects and ISO strings
       const date = selectedSlot.start instanceof Date ? selectedSlot.start : new Date(selectedSlot.start)
-      // Convert to local time string for datetime-local input
       const year = date.getFullYear()
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const day = String(date.getDate()).padStart(2, '0')
@@ -51,7 +48,6 @@ export default function AppointmentBookingModal({
     is_walk_in: false,
     booking_source: 'online',
     priority: 0,
-    // Recurring appointment fields
     is_recurring: false,
     recurrence_pattern: 'weekly', // daily, weekly, monthly
     recurrence_interval: 1, // every N weeks/months
@@ -73,13 +69,11 @@ export default function AppointmentBookingModal({
   const [fieldErrors, setFieldErrors] = useState({})
   const [isValidating, setIsValidating] = useState(false)
   
-  // Customer management state
   const [customerMode, setCustomerMode] = useState('new') // 'new' or 'existing'
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [showCustomerSearch, setShowCustomerSearch] = useState(false)
   const [customerSearchLoading, setCustomerSearchLoading] = useState(false)
   
-  // Notification preferences state
   const [notificationPreferences, setNotificationPreferences] = useState({
     sms: true,
     email: true,
@@ -87,25 +81,20 @@ export default function AppointmentBookingModal({
     reminders: true
   })
   
-  // Delete/Cancel confirmation dialog state
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [deleteOption, setDeleteOption] = useState('single') // 'single' or 'all' for recurring
   const [deletingAppointment, setDeletingAppointment] = useState(false)
   const [actionType, setActionType] = useState('cancel') // 'cancel' or 'delete'
   
-  // Quick block mode state
   const [isBlockMode, setIsBlockMode] = useState(false)
   const [blockReason, setBlockReason] = useState('')
 
-  // Populate form when modal opens with selectedSlot or when editing
   useEffect(() => {
-    // PHASE 1 FIX: Reset delete option when modal opens
     setDeleteOption('single')
     setActionType('cancel')
     setShowDeleteConfirmation(false)
     
     if (isEditing && editingAppointment) {
-      // Convert appointment time to local time for editing
       let scheduledAt = ''
       if (editingAppointment.scheduled_at) {
         const date = new Date(editingAppointment.scheduled_at)
@@ -117,7 +106,6 @@ export default function AppointmentBookingModal({
         scheduledAt = `${year}-${month}-${day}T${hours}:${minutes}`
       }
       
-      // Debug logging to see what IDs we're trying to set
       console.log('🔍 Modal - Setting form data for editing:', {
         barber_id: editingAppointment.barber_id,
         service_id: editingAppointment.service_id,
@@ -138,7 +126,6 @@ export default function AppointmentBookingModal({
         is_walk_in: editingAppointment.is_walk_in || false,
         booking_source: editingAppointment.booking_source || 'online',
         priority: editingAppointment.priority || 0,
-        // Recurring fields - only show for parent recurring events
         is_recurring: !!editingAppointment.recurrence_rule,
         recurrence_pattern: 'weekly',
         recurrence_interval: 1,
@@ -148,22 +135,18 @@ export default function AppointmentBookingModal({
         recurrence_end_date: ''
       })
     } else if (selectedSlot && !isEditing) {
-      // Update form when opening with a new selected slot
       let dateTime
       const slotDate = selectedSlot.start instanceof Date 
         ? selectedSlot.start 
         : new Date(selectedSlot.start)
       
-      // Handle different view types
       if (selectedSlot.needsTimePicker) {
-        // Month view: Use selected date with suggested time
         const year = slotDate.getFullYear()
         const month = String(slotDate.getMonth() + 1).padStart(2, '0')
         const day = String(slotDate.getDate()).padStart(2, '0')
         const time = selectedSlot.suggestedTime || '09:00'
         dateTime = `${year}-${month}-${day}T${time}`
       } else {
-        // Other views: Use exact time from slot - convert to local time
         const year = slotDate.getFullYear()
         const month = String(slotDate.getMonth() + 1).padStart(2, '0')
         const day = String(slotDate.getDate()).padStart(2, '0')
@@ -181,7 +164,6 @@ export default function AppointmentBookingModal({
     }
   }, [isEditing, editingAppointment, selectedSlot])
 
-  // Calculate end time based on start time and duration
   const calculateEndTime = useCallback(() => {
     if (formData.scheduled_at && formData.duration_minutes) {
       const start = new Date(formData.scheduled_at)
@@ -191,7 +173,6 @@ export default function AppointmentBookingModal({
     return null
   }, [formData.scheduled_at, formData.duration_minutes])
 
-  // Format time range for display
   const getTimeRangeDisplay = useCallback(() => {
     if (formData.scheduled_at && formData.duration_minutes) {
       const start = new Date(formData.scheduled_at)
@@ -213,12 +194,10 @@ export default function AppointmentBookingModal({
     return null
   }, [formData.scheduled_at, formData.duration_minutes, calculateEndTime])
 
-  // Update service details when service is selected
   useEffect(() => {
     if (formData.service_id) {
       const selectedService = services.find(s => s.id === formData.service_id)
       if (selectedService) {
-        // Only update if values are actually different to prevent infinite loop
         if (formData.duration_minutes !== selectedService.duration_minutes ||
             formData.service_price !== parseFloat(selectedService.price)) {
           setFormData(prev => ({
@@ -231,7 +210,6 @@ export default function AppointmentBookingModal({
     }
   }, [formData.service_id, formData.duration_minutes, formData.service_price, services])
 
-  // Check availability when barber, date, or duration changes
   const checkAvailability = useCallback(async () => {
     if (!formData.barber_id || !formData.scheduled_at || !formData.duration_minutes) return
     
@@ -261,7 +239,6 @@ export default function AppointmentBookingModal({
       
       setAvailability(data.available_slots || [])
       
-      // Check if selected time is available
       const selectedTime = appointmentDate.toTimeString().slice(0, 5)
       const isAvailable = data.available_slots?.some(slot => 
         slot.start_time === selectedTime && slot.available
@@ -279,17 +256,13 @@ export default function AppointmentBookingModal({
     }
   }, [formData.barber_id, formData.scheduled_at, formData.duration_minutes, isEditing, editingAppointment?.id])
 
-  // Use useRef for the timer to avoid dependency issues
   const availabilityTimerRef = useRef(null)
 
-  // Debounced availability check
   const debouncedAvailabilityCheck = useCallback(() => {
-    // Clear existing timer
     if (availabilityTimerRef.current) {
       clearTimeout(availabilityTimerRef.current)
     }
     
-    // Set new timer
     availabilityTimerRef.current = setTimeout(() => {
       checkAvailability()
     }, 800) // Wait 800ms after user stops typing/changing
@@ -298,7 +271,6 @@ export default function AppointmentBookingModal({
   useEffect(() => {
     debouncedAvailabilityCheck()
     
-    // Cleanup timer on unmount
     return () => {
       if (availabilityTimerRef.current) {
         clearTimeout(availabilityTimerRef.current)
@@ -306,7 +278,6 @@ export default function AppointmentBookingModal({
     }
   }, [debouncedAvailabilityCheck])
 
-  // Validation function
   const validateField = (name, value) => {
     const errors = {}
     
@@ -356,7 +327,6 @@ export default function AppointmentBookingModal({
     return errors
   }
 
-  // Validate all required fields
   const validateForm = () => {
     const requiredFields = ['client_name', 'client_phone', 'scheduled_at', 'barber_id', 'service_id']
     let allErrors = {}
@@ -367,7 +337,6 @@ export default function AppointmentBookingModal({
       allErrors = { ...allErrors, ...fieldErrors }
     })
     
-    // Validate email if provided
     if (formData.client_email) {
       const emailErrors = validateField('client_email', formData.client_email)
       allErrors = { ...allErrors, ...emailErrors }
@@ -377,12 +346,10 @@ export default function AppointmentBookingModal({
     return Object.keys(allErrors).length === 0
   }
 
-  // Customer management functions
   const handleCustomerModeChange = (mode) => {
     setCustomerMode(mode)
     if (mode === 'new') {
       setSelectedCustomer(null)
-      // Clear form fields when switching to new customer
       setFormData(prev => ({
         ...prev,
         client_name: '',
@@ -398,7 +365,6 @@ export default function AppointmentBookingModal({
     setSelectedCustomer(customer)
     setCustomerMode('existing')
     
-    // Populate form with customer data
     setFormData(prev => ({
       ...prev,
       client_name: customer.name || '',
@@ -407,12 +373,10 @@ export default function AppointmentBookingModal({
       customer_id: customer.id
     }))
     
-    // Load customer notification preferences
     if (customer.notification_preferences) {
       setNotificationPreferences(customer.notification_preferences)
     }
     
-    // Clear any existing field errors for customer fields
     setFieldErrors(prev => {
       const newErrors = { ...prev }
       delete newErrors.client_name
@@ -428,7 +392,6 @@ export default function AppointmentBookingModal({
     setShowCustomerSearch(false)
   }
 
-  // Quick customer lookup by phone/email
   const quickCustomerLookup = async (phone, email) => {
     if (!phone && !email) return
 
@@ -449,7 +412,6 @@ export default function AppointmentBookingModal({
       if (response.ok) {
         const data = await response.json()
         if (data.found && data.customer) {
-          // Auto-select found customer
           handleSelectCustomer(data.customer)
         }
       }
@@ -463,9 +425,7 @@ export default function AppointmentBookingModal({
   const handleInputChange = async (e) => {
     const { name, value, type, checked } = e.target
     
-    // Special handling for converting to recurring
     if (name === 'is_recurring' && checked && isEditing && !editingAppointment?.recurrence_rule) {
-      // Preserve the original day and time when converting to recurring
       const appointmentDate = new Date(formData.scheduled_at)
       const dayOfWeek = appointmentDate.getDay()
       
@@ -483,12 +443,10 @@ export default function AppointmentBookingModal({
         recurrence_days: [dayOfWeek], // Set the day to match original appointment
         recurrence_end_type: 'count',
         recurrence_count: 10
-        // Note: scheduled_at is NOT changed, preserving the original time
       }))
       
       setShowConversionConfirmation(true)
       
-      // Check for conflicts when converting to recurring
       setTimeout(() => checkRecurringConflicts(), 500)
     } else if (name === 'is_recurring' && !checked) {
       setShowConversionConfirmation(false)
@@ -503,13 +461,11 @@ export default function AppointmentBookingModal({
         [name]: type === 'checkbox' ? checked : value
       }))
       
-      // Real-time validation for individual fields
       if (['client_name', 'client_phone', 'client_email', 'scheduled_at', 'barber_id', 'service_id'].includes(name)) {
         const fieldErrors = validateField(name, type === 'checkbox' ? checked : value)
         setFieldErrors(prev => ({
           ...prev,
           ...fieldErrors,
-          // Clear error if field is now valid
           ...(Object.keys(fieldErrors).length === 0 ? { [name]: undefined } : {})
         }))
       }
@@ -523,7 +479,6 @@ export default function AppointmentBookingModal({
     setError('')
     setIsValidating(true)
     
-    // Validate form before submission
     if (!validateForm()) {
       setIsValidating(false)
       setLoading(false)
@@ -532,7 +487,6 @@ export default function AppointmentBookingModal({
     }
     
     try {
-      // Validate required fields
       if (!formData.barber_id || !formData.service_id || !formData.scheduled_at) {
         throw new Error('Please fill in all required fields')
       }
@@ -541,7 +495,6 @@ export default function AppointmentBookingModal({
         throw new Error('Customer name is required')
       }
       
-      // Prepare appointment data with customer and notification information
       const appointmentData = {
         ...formData,
         barbershop_id: barbershopId,
@@ -550,30 +503,24 @@ export default function AppointmentBookingModal({
         scheduled_at: new Date(formData.scheduled_at).toISOString(),
         recurrence_rule: generateRRule(),
         
-        // Customer management data
         customer_id: selectedCustomer?.id || null,
         customer_mode: customerMode,
         is_new_customer: customerMode === 'new',
         
-        // Notification preferences
         notification_preferences: notificationPreferences,
         send_notifications: notificationPreferences.confirmations || notificationPreferences.reminders,
         
-        // Customer data for API compatibility
         customer_name: formData.client_name,
         customer_phone: formData.client_phone, 
         customer_email: formData.client_email
       }
       
       if (isEditing) {
-        // Check if converting to recurring appointment
         if (formData.is_recurring && !editingAppointment.recurrence_rule) {
-          // Don't proceed if user selected cancel for conflicts
           if (conflicts && conflicts.has_conflicts && conflictResolution === 'cancel') {
             throw new Error('Conversion cancelled due to conflicts')
           }
           
-          // Convert existing appointment to recurring
           const response = await fetch(`/api/calendar/appointments/${editingAppointment.id}/convert-recurring`, {
             method: 'POST',
             headers: {
@@ -593,7 +540,6 @@ export default function AppointmentBookingModal({
           
           const data = await response.json()
           console.log('Convert recurring response:', data)
-          // Pass the appointment data properly
           if (data && data.appointment) {
             onBookingComplete(data.appointment)
           } else {
@@ -601,7 +547,6 @@ export default function AppointmentBookingModal({
             throw new Error('Invalid response from server')
           }
         } else {
-          // Update existing appointment normally
           const response = await fetch(`/api/calendar/appointments/${editingAppointment.id}`, {
             method: 'PATCH',
             headers: {
@@ -619,7 +564,6 @@ export default function AppointmentBookingModal({
           onBookingComplete(data.appointment)
         }
       } else {
-        // Create new appointment
         const response = await fetch('/api/calendar/appointments', {
           method: 'POST',
           headers: {
@@ -646,7 +590,6 @@ export default function AppointmentBookingModal({
     }
   }
   
-  // Handle appointment uncancellation (reactivate cancelled appointment)
   const handleUncancel = async () => {
     if (!editingAppointment || !editingAppointment.id) {
       console.error('No appointment to uncancel', editingAppointment)
@@ -678,11 +621,9 @@ export default function AppointmentBookingModal({
       
       console.log('Uncancel successful:', data)
       
-      // Close the modal and refresh the calendar
       setShowDeleteConfirmation(false)
       onClose()
       
-      // Call the booking complete callback to refresh the calendar
       if (onBookingComplete) {
         await onBookingComplete({ isUncancelled: true })
       }
@@ -695,7 +636,6 @@ export default function AppointmentBookingModal({
     }
   }
 
-  // Handle appointment cancellation (soft delete - marks as cancelled, stays visible)
   const handleCancel = async () => {
     if (!editingAppointment || !editingAppointment.id) {
       console.error('No appointment to cancel', editingAppointment)
@@ -727,11 +667,9 @@ export default function AppointmentBookingModal({
       
       console.log('Cancel successful:', data)
       
-      // Close the modal and refresh the calendar
       setShowDeleteConfirmation(false)
       onClose()
       
-      // Call the booking complete callback to refresh the calendar
       if (onBookingComplete) {
         await onBookingComplete({ isCancelled: true })
       }
@@ -744,17 +682,14 @@ export default function AppointmentBookingModal({
     }
   }
 
-  // Handle quick block time functionality
   const handleQuickBlock = async () => {
     setLoading(true)
     setError('')
     
     try {
-      // Calculate end time based on start time and duration
       const startDate = new Date(formData.scheduled_at || selectedSlot?.start)
       const endDate = new Date(startDate.getTime() + (formData.duration_minutes || 60) * 60000)
       
-      // Prepare minimal booking data for blocked time
       const blockData = {
         barber_id: formData.barber_id || selectedSlot?.barberId || barbers?.[0]?.id,
         service_id: null, // No service for blocked time
@@ -792,12 +727,10 @@ export default function AppointmentBookingModal({
       
       console.log('Time blocked successfully:', data)
       
-      // Reset form and close modal
       setIsBlockMode(false)
       setBlockReason('')
       onClose()
       
-      // Refresh calendar
       if (onBookingComplete) {
         await onBookingComplete({ isBlocked: true })
       }
@@ -810,7 +743,6 @@ export default function AppointmentBookingModal({
     }
   }
 
-  // Handle appointment deletion (hard delete - completely removes from calendar and history)
   const handleDelete = async () => {
     if (!editingAppointment || !editingAppointment.id) {
       console.error('No appointment to delete', editingAppointment)
@@ -830,20 +762,15 @@ export default function AppointmentBookingModal({
     setError('')
     
     try {
-      // Build delete URL with appropriate parameters
       let deleteUrl = `/api/calendar/appointments/${editingAppointment.id}`
       const params = new URLSearchParams()
       
-      // PHASE 1 ENHANCED: Explicitly check for cancelled status FIRST
       const isCancelled = editingAppointment.extendedProps?.status === 'cancelled'
       
       if (isCancelled) {
-        // PHASE 1 FIX: Cancelled appointments NEVER get parameters
         console.log('🔴 DELETE - CANCELLED APPOINTMENT - NO PARAMETERS WILL BE SENT')
         console.log('🔴 DELETE - Status:', editingAppointment.extendedProps?.status)
-        // Do NOT add any parameters - just use base URL
       } else {
-        // Only check recurring logic for NON-cancelled appointments
         const isActuallyRecurring = editingAppointment.isRecurring || editingAppointment.extendedProps?.isRecurring
         
         console.log('🔴 DELETE - Non-Cancelled Appointment Check:', {
@@ -854,12 +781,10 @@ export default function AppointmentBookingModal({
           deleteOption
         })
         
-        // Only add parameters for actual recurring appointments that are NOT cancelled
         if (isActuallyRecurring) {
           if (deleteOption === 'all') {
             params.append('deleteAll', 'true')
           } else if (deleteOption === 'single' && editingAppointment.start) {
-            // Get the date of this specific occurrence
             const occurrenceDate = new Date(editingAppointment.start)
             params.append('cancelDate', occurrenceDate.toISOString().split('T')[0])
           }
@@ -873,7 +798,6 @@ export default function AppointmentBookingModal({
       console.log('🔴 DELETE URL:', deleteUrl)
       console.log('🔴 URL PARAMS:', params.toString() || 'NONE')
       
-      // Use DELETE method to actually remove from database
       const response = await fetch(deleteUrl, {
         method: 'DELETE',
         headers: {
@@ -889,12 +813,9 @@ export default function AppointmentBookingModal({
       
       console.log('Delete successful:', data)
       
-      // Close the modal and refresh the calendar
       setShowDeleteConfirmation(false)
       onClose()
       
-      // Call the booking complete callback to refresh the calendar
-      // Pass a special flag to indicate this was a deletion
       if (onBookingComplete) {
         await onBookingComplete({ isDeleted: true })
       }
@@ -922,7 +843,6 @@ export default function AppointmentBookingModal({
     setAvailabilityError('')
   }
 
-  // Check for conflicts when converting to recurring
   const checkRecurringConflicts = async () => {
     if (!formData.is_recurring || !formData.barber_id) return
     
@@ -959,7 +879,6 @@ export default function AppointmentBookingModal({
     }
   }
   
-  // Helper function to generate RRule string
   const generateRRule = () => {
     if (!formData.is_recurring) return null
     
@@ -981,7 +900,6 @@ export default function AppointmentBookingModal({
     
     let rrule = `FREQ=${freq};INTERVAL=${interval}`
     
-    // Add end condition
     if (formData.recurrence_end_type === 'count') {
       rrule += `;COUNT=${formData.recurrence_count}`
     } else if (formData.recurrence_end_type === 'date' && formData.recurrence_end_date) {
@@ -990,7 +908,6 @@ export default function AppointmentBookingModal({
       rrule += `;UNTIL=${until}`
     }
     
-    // Add days of week for weekly pattern
     if (formData.recurrence_pattern === 'weekly' && formData.recurrence_days.length > 0) {
       const days = formData.recurrence_days.map(day => {
         const weekdays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']
@@ -1435,7 +1352,6 @@ export default function AppointmentBookingModal({
                                   value={formData.client_name}
                                   onChange={handleInputChange}
                                   onBlur={() => {
-                                    // Quick lookup when user enters phone/email
                                     if (formData.client_phone || formData.client_email) {
                                       quickCustomerLookup(formData.client_phone, formData.client_email)
                                     }
@@ -1464,7 +1380,6 @@ export default function AppointmentBookingModal({
                                   value={formData.client_phone}
                                   onChange={handleInputChange}
                                   onBlur={() => {
-                                    // Quick lookup when user enters phone
                                     if (formData.client_phone) {
                                       quickCustomerLookup(formData.client_phone, formData.client_email)
                                     }
@@ -1494,7 +1409,6 @@ export default function AppointmentBookingModal({
                                 value={formData.client_email}
                                 onChange={handleInputChange}
                                 onBlur={() => {
-                                  // Quick lookup when user enters email
                                   if (formData.client_email) {
                                     quickCustomerLookup(formData.client_phone, formData.client_email)
                                   }
@@ -1941,7 +1855,6 @@ export default function AppointmentBookingModal({
                           <div className="flex flex-col sm:flex-row gap-2">
                             {/* Show different first button based on appointment status */}
                             {editingAppointment?.extendedProps?.status === 'cancelled' ? (
-                              // Restore button for cancelled appointments
                               <button
                                 type="button"
                                 onClick={() => {
@@ -1954,7 +1867,6 @@ export default function AppointmentBookingModal({
                                 Restore
                               </button>
                             ) : (
-                              // Cancel button for active appointments
                               <button
                                 type="button"
                                 onClick={() => {

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-// import { posthog } from '@/lib/posthog/server'
 
-// GDPR-compliant production metrics tracking endpoint
 export async function POST(request) {
   try {
     const body = await request.json()
@@ -15,7 +13,6 @@ export async function POST(request) {
       metadata = {}
     } = body
 
-    // GDPR Consent Check - Only track if user has given appropriate consent
     if (!consent.analytics && !consent.performance) {
       return NextResponse.json({ 
         success: false, 
@@ -23,7 +20,6 @@ export async function POST(request) {
       }, { status: 403 })
     }
 
-    // Validate required fields
     if (!event || !sessionId) {
       return NextResponse.json({ 
         success: false, 
@@ -31,13 +27,11 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Get client IP and user agent for fraud detection (GDPR compliant)
     const forwarded = request.headers.get('x-forwarded-for')
     const realIP = request.headers.get('x-real-ip')
     const clientIP = forwarded ? forwarded.split(',')[0] : realIP || 'unknown'
     const userAgent = request.headers.get('user-agent') || 'unknown'
 
-    // Enhanced properties with production context
     const enhancedProperties = {
       ...properties,
       session_id: sessionId,
@@ -58,7 +52,6 @@ export async function POST(request) {
       platform: process.env.NODE_ENV === 'production' ? 'bookedbarber.com' : 'development'
     }
 
-    // Store in Supabase for detailed analysis (if consent given)
     let supabaseResult = null
     if (consent.analytics) {
       try {
@@ -77,26 +70,18 @@ export async function POST(request) {
           .select()
       } catch (supabaseError) {
         console.error('Supabase metrics storage error:', supabaseError)
-        // Don't fail the request if Supabase fails
       }
     }
 
-    // Track with PostHog for real-time analytics (if consent given)
     let posthogResult = null
     if (consent.analytics && false) { // posthog temporarily disabled
       try {
-        // posthogResult = await posthog.capture({
-        //   distinctId: userId || sessionId,
-        //   event: event,
-        //   properties: enhancedProperties
         // })
       } catch (posthogError) {
         console.error('PostHog tracking error:', posthogError)
-        // Don't fail the request if PostHog fails
       }
     }
 
-    // Production Metrics Specific Events - Enhanced Tracking
     await trackProductionSpecificEvents(event, enhancedProperties, consent)
 
     return NextResponse.json({ 
@@ -113,17 +98,8 @@ export async function POST(request) {
   } catch (error) {
     console.error('Metrics tracking error:', error)
     
-    // Track error occurrence (without sensitive data)
     try {
       if (false) { // posthog temporarily disabled
-        // await posthog.capture({
-        //   distinctId: 'system',
-        //   event: 'metrics_tracking_error',
-        //   properties: {
-        //     error_type: error.name,
-        //     error_message: error.message,
-        //     timestamp: new Date().toISOString(),
-        //     endpoint: '/api/metrics/track'
         //   }
         // })
       }
@@ -138,14 +114,12 @@ export async function POST(request) {
   }
 }
 
-// Track production-specific conversion and performance metrics
 async function trackProductionSpecificEvents(event, properties, consent) {
   if (!consent.analytics) return
 
   try {
     const supabase = createClient()
     
-    // Conversion Funnel Tracking
     if (event === 'pricing_page_viewed') {
       await supabase.from('conversion_funnel').upsert({
         session_id: properties.session_id,
@@ -186,7 +160,6 @@ async function trackProductionSpecificEvents(event, properties, consent) {
       })
     }
 
-    // OAuth Completion Tracking
     if (event === 'oauth_started') {
       await supabase.from('oauth_funnel').upsert({
         session_id: properties.session_id,
@@ -208,7 +181,6 @@ async function trackProductionSpecificEvents(event, properties, consent) {
       })
     }
 
-    // Stripe Checkout Tracking
     if (event === 'stripe_checkout_started') {
       await supabase.from('payment_funnel').insert({
         session_id: properties.session_id,
@@ -232,7 +204,6 @@ async function trackProductionSpecificEvents(event, properties, consent) {
       })
     }
 
-    // Page Performance Tracking
     if (event === 'page_performance') {
       await supabase.from('page_performance').insert({
         session_id: properties.session_id,
@@ -250,11 +221,9 @@ async function trackProductionSpecificEvents(event, properties, consent) {
 
   } catch (error) {
     console.error('Production-specific metrics tracking error:', error)
-    // Don't throw - let the main function complete
   }
 }
 
-// GET endpoint for health check
 export async function GET() {
   return NextResponse.json({
     service: 'metrics-tracking',

@@ -3,7 +3,6 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: '.env.local' });
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -26,7 +25,6 @@ async function createTestUser() {
   };
 
   try {
-    // Create user with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: testUser.email,
       password: testUser.password,
@@ -41,7 +39,6 @@ async function createTestUser() {
       if (authError.message.includes('already registered')) {
         console.log('⚠️  User already exists, skipping creation');
         
-        // Try to get existing user
         const { data: existingUser } = await supabase.auth.admin.getUserByEmail(testUser.email);
         if (existingUser) {
           console.log(`✅ Found existing user: ${testUser.email}`);
@@ -71,5 +68,4 @@ async function createTestUser() {
   }
 }
 
-// Run the script
 createTestUser();

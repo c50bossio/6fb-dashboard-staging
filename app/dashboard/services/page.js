@@ -18,7 +18,6 @@ import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
-// Service categories
 const SERVICE_CATEGORIES = [
   { id: 'haircuts', name: 'Haircuts', icon: ScissorsIcon, color: 'blue' },
   { id: 'beard', name: 'Beard & Shave', icon: ScissorsIcon, color: 'green' },
@@ -28,7 +27,6 @@ const SERVICE_CATEGORIES = [
   { id: 'special', name: 'Special Services', icon: SparklesIcon, color: 'indigo' }
 ]
 
-// Mock services data
 const Services = [
   {
     id: 'classic-cut',
@@ -190,7 +188,6 @@ export default function ServicesPage() {
     return colors[category.color] || colors.blue
   }
 
-  // Calculate totals
   const totalServices = services.length
   const activeServices = services.filter(s => s.active).length
   const totalMonthlyBookings = services.reduce((sum, s) => sum + s.bookings_this_month, 0)

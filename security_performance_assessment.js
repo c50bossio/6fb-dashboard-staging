@@ -82,12 +82,10 @@ class SecurityPerformanceAssessment {
       'http://localhost:9999/debug'
     ];
 
-    // Test each endpoint for security
     for (const endpoint of testEndpoints) {
       await this.testEndpointSecurity(endpoint);
     }
 
-    // Calculate security score
     this.calculateSecurityScore();
   }
 
@@ -127,7 +125,6 @@ class SecurityPerformanceAssessment {
           secure: isHttps
         };
 
-        // Check for sensitive endpoints
         const sensitivePatterns = ['/.env', '/config.json', '/.git', '/admin', '/debug'];
         const isSensitive = sensitivePatterns.some(pattern => endpoint.includes(pattern));
         
@@ -142,7 +139,6 @@ class SecurityPerformanceAssessment {
         } else if (isSensitive) {
           console.log(`✅ PROTECTED: ${endpoint} is not accessible`);
         } else {
-          // Check security headers for normal endpoints
           const missingHeaders = Object.entries(securityHeaders)
             .filter(([key, value]) => value === 'Missing')
             .map(([key]) => key);
@@ -198,12 +194,10 @@ class SecurityPerformanceAssessment {
       'http://localhost:8001/health'
     ];
 
-    // Test response times
     for (const endpoint of performanceEndpoints) {
       await this.testEndpointPerformance(endpoint);
     }
 
-    // Run load test
     await this.runLoadTest();
 
     this.calculatePerformanceScore();
@@ -261,7 +255,6 @@ class SecurityPerformanceAssessment {
     console.log(`   Average: ${Math.round(avgResponseTime)}ms`);
     console.log(`   Range: ${Math.round(minResponseTime)}ms - ${Math.round(maxResponseTime)}ms`);
 
-    // Evaluate performance
     if (avgResponseTime > 3000) {
       this.results.performance.score -= 20;
       console.log('   ❌ SLOW: Response time > 3 seconds');
@@ -372,10 +365,8 @@ class SecurityPerformanceAssessment {
     console.log('\n🏗️ Running Infrastructure Assessment...');
     console.log('========================================');
     
-    // Test Docker services
     await this.testDockerServices();
     
-    // Test database connectivity
     await this.testDatabaseConnectivity();
     
     this.calculateInfrastructureScore();
@@ -420,8 +411,6 @@ class SecurityPerformanceAssessment {
   async testDatabaseConnectivity() {
     console.log('🗃️ Testing database connectivity...');
     
-    // This would typically test database connections
-    // For now, we'll just check if the health endpoints report database status
     
     try {
       const healthResponse = await this.makeHealthRequest('http://localhost:9999/api/health');
@@ -500,12 +489,10 @@ class SecurityPerformanceAssessment {
   }
 
   calculatePerformanceScore() {
-    // Performance score is already calculated during testing
     this.results.performance.score = Math.max(0, this.results.performance.score);
   }
 
   calculateInfrastructureScore() {
-    // Infrastructure score is already calculated during testing
     this.results.infrastructure.score = Math.max(0, this.results.infrastructure.score);
   }
 
@@ -518,7 +505,6 @@ class SecurityPerformanceAssessment {
     
     this.results.overall.score = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
     
-    // Determine risk level
     if (this.results.overall.score < 50) {
       this.results.overall.riskLevel = 'CRITICAL';
     } else if (this.results.overall.score < 70) {
@@ -533,7 +519,6 @@ class SecurityPerformanceAssessment {
   generateRecommendations() {
     const recommendations = [];
     
-    // Security recommendations
     const criticalVulns = this.results.security.vulnerabilities.filter(v => v.severity === 'CRITICAL');
     if (criticalVulns.length > 0) {
       recommendations.push({
@@ -554,7 +539,6 @@ class SecurityPerformanceAssessment {
       });
     }
 
-    // Performance recommendations
     if (this.results.performance.score < 80) {
       recommendations.push({
         priority: 'HIGH',
@@ -564,7 +548,6 @@ class SecurityPerformanceAssessment {
       });
     }
 
-    // Infrastructure recommendations
     if (this.results.infrastructure.score < 90) {
       recommendations.push({
         priority: 'MEDIUM',
@@ -574,7 +557,6 @@ class SecurityPerformanceAssessment {
       });
     }
 
-    // General recommendations
     recommendations.push({
       priority: 'MEDIUM',
       category: 'Monitoring',
@@ -632,7 +614,6 @@ class SecurityPerformanceAssessment {
     
     console.log('\n✅ Production Readiness Assessment Complete');
     
-    // Determine production readiness
     if (this.results.overall.score >= 85 && this.results.overall.riskLevel === 'LOW') {
       console.log('🚀 READY FOR PRODUCTION DEPLOYMENT');
     } else if (this.results.overall.score >= 70) {
@@ -643,12 +624,10 @@ class SecurityPerformanceAssessment {
   }
 }
 
-// Run the assessment
 const assessment = new SecurityPerformanceAssessment();
 assessment.runComprehensiveAssessment()
   .then((results) => {
     console.log('\n📁 Assessment completed successfully');
-    // Optionally save results to file
     require('fs').writeFileSync('production-readiness-assessment.json', JSON.stringify(results, null, 2));
     console.log('📄 Detailed results saved to: production-readiness-assessment.json');
   })

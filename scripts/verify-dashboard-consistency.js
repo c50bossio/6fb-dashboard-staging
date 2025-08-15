@@ -9,7 +9,6 @@ const fetch = require('node-fetch')
 
 const BASE_URL = 'http://localhost:9999'
 
-// Color functions for terminal output
 const colors = {
   green: (text) => `\x1b[32m${text}\x1b[0m`,
   red: (text) => `\x1b[31m${text}\x1b[0m`,
@@ -59,7 +58,6 @@ async function verifyConsistency() {
   console.log(colors.bold('\n🔍 Dashboard Data Consistency Check'))
   console.log('=====================================\n')
   
-  // Fetch data from both sources
   console.log('Fetching data from APIs...\n')
   
   const analyticsData = await fetchLiveAnalytics()
@@ -70,25 +68,21 @@ async function verifyConsistency() {
     return
   }
   
-  // Display Analytics Dashboard data
   console.log(colors.cyan('📊 Analytics Dashboard Data:'))
   console.log(`   Revenue: ${colors.bold(`$${analyticsData.revenue.toLocaleString()}`)}`)
   console.log(`   Customers: ${colors.bold(analyticsData.customers)}`)
   console.log(`   Appointments: ${colors.bold(analyticsData.appointments)}`)
   console.log(`   Source: ${analyticsData.source}\n`)
   
-  // Display Dashboard Metrics data
   console.log(colors.cyan('📈 Dashboard Metrics Data:'))
   console.log(`   System Health: ${colors.bold(dashboardData.systemHealth)}`)
   console.log(`   AI Activity: ${colors.bold(dashboardData.aiActivity)} conversations`)
   console.log(`   Active Shops: ${colors.bold(dashboardData.businessInsights)}`)
   console.log(`   Source: ${dashboardData.source}\n`)
   
-  // Check for consistency issues
   console.log(colors.bold('🔎 Consistency Analysis:'))
   console.log('------------------------')
   
-  // The issue: Executive Overview might be showing 0 when Analytics shows real data
   if (analyticsData.revenue > 0 && analyticsData.customers === 0) {
     console.log(colors.yellow('⚠️  Warning: Revenue exists but no customers recorded'))
   }
@@ -97,7 +91,6 @@ async function verifyConsistency() {
     console.log(colors.yellow('⚠️  Warning: Appointments exist but no revenue recorded'))
   }
   
-  // Recommendations
   console.log('\n' + colors.bold('💡 Recommendations:'))
   console.log('-------------------')
   
@@ -109,7 +102,6 @@ async function verifyConsistency() {
     console.log('   Both dashboards should now show consistent data')
   }
   
-  // Check if tables exist
   console.log('\n' + colors.bold('📋 Next Steps:'))
   console.log('--------------')
   console.log('1. Ensure analytics tables exist in Supabase')
@@ -118,5 +110,4 @@ async function verifyConsistency() {
   console.log('4. Refresh both dashboard pages to verify consistency')
 }
 
-// Run the verification
 verifyConsistency().catch(console.error)

@@ -50,7 +50,6 @@ export default function BarberAvailabilityManager({
     specific_date: ''
   })
 
-  // Fetch existing availability
   const fetchAvailability = useCallback(async () => {
     if (!barberId || !barbershopId) return
     
@@ -80,7 +79,6 @@ export default function BarberAvailabilityManager({
     }
   }, [isOpen, fetchAvailability])
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -95,7 +93,6 @@ export default function BarberAvailabilityManager({
       }
 
       if (editingSlot) {
-        // Update existing slot
         const { error } = await supabase
           .from('barber_availability')
           .update(availabilityData)
@@ -103,7 +100,6 @@ export default function BarberAvailabilityManager({
 
         if (error) throw error
       } else {
-        // Create new slot
         const { error } = await supabase
           .from('barber_availability')
           .insert(availabilityData)
@@ -111,7 +107,6 @@ export default function BarberAvailabilityManager({
         if (error) throw error
       }
 
-      // Reset form and refresh data
       setFormData({
         day_of_week: 1,
         start_time: '09:00',
@@ -133,7 +128,6 @@ export default function BarberAvailabilityManager({
     }
   }
 
-  // Handle delete slot
   const handleDelete = async (slotId) => {
     if (!confirm('Are you sure you want to delete this availability slot?')) return
 
@@ -152,7 +146,6 @@ export default function BarberAvailabilityManager({
     }
   }
 
-  // Handle edit slot
   const handleEdit = (slot) => {
     setFormData({
       day_of_week: slot.day_of_week,
@@ -169,7 +162,6 @@ export default function BarberAvailabilityManager({
     setEditingSlot(slot)
   }
 
-  // Add break time
   const addBreakTime = () => {
     setFormData(prev => ({
       ...prev,
@@ -177,7 +169,6 @@ export default function BarberAvailabilityManager({
     }))
   }
 
-  // Remove break time
   const removeBreakTime = (index) => {
     setFormData(prev => ({
       ...prev,
@@ -185,7 +176,6 @@ export default function BarberAvailabilityManager({
     }))
   }
 
-  // Update break time
   const updateBreakTime = (index, field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -195,13 +185,11 @@ export default function BarberAvailabilityManager({
     }))
   }
 
-  // Group availability by day
   const availabilityByDay = daysOfWeek.map(day => ({
     ...day,
     slots: availability.filter(slot => slot.day_of_week === day.value && !slot.specific_date)
   }))
 
-  // Get specific date overrides
   const specificDateSlots = availability.filter(slot => slot.specific_date)
 
   return (

@@ -13,7 +13,6 @@ export default function FinalProfessionalCalendar({
 }) {
   const calendarRef = useRef(null)
   
-  // Professional barber resources
   const resources = [
     { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
     { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#546355' },
@@ -21,12 +20,10 @@ export default function FinalProfessionalCalendar({
     { id: 'barber-4', title: 'Lisa Davis', eventColor: '#D4B878' }
   ]
   
-  // Generate events for today
   const today = new Date()
   const dateStr = today.toISOString().split('T')[0]
   
   const events = [
-    // John Smith's appointments
     {
       id: '1',
       title: 'John Doe - Haircut',
@@ -52,7 +49,6 @@ export default function FinalProfessionalCalendar({
       backgroundColor: '#10b981'
     },
     
-    // Sarah Johnson's appointments
     {
       id: '4',
       title: 'Jane Smith - Hair Color',
@@ -78,7 +74,6 @@ export default function FinalProfessionalCalendar({
       backgroundColor: '#546355'
     },
     
-    // Mike Brown's appointments
     {
       id: '7',
       title: 'Bob Wilson - Classic Cut',
@@ -104,7 +99,6 @@ export default function FinalProfessionalCalendar({
       backgroundColor: '#f59e0b'
     },
     
-    // Lisa Davis's appointments
     {
       id: '10',
       title: 'Alice Brown - Kids Cut',
@@ -131,7 +125,6 @@ export default function FinalProfessionalCalendar({
     }
   ]
   
-  // Handle slot selection
   const handleDateSelect = useCallback((selectInfo) => {
     if (onSlotClick) {
       onSlotClick({
@@ -144,7 +137,6 @@ export default function FinalProfessionalCalendar({
     selectInfo.view.calendar.unselect()
   }, [onSlotClick])
   
-  // Handle event click
   const handleEventClick = useCallback((clickInfo) => {
     if (onEventClick) {
       onEventClick({
@@ -154,7 +146,6 @@ export default function FinalProfessionalCalendar({
     }
   }, [onEventClick])
   
-  // Handle event drop
   const handleEventDrop = useCallback((dropInfo) => {
     if (onEventDrop) {
       onEventDrop({
@@ -176,7 +167,6 @@ export default function FinalProfessionalCalendar({
         ref={calendarRef}
         plugins={[resourceTimeGridPlugin, interactionPlugin]}
         
-        // View
         initialView="resourceTimeGridDay"
         headerToolbar={{
           left: 'prev,next today',
@@ -184,11 +174,9 @@ export default function FinalProfessionalCalendar({
           right: 'resourceTimeGridDay,resourceTimeGridWeek'
         }}
         
-        // Data
         resources={resources}
         events={events}
         
-        // Time configuration
         slotMinTime="08:00:00"
         slotMaxTime="20:00:00"
         slotDuration="00:30:00"
@@ -199,19 +187,16 @@ export default function FinalProfessionalCalendar({
           meridiem: 'short'
         }}
         
-        // Business hours
         businessHours={{
           daysOfWeek: [1, 2, 3, 4, 5, 6],
           startTime: '09:00',
           endTime: '18:00'
         }}
         
-        // Display
         height={height}
         nowIndicator={true}
         eventDisplay="block"
         
-        // Interaction
         editable={true}
         selectable={true}
         selectMirror={true}
@@ -219,12 +204,10 @@ export default function FinalProfessionalCalendar({
         eventClick={handleEventClick}
         eventDrop={handleEventDrop}
         
-        // Resources
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
         resourceAreaHeaderContent="Barbers"
         resourceAreaWidth="15%"
         
-        // Performance
         lazyFetching={true}
         progressiveEventRendering={true}
       />

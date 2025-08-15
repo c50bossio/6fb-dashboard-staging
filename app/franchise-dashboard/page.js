@@ -21,7 +21,6 @@ export default function FranchiseDashboard() {
     try {
       setLoading(true)
       
-      // Fetch franchise overview data
       const [franchiseRes, locationsRes, performanceRes] = await Promise.all([
         fetch('/api/franchise/overview'),
         fetch('/api/franchise/locations'),

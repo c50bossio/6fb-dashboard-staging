@@ -12,7 +12,6 @@ const { execSync } = require('child_process');
 
 console.log('🚀 Setting up SendGrid Email Service Dependencies...\n');
 
-// Required dependencies
 const requiredDependencies = {
     '@sendgrid/mail': '^7.7.0',
     '@supabase/supabase-js': '^2.45.0'
@@ -22,7 +21,6 @@ const requiredDevDependencies = {
     '@types/node': '^20.0.0'
 };
 
-// Environment variables to check
 const requiredEnvVars = [
     'SENDGRID_API_KEY',
     'SENDGRID_WEBHOOK_VERIFICATION_KEY',
@@ -46,7 +44,6 @@ async function checkAndInstallDependencies() {
     let dependenciesToInstall = [];
     let devDependenciesToInstall = [];
     
-    // Check regular dependencies
     Object.entries(requiredDependencies).forEach(([pkg, version]) => {
         if (!packageJson.dependencies || !packageJson.dependencies[pkg]) {
             dependenciesToInstall.push(`${pkg}@${version}`);
@@ -56,7 +53,6 @@ async function checkAndInstallDependencies() {
         }
     });
     
-    // Check dev dependencies
     Object.entries(requiredDevDependencies).forEach(([pkg, version]) => {
         if (!packageJson.devDependencies || !packageJson.devDependencies[pkg]) {
             devDependenciesToInstall.push(`${pkg}@${version}`);
@@ -66,7 +62,6 @@ async function checkAndInstallDependencies() {
         }
     });
     
-    // Install missing dependencies
     if (dependenciesToInstall.length > 0) {
         console.log(`\n📥 Installing missing dependencies...`);
         try {
@@ -123,7 +118,6 @@ DEFAULT_FROM_NAME=Your Barbershop
         console.log('  ✅ Created .env.local template');
     }
     
-    // Check if variables are set (not just if file exists)
     const missingVars = [];
     requiredEnvVars.forEach(varName => {
         if (!process.env[varName] || process.env[varName].includes('your_') || process.env[varName].includes('_here')) {
@@ -201,14 +195,11 @@ async function testSendGridService() {
     console.log('🧪 Testing SendGrid Email Service...');
     
     try {
-        // Test 1: Service initialization
         console.log('✅ Service initialized successfully');
         
-        // Test 2: Get pricing information
         const templates = sendGridService.getEmailTemplates();
         console.log('✅ Email templates loaded:', Object.keys(templates).length);
         
-        // Test 3: Test campaign (using dummy data)
         const testConfig = {
             campaignName: 'Test Campaign',
             recipients: [{ email: 'test@example.com', name: 'Test User' }],
@@ -241,7 +232,6 @@ if (require.main === module) {
     console.log('  💡 Run: node test-sendgrid-service.js to test your setup');
 }
 
-// Main execution
 async function main() {
     try {
         await checkAndInstallDependencies();

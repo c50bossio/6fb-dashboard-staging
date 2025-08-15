@@ -60,7 +60,6 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  // Protect against existing customers accessing pricing page
   useEffect(() => {
     if (user && profile) {
       console.log('🔍 Checking existing user on pricing page:', {
@@ -69,14 +68,12 @@ export default function PricingPage() {
         subscription_status: profile.subscription_status
       })
       
-      // If user has active subscription, redirect them away from pricing
       if (profile.subscription_status === 'active') {
         console.log('✅ User already has active subscription, redirecting to welcome')
         router.push('/welcome?from=existing_customer')
         return
       }
       
-      // If user has a role (individual_barber, shop_owner, etc.) they likely already paid
       if (profile.role && profile.role !== 'CLIENT') {
         console.log('✅ User has business role, redirecting to welcome')
         router.push('/welcome?from=existing_customer')
@@ -90,7 +87,6 @@ export default function PricingPage() {
       setLoading(true)
       console.log('📧 Starting email signup for plan:', planId)
       
-      // Redirect to email registration page with plan data
       const registrationUrl = `/register?plan=${planId}&billing=${billingPeriod}`
       console.log('🔄 Redirecting to registration:', registrationUrl)
       window.location.href = registrationUrl
@@ -107,7 +103,6 @@ export default function PricingPage() {
       setLoading(true)
       console.log('🔐 Starting Google OAuth for plan:', planId)
       
-      // Pass plan data via URL parameters to the OAuth callback
       const callbackUrl = `${window.location.origin}/auth/callback?plan=${planId}&billing=${billingPeriod}`
       console.log('🔄 OAuth callback URL:', callbackUrl)
       

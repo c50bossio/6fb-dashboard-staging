@@ -7,11 +7,9 @@
 
 const http = require('http');
 
-// Test configuration
 const BASE_URL = 'http://localhost:9999';
 const TEST_USER_UUID = '11111111-1111-1111-1111-111111111111';
 
-// ANSI color codes for output
 const colors = {
   green: '\x1b[32m',
   red: '\x1b[31m',
@@ -19,11 +17,9 @@ const colors = {
   reset: '\x1b[0m'
 };
 
-// Test results
 let passed = 0;
 let failed = 0;
 
-// Helper function to make HTTP requests
 function makeRequest(path, options = {}) {
   return new Promise((resolve, reject) => {
     const url = new URL(path, BASE_URL);
@@ -60,7 +56,6 @@ function makeRequest(path, options = {}) {
   });
 }
 
-// Test functions
 async function testServerRunning() {
   console.log('\n📡 Testing server availability...');
   try {
@@ -221,7 +216,6 @@ async function testCampaignCreation() {
   }
 }
 
-// Main test runner
 async function runTests() {
   console.log('========================================');
   console.log('🧪 Campaign & Billing System Quick Test');
@@ -230,7 +224,6 @@ async function runTests() {
   console.log(`🔐 Test User: ${TEST_USER_UUID}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   
-  // Run tests
   const serverOk = await testServerRunning();
   
   if (serverOk) {
@@ -241,7 +234,6 @@ async function runTests() {
     await testCampaignCreation();
   }
   
-  // Summary
   console.log('\n========================================');
   console.log('📊 Test Results Summary');
   console.log('========================================');
@@ -261,11 +253,9 @@ async function runTests() {
     console.log(`${colors.red}❌ System has issues${colors.reset}`);
   }
   
-  // Exit with appropriate code
   process.exit(failed > 0 ? 1 : 0);
 }
 
-// Run the tests
 runTests().catch(error => {
   console.error(`${colors.red}Fatal error: ${error.message}${colors.reset}`);
   process.exit(1);

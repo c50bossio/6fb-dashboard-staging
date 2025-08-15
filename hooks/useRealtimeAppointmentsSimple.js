@@ -16,7 +16,6 @@ export function useRealtimeAppointmentsSimple(shopId) {
     connected: false
   })
 
-  // Transform booking to FullCalendar event format
   const transformToEvent = useCallback((booking) => {
     const isCancelled = booking.status === 'cancelled'
     
@@ -58,15 +57,12 @@ export function useRealtimeAppointmentsSimple(shopId) {
       return
     }
     
-    // Create Supabase client with service role for realtime to work
-    // Note: Using service role because anon key doesn't receive realtime events due to RLS
     const serviceRoleKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY || 
                           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
     
     const supabase = createClient(supabaseUrl, serviceRoleKey)
     console.log('✅ Simple hook: Supabase client created with service role for realtime')
     
-    // Fetch initial appointments
     const fetchAppointments = async () => {
       try {
         console.log('📡 Fetching initial appointments...')
@@ -93,7 +89,6 @@ export function useRealtimeAppointmentsSimple(shopId) {
     
     fetchAppointments()
     
-    // Set up realtime subscription
     console.log('📡 Setting up realtime subscription...')
     
     const channel = supabase
@@ -111,11 +106,9 @@ export function useRealtimeAppointmentsSimple(shopId) {
           const eventType = payload.eventType
           setLastUpdate(new Date().toISOString())
           
-          // Update stats
           if (eventType === 'INSERT') {
             setStats(prev => ({ ...prev, inserts: prev.inserts + 1 }))
             const newEvent = transformToEvent(payload.new)
-            // CRITICAL: Check if appointment already exists before adding
             setAppointments(prev => {
               const exists = prev.some(apt => apt.id === newEvent.id)
               if (exists) {
@@ -145,7 +138,6 @@ export function useRealtimeAppointmentsSimple(shopId) {
           setIsConnected(true)
           setStats(prev => ({ ...prev, connected: true }))
           
-          // Store in window for debugging
           if (typeof window !== 'undefined') {
             window.simpleHookConnected = true
             window.simpleHookStatus = status
@@ -162,17 +154,14 @@ export function useRealtimeAppointmentsSimple(shopId) {
         }
       })
     
-    // Cleanup
     return () => {
       console.log('🧹 Cleaning up simple hook subscription')
       supabase.removeChannel(channel)
     }
   }, [shopId]) // Removed transformToEvent to prevent infinite loop
 
-  // Manual refresh function
   const refresh = useCallback(async () => {
     console.log('🔄 Manual refresh triggered')
-    // Re-fetch appointments
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     

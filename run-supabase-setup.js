@@ -17,10 +17,8 @@ async function runDatabaseSetup() {
   console.log(`📍 URL: ${supabaseUrl}`);
   
   try {
-    // Read the SQL file
     const sql = fs.readFileSync('supabase-booking-hub-setup.sql', 'utf8');
     
-    // Split into individual statements
     const statements = sql
       .split(';')
       .map(stmt => stmt.trim())
@@ -34,7 +32,6 @@ async function runDatabaseSetup() {
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i] + ';';
       
-      // Skip empty statements and comments
       if (statement.trim() === ';' || statement.startsWith('--')) {
         continue;
       }
@@ -42,16 +39,13 @@ async function runDatabaseSetup() {
       try {
         console.log(`⏳ Executing statement ${i + 1}/${statements.length}...`);
         
-        // Use rpc to execute raw SQL
         const { data, error } = await supabase.rpc('exec_sql', {
           sql_query: statement
         });
         
         if (error) {
-          // Try alternative approach for unsupported statements
           console.warn(`⚠️ RPC failed, trying direct query: ${error.message}`);
           
-          // For some statements, we might need to use the REST API directly
           const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
             method: 'POST',
             headers: {
@@ -75,7 +69,6 @@ async function runDatabaseSetup() {
           successCount++;
         }
         
-        // Small delay to avoid overwhelming the database
         await new Promise(resolve => setTimeout(resolve, 100));
         
       } catch (err) {
@@ -110,5 +103,4 @@ async function runDatabaseSetup() {
   }
 }
 
-// Run the setup
 runDatabaseSetup().catch(console.error);

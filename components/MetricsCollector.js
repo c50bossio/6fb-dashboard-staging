@@ -24,17 +24,14 @@ export function MetricsCollector({
   const interactionObserverRef = useRef(null)
   const performanceObserverRef = useRef(null)
 
-  // Initialize consent and tracking
   useEffect(() => {
     const existingConsent = metricsRef.current.getConsent()
     setConsent(existingConsent)
     
-    // Show consent banner if required and not given
     if (consentRequired && !existingConsent.analytics && !existingConsent.performance) {
       setShowConsentBanner(true)
     }
 
-    // Update user ID when authentication changes
     if (user?.id) {
       localStorage.setItem('user_id', user.id)
       metricsRef.current.track('user_identified', {
@@ -44,13 +41,11 @@ export function MetricsCollector({
     }
   }, [user, consentRequired])
 
-  // Initialize interaction tracking
   useEffect(() => {
     if (!trackingEnabled || !autoTrackInteractions) return
     if (consentRequired && !consent?.analytics) return
 
     const trackPricingInteractions = () => {
-      // Track pricing plan hover interactions
       const planElements = document.querySelectorAll('[data-plan-name]')
       planElements.forEach(element => {
         const planName = element.dataset.planName
@@ -64,7 +59,6 @@ export function MetricsCollector({
         })
       })
 
-      // Track CTA button interactions
       const ctaButtons = document.querySelectorAll('[data-cta]')
       ctaButtons.forEach(button => {
         button.addEventListener('click', (e) => {
@@ -80,7 +74,6 @@ export function MetricsCollector({
         })
       })
 
-      // Track form abandonment
       const forms = document.querySelectorAll('form[data-track-form]')
       forms.forEach(form => {
         const formName = form.dataset.trackForm
@@ -93,7 +86,6 @@ export function MetricsCollector({
           })
         })
 
-        // Track field-level interactions
         const fields = form.querySelectorAll('input, select, textarea')
         fields.forEach(field => {
           let focusTime = 0
@@ -117,7 +109,6 @@ export function MetricsCollector({
       })
     }
 
-    // Initialize tracking with delay to ensure DOM is ready
     const initTimeout = setTimeout(trackPricingInteractions, 1000)
     
     return () => {
@@ -125,7 +116,6 @@ export function MetricsCollector({
     }
   }, [trackingEnabled, autoTrackInteractions, consent])
 
-  // Initialize intersection observer for element visibility tracking
   useEffect(() => {
     if (!trackingEnabled || !autoTrackInteractions) return
     if (consentRequired && !consent?.analytics) return
@@ -151,7 +141,6 @@ export function MetricsCollector({
       threshold: [0.25, 0.5, 0.75, 1.0]
     })
 
-    // Observe trackable elements
     const trackableElements = document.querySelectorAll('[data-track-view]')
     trackableElements.forEach(element => {
       interactionObserverRef.current.observe(element)
@@ -164,12 +153,10 @@ export function MetricsCollector({
     }
   }, [trackingEnabled, autoTrackInteractions, consent])
 
-  // Initialize performance tracking
   useEffect(() => {
     if (!trackingEnabled || !autoTrackPerformance) return
     if (consentRequired && !consent?.performance) return
 
-    // Track scroll depth
     let maxScrollDepth = 0
     const handleScroll = () => {
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop
@@ -180,7 +167,6 @@ export function MetricsCollector({
       if (scrollPercent > maxScrollDepth) {
         maxScrollDepth = scrollPercent
         
-        // Track scroll milestones
         if (scrollPercent >= 25 && scrollPercent < 50) {
           metricsRef.current.track('scroll_depth_25')
         } else if (scrollPercent >= 50 && scrollPercent < 75) {
@@ -193,7 +179,6 @@ export function MetricsCollector({
       }
     }
 
-    // Track time on page intervals
     const timeIntervals = [30, 60, 120, 300, 600] // 30s, 1m, 2m, 5m, 10m
     const timeTrackers = timeIntervals.map(seconds => 
       setTimeout(() => {
@@ -213,7 +198,6 @@ export function MetricsCollector({
     }
   }, [trackingEnabled, autoTrackPerformance, consent])
 
-  // Handle consent acceptance
   const handleConsentAccept = (consentTypes) => {
     const newConsent = {
       analytics: consentTypes.includes('analytics'),
@@ -225,14 +209,12 @@ export function MetricsCollector({
     setConsent(newConsent)
     setShowConsentBanner(false)
 
-    // Track consent acceptance
     metricsRef.current.track('consent_accepted', {
       consent_types: consentTypes,
       timestamp: new Date().toISOString()
     })
   }
 
-  // Handle consent rejection
   const handleConsentReject = () => {
     const noConsent = {
       analytics: false,
@@ -269,7 +251,6 @@ export function MetricsCollector({
   )
 }
 
-// GDPR Consent Banner Component
 function GDPRConsentBanner({ onAccept, onReject }) {
   const [selectedConsent, setSelectedConsent] = useState(['analytics', 'performance'])
 
@@ -333,7 +314,6 @@ function GDPRConsentBanner({ onAccept, onReject }) {
   )
 }
 
-// Debug Information Component (Development Only)
 function MetricsDebugInfo({ consent, sessionId, interactionCount }) {
   if (process.env.NODE_ENV !== 'development') return null
 
@@ -352,7 +332,6 @@ function MetricsDebugInfo({ consent, sessionId, interactionCount }) {
   )
 }
 
-// Specific tracking hooks for common use cases
 export function usePricingTracking() {
   const trackPlanView = (planName) => {
     metricsTracker.trackConversionFunnel.pricingPageViewed()

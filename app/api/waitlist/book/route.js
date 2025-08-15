@@ -73,7 +73,6 @@ export async function POST(request) {
     try {
         const body = await request.json();
         
-        // Validate required fields
         if (!body.waitlist_id || !body.slot_time) {
             return NextResponse.json(
                 { 
@@ -84,7 +83,6 @@ export async function POST(request) {
             );
         }
         
-        // Validate slot_time format
         const slot_time = new Date(body.slot_time);
         if (isNaN(slot_time.getTime())) {
             return NextResponse.json(
@@ -93,7 +91,6 @@ export async function POST(request) {
             );
         }
         
-        // Check if slot is in the future
         if (slot_time <= new Date()) {
             return NextResponse.json(
                 { success: false, error: 'Slot time must be in the future' },
@@ -101,7 +98,6 @@ export async function POST(request) {
             );
         }
         
-        // Simulate booking creation (in production, this would call the Python service)
         const result = {
             success: true,
             booking_id: `booking_${Date.now()}`,
@@ -119,21 +115,13 @@ export async function POST(request) {
             message: 'Booking successfully created from waitlist'
         };
         
-        // In production, this would call:
-        // const result = await waitlist_cancellation_service.process_waitlist_booking(
-        //     body.waitlist_id,
-        //     slot_time,
-        //     body.barber_id,
-        //     body.auto_confirm !== false
         // );
         
         if (!result.success) {
             return NextResponse.json(result, { status: 400 });
         }
         
-        // If booking was successful, trigger additional processes
         if (result.success && result.booking_id) {
-            // In production, these would be handled by the service:
             // 1. Send confirmation notification to customer
             // 2. Update waitlist positions for remaining customers
             // 3. Create payment intent if payment is required

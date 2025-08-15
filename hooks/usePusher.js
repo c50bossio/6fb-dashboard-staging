@@ -13,11 +13,9 @@ export function usePusher() {
   useEffect(() => {
     if (!user) return
 
-    // Initialize Pusher client
     const pusher = getPusherClient()
     pusherRef.current = pusher
 
-    // Connection state handlers
     pusher.connection.bind('connected', () => {
       console.log('Pusher connected')
       setIsConnected(true)
@@ -32,16 +30,13 @@ export function usePusher() {
       console.error('Pusher connection error:', error)
     })
 
-    // Cleanup
     return () => {
-      // Unbind all channels
       Object.values(channelsRef.current).forEach(channel => {
         channel.unbind_all()
         pusher.unsubscribe(channel.name)
       })
       channelsRef.current = {}
       
-      // Disconnect
       pusher.disconnect()
     }
   }, [user])
@@ -49,21 +44,17 @@ export function usePusher() {
   const subscribe = useCallback((channelName, events = {}) => {
     if (!pusherRef.current || !user) return null
 
-    // Check if already subscribed
     if (channelsRef.current[channelName]) {
       return channelsRef.current[channelName]
     }
 
-    // Subscribe to channel
     const channel = pusherRef.current.subscribe(channelName)
     channelsRef.current[channelName] = channel
 
-    // Bind events
     Object.entries(events).forEach(([event, handler]) => {
       channel.bind(event, handler)
     })
 
-    // Handle subscription success/error
     channel.bind('pusher:subscription_succeeded', () => {
       console.log(`Subscribed to ${channelName}`)
     })
@@ -103,7 +94,6 @@ export function usePusher() {
   }
 }
 
-// Hook for presence channels
 export function usePresenceChannel(roomId) {
   const { user } = useAuth()
   const [members, setMembers] = useState([])
@@ -136,7 +126,6 @@ export function usePresenceChannel(roomId) {
   return { members, myInfo }
 }
 
-// Hook for real-time notifications
 export function useRealtimeNotifications() {
   const { user } = useAuth()
   const [notifications, setNotifications] = useState([])

@@ -39,7 +39,6 @@ export function middleware(request) {
     '/.dockerignore'
   ]
 
-  // Block sensitive file access
   const isBlockedPath = blockedPaths.some(blocked => 
     pathname.startsWith(blocked) || pathname === blocked
   )
@@ -52,7 +51,6 @@ export function middleware(request) {
   // 🛡️ SECURITY HEADERS: Add comprehensive security headers
   const response = NextResponse.next()
 
-  // Content Security Policy - Updated for PostHog and analytics
   response.headers.set(
     'Content-Security-Policy',
     "default-src 'self'; " +
@@ -66,14 +64,12 @@ export function middleware(request) {
     "base-uri 'self';"
   )
 
-  // Security headers
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')  
   response.headers.set('X-XSS-Protection', '1; mode=block')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
   
-  // HSTS for production
   if (process.env.NODE_ENV === 'production') {
     response.headers.set(
       'Strict-Transport-Security', 

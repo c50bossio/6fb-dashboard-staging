@@ -7,7 +7,6 @@ import { jest } from '@jest/globals';
 import { screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-// Time utilities
 export const TimeHelpers = {
   /**
    * Create a date in the future
@@ -68,7 +67,6 @@ export const TimeHelpers = {
   }
 };
 
-// DOM testing utilities
 export const DOMHelpers = {
   /**
    * Find element by test ID with better error messages
@@ -163,7 +161,6 @@ export const DOMHelpers = {
   }
 };
 
-// Database implementations
 export const DatabaseHelpers = {
   /**
    * Database fetch with custom responses
@@ -315,7 +312,6 @@ export const DatabaseHelpers = {
   }
 };
 
-// Assertion helpers
 export const AssertionHelpers = {
   /**
    * Check if element has specific CSS class
@@ -400,7 +396,6 @@ export const AssertionHelpers = {
   }
 };
 
-// Test data manipulation
 export const DataHelpers = {
   /**
    * Create test user with role
@@ -506,7 +501,6 @@ export const DataHelpers = {
   }
 };
 
-// Setup and teardown helpers
 export const SetupHelpers = {
   /**
    * Setup common mocks for testing
@@ -517,7 +511,6 @@ export const SetupHelpers = {
     DatabaseHelpers.mockResizeObserver();
     DatabaseHelpers.mockPerformance();
     
-    // Database console methods to reduce noise in tests
     global.console.warn = jest.fn();
     global.console.error = jest.fn();
   },
@@ -536,7 +529,6 @@ export const SetupHelpers = {
   setupTestEnvironment() {
     this.setupCommonDatabases();
     
-    // Database next/router
     const Router = {
       push: jest.fn(),
       replace: jest.fn(),
@@ -568,15 +560,12 @@ export const SetupHelpers = {
     jest.clearAllMocks();
     jest.clearAllTimers();
     
-    // Reset DOM
     document.body.innerHTML = '';
     
-    // Clear any remaining event listeners
     window.removeAllListeners?.();
   }
 };
 
-// Async testing utilities
 export const AsyncHelpers = {
   /**
    * Wait for condition to be true
@@ -640,7 +629,6 @@ export const AsyncHelpers = {
   }
 };
 
-// Performance testing utilities
 export const PerformanceHelpers = {
   /**
    * Measure execution time
@@ -692,7 +680,6 @@ export const PerformanceHelpers = {
   }
 };
 
-// Accessibility testing helpers
 export const A11yHelpers = {
   /**
    * Check if element has proper ARIA attributes
@@ -709,7 +696,6 @@ export const A11yHelpers = {
   async testKeyboardNavigation(container, expectedOrder = []) {
     const user = userEvent.setup();
     
-    // Start from first focusable element
     await user.tab();
     
     for (const expectedTestId of expectedOrder) {
@@ -723,10 +709,8 @@ export const A11yHelpers = {
    * Check if element is accessible to screen readers
    */
   expectScreenReaderAccessible(element) {
-    // Check if element has accessible name
     expect(element).toHaveAccessibleName();
     
-    // Check if element has proper role
     const role = element.getAttribute('role');
     const tagName = element.tagName.toLowerCase();
     
@@ -743,7 +727,6 @@ export const A11yHelpers = {
     const color = styles.color;
     const backgroundColor = styles.backgroundColor;
     
-    // This is a simplified check - in real tests you'd use a proper contrast checker
     expect(color).not.toBe(backgroundColor);
     expect(color).not.toBe('transparent');
   },
@@ -770,7 +753,6 @@ export const A11yHelpers = {
   }
 };
 
-// Mobile testing utilities
 export const MobileHelpers = {
   /**
    * Set mobile viewport
@@ -788,7 +770,6 @@ export const MobileHelpers = {
       value: height,
     });
     
-    // Trigger resize event
     window.dispatchEvent(new Event('resize'));
   },
 
@@ -868,7 +849,6 @@ export const MobileHelpers = {
   }
 };
 
-// Export all helper categories
 export {
   TimeHelpers,
   DOMHelpers,
@@ -882,7 +862,6 @@ export {
   MobileHelpers
 };
 
-// Default export with all helpers
 export default {
   Time: TimeHelpers,
   DOM: DOMHelpers,

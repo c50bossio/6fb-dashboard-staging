@@ -3,7 +3,6 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: '.env.local' });
 
-// Initialize Supabase admin client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -19,7 +18,6 @@ async function checkEmailSettings() {
   console.log('🔍 Checking Supabase Email Configuration...\n');
   console.log('=' .repeat(50));
   
-  // Extract project reference
   const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL.split('//')[1].split('.')[0];
   
   console.log('📊 Project Information:');
@@ -29,12 +27,10 @@ async function checkEmailSettings() {
   console.log('📧 Email Configuration Status:');
   console.log('─'.repeat(50));
   
-  // Test email sending by attempting to send a password reset
   try {
     console.log('\n1. Testing Email Service:');
     const testEmail = `test_${Date.now()}@example.com`;
     
-    // Try to sign up a test user to check if emails are being sent
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: testEmail,
       password: 'TestPassword123!',
@@ -50,7 +46,6 @@ async function checkEmailSettings() {
       console.log('   💡 Users can login immediately without email verification');
     }
     
-    // Clean up test user if created
     if (signUpData?.user) {
       await supabase.auth.admin.deleteUser(signUpData.user.id).catch(() => {});
     }
@@ -75,9 +70,7 @@ async function checkEmailSettings() {
   console.log('\n4. Current Configuration:');
   console.log('─'.repeat(50));
   
-  // Check if we can access auth settings
   try {
-    // Test with a known user (the test user we created)
     const { data: testUser } = await supabase.auth.admin.getUserByEmail('test@barbershop.com');
     
     if (testUser?.user) {
@@ -110,5 +103,4 @@ async function checkEmailSettings() {
   console.log('\n✅ Email configuration check complete!\n');
 }
 
-// Run the check
 checkEmailSettings().catch(console.error);

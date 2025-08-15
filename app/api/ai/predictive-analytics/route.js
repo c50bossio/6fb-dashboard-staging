@@ -40,7 +40,6 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const barbershop_id = searchParams.get('barbershop_id') || 'demo'
     
-    // Generate comprehensive predictive dashboard
     const dashboard = await generatePredictiveDashboard(barbershop_id)
     return dashboard
   } catch (error) {
@@ -57,13 +56,11 @@ export async function GET(request) {
  */
 async function generateRevenueForecast(barbershop_id, parameters) {
   try {
-    // Fetch historical data (simulated for demo)
     const historicalData = await getHistoricalRevenue(barbershop_id)
     
     const timeframe = parameters?.timeframe || 30 // days
     const confidence_level = parameters?.confidence_level || 0.85
     
-    // Advanced forecasting using multiple models
     const forecasts = {
       linear_trend: generateLinearForecast(historicalData, timeframe),
       seasonal_adjusted: generateSeasonalForecast(historicalData, timeframe),
@@ -73,13 +70,10 @@ async function generateRevenueForecast(barbershop_id, parameters) {
       realistic: null
     }
     
-    // Calculate ensemble prediction
     const ensembleForecast = calculateEnsemble(forecasts)
     
-    // Generate confidence intervals
     const confidenceIntervals = calculateConfidenceIntervals(ensembleForecast, confidence_level)
     
-    // Add external factors
     const externalFactors = analyzeExternalFactors()
     
     return NextResponse.json({
@@ -400,14 +394,11 @@ async function optimizePricing(barbershop_id, parameters) {
  */
 async function generatePredictiveDashboard(barbershop_id) {
   try {
-    // Get real historical data for predictions
     const historicalData = await getHistoricalRevenue(barbershop_id)
     
-    // Import dashboard data functions for real metrics
     const { getBusinessMetrics } = await import('../../../../lib/dashboard-data')
     const currentMetrics = await getBusinessMetrics(barbershop_id)
     
-    // Generate forecasts based on real data
     const forecasts = {
       linear_trend: generateLinearForecast(historicalData, 30),
       seasonal_adjusted: generateSeasonalForecast(historicalData, 30),
@@ -416,7 +407,6 @@ async function generatePredictiveDashboard(barbershop_id) {
     
     const ensembleForecast = calculateEnsemble(forecasts)
     
-    // Calculate real metrics from data
     const avgDailyRevenue = historicalData.length > 0 ? 
       historicalData.slice(0, 7).reduce((sum, d) => sum + d.revenue, 0) / 7 : 0
     
@@ -425,10 +415,8 @@ async function generatePredictiveDashboard(barbershop_id) {
        (historicalData.slice(7, 14).reduce((sum, d) => sum + d.revenue, 0) / 7)) /
        (historicalData.slice(7, 14).reduce((sum, d) => sum + d.revenue, 0) / 7) * 100 : 0
     
-    // Identify real patterns in data
     const predictions = []
     
-    // Revenue prediction based on real trends
     if (ensembleForecast.growth_rate > 10) {
       predictions.push({
         type: 'Revenue Growth',
@@ -438,7 +426,6 @@ async function generatePredictiveDashboard(barbershop_id) {
       })
     }
     
-    // Customer analysis from real data
     if (currentMetrics.customers > 20) {
       const churnRisk = Math.round(currentMetrics.customers * 0.15) // Estimate 15% at risk
       predictions.push({
@@ -449,7 +436,6 @@ async function generatePredictiveDashboard(barbershop_id) {
       })
     }
     
-    // Demand patterns from appointment data
     if (historicalData.length > 0) {
       const avgBookings = historicalData.reduce((sum, d) => sum + d.bookings, 0) / historicalData.length
       const peakDays = historicalData.filter(d => d.bookings > avgBookings * 1.2)
@@ -557,7 +543,6 @@ async function generatePredictiveDashboard(barbershop_id) {
   } catch (error) {
     console.error('Failed to generate predictive dashboard:', error)
     
-    // Return minimal dashboard on error
     return NextResponse.json({
       success: false,
       error: 'Failed to generate predictions',
@@ -584,19 +569,14 @@ async function generatePredictiveDashboard(barbershop_id) {
  */
 
 async function getHistoricalRevenue(barbershop_id) {
-  // Fetch real historical data from database
   try {
-    // Import the dashboard data functions to access real database
     const { getBusinessMetrics, getPredictiveData } = await import('../../../../lib/dashboard-data')
     
-    // Get actual business metrics from database
     const metrics = await getBusinessMetrics(barbershop_id, '90d')
     
-    // Also try to get appointments and payments data for more detailed history
     const { createClient } = await import('../../../../lib/supabase/server')
     const supabase = createClient()
     
-    // Get last 90 days of bookings (consolidated table with more comprehensive data)
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
     const { data: bookings } = await supabase
       .from('bookings')
@@ -604,7 +584,6 @@ async function getHistoricalRevenue(barbershop_id) {
       .gte('created_at', ninetyDaysAgo.toISOString())
       .order('created_at', { ascending: false })
     
-    // Get payments for revenue data
     const { data: payments } = await supabase
       .from('payments')
       .select('*')
@@ -612,10 +591,8 @@ async function getHistoricalRevenue(barbershop_id) {
       .gte('created_at', ninetyDaysAgo.toISOString())
       .order('created_at', { ascending: false })
     
-    // Group data by day for historical analysis
     const dailyData = {}
     
-    // Process bookings by day
     if (bookings && bookings.length > 0) {
       bookings.forEach(booking => {
         const date = booking.created_at.split('T')[0]
@@ -623,14 +600,12 @@ async function getHistoricalRevenue(barbershop_id) {
           dailyData[date] = { date, revenue: 0, bookings: 0 }
         }
         dailyData[date].bookings++
-        // Add revenue from booking if available
         if (booking.price) {
           dailyData[date].revenue += parseFloat(booking.price)
         }
       })
     }
     
-    // Process payments by day
     if (payments && payments.length > 0) {
       payments.forEach(payment => {
         const date = payment.created_at.split('T')[0]
@@ -641,27 +616,22 @@ async function getHistoricalRevenue(barbershop_id) {
       })
     }
     
-    // Convert to array and sort by date
     const historicalData = Object.values(dailyData).sort((a, b) => 
       new Date(b.date) - new Date(a.date)
     )
     
-    // If we have real data, return it
     if (historicalData.length > 0) {
       console.log('✅ Using real historical data for predictions:', historicalData.length, 'days')
       return historicalData
     }
     
-    // Fallback: generate minimal data based on current metrics
     const avgDailyRevenue = metrics.revenue / 30
     const avgDailyBookings = metrics.appointments / 30
     
-    // NO MOCK DATA - Return empty array when no data exists
     return []
     
   } catch (error) {
     console.error('Failed to fetch historical data:', error)
-    // Return empty array instead of mock data
     return []
   }
 }
@@ -674,7 +644,6 @@ function generateLinearForecast(data, days) {
   const recent = data.slice(0, Math.min(30, data.length))
   const avgRevenue = recent.reduce((sum, day) => sum + day.revenue, 0) / recent.length
   
-  // Calculate trend if we have enough data
   let trend = 0
   if (recent.length >= 2) {
     const firstWeekAvg = recent.slice(0, 7).reduce((sum, d) => sum + d.revenue, 0) / 7
@@ -694,22 +663,17 @@ function generateSeasonalForecast(data, days) {
     return { total_revenue: 0, daily_average: 0, growth_rate: 0 }
   }
   
-  // Calculate base revenue from actual data
   const baseRevenue = data.reduce((sum, day) => sum + day.revenue, 0) / data.length
   
-  // Detect seasonal patterns (simplified - in production would use more sophisticated analysis)
   const currentMonth = new Date().getMonth()
   let seasonalMultiplier = 1.0
   
-  // Winter months (Nov-Jan) typically see 15% increase
   if (currentMonth >= 10 || currentMonth <= 0) {
     seasonalMultiplier = 1.15
   }
-  // Summer months (Jun-Aug) typically see 5% decrease
   else if (currentMonth >= 5 && currentMonth <= 7) {
     seasonalMultiplier = 0.95
   }
-  // Spring/Fall normal
   else {
     seasonalMultiplier = 1.05
   }
@@ -726,14 +690,11 @@ function generateMLForecast(data, days) {
     return { total_revenue: 0, daily_average: 0, growth_rate: 0 }
   }
   
-  // Simple ML-style prediction based on patterns in real data
   const avgRevenue = data.reduce((sum, day) => sum + day.revenue, 0) / data.length
   const avgBookings = data.reduce((sum, day) => sum + day.bookings, 0) / data.length
   
-  // Calculate revenue per booking
   const revenuePerBooking = avgBookings > 0 ? avgRevenue / avgBookings : 30
   
-  // Predict slight growth based on recent trends
   const recentGrowth = data.length >= 14 ? 
     (data.slice(0, 7).reduce((sum, d) => sum + d.revenue, 0) / 7) /
     (data.slice(7, 14).reduce((sum, d) => sum + d.revenue, 0) / 7) : 1.0

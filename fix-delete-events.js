@@ -3,7 +3,6 @@
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 
-// Load environment variables
 dotenv.config({ path: '.env.local' })
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -21,14 +20,11 @@ async function checkAndFixDeleteEvents() {
   console.log('=' .repeat(60))
   
   try {
-    // Check current replication settings
     console.log('\n📋 Current Configuration:')
     console.log('  - Table: bookings')
     console.log('  - Schema: public')
     console.log('  - Events: INSERT, UPDATE, DELETE')
     
-    // For Supabase, we need to ensure the table has REPLICA IDENTITY FULL
-    // This is required for DELETE events to include the old record data
     console.log('\n🔍 Checking REPLICA IDENTITY setting...')
     
     let replicaCheck = null
@@ -54,10 +50,8 @@ async function checkAndFixDeleteEvents() {
       console.log('\n  This enables DELETE events to include full row data')
     }
     
-    // Test DELETE event propagation
     console.log('\n🧪 Testing DELETE event propagation...')
     
-    // Create a test appointment
     const testAppointment = {
       shop_id: 'test-delete-shop',
       barber_id: '56ddbef1-fc3b-4f86-b841-88a8e72e166e',
@@ -84,7 +78,6 @@ async function checkAndFixDeleteEvents() {
     if (createError) throw createError
     console.log('  ✅ Test appointment created:', newAppointment.id)
     
-    // Set up subscription to catch DELETE event
     let deleteReceived = false
     let deletePayload = null
     
@@ -107,10 +100,8 @@ async function checkAndFixDeleteEvents() {
         console.log('  Subscription status:', status)
       })
     
-    // Wait for subscription to be ready
     await new Promise(resolve => setTimeout(resolve, 2000))
     
-    // Delete the test appointment
     console.log('  🗑️  Deleting test appointment...')
     const { error: deleteError } = await supabase
       .from('bookings')
@@ -120,14 +111,11 @@ async function checkAndFixDeleteEvents() {
     if (deleteError) throw deleteError
     console.log('  ✅ Test appointment deleted')
     
-    // Wait for DELETE event
     console.log('  ⏳ Waiting for DELETE event (5 seconds)...')
     await new Promise(resolve => setTimeout(resolve, 5000))
     
-    // Unsubscribe
     supabase.removeChannel(channel)
     
-    // Results
     console.log('\n📊 Test Results:')
     if (deleteReceived) {
       console.log('  ✅ DELETE events are working!')
@@ -152,7 +140,6 @@ async function checkAndFixDeleteEvents() {
       console.log('  or trigger a full refresh of appointments')
     }
     
-    // Alternative approach using soft deletes
     console.log('\n💡 Implementing Soft Delete Workaround:')
     console.log('  Instead of DELETE, update status to "deleted" or "cancelled"')
     console.log('  This triggers UPDATE events which are reliably received')
@@ -164,5 +151,4 @@ async function checkAndFixDeleteEvents() {
   process.exit(0)
 }
 
-// Run the check
 checkAndFixDeleteEvents()

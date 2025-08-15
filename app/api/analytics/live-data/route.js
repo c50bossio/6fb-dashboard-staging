@@ -10,21 +10,18 @@ export const runtime = 'edge'
 
 export async function GET(request) {
   try {
-    // Optional authentication check - only validate if auth header is present
     const authHeader = request.headers.get('authorization')
     let authenticatedUser = null
     
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
         const token = authHeader.replace('Bearer ', '')
-        // Import supabase client for token validation
         const { createClient } = await import('@supabase/supabase-js')
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
         )
         
-        // Verify the token
         const { data: { user }, error } = await supabase.auth.getUser(token)
         
         if (error || !user) {
@@ -37,7 +34,6 @@ export async function GET(request) {
         console.warn('Auth validation error:', authError.message)
       }
     } else {
-      // No auth header - proceed with development mode or fallback
       console.log('📊 Analytics API: No auth header, proceeding with development mode')
     }
     
@@ -47,13 +43,11 @@ export async function GET(request) {
     const format = searchParams.get('format') || 'json'; // json, formatted, specific
     const metric = searchParams.get('metric'); // for specific metric queries
     
-    // New date range parameters
     const periodType = searchParams.get('period_type'); // ytd, previous_year, 7days, 30days, 90days, custom
     const startDate = searchParams.get('start_date'); // ISO date string for custom range
     const endDate = searchParams.get('end_date'); // ISO date string for custom range
     const comparison = searchParams.get('comparison') === 'true'; // Enable comparison mode
 
-    // Enhanced with intelligent caching for performance optimization
     const cacheType = 'live-analytics';
     const cacheParams = { 
       barbershopId: barbershopId || 'demo-shop-001', 
@@ -66,13 +60,11 @@ export async function GET(request) {
     let analyticsData;
     
     try {
-      // Use intelligent caching unless force refresh is requested
       if (!forceRefresh) {
         analyticsData = await cacheQuery(cacheType, cacheParams, async () => {
           return await getSupabaseAnalyticsData(barbershopId, format, metric);
         });
       } else {
-        // Force refresh - invalidate cache and fetch fresh data
         invalidateCache(cacheType);
         console.log('🔄 Force refresh requested - cache invalidated');
         analyticsData = await getSupabaseAnalyticsData(barbershopId, format, metric);
@@ -80,7 +72,6 @@ export async function GET(request) {
       
     } catch (error) {
       console.error('❌ Analytics data fetch error:', error);
-      // Return error response with cache stats for debugging
       const cacheStats = getCacheStats();
       return NextResponse.json({
         success: false,
@@ -90,7 +81,6 @@ export async function GET(request) {
       }, { status: 500 });
     }
 
-    // Handle different response formats
     if (format === 'formatted') {
       return NextResponse.json({
         success: true,
@@ -115,7 +105,6 @@ export async function GET(request) {
       });
     }
     
-    // Default JSON format with enhanced metadata
     const cacheStats = getCacheStats();
     
     return NextResponse.json({
@@ -159,11 +148,9 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
   try {
     console.log('🔄 Using Supabase approach for analytics data consistency');
     
-    // Import Supabase client (same as Dashboard Metrics API)
     const { createClient } = await import('../../../../lib/supabase/server');
     const supabase = createClient();
     
-    // Use same query approach as Dashboard Metrics API getUserEngagementMetrics
     const shopId = barbershopId || 'demo-shop-001';
     
     const { data: customers, error: customersError } = await supabase
@@ -183,7 +170,6 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       console.error('Services query error:', servicesError);
     }
 
-    // Calculate metrics using same logic as Dashboard Metrics API
     const totalCustomers = customers?.length || 0;
     const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0;
     const totalAppointments = customers?.reduce((sum, c) => sum + (c.total_visits || 0), 0) || 0;
@@ -195,7 +181,6 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       appointments: totalAppointments
     });
     
-    // Format data to match analytics API structure
     const analyticsMetrics = {
       total_revenue: totalRevenue,
       monthly_revenue: totalRevenue, // Using total as monthly for now
@@ -247,7 +232,6 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
     
   } catch (error) {
     console.error('Supabase analytics data error:', error);
-    // Return empty structure if Supabase fails
     return {
       success: true,
       data: {
@@ -275,22 +259,16 @@ async function getConsistentFallbackData(barbershopId, format, metric) {
  */
 async function getRealDatabaseAnalytics(barbershopId, format, metric) {
   try {
-    // Import database operations
     const { getBusinessMetrics, getDashboardModeData } = await import('../../../../lib/dashboard-data');
     
-    // Use demo shop if no ID provided
     const shopId = barbershopId || 'demo-shop-001';
     
-    // Get real metrics from database
     const [businessMetrics, dashboardData] = await Promise.all([
       getBusinessMetrics(shopId),
       getDashboardModeData('analytics', shopId)
     ]);
     
-    // Process real data into analytics format
-    // Map from getBusinessMetrics format to analytics format
     const realMetrics = {
-      // Revenue Metrics from database (getBusinessMetrics returns revenue, not total_revenue)
       total_revenue: businessMetrics.revenue || 0,
       monthly_revenue: businessMetrics.revenue || 0,  // Same as total for now
       daily_revenue: businessMetrics.dailyRevenue || businessMetrics.revenue / 30 || 0,
@@ -299,7 +277,6 @@ async function getRealDatabaseAnalytics(barbershopId, format, metric) {
       tip_revenue: 0,  // Not tracked separately yet
       revenue_growth: 12.5,  // Default growth rate
       
-      // Booking Metrics from database (getBusinessMetrics returns appointments, not total_bookings)
       total_appointments: businessMetrics.appointments || 0,
       completed_appointments: businessMetrics.appointments || 0,  // Assume all completed for now
       cancelled_appointments: 0,  // Not tracked separately yet
@@ -309,7 +286,6 @@ async function getRealDatabaseAnalytics(barbershopId, format, metric) {
       appointment_completion_rate: businessMetrics.appointments > 0 ? 100 : 0,
       average_appointments_per_day: businessMetrics.appointments / 30 || 0,
       
-      // Customer Metrics from database (getBusinessMetrics returns customers, not total_customers)
       total_customers: businessMetrics.customers || 0,
       new_customers_this_month: Math.round((businessMetrics.customers || 0) * 0.15),  // Estimate 15% new
       returning_customers: Math.round((businessMetrics.customers || 0) * 0.85),  // Estimate 85% returning
@@ -317,25 +293,21 @@ async function getRealDatabaseAnalytics(barbershopId, format, metric) {
       average_customer_lifetime_value: businessMetrics.revenue && businessMetrics.customers ? 
         Math.round(businessMetrics.revenue / businessMetrics.customers) : 0,
       
-      // Staff Performance from database
       total_barbers: 5,  // Default value
       active_barbers: 3,  // Default value
       top_performing_barber: "No data",
       average_service_duration: 45,  // Default 45 minutes
       
-      // Business Intelligence from database
       peak_booking_hours: [10, 14, 18],  // Default peak hours
       most_popular_services: [],  // Will be populated from dashboard data if available
       busiest_days: ['Friday', 'Saturday'],  // Default busy days
       occupancy_rate: businessMetrics.capacityUtilization || 75,
       
-      // Financial Health from database
       average_service_price: businessMetrics.revenue && businessMetrics.appointments ? 
         Math.round(businessMetrics.revenue / businessMetrics.appointments) : 30,
       payment_success_rate: 98,  // Default success rate
       outstanding_payments: 0,  // Not tracked yet
       
-      // Metadata
       last_updated: new Date().toISOString(),
       data_freshness: "database_real"
     };
@@ -411,7 +383,6 @@ Data Quality: REAL DATABASE
   } catch (error) {
     console.error('Database analytics error:', error);
     
-    // Return empty state instead of mock data - follow NO MOCK DATA policy
     return {
       data: {
         total_revenue: 0,
@@ -437,7 +408,6 @@ export async function POST(request) {
     const body = await request.json();
     const { barbershop_id, refresh_cache } = body;
 
-    // Try to trigger refresh in Python service
     try {
       const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
       const response = await fetch(`${pythonServiceUrl}/analytics/refresh`, {

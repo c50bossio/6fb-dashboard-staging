@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 export const runtime = 'edge'
 
-// Initialize Supabase client with service role key for server-side operations
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -23,7 +22,6 @@ export async function GET(request) {
     }
 
     if (!supabase) {
-      // Return default settings if Supabase is not configured
       return NextResponse.json({
         success: true,
         data: {
@@ -45,7 +43,6 @@ export async function GET(request) {
       })
     }
 
-    // Get embed settings from database
     const { data: link, error } = await supabase
       .from('booking_links')
       .select('id, embed_settings, embed_count, last_embedded_at')
@@ -67,7 +64,6 @@ export async function GET(request) {
       )
     }
 
-    // Parse embed settings (stored as JSONB)
     const embedSettings = link.embed_settings || {
       theme: 'light',
       primaryColor: '#3B82F6',
@@ -112,14 +108,12 @@ export async function POST(request) {
     }
 
     if (!supabase) {
-      // Return success if Supabase is not configured (development mode)
       return NextResponse.json({
         success: true,
         message: 'Settings saved successfully (development mode)'
       })
     }
 
-    // Update embed settings in database
     const updates = {}
     
     if (embedSettings) {
@@ -127,7 +121,6 @@ export async function POST(request) {
     }
     
     if (incrementView) {
-      // Increment embed view count
       const { data: currentLink } = await supabase
         .from('booking_links')
         .select('embed_count')
@@ -186,7 +179,6 @@ export async function PUT(request) {
       })
     }
 
-    // Get current settings
     const { data: link, error: fetchError } = await supabase
       .from('booking_links')
       .select('embed_settings')
@@ -200,7 +192,6 @@ export async function PUT(request) {
       )
     }
 
-    // Update allowed domains
     const embedSettings = link.embed_settings || { allowedDomains: [] }
     let allowedDomains = embedSettings.allowedDomains || []
 
@@ -212,7 +203,6 @@ export async function PUT(request) {
 
     embedSettings.allowedDomains = allowedDomains
 
-    // Save updated settings
     const { error: updateError } = await supabase
       .from('booking_links')
       .update({ embed_settings: embedSettings })
@@ -240,7 +230,6 @@ export async function PUT(request) {
   }
 }
 
-// Analytics endpoint for tracking embed usage
 export async function PATCH(request) {
   try {
     const body = await request.json()
@@ -260,7 +249,6 @@ export async function PATCH(request) {
       })
     }
 
-    // Log embed analytics event
     const analyticsData = {
       link_id: linkId,
       event_type: event,
@@ -272,14 +260,12 @@ export async function PATCH(request) {
                   'unknown'
     }
 
-    // Check if embed_analytics table exists, create analytics entry
     try {
       const { error: analyticsError } = await supabase
         .from('embed_analytics')
         .insert([analyticsData])
 
       if (analyticsError) {
-        // Table might not exist, log to booking_links instead
         console.log('Embed analytics table not found, updating booking_links')
         
         const { error: updateError } = await supabase

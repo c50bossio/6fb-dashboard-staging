@@ -21,7 +21,6 @@ export default function AnalyticsTab() {
   const [timeRange, setTimeRange] = useState('30d')
 
   useEffect(() => {
-    // Simulate loading analytics data
     const timer = setTimeout(() => {
       const mockAnalyticsData = {
         overview: {

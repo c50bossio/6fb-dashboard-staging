@@ -113,7 +113,6 @@ class TripleToolReporter {
     console.log('\n📊 Triple Tool Testing Results Summary')
     console.log('=' .repeat(50))
     
-    // Overall summary
     const { total, passed, failed, skipped, duration } = this.results.summary
     const passRate = total > 0 ? Math.round((passed / total) * 100) : 0
     
@@ -125,7 +124,6 @@ class TripleToolReporter {
     console.log(`⏱️  Duration:      ${Math.round(duration / 1000)}s`)
     console.log('')
 
-    // Breakdown by tool
     console.log('📋 Results by Testing Tool:')
     console.log('-'.repeat(30))
     
@@ -144,7 +142,6 @@ class TripleToolReporter {
       }
     })
 
-    // Performance metrics
     console.log('\n⚡ Performance Highlights:')
     console.log('-'.repeat(25))
     
@@ -160,7 +157,6 @@ class TripleToolReporter {
       console.log(`Avg Performance Test Duration: ${avgDuration}ms`)
     }
 
-    // Visual regression summary
     const visualTests = this.results.playwright.filter(t => 
       t.title.toLowerCase().includes('visual') || 
       t.title.toLowerCase().includes('screenshot')
@@ -171,7 +167,6 @@ class TripleToolReporter {
       console.log(`Visual Regression Tests: ${visualPassed}/${visualTests.length}`)
     }
 
-    // Accessibility summary
     const a11yTests = this.results.playwright.filter(t => 
       t.title.toLowerCase().includes('accessibility') || 
       t.title.toLowerCase().includes('wcag')
@@ -182,7 +177,6 @@ class TripleToolReporter {
       console.log(`Accessibility Tests: ${a11yPassed}/${a11yTests.length}`)
     }
 
-    // Failed tests details
     const failedTests = [
       ...this.results.playwright,
       ...this.results.puppeteer,
@@ -203,10 +197,8 @@ class TripleToolReporter {
       })
     }
 
-    // Generate JSON report
     await this.generateJSONReport()
     
-    // Generate HTML report
     await this.generateHTMLReport()
     
     console.log('\n📁 Reports Generated:')
@@ -328,7 +320,6 @@ class TripleToolReporter {
     </div>
 
     <script>
-        // Add any interactive functionality here
         console.log('6FB AI Agent System Test Results Loaded');
     </script>
 </body>

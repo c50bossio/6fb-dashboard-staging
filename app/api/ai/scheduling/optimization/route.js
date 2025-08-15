@@ -6,7 +6,6 @@
 import { NextResponse } from 'next/server';
 export const runtime = 'edge'
 
-// GET: Get real-time optimization suggestions
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -21,7 +20,6 @@ export async function GET(request) {
       );
     }
     
-    // Mock real-time optimization data
     const Optimization = {
       success: true,
       barbershop_id: barbershopId,
@@ -107,7 +105,6 @@ export async function GET(request) {
   }
 }
 
-// POST: Apply optimization suggestions
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -120,7 +117,6 @@ export async function POST(request) {
       );
     }
     
-    // Mock optimization application
     const Application = {
       success: true,
       barbershop_id: barbershop_id,
@@ -157,7 +153,6 @@ export async function POST(request) {
   }
 }
 
-// PUT: Update optimization preferences
 export async function PUT(request) {
   try {
     const body = await request.json();
@@ -170,7 +165,6 @@ export async function PUT(request) {
       );
     }
     
-    // Mock preferences update
     const PreferencesUpdate = {
       success: true,
       barbershop_id: barbershop_id,

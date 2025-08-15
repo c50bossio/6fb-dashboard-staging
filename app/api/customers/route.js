@@ -24,12 +24,10 @@ export async function GET(request) {
       .eq('is_active', true)
       .range(offset, offset + limit - 1)
 
-    // Add search functionality
     if (search) {
       query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
     }
 
-    // Add sorting
     query = query.order(sortBy, { ascending: sortOrder === 'asc' })
 
     const { data: customers, error } = await query
@@ -42,7 +40,6 @@ export async function GET(request) {
       )
     }
 
-    // Get total count for pagination
     let countQuery = supabase
       .from('customers')
       .select('id', { count: 'exact', head: true })
@@ -94,7 +91,6 @@ export async function POST(request) {
       }
     } = body
 
-    // Validate required fields
     if (!name || (!phone && !email)) {
       return NextResponse.json(
         { error: 'Name and at least one contact method (phone or email) are required' },
@@ -102,7 +98,6 @@ export async function POST(request) {
       )
     }
 
-    // Check for existing customer with same phone/email
     let existingQuery = supabase
       .from('customers')
       .select('id, name, phone, email')
@@ -129,7 +124,6 @@ export async function POST(request) {
       )
     }
 
-    // Create new customer
     const { data: customer, error } = await supabase
       .from('customers')
       .insert([{
@@ -182,7 +176,6 @@ export async function PATCH(request) {
       )
     }
 
-    // Remove fields that shouldn't be updated directly
     delete updateData.total_visits
     delete updateData.total_spent
     delete updateData.created_at

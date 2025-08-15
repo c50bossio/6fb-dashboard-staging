@@ -7,14 +7,12 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import rrulePlugin from '@fullcalendar/rrule'
 
-// Explicitly import rrule library to ensure availability
 import { RRule } from 'rrule'
 
 export default function SimpleFullCalendar({ events: externalEvents }) {
   const calendarRef = useRef(null)
   const [debugInfo, setDebugInfo] = useState('')
 
-  // Test event with RRule - matches our API format (used if no external events provided)
   const testEvents = [
     {
       id: 'simple-test-1',
@@ -33,11 +31,9 @@ export default function SimpleFullCalendar({ events: externalEvents }) {
     }
   ]
 
-  // Use external events if provided, otherwise use test events
   const events = externalEvents || testEvents
 
   useEffect(() => {
-    // Debug RRule availability
     console.log('=== SimpleFullCalendar Debug ===')
     console.log('RRule imported:', typeof RRule)
     console.log('rrulePlugin:', typeof rrulePlugin)
@@ -52,14 +48,12 @@ export default function SimpleFullCalendar({ events: externalEvents }) {
         
         setDebugInfo(`RRule: ${typeof RRule}, Events: ${events.length}`)
         
-        // Check for recurring events
         const recurringEvents = events.filter(e => 
           (e._def && e._def.recurringDef) ||
           (e.extendedProps && e.extendedProps.rrule)
         )
         console.log('Recurring events found:', recurringEvents.length)
         
-        // Navigate to show August
         calendarApi.gotoDate('2025-08-11')
       }
     }, 1000)

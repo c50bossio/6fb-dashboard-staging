@@ -3,13 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import { config, getServiceStatus } from '@/services/production-config';
 import { errorMonitor, performanceMonitor } from '@/services/error-monitoring';
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Service health checks
 async function checkDatabase() {
   const timer = performanceMonitor.startTimer('database');
   try {
@@ -34,10 +32,8 @@ async function checkDatabase() {
 }
 
 async function checkRedis() {
-  // In production, check Redis connection
   if (process.env.REDIS_URL) {
     try {
-      // Redis health check would go here
       return {
         status: 'healthy',
         latency: 5
@@ -57,19 +53,16 @@ async function checkRedis() {
 async function checkExternalServices() {
   const services = {};
   
-  // Check SendGrid
   services.sendgrid = {
     configured: !!process.env.SENDGRID_API_KEY,
     status: process.env.SENDGRID_API_KEY ? 'healthy' : 'not_configured'
   };
   
-  // Check Twilio
   services.twilio = {
     configured: !!process.env.TWILIO_ACCOUNT_SID,
     status: process.env.TWILIO_ACCOUNT_SID ? 'healthy' : 'not_configured'
   };
   
-  // Check Stripe
   services.stripe = {
     configured: !!process.env.STRIPE_SECRET_KEY,
     status: process.env.STRIPE_SECRET_KEY ? 'healthy' : 'not_configured'
@@ -79,7 +72,6 @@ async function checkExternalServices() {
 }
 
 function getSystemMetrics() {
-  // Get Node.js process metrics
   const memoryUsage = process.memoryUsage();
   const uptime = process.uptime();
   
@@ -122,7 +114,6 @@ export async function GET(request) {
     const detailed = searchParams.get('detailed') === 'true';
     const secret = searchParams.get('secret');
     
-    // Basic health check (always available)
     const basicHealth = {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -130,12 +121,10 @@ export async function GET(request) {
       version: process.env.npm_package_version || '1.0.0'
     };
     
-    // Return basic health for non-authenticated requests
     if (!detailed) {
       return NextResponse.json(basicHealth);
     }
     
-    // Require secret for detailed health checks in production
     if (
       process.env.NODE_ENV === 'production' && 
       secret !== process.env.HEALTH_CHECK_SECRET
@@ -146,14 +135,12 @@ export async function GET(request) {
       );
     }
     
-    // Perform detailed health checks
     const [database, redis, externalServices] = await Promise.all([
       checkDatabase(),
       checkRedis(),
       checkExternalServices()
     ]);
     
-    // Get monitoring metrics
     const errorMetrics = errorMonitor.getMetrics('1h');
     const performanceStats = {
       api: performanceMonitor.getStats('api', '1h'),
@@ -162,13 +149,10 @@ export async function GET(request) {
       sms: performanceMonitor.getStats('sms', '1h')
     };
     
-    // Get system metrics
     const systemMetrics = getSystemMetrics();
     
-    // Get service configuration status
     const serviceStatus = getServiceStatus();
     
-    // Determine overall health
     let overallStatus = 'healthy';
     const issues = [];
     
@@ -197,7 +181,6 @@ export async function GET(request) {
       issues.push('High memory usage (>90%)');
     }
     
-    // Build detailed response
     const detailedHealth = {
       ...basicHealth,
       status: overallStatus,
@@ -227,13 +210,11 @@ export async function GET(request) {
       }
     };
     
-    // Set appropriate cache headers
     const headers = {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'X-Health-Status': overallStatus
     };
     
-    // Return appropriate status code based on health
     const statusCode = overallStatus === 'healthy' ? 200 : 
                        overallStatus === 'degraded' ? 200 : 503;
     
@@ -245,7 +226,6 @@ export async function GET(request) {
   } catch (error) {
     console.error('Health check error:', error);
     
-    // Log to error monitor
     await errorMonitor.logError(error, {
       endpoint: '/api/health/production',
       type: 'health_check_failure'

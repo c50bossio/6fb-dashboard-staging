@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
 
-// Test Cin7 API connection with multiple endpoint variations
 async function testCin7Connection(accountId, apiKey) {
   try {
     console.log('Testing Cin7 connection with account:', accountId)
     
-    // Try multiple endpoint variations in order of most likely to work
     const endpointVariations = [
       'https://inventory.dearsystems.com/ExternalAPI/v2/me',
       'https://inventory.dearsystems.com/externalapi/v2/me', 
@@ -45,7 +43,6 @@ async function testCin7Connection(accountId, apiKey) {
       }
     }
     
-    // If we get here, all endpoints failed
     return { success: false, error: 'Unable to connect with any known API endpoint. Please verify your credentials and API access.' }
   } catch (error) {
     console.error('Cin7 connection test failed:', error)
@@ -64,7 +61,6 @@ export async function POST(request) {
       )
     }
 
-    // Test the connection first
     console.log('Testing Cin7 connection...')
     const connectionTest = await testCin7Connection(accountId, apiKey)
     
@@ -75,7 +71,6 @@ export async function POST(request) {
       )
     }
 
-    // Connection successful!
     return NextResponse.json({
       success: true,
       status: 'connected',

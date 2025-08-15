@@ -16,7 +16,6 @@ import {
   AreaChart, Area
 } from 'recharts'
 
-// Number formatting utility for professional display
 const formatMetricValue = (value, type = 'default') => {
   if (value === null || value === undefined || value === '') return '0'
   
@@ -25,39 +24,33 @@ const formatMetricValue = (value, type = 'default') => {
   
   switch (type) {
     case 'currency':
-      // Currency: 2 decimal places, with commas
       return numValue.toLocaleString('en-US', { 
         minimumFractionDigits: 2, 
         maximumFractionDigits: 2 
       })
     
     case 'percentage':
-      // Percentages: 1 decimal place
       return numValue.toLocaleString('en-US', { 
         minimumFractionDigits: 1, 
         maximumFractionDigits: 1 
       })
     
     case 'count':
-      // Counts: No decimals, with commas for large numbers
       return Math.round(numValue).toLocaleString('en-US')
     
     case 'rating':
-      // Ratings: 1 decimal place
       return numValue.toLocaleString('en-US', { 
         minimumFractionDigits: 1, 
         maximumFractionDigits: 1 
       })
     
     case 'decimal':
-      // General decimals: 2 decimal places max
       return numValue.toLocaleString('en-US', { 
         minimumFractionDigits: 0, 
         maximumFractionDigits: 2 
       })
     
     default:
-      // Default: Smart formatting based on value
       if (numValue >= 1000) {
         return Math.round(numValue).toLocaleString('en-US')
       } else if (numValue < 1 && numValue > 0) {
@@ -79,7 +72,6 @@ export default function AnalyticsPanel({ data }) {
   const [dataSource, setDataSource] = useState('loading')
   const datePickerRef = useRef(null)
 
-  // Chart data from real database (NO MOCK DATA)
   const revenueData = [
     { date: 'Mon', revenue: analyticsData ? analyticsData.totalRevenue / 30 : 0, bookings: analyticsData ? Math.round(analyticsData.totalBookings / 7) : 0 },
     { date: 'Tue', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.2 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.2) : 0 },
@@ -90,17 +82,14 @@ export default function AnalyticsPanel({ data }) {
     { date: 'Sun', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.6 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.6) : 0 }
   ]
 
-  // Service breakdown from database (to be replaced with API call)
   const serviceBreakdown = analyticsData?.popular_services || [
     { name: 'No Data', value: 100, color: '#9CA3AF' }
   ]
 
-  // Customer retention from database (NO MOCK DATA)
   const customerRetention = analyticsData?.customer_retention_data || [
     { month: 'No Data', newCustomers: 0, returning: 0 }
   ]
 
-  // Click outside to close date picker
   useEffect(() => {
     function handleClickOutside(event) {
       if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
@@ -121,20 +110,16 @@ export default function AnalyticsPanel({ data }) {
         setDataSource('loading')
         console.log(`🔄 Fetching analytics for ${timeRange}...`)
         
-        // Build API URL with enhanced parameters
         let apiUrl = `/api/analytics/live-data?format=json&force_refresh=true&period_type=${timeRange}`
         
-        // Add custom date range if applicable
         if (timeRange === 'custom' && customStartDate && customEndDate) {
           apiUrl += `&start_date=${customStartDate}&end_date=${customEndDate}`
         }
         
-        // Add comparison mode if enabled
         if (comparisonMode) {
           apiUrl += '&comparison=true'
         }
         
-        // Simple headers without auth complexity for now
         const headers = {
           'Content-Type': 'application/json',
         }
@@ -156,9 +141,7 @@ export default function AnalyticsPanel({ data }) {
             
             let dashboardData = {}
             
-            // Handle different data structures based on period type
             if (timeRange === 'ytd' && result.data.current_ytd) {
-              // YTD comparison data
               const currentYtd = result.data.current_ytd
               const yoyGrowth = result.data.year_over_year_growth || {}
               
@@ -175,7 +158,6 @@ export default function AnalyticsPanel({ data }) {
                 comparison: result.data.previous_ytd
               }
             } else if (timeRange === 'previous_year' && result.data.period_revenue) {
-              // Previous year data
               dashboardData = {
                 totalRevenue: result.data.period_revenue || 0,
                 revenueGrowth: result.data.revenue_growth || 0,
@@ -189,7 +171,6 @@ export default function AnalyticsPanel({ data }) {
                 year: result.data.year
               }
             } else {
-              // Standard period data (7days, 30days, 90days, custom)
               const revenue = result.data.total_revenue || result.data.monthly_revenue || result.data.period_revenue || 0
               dashboardData = {
                 totalRevenue: revenue,
@@ -222,7 +203,6 @@ export default function AnalyticsPanel({ data }) {
         console.log('🔄 Using fallback analytics data')
         setDataSource('fallback')
         
-        // NO MOCK DATA - use empty state or zero values when API fails
         setAnalyticsData({
           totalRevenue: 0,
           revenueGrowth: 0,
@@ -245,7 +225,6 @@ export default function AnalyticsPanel({ data }) {
   const StatCard = ({ title, value, growth, icon: Icon, prefix = '' }) => {
     const isPositive = growth > 0
     
-    // Determine formatting type based on title and prefix
     const getFormattingType = () => {
       if (prefix === '$') return 'currency'
       if (title.toLowerCase().includes('rate') || title.toLowerCase().includes('rating')) return 'rating'

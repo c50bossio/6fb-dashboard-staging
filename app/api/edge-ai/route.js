@@ -1,4 +1,3 @@
-// Ultra-aggressive bundle optimization: Edge runtime for AI
 export const runtime = 'edge'
 
 /**
@@ -9,7 +8,6 @@ export async function POST(request) {
   try {
     const { messages, provider = 'openai' } = await request.json()
     
-    // Simple fetch-based AI proxy (no heavy SDKs)
     const apiUrl = provider === 'anthropic' 
       ? 'https://api.anthropic.com/v1/messages'
       : 'https://api.openai.com/v1/chat/completions'
@@ -50,7 +48,6 @@ export async function POST(request) {
     
     const data = await response.json()
     
-    // Transform response to common format
     const message = provider === 'anthropic' 
       ? data.content[0]?.text 
       : data.choices[0]?.message?.content

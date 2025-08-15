@@ -15,7 +15,6 @@ import {
   Activity, Zap, Target, Brain, Database, RefreshCw
 } from 'lucide-react'
 
-// Color schemes for different models
 const MODEL_COLORS = {
   'gpt-5': '#22c55e',
   'gpt-5-mini': '#546355', 
@@ -41,7 +40,6 @@ export default function PerformanceDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true)
   const intervalRef = useRef(null)
 
-  // Fetch dashboard data
   const fetchDashboardData = async () => {
     try {
       const response = await fetch('/api/performance/dashboard')
@@ -53,7 +51,6 @@ export default function PerformanceDashboard() {
     }
   }
 
-  // Fetch model performance snapshots
   const fetchModelSnapshots = async () => {
     try {
       const response = await fetch('/api/performance/snapshots')
@@ -65,7 +62,6 @@ export default function PerformanceDashboard() {
     }
   }
 
-  // Fetch cost analysis
   const fetchCostAnalysis = async () => {
     try {
       const response = await fetch('/api/performance/costs')
@@ -77,7 +73,6 @@ export default function PerformanceDashboard() {
     }
   }
 
-  // Fetch A/B tests
   const fetchAbTests = async () => {
     try {
       const response = await fetch('/api/performance/ab-tests')
@@ -89,7 +84,6 @@ export default function PerformanceDashboard() {
     }
   }
 
-  // Fetch all data
   const fetchAllData = async () => {
     setLoading(true)
     try {
@@ -106,7 +100,6 @@ export default function PerformanceDashboard() {
     }
   }
 
-  // Setup auto-refresh
   useEffect(() => {
     fetchAllData()
 
@@ -121,7 +114,6 @@ export default function PerformanceDashboard() {
     }
   }, [autoRefresh])
 
-  // Toggle auto-refresh
   const toggleAutoRefresh = () => {
     setAutoRefresh(!autoRefresh)
     if (intervalRef.current) {
@@ -130,7 +122,6 @@ export default function PerformanceDashboard() {
     }
   }
 
-  // Format status badge
   const getStatusBadge = (status) => {
     const statusConfig = {
       'excellent': { variant: 'default', color: 'bg-green-500', label: 'Excellent' },
@@ -148,13 +139,11 @@ export default function PerformanceDashboard() {
     )
   }
 
-  // Format response time
   const formatResponseTime = (seconds) => {
     if (seconds < 1) return `${(seconds * 1000).toFixed(0)}ms`
     return `${seconds.toFixed(2)}s`
   }
 
-  // Format cost
   const formatCost = (cost) => {
     if (cost < 0.01) return `$${(cost * 1000).toFixed(2)}m`
     return `$${cost.toFixed(3)}`

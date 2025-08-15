@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -15,7 +14,6 @@ export async function POST(request, { params }) {
     console.log('Convert recurring request for ID:', id)
     console.log('Request body:', body)
     
-    // Get the existing appointment
     const { data: existingAppointment, error: fetchError } = await supabase
       .from('bookings')
       .select('*')
@@ -41,7 +39,6 @@ export async function POST(request, { params }) {
     console.log('Found existing appointment:', existingAppointment)
     
     // 🔍 DEBUG: Log the time values we're working with
-    console.log('🔍 DEBUGGING TIME CONVERSION:')
     console.log('  - existingAppointment.start_time (raw):', existingAppointment.start_time)
     console.log('  - existingAppointment.end_time (raw):', existingAppointment.end_time)
     
@@ -59,7 +56,6 @@ export async function POST(request, { params }) {
       console.log('  - end_time local time:', endDate.toLocaleString())
     }
     
-    // Check if already a recurring appointment
     if (existingAppointment.is_recurring) {
       return NextResponse.json(
         { error: 'Appointment is already recurring' },
@@ -74,7 +70,6 @@ export async function POST(request, { params }) {
       )
     }
     
-    // Validate RRule format (basic validation)
     const rrule = body.recurrence_rule
     if (!rrule.includes('FREQ=')) {
       return NextResponse.json(
@@ -83,12 +78,9 @@ export async function POST(request, { params }) {
       )
     }
     
-    // Build the recurring pattern object for storage
-    // Add DTSTART to the RRule for FullCalendar compatibility
     const startDate = new Date(existingAppointment.start_time)
     const dtstart = startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
     
-    // Add DTSTART to RRule if not present
     let enhancedRRule = rrule
     if (!rrule.includes('DTSTART')) {
       enhancedRRule = `DTSTART:${dtstart}\n${rrule}`
@@ -104,14 +96,12 @@ export async function POST(request, { params }) {
       rrule: enhancedRRule,  // Store the enhanced RRule with DTSTART
       dtstart: existingAppointment.start_time,
       dtend: existingAppointment.end_time,
-      // Add any additional pattern metadata
       frequency: extractFrequency(rrule),
       interval: extractInterval(rrule),
       count: extractCount(rrule),
       until: extractUntil(rrule),
       created_at: new Date().toISOString(),
       created_by: 'calendar_api',
-      // Store conflict resolution information
       conflict_resolution: body.conflict_resolution || 'none',
       skip_dates: body.skip_dates || []
     }
@@ -136,12 +126,9 @@ export async function POST(request, { params }) {
       console.log('  - dtend local time:', dtend.toLocaleString())
     }
     
-    // Update the existing appointment to become a recurring appointment  
-    // Store the RRule pattern in the new recurring_pattern JSONB field
     const updateData = {
       is_recurring: true,
       recurring_pattern: recurringPattern,
-      // Update other fields if provided
       ...(body.service_price && { price: body.service_price }),
       updated_at: new Date().toISOString()
     }
@@ -163,10 +150,8 @@ export async function POST(request, { params }) {
     
     console.log('Updated appointment with recurring pattern:', updatedAppointment)
     
-    // Calculate expected occurrences for reporting (don't store them)
     const expectedOccurrences = calculateOccurrences(rrule, existingAppointment.start_time)
     
-    // Return the updated appointment with recurring info
     const responseData = {
       appointment: updatedAppointment,
       message: `Appointment converted to recurring series with RRule pattern`,
@@ -190,7 +175,6 @@ export async function POST(request, { params }) {
   }
 }
 
-// Helper functions to extract RRule components
 function extractFrequency(rrule) {
   const freqMatch = rrule.match(/FREQ=([^;]+)/)
   return freqMatch ? freqMatch[1] : 'WEEKLY'
@@ -211,10 +195,8 @@ function extractUntil(rrule) {
   return untilMatch ? untilMatch[1] : null
 }
 
-// Helper function to calculate expected occurrences (for reporting only)
 function calculateOccurrences(rruleString, startDate) {
   try {
-    // Parse the RRule to calculate occurrences
     const rules = rruleString.split(';').reduce((acc, rule) => {
       const [key, value] = rule.split('=')
       acc[key] = value
@@ -229,10 +211,8 @@ function calculateOccurrences(rruleString, startDate) {
     const start = new Date(startDate)
     let current = new Date(start)
     
-    // Generate occurrences based on frequency
     for (let i = 0; i < count && occurrences.length < 52; i++) { // Safety limit of 52
       if (i > 0) {
-        // Calculate next occurrence
         if (freq === 'DAILY') {
           current.setDate(current.getDate() + interval)
         } else if (freq === 'WEEKLY') {
@@ -255,7 +235,6 @@ function calculateOccurrences(rruleString, startDate) {
   }
 }
 
-// Helper function to transform booking to calendar event (kept for compatibility)
 function transformBookingToEvent(booking) {
   const event = {
     id: booking.id,
@@ -280,7 +259,6 @@ function transformBookingToEvent(booking) {
     }
   }
   
-  // Add RRule at the top level for FullCalendar native support
   if (booking.is_recurring && booking.recurring_pattern && booking.recurring_pattern.rrule) {
     event.rrule = booking.recurring_pattern.rrule
   }

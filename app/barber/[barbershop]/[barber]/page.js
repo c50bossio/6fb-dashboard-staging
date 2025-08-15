@@ -29,21 +29,18 @@ export default function BarberLandingPage() {
   const [selectedTime, setSelectedTime] = useState(null)
   const [showBookingModal, setShowBookingModal] = useState(false)
 
-  // Load barber data on component mount
   useEffect(() => {
     loadBarberData()
   }, [barbershop, barber])
 
   const loadBarberData = async () => {
     try {
-      // Fetch barber data from API  
       const response = await fetch(`/api/public/barber/${barbershop}/${barber}`)
       
       if (response.ok) {
         const data = await response.json()
         setBarberData(data)
       } else {
-        // Handle 404 - barber not found
         setBarberData(null)
       }
     } catch (error) {

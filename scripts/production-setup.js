@@ -152,7 +152,6 @@ async function checkGitConfiguration() {
       }
     });
     
-    // Check if production branch is protected
     try {
       const protectionStatus = execSync('gh api repos/c50bossio/6fb-dashboard-staging/branches/production/protection', { encoding: 'utf8' });
       console.log('✅ Production branch: Protected');
@@ -172,7 +171,6 @@ async function checkVercelDeployment() {
   console.log('='.repeat(50));
   
   try {
-    // Check project status
     const projects = execSync('vercel project ls --scope=6fb', { encoding: 'utf8' });
     
     if (projects.includes('6fb-ai-dashboard')) {
@@ -182,7 +180,6 @@ async function checkVercelDeployment() {
       return false;
     }
     
-    // Check domains
     const domains = execSync('vercel domains ls --scope=6fb', { encoding: 'utf8' });
     
     if (domains.includes('bookedbarber.com')) {
@@ -191,7 +188,6 @@ async function checkVercelDeployment() {
       console.log('❌ Domain: bookedbarber.com not configured');
     }
     
-    // Check latest deployment
     try {
       const deployments = execSync('vercel ls --scope=6fb', { encoding: 'utf8' });
       console.log('✅ Deployments: Active');
@@ -261,7 +257,6 @@ async function generateSetupReport() {
   console.log('  Health check: curl https://bookedbarber.com/api/health');
 }
 
-// Run the setup report
 if (require.main === module) {
   generateSetupReport().catch(console.error);
 }

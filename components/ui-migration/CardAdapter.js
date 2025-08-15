@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
-// Map variant styles
 const variantStyles = {
   default: '',
   elevated: 'shadow-md',
@@ -27,7 +26,6 @@ const variantStyles = {
   info: 'border-olive-200 shadow-sm bg-olive-50'
 }
 
-// Map padding sizes
 const paddingStyles = {
   none: 'p-0',
   sm: 'p-4',
@@ -66,7 +64,6 @@ const Card = ({
   )
 }
 
-// Re-export shadcn components with same names
 export const CardHeader = ({ children, className = '' }) => (
   <ShadcnCardHeader className={cn('border-b border-gray-200 pb-4 mb-6', className)}>
     {children}
@@ -95,7 +92,6 @@ export const CardFooter = ({ children, className = '' }) => (
   </ShadcnCardFooter>
 )
 
-// Specialized StatCard component
 export function StatCard({ 
   title, 
   value, 

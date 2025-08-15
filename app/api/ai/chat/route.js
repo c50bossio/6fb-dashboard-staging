@@ -1,7 +1,6 @@
 import { streamText } from 'ai'
 import { NextResponse } from 'next/server'
 
-// Ultra-aggressive bundle optimization: Use edge runtime
 export const runtime = 'edge'
 
 /**
@@ -21,15 +20,12 @@ export async function POST(request) {
 
     const lastMessage = messages[messages.length - 1]?.content || ''
     
-    // Route to the appropriate AI service based on agent or message type
     let apiEndpoint = '/api/ai/analytics-enhanced-chat'
     
     if (agentId) {
-      // Use agent-specific endpoint if agent ID provided
       apiEndpoint = '/api/ai/agents'
     }
 
-    // Call the actual AI service
     const aiResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}${apiEndpoint}`, {
       method: 'POST',
       headers: {
@@ -49,12 +45,10 @@ export async function POST(request) {
 
     const aiData = await aiResponse.json()
     
-    // Create streaming response
     const stream = new ReadableStream({
       start(controller) {
         const response = aiData.message || aiData.response || "I'm here to help with your barbershop business!"
         
-        // Simulate streaming by sending chunks
         const chunks = response.match(/.{1,10}/g) || [response]
         let index = 0
         
@@ -77,7 +71,6 @@ export async function POST(request) {
   } catch (error) {
     console.error('Streaming chat error:', error)
     
-    // Return fallback response
     const fallbackMessage = "I'm your AI business assistant. I can help you with scheduling, customer management, revenue optimization, and business insights. What would you like to know?"
     
     const fallbackStream = new ReadableStream({

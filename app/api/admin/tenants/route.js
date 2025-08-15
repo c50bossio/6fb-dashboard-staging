@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 
-// Admin middleware to check for platform admin permissions
 async function verifyAdminAccess(request) {
   try {
     const supabase = createClient()
@@ -14,8 +13,6 @@ async function verifyAdminAccess(request) {
       return { authorized: false, error: 'Authentication required' }
     }
 
-    // In production, check if user has platform admin role
-    // For now, allow all authenticated users for demo purposes
     const adminEmails = ['admin@6fb.ai', 'platform@6fb.ai']
     const isAdmin = adminEmails.includes(user.email) || user.email?.endsWith('@6fb.ai')
     
@@ -31,7 +28,6 @@ async function verifyAdminAccess(request) {
 
 export async function GET(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -50,7 +46,6 @@ export async function GET(request) {
     const planTier = searchParams.get('plan_tier')
 
     if (action === 'list') {
-      // Get all tenants with filtering and pagination
       let tenants = [
         {
           id: '00000000-0000-0000-0000-000000000001',
@@ -132,7 +127,6 @@ export async function GET(request) {
         }
       ]
 
-      // Apply filters
       if (search) {
         tenants = tenants.filter(t => 
           t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -149,7 +143,6 @@ export async function GET(request) {
         tenants = tenants.filter(t => t.plan_tier === planTier)
       }
 
-      // Pagination
       const totalCount = tenants.length
       const startIndex = (page - 1) * limit
       const paginatedTenants = tenants.slice(startIndex, startIndex + limit)
@@ -173,7 +166,6 @@ export async function GET(request) {
     }
 
     if (action === 'get' && tenantId) {
-      // Get detailed tenant information
       const tenant = {
         id: tenantId,
         name: 'Demo Barbershop',
@@ -265,7 +257,6 @@ export async function GET(request) {
     }
 
     if (action === 'statistics') {
-      // Platform-wide statistics
       const stats = {
         overview: {
           total_tenants: 47,
@@ -325,7 +316,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -339,7 +329,6 @@ export async function POST(request) {
     if (action === 'create') {
       const tenantData = data
       
-      // Validate required fields
       const requiredFields = ['name', 'email', 'plan_tier']
       for (const field of requiredFields) {
         if (!tenantData[field]) {
@@ -350,7 +339,6 @@ export async function POST(request) {
         }
       }
 
-      // Generate tenant ID and slug
       const tenantId = generateUUID()
       const slug = generateSlug(tenantData.name)
 
@@ -377,7 +365,6 @@ export async function POST(request) {
         dashboard_url: `/dashboard?tenant=${slug}`
       }
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'tenant_created', {
         tenant_id: tenantId,
         tenant_name: tenantData.name,
@@ -402,7 +389,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'tenant_updated', {
         tenant_id: tenant_id,
         updated_fields: Object.keys(updates)
@@ -430,7 +416,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'tenant_suspended', {
         tenant_id: tenant_id,
         reason: reason || 'Manual admin action'
@@ -459,7 +444,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'tenant_activated', {
         tenant_id: tenant_id
       })
@@ -486,7 +470,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'tenant_deleted', {
         tenant_id: tenant_id
       })
@@ -518,9 +501,7 @@ export async function POST(request) {
   }
 }
 
-// Utility functions
 function generateUUID() {
-  // NO RANDOM - use timestamp-based unique ID
   return `tenant-${Date.now()}-${process.hrtime.bigint().toString(36)}`
 }
 
@@ -590,7 +571,6 @@ function getPlanFeatures(planTier) {
 }
 
 async function logAdminAction(adminUserId, action, details) {
-  // In production, this would write to an audit log table
   console.log('Admin Action:', {
     admin_user_id: adminUserId,
     action: action,

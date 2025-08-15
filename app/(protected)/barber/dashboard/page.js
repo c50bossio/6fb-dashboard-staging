@@ -38,7 +38,6 @@ export default function BarberDashboard() {
     try {
       setLoading(true)
       
-      // Load today's appointments
       const appointmentsRes = await fetch('/api/appointments?barber_id=' + (user?.id || 'demo'))
       const appointmentsData = await appointmentsRes.json()
       
@@ -50,12 +49,10 @@ export default function BarberDashboard() {
         
         setAppointments(todayAppointments)
         
-        // Calculate stats
         const completed = todayAppointments.filter(apt => apt.status === 'completed').length
         const upcoming = todayAppointments.filter(apt => apt.status === 'confirmed').length
         const cancelled = todayAppointments.filter(apt => apt.status === 'cancelled').length
         
-        // Calculate real earnings from completed appointments
         const todayEarnings = todayAppointments
           .filter(apt => apt.status === 'completed')
           .reduce((total, apt) => total + (apt.service_price || apt.total_amount || 0), 0)

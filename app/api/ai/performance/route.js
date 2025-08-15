@@ -7,7 +7,6 @@ export const maxDuration = 30
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -58,7 +57,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -76,7 +74,6 @@ export async function POST(request) {
     }
 
     try {
-      // Record performance metric via FastAPI
       const response = await recordPerformanceMetric({
         component,
         metric,
@@ -238,7 +235,6 @@ async function recordPerformanceMetric(options) {
 function generateFallbackPerformanceData(reportType) {
   if (reportType === 'realtime') {
     return {
-      // Real optimization results: 85% improvement (841ms → 126ms)
       optimization_results: {
         response_time_improvement: {
           current_avg_ms: 126.2,

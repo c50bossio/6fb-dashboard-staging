@@ -8,7 +8,6 @@ const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 const RateLimiter = require('limiter').RateLimiter;
 
-// Initialize Supabase (lazy load to ensure env vars are available)
 let supabase;
 function getSupabase() {
     if (!supabase && process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -22,28 +21,23 @@ function getSupabase() {
 
 class ProductionSendGridService {
     constructor() {
-        // SendGrid configuration
         this.apiKey = process.env.SENDGRID_API_KEY;
         this.fromEmail = process.env.SENDGRID_FROM_EMAIL || 'support@6fbmentorship.com';
         this.fromName = process.env.SENDGRID_FROM_NAME || '6FB AI System';
         this.webhookSecret = process.env.SENDGRID_WEBHOOK_SECRET;
         
-        // Rate limiting configuration
         this.rateLimiter = new RateLimiter({
             tokensPerInterval: parseInt(process.env.SENDGRID_RATE_LIMIT_PER_SECOND) || 100,
             interval: 'second'
         });
         
-        // Batch configuration
         this.maxBatchSize = parseInt(process.env.SENDGRID_BATCH_SIZE) || 1000;
         this.maxPersonalizations = parseInt(process.env.SENDGRID_MAX_PERSONALIZATIONS) || 1000;
         
-        // Compliance configuration
         this.unsubscribeUrl = process.env.UNSUBSCRIBE_URL || 'https://6fbmentorship.com/unsubscribe';
         this.physicalAddress = process.env.PHYSICAL_ADDRESS || '123 Business St, City, State 12345';
         this.companyName = process.env.COMPANY_NAME || '6FB AI Agent System';
         
-        // Initialize SendGrid
         if (this.apiKey && !this.apiKey.includes('placeholder')) {
             sgMail.setApiKey(this.apiKey);
             this.initialized = true;
@@ -52,7 +46,6 @@ class ProductionSendGridService {
             this.initialized = false;
         }
         
-        // Metrics tracking
         this.metrics = {
             emailsSent: 0,
             emailsFailed: 0,
@@ -78,13 +71,10 @@ class ProductionSendGridService {
         };
 
         try {
-            // Check unsubscribes
             const validRecipients = await this.filterUnsubscribed(recipients, campaign.owner_id);
             
-            // Split into batches
             const batches = this.createBatches(validRecipients, this.maxBatchSize);
             
-            // Process each batch with rate limiting
             for (const batch of batches) {
                 await this.rateLimiter.removeTokens(1);
                 
@@ -97,17 +87,13 @@ class ProductionSendGridService {
                     results.failed.push(...batchResult.failed);
                 }
                 
-                // Calculate cost
                 results.totalCost += this.calculateCost(batch.length, campaign.owner_type);
                 
-                // Small delay between batches
                 await this.delay(100);
             }
             
-            // Store campaign results
             await this.storeCampaignResults(campaign.id, results);
             
-            // Update metrics
             this.metrics.emailsSent += results.sent.length;
             this.metrics.emailsFailed += results.failed.length;
             this.metrics.batchesProcessed += results.batches;
@@ -163,7 +149,6 @@ class ProductionSendGridService {
         try {
             const response = await sgMail.send(msg);
             
-            // Store individual recipient records
             await this.storeRecipientRecords(campaign.id, recipients, 'sent');
             
             return {
@@ -174,7 +159,6 @@ class ProductionSendGridService {
         } catch (error) {
             console.error('Batch send error:', error);
             
-            // Store failed records
             await this.storeRecipientRecords(campaign.id, recipients, 'failed', error.message);
             
             return {
@@ -235,7 +219,6 @@ class ProductionSendGridService {
      * Process webhook from SendGrid
      */
     async processWebhook(body, signature) {
-        // Verify webhook signature
         if (!this.verifyWebhookSignature(body, signature)) {
             throw new Error('Invalid webhook signature');
         }
@@ -266,7 +249,6 @@ class ProductionSendGridService {
     async processWebhookEvent(event) {
         const { event: eventType, email, campaign_id, timestamp } = event;
         
-        // Update recipient status based on event
         const statusMap = {
             'delivered': 'delivered',
             'open': 'opened',
@@ -280,7 +262,6 @@ class ProductionSendGridService {
         const status = statusMap[eventType];
         if (!status) return;
 
-        // Update recipient record
         const { error } = await getSupabase()
             .from('campaign_recipients')
             .update({
@@ -296,12 +277,10 @@ class ProductionSendGridService {
             console.error('Failed to update recipient status:', error);
         }
 
-        // Handle unsubscribes
         if (eventType === 'unsubscribe' || eventType === 'spamreport') {
             await this.handleUnsubscribe(email, campaign_id, eventType);
         }
 
-        // Update campaign metrics
         await this.updateCampaignMetrics(campaign_id, eventType);
     }
 
@@ -421,7 +400,6 @@ class ProductionSendGridService {
         const metric = metricMap[eventType];
         if (!metric) return;
 
-        // Increment the metric
         const { error } = await getSupabase().rpc('increment_campaign_metric', {
             campaign_id: campaignId,
             metric_name: metric
@@ -488,7 +466,6 @@ class ProductionSendGridService {
      */
     async healthCheck() {
         try {
-            // Test SendGrid API
             if (this.initialized) {
                 const response = await sgMail.send({
                     to: 'test@example.com',
@@ -522,9 +499,7 @@ class ProductionSendGridService {
     }
 }
 
-// Export singleton instance
 const sendGridService = new ProductionSendGridService();
 module.exports = sendGridService;
 
-// Also export class for testing
 module.exports.ProductionSendGridService = ProductionSendGridService;

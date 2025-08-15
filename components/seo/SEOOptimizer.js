@@ -9,10 +9,8 @@ export default function SEOOptimizer() {
   const [seoMetrics, setSeoMetrics] = useState(null)
 
   useEffect(() => {
-    // Track page performance and SEO metrics
     if (typeof window !== 'undefined') {
       const trackPageMetrics = async () => {
-        // Core Web Vitals tracking
         const perfObserver = new PerformanceObserver((list) => {
           list.getEntries().forEach((entry) => {
             if (entry.entryType === 'largest-contentful-paint') {
@@ -30,7 +28,6 @@ export default function SEOOptimizer() {
           console.log('Performance observer not supported')
         }
 
-        // Cumulative Layout Shift
         let cls = 0
         new PerformanceObserver((list) => {
           list.getEntries().forEach((entry) => {
@@ -41,7 +38,6 @@ export default function SEOOptimizer() {
           console.log('CLS:', cls)
         }).observe({ entryTypes: ['layout-shift'] })
 
-        // SEO checks
         const seoChecks = {
           hasTitle: !!document.title && document.title.length > 0,
           titleLength: document.title?.length || 0,
@@ -60,13 +56,11 @@ export default function SEOOptimizer() {
 
         setSeoMetrics(seoChecks)
 
-        // Send SEO data to analytics
         if (pathname.includes('/book/')) {
           const barberId = pathname.split('/book/')[1]
           const linkId = searchParams?.get('linkId')
           
           if (linkId) {
-            // Track that this is a booking link visit
             await fetch('/api/analytics/track', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -84,7 +78,6 @@ export default function SEOOptimizer() {
         }
       }
 
-      // Delay to ensure page is fully loaded
       setTimeout(trackPageMetrics, 1000)
     }
   }, [pathname, searchParams])
@@ -98,7 +91,6 @@ export default function SEOOptimizer() {
     return sessionId
   }
 
-  // SEO recommendations based on current page analysis
   const getSEORecommendations = () => {
     if (!seoMetrics) return []
     
@@ -149,7 +141,6 @@ export default function SEOOptimizer() {
     return recommendations
   }
 
-  // Only show in development mode
   if (process.env.NODE_ENV !== 'development') {
     return null
   }

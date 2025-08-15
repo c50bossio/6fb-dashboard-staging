@@ -20,13 +20,11 @@ export default function TenantSignup() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
-    // Business Information
     name: '',
     email: '',
     phone: '',
     business_type: 'barbershop',
     
-    // Address
     address: {
       street: '',
       city: '',
@@ -35,11 +33,9 @@ export default function TenantSignup() {
       country: 'US'
     },
     
-    // Configuration
     timezone: 'America/New_York',
     plan_tier: 'professional',
     
-    // Owner Information
     owner_user: {
       first_name: '',
       last_name: '',
@@ -128,7 +124,6 @@ export default function TenantSignup() {
       }))
     }
     
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -141,14 +136,12 @@ export default function TenantSignup() {
     const newErrors = {}
     
     if (stepNumber === 1) {
-      // Business information validation
       if (!formData.name.trim()) newErrors.name = 'Business name is required'
       if (!formData.email.trim()) newErrors.email = 'Email is required'
       if (formData.email && !isValidEmail(formData.email)) newErrors.email = 'Invalid email format'
     }
     
     if (stepNumber === 2) {
-      // Address validation
       if (!formData.address.street.trim()) newErrors['address.street'] = 'Street address is required'
       if (!formData.address.city.trim()) newErrors['address.city'] = 'City is required'
       if (!formData.address.state.trim()) newErrors['address.state'] = 'State is required'
@@ -156,7 +149,6 @@ export default function TenantSignup() {
     }
     
     if (stepNumber === 4) {
-      // Owner information validation
       if (!formData.owner_user.first_name.trim()) newErrors['owner_user.first_name'] = 'First name is required'
       if (!formData.owner_user.last_name.trim()) newErrors['owner_user.last_name'] = 'Last name is required'
       if (!formData.owner_user.email.trim()) newErrors['owner_user.email'] = 'Email is required'
@@ -202,7 +194,6 @@ export default function TenantSignup() {
       const result = await response.json()
       
       if (result.success) {
-        // Redirect to onboarding or dashboard
         router.push(`${result.data.onboarding_url}&welcome=true`)
       } else {
         setErrors({ submit: result.error || 'Failed to create account' })

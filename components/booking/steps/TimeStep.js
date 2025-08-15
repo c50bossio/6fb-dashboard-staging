@@ -10,7 +10,6 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
   const [loading, setLoading] = useState(false)
   const [currentWeek, setCurrentWeek] = useState(0)
   
-  // Generate next 14 days
   const generateDates = () => {
     const dates = []
     const today = new Date()
@@ -35,8 +34,6 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
   const loadAvailableSlots = async (date) => {
     setLoading(true)
     try {
-      // In production, fetch from API based on barber, service, and date
-      // This would check the barber's schedule and existing appointments
       
       const dayName = date.toLocaleDateString('en-US', { weekday: 'lowercase' })
       const businessHours = shopSettings.businessHours?.[dayName]
@@ -47,12 +44,10 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
         return
       }
       
-      // Generate time slots based on business hours and service duration
       const slots = []
       const serviceMinutes = bookingData.duration || 30
       const bufferMinutes = 5 // Buffer between appointments
       
-      // Parse business hours
       const [openHour, openMin] = businessHours.open.split(':').map(v => parseInt(v))
       const [closeHour, closeMin] = businessHours.close.split(':').map(v => parseInt(v))
       
@@ -65,18 +60,14 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
       const now = new Date()
       const isToday = date.toDateString() === now.toDateString()
       
-      // Generate slots
       let currentSlot = new Date(startTime)
       
       while (currentSlot < endTime) {
         const slotEnd = new Date(currentSlot)
         slotEnd.setMinutes(slotEnd.getMinutes() + serviceMinutes)
         
-        // Check if slot fits within business hours
         if (slotEnd <= endTime) {
-          // Check if slot is in the future (for today)
           if (!isToday || currentSlot > now) {
-            // Mock availability (in production, check against existing bookings)
             const Booked = Math.random() > 0.7 // 30% chance of being booked
             
             slots.push({
@@ -91,11 +82,9 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
           }
         }
         
-        // Move to next slot
         currentSlot.setMinutes(currentSlot.getMinutes() + serviceMinutes + bufferMinutes)
       }
       
-      // Group slots by time period
       const groupedSlots = {
         morning: slots.filter(s => {
           const hour = parseInt(s.time.split(':')[0])

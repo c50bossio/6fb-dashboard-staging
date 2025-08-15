@@ -13,7 +13,6 @@ export async function POST(request) {
     const uploadType = formData.get('type') // 'logo', 'cover', 'gallery', 'team'
     const shopId = formData.get('shopId')
 
-    // Validate inputs
     if (!file || !uploadType || !shopId) {
       return NextResponse.json(
         { error: 'File, type, and shopId are required' },
@@ -21,7 +20,6 @@ export async function POST(request) {
       )
     }
 
-    // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
         { error: 'Invalid file type. Only JPEG, PNG, WebP, and SVG are allowed.' },
@@ -29,7 +27,6 @@ export async function POST(request) {
       )
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: 'File too large. Maximum size is 5MB.' },
@@ -37,32 +34,25 @@ export async function POST(request) {
       )
     }
 
-    // Generate unique filename
     const fileExtension = file.name.split('.').pop().toLowerCase()
     const uniqueFilename = `${uploadType}-${shopId}-${uuidv4()}.${fileExtension}`
     
-    // Determine upload directory based on type
     const uploadDir = getUploadDirectory(uploadType)
     const uploadPath = join(process.cwd(), 'public', uploadDir)
     const filePath = join(uploadPath, uniqueFilename)
     
-    // Create directory if it doesn't exist
     try {
       await mkdir(uploadPath, { recursive: true })
     } catch (error) {
-      // Directory might already exist, ignore error
     }
 
-    // Convert file to buffer and save
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     
     await writeFile(filePath, buffer)
 
-    // Generate public URL
     const publicUrl = `/${uploadDir}/${uniqueFilename}`
 
-    // Return success response with file URL
     return NextResponse.json({
       message: 'File uploaded successfully',
       url: publicUrl,
@@ -81,7 +71,6 @@ export async function POST(request) {
   }
 }
 
-// Helper function to determine upload directory
 function getUploadDirectory(uploadType) {
   switch (uploadType) {
     case 'logo':
@@ -100,7 +89,6 @@ function getUploadDirectory(uploadType) {
   }
 }
 
-// DELETE - Remove uploaded file
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -114,10 +102,8 @@ export async function DELETE(request) {
       )
     }
 
-    // Extract filename from URL
     const filename = fileUrl.split('/').pop()
     
-    // Verify the file belongs to this shop (security check)
     if (!filename.includes(shopId)) {
       return NextResponse.json(
         { error: 'Unauthorized to delete this file' },
@@ -125,14 +111,12 @@ export async function DELETE(request) {
       )
     }
 
-    // Construct file path
     const filePath = join(process.cwd(), 'public', fileUrl)
 
     try {
       const fs = require('fs').promises
       await fs.unlink(filePath)
     } catch (error) {
-      // File might not exist, that's okay
       console.log('File already deleted or does not exist:', filePath)
     }
 

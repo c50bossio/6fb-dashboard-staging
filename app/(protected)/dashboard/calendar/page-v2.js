@@ -22,7 +22,6 @@ import { getCalendarConfig } from '../../../../components/calendar/CalendarConfi
 const TimezoneService = require('../../../../services/timezone.service')
 import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 
-// Professional calendar component with RRule support
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'),
   { 
@@ -36,16 +35,13 @@ const ProfessionalCalendar = dynamic(
   }
 )
 
-// Import professional calendar styles
 import '../../../../styles/professional-calendar.css'
 
-// Import the appointment modal
 const AppointmentBookingModal = dynamic(
   () => import('../../../../components/calendar/AppointmentBookingModal'),
   { ssr: false }
 )
 
-// Import the reschedule confirmation modal
 const RescheduleConfirmationModal = dynamic(
   () => import('../../../../components/calendar/RescheduleConfirmationModal'),
   { ssr: false }
@@ -64,7 +60,6 @@ export default function CalendarPageV2() {
   
   const { success, error: showError, info } = useToast()
   
-  // Use the new calendar events hook with server-side expansion
   const {
     events,
     loading,
@@ -84,27 +79,22 @@ export default function CalendarPageV2() {
     useServerExpansion: true // Enable server-side expansion for performance
   })
   
-  // Modal states
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showRescheduleModal, setShowRescheduleModal] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [pendingReschedule, setPendingReschedule] = useState(null)
   
-  // Search and filter states
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBarber, setFilterBarber] = useState('all')
   const [filterService, setFilterService] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   
-  // Get calendar configuration with proper RRule support
   const calendarConfig = useMemo(() => getCalendarConfig(timezone), [timezone])
   
-  // Initialize component
   useEffect(() => {
     setMounted(true)
     
-    // Set up time display
     const updateTime = () => {
       setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
     }
@@ -112,11 +102,9 @@ export default function CalendarPageV2() {
     updateTime()
     const timeInterval = setInterval(updateTime, 1000)
     
-    // Fetch initial data
     fetchBarbers()
     fetchServices()
     
-    // Fetch events for current month
     const now = new Date()
     const start = new Date(now.getFullYear(), now.getMonth(), 1)
     const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
@@ -125,7 +113,6 @@ export default function CalendarPageV2() {
     return () => clearInterval(timeInterval)
   }, [])
   
-  // Fetch barbers from API
   const fetchBarbers = async () => {
     try {
       const response = await fetch('/api/calendar/barbers')
@@ -145,7 +132,6 @@ export default function CalendarPageV2() {
     }
   }
   
-  // Fetch services from API
   const fetchServices = async () => {
     try {
       const response = await fetch('/api/calendar/services')
@@ -159,13 +145,11 @@ export default function CalendarPageV2() {
     }
   }
   
-  // Handle calendar date navigation
   const handleDatesSet = useCallback((dateInfo) => {
     console.log('📅 Calendar view changed:', dateInfo)
     fetchEvents(dateInfo.start, dateInfo.end)
   }, [fetchEvents])
   
-  // Handle event click
   const handleEventClick = useCallback((clickInfo) => {
     const event = clickInfo.event
     
@@ -201,7 +185,6 @@ export default function CalendarPageV2() {
     setShowAppointmentModal(true)
   }, [])
   
-  // Handle date/time slot selection
   const handleDateSelect = useCallback((selectInfo) => {
     console.log('📅 Slot selected:', selectInfo)
     
@@ -218,10 +201,8 @@ export default function CalendarPageV2() {
     setShowAppointmentModal(true)
   }, [resources])
   
-  // Handle appointment save/create
   const handleAppointmentSave = async (appointmentData) => {
     try {
-      // Handle deletion
       if (appointmentData?.isDeleted) {
         const deletionOptions = appointmentData.deletionOptions || { deletion_type: 'all' }
         
@@ -235,7 +216,6 @@ export default function CalendarPageV2() {
         return
       }
       
-      // Handle conversion to recurring
       if (appointmentData?.id && appointmentData?.is_recurring && !appointmentData.wasRecurring) {
         await convertToRecurring(appointmentData.id, appointmentData.recurrence_pattern)
         
@@ -247,7 +227,6 @@ export default function CalendarPageV2() {
         return
       }
       
-      // Handle update
       if (appointmentData?.id && !appointmentData.isNew) {
         const modificationOptions = appointmentData.modificationOptions || {}
         await updateAppointment(appointmentData.id, appointmentData, modificationOptions)
@@ -260,7 +239,6 @@ export default function CalendarPageV2() {
         return
       }
       
-      // Handle new appointment creation
       const result = await createAppointment({
         ...appointmentData,
         shop_id: barbershopId,
@@ -281,7 +259,6 @@ export default function CalendarPageV2() {
     }
   }
   
-  // Handle appointment reschedule
   const handleRescheduleConfirm = async (rescheduleData) => {
     try {
       const modificationOptions = {
@@ -315,12 +292,10 @@ export default function CalendarPageV2() {
     }
   }
   
-  // Handle event drag and drop
   const handleEventDrop = async (dropInfo) => {
     const event = dropInfo.event
     const oldEvent = dropInfo.oldEvent
     
-    // Check for conflicts
     const hasConflict = await checkConflicts(
       event.extendedProps.barber_id,
       event.start,
@@ -337,7 +312,6 @@ export default function CalendarPageV2() {
       return
     }
     
-    // Prepare reschedule data
     setPendingReschedule({
       appointmentId: event.groupId || event.id,
       oldTime: {
@@ -358,7 +332,6 @@ export default function CalendarPageV2() {
     setShowRescheduleModal(true)
   }
   
-  // Generate QR code for booking
   const generateQRCode = useCallback(async (resource) => {
     setSelectedResource(resource)
     

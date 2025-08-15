@@ -5,7 +5,6 @@ import Link from 'next/link'
 
 import { Card, Badge } from '../ui'
 
-// Destructure icons from the imported module to avoid bundling issues
 const {
   ChatBubbleLeftRightIcon,
   ChartBarIcon,
@@ -20,7 +19,6 @@ const {
   RocketLaunchIcon
 } = HeroIcons
 
-// Fallback icon component in case of import issues
 const FallbackIcon = ({ className }) => (
   <div className={`${className} bg-gray-300 rounded-full`} />
 )
@@ -119,7 +117,6 @@ export default function QuickActions({ profile }) {
     return colorMap[color] || colorMap.blue
   }
 
-  // Show quick start for new users
   const isNewUser = !profile?.subscription_status || profile?.subscription_status === 'trial'
 
   return (

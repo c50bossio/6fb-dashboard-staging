@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 
-// Real Cin7 API product sync implementation
 async function fetchCin7Products(accountId, apiKey) {
   try {
     console.log('Fetching products from Cin7 API...')
@@ -30,7 +29,6 @@ async function fetchCin7Products(accountId, apiKey) {
   }
 }
 
-// Map Cin7 product to local database format
 function mapCin7ProductToLocal(cin7Product, barbershopId) {
   return {
     barbershop_id: barbershopId,
@@ -56,12 +54,10 @@ export async function POST(request) {
     
     console.log('Starting real Cin7 product synchronization...')
     
-    // Get user and barbershop
     const isDevelopment = process.env.NODE_ENV === 'development'
     let userId
     
     if (isDevelopment) {
-      // Use first shop owner for development
       const { data: devUsers } = await supabase
         .from('profiles')
         .select('id')
@@ -70,7 +66,6 @@ export async function POST(request) {
       userId = devUsers?.[0]?.id
       
       if (!userId) {
-        // If no SHOP_OWNER exists, use first available user
         const { data: anyUsers } = await supabase
           .from('profiles')
           .select('id')
@@ -92,7 +87,6 @@ export async function POST(request) {
     
     console.log('✅ Using userId:', userId, 'in', isDevelopment ? 'development' : 'production', 'mode')
     
-    // Get the user's barbershop
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, name')
@@ -106,18 +100,14 @@ export async function POST(request) {
       )
     }
     
-    // For now, we'll need to store Cin7 credentials securely
-    // This is a simplified version - in production, credentials should be encrypted and stored per barbershop
     const cin7Credentials = {
       accountId: '11d319f3-0a8b-4314-bb82-603f47fe2069', // Your real Account ID
       apiKey: process.env.CIN7_API_KEY // Store your API key in environment variables
     }
     
     if (!cin7Credentials.apiKey) {
-      // Fallback: try to get from a test connection or use a demo
       console.log('No Cin7 API key in environment, creating demo products...')
       
-      // Create some demo products based on common barbershop inventory
       const demoProducts = [
         {
           barbershop_id: barbershop.id,
@@ -196,7 +186,6 @@ export async function POST(request) {
         }
       ]
       
-      // Insert demo products
       const { data: insertedProducts, error: insertError } = await supabase
         .from('products')
         .insert(demoProducts)
@@ -219,7 +208,6 @@ export async function POST(request) {
       })
     }
     
-    // Real Cin7 API integration
     try {
       const cin7Products = await fetchCin7Products(cin7Credentials.accountId, cin7Credentials.apiKey)
       
@@ -231,12 +219,10 @@ export async function POST(request) {
         })
       }
       
-      // Map Cin7 products to local format
       const localProducts = cin7Products.map(product => 
         mapCin7ProductToLocal(product, barbershop.id)
       )
       
-      // Insert products into database (using upsert to handle duplicates by SKU)
       const { data: syncedProducts, error: syncError } = await supabase
         .from('products')
         .upsert(localProducts, { 
@@ -264,7 +250,6 @@ export async function POST(request) {
     } catch (cin7Error) {
       console.error('Cin7 API error:', cin7Error.message)
       
-      // Fallback to demo products if Cin7 API fails
       console.log('Cin7 API failed, falling back to demo products...')
       // ... (demo product creation code would go here)
       

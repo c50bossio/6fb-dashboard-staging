@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
-// Uncancel appointment (reactivate cancelled appointment)
 export async function POST(request) {
   try {
     const { appointmentId } = await request.json()
@@ -14,13 +13,11 @@ export async function POST(request) {
       )
     }
 
-    // Initialize Supabase client
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
     )
 
-    // Get the current appointment to check if it's actually cancelled
     const { data: current, error: fetchError } = await supabase
       .from('bookings')
       .select('status, notes')
@@ -44,7 +41,6 @@ export async function POST(request) {
     const currentNotes = current.notes || ''
     const uncancelNote = `${currentNotes} [Uncancelled at ${new Date().toLocaleString()}]`
     
-    // Update the appointment status back to confirmed
     const { data, error } = await supabase
       .from('bookings')
       .update({
@@ -63,7 +59,6 @@ export async function POST(request) {
       )
     }
 
-    // The UPDATE event will trigger real-time updates automatically
     console.log('✅ Appointment uncancelled:', appointmentId)
 
     return NextResponse.json({

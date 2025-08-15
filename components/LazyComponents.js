@@ -6,7 +6,6 @@
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
 
-// Loading component for lazy-loaded components
 const ComponentLoader = () => (
   <div className="space-y-4 p-4">
     <Skeleton className="h-12 w-3/4" />
@@ -15,7 +14,6 @@ const ComponentLoader = () => (
   </div>
 )
 
-// AI Chat component - Heavy component loaded on demand
 export const LazyAIChat = dynamic(
   () => import('@/components/AIChat'),
   {
@@ -24,7 +22,6 @@ export const LazyAIChat = dynamic(
   }
 )
 
-// Calendar component - Heavy FullCalendar library
 export const LazyCalendar = dynamic(
   () => import('@/components/calendar/Calendar'),
   {
@@ -33,7 +30,6 @@ export const LazyCalendar = dynamic(
   }
 )
 
-// Analytics Dashboard - Charts and data visualizations
 export const LazyAnalyticsDashboard = dynamic(
   () => import('@/components/analytics/AnalyticsDashboard'),
   {
@@ -42,7 +38,6 @@ export const LazyAnalyticsDashboard = dynamic(
   }
 )
 
-// Marketing Campaign Manager
 export const LazyMarketingManager = dynamic(
   () => import('@/components/marketing/MarketingCampaignManager'),
   {
@@ -51,7 +46,6 @@ export const LazyMarketingManager = dynamic(
   }
 )
 
-// Onboarding Flow
 export const LazyOnboardingWizard = dynamic(
   () => import('@/components/onboarding/OnboardingWizard'),
   {
@@ -60,7 +54,6 @@ export const LazyOnboardingWizard = dynamic(
   }
 )
 
-// Settings Panels
 export const LazySettingsPanel = dynamic(
   () => import('@/components/settings/SettingsPanel'),
   {
@@ -69,7 +62,6 @@ export const LazySettingsPanel = dynamic(
   }
 )
 
-// PDF Reports Generator
 export const LazyReportGenerator = dynamic(
   () => import('@/components/reports/ReportGenerator'),
   {
@@ -78,7 +70,6 @@ export const LazyReportGenerator = dynamic(
   }
 )
 
-// Advanced Forms
 export const LazyAdvancedForm = dynamic(
   () => import('@/components/forms/AdvancedForm'),
   {
@@ -87,7 +78,6 @@ export const LazyAdvancedForm = dynamic(
   }
 )
 
-// Data Tables with sorting/filtering
 export const LazyDataTable = dynamic(
   () => import('@/components/tables/DataTable'),
   {
@@ -96,7 +86,6 @@ export const LazyDataTable = dynamic(
   }
 )
 
-// Rich Text Editor
 export const LazyRichTextEditor = dynamic(
   () => import('@/components/editors/RichTextEditor'),
   {
@@ -105,7 +94,6 @@ export const LazyRichTextEditor = dynamic(
   }
 )
 
-// QR Code Generator
 export const LazyQRCodeGenerator = dynamic(
   () => import('@/components/tools/QRCodeGenerator'),
   {
@@ -114,7 +102,6 @@ export const LazyQRCodeGenerator = dynamic(
   }
 )
 
-// Video Player
 export const LazyVideoPlayer = dynamic(
   () => import('@/components/media/VideoPlayer'),
   {
@@ -123,7 +110,6 @@ export const LazyVideoPlayer = dynamic(
   }
 )
 
-// File Uploader
 export const LazyFileUploader = dynamic(
   () => import('@/components/upload/FileUploader'),
   {
@@ -132,7 +118,6 @@ export const LazyFileUploader = dynamic(
   }
 )
 
-// Map Component
 export const LazyMapView = dynamic(
   () => import('@/components/maps/MapView'),
   {
@@ -141,7 +126,6 @@ export const LazyMapView = dynamic(
   }
 )
 
-// Export all lazy components as default
 export default {
   AIChat: LazyAIChat,
   Calendar: LazyCalendar,

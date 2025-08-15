@@ -17,7 +17,6 @@ import ProtectedRoute from '../../components/ProtectedRoute'
 import GlobalNavigation from '../../components/GlobalNavigation'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
-// Mock customer data
 const Customers = [
   {
     id: 1,

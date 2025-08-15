@@ -22,7 +22,6 @@ export async function PUT(request) {
       timezone = 'America/New_York'
     } = body;
 
-    // Validate required fields
     if (!appointment_id) {
       return NextResponse.json(
         { error: 'Appointment ID is required' },
@@ -37,7 +36,6 @@ export async function PUT(request) {
       );
     }
 
-    // Fetch the original appointment
     const { data: appointment, error: fetchError } = await supabase
       .from('bookings')
       .select('*, barbers(*), customers(*), services(*)')
@@ -103,34 +101,28 @@ export async function PUT(request) {
  */
 async function modifyThisOnly(appointment, occurrenceDate, changes, timezone) {
   try {
-    // Create an exception for this occurrence
     const exceptions = appointment.recurring_pattern.exceptions || [];
     const modifications = appointment.recurring_pattern.modifications || {};
     
-    // Add this date to exceptions list
     const occurrenceKey = new Date(occurrenceDate).toISOString().split('T')[0];
     
     if (!exceptions.includes(occurrenceKey)) {
       exceptions.push(occurrenceKey);
     }
     
-    // Store the modifications for this date
     modifications[occurrenceKey] = {
       ...changes,
       modified_at: new Date().toISOString(),
       original_time: occurrenceDate
     };
 
-    // Update the recurring pattern with exceptions
     const updatedPattern = {
       ...appointment.recurring_pattern,
       exceptions,
       modifications
     };
 
-    // If time is being changed, create a separate single appointment
     if (changes.start_time || changes.end_time) {
-      // Create a new single appointment for this occurrence
       const newAppointmentData = {
         shop_id: appointment.shop_id,
         barber_id: changes.barber_id || appointment.barber_id,
@@ -157,11 +149,9 @@ async function modifyThisOnly(appointment, occurrenceDate, changes, timezone) {
         return { error: 'Failed to create exception appointment', status: 500 };
       }
 
-      // Update parent with exception reference
       modifications[occurrenceKey].exception_id = newAppointment.id;
     }
 
-    // Update the parent appointment's recurring pattern
     const { data, error } = await supabase
       .from('bookings')
       .update({ recurring_pattern: updatedPattern })
@@ -193,15 +183,12 @@ async function modifyThisOnly(appointment, occurrenceDate, changes, timezone) {
  */
 async function modifyThisAndFuture(appointment, occurrenceDate, changes, timezone) {
   try {
-    // Update the existing appointment to end before this date
     const originalRRule = appointment.recurring_pattern.rrule;
     const untilDate = new Date(occurrenceDate);
     untilDate.setDate(untilDate.getDate() - 1); // End the day before
     
-    // Parse and update the original RRule to add UNTIL
     const updatedOriginalRRule = updateRRuleUntil(originalRRule, untilDate);
     
-    // Update the original appointment
     const { error: updateError } = await supabase
       .from('bookings')
       .update({
@@ -218,19 +205,15 @@ async function modifyThisAndFuture(appointment, occurrenceDate, changes, timezon
       return { error: 'Failed to update original series', status: 500 };
     }
 
-    // Create a new recurring series starting from this date
     const newStartTime = changes.start_time || occurrenceDate;
     const newPattern = { ...appointment.recurring_pattern };
     
-    // Update pattern with changes
     if (changes.recurrence_pattern) {
       Object.assign(newPattern, changes.recurrence_pattern);
     }
 
-    // Create new RRule starting from the occurrence date
     const newRRule = createRRuleFromDate(newPattern, newStartTime, timezone);
 
-    // Create new appointment series
     const newAppointmentData = {
       shop_id: appointment.shop_id,
       barber_id: changes.barber_id || appointment.barber_id,
@@ -284,16 +267,13 @@ async function modifyThisAndFuture(appointment, occurrenceDate, changes, timezon
  */
 async function modifyAll(appointment, changes, timezone) {
   try {
-    // Build update object
     const updateData = {};
     
-    // Update basic fields if provided
     if (changes.barber_id) updateData.barber_id = changes.barber_id;
     if (changes.service_id) updateData.service_id = changes.service_id;
     if (changes.status) updateData.status = changes.status;
     if (changes.notes !== undefined) updateData.notes = changes.notes;
     
-    // Update time if provided
     if (changes.start_time) {
       updateData.start_time = TimezoneService.toUTC(changes.start_time, timezone);
     }
@@ -308,7 +288,6 @@ async function modifyAll(appointment, changes, timezone) {
       updateData.end_time = endUTC;
     }
     
-    // Update recurring pattern if provided
     if (changes.recurrence_pattern) {
       const newRRule = RRuleService.createRRuleString(changes.recurrence_pattern);
       const validation = RRuleService.validateRRule(newRRule);
@@ -325,7 +304,6 @@ async function modifyAll(appointment, changes, timezone) {
       };
     }
 
-    // Update the appointment
     const { data, error } = await supabase
       .from('bookings')
       .update(updateData)
@@ -355,15 +333,12 @@ async function modifyAll(appointment, changes, timezone) {
  * Helper function to update RRule with UNTIL date
  */
 function updateRRuleUntil(rruleString, untilDate) {
-  // Remove existing UNTIL if present
   let cleanedRRule = rruleString.replace(/UNTIL=[^;\\n]+[;\\n]?/, '');
   
-  // Format until date
   const untilStr = untilDate.toISOString()
     .replace(/[-:]/g, '')
     .replace(/\\.\\d{3}/, '');
   
-  // Add new UNTIL
   if (cleanedRRule.includes(';')) {
     cleanedRRule += `;UNTIL=${untilStr}`;
   } else {
@@ -382,7 +357,6 @@ function createRRuleFromDate(pattern, startDate, timezone) {
   
   let rrule = pattern.rrule;
   
-  // Update or add DTSTART
   if (rrule.includes('DTSTART')) {
     rrule = rrule.replace(/DTSTART[^\\n]+/, `DTSTART:${dtstart}`);
   } else {

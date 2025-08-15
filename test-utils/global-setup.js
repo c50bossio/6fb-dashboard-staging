@@ -10,7 +10,6 @@ const path = require('path')
 async function globalSetup(config) {
   console.log('🔧 Setting up 6FB AI Agent System test environment...')
   
-  // Create test directories
   const testDirs = [
     'test-results',
     'test-results/screenshots',
@@ -27,13 +26,10 @@ async function globalSetup(config) {
     console.log(`✓ Created directory: ${dir}`)
   }
 
-  // Set up authentication for Playwright tests
   await setupAuthentication()
 
-  // Verify test server is ready
   await verifyTestServer()
 
-  // Initialize Computer Use if available
   await initializeComputerUse()
 
   console.log('✅ Global setup completed successfully')
@@ -47,26 +43,19 @@ async function setupAuthentication() {
   const page = await context.newPage()
 
   try {
-    // Navigate to login page
     await page.goto('http://localhost:9999/login')
     
-    // Check if login page loads
     await page.waitForSelector('[data-testid="login-form"]', { timeout: 10000 })
     
-    // Fill login form with test credentials
     await page.fill('[data-testid="email-input"]', 'test@example.com')
     await page.fill('[data-testid="password-input"]', 'testpassword')
     
-    // Submit login
     await page.click('[data-testid="login-button"]')
     
-    // Wait for successful login
     await page.waitForURL('**/dashboard', { timeout: 10000 })
     
-    // Verify we're logged in
     await page.waitForSelector('[data-testid="user-menu"]', { timeout: 5000 })
     
-    // Save authentication state
     await page.context().storageState({ path: 'playwright/.auth/user.json' })
     
     console.log('✓ Authentication setup completed')
@@ -75,7 +64,6 @@ async function setupAuthentication() {
     console.warn('⚠️  Authentication setup failed:', error.message)
     console.warn('   Tests requiring authentication may fail')
     
-    // Create empty auth file to prevent errors
     await fs.writeFile('playwright/.auth/user.json', JSON.stringify({
       cookies: [],
       origins: []
@@ -104,7 +92,6 @@ async function verifyTestServer() {
         return
       }
     } catch (error) {
-      // Server not ready yet
     }
     
     if (i < maxRetries - 1) {
@@ -122,18 +109,15 @@ async function initializeComputerUse() {
   console.log('🤖 Initializing Computer Use integration...')
   
   try {
-    // Check if Python script exists
     const pythonScriptPath = path.join(__dirname, '../../computer_use_basic.py')
     await fs.access(pythonScriptPath)
     
-    // Check if Claude API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
       console.warn('⚠️  ANTHROPIC_API_KEY not configured')
       console.warn('   Computer Use tests will be skipped')
       return
     }
     
-    // Test Python environment
     const { exec } = require('child_process')
     const { promisify } = require('util')
     const execAsync = promisify(exec)
@@ -141,7 +125,6 @@ async function initializeComputerUse() {
     await execAsync('python3 --version')
     console.log('✓ Python environment ready')
     
-    // Test Claude API connection
     const testCommand = `cd "${path.dirname(pythonScriptPath)}" && python3 -c "
 import os
 import anthropic
@@ -162,7 +145,6 @@ print('Claude API connection ready')
   }
 }
 
-// Create health check endpoint test
 async function createHealthCheckTest() {
   const healthCheckTest = `
 import { test, expect } from '@playwright/test'
@@ -177,7 +159,6 @@ test('health check', async ({ page }) => {
   console.log('✓ Created health check test')
 }
 
-// Set up test data
 async function setupTestData() {
   console.log('📊 Setting up test data...')
   
@@ -230,5 +211,4 @@ async function setupTestData() {
   console.log('✓ Test data prepared')
 }
 
-// Export for use in playwright.config.js
 module.exports = globalSetup

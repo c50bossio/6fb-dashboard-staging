@@ -21,7 +21,6 @@ export default function WebsiteSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [settings, setSettings] = useState({
-    // Basic Info
     name: '',
     tagline: '',
     description: '',
@@ -31,7 +30,6 @@ export default function WebsiteSettingsPage() {
     city: '',
     state: '',
     
-    // Branding
     logo_url: '',
     cover_image_url: '',
     brand_colors: {
@@ -47,16 +45,13 @@ export default function WebsiteSettingsPage() {
     },
     theme_preset: 'default',
     
-    // Content
     hero_title: '',
     hero_subtitle: '',
     about_text: '',
     
-    // Settings
     website_enabled: true,
     shop_slug: '',
     
-    // Social Links
     social_links: {
       instagram: '',
       facebook: '',
@@ -64,23 +59,17 @@ export default function WebsiteSettingsPage() {
       twitter: ''
     },
     
-    // SEO
     seo_title: '',
     seo_description: '',
     seo_keywords: ''
   })
 
-  // Get current barbershop ID (demo implementation)
   const [shopId, setShopId] = useState('demo-barbershop')
   
-  // In a real implementation, you'd get this from user context or API
   useEffect(() => {
-    // For demo purposes, we'll use a fixed shop ID
-    // In production, this would come from the authenticated user's barbershop
     setShopId('demo-barbershop')
   }, [])
 
-  // Tabs configuration
   const tabs = [
     { id: 'general', name: 'General', icon: Cog6ToothIcon },
     { id: 'branding', name: 'Branding', icon: PaintBrushIcon },
@@ -89,7 +78,6 @@ export default function WebsiteSettingsPage() {
     { id: 'preview', name: 'Preview', icon: EyeIcon }
   ]
 
-  // Predefined theme presets
   const themePresets = [
     {
       id: 'default',
@@ -113,7 +101,6 @@ export default function WebsiteSettingsPage() {
     }
   ]
 
-  // Load settings on component mount
   useEffect(() => {
     loadSettings()
   }, [])
@@ -121,7 +108,6 @@ export default function WebsiteSettingsPage() {
   const loadSettings = async () => {
     setLoading(true)
     try {
-      // First, try to create demo data if it doesn't exist
       const demoResponse = await fetch('/api/demo/setup', { method: 'POST' })
       const demoResult = await demoResponse.json()
       
@@ -137,14 +123,12 @@ export default function WebsiteSettingsPage() {
         setSettings({
           ...settings,
           ...data,
-          // Ensure all required fields have defaults
           brand_colors: data.brand_colors || settings.brand_colors,
           custom_fonts: data.custom_fonts || settings.custom_fonts,
           social_links: data.social_links || settings.social_links
         })
         setMessage({ type: 'success', text: 'Settings loaded successfully' })
       } else {
-        // If it still fails, use default settings
         setMessage({ type: 'info', text: 'Using default settings - save to create your barbershop profile' })
       }
     } catch (error) {
@@ -158,7 +142,6 @@ export default function WebsiteSettingsPage() {
   const saveSettings = async () => {
     setSaving(true)
     try {
-      // First create a barbershop record if it doesn't exist
       const createResponse = await fetch('/api/demo/simple-setup', { method: 'POST' })
       const createResult = await createResponse.json()
       
@@ -168,7 +151,6 @@ export default function WebsiteSettingsPage() {
         setShopId(actualShopId)
       }
 
-      // Then save the settings
       const response = await fetch(`/api/customization/${actualShopId}/settings`, {
         method: 'PUT',
         headers: {
@@ -188,7 +170,6 @@ export default function WebsiteSettingsPage() {
       setMessage({ type: 'error', text: 'Failed to save settings: ' + error.message })
     } finally {
       setSaving(false)
-      // Clear message after 5 seconds for better UX
       setTimeout(() => setMessage({ type: '', text: '' }), 5000)
     }
   }
@@ -872,9 +853,7 @@ export default function WebsiteSettingsPage() {
                       <div className="flex space-x-3">
                         <button
                           onClick={() => {
-                            // Save current settings to localStorage for preview
                             localStorage.setItem('preview-barbershop', JSON.stringify(settings))
-                            // Open preview page
                             window.open('/barbershop/preview', '_blank')
                           }}
                           className="text-sm text-olive-600 hover:text-olive-800 underline font-medium"

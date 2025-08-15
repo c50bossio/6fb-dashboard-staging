@@ -4,12 +4,10 @@ import { GET as MeGET } from '@/app/api/auth/me/route'
 import { POST as LogoutPOST } from '@/app/api/auth/logout/route'
 import { NextRequest } from 'next/server'
 
-// Mock NextAuth
 jest.mock('next-auth/next', () => ({
   NextAuth: jest.fn(),
 }))
 
-// Mock session handling
 const Session = {
   user: {
     id: 'test-user-123',
@@ -36,15 +34,12 @@ describe('Authentication API Routes', () => {
         })
       })
 
-      // Mock successful authentication
       const AuthResponse = {
         ok: true,
         user: mockSession.user,
         token: 'mock-jwt-token'
       }
 
-      // Since we can't easily mock the actual auth logic without seeing the implementation,
-      // we'll test the request structure and expected response format
       const response = await LoginPOST(request).catch(() => ({
         status: 200,
         json: async () => mockAuthResponse
@@ -78,7 +73,6 @@ describe('Authentication API Routes', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'test@example.com'
-          // Missing password
         })
       })
 
@@ -183,7 +177,6 @@ describe('Authentication API Routes', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'test@example.com'
-          // Missing password and name
         })
       })
 
@@ -217,7 +210,6 @@ describe('Authentication API Routes', () => {
     it('returns 401 when not authenticated', async () => {
       const request = new NextRequest('http://localhost:3000/api/auth/me', {
         method: 'GET'
-        // No authentication headers
       })
 
       const response = await MeGET(request).catch(() => ({
@@ -267,7 +259,6 @@ describe('Authentication API Routes', () => {
     it('handles logout when not authenticated', async () => {
       const request = new NextRequest('http://localhost:3000/api/auth/logout', {
         method: 'POST'
-        // No authentication headers
       })
 
       const response = await LogoutPOST(request).catch(() => ({
@@ -275,14 +266,12 @@ describe('Authentication API Routes', () => {
         json: async () => ({ success: true, message: 'Already logged out' })
       }))
 
-      // Should still return success even if not authenticated
       expect(response.status).toBe(200)
     })
   })
 
   describe('Authentication Security', () => {
     it('handles rate limiting', async () => {
-      // Simulate multiple rapid login attempts
       const requests = await fetchFromDatabase({ limit: 6 }, () => 
         new NextRequest('http://localhost:3000/api/auth/login', {
           method: 'POST',
@@ -297,7 +286,6 @@ describe('Authentication API Routes', () => {
         })
       )
 
-      // The 6th request should be rate limited
       const responses = await Promise.all(
         requests.map(req => 
           LoginPOST(req).catch(() => ({
@@ -350,7 +338,6 @@ describe('Authentication API Routes', () => {
         json: async () => ({ error: 'Invalid input format' })
       }))
 
-      // Should reject malicious input
       expect(response.status).toBe(400)
     })
   })

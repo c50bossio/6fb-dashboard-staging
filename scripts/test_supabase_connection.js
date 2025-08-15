@@ -10,7 +10,6 @@ const { createClient } = require('@supabase/supabase-js')
 async function testConnection() {
   console.log('🔍 Testing Supabase Connection...\n')
 
-  // Check environment variables
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -29,11 +28,9 @@ async function testConnection() {
   }
 
   try {
-    // Test with anon key (client-side)
     console.log('\n🧪 Testing client connection (anon key)...')
     const supabase = createClient(url, anonKey)
     
-    // Try to fetch from a table (will fail if table doesn't exist yet)
     const { data, error } = await supabase
       .from('users')
       .select('count')
@@ -53,7 +50,6 @@ async function testConnection() {
       console.log('✅ Connection successful! Tables exist.')
     }
 
-    // Test with service key (server-side)
     if (serviceKey) {
       console.log('\n🧪 Testing service connection (service key)...')
       const supabaseAdmin = createClient(url, serviceKey)
@@ -82,5 +78,4 @@ async function testConnection() {
   }
 }
 
-// Run the test
 testConnection()

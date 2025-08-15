@@ -113,7 +113,6 @@ class AdvancedPerformanceAnalyzer {
     async performLoadTesting() {
         console.log('📊 Performing Load Testing...');
         
-        // Test real endpoints with increasing load
         const endpoints = [
             { name: 'Health Check', url: '/health', method: 'GET' },
             { name: 'Dashboard Stats', url: '/api/v1/dashboard/stats', method: 'GET' },
@@ -173,7 +172,6 @@ class AdvancedPerformanceAnalyzer {
                     };
                 }
                 
-                // Brief pause between load levels
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
         }
@@ -192,7 +190,6 @@ class AdvancedPerformanceAnalyzer {
                 const browsers = [];
                 const results = [];
                 
-                // Launch browsers for concurrent users
                 for (let i = 0; i < userCount; i++) {
                     const browser = await chromium.launch({ headless: true });
                     browsers.push(browser);
@@ -200,7 +197,6 @@ class AdvancedPerformanceAnalyzer {
                 
                 const startTime = Date.now();
                 
-                // Simulate concurrent user workflows
                 const userPromises = browsers.map((browser, index) => 
                     this.simulateUserWorkflow(browser, index)
                 );
@@ -208,7 +204,6 @@ class AdvancedPerformanceAnalyzer {
                 const userResults = await Promise.all(userPromises);
                 const endTime = Date.now();
                 
-                // Close browsers
                 await Promise.all(browsers.map(browser => browser.close()));
                 
                 const successful = userResults.filter(r => r.success);
@@ -244,7 +239,6 @@ class AdvancedPerformanceAnalyzer {
         try {
             const startTime = Date.now();
             
-            // Simulate a typical barbershop user workflow
             const workflow = [
                 { action: 'Load Dashboard', url: '/' },
                 { action: 'View Analytics', url: '/dashboard/analytics' },
@@ -262,7 +256,6 @@ class AdvancedPerformanceAnalyzer {
                         timeout: 30000 
                     });
                     
-                    // Wait for page to be interactive
                     await page.waitForLoadState('networkidle');
                     
                     const stepEnd = Date.now();
@@ -317,11 +310,9 @@ class AdvancedPerformanceAnalyzer {
                     try {
                         const startTime = Date.now();
                         
-                        // Load dashboard
                         await page.goto(`${this.results.system.frontend_url}/`, { waitUntil: 'networkidle' });
                         const dashboardLoadTime = Date.now() - startTime;
                         
-                        // Check if key elements are visible
                         const dashboardElements = await page.evaluate(() => {
                             return {
                                 hasHeader: !!document.querySelector('header, nav, .navbar'),
@@ -331,12 +322,10 @@ class AdvancedPerformanceAnalyzer {
                             };
                         });
                         
-                        // Navigate to analytics
                         const analyticsStart = Date.now();
                         await page.goto(`${this.results.system.frontend_url}/dashboard/analytics`, { waitUntil: 'networkidle' });
                         const analyticsLoadTime = Date.now() - analyticsStart;
                         
-                        // Check for charts/analytics elements
                         const analyticsElements = await page.evaluate(() => {
                             return {
                                 hasCharts: !!document.querySelector('canvas, .recharts-wrapper, .chart'),
@@ -373,7 +362,6 @@ class AdvancedPerformanceAnalyzer {
                     const startTime = Date.now();
                     
                     try {
-                        // Test AI-related endpoints
                         const aiTests = [
                             '/api/v1/ai/agents/status',
                             '/api/v1/business/recommendations/status',
@@ -491,7 +479,6 @@ class AdvancedPerformanceAnalyzer {
     generateAdvancedRecommendations() {
         const recommendations = [];
         
-        // Database performance recommendations
         if (this.results.database_performance.tests) {
             Object.entries(this.results.database_performance.tests).forEach(([testName, testData]) => {
                 if (testData.averageResponseTime > 200) {
@@ -505,7 +492,6 @@ class AdvancedPerformanceAnalyzer {
             });
         }
 
-        // Load testing recommendations
         if (this.results.load_testing.endpoints) {
             Object.entries(this.results.load_testing.endpoints).forEach(([endpointName, loadData]) => {
                 Object.entries(loadData).forEach(([concurrency, stats]) => {
@@ -530,7 +516,6 @@ class AdvancedPerformanceAnalyzer {
             });
         }
 
-        // Concurrent user recommendations
         if (this.results.concurrent_user_testing.scenarios) {
             Object.entries(this.results.concurrent_user_testing.scenarios).forEach(([userCount, scenario]) => {
                 if (scenario.failedUsers > 0) {
@@ -553,7 +538,6 @@ class AdvancedPerformanceAnalyzer {
             });
         }
 
-        // Real-world scenario recommendations
         if (this.results.real_world_scenarios.tests) {
             Object.entries(this.results.real_world_scenarios.tests).forEach(([scenarioName, scenarioData]) => {
                 if (!scenarioData.success) {
@@ -576,11 +560,9 @@ class AdvancedPerformanceAnalyzer {
         this.results.recommendations = this.generateAdvancedRecommendations();
         this.results.summary = this.generateAdvancedSummary();
         
-        // Save detailed results to JSON
         const reportPath = path.join(__dirname, 'advanced_performance_results.json');
         await fs.promises.writeFile(reportPath, JSON.stringify(this.results, null, 2));
         
-        // Generate human-readable report
         const readableReport = this.generateAdvancedReadableReport();
         const readableReportPath = path.join(__dirname, 'ADVANCED_PERFORMANCE_REPORT.md');
         await fs.promises.writeFile(readableReportPath, readableReport);
@@ -601,7 +583,6 @@ class AdvancedPerformanceAnalyzer {
             recommendations: this.results.recommendations.length
         };
 
-        // Calculate database performance score
         if (this.results.database_performance.tests) {
             const dbTests = Object.values(this.results.database_performance.tests);
             if (dbTests.length > 0) {
@@ -610,7 +591,6 @@ class AdvancedPerformanceAnalyzer {
             }
         }
 
-        // Calculate load testing score
         if (this.results.load_testing.endpoints) {
             let totalScore = 0;
             let testCount = 0;
@@ -631,7 +611,6 @@ class AdvancedPerformanceAnalyzer {
             }
         }
 
-        // Calculate concurrent user score
         if (this.results.concurrent_user_testing.scenarios) {
             const scenarios = Object.values(this.results.concurrent_user_testing.scenarios);
             if (scenarios.length > 0) {
@@ -642,14 +621,12 @@ class AdvancedPerformanceAnalyzer {
             }
         }
 
-        // Calculate real-world scenario score
         if (this.results.real_world_scenarios.tests) {
             const scenarios = Object.values(this.results.real_world_scenarios.tests);
             const successfulScenarios = scenarios.filter(s => s.success).length;
             summary.realWorldScenarioScore = Math.round((successfulScenarios / scenarios.length) * 100);
         }
 
-        // Calculate overall score
         const scores = [
             summary.databasePerformanceScore,
             summary.loadTestingScore,
@@ -661,7 +638,6 @@ class AdvancedPerformanceAnalyzer {
             summary.overallAdvancedScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
         }
 
-        // Count critical issues
         summary.criticalIssues = this.results.recommendations.filter(r => r.priority === 'Critical').length;
 
         return summary;
@@ -843,7 +819,6 @@ ${this.results.recommendations
     }
 
     assessMaxConcurrency() {
-        // Analyze load testing results to determine max concurrency
         let maxStableConcurrency = 1;
         
         if (this.results.load_testing.endpoints) {
@@ -887,7 +862,6 @@ ${this.results.recommendations
     }
 }
 
-// Run the analysis
 if (require.main === module) {
     const analyzer = new AdvancedPerformanceAnalyzer();
     analyzer.runAdvancedAnalysis().catch(console.error);

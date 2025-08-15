@@ -243,7 +243,6 @@ async function setupGMBSchema() {
   console.log('🗄️ Setting up Google My Business database schema...\n');
   
   try {
-    // Split the schema into individual statements
     const statements = gmbSchema
       .split(';')
       .map(stmt => stmt.trim())
@@ -258,14 +257,11 @@ async function setupGMBSchema() {
       const statement = statements[i] + ';';
       
       try {
-        // Use the query method instead of rpc
         const { data, error } = await supabase
           .from('_dummy_') // This will fail but we can catch it
           .select('*')
           .limit(0);
         
-        // Since the above will fail, let's try a different approach
-        // We'll use the REST API directly
         const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
           method: 'POST',
           headers: {
@@ -292,7 +288,6 @@ async function setupGMBSchema() {
         errorCount++;
       }
       
-      // Small delay between statements
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     
@@ -316,7 +311,6 @@ async function setupGMBSchema() {
   }
 }
 
-// Also create a simple verification function
 async function verifySchema() {
   console.log('\n🔍 Verifying schema setup...');
   
@@ -348,7 +342,6 @@ async function verifySchema() {
   }
 }
 
-// Run the setup
 setupGMBSchema()
   .then(() => verifySchema())
   .catch(console.error);

@@ -8,7 +8,6 @@ const test = async () => {
   console.log("=====================================");
 
   try {
-    // Test 1: Basic page accessibility
     console.log("\n1. Testing appointments page accessibility...");
     const response = await fetch("http://localhost:9999/appointments");
     
@@ -17,7 +16,6 @@ const test = async () => {
       
       const html = await response.text();
       
-      // Test 2: Check for calendar components
       console.log("\n2. Checking for calendar components...");
       
       const checks = [
@@ -36,7 +34,6 @@ const test = async () => {
         }
       });
 
-      // Test 3: Check for mock data
       console.log("\n3. Checking for mock appointment data...");
       const DataChecks = [
         { name: "Marcus Johnson (barber)", pattern: /Marcus Johnson/i },
@@ -61,7 +58,6 @@ const test = async () => {
     console.log(`❌ Error testing calendar: ${error.message}`);
   }
 
-  // Test 4: Test API endpoints related to appointments
   console.log("\n4. Testing appointments API endpoints...");
   
   const apiTests = [
@@ -79,7 +75,6 @@ const test = async () => {
     }
   }
 
-  // Test 5: Check backend health  
   console.log("\n5. Testing backend connectivity...");
   try {
     const response = await fetch("http://localhost:8001/health");
@@ -116,5 +111,4 @@ const test = async () => {
 
 };
 
-// Run the test
 test();

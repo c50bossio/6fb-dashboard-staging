@@ -15,7 +15,6 @@ async function analyzeSignupFlow() {
     console.log('4. Onboarding/Welcome FOURTH (guide users to success)');
     console.log('');
     
-    // Step 1: Navigate to homepage
     console.log('🏠 STEP 1: Navigating to homepage...');
     await page.goto('http://localhost:9999');
     await page.waitForLoadState('networkidle');
@@ -23,7 +22,6 @@ async function analyzeSignupFlow() {
     await page.screenshot({ path: 'test-results/screenshots/01-homepage.png' });
     console.log('✅ Homepage loaded');
     
-    // Step 2: Find and analyze signup buttons
     console.log('\n🔍 STEP 2: Finding signup buttons on homepage...');
     
     const signupButtons = await page.locator('text=/sign.*up|register|get.*started|start.*free/i').all();
@@ -35,10 +33,8 @@ async function analyzeSignupFlow() {
       console.log(`  ${i + 1}. "${text.trim()}" → ${href}`);
     }
     
-    // Step 3: Click the main signup button
     console.log('\n📱 STEP 3: Testing primary signup flow...');
     
-    // Look for common signup button patterns
     const primarySignup = page.locator('text=/get.*started|sign.*up|register|start.*free/i').first();
     
     if (await primarySignup.count() > 0) {
@@ -53,11 +49,9 @@ async function analyzeSignupFlow() {
       
       await page.screenshot({ path: 'test-results/screenshots/02-after-signup-click.png' });
       
-      // Analyze what page we landed on
       const pageTitle = await page.locator('h1').first().textContent().catch(() => 'No title');
       console.log(`Page title: "${pageTitle}"`);
       
-      // Check if this is a plan selection page or auth page
       const hasPlanSelection = await page.locator('text=/plan|pricing|choose/i').count() > 0;
       const hasAuthForm = await page.locator('text=/sign.*in|login|google|email.*password/i').count() > 0;
       
@@ -67,7 +61,6 @@ async function analyzeSignupFlow() {
       if (hasPlanSelection) {
         console.log('✅ FOLLOWS BEST PRACTICE: Plan selection comes first');
         
-        // Test plan selection
         console.log('\n🎯 Testing plan selection...');
         const planButtons = await page.locator('button:has-text("Start as")').all();
         
@@ -78,7 +71,6 @@ async function analyzeSignupFlow() {
             console.log(`  ${i + 1}. ${planText.trim()}`);
           }
           
-          // Click first plan option
           const firstPlan = planButtons[0];
           const planName = await firstPlan.textContent();
           console.log(`\nClicking first plan: "${planName.trim()}"`);
@@ -91,7 +83,6 @@ async function analyzeSignupFlow() {
           
           await page.screenshot({ path: 'test-results/screenshots/03-after-plan-selection.png' });
           
-          // Check if we go to auth next
           const nowHasAuth = await page.locator('text=/google.*sign|continue.*google|oauth/i').count() > 0;
           if (nowHasAuth) {
             console.log('✅ CORRECT: Plan → Auth flow');
@@ -104,14 +95,12 @@ async function analyzeSignupFlow() {
         console.log('   Users don\'t know what they\'re signing up for!');
         console.log('   This reduces conversion rates and increases confusion.');
         
-        // Check what auth options are available
         const authOptions = await page.locator('button:has-text("Google"), button:has-text("Sign"), input[type="email"]').all();
         console.log(`\nFound ${authOptions.length} auth options on this page`);
         
       } else {
         console.log('❓ UNCLEAR: Neither plan selection nor clear auth form found');
         
-        // Look for other elements to understand the page
         const allButtons = await page.locator('button').all();
         console.log(`\nFound ${allButtons.length} buttons on this page:`);
         for (let i = 0; i < Math.min(allButtons.length, 5); i++) {
@@ -124,7 +113,6 @@ async function analyzeSignupFlow() {
       console.log('❌ No primary signup button found on homepage');
     }
     
-    // Step 4: Test direct navigation to pricing/subscribe page
     console.log('\n💰 STEP 4: Testing direct navigation to pricing page...');
     await page.goto('http://localhost:9999/subscribe');
     await page.waitForLoadState('networkidle');
@@ -152,7 +140,6 @@ async function analyzeSignupFlow() {
         
         await page.screenshot({ path: 'test-results/screenshots/05-after-plan-click.png' });
         
-        // Check if OAuth flow starts
         const hasOAuthFlow = afterClickUrl.includes('oauth') || afterClickUrl.includes('google') || 
                            await page.locator('text=/continue.*google|sign.*google/i').count() > 0;
         

@@ -54,7 +54,6 @@ async function createPerformanceIndexes() {
   
   console.log(`📝 Processing ${indexes.length} strategic indexes...\n`)
   
-  // Since exec_sql is not available, we'll provide manual SQL
   console.log('📋 MANUAL SQL FOR SUPABASE DASHBOARD:')
   console.log('=====================================')
   console.log('Copy and paste this SQL into Supabase Dashboard → SQL Editor:\n')
@@ -65,7 +64,6 @@ async function createPerformanceIndexes() {
     console.log('')
   }
   
-  // Test query performance without indexes first
   console.log('⚡ Testing current query performance...')
   
   const testQueries = [
@@ -147,5 +145,4 @@ async function createPerformanceIndexes() {
   console.log('\n✨ Index creation script complete!')
 }
 
-// Run the performance index creation
 createPerformanceIndexes().catch(console.error)

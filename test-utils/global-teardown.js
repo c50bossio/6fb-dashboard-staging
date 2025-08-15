@@ -10,18 +10,14 @@ async function globalTeardown(config) {
   console.log('🧹 Cleaning up test environment...')
   
   try {
-    // Generate final test summary
     await generateTestSummary()
     
-    // Clean up temporary files
     await cleanupTempFiles()
     
-    // Archive test results if in CI
     if (process.env.CI) {
       await archiveTestResults()
     }
     
-    // Send notifications if configured
     await sendNotifications()
     
     console.log('✅ Global teardown completed successfully')
@@ -48,7 +44,6 @@ async function generateTestSummary() {
     }
   }
   
-  // Check for generated reports
   const reportFiles = [
     'test-results/triple-tool-report.json',
     'test-results/triple-tool-report.html',
@@ -61,11 +56,9 @@ async function generateTestSummary() {
       await fs.access(file)
       summaryData.testRun.reportsGenerated.push(file)
     } catch {
-      // File doesn't exist, skip
     }
   }
   
-  // Save summary
   const summaryPath = path.join('test-results', 'test-summary.json')
   await fs.writeFile(summaryPath, JSON.stringify(summaryData, null, 2))
   
@@ -95,7 +88,6 @@ async function cleanupTempFiles() {
         cleanedFiles++
       }
     } catch (error) {
-      // Pattern didn't match or glob not available
     }
   }
   
@@ -113,18 +105,15 @@ async function archiveTestResults() {
     const { promisify } = require('util')
     const execAsync = promisify(exec)
     
-    // Create archive of test results
     await execAsync(`tar -czf ${archiveName} test-results/ playwright-report/ || true`)
     
     console.log(`✓ Test results archived as ${archiveName}`)
     
-    // Move to artifacts directory if it exists
     try {
       await fs.access('artifacts')
       await fs.rename(archiveName, `artifacts/${archiveName}`)
       console.log('✓ Archive moved to artifacts directory')
     } catch {
-      // Artifacts directory doesn't exist, leave in root
     }
     
   } catch (error) {
@@ -133,7 +122,6 @@ async function archiveTestResults() {
 }
 
 async function sendNotifications() {
-  // Skip notifications if not configured
   if (!process.env.NOTIFICATION_WEBHOOK && !process.env.SLACK_WEBHOOK) {
     return
   }
@@ -141,13 +129,11 @@ async function sendNotifications() {
   console.log('📤 Sending test notifications...')
   
   try {
-    // Read test results
     let testResults = null
     try {
       const resultsData = await fs.readFile('test-results/triple-tool-report.json', 'utf8')
       testResults = JSON.parse(resultsData)
     } catch {
-      // Results file not available
       return
     }
     
@@ -187,7 +173,6 @@ async function sendNotifications() {
       ]
     }
     
-    // Send to webhook
     const webhookUrl = process.env.NOTIFICATION_WEBHOOK || process.env.SLACK_WEBHOOK
     
     const response = await fetch(webhookUrl, {
@@ -230,7 +215,6 @@ async function logFinalSummary() {
     console.log(`   ⏱️  Duration: ${Math.round(duration / 1000)}s`)
     console.log('')
     
-    // Show tool breakdown
     console.log('🛠️  Tool Breakdown:')
     const tools = ['playwright', 'puppeteer', 'computerUse']
     tools.forEach(tool => {
@@ -252,8 +236,6 @@ async function logFinalSummary() {
     if (failed > 0) {
       console.log('')
       console.log('❌ Some tests failed. Check the reports for details.')
-      console.log('   Debug with: npm run test:e2e:debug')
-      console.log('   Puppeteer debug: npm run puppeteer:debug')
     } else {
       console.log('')
       console.log('🎉 All tests passed! Great job!')
@@ -267,10 +249,8 @@ async function logFinalSummary() {
   console.log('='.repeat(60))
 }
 
-// Always show final summary
 process.on('exit', () => {
   if (!process.env.SUPPRESS_FINAL_SUMMARY) {
-    // This runs synchronously, so we can't use async functions
     console.log('\n🏁 6FB AI Agent System testing session ended')
   }
 })

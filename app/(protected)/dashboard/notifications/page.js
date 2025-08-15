@@ -77,7 +77,6 @@ export default function NotificationsPage() {
       const result = await response.json()
       setTestResult(result)
       
-      // Refresh history after sending
       setTimeout(fetchHistory, 1000)
     } catch (error) {
       setTestResult({

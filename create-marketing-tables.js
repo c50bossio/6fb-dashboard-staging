@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase connection with provided credentials
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
 
@@ -11,7 +10,6 @@ async function createMarketingTables() {
   console.log('='.repeat(60))
   
   try {
-    // SQL for creating marketing tables
     const sqlStatements = [
       {
         name: 'customer_segments',
@@ -82,7 +80,6 @@ async function createMarketingTables() {
       }
     ]
     
-    // Create indexes for better performance
     const indexStatements = [
       "CREATE INDEX IF NOT EXISTS idx_customer_segments_active ON customer_segments(is_active);",
       "CREATE INDEX IF NOT EXISTS idx_marketing_accounts_platform ON marketing_accounts(platform);",
@@ -93,14 +90,11 @@ async function createMarketingTables() {
       "CREATE INDEX IF NOT EXISTS idx_campaign_executions_status ON campaign_executions(status);"
     ]
     
-    // Execute table creation
     for (const tableInfo of sqlStatements) {
       console.log(`\n🔨 Creating ${tableInfo.name} table...`)
       console.log('-'.repeat(40))
       
       try {
-        // We'll try to create the table using raw SQL approach
-        // Since we can't use supabase.rpc('exec_sql'), we'll create a simple insert to test if table exists
         const { data, error } = await supabase
           .from(tableInfo.name)
           .select('*')
@@ -120,11 +114,9 @@ async function createMarketingTables() {
       }
     }
     
-    // Test insertion of sample data for any existing tables
     console.log('\n🧪 TESTING SAMPLE DATA INSERTION')
     console.log('-'.repeat(40))
     
-    // Try to insert sample customer segments
     try {
       const sampleSegments = [
         {
@@ -172,7 +164,6 @@ async function createMarketingTables() {
       console.log('❌ Customer segments insertion failed:', err.message)
     }
     
-    // Try to insert sample marketing accounts
     try {
       const sampleAccounts = [
         {
@@ -220,9 +211,7 @@ async function createMarketingTables() {
       console.log('❌ Marketing accounts insertion failed:', err.message)
     }
     
-    // Try to insert sample marketing campaign
     try {
-      // First get a segment ID if segments were created
       const { data: segments } = await supabase
         .from('customer_segments')
         .select('id, name')
@@ -290,7 +279,6 @@ async function createMarketingTables() {
     
     console.log('\n🔗 Supabase SQL Editor: https://dfhqjdoydihajmjxniee.supabase.co/project/dfhqjdoydihajmjxniee/sql')
     
-    // Display all SQL statements for easy copy-paste
     console.log('\n📝 COMPLETE SQL SCRIPT FOR COPY-PASTE:')
     console.log('='.repeat(60))
     console.log('-- Marketing Tables Creation Script')
@@ -315,5 +303,4 @@ async function createMarketingTables() {
   }
 }
 
-// Run the table creation
 createMarketingTables().catch(console.error)

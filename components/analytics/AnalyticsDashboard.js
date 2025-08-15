@@ -25,21 +25,16 @@ export default function AnalyticsDashboard() {
   })
 
   useEffect(() => {
-    // Track dashboard view
     analytics.trackFeatureUsage('analytics_dashboard_viewed')
     
-    // Fetch REAL data from database
     const fetchAnalyticsData = async () => {
       try {
-        // Get business metrics from real database
         const metricsResponse = await fetch('/api/analytics/live-data')
         const metricsData = await metricsResponse.json()
         
-        // Get trending services from real database
         const servicesResponse = await fetch('/api/dashboard/metrics?type=trending_services')
         const servicesData = await servicesResponse.json()
         
-        // Process and set the real data
         setMetrics({
           totalBookings: metricsData.appointments_today || 0,
           revenue: metricsData.revenue_today || 0,
@@ -56,7 +51,6 @@ export default function AnalyticsDashboard() {
         })
       } catch (error) {
         console.error('Failed to fetch analytics data:', error)
-        // Set empty data on error - NO MOCK DATA
         setMetrics({
           totalBookings: 0,
           revenue: 0,
@@ -70,20 +64,17 @@ export default function AnalyticsDashboard() {
     
     fetchAnalyticsData()
     
-    // Auto-refresh every 30 seconds
     const interval = setInterval(fetchAnalyticsData, 30000)
     return () => clearInterval(interval)
   }, [analytics])
 
   const handleExportData = () => {
     analytics.trackFeatureUsage('analytics_export_clicked')
-    // Implementation for exporting analytics data
     alert('Analytics export feature coming soon!')
   }
 
   const handleScheduleReport = () => {
     analytics.trackFeatureUsage('schedule_report_clicked')
-    // Implementation for scheduling reports
     alert('Schedule report feature coming soon!')
   }
 
@@ -241,7 +232,6 @@ export default function AnalyticsDashboard() {
   )
 }
 
-// Metric Card Component
 function MetricCard({ title, value, change, changeType, icon }) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -268,16 +258,13 @@ function MetricCard({ title, value, change, changeType, icon }) {
   )
 }
 
-// AI Insights Component
 function AIInsights({ analytics }) {
   const [insights, setInsights] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Track AI insights view
     analytics.trackFeatureUsage('ai_insights_viewed')
     
-    // Fetch REAL AI insights from database
     const fetchAIInsights = async () => {
       try {
         const response = await fetch('/api/ai/insights')

@@ -18,7 +18,6 @@
 const { createClient } = require('@supabase/supabase-js')
 const { v4: uuidv4 } = require('uuid')
 
-// Initialize Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
@@ -30,12 +29,10 @@ async function seedMultiRoleBillingData() {
 
   try {
     // ===============================================
-    // STEP 1: CREATE USER PROFILES FOR EACH ROLE
     // ===============================================
     console.log('👤 Creating user profiles for each role...')
     
     const userProfiles = [
-      // Individual Barber
       {
         id: 'barber-mike-001',
         email: 'mike@elitecuts.com',
@@ -54,7 +51,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       },
-      // Shop Owner
       {
         id: 'shop-owner-alex-001', 
         email: 'alex@elitecuts.com',
@@ -74,7 +70,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       },
-      // Enterprise Owner
       {
         id: 'enterprise-sarah-001',
         email: 'sarah@cutspro.com',
@@ -96,7 +91,6 @@ async function seedMultiRoleBillingData() {
       }
     ]
 
-    // Insert user profiles
     for (const profile of userProfiles) {
       const { data, error } = await supabase
         .from('profiles')
@@ -110,12 +104,10 @@ async function seedMultiRoleBillingData() {
     }
 
     // ===============================================
-    // STEP 2: CREATE MARKETING ACCOUNTS FOR EACH ROLE
     // ===============================================
     console.log('\n💳 Creating marketing billing accounts...')
     
     const marketingAccounts = [
-      // Individual Barber Account
       {
         id: uuidv4(),
         owner_id: 'barber-mike-001',
@@ -145,7 +137,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
         updated_at: new Date().toISOString()
       },
-      // Shop Owner Account
       {
         id: uuidv4(),
         owner_id: 'shop-owner-alex-001',
@@ -176,7 +167,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days ago
         updated_at: new Date().toISOString()
       },
-      // Enterprise Account
       {
         id: uuidv4(),
         owner_id: 'enterprise-sarah-001',
@@ -209,7 +199,6 @@ async function seedMultiRoleBillingData() {
       }
     ]
 
-    // Insert marketing accounts
     const createdAccounts = []
     for (const account of marketingAccounts) {
       const { data, error } = await supabase
@@ -227,12 +216,10 @@ async function seedMultiRoleBillingData() {
     }
 
     // ===============================================
-    // STEP 3: CREATE SAMPLE PAYMENT METHODS
     // ===============================================
     console.log('\n💳 Creating sample payment methods...')
     
     const paymentMethods = [
-      // Barber Payment Method
       {
         id: uuidv4(),
         account_id: createdAccounts[0]?.id,
@@ -254,7 +241,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: new Date().toISOString()
       },
-      // Shop Owner Payment Method
       {
         id: uuidv4(),
         account_id: createdAccounts[1]?.id,
@@ -276,7 +262,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: new Date().toISOString()
       },
-      // Enterprise Payment Method (Primary)
       {
         id: uuidv4(),
         account_id: createdAccounts[2]?.id,
@@ -298,7 +283,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: new Date().toISOString()
       },
-      // Enterprise Payment Method (Backup)
       {
         id: uuidv4(),
         account_id: createdAccounts[2]?.id,
@@ -322,7 +306,6 @@ async function seedMultiRoleBillingData() {
       }
     ]
 
-    // Insert payment methods
     for (const paymentMethod of paymentMethods) {
       if (paymentMethod.account_id) {
         const { data, error } = await supabase
@@ -338,13 +321,10 @@ async function seedMultiRoleBillingData() {
     }
 
     // ===============================================
-    // STEP 4: CREATE SAMPLE CAMPAIGNS & BILLING RECORDS
     // ===============================================
     console.log('\n📧 Creating sample marketing campaigns and billing records...')
     
-    // Create sample campaigns first
     const sampleCampaigns = [
-      // Barber Campaigns
       {
         id: uuidv4(),
         created_by: 'barber-mike-001',
@@ -374,7 +354,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: new Date().toISOString()
       },
-      // Shop Campaigns
       {
         id: uuidv4(),
         created_by: 'shop-owner-alex-001',
@@ -404,7 +383,6 @@ async function seedMultiRoleBillingData() {
         created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: new Date().toISOString()
       },
-      // Enterprise Campaigns
       {
         id: uuidv4(),
         created_by: 'enterprise-sarah-001',
@@ -436,7 +414,6 @@ async function seedMultiRoleBillingData() {
       }
     ]
 
-    // Insert campaigns
     const createdCampaigns = []
     for (const campaign of sampleCampaigns) {
       if (campaign.billing_account_id) {
@@ -455,7 +432,6 @@ async function seedMultiRoleBillingData() {
       }
     }
 
-    // Create billing records for campaigns
     console.log('\n💰 Creating billing transaction records...')
     
     const billingRecords = []
@@ -483,7 +459,6 @@ async function seedMultiRoleBillingData() {
       })
     })
 
-    // Insert billing records
     for (const record of billingRecords) {
       const { data, error } = await supabase
         .from('marketing_billing_records')
@@ -497,7 +472,6 @@ async function seedMultiRoleBillingData() {
     }
 
     // ===============================================
-    // FINAL SUMMARY
     // ===============================================
     console.log('\n✨ Multi-role billing data seed completed!')
     console.log('\n📊 SUMMARY:')
@@ -523,7 +497,6 @@ async function seedMultiRoleBillingData() {
   }
 }
 
-// Execute the seed
 if (require.main === module) {
   seedMultiRoleBillingData().catch(console.error)
 }

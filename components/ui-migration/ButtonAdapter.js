@@ -9,7 +9,6 @@ import { Button as ShadcnButton } from '@/components/ui/button'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
 
-// Map old variant names to shadcn variants
 const variantMap = {
   primary: 'default',
   secondary: 'secondary',
@@ -19,7 +18,6 @@ const variantMap = {
   danger: 'destructive'
 }
 
-// Map old size names to shadcn sizes
 const sizeMap = {
   sm: 'sm',
   md: 'default',
@@ -41,7 +39,6 @@ export default function ButtonAdapter({
   const shadcnVariant = variantMap[variant] || 'default'
   const shadcnSize = sizeMap[size] || 'default'
   
-  // Add extra styles for special variants
   const extraClasses = cn(
     variant === 'cta' && 'bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 hover:from-yellow-300 hover:to-orange-300 font-bold',
     size === 'xl' && 'px-8 py-4 text-xl',
@@ -67,7 +64,6 @@ export default function ButtonAdapter({
   )
 }
 
-// Export specialized CTA Button
 export function CTAButton({ 
   children, 
   loading = false, 
@@ -106,7 +102,6 @@ export function CTAButton({
   )
 }
 
-// Export ButtonGroup for compatibility
 export function ButtonGroup({ children, className = '' }) {
   return (
     <div className={cn('flex flex-col sm:flex-row gap-4', className)}>

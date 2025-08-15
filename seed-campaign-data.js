@@ -2,7 +2,6 @@
 
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c';
 
@@ -11,7 +10,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function seedCampaignData() {
   console.log('🌱 Seeding campaign data...\n');
   
-  // Get the first marketing account
   const { data: accounts, error: accountError } = await supabase
     .from('marketing_accounts')
     .select('*')
@@ -25,7 +23,6 @@ async function seedCampaignData() {
   const account = accounts[0];
   console.log('Using account:', account.account_name);
   
-  // Create sample campaigns
   const campaigns = [
     {
       account_id: account.id,
@@ -120,7 +117,6 @@ async function seedCampaignData() {
     }
   }
   
-  // Create billing records for sent campaigns
   const completedCampaign = campaigns.find(c => c.status === 'completed');
   if (completedCampaign) {
     const billingRecord = {
@@ -149,7 +145,6 @@ async function seedCampaignData() {
     }
   }
   
-  // Show summary
   const { count } = await supabase
     .from('marketing_campaigns')
     .select('*', { count: 'exact', head: true });

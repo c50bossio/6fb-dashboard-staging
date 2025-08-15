@@ -16,7 +16,6 @@ class EnhancedErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
     return {
       hasError: true,
       error,
@@ -25,7 +24,6 @@ class EnhancedErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error details
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     
     this.setState({
@@ -34,13 +32,11 @@ class EnhancedErrorBoundary extends React.Component {
       errorId: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     })
 
-    // Report error to monitoring service
     this.reportError(error, errorInfo)
   }
 
   reportError = async (error, errorInfo) => {
     try {
-      // Send error report to backend
       await fetch('/api/errors/report', {
         method: 'POST',
         headers: {
@@ -78,7 +74,6 @@ class EnhancedErrorBoundary extends React.Component {
       errorId: null
     }))
 
-    // Call onRetry callback if provided
     if (this.props.onRetry) {
       this.props.onRetry()
     }
@@ -92,7 +87,6 @@ class EnhancedErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      // Custom fallback UI based on error severity
       const errorType = this.getErrorType(this.state.error)
       
       return (
@@ -190,23 +184,19 @@ class EnhancedErrorBoundary extends React.Component {
     const errorMessage = error.message?.toLowerCase() || ''
     const errorName = error.name?.toLowerCase() || ''
 
-    // Network/API errors
     if (errorMessage.includes('fetch') || errorMessage.includes('network') || 
         errorMessage.includes('connection') || errorName.includes('typeerror')) {
       return 'network'
     }
     
-    // Authentication errors
     if (errorMessage.includes('unauthorized') || errorMessage.includes('auth')) {
       return 'auth'
     }
     
-    // Chunk loading errors (common in React apps)
     if (errorMessage.includes('chunk') || errorMessage.includes('loading')) {
       return 'chunk'
     }
     
-    // Memory errors
     if (errorMessage.includes('memory') || errorMessage.includes('allocation')) {
       return 'memory'
     }
@@ -239,7 +229,6 @@ class EnhancedErrorBoundary extends React.Component {
   }
 }
 
-// HOC for easy wrapping of components
 export const withErrorBoundary = (WrappedComponent, componentName) => {
   return function ErrorBoundaryWrapped(props) {
     return (
@@ -250,7 +239,6 @@ export const withErrorBoundary = (WrappedComponent, componentName) => {
   }
 }
 
-// Hook for error reporting
 export const useErrorReporting = () => {
   const reportError = async (error, context = {}) => {
     try {

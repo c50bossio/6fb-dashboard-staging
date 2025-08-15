@@ -56,14 +56,12 @@ export default function NovuNotificationCenter() {
       }}
       onNotificationClick={(notification) => {
         console.log('Notification clicked:', notification)
-        // Handle notification click - navigate to relevant page
         if (notification.cta?.data?.url) {
           window.location.href = notification.cta.data.url
         }
       }}
       onActionClick={(actionId, notification) => {
         console.log('Action clicked:', actionId, notification)
-        // Handle action button clicks
       }}
     />
   )

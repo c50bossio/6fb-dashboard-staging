@@ -19,7 +19,6 @@ export default function TurnstileWidget({
   const [isLoaded, setIsLoaded] = useState(false)
   const [error, setError] = useState(null)
 
-  // Initialize Turnstile widget
   useEffect(() => {
     if (!containerRef.current || !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
       console.warn('Turnstile widget cannot be rendered: missing container or site key')
@@ -77,19 +76,16 @@ export default function TurnstileWidget({
     initializeTurnstile()
   }, [theme, size, onVerify, onError, onExpire, onTimeout])
 
-  // Handle reset trigger
   useEffect(() => {
     if (resetTrigger && widgetId !== null) {
       resetTurnstile(widgetId)
     }
   }, [resetTrigger, widgetId])
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (widgetId !== null) {
         try {
-          // Turnstile cleanup is handled automatically
         } catch (err) {
           console.warn('Turnstile cleanup error:', err)
         }
@@ -97,7 +93,6 @@ export default function TurnstileWidget({
     }
   }, [widgetId])
 
-  // Don't render if no site key is configured
   if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
     return (
       <div className={`p-4 bg-yellow-50 border border-yellow-200 rounded-lg ${className}`}>
@@ -127,7 +122,6 @@ export default function TurnstileWidget({
   )
 }
 
-// React hook version for more advanced usage
 export function useTurnstileWidget(options = {}) {
   const [token, setToken] = useState(null)
   const [isVerified, setIsVerified] = useState(false)

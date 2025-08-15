@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 
-// Dynamic imports to reduce initial bundle size
 const EnhancedProfessionalCalendar = dynamic(() => import('./EnhancedProfessionalCalendar'), {
   ssr: false,
   loading: () => (

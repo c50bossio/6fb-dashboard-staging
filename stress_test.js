@@ -92,7 +92,6 @@ class StressTestSuite {
         console.log(`   📈 Requests/sec: ${Math.round(level / (totalTime / 1000))}`);
         console.log(`   ⚡ Avg response: ${Math.round(avgResponseTime)}ms`);
         
-        // Evaluate performance degradation
         if (failed > 0) {
           this.results.overall.score -= failed * 2;
           console.log(`   ⚠️ ${failed} requests failed under concurrent load`);
@@ -108,7 +107,6 @@ class StressTestSuite {
         this.results.overall.score -= 20;
       }
       
-      // Brief pause between tests
       await this.sleep(2000);
     }
   }
@@ -145,7 +143,6 @@ class StressTestSuite {
       }
     }, 1000 / requestsPerSecond);
     
-    // Run the test for the specified duration
     await this.sleep(testDuration);
     clearInterval(interval);
     
@@ -190,18 +187,14 @@ class StressTestSuite {
     
     console.log(`📊 Baseline: ${baselineRequests} requests, then spike to: ${spikeRequests} requests`);
     
-    // Baseline measurement
     console.log('   Measuring baseline performance...');
     const baselineResults = await this.runRequestBatch(testEndpoint, baselineRequests);
     
-    // Brief pause
     await this.sleep(1000);
     
-    // Spike test
     console.log('   Executing spike test...');
     const spikeResults = await this.runRequestBatch(testEndpoint, spikeRequests);
     
-    // Calculate performance impact
     const baselineAvgTime = baselineResults.avgResponseTime;
     const spikeAvgTime = spikeResults.avgResponseTime;
     const performanceImpact = spikeAvgTime / baselineAvgTime;
@@ -238,17 +231,14 @@ class StressTestSuite {
     
     const testEndpoint = 'http://localhost:9999/api/health';
     
-    // Get initial memory usage
     const initialMemory = await this.getMemoryUsage();
     console.log(`   📊 Initial memory usage: ${initialMemory.used}MB / ${initialMemory.total}MB`);
     
-    // Run intensive requests
     const intensiveRequests = 100;
     console.log(`   🔥 Running ${intensiveRequests} intensive requests...`);
     
     const results = await this.runRequestBatch(testEndpoint, intensiveRequests);
     
-    // Check memory usage after intensive operations
     await this.sleep(2000); // Allow memory to settle
     const finalMemory = await this.getMemoryUsage();
     
@@ -364,13 +354,11 @@ class StressTestSuite {
     try {
       const healthResponse = await this.makeTimedRequest('http://localhost:9999/api/health');
       if (healthResponse.success) {
-        // Parse the health response to get memory info
         const response = await fetch('http://localhost:9999/api/health');
         const data = await response.json();
         return data.system?.memory || { used: 0, total: 0 };
       }
     } catch (error) {
-      // Fallback to process memory if health endpoint doesn't provide it
     }
     
     const used = Math.round(process.memoryUsage().rss / 1024 / 1024);
@@ -389,7 +377,6 @@ class StressTestSuite {
     
     console.log(`\n🎯 Overall Stress Test Score: ${overallScore}/100`);
     
-    // Determine stress resistance level
     let stressResistance = 'EXCELLENT';
     if (overallScore < 60) stressResistance = 'POOR';
     else if (overallScore < 70) stressResistance = 'FAIR';
@@ -436,7 +423,6 @@ class StressTestSuite {
       console.log('   2. [LOW] Consider capacity planning for future growth');
     }
     
-    // Overall assessment
     if (overallScore >= 85) {
       console.log('\n✅ EXCELLENT: System demonstrates strong stress resistance');
     } else if (overallScore >= 70) {
@@ -449,11 +435,9 @@ class StressTestSuite {
   }
 }
 
-// Run the stress test
 const stressTest = new StressTestSuite();
 stressTest.runCompleteStressTest()
   .then((results) => {
-    // Save results
     const fs = require('fs');
     fs.writeFileSync('stress-test-results.json', JSON.stringify(results, null, 2));
     console.log('\n📁 Stress test results saved to: stress-test-results.json');

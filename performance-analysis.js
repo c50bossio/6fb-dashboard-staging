@@ -10,7 +10,6 @@ const puppeteer = require('puppeteer');
   
   const page = await browser.newPage();
   
-  // Collect network requests
   const networkRequests = [];
   const failedRequests = [];
   
@@ -51,7 +50,6 @@ const puppeteer = require('puppeteer');
   
   const endTime = Date.now();
   
-  // Wait a bit more for any delayed requests
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   console.log(`\n🌐 NETWORK ANALYSIS (${endTime - startTime}ms total):`);
@@ -65,7 +63,6 @@ const puppeteer = require('puppeteer');
     });
   }
   
-  // Analyze slow requests
   const slowRequests = networkRequests
     .filter(req => req.duration && req.duration > 500)
     .sort((a, b) => (b.duration || 0) - (a.duration || 0));
@@ -77,7 +74,6 @@ const puppeteer = require('puppeteer');
     });
   }
   
-  // Group by resource type
   const byType = networkRequests.reduce((acc, req) => {
     acc[req.resourceType] = (acc[req.resourceType] || 0) + 1;
     return acc;
@@ -88,7 +84,6 @@ const puppeteer = require('puppeteer');
     console.log(`   ${type}: ${count}`);
   });
   
-  // Get detailed resource timing
   const resourceTimings = await page.evaluate(() => {
     return performance.getEntriesByType('resource').map(resource => ({
       name: resource.name,
@@ -105,7 +100,6 @@ const puppeteer = require('puppeteer');
     console.log(`   ${resource.duration}ms - ${resource.type} - ${fileName}`);
   });
   
-  // Get JavaScript execution timing
   const jsMetrics = await page.evaluate(() => {
     const entries = performance.getEntriesByType('measure') || [];
     const jsExecutionTime = entries

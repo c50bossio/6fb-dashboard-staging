@@ -13,7 +13,6 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 console.log('🚀 Creating demo barbershop for calendar API...');
 
-// Create Supabase client with service role key
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     autoRefreshToken: false,
@@ -23,7 +22,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 async function createDemoBarbershop() {
   try {
-    // Check if demo barbershop already exists
     const { data: existing } = await supabase
       .from('barbershops')
       .select('id, name, shop_slug')
@@ -38,7 +36,6 @@ async function createDemoBarbershop() {
 
     console.log('📋 Creating new demo barbershop...');
 
-    // Create demo user first (owner of the barbershop) 
     let ownerId;
     try {
       const { data: user, error: userError } = await supabase
@@ -58,7 +55,6 @@ async function createDemoBarbershop() {
       ownerId = user?.id;
     } catch (err) {
       console.log('⚠️ User might already exist, continuing...');
-      // Get existing user
       const { data: existingUser } = await supabase
         .from('users')
         .select('id')
@@ -68,7 +64,6 @@ async function createDemoBarbershop() {
       ownerId = existingUser?.id;
     }
 
-    // Create demo barbershop with all required fields
     const barbershopData = {
       name: 'Demo Barbershop',
       tagline: 'Premium Cuts, Professional Service, Demo Experience',
@@ -128,7 +123,6 @@ async function createDemoBarbershop() {
     console.log('📋 Name:', barbershop.name);
     console.log('📋 Slug:', barbershop.shop_slug);
 
-    // Create demo business hours
     const businessHours = [
       { day_of_week: 1, is_open: true, open_time: '09:00', close_time: '18:00' }, // Monday
       { day_of_week: 2, is_open: true, open_time: '09:00', close_time: '18:00' }, // Tuesday
@@ -154,7 +148,6 @@ async function createDemoBarbershop() {
       console.log('✅ Business hours created');
     }
 
-    // Create demo services
     const services = [
       {
         barbershop_id: barbershop.id,

@@ -7,7 +7,6 @@ export const maxDuration = 30
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -73,7 +72,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     

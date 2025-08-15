@@ -18,7 +18,6 @@ export default function EmbedWidgetsTab() {
   const [copiedId, setCopiedId] = useState(null)
 
   useEffect(() => {
-    // Simulate loading embed widgets
     const timer = setTimeout(() => {
       const mockEmbedWidgets = [
         {

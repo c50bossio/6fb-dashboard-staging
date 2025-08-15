@@ -24,19 +24,14 @@ class MobilePerformanceAnalyzer {
         console.log('📱 Starting mobile performance analysis...\n');
 
         try {
-            // Test on different mobile devices
             await this.testMobileDevices();
             
-            // Test touch interactions
             await this.testTouchInteractions();
             
-            // Test responsive design
             await this.testResponsiveDesign();
             
-            // Generate mobile-specific recommendations
             this.generateMobileRecommendations();
             
-            // Save results
             await this.saveMobileResults();
             
             console.log('✅ Mobile performance analysis completed successfully!');
@@ -91,14 +86,12 @@ class MobilePerformanceAnalyzer {
                         
                         const loadTime = Date.now() - startTime;
                         
-                        // Test mobile-specific metrics
                         const mobileMetrics = await page.evaluate(() => {
                             const viewport = {
                                 width: window.innerWidth,
                                 height: window.innerHeight
                             };
                             
-                            // Check for mobile-optimized elements
                             const mobileElements = {
                                 hasTouchTargets: document.querySelectorAll('[role="button"], button, a').length,
                                 hasResponsiveImages: document.querySelectorAll('img[srcset], picture').length,
@@ -106,7 +99,6 @@ class MobilePerformanceAnalyzer {
                                 hasTooltips: document.querySelectorAll('[title], [aria-label]').length
                             };
                             
-                            // Check text readability
                             const textElements = document.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6');
                             let readableTextCount = 0;
                             
@@ -162,7 +154,6 @@ class MobilePerformanceAnalyzer {
         try {
             await page.goto('http://localhost:9999/', { waitUntil: 'networkidle' });
             
-            // Test touch target sizes
             const touchTargets = await page.evaluate(() => {
                 const interactiveElements = document.querySelectorAll(
                     'button, a, [role="button"], input, select, textarea'
@@ -188,7 +179,6 @@ class MobilePerformanceAnalyzer {
                 return targetData;
             });
             
-            // Analyze touch target compliance (minimum 44px)
             const compliantTargets = touchTargets.filter(target => target.minTouchSize >= 44);
             const touchTargetScore = touchTargets.length > 0 ? 
                 (compliantTargets.length / touchTargets.length) * 100 : 0;
@@ -232,10 +222,8 @@ class MobilePerformanceAnalyzer {
                 await page.goto('http://localhost:9999/', { waitUntil: 'networkidle' });
                 
                 const responsiveMetrics = await page.evaluate(() => {
-                    // Check for horizontal scrolling
                     const hasHorizontalScroll = document.documentElement.scrollWidth > window.innerWidth;
                     
-                    // Check for responsive containers
                     const containers = document.querySelectorAll('.container, .wrapper, main, .content');
                     let responsiveContainers = 0;
                     
@@ -246,7 +234,6 @@ class MobilePerformanceAnalyzer {
                         }
                     });
                     
-                    // Check for responsive images
                     const images = document.querySelectorAll('img');
                     let responsiveImages = 0;
                     
@@ -292,7 +279,6 @@ class MobilePerformanceAnalyzer {
     generateMobileRecommendations() {
         const recommendations = [];
         
-        // Touch target recommendations
         if (this.results.touch_interactions.touchTargetScore < 80) {
             recommendations.push({
                 category: 'Mobile Usability',
@@ -302,7 +288,6 @@ class MobilePerformanceAnalyzer {
             });
         }
         
-        // Device-specific recommendations
         Object.entries(this.results.mobile_devices).forEach(([deviceName, deviceData]) => {
             Object.entries(deviceData.pages).forEach(([pageName, pageData]) => {
                 if (pageData.loadTime > 3000) {
@@ -325,7 +310,6 @@ class MobilePerformanceAnalyzer {
             });
         });
         
-        // Responsive design recommendations
         if (this.results.responsive_design.viewports) {
             Object.entries(this.results.responsive_design.viewports).forEach(([viewportName, viewportData]) => {
                 if (viewportData.metrics.hasHorizontalScroll) {
@@ -494,7 +478,6 @@ ${this.results.recommendations
     }
 }
 
-// Run the analysis
 if (require.main === module) {
     const analyzer = new MobilePerformanceAnalyzer();
     analyzer.runMobileAnalysis().catch(console.error);

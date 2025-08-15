@@ -13,7 +13,6 @@
 const { createClient } = require('@supabase/supabase-js')
 const { v4: uuidv4 } = require('uuid')
 
-// Initialize Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
@@ -384,7 +383,6 @@ async function seedBillingData() {
 
     console.log('\n✨ Marketing billing data seed completed successfully!')
     
-    // Display summary
     console.log('\n📊 Summary:')
     console.log(`   - ${accounts.length} billing accounts created`)
     console.log(`   - ${paymentMethods.length} payment methods added`)
@@ -401,5 +399,4 @@ async function seedBillingData() {
   }
 }
 
-// Run the seed function
 seedBillingData().catch(console.error)

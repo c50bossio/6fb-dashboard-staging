@@ -9,7 +9,6 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 console.log('🚀 Executing SQL directly in Supabase...');
 
-// Create admin client with service role
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     autoRefreshToken: false,
@@ -21,7 +20,6 @@ async function executeSQL() {
   console.log('📋 Creating barbershops table and inserting demo data...');
   
   try {
-    // Create the table first
     const createTableSQL = `
       CREATE TABLE IF NOT EXISTS public.barbershops (
         id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -60,10 +58,8 @@ async function executeSQL() {
       );
     `;
 
-    // Try using a direct approach with individual operations
     console.log('🏗️ Step 1: Creating table structure...');
     
-    // Insert demo data directly without worrying about table creation
     const demoData = {
       id: '550e8400-e29b-41d4-a716-446655440000',
       name: 'Elite Cuts Barbershop',
@@ -114,14 +110,12 @@ async function executeSQL() {
 
     console.log('📋 Step 2: Inserting demo barbershop data...');
     
-    // Use upsert to handle the case where table might not exist
     const { data, error } = await supabase
       .from('barbershops')
       .upsert(demoData, { onConflict: 'id' })
       .select();
 
     if (error) {
-      // If table doesn't exist, the error will tell us
       if (error.message.includes('relation "public.barbershops" does not exist')) {
         console.log('❌ Table does not exist. Manual setup required.');
         console.log('📋 Please run the SQL manually in Supabase dashboard:');
@@ -185,7 +179,6 @@ async function testSaveAPI() {
   console.log('🧪 Testing save API endpoint...');
   
   try {
-    // Test the actual save endpoint that the UI uses
     const response = await fetch('http://localhost:9999/api/demo/simple-setup', {
       method: 'POST',
       headers: {
@@ -212,13 +205,11 @@ async function testSaveAPI() {
 async function main() {
   console.log('🚀 Starting automated Supabase database setup...\n');
 
-  // Step 1: Try to execute the SQL
   const setupSuccess = await executeSQL();
   
   if (setupSuccess) {
     console.log('\n✅ Database setup completed!');
     
-    // Step 2: Verify the setup
     const verifySuccess = await verifySetup();
     
     if (verifySuccess) {

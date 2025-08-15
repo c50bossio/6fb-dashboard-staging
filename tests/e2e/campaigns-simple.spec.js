@@ -1,12 +1,8 @@
-// Simplified E2E Tests for Campaign Management and Billing System
-// These tests work without complex setup requirements
 
 const { test, expect } = require('@playwright/test');
 
-// Configure tests
 test.use({
   baseURL: 'http://localhost:9999',
-  // Set dev mode environment
   extraHTTPHeaders: {
     'X-Test-Mode': 'true'
   }
@@ -15,28 +11,23 @@ test.use({
 test.describe('Campaign Management - Simple Tests', () => {
   
   test('should load campaigns page', async ({ page }) => {
-    // Set dev mode cookies/storage
     await page.addInitScript(() => {
       localStorage.setItem('dev-mode', 'true');
       window.NEXT_PUBLIC_DEV_MODE = 'true';
     });
     
-    // Navigate to campaigns
     await page.goto('/dashboard/campaigns');
     
-    // Wait for either the page content or loading indicator
     const pageLoaded = await Promise.race([
       page.waitForSelector('text=Campaign Management', { timeout: 15000 }).then(() => true),
       page.waitForSelector('text=Loading', { timeout: 15000 }).then(() => false)
     ]);
     
     if (pageLoaded) {
-      // Check main elements are present
       await expect(page.locator('h1, h2').filter({ hasText: 'Campaign Management' })).toBeVisible();
       console.log('✅ Campaigns page loaded successfully');
     } else {
       console.log('⚠️ Page is loading, checking for test user...');
-      // Even if loading, test user should be set
       const userText = await page.textContent('body');
       expect(userText).toContain('Test Shop Owner');
     }
@@ -50,10 +41,8 @@ test.describe('Campaign Management - Simple Tests', () => {
     
     await page.goto('/dashboard/campaigns');
     
-    // Give page time to load
     await page.waitForTimeout(3000);
     
-    // Check for test user name anywhere on page
     const pageContent = await page.textContent('body');
     expect(pageContent).toContain('Test Shop Owner');
     console.log('✅ Test user detected');
@@ -68,7 +57,6 @@ test.describe('Campaign Management - Simple Tests', () => {
     await page.goto('/dashboard/campaigns');
     await page.waitForTimeout(3000);
     
-    // Check for campaign buttons
     const buttons = await page.$$eval('button', buttons => 
       buttons.map(btn => btn.textContent.trim())
     );
@@ -90,13 +78,11 @@ test.describe('Campaign Management - Simple Tests', () => {
     await page.goto('/dashboard/campaigns');
     await page.waitForTimeout(3000);
     
-    // Find and click email campaign button
     const emailButton = await page.$('button:has-text("Email")');
     if (emailButton) {
       await emailButton.click();
       await page.waitForTimeout(1000);
       
-      // Check if modal opened
       const modalText = await page.textContent('body');
       const hasModal = modalText.includes('Create') || modalText.includes('Campaign') || modalText.includes('Subject');
       expect(hasModal).toBeTruthy();
@@ -115,13 +101,11 @@ test.describe('Campaign Management - Simple Tests', () => {
     await page.goto('/dashboard/campaigns');
     await page.waitForTimeout(3000);
     
-    // Find and click billing button
     const billingButton = await page.$('button:has-text("Billing")');
     if (billingButton) {
       await billingButton.click();
       await page.waitForTimeout(1000);
       
-      // Check for billing content
       const pageText = await page.textContent('body');
       const hasBillingContent = pageText.includes('Payment') || pageText.includes('4242') || pageText.includes('Account');
       expect(hasBillingContent).toBeTruthy();
@@ -137,7 +121,6 @@ test.describe('Mock Services Verification', () => {
   test('should make API calls with test user UUID', async ({ page }) => {
     const apiCalls = [];
     
-    // Intercept API calls
     page.on('request', request => {
       const url = request.url();
       if (url.includes('/api/marketing')) {
@@ -154,7 +137,6 @@ test.describe('Mock Services Verification', () => {
     await page.goto('/dashboard/campaigns');
     await page.waitForTimeout(3000);
     
-    // Check if test UUID is in API calls
     const hasTestUUID = apiCalls.some(url => 
       url.includes('11111111-1111-1111-1111-111111111111')
     );
@@ -167,12 +149,10 @@ test.describe('Mock Services Verification', () => {
       console.log('⚠️ No API calls intercepted');
     }
     
-    // Pass test if we got this far
     expect(true).toBeTruthy();
   });
 
   test('should handle campaign creation without errors', async ({ page }) => {
-    // Monitor console for errors
     const errors = [];
     page.on('console', msg => {
       if (msg.type() === 'error') {
@@ -188,13 +168,11 @@ test.describe('Mock Services Verification', () => {
     await page.goto('/dashboard/campaigns');
     await page.waitForTimeout(3000);
     
-    // Try to create a campaign
     const emailButton = await page.$('button:has-text("Email")');
     if (emailButton) {
       await emailButton.click();
       await page.waitForTimeout(1000);
       
-      // Fill form if fields are available
       const subjectField = await page.$('input[placeholder*="subject" i]');
       if (subjectField) {
         await subjectField.fill('Test Campaign');
@@ -205,7 +183,6 @@ test.describe('Mock Services Verification', () => {
         await textArea.fill('Test message');
       }
       
-      // Try to submit
       const submitButton = await page.$('button:has-text("Create")');
       if (submitButton) {
         await submitButton.click();
@@ -213,7 +190,6 @@ test.describe('Mock Services Verification', () => {
       }
     }
     
-    // Check for critical errors
     const criticalErrors = errors.filter(err => 
       err.includes('500') || 
       err.includes('undefined') || 
@@ -238,11 +214,9 @@ test.describe('Development Mode Features', () => {
       window.NEXT_PUBLIC_DEV_MODE = 'true';
     });
     
-    // Go directly to protected route
     await page.goto('/dashboard/campaigns');
     await page.waitForTimeout(2000);
     
-    // Should not be on login page
     const currentURL = page.url();
     expect(currentURL).not.toContain('/login');
     expect(currentURL).not.toContain('/register');
@@ -251,7 +225,6 @@ test.describe('Development Mode Features', () => {
   });
 
   test('should load mock billing data', async ({ page }) => {
-    // Monitor network responses
     let billingDataLoaded = false;
     
     page.on('response', response => {
@@ -275,7 +248,6 @@ test.describe('Development Mode Features', () => {
   });
 });
 
-// Summary test
 test.describe('System Health Check', () => {
   
   test('overall system functionality', async ({ page }) => {
@@ -287,14 +259,12 @@ test.describe('System Health Check', () => {
       noErrors: true
     };
     
-    // Monitor errors
     page.on('console', msg => {
       if (msg.type() === 'error') {
         results.noErrors = false;
       }
     });
     
-    // Monitor API calls
     page.on('response', response => {
       if (response.url().includes('/api/marketing') && response.status() === 200) {
         results.apiCallsWork = true;
@@ -309,19 +279,15 @@ test.describe('System Health Check', () => {
     await page.goto('/dashboard/campaigns');
     await page.waitForTimeout(5000);
     
-    // Check page loaded
     const title = await page.title();
     results.pageLoads = title.includes('6FB') || title.includes('Agent');
     
-    // Check test user
     const pageText = await page.textContent('body');
     results.testUserPresent = pageText.includes('Test Shop Owner');
     
-    // Check buttons
     const buttons = await page.$$('button');
     results.buttonsPresent = buttons.length > 3;
     
-    // Report results
     console.log('\n📊 System Health Check Results:');
     console.log(`  Page Loads: ${results.pageLoads ? '✅' : '❌'}`);
     console.log(`  Test User: ${results.testUserPresent ? '✅' : '❌'}`);
@@ -329,7 +295,6 @@ test.describe('System Health Check', () => {
     console.log(`  API Calls: ${results.apiCallsWork ? '✅' : '❌'}`);
     console.log(`  No Errors: ${results.noErrors ? '✅' : '⚠️'}`);
     
-    // Overall pass if most features work
     const passCount = Object.values(results).filter(v => v).length;
     expect(passCount).toBeGreaterThanOrEqual(3);
   });

@@ -29,7 +29,6 @@ import { Card } from '../../../../components/ui'
 import ExecutableActionButton from '../../../../components/ExecutableActionButton'
 import ModelSelector from '../../../../components/chat/ModelSelector'
 
-// Agent Personality Icons
 const AGENT_ICONS = {
   'financial_coach': BanknotesIcon,
   'marketing_expert': MegaphoneIcon,
@@ -48,7 +47,6 @@ const AGENT_COLORS = {
   'strategic_mindset': 'bg-indigo-50 text-olive-600 border-indigo-200'
 }
 
-// Quick Actions Component
 function QuickActions({ onQuickAction, isLoading }) {
   const quickActions = [
     {
@@ -131,7 +129,6 @@ function QuickActions({ onQuickAction, isLoading }) {
   )
 }
 
-// Message Bubble Component
 function MessageBubble({ message, isUser, agent, isLoading = false, handleExecuteAction, isError = false, onRetry }) {
   if (isUser) {
     return (
@@ -143,7 +140,6 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
     )
   }
 
-  // AI Agent Message
   const AgentIcon = agent?.personality ? AGENT_ICONS[agent.personality] || SparklesIcon : SparklesIcon
   const agentColor = agent?.personality ? AGENT_COLORS[agent.personality] || 'bg-gray-50 text-gray-600 border-gray-200' : 'bg-gray-50 text-gray-600 border-gray-200'
 
@@ -264,7 +260,6 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
   )
 }
 
-// Conversation History Sidebar
 function ConversationHistory({ conversations, activeConversation, onSelectConversation, onNewConversation, onDeleteConversation, onDeleteAll }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
@@ -272,7 +267,6 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
   const [sortBy, setSortBy] = useState('recent') // recent, oldest, alphabetical
   const [showDropdown, setShowDropdown] = useState(null) // Track which conversation dropdown is open
   
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
       setShowDropdown(null)
@@ -300,7 +294,6 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
     setDeleteTarget(null)
   }
   
-  // Export conversation as JSON or text
   const exportConversation = (conversation, format = 'json') => {
     let content = ''
     let filename = `conversation-${conversation.id}`
@@ -323,7 +316,6 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
       filename += '.txt'
     }
     
-    // Create and download file
     const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/plain' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -335,11 +327,9 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
     URL.revokeObjectURL(url)
   }
   
-  // Filter and sort conversations
   const filteredAndSortedConversations = useMemo(() => {
     let filtered = conversations
     
-    // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase()
       filtered = conversations.filter(conv => 
@@ -348,7 +338,6 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
       )
     }
     
-    // Sort conversations
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'oldest':
@@ -566,7 +555,6 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
   )
 }
 
-// Main AI Command Center Component
 function AICommandCenter() {
   const { user } = useAuth()
   const [messages, setMessages] = useState([])
@@ -589,22 +577,17 @@ function AICommandCenter() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  // Debounced localStorage save function
   const debouncedSaveConversations = useCallback((conversationsToSave) => {
-    // Clear previous timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
     
-    // Set new timeout for 500ms debounce
     saveTimeoutRef.current = setTimeout(() => {
       try {
         localStorage.setItem('ai-conversations', JSON.stringify(conversationsToSave))
       } catch (error) {
         console.error('Failed to save conversations to localStorage:', error)
-        // Handle localStorage quota exceeded or other errors
         if (error.name === 'QuotaExceededError') {
-          // Keep only the most recent 10 conversations if quota exceeded
           const recentConversations = conversationsToSave.slice(0, 10)
           try {
             localStorage.setItem('ai-conversations', JSON.stringify(recentConversations))
@@ -616,7 +599,6 @@ function AICommandCenter() {
     }, 500)
   }, [])
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
@@ -628,20 +610,17 @@ function AICommandCenter() {
   useEffect(() => {
     scrollToBottom()
     
-    // Save conversation when messages update
     if (messages.length > 0 && messages[messages.length - 1].id !== 'welcome') {
       saveCurrentConversation()
     }
   }, [messages])
 
-  // Load conversations from localStorage on mount
   useEffect(() => {
     const savedConversations = localStorage.getItem('ai-conversations')
     if (savedConversations) {
       try {
         const parsed = JSON.parse(savedConversations)
         setConversations(parsed)
-        // Load the most recent conversation
         if (parsed.length > 0) {
           const mostRecent = parsed[0]
           setActiveConversation(mostRecent.id)
@@ -653,7 +632,6 @@ function AICommandCenter() {
     }
   }, [])
 
-  // Initialize with welcome message
   useEffect(() => {
     if (messages.length === 0) {
       setMessages([{
@@ -687,7 +665,6 @@ Try the quick actions below or just start chatting! 💬`,
     }
   }, [])
 
-  // Send message to AI agents
   const sendMessage = async (messageText) => {
     if (!messageText.trim() || isLoading) return
 
@@ -698,18 +675,14 @@ Try the quick actions below or just start chatting! 💬`,
       timestamp: new Date().toISOString()
     }
 
-    // Store message for retry functionality
     setLastFailedMessage(messageText.trim())
 
-    // Clear input immediately and set loading state
     setInputMessage('')
     setIsLoading(true)
     
-    // Add user message to the conversation
     setMessages(prev => [...prev, userMessage])
 
     try {
-      // Add loading message
       const loadingMessage = {
         id: `loading-${Date.now()}`,
         text: '',
@@ -719,7 +692,6 @@ Try the quick actions below or just start chatting! 💬`,
       }
       setMessages(prev => [...prev, loadingMessage])
 
-      // Send to AI orchestrator
       const response = await fetch('/api/ai/orchestrator', {
         method: 'POST',
         headers: {
@@ -744,11 +716,9 @@ Try the quick actions below or just start chatting! 💬`,
 
       const data = await response.json()
 
-      // Clear error state on successful response
       setRetryCount(0)
       setLastFailedMessage(null)
       
-      // Remove loading message and add AI response
       setMessages(prev => {
         const filtered = prev.filter(msg => !msg.isLoading)
         const aiMessage = {
@@ -771,7 +741,6 @@ Try the quick actions below or just start chatting! 💬`,
     } catch (error) {
       console.error('Error sending message:', error)
       
-      // Determine error type for better user messaging
       const isNetworkError = error.message.includes('fetch') || error.message.includes('network') || error.name === 'NetworkError'
       const isServerError = error.message.includes('500') || error.message.includes('server')
       const isTimeoutError = error.message.includes('timeout') || error.message.includes('Timeout')
@@ -790,7 +759,6 @@ Try the quick actions below or just start chatting! 💬`,
         helpfulTips = `\n\n🔄 **What to try:**\n• Simplify your question\n• Try again in a moment\n• Break complex requests into smaller parts\n\n**Quick wins while waiting:**\n• Check Google My Business reviews\n• Update social media\n• Review appointment schedule`
       }
       
-      // Remove loading message and add enhanced error message
       setMessages(prev => {
         const filtered = prev.filter(msg => !msg.isLoading)
         return [...filtered, {
@@ -821,7 +789,6 @@ Try the quick actions below or just start chatting! 💬`,
     sendMessage(prompt)
   }
 
-  // Retry last failed message
   const retryLastMessage = () => {
     if (lastFailedMessage) {
       setRetryCount(prev => prev + 1)
@@ -829,10 +796,8 @@ Try the quick actions below or just start chatting! 💬`,
     }
   }
 
-  // Execute action handler
   const handleExecuteAction = async (action) => {
     try {
-      // Add user message showing action being executed
       const executionMessage = {
         id: `exec-${Date.now()}`,
         text: `🎯 Executing: ${action.label || action.task}`,
@@ -841,7 +806,6 @@ Try the quick actions below or just start chatting! 💬`,
       }
       setMessages(prev => [...prev, executionMessage])
 
-      // Call executable action API
       const response = await fetch('/api/ai/actions/execute', {
         method: 'POST',
         headers: {
@@ -862,7 +826,6 @@ Try the quick actions below or just start chatting! 💬`,
 
       const data = await response.json()
 
-      // Add AI response about the execution
       const resultMessage = {
         id: `exec-result-${Date.now()}`,
         text: data.success 
@@ -888,7 +851,6 @@ Try the quick actions below or just start chatting! 💬`,
     } catch (error) {
       console.error('Action execution error:', error)
       
-      // Add error message
       const errorMessage = {
         id: `exec-error-${Date.now()}`,
         text: `❌ **Execution Error**\n\nI encountered an issue while executing "${action.label || action.task}". This might be due to temporary connectivity issues.\n\n**What you can try:**\n• Check your connection and try again\n• Try the action manually for now\n• Contact support if this persists`,
@@ -941,15 +903,12 @@ Try the quick actions below or just start chatting! 💬`,
       setActiveConversation(conversationId)
     }
     
-    // Sort by updated_at (most recent first)
     updatedConversations.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
     
-    // Keep only last 20 conversations for memory optimization
     updatedConversations = updatedConversations.slice(0, 20)
     
     setConversations(updatedConversations)
     
-    // Use debounced save instead of immediate localStorage write
     debouncedSaveConversations(updatedConversations)
   }, [messages, activeConversation, conversations, debouncedSaveConversations])
 
@@ -958,7 +917,6 @@ Try the quick actions below or just start chatting! 💬`,
     setConversations(updatedConversations)
     debouncedSaveConversations(updatedConversations)
     
-    // If deleting active conversation, reset to new conversation
     if (conversationId === activeConversation) {
       handleNewConversation()
     }
@@ -967,7 +925,6 @@ Try the quick actions below or just start chatting! 💬`,
   const handleDeleteAll = useCallback(() => {
     setConversations([])
     
-    // Clear localStorage immediately for delete all
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
@@ -979,7 +936,6 @@ Try the quick actions below or just start chatting! 💬`,
   const handleNewConversation = () => {
     setMessages([])
     setActiveConversation(null)
-    // Re-trigger welcome message
     setTimeout(() => {
       setMessages([{
         id: 'welcome',

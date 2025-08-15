@@ -27,7 +27,6 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
 
   const loadAlerts = async () => {
     try {
-      // Use the new intelligent alerts system
       const response = await fetch(`/api/alerts/intelligent?barbershop_id=${barbershop_id}`)
       const data = await response.json()
       
@@ -41,7 +40,6 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
         })
       } else {
         console.warn('Intelligent alerts API failed:', data.error)
-        // Fall back to business monitor API
         const fallbackResponse = await fetch(`/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
         const fallbackData = await fallbackResponse.json()
         
@@ -64,7 +62,6 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
 
   const dismissAlert = async (alertId) => {
     try {
-      // Use the new intelligent alerts management
       await fetch('/api/alerts/intelligent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -245,4 +242,3 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
   )
 }
 
-// NO MOCK DATA - All data comes from real API calls

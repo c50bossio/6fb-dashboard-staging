@@ -20,7 +20,6 @@ export async function POST(request) {
       models
     })
 
-    // Validate timeframe
     if (timeframe < 1 || timeframe > 90) {
       return NextResponse.json({
         success: false,
@@ -28,7 +27,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Generate predictions
     const predictions = await predictiveAnalytics.generatePredictions(
       barbershopId,
       timeframe
@@ -41,7 +39,6 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    // Format response based on requested models
     let response = {
       success: true,
       barbershopId,
@@ -89,7 +86,6 @@ export async function GET(request) {
 
     switch (action) {
       case 'performance':
-        // Get model performance metrics
         response = {
           success: true,
           performance: predictiveAnalytics.getModelPerformance(),
@@ -99,7 +95,6 @@ export async function GET(request) {
         break
 
       case 'models':
-        // Get available prediction models
         response = {
           success: true,
           models: Object.entries(predictiveAnalytics.models).map(([key, model]) => ({
@@ -113,7 +108,6 @@ export async function GET(request) {
         break
 
       case 'latest':
-        // Get latest predictions
         const timeframe = parseInt(searchParams.get('timeframe') || '7')
         const latest = await predictiveAnalytics.generatePredictions(
           barbershopId,
@@ -172,7 +166,6 @@ export async function PUT(request) {
       }, { status: 400 })
     }
 
-    // Track prediction accuracy
     const accuracy = await predictiveAnalytics.trackPredictionAccuracy(
       predictionId,
       actualOutcome

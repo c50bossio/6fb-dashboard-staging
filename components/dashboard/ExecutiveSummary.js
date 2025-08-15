@@ -105,7 +105,6 @@ export default function ExecutiveSummary({ data }) {
   )
 }
 
-// Helper Components
 const MetricCard = ({ icon: Icon, title, value, change, trend, subtitle }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
     <div className="flex items-start justify-between mb-4">

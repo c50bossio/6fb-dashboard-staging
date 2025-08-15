@@ -18,10 +18,8 @@ async function setupCin7Tables() {
   
   let success = true
   
-  // Test if tables already exist
   console.log('📋 Checking existing tables...')
   
-  // Check cin7_connections
   const { error: conn_check } = await supabase
     .from('cin7_connections')
     .select('id')
@@ -34,7 +32,6 @@ async function setupCin7Tables() {
     success = false
   }
   
-  // Check cin7_sync_logs
   const { error: logs_check } = await supabase
     .from('cin7_sync_logs')
     .select('id')
@@ -47,7 +44,6 @@ async function setupCin7Tables() {
     success = false
   }
   
-  // Check inventory columns
   const { error: inv_check } = await supabase
     .from('inventory')
     .select('cin7_product_id')

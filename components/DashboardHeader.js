@@ -26,18 +26,15 @@ export default function DashboardHeader() {
   const [activeDropdown, setActiveDropdown] = useState(null) // 'notifications', 'profile', or null
   const [darkMode, setDarkMode] = useState(false)
   
-  // Refs for dropdown containers
   const notificationsRef = useRef(null)
   const profileRef = useRef(null)
 
   useEffect(() => {
-    // Set time of day greeting
     const hour = new Date().getHours()
     if (hour < 12) setTimeOfDay('morning')
     else if (hour < 17) setTimeOfDay('afternoon')
     else setTimeOfDay('evening')
 
-    // Update current time
     const updateTime = () => {
       setCurrentTime(new Date().toLocaleTimeString([], { 
         hour: '2-digit', 
@@ -48,7 +45,6 @@ export default function DashboardHeader() {
     updateTime()
     const interval = setInterval(updateTime, 60000) // Update every minute
     
-    // Load dark mode preference from localStorage
     const savedDarkMode = localStorage.getItem('darkMode')
     if (savedDarkMode !== null) {
       setDarkMode(savedDarkMode === 'true')
@@ -57,7 +53,6 @@ export default function DashboardHeader() {
     return () => clearInterval(interval)
   }, [])
 
-  // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -90,15 +85,12 @@ export default function DashboardHeader() {
     return roleMap[userRole] || 'User'
   }
 
-  // Get the actual user role for permissions
   const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
 
-  // Toggle dropdown handlers
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown)
   }
 
-  // Sample notifications data
   const notifications = [
     { id: 1, message: 'New booking from John Doe', time: '5 min ago', read: false },
     { id: 2, message: 'Payment received: $45.00', time: '1 hour ago', read: false },
@@ -109,14 +101,10 @@ export default function DashboardHeader() {
     console.log('🚪 Starting sign out process...')
     setActiveDropdown(null) // Close dropdown immediately
     
-    // Attempt to sign out
     const result = await signOut()
     console.log('📤 Sign out result:', result)
     
-    // The auth state change listener in SupabaseAuthProvider will handle the redirect
-    // We don't need to manually redirect here to avoid conflicts
     
-    // Optional: Show a loading state or message
     if (result && result.success) {
       console.log('✅ Sign out successful, auth provider will redirect')
     } else {
@@ -128,10 +116,8 @@ export default function DashboardHeader() {
     const newDarkMode = !darkMode
     setDarkMode(newDarkMode)
     
-    // Save to localStorage
     localStorage.setItem('darkMode', newDarkMode.toString())
     
-    // Apply dark mode class to document
     if (newDarkMode) {
       document.documentElement.classList.add('dark')
     } else {

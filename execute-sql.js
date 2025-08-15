@@ -5,15 +5,12 @@ require('dotenv').config({ path: '.env.local' });
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Parse project ref
 const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
 
 console.log(`🚀 Attempting to execute SQL for project: ${projectRef}`);
 
-// Read SQL file
 const sqlContent = fs.readFileSync('database/RUN_THIS_IN_SUPABASE.sql', 'utf8');
 
-// Try Supabase's query endpoint
 const options = {
   hostname: `${projectRef}.supabase.co`,
   port: 443,
@@ -56,7 +53,6 @@ req.on('error', (error) => {
   console.error('Error:', error);
 });
 
-// Try to send SQL
 req.write(JSON.stringify({
   query: sqlContent
 }));

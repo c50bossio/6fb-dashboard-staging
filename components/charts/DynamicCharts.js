@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 
-// Dynamic imports for chart libraries to reduce initial bundle size
 const Chart = dynamic(() => import('react-chartjs-2').then(mod => mod.Chart), {
   ssr: false,
   loading: () => <div className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>
@@ -24,7 +23,6 @@ const Doughnut = dynamic(() => import('react-chartjs-2').then(mod => mod.Doughnu
   loading: () => <div className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>
 })
 
-// Recharts dynamic imports
 const RechartsLineChart = dynamic(() => import('recharts').then(mod => mod.LineChart), {
   ssr: false,
   loading: () => <div className="h-64 bg-gray-200 rounded-lg animate-pulse"></div>

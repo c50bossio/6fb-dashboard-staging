@@ -25,7 +25,6 @@ export default function ActionCenter({ data }) {
   const alerts = data?.alerts || []
   const realtime = data?.realtime || {}
 
-  // Priority tasks based on real-time data
   const priorityTasks = [
     {
       id: 1,
@@ -73,7 +72,6 @@ export default function ActionCenter({ data }) {
     setActiveTask(task)
     console.log(`Executing ${action} for task:`, task.title)
     
-    // Simulate task completion
     setTimeout(() => {
       setCompletedTasks([...completedTasks, task.id])
       setActiveTask(null)
@@ -228,7 +226,6 @@ export default function ActionCenter({ data }) {
   )
 }
 
-// Task Card Component
 const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
   const Icon = task.icon
   const priorityColors = {
@@ -302,7 +299,6 @@ const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
   )
 }
 
-// Alert Card Component
 const AlertCard = ({ alert }) => {
   const typeStyles = {
     warning: 'bg-amber-50 border-amber-200 text-amber-800',
@@ -331,7 +327,6 @@ const AlertCard = ({ alert }) => {
   )
 }
 
-// Quick Action Button Component
 const QuickActionButton = ({ icon: Icon, label, color, badge, onClick }) => (
   <button
     onClick={onClick}
@@ -349,7 +344,6 @@ const QuickActionButton = ({ icon: Icon, label, color, badge, onClick }) => (
   </button>
 )
 
-// Appointment Card Component
 const AppointmentCard = ({ appointment }) => (
   <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
     <div className="flex items-center gap-3">

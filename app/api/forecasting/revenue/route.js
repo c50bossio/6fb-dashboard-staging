@@ -5,7 +5,6 @@ export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -18,7 +17,6 @@ export async function GET(request) {
     const timeHorizons = searchParams.get('time_horizons')?.split(',') || ['1_week', '1_month', '3_months']
 
     try {
-      // Get real revenue data from database
       const endDate = new Date()
       const startDate = new Date(endDate.getTime() - 90 * 24 * 60 * 60 * 1000) // 90 days of history
 
@@ -41,7 +39,6 @@ export async function GET(request) {
         throw error
       }
 
-      // Generate real revenue forecast from historical data
       const forecast = generateRealRevenueForecast(barbershopId, revenueData || [], timeHorizons)
       
       return NextResponse.json({
@@ -55,7 +52,6 @@ export async function GET(request) {
     } catch (dbError) {
       console.error('Database error in revenue forecast:', dbError)
       
-      // Return empty state instead of mock data - follow NO MOCK DATA policy
       return NextResponse.json({
         success: true,
         data: {
@@ -101,7 +97,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -158,11 +153,9 @@ export async function POST(request) {
   }
 }
 
-// REAL DATABASE OPERATIONS FOR REVENUE FORECASTING
 
 function generateRealRevenueForecast(barbershopId, revenueData, timeHorizons) {
   if (!revenueData || revenueData.length < 5) {
-    // Insufficient data for meaningful forecasting
     return {
       barbershop_id: barbershopId,
       forecast_type: 'revenue',
@@ -191,7 +184,6 @@ function generateRealRevenueForecast(barbershopId, revenueData, timeHorizons) {
     }
   }
 
-  // Calculate real revenue patterns
   const patterns = analyzeRealRevenuePatterns(revenueData)
   const forecasts = generateRealRevenueForecasts(patterns, timeHorizons)
   
@@ -203,10 +195,8 @@ function generateRealRevenueForecast(barbershopId, revenueData, timeHorizons) {
     data_source: 'real_historical_revenue',
     historical_period_days: Math.ceil((new Date() - new Date(revenueData[0]?.scheduled_at || new Date())) / (1000 * 60 * 60 * 24)),
     
-    // Real forecasts based on historical patterns
     forecasts,
     
-    // Summary from real data
     summary: {
       total_predicted_revenue: forecasts.reduce((sum, f) => sum + f.predicted_revenue, 0),
       average_monthly_revenue: Math.round(patterns.avgMonthlyRevenue * 100) / 100,
@@ -215,7 +205,6 @@ function generateRealRevenueForecast(barbershopId, revenueData, timeHorizons) {
       based_on_bookings: revenueData.length
     },
     
-    // Real patterns from database
     historical_patterns: {
       daily_average_revenue: patterns.avgDailyRevenue,
       monthly_average_revenue: patterns.avgMonthlyRevenue,
@@ -224,7 +213,6 @@ function generateRealRevenueForecast(barbershopId, revenueData, timeHorizons) {
       revenue_trend: patterns.trend
     },
     
-    // Business insights based on real data
     insights: generateRevenueInsights(patterns, revenueData)
   }
 }
@@ -235,7 +223,6 @@ function analyzeRealRevenuePatterns(revenueData) {
   const avgDailyRevenue = totalRevenue / totalDays
   const avgMonthlyRevenue = avgDailyRevenue * 30
   
-  // Analyze by day of week
   const revenueByDay = [0, 0, 0, 0, 0, 0, 0] // Sunday = 0
   const serviceRevenue = {}
   
@@ -250,16 +237,13 @@ function analyzeRealRevenuePatterns(revenueData) {
     serviceRevenue[serviceName] = (serviceRevenue[serviceName] || 0) + revenue
   })
   
-  // Find peak revenue day
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const peakDayIndex = revenueByDay.indexOf(Math.max(...revenueByDay))
   const peakRevenueDay = dayNames[peakDayIndex]
   
-  // Find most profitable service
   const mostProfitableService = Object.entries(serviceRevenue)
     .sort(([,a], [,b]) => b - a)[0]
   
-  // Calculate growth rate (simple linear trend)
   const growthRate = calculateRevenueGrowthTrend(revenueData)
   
   return {
@@ -309,7 +293,6 @@ function generateRealRevenueForecasts(patterns, timeHorizons) {
         break
     }
     
-    // Apply growth rate
     const growthMultiplier = 1 + (patterns.growthRate / 100)
     const predictedRevenue = Math.round(baseMonthlyRevenue * multiplier * growthMultiplier * 100) / 100
     
@@ -328,7 +311,6 @@ function generateRealRevenueForecasts(patterns, timeHorizons) {
 function calculateRevenueGrowthTrend(revenueData) {
   if (revenueData.length < 4) return 0
   
-  // Split into two periods and compare
   const midpoint = Math.floor(revenueData.length / 2)
   const firstPeriod = revenueData.slice(0, midpoint)
   const secondPeriod = revenueData.slice(midpoint)
@@ -468,5 +450,3 @@ function getTopServicesByRevenue(bookings) {
     .map(([service, revenue]) => ({ service, revenue: Math.round(revenue * 100) / 100 }))
 }
 
-// ALL MOCK DATA GENERATION FUNCTIONS REMOVED
-// Using real database operations only per NO_MOCK_DATA_POLICY

@@ -9,7 +9,6 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
 
   useEffect(() => {
     if (isVisible && collaborationData) {
-      // Animate in with slight delay
       const timer = setTimeout(() => setAnimateIn(true), 100)
       return () => clearTimeout(timer)
     }
@@ -168,7 +167,6 @@ export default function AgentCollaborationIndicator({ collaborationData, isVisib
   )
 }
 
-// Compact version for smaller spaces
 export function CompactCollaborationIndicator({ collaborationData, className = '' }) {
   if (!collaborationData) return null
 

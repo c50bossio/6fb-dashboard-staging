@@ -2,15 +2,12 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-// Helper function to transform appointment to calendar event
 function transformBookingToEvent(appointment) {
-  // Determine background color based on status
   let backgroundColor = appointment.barbers?.color || '#546355'
   let borderColor = appointment.barbers?.color || '#546355'
   
@@ -50,7 +47,6 @@ export async function GET(request, { params }) {
   try {
     const { id } = params
     
-    // Fetch appointment from bookings table
     const { data: appointment, error } = await supabase
       .from('bookings')
       .select(`
@@ -69,7 +65,6 @@ export async function GET(request, { params }) {
       )
     }
     
-    // Return the appointment data
     return NextResponse.json({ 
       appointment: appointment
     })
@@ -88,32 +83,27 @@ export async function PATCH(request, { params }) {
     const { id } = params
     const body = await request.json()
     
-    // Calculate end time based on duration if provided
     let updateData = {}
     
     if (body.scheduled_at && body.duration_minutes) {
       const startTime = new Date(body.scheduled_at)
       const endTime = new Date(startTime.getTime() + body.duration_minutes * 60000)
       
-      // For bookings table, we use start_time and end_time
       updateData.start_time = startTime.toISOString()
       updateData.end_time = endTime.toISOString()
       updateData.duration_minutes = body.duration_minutes
     }
     
-    // Map frontend field names to database field names (bookings table)
     if (body.client_notes) updateData.notes = body.client_notes
     if (body.service_price) updateData.price = body.service_price
     if (body.status) updateData.status = body.status
     if (body.barber_id) updateData.barber_id = body.barber_id
     if (body.service_id) updateData.service_id = body.service_id
     
-    // Handle customer information updates directly on bookings table
     if (body.client_name) updateData.customer_name = body.client_name
     if (body.client_phone) updateData.customer_phone = body.client_phone
     if (body.client_email) updateData.customer_email = body.client_email
     
-    // Update the booking
     const { data: updatedBooking, error } = await supabase
       .from('bookings')
       .update(updateData)
@@ -136,7 +126,6 @@ export async function PATCH(request, { params }) {
       )
     }
     
-    // Return the updated booking
     return NextResponse.json({ 
       appointment: updatedBooking,
       message: 'Appointment updated successfully'
@@ -165,7 +154,6 @@ export async function DELETE(request, { params }) {
       url: request.url 
     })
     
-    // First, get the appointment to check if it's recurring
     const { data: appointment, error: fetchError } = await supabase
       .from('bookings')
       .select('*')
@@ -188,10 +176,8 @@ export async function DELETE(request, { params }) {
     })
     
     // ===================================================
-    // PHASE 2: CLEAR DECISION TREE FOR DELETE OPERATIONS
     // ===================================================
     
-    // RULE 1: CANCELLED APPOINTMENTS - ALWAYS DELETE DIRECTLY
     if (appointment.status === 'cancelled') {
       console.log('🔴 DELETE API - RULE 1: CANCELLED APPOINTMENT')
       console.log('🔴 DELETE API - Action: DELETE DIRECTLY (ignore all parameters)')
@@ -220,7 +206,6 @@ export async function DELETE(request, { params }) {
       })
     }
     
-    // RULE 2: NON-RECURRING APPOINTMENTS - DELETE DIRECTLY
     if (!appointment.is_recurring || !appointment.recurring_pattern) {
       console.log('🔴 DELETE API - RULE 2: NON-RECURRING APPOINTMENT')
       console.log('🔴 DELETE API - Action: DELETE DIRECTLY')
@@ -249,7 +234,6 @@ export async function DELETE(request, { params }) {
       })
     }
     
-    // RULE 3: RECURRING APPOINTMENT WITH deleteAll=true - DELETE ENTIRE SERIES
     if (appointment.is_recurring && deleteAll === true) {
       console.log('🔴 DELETE API - RULE 3: RECURRING SERIES DELETE')
       console.log('🔴 DELETE API - Action: DELETE ENTIRE RECURRING SERIES')
@@ -279,21 +263,17 @@ export async function DELETE(request, { params }) {
       })
     }
     
-    // RULE 4: RECURRING APPOINTMENT WITH cancelDate - CANCEL SINGLE OCCURRENCE
     if (appointment.is_recurring && cancelDate) {
       console.log('🔴 DELETE API - RULE 4: RECURRING SINGLE OCCURRENCE')
       console.log('🔴 DELETE API - Action: ADD DATE TO CANCELLED_DATES')
       
-      // Add the date to cancelled_dates in recurring_pattern
       const currentPattern = appointment.recurring_pattern || {}
       const cancelledDates = currentPattern.cancelled_dates || []
       
-      // Add the cancelled date if not already present
       if (!cancelledDates.includes(cancelDate)) {
         cancelledDates.push(cancelDate)
       }
       
-      // Update the recurring pattern with the new cancelled date
       const updatedPattern = {
         ...currentPattern,
         cancelled_dates: cancelledDates
@@ -328,7 +308,6 @@ export async function DELETE(request, { params }) {
       })
     }
     
-    // RULE 5: DEFAULT - DELETE DIRECTLY (fallback for any edge cases)
     console.log('🔴 DELETE API - RULE 5: DEFAULT FALLBACK')
     console.log('🔴 DELETE API - Action: DELETE DIRECTLY')
     console.log('🔴 DELETE API - Decision Logic:', {

@@ -6,11 +6,9 @@ export const runtime = 'edge'
  * Automatically generates and manages business tasks based on analytics and insights
  */
 
-// In-memory task storage (replace with database in production)
 const taskStorage = new Map()
 const taskTemplates = new Map()
 
-// Initialize task templates
 initializeTaskTemplates()
 
 export async function POST(request) {
@@ -63,11 +61,9 @@ export async function GET(request) {
  */
 async function generateSmartTasks(barbershop_id) {
   try {
-    // Fetch current business analytics
     const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershop_id}`)
     const analyticsData = await analyticsResponse.json()
     
-    // Fetch business monitor alerts
     const monitorResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
     const monitorData = await monitorResponse.json()
     
@@ -76,27 +72,21 @@ async function generateSmartTasks(barbershop_id) {
     
     const generatedTasks = []
     
-    // Generate tasks based on revenue analysis
     const revenueTasks = generateRevenueBasedTasks(metrics)
     generatedTasks.push(...revenueTasks)
     
-    // Generate tasks based on customer analysis
     const customerTasks = generateCustomerBasedTasks(metrics)
     generatedTasks.push(...customerTasks)
     
-    // Generate tasks based on operational metrics
     const operationalTasks = generateOperationalTasks(metrics)
     generatedTasks.push(...operationalTasks)
     
-    // Generate tasks based on alerts
     const alertTasks = generateAlertBasedTasks(alerts)
     generatedTasks.push(...alertTasks)
     
-    // Generate routine maintenance tasks
     const routineTasks = generateRoutineTasks()
     generatedTasks.push(...routineTasks)
     
-    // Store tasks
     const existingTasks = taskStorage.get(barbershop_id) || []
     const newTasks = generatedTasks.filter(newTask => 
       !existingTasks.some(existing => existing.template_id === newTask.template_id)
@@ -128,7 +118,6 @@ function generateRevenueBasedTasks(metrics) {
   const currentRevenue = metrics.daily_revenue || 0
   const targetRevenue = 450
   
-  // Low revenue task
   if (currentRevenue < targetRevenue * 0.8) {
     tasks.push(createTask('revenue_boost', {
       title: '💰 Boost Daily Revenue',
@@ -144,7 +133,6 @@ function generateRevenueBasedTasks(metrics) {
     }))
   }
   
-  // Upselling opportunity
   const avgTransaction = metrics.avg_transaction_value || 52
   if (avgTransaction < 65) {
     tasks.push(createTask('upselling_focus', {
@@ -173,7 +161,6 @@ function generateCustomerBasedTasks(metrics) {
   const returningCustomers = metrics.returning_customers || 0
   const retentionRate = totalCustomers > 0 ? (returningCustomers / totalCustomers) * 100 : 0
   
-  // Low retention task
   if (retentionRate < 70) {
     tasks.push(createTask('customer_retention', {
       title: '❤️ Improve Customer Retention',
@@ -189,7 +176,6 @@ function generateCustomerBasedTasks(metrics) {
     }))
   }
   
-  // Customer feedback task
   tasks.push(createTask('collect_feedback', {
     title: '📝 Collect Customer Feedback',
     description: 'Gather insights to improve service quality',
@@ -215,7 +201,6 @@ function generateOperationalTasks(metrics) {
   const avgServiceTime = metrics.avg_service_time || 45
   const utilizationRate = metrics.utilization_rate || 75
   
-  // Long service times
   if (avgServiceTime > 50) {
     tasks.push(createTask('optimize_service_time', {
       title: '⚡ Optimize Service Efficiency',
@@ -231,7 +216,6 @@ function generateOperationalTasks(metrics) {
     }))
   }
   
-  // Low utilization
   if (utilizationRate < 80) {
     tasks.push(createTask('improve_scheduling', {
       title: '📅 Optimize Scheduling',
@@ -301,7 +285,6 @@ function generateRoutineTasks() {
   const dayOfWeek = today.getDay()
   const tasks = []
   
-  // Weekly social media task (Mondays)
   if (dayOfWeek === 1) {
     tasks.push(createTask('weekly_social_media', {
       title: '📱 Weekly Social Media Update',
@@ -318,7 +301,6 @@ function generateRoutineTasks() {
     }))
   }
   
-  // Equipment maintenance (First of month)
   if (today.getDate() === 1) {
     tasks.push(createTask('monthly_equipment_check', {
       title: '🔧 Monthly Equipment Maintenance',
@@ -371,7 +353,6 @@ function generateCompletionReward(priority) {
   }
   
   const rewardList = rewards[priority] || rewards.medium
-  // NO RANDOM - use first reward consistently
   return rewardList[0]
 }
 
@@ -391,7 +372,6 @@ async function getTasks(barbershop_id, filters = {}) {
     filteredTasks = filteredTasks.filter(task => task.priority === filters.priority)
   }
   
-  // Sort by priority and creation date
   const priorityOrder = { high: 3, medium: 2, low: 1 }
   filteredTasks.sort((a, b) => {
     const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority]
@@ -480,7 +460,6 @@ async function dismissTask(task_data) {
  * Initialize task templates
  */
 function initializeTaskTemplates() {
-  // This could be expanded with more sophisticated templates
   taskTemplates.set('revenue_boost', {
     category: 'revenue',
     complexity: 'medium',

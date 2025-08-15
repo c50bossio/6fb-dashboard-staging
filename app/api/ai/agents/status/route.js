@@ -10,10 +10,8 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const detailed = searchParams.get('detailed') === 'true'
     
-    // Check AI service availability
     const aiServices = await checkAIServices()
     
-    // Define the available agents
     const agents = [
       {
         id: 'master_coach',
@@ -94,7 +92,6 @@ export async function GET(request) {
       }
     ]
 
-    // Calculate system statistics
     const activeAgents = agents.filter(agent => agent.status === 'online').length
     const totalAgents = agents.length
     const degradedAgents = agents.filter(agent => agent.status === 'degraded').length
@@ -156,22 +153,18 @@ async function checkAIServices() {
   }
 
   try {
-    // Check OpenAI
     if (process.env.OPENAI_API_KEY) {
       services.openai = true
     }
 
-    // Check Anthropic
     if (process.env.ANTHROPIC_API_KEY) {
       services.anthropic = true
     }
 
-    // Check Gemini
     if (process.env.GOOGLE_AI_API_KEY) {
       services.gemini = true
     }
 
-    // System is healthy if at least one service is available
     services.system_healthy = services.openai || services.anthropic || services.gemini
 
   } catch (error) {
@@ -189,7 +182,6 @@ export async function POST(request) {
     const { action, agent_id, status } = await request.json()
 
     if (action === 'restart_agent' && agent_id) {
-      // Simulate agent restart
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       return NextResponse.json({

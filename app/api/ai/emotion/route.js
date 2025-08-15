@@ -104,7 +104,6 @@ export async function GET(request) {
   }
 }
 
-// Handler functions
 async function handleEmotionAnalysis(text, context, userId, businessContext) {
   if (!text || typeof text !== 'string') {
     return NextResponse.json({
@@ -115,10 +114,8 @@ async function handleEmotionAnalysis(text, context, userId, businessContext) {
 
   const startTime = Date.now()
   
-  // Perform emotion analysis
   const emotionResult = await emotionService.analyzeSentiment(text, context)
   
-  // Generate empathetic response suggestions
   const empatheticResponse = emotionService.generateEmpatheticResponse(
     emotionResult.emotion,
     emotionResult.confidence,
@@ -126,7 +123,6 @@ async function handleEmotionAnalysis(text, context, userId, businessContext) {
     businessContext
   )
 
-  // Track the sentiment
   await emotionService.trackSentiment(userId, emotionResult, {
     messageLength: text.length,
     sessionId: context.sessionId,
@@ -202,7 +198,6 @@ async function handleSentimentTracking(body) {
 async function handleSentimentHistory(userId, days = 30) {
   const history = emotionService.getSentimentHistory(userId, days)
   
-  // Generate analytics from history
   const analytics = generateSentimentAnalytics(history)
 
   return NextResponse.json({
@@ -238,7 +233,6 @@ async function handleEmotionAnalytics(userId) {
   const history = emotionService.getSentimentHistory(userId, 30)
   const analytics = generateSentimentAnalytics(history)
 
-  // Add trend analysis
   const trends = analyzeSentimentTrends(history)
 
   return NextResponse.json({
@@ -251,7 +245,6 @@ async function handleEmotionAnalytics(userId) {
   })
 }
 
-// Utility functions
 function getImmediateActions(emotion, confidence) {
   const actions = {
     happy: ['Capitalize on positive momentum', 'Offer premium services'],
@@ -303,10 +296,8 @@ function analyzeSentimentTrends(history) {
     return { trend: 'insufficient_data', direction: 'neutral' }
   }
 
-  // Sort by timestamp (newest first)
   const sortedHistory = history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
   
-  // Compare recent vs older sentiment
   const recentCount = Math.min(5, Math.floor(sortedHistory.length / 2))
   const recent = sortedHistory.slice(0, recentCount)
   const older = sortedHistory.slice(recentCount, recentCount * 2)
@@ -337,7 +328,6 @@ function analyzeSentimentTrends(history) {
 function generateInsights(analytics, trends) {
   const insights = []
 
-  // Dominant emotion insights
   if (analytics.dominant_emotion === 'frustrated') {
     insights.push({
       type: 'warning',
@@ -352,7 +342,6 @@ function generateInsights(analytics, trends) {
     })
   }
 
-  // Trend insights
   if (trends.trend === 'declining') {
     insights.push({
       type: 'alert',
@@ -367,7 +356,6 @@ function generateInsights(analytics, trends) {
     })
   }
 
-  // Confidence insights
   if (analytics.average_confidence < 0.6) {
     insights.push({
       type: 'info',

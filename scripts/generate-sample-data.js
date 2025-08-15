@@ -8,7 +8,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables
 const envPath = join(__dirname, '../.env.local')
 try {
   const envContent = readFileSync(envPath, 'utf8')
@@ -39,7 +38,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 async function generateSampleData() {
   try {
-    // Create a sample barbershop
     console.log('🏪 Creating sample barbershop...')
     
     const barbershopData = {
@@ -76,7 +74,6 @@ async function generateSampleData() {
 
     console.log(`   ✅ Created: ${barbershop.name}`)
 
-    // Create sample services for testing
     console.log('\n✂️  Creating sample services...')
     const services = [
       { name: 'Classic Haircut', price: 35, duration_minutes: 30, category: 'Hair' },

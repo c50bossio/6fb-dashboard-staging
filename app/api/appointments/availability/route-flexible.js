@@ -9,7 +9,6 @@ import { createClient } from '@supabase/supabase-js'
 import { getConfig, isDevelopment } from '@/lib/config/environment'
 export const runtime = 'edge'
 
-// Get environment config
 const config = getConfig()
 
 /**
@@ -18,7 +17,6 @@ const config = getConfig()
 function createSupabaseClient(request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   
-  // In production, use authenticated client
   if (config.requireAuth) {
     const authHeader = request.headers.get('authorization')
     const token = authHeader?.replace('Bearer ', '')
@@ -40,7 +38,6 @@ function createSupabaseClient(request) {
     )
   }
   
-  // In development, use service role for easier testing
   return createClient(
     supabaseUrl,
     process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -53,7 +50,6 @@ function createSupabaseClient(request) {
   )
 }
 
-// Validation schema
 const availabilitySchema = z.object({
   barber_id: z.string().min(1),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -67,7 +63,6 @@ const availabilitySchema = z.object({
  */
 export async function GET(request) {
   try {
-    // Create client based on environment
     let supabase
     try {
       supabase = createSupabaseClient(request)
@@ -78,16 +73,13 @@ export async function GET(request) {
       }, { status: 401 })
     }
     
-    // Parse parameters
     const { searchParams } = new URL(request.url)
     const params = Object.fromEntries(searchParams.entries())
     
-    // Convert duration to number if string
     if (params.duration_minutes) {
       params.duration_minutes = parseInt(params.duration_minutes)
     }
     
-    // Validate
     const validation = availabilitySchema.safeParse(params)
     if (!validation.success) {
       return NextResponse.json({
@@ -98,10 +90,8 @@ export async function GET(request) {
     
     const { barber_id, date, duration_minutes, exclude_appointment_id } = validation.data
     
-    // Get barber info - try both tables for compatibility
     let barber = null
     
-    // Try barbers table first (test data)
     const { data: barberData, error: barberError } = await supabase
       .from('barbers')
       .select('*')
@@ -111,7 +101,6 @@ export async function GET(request) {
     if (!barberError && barberData) {
       barber = barberData
     } else {
-      // Try profiles table (production data)
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -135,7 +124,6 @@ export async function GET(request) {
       }, { status: 404 })
     }
     
-    // Get business hours
     const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' })
     const defaultHours = {
       start: '09:00',
@@ -153,7 +141,6 @@ export async function GET(request) {
       })
     }
     
-    // Get existing appointments
     const { data: appointments, error: appointmentsError } = await supabase
       .from('bookings')
       .select('id, start_time, end_time, status')
@@ -166,7 +153,6 @@ export async function GET(request) {
       console.error('Error fetching appointments:', appointmentsError)
     }
     
-    // Generate time slots
     const slots = generateTimeSlots({
       date,
       businessHours,
@@ -208,7 +194,6 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    // Create client
     let supabase
     try {
       supabase = createSupabaseClient(request)
@@ -222,7 +207,6 @@ export async function POST(request) {
     const body = await request.json()
     const { barber_id, start_time, end_time } = body
     
-    // Check for conflicts
     const { data: conflicts, error } = await supabase
       .from('bookings')
       .select('id, start_time, end_time')
@@ -261,19 +245,16 @@ function generateTimeSlots({ date, businessHours, duration, appointments, exclud
   const slots = []
   const interval = 15 // 15-minute intervals
   
-  // Parse times
   const [startHour, startMin] = businessHours.start.split(':').map(Number)
   const [endHour, endMin] = businessHours.end.split(':').map(Number)
   
   const startMinutes = startHour * 60 + startMin
   const endMinutes = endHour * 60 + endMin
   
-  // Generate slots
   for (let minutes = startMinutes; minutes <= endMinutes - duration; minutes += interval) {
     const slotStart = new Date(`${date}T${formatTime(minutes)}:00`)
     const slotEnd = new Date(`${date}T${formatTime(minutes + duration)}:00`)
     
-    // Check conflicts
     const hasConflict = appointments.some(apt => {
       if (excludeId && apt.id === excludeId) return false
       

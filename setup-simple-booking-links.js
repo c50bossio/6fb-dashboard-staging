@@ -8,8 +8,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 async function setupSimpleBookingLinks() {
   console.log('🔧 Setting up simplified booking links for demo...\n');
 
-  // Since we can't create the table easily, let's work with what we have
-  // First, let's see what tables exist
   console.log('📋 Checking existing tables...');
   
   const { data: tables, error } = await supabase
@@ -23,7 +21,6 @@ async function setupSimpleBookingLinks() {
     console.log('📊 Available tables:', tables?.map(t => t.table_name).join(', '));
   }
 
-  // Let's check if profiles table exists and add some mock booking links data there
   console.log('\n👤 Checking profiles table...');
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
@@ -41,10 +38,8 @@ async function setupSimpleBookingLinks() {
     }
   }
 
-  // For now, let's mock the booking links functionality by creating a simple solution
   console.log('\n💡 Creating temporary booking links solution...');
   
-  // Create mock data that the component can use
   const mockBookingLinks = [
     {
       id: 'demo-link-1',

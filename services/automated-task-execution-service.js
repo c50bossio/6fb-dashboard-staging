@@ -29,27 +29,23 @@ class AutomatedTaskExecutionService {
    */
   initializeSafetyRules() {
     return {
-      // Financial actions require approval above threshold
       financial: {
         maxAutomaticAmount: 50.00,
         requiresApproval: ['refund', 'discount', 'credit']
       },
       
-      // Communication limits to prevent spam
       communication: {
         maxEmailsPerDay: 3,
         maxSMSPerDay: 2,
         cooldownPeriod: 3600000 // 1 hour in ms
       },
       
-      // Data modification restrictions
       dataModification: {
         allowedFields: ['notes', 'tags', 'status'],
         restrictedFields: ['pricing', 'permissions', 'financial_data'],
         requiresApproval: ['delete', 'archive', 'bulk_update']
       },
       
-      // External system integration limits
       external: {
         maxAPICallsPerMinute: 10,
         allowedServices: ['email', 'sms', 'calendar', 'crm'],
@@ -63,7 +59,6 @@ class AutomatedTaskExecutionService {
    */
   initializeTriggerConfigs() {
     return {
-      // Emotional triggers from sentiment analysis
       emotional: {
         angry: {
           threshold: 0.8,
@@ -102,7 +97,6 @@ class AutomatedTaskExecutionService {
         }
       },
       
-      // Business process triggers
       business: {
         appointment_cancellation: {
           frequency_threshold: 3, // 3 cancellations
@@ -188,7 +182,6 @@ class AutomatedTaskExecutionService {
   async identifyTriggers(context) {
     const triggers = []
 
-    // Check emotional triggers
     if (context.emotion && context.emotionConfidence) {
       const emotionConfig = this.triggerConfigs.emotional[context.emotion]
       
@@ -203,7 +196,6 @@ class AutomatedTaskExecutionService {
       }
     }
 
-    // Check business triggers
     if (context.businessEvent) {
       const businessConfig = this.triggerConfigs.business[context.businessEvent.type]
       
@@ -296,7 +288,6 @@ class AutomatedTaskExecutionService {
    */
   async evaluateAndExecuteTask(task) {
     try {
-      // Safety evaluation
       const safetyCheck = await this.performSafetyCheck(task)
       if (!safetyCheck.passed) {
         console.log('⚠️ Task failed safety check:', safetyCheck.reasons)
@@ -305,7 +296,6 @@ class AutomatedTaskExecutionService {
         return false
       }
 
-      // Approval workflow
       if (task.requiresApproval) {
         task.status = 'pending_approval'
         this.approvalQueue.push(task)
@@ -313,7 +303,6 @@ class AutomatedTaskExecutionService {
         return false
       }
 
-      // Execute immediately if safe and no approval needed
       return await this.executeTask(task)
 
     } catch (error) {
@@ -330,7 +319,6 @@ class AutomatedTaskExecutionService {
   async performSafetyCheck(task) {
     const reasons = []
     
-    // Check financial safety
     if (this.involvesMoney(task.actions)) {
       const financialCheck = this.checkFinancialSafety(task)
       if (!financialCheck.safe) {
@@ -338,7 +326,6 @@ class AutomatedTaskExecutionService {
       }
     }
 
-    // Check communication limits
     if (this.involvesComms(task.actions)) {
       const commsCheck = await this.checkCommunicationLimits(task)
       if (!commsCheck.safe) {
@@ -346,7 +333,6 @@ class AutomatedTaskExecutionService {
       }
     }
 
-    // Check data modification safety
     if (this.involvesDataMod(task.actions)) {
       const dataCheck = this.checkDataModificationSafety(task)
       if (!dataCheck.safe) {
@@ -377,19 +363,16 @@ class AutomatedTaskExecutionService {
         const result = await this.executeAction(action, task)
         results.push(result)
         
-        // Stop execution if any critical action fails
         if (!result.success && result.critical) {
           break
         }
       }
 
-      // Update task status
       const allSuccessful = results.every(r => r.success)
       task.status = allSuccessful ? 'completed' : 'partial_failure'
       task.completedAt = new Date().toISOString()
       task.results = results
 
-      // Move to history
       this.executionHistory.push(task)
       this.activeExecutions.delete(task.id)
 
@@ -514,7 +497,6 @@ class AutomatedTaskExecutionService {
    * Specific action implementations
    */
   async escalateToManager(task) {
-    // Simulate escalation to manager
     const escalation = {
       customerId: task.context.userId,
       issue: task.context.message || 'Customer expressing anger/frustration',
@@ -525,7 +507,6 @@ class AutomatedTaskExecutionService {
       escalatedAt: new Date().toISOString()
     }
     
-    // In real implementation, this would:
     // - Create ticket in support system
     // - Send notification to manager
     // - Update customer record
@@ -535,7 +516,6 @@ class AutomatedTaskExecutionService {
   }
 
   async offerHelp(task) {
-    // Generate helpful response based on context
     const helpOffer = {
       customerId: task.context.userId,
       message: "I notice you might be having some difficulty. I'm here to help! Would you like me to walk you through this step by step?",
@@ -548,7 +528,6 @@ class AutomatedTaskExecutionService {
   }
 
   async upsellServices(task) {
-    // Generate personalized upsell based on excitement
     const upsell = {
       customerId: task.context.userId,
       recommendations: [
@@ -565,7 +544,6 @@ class AutomatedTaskExecutionService {
   }
 
   async sendTutorial(task) {
-    // Send relevant tutorial based on confusion
     const tutorial = {
       customerId: task.context.userId,
       topic: 'getting_started',
@@ -579,7 +557,6 @@ class AutomatedTaskExecutionService {
   }
 
   async requestReview(task) {
-    // Request review from satisfied/excited customer
     const reviewRequest = {
       customerId: task.context.userId,
       platform: 'google_reviews',
@@ -593,7 +570,6 @@ class AutomatedTaskExecutionService {
   }
 
   async sendPaymentReminder(task) {
-    // Send gentle payment reminder
     const reminder = {
       customerId: task.context.userId,
       amount: task.context.businessEvent?.data?.amount || 0,
@@ -607,7 +583,6 @@ class AutomatedTaskExecutionService {
   }
 
   async reorderStock(task) {
-    // Automatic inventory reorder
     const reorder = {
       product: task.context.businessEvent?.data?.product || 'unknown',
       currentStock: task.context.businessEvent?.data?.currentStock || 0,
@@ -622,7 +597,6 @@ class AutomatedTaskExecutionService {
   }
 
   async provideReassurance(task) {
-    // Provide reassurance to anxious customers
     const reassurance = {
       customerId: task.context.userId,
       message: "I understand this might feel overwhelming. You're in great hands with our team, and we're here to make sure you're completely comfortable throughout your experience.",
@@ -636,7 +610,6 @@ class AutomatedTaskExecutionService {
   }
 
   async reduceUncertainty(task) {
-    // Reduce customer uncertainty with clear information
     const clarification = {
       customerId: task.context.userId,
       informationProvided: [
@@ -653,7 +626,6 @@ class AutomatedTaskExecutionService {
   }
 
   async clearNextSteps(task) {
-    // Provide clear next steps to anxious customers
     const nextSteps = {
       customerId: task.context.userId,
       steps: [
@@ -671,7 +643,6 @@ class AutomatedTaskExecutionService {
   }
 
   async paymentAssistance(task) {
-    // Provide payment assistance for billing issues
     const assistance = {
       customerId: task.context.userId,
       issueType: 'payment_problem',
@@ -689,7 +660,6 @@ class AutomatedTaskExecutionService {
   }
 
   async bookingTutorial(task) {
-    // Send booking tutorial for confused customers
     const tutorial = {
       customerId: task.context.userId,
       tutorialType: 'booking_process',
@@ -708,7 +678,6 @@ class AutomatedTaskExecutionService {
   }
 
   async liveAssistance(task) {
-    // Offer live assistance for complex issues
     const liveHelp = {
       customerId: task.context.userId,
       assistanceType: 'live_chat',
@@ -722,7 +691,6 @@ class AutomatedTaskExecutionService {
   }
 
   async serviceRecovery(task) {
-    // Service recovery for complaints
     const recovery = {
       customerId: task.context.userId,
       recoveryType: 'service_complaint',
@@ -740,7 +708,6 @@ class AutomatedTaskExecutionService {
   }
 
   async welcomeMessage(task) {
-    // Welcome message for first-time customers
     const welcome = {
       customerId: task.context.userId,
       messageType: 'first_time_welcome',
@@ -754,7 +721,6 @@ class AutomatedTaskExecutionService {
   }
 
   async expectationSetting(task) {
-    // Set clear expectations for new customers
     const expectations = {
       customerId: task.context.userId,
       serviceExpectations: [
@@ -772,7 +738,6 @@ class AutomatedTaskExecutionService {
   }
 
   async satisfactionGuarantee(task) {
-    // Explain satisfaction guarantee to worried customers
     const guarantee = {
       customerId: task.context.userId,
       guaranteeType: '100_percent_satisfaction',
@@ -786,7 +751,6 @@ class AutomatedTaskExecutionService {
   }
 
   async executeCustomAction(actionType, task) {
-    // Placeholder for custom business-specific actions
     console.log(`🔧 Custom action executed: ${actionType}`)
     return { actionType, executed: true, timestamp: new Date().toISOString() }
   }
@@ -810,17 +774,14 @@ class AutomatedTaskExecutionService {
   }
 
   checkFinancialSafety(task) {
-    // Implement financial safety checks
     return { safe: true, reason: 'Within limits' }
   }
 
   async checkCommunicationLimits(task) {
-    // Check daily communication limits per customer
     return { safe: true, reason: 'Within daily limits' }
   }
 
   checkDataModificationSafety(task) {
-    // Check data modification permissions
     return { safe: true, reason: 'Authorized modifications only' }
   }
 
@@ -942,6 +903,5 @@ class AutomatedTaskExecutionService {
   }
 }
 
-// Export singleton instance
 const automatedTaskExecutionService = new AutomatedTaskExecutionService()
 export default automatedTaskExecutionService

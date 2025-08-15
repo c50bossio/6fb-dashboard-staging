@@ -2,13 +2,11 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { isDevBypassEnabled, getTestBillingData, TEST_USER_UUID } from '@/lib/auth/dev-bypass'
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// GET - Retrieve billing accounts and history using real database
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -22,7 +20,6 @@ export async function GET(request) {
       )
     }
 
-    // Check for dev bypass mode with test user
     if (isDevBypassEnabled() && userId === TEST_USER_UUID) {
       const testData = getTestBillingData()
       return NextResponse.json({
@@ -33,7 +30,6 @@ export async function GET(request) {
       })
     }
 
-    // Get real marketing accounts from database
     const { data: accounts, error: accountsError } = await supabase
       .from('marketing_accounts')
       .select('*')
@@ -51,9 +47,7 @@ export async function GET(request) {
       })
     }
 
-    // If no accounts exist for this user, create a default one
     if (!accounts || accounts.length === 0) {
-      // Get user profile for account creation
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -85,7 +79,6 @@ export async function GET(request) {
       }
     }
 
-    // Get billing history from marketing_billing_records
     const { data: billingHistory } = await supabase
       .from('marketing_billing_records')
       .select('*')
@@ -109,7 +102,6 @@ export async function GET(request) {
   }
 }
 
-// POST - Create new billing account
 export async function POST(request) {
   try {
     const data = await request.json()
@@ -129,7 +121,6 @@ export async function POST(request) {
       )
     }
 
-    // Create billing account
     const { data: newAccount, error: createError } = await supabase
       .from('marketing_accounts')
       .insert({
@@ -176,7 +167,6 @@ export async function POST(request) {
   }
 }
 
-// PUT - Update billing account
 export async function PUT(request) {
   try {
     const data = await request.json()
@@ -189,7 +179,6 @@ export async function PUT(request) {
       )
     }
 
-    // Verify ownership
     const { data: account, error: fetchError } = await supabase
       .from('marketing_accounts')
       .select('owner_id')
@@ -210,7 +199,6 @@ export async function PUT(request) {
       )
     }
 
-    // Update account
     const { data: updatedAccount, error: updateError } = await supabase
       .from('marketing_accounts')
       .update({
@@ -244,7 +232,6 @@ export async function PUT(request) {
   }
 }
 
-// DELETE - Remove billing account
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -258,7 +245,6 @@ export async function DELETE(request) {
       )
     }
 
-    // Verify ownership
     const { data: account, error: fetchError } = await supabase
       .from('marketing_accounts')
       .select('owner_id')
@@ -279,7 +265,6 @@ export async function DELETE(request) {
       )
     }
 
-    // Soft delete - set is_active to false
     const { error: deleteError } = await supabase
       .from('marketing_accounts')
       .update({

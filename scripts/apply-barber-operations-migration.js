@@ -15,13 +15,11 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 
-// Load environment variables
 dotenv.config({ path: '.env.local' })
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -31,7 +29,6 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1)
 }
 
-// Create Supabase client with service role key for admin access
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
@@ -43,7 +40,6 @@ async function applyMigration() {
   console.log('🚀 Starting Barber Operations Migration...\n')
   
   try {
-    // Read the migration SQL file
     const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '001_barber_operations.sql')
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8')
     
@@ -51,8 +47,6 @@ async function applyMigration() {
     console.log('📍 File path:', migrationPath)
     console.log('📏 SQL length:', migrationSQL.length, 'characters\n')
     
-    // Split SQL into individual statements (by semicolon)
-    // Filter out empty statements and comments
     const statements = migrationSQL
       .split(/;(?=\s*\n)/)
       .map(stmt => stmt.trim())
@@ -64,16 +58,13 @@ async function applyMigration() {
     let errorCount = 0
     const errors = []
     
-    // Execute each statement
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i]
       
-      // Skip if statement is empty or only comments
       if (!statement || statement.match(/^(\s*--.*\n?)*$/)) {
         continue
       }
       
-      // Extract the first meaningful part of the statement for logging
       const statementPreview = statement
         .split('\n')
         .find(line => line && !line.startsWith('--'))
@@ -82,20 +73,17 @@ async function applyMigration() {
       process.stdout.write(`[${i + 1}/${statements.length}] Executing: ${statementPreview}...`)
       
       try {
-        // Execute the SQL statement using Supabase's rpc function
         const { error } = await supabase.rpc('exec_sql', {
           sql: statement + ';'
         }).single()
         
         if (error) {
-          // If exec_sql doesn't exist, try direct query (this might not work for all statements)
           const { error: queryError } = await supabase
             .from('_migrations')
             .select('*')
             .limit(1)
           
           if (queryError && queryError.message.includes('exec_sql')) {
-            // exec_sql function doesn't exist, show instructions
             console.log('\n\n⚠️  The exec_sql function is not available in your Supabase database.')
             console.log('\n📝 Please run the migration manually:')
             console.log('1. Go to your Supabase dashboard')
@@ -105,7 +93,6 @@ async function applyMigration() {
             console.log(`   ${migrationPath}`)
             console.log('5. Run the query\n')
             
-            // Save migration to a temp file for easy access
             const tempPath = path.join(__dirname, '..', 'APPLY_THIS_MIGRATION.sql')
             fs.writeFileSync(tempPath, migrationSQL)
             console.log(`\n💾 Migration SQL has been saved to: ${tempPath}`)
@@ -127,12 +114,10 @@ async function applyMigration() {
           error: error.message || error
         })
         
-        // Log the error but continue with other statements
         console.error(`   Error: ${error.message || error}`)
       }
     }
     
-    // Summary
     console.log('\n' + '='.repeat(60))
     console.log('📊 Migration Summary:')
     console.log('='.repeat(60))
@@ -157,7 +142,6 @@ async function applyMigration() {
       console.log('   Your database now has the barber operations tables.')
     }
     
-    // Test the tables
     console.log('\n🔍 Testing created tables...\n')
     
     const tablesToTest = [
@@ -194,7 +178,6 @@ async function applyMigration() {
   }
 }
 
-// Alternative: Direct SQL execution instructions
 function showManualInstructions() {
   console.log('\n📝 Manual Migration Instructions:')
   console.log('=====================================\n')
@@ -209,12 +192,10 @@ function showManualInstructions() {
   console.log('The migration will create all necessary tables for the barber operations system.\n')
 }
 
-// Run the migration
 console.log('====================================')
 console.log('   Barber Operations Migration')
 console.log('====================================\n')
 
-// Check if we should show manual instructions
 if (process.argv.includes('--manual')) {
   showManualInstructions()
 } else {

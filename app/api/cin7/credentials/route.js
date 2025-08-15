@@ -6,7 +6,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// GET - Retrieve credential info (without sensitive data)
 export async function GET() {
   try {
     const barbershopId = '550e8400-e29b-41d4-a716-446655440000' // Hardcoded for demo
@@ -25,7 +24,6 @@ export async function GET() {
       })
     }
     
-    // Mask account ID for security (show first 8 chars + ...)
     const { data: credWithAccountId } = await supabase
       .from('cin7_credentials')
       .select('encrypted_account_id')
@@ -60,14 +58,12 @@ export async function GET() {
   }
 }
 
-// DELETE - Remove credentials with confirmation
 export async function DELETE() {
   try {
     const barbershopId = '550e8400-e29b-41d4-a716-446655440000' // Hardcoded for demo
     
     console.log('🗑️ Deleting Cin7 credentials for barbershop:', barbershopId)
     
-    // Check if credentials exist
     const { data: existingCreds, error: checkError } = await supabase
       .from('cin7_credentials')
       .select('barbershop_id')
@@ -81,7 +77,6 @@ export async function DELETE() {
       }, { status: 404 })
     }
     
-    // Delete credentials
     const { error: deleteError } = await supabase
       .from('cin7_credentials')
       .delete()
@@ -112,7 +107,6 @@ export async function DELETE() {
   }
 }
 
-// PUT - Update credentials
 export async function PUT(request) {
   try {
     const body = await request.json()
@@ -128,7 +122,6 @@ export async function PUT(request) {
     
     console.log('🔄 Updating Cin7 credentials...')
     
-    // Test new credentials before saving
     const testResponse = await fetch('https://inventory.dearsystems.com/externalapi/products?limit=1', {
       method: 'GET',
       headers: {
@@ -145,7 +138,6 @@ export async function PUT(request) {
       }, { status: 400 })
     }
     
-    // Encrypt and update credentials
     const encryptedApiKey = Buffer.from(apiKey).toString('base64')
     const encryptedAccountId = Buffer.from(accountId).toString('base64')
     

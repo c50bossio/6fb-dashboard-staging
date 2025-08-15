@@ -18,7 +18,6 @@ import {
   BusinessAnalyticsRepository
 } from '../../database/async_repositories.py';
 
-// Test database configuration
 const TEST_DB_CONFIG = {
   host: process.env.TEST_DB_HOST || 'localhost',
   port: process.env.TEST_DB_PORT || 5432,
@@ -38,13 +37,10 @@ describe('Database Operations Integration Tests', () => {
   let analyticsRepo;
 
   beforeAll(async () => {
-    // Create test database and tables
     await setupTestDatabase();
     
-    // Initialize connection pool
     testPool = await createConnectionPool(TEST_DB_CONFIG);
     
-    // Initialize repositories
     userRepo = new UserRepository(testPool);
     shopRepo = new ShopRepository(testPool);
     appointmentRepo = new AppointmentRepository(testPool);
@@ -52,17 +48,14 @@ describe('Database Operations Integration Tests', () => {
   });
 
   afterAll(async () => {
-    // Clean up test database
     await cleanupTestDatabase();
     
-    // Close connection pool
     if (testPool) {
       await closePool(testPool);
     }
   });
 
   beforeEach(async () => {
-    // Clear test data before each test
     await clearTestData();
   });
 
@@ -79,7 +72,6 @@ describe('Database Operations Integration Tests', () => {
       const promises = [];
       const queryCount = 10;
 
-      // Create multiple concurrent queries
       for (let i = 0; i < queryCount; i++) {
         promises.push(
           executeQuery(testPool, 'SELECT $1 as test_value', [i])
@@ -99,7 +91,6 @@ describe('Database Operations Integration Tests', () => {
       const smallPool = await createConnectionPool(poolConfig);
       
       try {
-        // Create more concurrent connections than pool size
         const promises = [];
         for (let i = 0; i < 5; i++) {
           promises.push(
@@ -115,7 +106,6 @@ describe('Database Operations Integration Tests', () => {
     });
 
     it('should handle connection errors and retry', async () => {
-      // Test with invalid connection parameters
       const invalidConfig = { ...TEST_DB_CONFIG, port: 9999 };
       
       await expect(createConnectionPool(invalidConfig)).rejects.toThrow();
@@ -127,13 +117,11 @@ describe('Database Operations Integration Tests', () => {
       const testUserId = 'test_user_' + Date.now();
       
       const result = await executeTransaction(testPool, async (client) => {
-        // Insert user
         await client.query(
           'INSERT INTO users (id, email, name, role) VALUES ($1, $2, $3, $4)',
           [testUserId, 'test@example.com', await getTestUserFromDatabase(), 'CLIENT']
         );
         
-        // Insert user profile
         await client.query(
           'INSERT INTO user_profiles (user_id, phone, preferences) VALUES ($1, $2, $3)',
           [testUserId, '+1234567890', '{"notifications": true}']
@@ -144,7 +132,6 @@ describe('Database Operations Integration Tests', () => {
 
       expect(result.success).toBe(true);
       
-      // Verify data was committed
       const userResult = await executeQuery(
         testPool, 
         'SELECT * FROM users WHERE id = $1', 
@@ -159,20 +146,17 @@ describe('Database Operations Integration Tests', () => {
       
       try {
         await executeTransaction(testPool, async (client) => {
-          // Insert user
           await client.query(
             'INSERT INTO users (id, email, name, role) VALUES ($1, $2, $3, $4)',
             [testUserId, 'rollback@example.com', 'Rollback User', 'CLIENT']
           );
           
-          // This should fail due to foreign key constraint or intentional error
           throw new Error('Intentional transaction failure');
         });
       } catch (error) {
         expect(error.message).toBe('Intentional transaction failure');
       }
 
-      // Verify data was rolled back
       const userResult = await executeQuery(
         testPool, 
         'SELECT * FROM users WHERE id = $1', 
@@ -185,13 +169,11 @@ describe('Database Operations Integration Tests', () => {
       const testUserId = 'test_nested_' + Date.now();
       
       const result = await executeTransaction(testPool, async (outerClient) => {
-        // Outer transaction
         await outerClient.query(
           'INSERT INTO users (id, email, name, role) VALUES ($1, $2, $3, $4)',
           [testUserId, 'nested@example.com', 'Nested User', 'CLIENT']
         );
         
-        // Simulate nested operation that might use savepoints
         await outerClient.query('SAVEPOINT nested_operation');
         
         try {
@@ -228,19 +210,16 @@ describe('Database Operations Integration Tests', () => {
       expect(createdUser.email).toBe(userData.email);
       expect(createdUser.role).toBe(userData.role);
 
-      // Retrieve user by ID
       const retrievedUser = await userRepo.findById(createdUser.id);
       expect(retrievedUser).toBeDefined();
       expect(retrievedUser.email).toBe(userData.email);
 
-      // Retrieve user by email
       const userByEmail = await userRepo.findByEmail(userData.email);
       expect(userByEmail).toBeDefined();
       expect(userByEmail.id).toBe(createdUser.id);
     });
 
     it('should update user information', async () => {
-      // Create test user
       const userData = {
         email: 'updateuser@example.com',
         name: 'Update User',
@@ -249,7 +228,6 @@ describe('Database Operations Integration Tests', () => {
       };
       const user = await userRepo.create(userData);
 
-      // Update user
       const updateData = {
         name: 'Updated Name',
         phone: '+9876543210'
@@ -259,13 +237,11 @@ describe('Database Operations Integration Tests', () => {
       expect(updatedUser.name).toBe(updateData.name);
       expect(updatedUser.updated_at).toBeDefined();
       
-      // Verify update in database
       const retrievedUser = await userRepo.findById(user.id);
       expect(retrievedUser.name).toBe(updateData.name);
     });
 
     it('should handle user role-based queries', async () => {
-      // Create users with different roles
       const users = [
         { email: 'client@example.com', name: 'Client User', role: 'CLIENT' },
         { email: 'barber@example.com', name: 'Barber User', role: 'BARBER' },
@@ -281,7 +257,6 @@ describe('Database Operations Integration Tests', () => {
         createdUsers.push(user);
       }
 
-      // Query users by role
       const barbers = await userRepo.findByRole('BARBER');
       expect(barbers).toHaveLength(1);
       expect(barbers[0].role).toBe('BARBER');
@@ -301,15 +276,12 @@ describe('Database Operations Integration Tests', () => {
 
       const user = await userRepo.create(userData);
       
-      // Verify password hash is stored securely
       expect(user.password_hash).toBeUndefined(); // Should not be returned in queries
       
-      // Test authentication method
       const authResult = await userRepo.verifyCredentials(
         userData.email, 
         'plaintext_password'
       );
-      // This would normally use proper password hashing
       expect(authResult).toBeDefined();
     });
   });
@@ -318,7 +290,6 @@ describe('Database Operations Integration Tests', () => {
     let testOwner;
 
     beforeEach(async () => {
-      // Create test shop owner
       testOwner = await userRepo.create({
         email: 'shopowner@example.com',
         name: 'Shop Owner',
@@ -353,13 +324,11 @@ describe('Database Operations Integration Tests', () => {
       expect(shop.owner_id).toBe(testOwner.id);
       expect(shop.business_hours).toEqual(shopData.business_hours);
 
-      // Retrieve shop
       const retrievedShop = await shopRepo.findById(shop.id);
       expect(retrievedShop.name).toBe(shopData.name);
     });
 
     it('should manage shop services and pricing', async () => {
-      // Create shop
       const shop = await shopRepo.create({
         name: 'Service Test Shop',
         owner_id: testOwner.id,
@@ -367,7 +336,6 @@ describe('Database Operations Integration Tests', () => {
         phone: '+1234567890'
       });
 
-      // Add services
       const services = [
         { name: 'Haircut', price: 35.00, duration: 30, description: 'Standard haircut' },
         { name: 'Beard Trim', price: 25.00, duration: 20, description: 'Beard trimming and styling' },
@@ -382,14 +350,12 @@ describe('Database Operations Integration Tests', () => {
 
       expect(createdServices).toHaveLength(3);
 
-      // Get shop services
       const shopServices = await shopRepo.getServices(shop.id);
       expect(shopServices).toHaveLength(3);
       expect(shopServices.find(s => s.name === 'Haircut').price).toBe(35.00);
     });
 
     it('should handle shop staff management', async () => {
-      // Create shop
       const shop = await shopRepo.create({
         name: 'Staff Test Shop',
         owner_id: testOwner.id,
@@ -397,7 +363,6 @@ describe('Database Operations Integration Tests', () => {
         phone: '+1234567890'
       });
 
-      // Create barbers
       const barber1 = await userRepo.create({
         email: 'barber1@example.com',
         name: 'Barber One',
@@ -412,7 +377,6 @@ describe('Database Operations Integration Tests', () => {
         password_hash: 'hash_barber2'
       });
 
-      // Add staff to shop
       await shopRepo.addStaff(shop.id, barber1.id, {
         position: 'Senior Barber',
         hourly_rate: 25.00,
@@ -425,7 +389,6 @@ describe('Database Operations Integration Tests', () => {
         commission_rate: 0.10
       });
 
-      // Get shop staff
       const staff = await shopRepo.getStaff(shop.id);
       expect(staff).toHaveLength(2);
       
@@ -439,7 +402,6 @@ describe('Database Operations Integration Tests', () => {
     let testClient, testBarber, testShop, testService;
 
     beforeEach(async () => {
-      // Create test users and shop
       testClient = await userRepo.create({
         email: 'client@example.com',
         name: 'Test Client',
@@ -474,7 +436,6 @@ describe('Database Operations Integration Tests', () => {
         duration: 30
       });
 
-      // Add barber to shop
       await shopRepo.addStaff(testShop.id, testBarber.id, {
         position: 'Barber',
         hourly_rate: 22.00,
@@ -500,13 +461,11 @@ describe('Database Operations Integration Tests', () => {
       expect(appointment.status).toBe('scheduled');
       expect(appointment.total_price).toBe(testService.price);
 
-      // Retrieve appointment
       const retrieved = await appointmentRepo.findById(appointment.id);
       expect(retrieved.notes).toBe(appointmentData.notes);
     });
 
     it('should handle appointment status updates', async () => {
-      // Create appointment
       const appointment = await appointmentRepo.create({
         client_id: testClient.id,
         barber_id: testBarber.id,
@@ -515,7 +474,6 @@ describe('Database Operations Integration Tests', () => {
         scheduled_time: new Date('2024-02-15T11:00:00Z')
       });
 
-      // Update to confirmed
       const confirmed = await appointmentRepo.updateStatus(
         appointment.id, 
         'confirmed',
@@ -523,7 +481,6 @@ describe('Database Operations Integration Tests', () => {
       );
       expect(confirmed.status).toBe('confirmed');
 
-      // Update to completed
       const completed = await appointmentRepo.updateStatus(
         appointment.id, 
         'completed',
@@ -540,7 +497,6 @@ describe('Database Operations Integration Tests', () => {
     it('should handle appointment scheduling conflicts', async () => {
       const scheduledTime = new Date('2024-02-15T14:00:00Z');
       
-      // Create first appointment
       const appointment1 = await appointmentRepo.create({
         client_id: testClient.id,
         barber_id: testBarber.id,
@@ -549,7 +505,6 @@ describe('Database Operations Integration Tests', () => {
         scheduled_time: scheduledTime
       });
 
-      // Try to create conflicting appointment (same barber, overlapping time)
       const conflictingTime = new Date('2024-02-15T14:15:00Z'); // 15 minutes overlap
       
       await expect(appointmentRepo.create({
@@ -564,7 +519,6 @@ describe('Database Operations Integration Tests', () => {
     it('should query appointments by various criteria', async () => {
       const baseTime = new Date('2024-02-15T09:00:00Z');
       
-      // Create multiple appointments
       const appointments = [];
       for (let i = 0; i < 5; i++) {
         const appointmentTime = new Date(baseTime.getTime() + (i * 60 * 60 * 1000)); // 1 hour apart
@@ -578,7 +532,6 @@ describe('Database Operations Integration Tests', () => {
         appointments.push(appointment);
       }
 
-      // Query by barber
       const barberAppointments = await appointmentRepo.findByBarber(
         testBarber.id,
         new Date('2024-02-15T00:00:00Z'),
@@ -586,11 +539,9 @@ describe('Database Operations Integration Tests', () => {
       );
       expect(barberAppointments).toHaveLength(5);
 
-      // Query by client
       const clientAppointments = await appointmentRepo.findByClient(testClient.id);
       expect(clientAppointments).toHaveLength(5);
 
-      // Query by shop
       const shopAppointments = await appointmentRepo.findByShop(
         testShop.id,
         new Date('2024-02-15T00:00:00Z'),
@@ -604,7 +555,6 @@ describe('Database Operations Integration Tests', () => {
     let testShop, testBarber, testClient, testService;
 
     beforeEach(async () => {
-      // Create test data for analytics
       const shopOwner = await userRepo.create({
         email: 'analyticsowner@example.com',
         name: 'Analytics Owner',
@@ -647,7 +597,6 @@ describe('Database Operations Integration Tests', () => {
     });
 
     it('should calculate revenue analytics', async () => {
-      // Create completed appointments
       const appointments = [];
       const baseTime = new Date('2024-01-01T10:00:00Z');
       
@@ -661,7 +610,6 @@ describe('Database Operations Integration Tests', () => {
           scheduled_time: appointmentTime
         });
 
-        // Complete the appointment
         await appointmentRepo.updateStatus(appointment.id, 'completed', {
           completed_at: new Date(appointmentTime.getTime() + (30 * 60 * 1000)), // 30 minutes later
           tip_amount: 5.00
@@ -670,7 +618,6 @@ describe('Database Operations Integration Tests', () => {
         appointments.push(appointment);
       }
 
-      // Get revenue analytics
       const revenueData = await analyticsRepo.getRevenueAnalytics(
         testShop.id,
         new Date('2024-01-01T00:00:00Z'),
@@ -685,7 +632,6 @@ describe('Database Operations Integration Tests', () => {
     });
 
     it('should analyze customer metrics', async () => {
-      // Create multiple clients with appointments
       const clients = [];
       for (let i = 0; i < 5; i++) {
         const client = await userRepo.create({
@@ -696,7 +642,6 @@ describe('Database Operations Integration Tests', () => {
         });
         clients.push(client);
 
-        // Create appointments for each client (varying amounts)
         const appointmentCount = i + 1; // 1 to 5 appointments per client
         for (let j = 0; j < appointmentCount; j++) {
           const appointment = await appointmentRepo.create({
@@ -726,7 +671,6 @@ describe('Database Operations Integration Tests', () => {
     });
 
     it('should track barber performance', async () => {
-      // Create second barber for comparison
       const barber2 = await userRepo.create({
         email: 'barber2@example.com',
         name: 'Second Barber',
@@ -740,12 +684,10 @@ describe('Database Operations Integration Tests', () => {
         commission_rate: 0.12
       });
 
-      // Create appointments for both barbers
       const appointments1 = [];
       const appointments2 = [];
 
       for (let i = 0; i < 5; i++) {
-        // Appointments for first barber
         const appt1 = await appointmentRepo.create({
           client_id: testClient.id,
           barber_id: testBarber.id,
@@ -759,7 +701,6 @@ describe('Database Operations Integration Tests', () => {
         });
         appointments1.push(appt1);
 
-        // Appointments for second barber
         const appt2 = await appointmentRepo.create({
           client_id: testClient.id,
           barber_id: barber2.id,
@@ -795,7 +736,6 @@ describe('Database Operations Integration Tests', () => {
     });
 
     it('should generate comprehensive business insights', async () => {
-      // Create diverse data for comprehensive analysis
       const insights = await analyticsRepo.getBusinessInsights(
         testShop.id,
         new Date('2024-01-01T00:00:00Z'),
@@ -809,7 +749,6 @@ describe('Database Operations Integration Tests', () => {
       expect(insights).toHaveProperty('trends');
       expect(insights).toHaveProperty('recommendations');
 
-      // Verify structure of insights
       expect(insights.revenue_summary).toHaveProperty('total');
       expect(insights.revenue_summary).toHaveProperty('growth_rate');
       expect(insights.customer_summary).toHaveProperty('total_customers');
@@ -821,7 +760,6 @@ describe('Database Operations Integration Tests', () => {
     let vectorRepo;
 
     beforeEach(async () => {
-      // This would be a specialized repository for vector operations
       vectorRepo = new VectorEmbeddingsRepository(testPool);
     });
 
@@ -840,14 +778,12 @@ describe('Database Operations Integration Tests', () => {
 
       expect(embeddingId).toBeDefined();
 
-      // Retrieve embedding
       const retrieved = await vectorRepo.getEmbedding(embeddingId);
       expect(retrieved.embedding).toHaveLength(384);
       expect(retrieved.metadata.source).toBe('revenue_optimization');
     });
 
     it('should perform similarity search on embeddings', async () => {
-      // Store multiple embeddings
       const embeddings = [];
       for (let i = 0; i < 10; i++) {
         const embedding = await fetchFromDatabase({ limit: 384 }, () => Math.random());
@@ -861,7 +797,6 @@ describe('Database Operations Integration Tests', () => {
         embeddings.push({ id: embeddingId, embedding, metadata });
       }
 
-      // Perform similarity search
       const queryEmbedding = await fetchFromDatabase({ limit: 384 }, () => Math.random());
       const similarResults = await vectorRepo.similaritySearch(
         queryEmbedding,
@@ -873,7 +808,6 @@ describe('Database Operations Integration Tests', () => {
       expect(similarResults[0]).toHaveProperty('similarity_score');
       expect(similarResults[0]).toHaveProperty('metadata');
       
-      // Results should be sorted by similarity score (descending)
       for (let i = 1; i < similarResults.length; i++) {
         expect(similarResults[i-1].similarity_score).toBeGreaterThanOrEqual(
           similarResults[i].similarity_score
@@ -884,7 +818,6 @@ describe('Database Operations Integration Tests', () => {
 
   describe('Data Integrity and Constraints', () => {
     it('should enforce foreign key constraints', async () => {
-      // Try to create appointment with non-existent client
       await expect(appointmentRepo.create({
         client_id: 'non-existent-client',
         barber_id: 'non-existent-barber',
@@ -902,22 +835,18 @@ describe('Database Operations Integration Tests', () => {
         password_hash: 'hash_unique'
       };
 
-      // Create first user
       await userRepo.create(userData);
 
-      // Try to create second user with same email
       await expect(userRepo.create(userData)).rejects.toThrow(/duplicate/i);
     });
 
     it('should validate data types and ranges', async () => {
-      // Test price validation
       await expect(shopRepo.addService('shop_id', {
         name: 'Invalid Service',
         price: -10.00, // Negative price should be invalid
         duration: 30
       })).rejects.toThrow();
 
-      // Test duration validation
       await expect(shopRepo.addService('shop_id', {
         name: 'Invalid Duration Service',
         price: 35.00,
@@ -928,14 +857,12 @@ describe('Database Operations Integration Tests', () => {
 
   describe('Performance and Scalability', () => {
     it('should handle large dataset queries efficiently', async () => {
-      // This test would be skipped in quick test runs
       if (process.env.SKIP_PERFORMANCE_TESTS) {
         return;
       }
 
       const startTime = Date.now();
       
-      // Create large dataset
       const promises = [];
       for (let i = 0; i < 1000; i++) {
         promises.push(userRepo.create({
@@ -951,7 +878,6 @@ describe('Database Operations Integration Tests', () => {
       const creationTime = Date.now() - startTime;
       console.log(`Created 1000 users in ${creationTime}ms`);
 
-      // Query large dataset
       const queryStartTime = Date.now();
       const users = await userRepo.findByRole('CLIENT', { limit: 100, offset: 0 });
       const queryTime = Date.now() - queryStartTime;
@@ -962,14 +888,12 @@ describe('Database Operations Integration Tests', () => {
     });
 
     it('should use database indexes effectively', async () => {
-      // Test index usage with EXPLAIN
       const explainResult = await executeQuery(
         testPool,
         'EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM users WHERE email = $1',
         ['test@example.com']
       );
 
-      // Verify index scan is used (not sequential scan)
       const plan = explainResult.rows[0]['QUERY PLAN'];
       expect(plan).toMatch(/Index Scan/i);
       expect(plan).not.toMatch(/Seq Scan/i);
@@ -977,9 +901,7 @@ describe('Database Operations Integration Tests', () => {
   });
 });
 
-// Helper functions for test setup and cleanup
 async function setupTestDatabase() {
-  // Connect to postgres database to create test database
   const adminClient = new pg.Client({
     host: TEST_DB_CONFIG.host,
     port: TEST_DB_CONFIG.port,
@@ -991,7 +913,6 @@ async function setupTestDatabase() {
   try {
     await adminClient.connect();
     
-    // Drop test database if exists and create new one
     await adminClient.query(`DROP DATABASE IF EXISTS ${TEST_DB_CONFIG.database}`);
     await adminClient.query(`CREATE DATABASE ${TEST_DB_CONFIG.database}`);
     
@@ -999,12 +920,10 @@ async function setupTestDatabase() {
     await adminClient.end();
   }
 
-  // Connect to test database and create schema
   const testClient = new pg.Client(TEST_DB_CONFIG);
   try {
     await testClient.connect();
     
-    // Read and execute schema file
     const fs = require('fs');
     const path = require('path');
     const schemaPath = path.join(__dirname, '../../database/complete-schema.sql');
@@ -1053,13 +972,11 @@ async function clearTestData() {
     try {
       await executeQuery(testPool, `TRUNCATE TABLE ${table} CASCADE`);
     } catch (error) {
-      // Table might not exist, continue
       console.warn(`Could not truncate table ${table}:`, error.message);
     }
   }
 }
 
-// Mock VectorEmbeddingsRepository for testing
 class VectorEmbeddingsRepository {
   constructor(pool) {
     this.pool = pool;

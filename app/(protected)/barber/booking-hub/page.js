@@ -10,7 +10,6 @@ import {
   EyeIcon
 } from '@heroicons/react/24/outline'
 
-// Import existing components we'll consolidate
 import PublicPageTab from '../../../../components/barber/booking-hub/PublicPageTab'
 import MarketingLinksTab from '../../../../components/barber/booking-hub/MarketingLinksTab'
 import QRCodesTab from '../../../../components/barber/booking-hub/QRCodesTab'

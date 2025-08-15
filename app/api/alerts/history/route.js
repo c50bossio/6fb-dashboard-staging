@@ -18,7 +18,6 @@ export async function GET(request) {
     const status = searchParams.get('status');
     const includeAnalytics = searchParams.get('include_analytics') !== 'false';
     
-    // Validate required parameters
     if (!barbershopId || !userId) {
       return NextResponse.json(
         { error: 'barbershop_id and user_id are required parameters' },
@@ -26,7 +25,6 @@ export async function GET(request) {
       );
     }
     
-    // Get alert history from Python service
     const historyResponse = await fetch('http://localhost:8001/intelligent-alerts/history', {
       method: 'POST',
       headers: {
@@ -52,7 +50,6 @@ export async function GET(request) {
     
     const historyData = await historyResponse.json();
     
-    // Enrich with additional analytics
     const enrichedData = {
       ...historyData,
       client_side_analytics: generateClientSideAnalytics(historyData.alerts || []),
@@ -110,7 +107,6 @@ export async function POST(request) {
       bulk_operation
     } = body;
     
-    // Validate required fields
     if (!barbershop_id || !user_id || !action) {
       return NextResponse.json(
         { error: 'barbershop_id, user_id, and action are required' },
@@ -172,7 +168,6 @@ export async function POST(request) {
   }
 }
 
-// Helper functions for different actions
 
 async function handleExport(barbershopId, userId, format, dateRange, filters) {
   const exportResponse = await fetch('http://localhost:8001/intelligent-alerts/export', {
@@ -352,7 +347,6 @@ async function handleAnalyzePatterns(barbershopId, userId, dateRange) {
   };
 }
 
-// Analytics and insight generation functions
 
 function generateClientSideAnalytics(alerts) {
   if (!alerts || alerts.length === 0) {
@@ -382,7 +376,6 @@ function generateClientSideAnalytics(alerts) {
   let responseTimeCount = 0;
   
   alerts.forEach(alert => {
-    // Hour distribution
     if (alert.created_at) {
       const hour = new Date(alert.created_at).getHours();
       analytics.by_hour[hour] = (analytics.by_hour[hour] || 0) + 1;
@@ -391,17 +384,14 @@ function generateClientSideAnalytics(alerts) {
       analytics.by_day_of_week[dayOfWeek] = (analytics.by_day_of_week[dayOfWeek] || 0) + 1;
     }
     
-    // Category distribution
     if (alert.category) {
       analytics.by_category[alert.category] = (analytics.by_category[alert.category] || 0) + 1;
     }
     
-    // Priority distribution
     if (alert.priority) {
       analytics.by_priority[alert.priority] = (analytics.by_priority[alert.priority] || 0) + 1;
     }
     
-    // Response time analysis
     if (alert.user_interactions && Array.isArray(alert.user_interactions)) {
       alert.user_interactions.forEach(interaction => {
         if (interaction.response_time && interaction.response_time > 0) {
@@ -430,12 +420,10 @@ function generateTrendAnalysis(alerts) {
     };
   }
   
-  // Sort alerts by creation date
   const sortedAlerts = [...alerts].sort((a, b) => 
     new Date(a.created_at) - new Date(b.created_at)
   );
   
-  // Calculate weekly buckets
   const weeklyBuckets = {};
   const categoryTrends = {};
   
@@ -463,7 +451,6 @@ function generateTrendAnalysis(alerts) {
     };
   }
   
-  // Calculate trend direction
   const firstWeek = weeklyBuckets[weeks[0]];
   const lastWeek = weeklyBuckets[weeks[weeks.length - 1]];
   const trendDirection = lastWeek > firstWeek ? 'increasing' : 
@@ -493,24 +480,20 @@ function calculatePerformanceMetrics(historyData) {
     };
   }
   
-  // Calculate alert effectiveness (resolution rate)
   const resolvedCount = alerts.filter(alert => alert.status === 'resolved').length;
   const alertEffectiveness = resolvedCount / alerts.length;
   
-  // Calculate user engagement (interaction rate)
   const interactedCount = alerts.filter(alert => 
     alert.user_interactions && alert.user_interactions.length > 0
   ).length;
   const userEngagement = interactedCount / alerts.length;
   
-  // Calculate system performance (average confidence and response time)
   const avgConfidence = alerts.reduce((sum, alert) => 
     sum + (alert.confidence_score || 0), 0) / alerts.length;
   
   const avgResponseTime = Object.values(interactionStats).reduce((sum, stat) => 
     sum + (stat.avg_response_time || 0), 0) / Math.max(Object.keys(interactionStats).length, 1);
   
-  // Normalize response time (assume good response time is under 5 minutes = 300 seconds)
   const responseTimeScore = Math.max(0, 1 - (avgResponseTime / 300));
   
   const systemPerformance = (avgConfidence + responseTimeScore) / 2;
@@ -537,7 +520,6 @@ function generateHistoryRecommendations(historyData) {
   const alerts = historyData.alerts || [];
   const performanceMetrics = calculatePerformanceMetrics(historyData);
   
-  // Recommendation based on alert effectiveness
   if (performanceMetrics.alert_effectiveness < 0.5) {
     recommendations.push({
       type: 'alert_quality',
@@ -552,7 +534,6 @@ function generateHistoryRecommendations(historyData) {
     });
   }
   
-  // Recommendation based on user engagement
   if (performanceMetrics.user_engagement < 0.3) {
     recommendations.push({
       type: 'engagement',
@@ -567,7 +548,6 @@ function generateHistoryRecommendations(historyData) {
     });
   }
   
-  // Recommendation based on categories
   const categoryStats = generateClientSideAnalytics(alerts).by_category;
   const topCategory = Object.entries(categoryStats).reduce((a, b) => 
     categoryStats[a[0]] > categoryStats[b[0]] ? a : b, ['', 0]
@@ -590,20 +570,16 @@ function generateHistoryRecommendations(historyData) {
   return recommendations;
 }
 
-// Utility functions
 
 function generateExportId() {
-  // NO RANDOM - use timestamp and counter for unique IDs
   return `export_${Date.now()}_${process.hrtime.bigint().toString(36)}`;
 }
 
 function generateReportId() {
-  // NO RANDOM - use timestamp and counter for unique IDs
   return `report_${Date.now()}_${process.hrtime.bigint().toString(36)}`;
 }
 
 function generateAnalysisId() {
-  // NO RANDOM - use timestamp and counter for unique IDs
   return `analysis_${Date.now()}_${process.hrtime.bigint().toString(36)}`;
 }
 

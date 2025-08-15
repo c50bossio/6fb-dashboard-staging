@@ -7,7 +7,6 @@ import { useState } from 'react'
 import { useRealtimeNotifications } from '@/hooks/useRealtimeDatabase'
 
 
-// Dynamically import components to avoid SSR issues
 const RealtimeDashboard = dynamic(
   () => import('@/components/realtime/RealtimeDashboard'),
   { ssr: false }
@@ -23,7 +22,6 @@ export default function RealtimePage() {
   const { data: notifications = [], refresh } = useRealtimeNotifications('demo-shop-001')
   
   const clearNotifications = () => {
-    // In real implementation, this would clear notifications in database
     refresh()
   }
 

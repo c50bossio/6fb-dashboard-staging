@@ -4,12 +4,10 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
-// GET /api/barbers - Fetch barbers/staff
 export async function GET(request) {
   try {
     const supabase = createClient()
     
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,7 +17,6 @@ export async function GET(request) {
     const barbershop_id = searchParams.get('barbershop_id')
     const active_only = searchParams.get('active_only') !== 'false'
 
-    // Fetch from database
     let query = supabase
       .from('barbershop_staff')
       .select(`
@@ -48,7 +45,6 @@ export async function GET(request) {
       }, { status: 500 })
     }
 
-    // Format the response to make it easier to work with
     const formattedBarbers = staff.map(staffMember => ({
       id: staffMember.user.id,
       name: staffMember.user.name,

@@ -2,7 +2,6 @@ const { execSync } = require('child_process')
 
 console.log('🚀 Creating booking_links table in Supabase...')
 
-// SQL to create the booking_links table
 const sql = `
 -- Create booking_links table
 CREATE TABLE IF NOT EXISTS booking_links (

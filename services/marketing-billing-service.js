@@ -14,7 +14,6 @@
 const { createClient } = require('@supabase/supabase-js')
 const Stripe = require('stripe')
 
-// Initialize services
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 })
@@ -26,7 +25,6 @@ const supabase = createClient(
 
 class MarketingBillingService {
   constructor() {
-    // Platform fee configuration
     this.platformFees = {
       email: 0.20,    // 20% markup on email campaigns
       sms: 0.25,      // 25% markup on SMS campaigns
@@ -35,7 +33,6 @@ class MarketingBillingService {
       enterprise: 0.15    // 15% for enterprise accounts
     }
 
-    // Base costs from providers
     this.baseCosts = {
       email: 0.002,   // $0.002 per email (SendGrid)
       sms: {
@@ -44,7 +41,6 @@ class MarketingBillingService {
       }
     }
 
-    // Volume discount tiers
     this.volumeDiscounts = [
       { min: 10000, max: 50000, discount: 0.05 },    // 5% off
       { min: 50001, max: 100000, discount: 0.10 },   // 10% off
@@ -58,7 +54,6 @@ class MarketingBillingService {
    */
   async calculateCampaignCost(campaignType, recipientsCount, accountTier = 'starter', options = {}) {
     try {
-      // Base cost calculation
       let baseCost = 0
       
       if (campaignType === 'email') {
@@ -67,22 +62,18 @@ class MarketingBillingService {
         const smsType = options.international ? 'international' : 'domestic'
         baseCost = this.baseCosts.sms[smsType] * recipientsCount
         
-        // Account for multi-segment messages
         if (options.messageLength > 160) {
           const segments = Math.ceil(options.messageLength / 153) // 153 chars per segment for multi-part
           baseCost *= segments
         }
       }
 
-      // Apply volume discount
       const discount = this.getVolumeDiscount(recipientsCount)
       const discountedCost = baseCost * (1 - discount)
 
-      // Calculate platform fee based on account tier
       const platformFeeRate = this.platformFees[accountTier] || this.platformFees.starter
       const platformFee = discountedCost * platformFeeRate
 
-      // Total cost
       const totalCost = discountedCost + platformFee
 
       return {
@@ -129,7 +120,6 @@ class MarketingBillingService {
         }
       })
 
-      // Update account with Stripe customer ID
       await supabase
         .from('marketing_accounts')
         .update({
@@ -150,7 +140,6 @@ class MarketingBillingService {
    */
   async addPaymentMethod(accountId, paymentMethodId) {
     try {
-      // Get account details
       const { data: account } = await supabase
         .from('marketing_accounts')
         .select('*')
@@ -161,22 +150,18 @@ class MarketingBillingService {
         throw new Error('Account not found')
       }
 
-      // Attach payment method to Stripe customer
       await stripe.paymentMethods.attach(paymentMethodId, {
         customer: account.stripe_customer_id
       })
 
-      // Get payment method details
       const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId)
 
-      // Check if this is the first payment method
       const { count } = await supabase
         .from('marketing_payment_methods')
         .select('*', { count: 'exact', head: true })
         .eq('account_id', accountId)
         .eq('is_active', true)
 
-      // Save to database
       const { data: savedMethod, error } = await supabase
         .from('marketing_payment_methods')
         .insert({
@@ -197,7 +182,6 @@ class MarketingBillingService {
 
       if (error) throw error
 
-      // Set as default payment method in Stripe if it's the default
       if (savedMethod.is_default) {
         await stripe.customers.update(account.stripe_customer_id, {
           invoice_settings: {
@@ -226,14 +210,12 @@ class MarketingBillingService {
         account_tier = 'starter'
       } = campaignData
 
-      // Calculate costs
       const costs = await this.calculateCampaignCost(
         campaign_type,
         recipients_count,
         account_tier
       )
 
-      // Get billing account
       const { data: account } = await supabase
         .from('marketing_accounts')
         .select('*')
@@ -244,7 +226,6 @@ class MarketingBillingService {
         throw new Error('Billing account not found')
       }
 
-      // Check spending limit
       if (account.monthly_spend_limit) {
         const currentMonthSpend = await this.getCurrentMonthSpend(billing_account_id)
         if (currentMonthSpend + costs.totalCost > account.monthly_spend_limit) {
@@ -252,7 +233,6 @@ class MarketingBillingService {
         }
       }
 
-      // Get default payment method
       const { data: paymentMethod } = await supabase
         .from('marketing_payment_methods')
         .select('*')
@@ -265,7 +245,6 @@ class MarketingBillingService {
         throw new Error('No default payment method found')
       }
 
-      // Create payment intent
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(costs.totalCost * 100), // Convert to cents
         currency: 'usd',
@@ -287,7 +266,6 @@ class MarketingBillingService {
         }
       })
 
-      // Create billing record
       const billingRecord = await this.createBillingRecord({
         campaign_id,
         billing_account_id,
@@ -377,7 +355,6 @@ class MarketingBillingService {
    */
   async generateBillingReport(accountId, startDate, endDate) {
     try {
-      // Fetch billing records
       const { data: records } = await supabase
         .from('marketing_billing_records')
         .select(`
@@ -393,7 +370,6 @@ class MarketingBillingService {
         .lte('created_at', endDate)
         .order('created_at', { ascending: false })
 
-      // Calculate summary statistics
       const summary = records.reduce((acc, record) => {
         acc.totalAmount += record.amount_charged || 0
         acc.totalPlatformFees += record.platform_fee || 0
@@ -471,7 +447,6 @@ class MarketingBillingService {
   async handlePaymentSuccess(paymentIntent) {
     const { campaign_id, billing_account_id } = paymentIntent.metadata
 
-    // Update billing record
     await supabase
       .from('marketing_billing_records')
       .update({
@@ -480,7 +455,6 @@ class MarketingBillingService {
       })
       .eq('stripe_payment_intent_id', paymentIntent.id)
 
-    // Update campaign status
     await supabase
       .from('marketing_campaigns')
       .update({
@@ -498,7 +472,6 @@ class MarketingBillingService {
   async handlePaymentFailure(paymentIntent) {
     const { campaign_id } = paymentIntent.metadata
 
-    // Update billing record
     await supabase
       .from('marketing_billing_records')
       .update({
@@ -507,7 +480,6 @@ class MarketingBillingService {
       })
       .eq('stripe_payment_intent_id', paymentIntent.id)
 
-    // Update campaign status
     await supabase
       .from('marketing_campaigns')
       .update({
@@ -523,7 +495,6 @@ class MarketingBillingService {
    * Handle subscription changes
    */
   async handleSubscriptionChange(subscription) {
-    // Implementation for subscription-based billing if needed
     console.log('Subscription event:', subscription.id)
   }
 
@@ -532,11 +503,9 @@ class MarketingBillingService {
    */
   async handlePaymentMethodAttached(paymentMethod) {
     console.log('Payment method attached:', paymentMethod.id)
-    // The payment method attachment is already handled in addPaymentMethod
   }
 }
 
-// Export singleton instance
 const marketingBillingService = new MarketingBillingService()
 
 module.exports = {

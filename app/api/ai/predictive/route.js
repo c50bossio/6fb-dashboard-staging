@@ -12,21 +12,17 @@ export const maxDuration = 60
 
 export async function GET(request) {
   try {
-    // Using service role authentication - no session dependency required
 
     const { searchParams } = new URL(request.url)
     const forecastType = searchParams.get('type') || 'comprehensive'
     const timeHorizon = searchParams.get('horizon') || 'weekly'
     const barbershopId = searchParams.get('shopId') || 'default'
 
-    // Enhanced with intelligent caching for AI predictions
     const cacheType = 'predictive-analytics';
     const cacheParams = { forecastType, timeHorizon, barbershopId };
 
     try {
-      // Use intelligent caching for expensive AI predictions
       const predictions = await cacheQuery(cacheType, cacheParams, async () => {
-        // Try Python service first, fallback to Supabase
         try {
           return await getPredictiveAnalytics('demo-user', { 
             forecastType, 
@@ -62,7 +58,6 @@ export async function GET(request) {
     } catch (error) {
       console.error('Predictive Analytics error:', error)
       
-      // Return error with cache stats
       const cacheStats = getCacheStats();
       return NextResponse.json({
         success: false,
@@ -83,16 +78,13 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Using service role authentication - no session dependency required
 
     const { forecastType, businessContext, timeHorizon, options, analysis_type, current_pricing, barbershop_id } = await request.json()
 
-    // Handle Strategic Pricing requests
     if (analysis_type === 'strategic_pricing') {
       console.log('🎯 Strategic Pricing Request:', { barbershop_id, current_pricing })
       
       try {
-        // Call our strategic pricing service (simulated for now)
         const strategicPricing = await generateStrategicPricingRecommendations(barbershop_id || 'demo-barbershop', current_pricing || {})
         
         return NextResponse.json({
@@ -115,7 +107,6 @@ export async function POST(request) {
       } catch (strategicError) {
         console.error('Strategic pricing error:', strategicError)
         
-        // Return fallback strategic pricing data
         return NextResponse.json({
           success: true,
           analysis_type: 'strategic_pricing_fallback',
@@ -140,9 +131,7 @@ export async function POST(request) {
       }
     }
 
-    // Original forecast logic
     try {
-      // Generate new predictive forecast
       const forecast = await generatePredictiveForecast('demo-user', {
         forecastType: forecastType || 'comprehensive',
         businessContext: businessContext || {},
@@ -160,7 +149,6 @@ export async function POST(request) {
     } catch (aiError) {
       console.error('Predictive forecast generation error:', aiError)
       
-      // Fallback to real data from Supabase
       const fallbackForecast = await fetchRealPredictionsFromSupabase(supabase, 'demo-user', forecastType || 'comprehensive', timeHorizon || 'weekly')
       
       return NextResponse.json({
@@ -259,14 +247,12 @@ async function generatePredictiveForecast(userId, options = {}) {
 
 async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType = 'comprehensive', timeHorizon = 'weekly') {
   try {
-    // Fetch real barbershop data from Supabase using bookings table (consolidated)
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single()
 
-    // Enhanced data collection for seasonal analysis - get more historical data
     const { data: bookings } = await supabase
       .from('bookings')
       .select('*')
@@ -274,7 +260,6 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
       .order('created_at', { ascending: false })
       .limit(500)
       
-    // Get customer data for lifecycle analysis
     const { data: customers } = await supabase
       .from('customers')
       .select('*')
@@ -282,18 +267,15 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
       .order('created_at', { ascending: false })
       .limit(200)
 
-    // Enhanced analytics - Calculate real metrics from bookings data
     const totalRevenue = bookings?.reduce((sum, b) => sum + (b.price || 0), 0) || 0
     const avgDailyRevenue = totalRevenue / 90  // Over 90 days now
     const totalBookings = bookings?.length || 0
     const avgDailyBookings = totalBookings / 90
     
-    // Advanced seasonal pattern analysis
     const seasonalAnalysis = analyzeSeasonalPatterns(bookings)
     const customerLifecycle = analyzeCustomerLifecycle(bookings, customers)
     const dynamicPricing = calculateDynamicPricing(bookings, seasonalAnalysis)
 
-    // Build enhanced predictions based on real data with advanced analytics
     const baseForecast = {
       id: `forecast_${Date.now()}`,
       type: forecastType,
@@ -301,7 +283,6 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
       generated_at: new Date().toISOString(),
       overallConfidence: 0.85,
       dataSource: 'supabase_real_data',
-      // NEW: Advanced analytics
       seasonalPatterns: seasonalAnalysis,
       customerLifecycle: customerLifecycle,
       dynamicPricing: dynamicPricing,
@@ -352,13 +333,11 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
     }
 
     if (forecastType === 'customer' || forecastType === 'comprehensive') {
-      // Analyze customer patterns from real bookings data
       const uniqueCustomers = new Set(bookings?.map(b => b.customer_id).filter(Boolean)).size
       const repeatCustomers = bookings?.filter((b, i, arr) => 
         arr.findIndex(x => x.customer_id === b.customer_id && x.customer_id) !== i
       ).length || 0
 
-      // Analyze customer segments by booking frequency
       const customerFrequency = {}
       bookings?.forEach(b => {
         if (b.customer_id) {
@@ -423,21 +402,17 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
     }
 
     if (forecastType === 'demand' || forecastType === 'comprehensive') {
-      // Analyze booking patterns from real data
       const hourlyDistribution = {}
       const dayDistribution = {}
       const servicePopularity = {}
       
       bookings?.forEach(booking => {
-        // Hour analysis
         const hour = new Date(booking.start_time).getHours()
         hourlyDistribution[hour] = (hourlyDistribution[hour] || 0) + 1
         
-        // Day analysis
         const day = new Date(booking.start_time).toLocaleDateString('en-US', { weekday: 'long' })
         dayDistribution[day] = (dayDistribution[day] || 0) + 1
         
-        // Service analysis
         if (booking.service_name) {
           servicePopularity[booking.service_name] = (servicePopularity[booking.service_name] || 0) + 1
         }
@@ -489,13 +464,11 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
 
   } catch (error) {
     console.error('Error fetching real data from Supabase:', error)
-    // Return fallback structure if database query fails
     return getFallbackPredictions(forecastType, timeHorizon)
   }
 }
 
 async function getFallbackPredictions(forecastType = 'comprehensive', timeHorizon = 'weekly') {
-  // Fallback predictive analytics data
   const baseForecast = {
     id: `mock_forecast_${Date.now()}`,
     type: forecastType,
@@ -642,10 +615,7 @@ async function getFallbackPredictions(forecastType = 'comprehensive', timeHorizo
 }
 
 async function generateStrategicPricingRecommendations(barbershopId, currentPricing = {}) {
-  // Strategic pricing using 60/90-day approach - simulated data
-  // In production, this would call the Python predictive analytics service
   
-  // Default pricing if not provided
   const pricing = {
     haircut: 25.0,
     styling: 35.0,
@@ -654,10 +624,8 @@ async function generateStrategicPricingRecommendations(barbershopId, currentPric
     ...currentPricing
   }
   
-  // Simulated strategic pricing recommendations based on our 60/90-day criteria
   const recommendations = []
   
-  // Haircut service - qualifies for increase (high performance over 60+ days)
   if (pricing.haircut) {
     recommendations.push({
       service_name: 'haircut',
@@ -680,7 +648,6 @@ async function generateStrategicPricingRecommendations(barbershopId, currentPric
     })
   }
   
-  // Styling service - also qualifies for increase (excellent performance)
   if (pricing.styling) {
     recommendations.push({
       service_name: 'styling',
@@ -703,7 +670,6 @@ async function generateStrategicPricingRecommendations(barbershopId, currentPric
     })
   }
   
-  // Note: beard_trim and wash do not qualify for increases
   // - beard_trim: Only 52 days of data (need 60+), booking rate 79% (need 85%+)
   // - wash: Low revenue service, insufficient volume
   
@@ -730,7 +696,6 @@ function analyzeSeasonalPatterns(bookings = []) {
     slowPeriods: []
   }
 
-  // Analyze monthly patterns
   bookings.forEach(booking => {
     const date = new Date(booking.start_time)
     const month = date.getMonth()
@@ -738,21 +703,18 @@ function analyzeSeasonalPatterns(bookings = []) {
     const hour = date.getHours()
     const revenue = booking.price || 0
 
-    // Monthly analysis
     if (!patterns.monthlyTrends[month]) {
       patterns.monthlyTrends[month] = { bookings: 0, revenue: 0 }
     }
     patterns.monthlyTrends[month].bookings += 1
     patterns.monthlyTrends[month].revenue += revenue
 
-    // Day of week analysis
     if (!patterns.dayOfWeekTrends[dayOfWeek]) {
       patterns.dayOfWeekTrends[dayOfWeek] = { bookings: 0, revenue: 0 }
     }
     patterns.dayOfWeekTrends[dayOfWeek].bookings += 1
     patterns.dayOfWeekTrends[dayOfWeek].revenue += revenue
 
-    // Hourly analysis
     if (!patterns.hourlyTrends[hour]) {
       patterns.hourlyTrends[hour] = { bookings: 0, revenue: 0 }
     }
@@ -760,7 +722,6 @@ function analyzeSeasonalPatterns(bookings = []) {
     patterns.hourlyTrends[hour].revenue += revenue
   })
 
-  // Calculate seasonal factors
   const totalBookings = bookings.length
   const avgMonthlyBookings = totalBookings / 12
   
@@ -769,7 +730,6 @@ function analyzeSeasonalPatterns(bookings = []) {
     patterns.seasonalFactors[month] = monthData.bookings / avgMonthlyBookings
   })
 
-  // Identify peak and slow periods
   const sortedMonths = Object.entries(patterns.seasonalFactors)
     .sort(([,a], [,b]) => b - a)
 
@@ -797,7 +757,6 @@ function analyzeCustomerLifecycle(bookings = [], customers = []) {
     return getDefaultCustomerLifecycle()
   }
 
-  // Group bookings by customer
   const customerBookings = {}
   bookings.forEach(booking => {
     if (booking.customer_id) {
@@ -808,7 +767,6 @@ function analyzeCustomerLifecycle(bookings = [], customers = []) {
     }
   })
 
-  // Analyze customer progression
   const lifecycle = {
     stages: {
       new: { count: 0, avgSpend: 0, retentionRate: 0 },
@@ -827,7 +785,6 @@ function analyzeCustomerLifecycle(bookings = [], customers = []) {
     const bookingCount = bookings.length
     const avgSpend = totalSpend / bookingCount
 
-    // Classify customer stage
     let stage = 'new'
     if (bookingCount >= 10 || totalSpend >= 500) {
       stage = 'vip'
@@ -839,7 +796,6 @@ function analyzeCustomerLifecycle(bookings = [], customers = []) {
     lifecycle.stages[stage].avgSpend += avgSpend
   })
 
-  // Calculate averages
   Object.keys(lifecycle.stages).forEach(stage => {
     const stageData = lifecycle.stages[stage]
     if (stageData.count > 0) {
@@ -848,7 +804,6 @@ function analyzeCustomerLifecycle(bookings = [], customers = []) {
     }
   })
 
-  // Generate insights
   lifecycle.insights = [
     `${lifecycle.stages.vip.count} VIP customers generate ${Math.round(lifecycle.stages.vip.avgSpend * 1.5)} average revenue`,
     `${lifecycle.stages.new.count} new customers with ${lifecycle.stages.new.retentionRate}% retention potential`,
@@ -874,7 +829,6 @@ function calculateDynamicPricing(bookings = [], seasonalAnalysis = {}) {
     return getDefaultPricingRecommendations()
   }
 
-  // Analyze service demand
   const serviceDemand = {}
   bookings.forEach(booking => {
     const service = booking.service_name || 'standard'
@@ -885,12 +839,10 @@ function calculateDynamicPricing(bookings = [], seasonalAnalysis = {}) {
     serviceDemand[service].totalRevenue += (booking.price || 0)
   })
 
-  // Calculate average prices and demand multipliers
   Object.keys(serviceDemand).forEach(service => {
     const data = serviceDemand[service]
     data.avgPrice = data.totalRevenue / data.count
     
-    // High demand = higher pricing opportunity
     if (data.count > bookings.length * 0.2) {
       pricing.demandMultipliers[service] = 1.15 // 15% premium
       pricing.recommendations.push({
@@ -903,7 +855,6 @@ function calculateDynamicPricing(bookings = [], seasonalAnalysis = {}) {
     }
   })
 
-  // Time-based pricing strategies
   pricing.strategies = [
     {
       name: 'Peak Hour Premium',

@@ -13,7 +13,6 @@ export async function GET(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -23,7 +22,6 @@ export async function GET(request) {
       )
     }
     
-    // Get the user's barbershop
     const { data: shop } = await supabase
       .from('barbershops')
       .select('id')
@@ -59,7 +57,6 @@ export async function GET(request) {
     const today = new Date()
     let startDate, endDate
     
-    // Calculate date ranges based on period
     switch (period) {
       case 'day':
         startDate = new Date(today.setHours(0, 0, 0, 0))
@@ -79,7 +76,6 @@ export async function GET(request) {
         endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
     }
     
-    // Build query for transactions/bookings
     let query = supabase
       .from('transactions')
       .select(`
@@ -97,7 +93,6 @@ export async function GET(request) {
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
     
-    // Filter by barber if specified
     if (barber_id) {
       query = query.eq('barber_id', barber_id)
     }
@@ -112,11 +107,9 @@ export async function GET(request) {
       }, { status: 500 })
     }
     
-    // Process time series data based on period
     let timeSeriesData = []
     
     if (period === 'day') {
-      // Hourly breakdown for today
       for (let hour = 0; hour < 24; hour++) {
         const hourStart = new Date(today)
         hourStart.setHours(hour, 0, 0, 0)
@@ -137,7 +130,6 @@ export async function GET(request) {
         })
       }
     } else {
-      // Daily breakdown for other periods
       const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
       
       for (let i = 0; i < days; i++) {
@@ -165,7 +157,6 @@ export async function GET(request) {
       }
     }
     
-    // Calculate service breakdown from real data
     const serviceBreakdown = {}
     transactions?.forEach(t => {
       const serviceName = t.services?.name || 'Unknown Service'
@@ -182,7 +173,6 @@ export async function GET(request) {
       serviceBreakdown[serviceName].prices.push(t.amount || 0)
     })
     
-    // Convert to array and calculate percentages
     const totalRevenue = transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
     const serviceBreakdownArray = Object.values(serviceBreakdown).map(service => ({
       ...service,
@@ -191,7 +181,6 @@ export async function GET(request) {
       prices: undefined // Remove raw prices array from response
     }))
     
-    // Get barber breakdown
     const { data: barbers } = await supabase
       .from('barbershop_staff')
       .select('user_id, first_name, last_name, commission_rate')
@@ -216,13 +205,11 @@ export async function GET(request) {
       }
     }
     
-    // Calculate summary
     const totalAppointments = transactions?.length || 0
     const averageTicket = totalAppointments > 0 ? totalRevenue / totalAppointments : 0
     const totalCommissions = barberBreakdown.reduce((sum, b) => sum + b.commission_earned, 0)
     const totalTips = transactions?.filter(t => t.type === 'tip').reduce((sum, t) => sum + (t.amount || 0), 0) || 0
     
-    // Calculate trends by comparing with previous period
     const previousStartDate = new Date(startDate)
     const previousEndDate = new Date(endDate)
     
@@ -252,7 +239,6 @@ export async function GET(request) {
     const previousAppointments = previousTransactions?.length || 0
     const previousTicket = previousAppointments > 0 ? previousRevenue / previousAppointments : 0
     
-    // Calculate percentage changes
     const revenueChange = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : 0
     const appointmentsChange = previousAppointments > 0 ? ((totalAppointments - previousAppointments) / previousAppointments) * 100 : 0
     const ticketSizeChange = previousTicket > 0 ? ((averageTicket - previousTicket) / previousTicket) * 100 : 0

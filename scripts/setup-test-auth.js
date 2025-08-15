@@ -7,7 +7,6 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: '.env.local' });
 
-// Initialize Supabase Admin Client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -56,7 +55,6 @@ async function setupTestUsers() {
   
   for (const user of testUsers) {
     try {
-      // Create user in Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: user.email,
         password: user.password,
@@ -68,7 +66,6 @@ async function setupTestUsers() {
         if (authError.message.includes('already exists')) {
           console.log(`⚠️  User ${user.email} already exists`);
           
-          // Update existing user's password
           const { data: updateData, error: updateError } = await supabase.auth.admin.updateUserById(
             authData?.id || '', 
             { 
@@ -90,7 +87,6 @@ async function setupTestUsers() {
         console.log(`✅ Created auth user: ${user.email}`);
       }
 
-      // Check if profile exists
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -98,7 +94,6 @@ async function setupTestUsers() {
         .single();
 
       if (profileError && profileError.code === 'PGRST116') {
-        // Profile doesn't exist, create it
         const profileToInsert = {
           id: authData?.id || crypto.randomUUID(),
           email: user.email,
@@ -145,12 +140,10 @@ async function setupTestUsers() {
   console.log('\n✅ Test users setup complete!');
 }
 
-// Check Supabase Auth settings
 async function checkAuthSettings() {
   console.log('\n🔍 Checking Supabase Auth Configuration...\n');
   
   try {
-    // Test connection
     const { data: { users }, error } = await supabase.auth.admin.listUsers({
       page: 1,
       perPage: 1
@@ -172,13 +165,11 @@ async function checkAuthSettings() {
   }
 }
 
-// Main execution
 async function main() {
   console.log('🚀 Supabase Authentication Setup\n');
   console.log('Project:', process.env.NEXT_PUBLIC_SUPABASE_URL);
   console.log('');
   
-  // Check connection first
   const isConnected = await checkAuthSettings();
   
   if (!isConnected) {
@@ -186,9 +177,7 @@ async function main() {
     process.exit(1);
   }
   
-  // Setup test users
   await setupTestUsers();
 }
 
-// Run the setup
 main().catch(console.error);

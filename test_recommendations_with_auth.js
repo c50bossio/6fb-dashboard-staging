@@ -9,22 +9,17 @@ async function testBusinessRecommendationsWithAuth() {
     console.log('🔐 Step 1: Authenticating with demo credentials...');
     await page.goto('http://localhost:9999/business-recommendations');
     
-    // Fill in demo credentials
     await page.fill('[placeholder="Enter your email"]', 'demo@barbershop.com');
     await page.fill('[placeholder="Enter your password"]', 'demo123');
     
-    // Click sign in
     await page.click('button:has-text("Sign in")');
     console.log('✅ Submitted login form');
     
-    // Wait for navigation or dashboard
     await page.waitForTimeout(3000);
     
-    // Check if we're now on the recommendations page or redirected
     const currentUrl = page.url();
     console.log('🌐 Current URL:', currentUrl);
     
-    // If not on recommendations page, navigate there
     if (!currentUrl.includes('business-recommendations')) {
       console.log('🧭 Navigating to business recommendations page...');
       await page.goto('http://localhost:9999/business-recommendations');
@@ -33,11 +28,9 @@ async function testBusinessRecommendationsWithAuth() {
     
     console.log('📊 Step 2: Testing Business Recommendations Engine...');
     
-    // Take screenshot after login
     await page.screenshot({ path: 'recommendations-after-auth.png' });
     console.log('📸 Screenshot after auth saved');
     
-    // Look for recommendations engine elements
     const hasTitle = await page.locator('h1:has-text("Business Recommendations Engine")').count() > 0;
     console.log('🧠 Has main title:', hasTitle);
     
@@ -47,15 +40,12 @@ async function testBusinessRecommendationsWithAuth() {
     const hasRefreshButton = await page.locator('button:has-text("Refresh Recommendations")').count() > 0;
     console.log('🔄 Has refresh button:', hasRefreshButton);
     
-    // Check for loading state
     const isLoading = await page.locator('.animate-pulse').count() > 0;
     console.log('⏳ Currently loading:', isLoading);
     
-    // Wait for recommendations to load
     console.log('⏱️ Waiting for recommendations to load...');
     await page.waitForTimeout(8000);
     
-    // Check for error state
     const hasError = await page.locator('text=Failed to Load Recommendations').count() > 0;
     console.log('❌ Has error state:', hasError);
     
@@ -68,11 +58,9 @@ async function testBusinessRecommendationsWithAuth() {
       }
     }
     
-    // Look for recommendation cards
     const recommendationCards = await page.locator('.border-l-4, [class*="recommendation"]').count();
     console.log('💡 Number of recommendation cards:', recommendationCards);
     
-    // Look for specific recommendation elements
     const hasAnalysisSummary = await page.locator('text=Analysis Summary').count() > 0;
     console.log('📈 Has analysis summary:', hasAnalysisSummary);
     
@@ -82,29 +70,24 @@ async function testBusinessRecommendationsWithAuth() {
     const hasPriorityMatrix = await page.locator('text=Priority Matrix').count() > 0;
     console.log('📊 Has priority matrix:', hasPriorityMatrix);
     
-    // Check for business metrics
     const hasRevenueMetrics = await page.locator('text*="Monthly Revenue"').count() > 0;
     console.log('💰 Has revenue metrics:', hasRevenueMetrics);
     
     const hasROIMetrics = await page.locator('text*="ROI"').count() > 0;
     console.log('📈 Has ROI metrics:', hasROIMetrics);
     
-    // Test refresh functionality
     if (hasRefreshButton) {
       console.log('🔄 Testing refresh functionality...');
       await page.click('button:has-text("Refresh Recommendations")');
       await page.waitForTimeout(3000);
       
-      // Check if refresh worked
       const isRefreshing = await page.locator('.animate-spin').count() > 0;
       console.log('🔄 Currently refreshing:', isRefreshing);
     }
     
-    // Take final screenshot
     await page.screenshot({ path: 'recommendations-final-test.png' });
     console.log('📸 Final screenshot saved');
     
-    // Test implementation tracking
     const implementButtons = await page.locator('button:has-text("Mark as Implemented")').count();
     console.log('✅ Implementation buttons found:', implementButtons);
     
@@ -127,7 +110,6 @@ async function testBusinessRecommendationsWithAuth() {
     console.log('✅ Implementation Tracking:', implementButtons > 0 ? 'WORKING' : 'NOT AVAILABLE');
     console.log('❌ Error Handling:', hasError ? 'ERROR DISPLAYED' : 'NO ERRORS');
     
-    // Overall assessment
     const overallScore = [
       hasTitle,
       recommendationCards > 0,

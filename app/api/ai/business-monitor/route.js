@@ -36,7 +36,6 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const barbershop_id = searchParams.get('barbershop_id') || 'demo'
     
-    // Get real-time business health status
     const healthStatus = await getBusinessHealthStatus(barbershop_id)
     
     return NextResponse.json({
@@ -57,7 +56,6 @@ export async function GET(request) {
  */
 async function analyzeBusinessMetrics(barbershop_id) {
   try {
-    // Fetch current analytics data
     const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershop_id}`)
     const analyticsData = await analyticsResponse.json()
     
@@ -69,28 +67,24 @@ async function analyzeBusinessMetrics(barbershop_id) {
     const alerts = []
     const recommendations = []
     
-    // Revenue Analysis
     const revenueAnalysis = analyzeRevenue(metrics)
     if (revenueAnalysis.alerts.length > 0) {
       alerts.push(...revenueAnalysis.alerts)
       recommendations.push(...revenueAnalysis.recommendations)
     }
     
-    // Booking Analysis  
     const bookingAnalysis = analyzeBookings(metrics)
     if (bookingAnalysis.alerts.length > 0) {
       alerts.push(...bookingAnalysis.alerts)
       recommendations.push(...bookingAnalysis.recommendations)
     }
     
-    // Customer Analysis
     const customerAnalysis = analyzeCustomers(metrics)
     if (customerAnalysis.alerts.length > 0) {
       alerts.push(...customerAnalysis.alerts)
       recommendations.push(...customerAnalysis.recommendations)
     }
     
-    // Performance Analysis
     const performanceAnalysis = analyzePerformance(metrics)
     if (performanceAnalysis.alerts.length > 0) {
       alerts.push(...performanceAnalysis.alerts)
@@ -131,7 +125,6 @@ function analyzeRevenue(metrics) {
   const previousRevenue = metrics.previous_period_revenue || currentRevenue * 1.1 // Simulated
   const revenueChange = ((currentRevenue - previousRevenue) / previousRevenue) * 100
   
-  // Revenue Drop Alert
   if (revenueChange < -15) {
     alerts.push({
       id: 'revenue_drop_critical',
@@ -160,7 +153,6 @@ function analyzeRevenue(metrics) {
     })
   }
   
-  // Revenue Growth Opportunity
   if (revenueChange > 20) {
     alerts.push({
       id: 'revenue_surge_opportunity',
@@ -203,7 +195,6 @@ function analyzeBookings(metrics) {
   const cancelledBookings = metrics.cancelled_bookings || 0
   const cancelationRate = totalBookings > 0 ? (cancelledBookings / totalBookings) * 100 : 0
   
-  // High Cancellation Rate
   if (cancelationRate > 20) {
     alerts.push({
       id: 'high_cancellation_rate',
@@ -232,7 +223,6 @@ function analyzeBookings(metrics) {
     })
   }
   
-  // Low Booking Volume
   if (totalBookings < 10) {
     alerts.push({
       id: 'low_booking_volume',
@@ -275,7 +265,6 @@ function analyzeCustomers(metrics) {
   const returningCustomers = metrics.returning_customers || 0
   const retentionRate = totalCustomers > 0 ? (returningCustomers / totalCustomers) * 100 : 0
   
-  // Low Customer Retention
   if (retentionRate < 60) {
     alerts.push({
       id: 'low_customer_retention',
@@ -317,7 +306,6 @@ function analyzePerformance(metrics) {
   const avgServiceTime = metrics.avg_service_time || 45 // minutes
   const customerSatisfaction = metrics.customer_satisfaction || 85 // percentage
   
-  // Long Service Times
   if (avgServiceTime > 60) {
     alerts.push({
       id: 'long_service_times',
@@ -346,7 +334,6 @@ function analyzePerformance(metrics) {
     })
   }
   
-  // Low Customer Satisfaction
   if (customerSatisfaction < 80) {
     alerts.push({
       id: 'low_customer_satisfaction',
@@ -430,7 +417,6 @@ function getHealthDescription(status) {
  * Get current business health status
  */
 async function getBusinessHealthStatus(barbershop_id) {
-  // This would typically fetch from database, but for now we'll simulate
   const alerts = [
     {
       id: 'demo_alert_1',
@@ -473,7 +459,6 @@ async function getBusinessHealthStatus(barbershop_id) {
  * Get active alerts for a business
  */
 async function getActiveAlerts(barbershop_id) {
-  // Simulate getting active alerts (would be from database)
   const alerts = [
     {
       id: 'revenue_opportunity_001',
@@ -552,7 +537,6 @@ async function getSmartRecommendations(barbershop_id) {
 async function dismissAlert(request) {
   const { alert_id, barbershop_id } = await request.json()
   
-  // In production, this would update database
   console.log(`Alert ${alert_id} dismissed for ${barbershop_id}`)
   
   return NextResponse.json({

@@ -7,7 +7,6 @@ export async function GET(request) {
   try {
     const supabase = createClient()
     
-    // Get all agents from the database
     const { data: agents, error } = await supabase
       .from('agents')
       .select('*')
@@ -47,7 +46,6 @@ export async function POST(request) {
       )
     }
 
-    // Create new agent
     const { data: agent, error } = await supabase
       .from('agents')
       .insert({

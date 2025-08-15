@@ -39,7 +39,6 @@ class AdvancedCrossBrowserTester {
     this.screenshotDir = path.join(__dirname, 'test-results', 'screenshots');
     this.reportDir = path.join(__dirname, 'test-results');
     
-    // Ensure directories exist
     fs.mkdirSync(this.screenshotDir, { recursive: true });
     fs.mkdirSync(this.reportDir, { recursive: true });
   }
@@ -64,7 +63,6 @@ class AdvancedCrossBrowserTester {
     };
 
     try {
-      // Test each page
       for (const pageInfo of this.testResults.pages) {
         console.log(`  📄 Testing ${pageInfo.name}...`);
         
@@ -83,7 +81,6 @@ class AdvancedCrossBrowserTester {
         }
       }
       
-      // Test responsive design
       console.log(`  📱 Testing responsive design...`);
       const responsiveResult = await this.testResponsiveDesign(browser, browserName);
       browserResult.viewports = responsiveResult;
@@ -127,7 +124,6 @@ class AdvancedCrossBrowserTester {
     };
     
     try {
-      // Monitor console errors
       const jsErrors = [];
       page.on('console', msg => {
         if (msg.type() === 'error') {
@@ -135,7 +131,6 @@ class AdvancedCrossBrowserTester {
         }
       });
       
-      // Monitor network responses
       let httpStatus = null;
       page.on('response', response => {
         if (response.url() === url) {
@@ -143,7 +138,6 @@ class AdvancedCrossBrowserTester {
         }
       });
       
-      // Navigate and measure load time
       const startTime = Date.now();
       const response = await page.goto(url, { 
         waitUntil: 'networkidle',
@@ -155,13 +149,10 @@ class AdvancedCrossBrowserTester {
       result.httpStatus = httpStatus || response.status();
       result.jsErrors = jsErrors;
       
-      // Wait for page to be fully loaded
       await page.waitForTimeout(2000);
       
-      // Test basic functionality
       await this.testPageInteractivity(page, pageInfo, result);
       
-      // Take screenshot
       const screenshotPath = path.join(
         this.screenshotDir, 
         `${browserName}-${pageInfo.name.replace(/\s+/g, '-')}-desktop.png`
@@ -172,7 +163,6 @@ class AdvancedCrossBrowserTester {
       });
       result.screenshots.push(screenshotPath);
       
-      // Basic performance metrics
       const performanceMetrics = await page.evaluate(() => {
         const perfData = performance.getEntriesByType('navigation')[0];
         return {
@@ -183,7 +173,6 @@ class AdvancedCrossBrowserTester {
       });
       result.performance = performanceMetrics;
       
-      // Check if page loaded successfully
       result.success = result.httpStatus === 200 && jsErrors.length === 0;
       
       console.log(`    ✅ ${pageInfo.name}: ${result.success ? 'PASS' : 'FAIL'} (${loadTime}ms)`);
@@ -201,38 +190,30 @@ class AdvancedCrossBrowserTester {
 
   async testPageInteractivity(page, pageInfo, result) {
     try {
-      // Test common interactive elements based on page type
       if (pageInfo.name === 'Homepage') {
-        // Test navigation links
         const navLinks = await page.$$('nav a');
         result.interactive.navigationLinks = navLinks.length;
         
-        // Test if hero section is visible
         const heroVisible = await page.isVisible('[data-testid="hero-section"], .hero, h1').catch(() => false);
         result.interactive.heroSection = heroVisible;
       }
       
       if (pageInfo.name === 'AI Agents') {
-        // Test AI agent cards
         const agentCards = await page.$$('[data-testid="agent-card"], .agent-card, .card').catch(() => []);
         result.interactive.agentCards = agentCards.length;
         
-        // Test if chat interface is present
         const chatInterface = await page.isVisible('[data-testid="chat-interface"], .chat, input[type="text"]').catch(() => false);
         result.interactive.chatInterface = chatInterface;
       }
       
       if (pageInfo.name === 'AI Dashboard') {
-        // Test dashboard widgets
         const widgets = await page.$$('[data-testid="widget"], .widget, .dashboard-card').catch(() => []);
         result.interactive.widgets = widgets.length;
         
-        // Test if data is loading
         const hasData = await page.isVisible('.chart, [data-testid="chart"], .metric').catch(() => false);
         result.interactive.hasData = hasData;
       }
       
-      // Test general page elements
       const buttons = await page.$$('button');
       const links = await page.$$('a');
       const forms = await page.$$('form');
@@ -262,7 +243,6 @@ class AdvancedCrossBrowserTester {
         await page.goto(this.baseUrl, { waitUntil: 'networkidle' });
         await page.waitForTimeout(1000);
         
-        // Take screenshot for visual comparison
         const screenshotPath = path.join(
           this.screenshotDir,
           `${browserName}-responsive-${viewport.name.replace(/\s+/g, '-')}.png`
@@ -272,7 +252,6 @@ class AdvancedCrossBrowserTester {
           fullPage: false 
         });
         
-        // Test responsive elements
         const isMenuCollapsed = viewport.width < 768;
         const hasResponsiveNavigation = await page.isVisible('[data-testid="mobile-menu"], .mobile-menu, .hamburger').catch(() => false);
         
@@ -347,14 +326,12 @@ class AdvancedCrossBrowserTester {
       responsiveAnalysis: []
     };
     
-    // Analyze results and generate recommendations
     for (const [browserName, browserData] of Object.entries(this.testResults.browsers)) {
       if (!browserData.supported) {
         report.criticalIssues.push(`❌ ${browserName}: Browser not supported or failed to launch`);
         continue;
       }
       
-      // Check for critical page failures
       for (const [pageName, pageData] of Object.entries(browserData.pages || {})) {
         if (!pageData.success) {
           const criticalPage = this.testResults.pages.find(p => p.name === pageName)?.critical;
@@ -365,7 +342,6 @@ class AdvancedCrossBrowserTester {
           }
         }
         
-        // Performance analysis
         if (pageData.loadTime > 3000) {
           report.performanceInsights.push(`⚡ ${browserName} - ${pageName}: Slow load time (${pageData.loadTime}ms)`);
         }
@@ -375,7 +351,6 @@ class AdvancedCrossBrowserTester {
         }
       }
       
-      // Responsive design analysis
       for (const [viewportName, viewportData] of Object.entries(browserData.viewports || {})) {
         if (!viewportData.responsive) {
           report.responsiveAnalysis.push(`📱 ${browserName}: Responsive issues at ${viewportName}`);
@@ -383,7 +358,6 @@ class AdvancedCrossBrowserTester {
       }
     }
     
-    // Generate overall recommendations
     if (report.criticalIssues.length === 0) {
       report.recommendations.push('✅ No critical browser compatibility issues detected');
     }
@@ -406,7 +380,6 @@ class AdvancedCrossBrowserTester {
     fs.writeFileSync(filepath, JSON.stringify(report, null, 2));
     console.log(`\n💾 Detailed results saved to: ${filepath}`);
     
-    // Also save a summary report
     const summaryPath = path.join(this.reportDir, 'cross_browser_summary.txt');
     const summaryContent = this.generateTextSummary(report);
     fs.writeFileSync(summaryPath, summaryContent);
@@ -464,10 +437,8 @@ class AdvancedCrossBrowserTester {
   }
 }
 
-// Export for use in other tests
 module.exports = AdvancedCrossBrowserTester;
 
-// Run if called directly
 if (require.main === module) {
   (async () => {
     const tester = new AdvancedCrossBrowserTester();

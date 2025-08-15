@@ -50,7 +50,6 @@ export default function MarketingLinksTab() {
     try {
       setLoading(true)
       
-      // Try to fetch from API first, with fallback to mock data
       const response = await fetch(`/api/barber/booking-links/create?barberId=${user?.id || 'dev-user-123'}`)
       
       if (response.ok) {
@@ -62,7 +61,6 @@ export default function MarketingLinksTab() {
         }
       }
       
-      // Fallback to mock data
       const mockBookingLinks = [
         {
           id: 'demo-link-1',
@@ -142,7 +140,6 @@ export default function MarketingLinksTab() {
       const result = await response.json()
       
       if (result.success) {
-        // Add the new link to the beginning of the list
         setBookingLinks(prev => [result.data, ...prev])
         showToastNotification('Booking link created successfully!', 'success')
       } else {
@@ -179,7 +176,6 @@ export default function MarketingLinksTab() {
       if (result.success) {
         const link = bookingLinks.find(l => l.id === linkId)
         if (link) {
-          // Add QR code data to the link for the modal
           const linkWithQR = {
             ...link,
             qrCodeUrl: result.data.qrCodeUrl,
@@ -190,7 +186,6 @@ export default function MarketingLinksTab() {
           setShowQRModal(true)
           showToastNotification('QR code generated successfully!', 'success')
           
-          // Update the link in the list to show QR as generated
           setBookingLinks(links => 
             links.map(l => l.id === linkId ? { ...l, qrGenerated: true } : l)
           )
@@ -207,7 +202,6 @@ export default function MarketingLinksTab() {
   const showEmbedCode = (linkId) => {
     const link = bookingLinks.find(l => l.id === linkId)
     if (link) {
-      // Update embed count
       const updatedLinks = bookingLinks.map(l => 
         l.id === linkId 
           ? { ...l, embed_count: (l.embed_count || 0) + 1 }
@@ -236,7 +230,6 @@ export default function MarketingLinksTab() {
     window.open(url, '_blank')
   }
 
-  // Calculate summary statistics
   const stats = {
     activeLinks: bookingLinks.filter(l => l.active).length,
     totalClicks: bookingLinks.reduce((sum, l) => sum + (l.clicks || 0), 0),

@@ -17,7 +17,6 @@ export async function POST(request) {
     const body = await request.json()
     const { metric, value, rating, url, userAgent, timestamp } = body
 
-    // Validate required fields
     if (!metric || value === undefined || !rating) {
       return NextResponse.json(
         { error: 'Missing required fields: metric, value, rating' },
@@ -25,7 +24,6 @@ export async function POST(request) {
       )
     }
 
-    // Create performance alert record - NO MOCK DATA
     const alert = {
       metric,
       value: parseFloat(value),
@@ -37,7 +35,6 @@ export async function POST(request) {
       created_at: new Date().toISOString()
     }
 
-    // Store alert in database
     const { data: savedAlert, error: saveError } = await supabase
       .from('performance_alerts')
       .insert(alert)
@@ -46,16 +43,13 @@ export async function POST(request) {
 
     if (saveError) {
       console.error('Failed to save performance alert:', saveError)
-      // Don't fail the request if we can't save - still log it
     }
 
     const alertId = savedAlert?.id || `alert_${Date.now()}`
 
-    // Log critical performance issues
     if (alert.severity === 'critical') {
       console.error(`🚨 CRITICAL PERFORMANCE ALERT: ${metric} = ${value} (${rating}) on ${url}`)
       
-      // Create notification for critical alerts
       await supabase
         .from('notifications')
         .insert({
@@ -97,10 +91,8 @@ export async function GET(request) {
     const severity = searchParams.get('severity')
     const hours = parseInt(searchParams.get('hours') || '24')
 
-    // Calculate time range
     const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
 
-    // Build query
     let query = supabase
       .from('performance_alerts')
       .select('*')
@@ -108,7 +100,6 @@ export async function GET(request) {
       .order('created_at', { ascending: false })
       .limit(limit)
 
-    // Apply filters
     if (metric) {
       query = query.eq('metric', metric)
     }
@@ -136,7 +127,6 @@ export async function GET(request) {
 
     const filteredAlerts = alerts || []
 
-    // Calculate summary statistics from real data
     const summary = {
       total_alerts: filteredAlerts.length,
       filtered_count: filteredAlerts.length,
@@ -147,16 +137,12 @@ export async function GET(request) {
     }
 
     filteredAlerts.forEach(alert => {
-      // By metric
       summary.by_metric[alert.metric] = (summary.by_metric[alert.metric] || 0) + 1
       
-      // By severity
       summary.by_severity[alert.severity] = (summary.by_severity[alert.severity] || 0) + 1
       
-      // By rating
       summary.by_rating[alert.rating] = (summary.by_rating[alert.rating] || 0) + 1
       
-      // Calculate averages
       if (!summary.average_values[alert.metric]) {
         summary.average_values[alert.metric] = { sum: 0, count: 0 }
       }
@@ -164,13 +150,11 @@ export async function GET(request) {
       summary.average_values[alert.metric].count += 1
     })
 
-    // Calculate final averages
     Object.keys(summary.average_values).forEach(metric => {
       const data = summary.average_values[metric]
       summary.average_values[metric] = parseFloat((data.sum / data.count).toFixed(2))
     })
 
-    // Get recent trend
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     const recentAlerts = filteredAlerts.filter(a => a.created_at >= oneDayAgo)
     const olderAlerts = filteredAlerts.filter(a => a.created_at < oneDayAgo)
@@ -206,7 +190,6 @@ export async function GET(request) {
  * Determine alert severity based on metric and value
  */
 function getSeverity(metric, value, rating) {
-  // Critical thresholds for immediate attention
   const criticalThresholds = {
     LCP: 6.0,    // Extremely poor LCP
     FID: 1.0,    // Extremely poor FID

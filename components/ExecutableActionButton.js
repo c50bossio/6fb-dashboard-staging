@@ -44,7 +44,6 @@ const ExecutableActionButton = ({
       const result = await onExecute(action)
       setExecutionResult(result)
       
-      // Auto-clear success result after 3 seconds
       if (result.success) {
         setTimeout(() => {
           setExecutionResult(null)

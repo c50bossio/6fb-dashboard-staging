@@ -10,7 +10,6 @@ export async function GET(request) {
     const error = searchParams.get('error')
     
     if (error) {
-      // Return error page that posts message to parent
       return new Response(`
         <!DOCTYPE html>
         <html>
@@ -53,15 +52,12 @@ export async function GET(request) {
       )
     }
 
-    // NO MOCK DATA - Real implementation would process OAuth callback
-    // This requires backend Outlook Calendar integration service
     const result = {
       success: false,
       error: 'Outlook Calendar integration requires backend service implementation'
     }
 
     if (result.success) {
-      // Return success page that posts message to parent
       return new Response(`
         <!DOCTYPE html>
         <html>
@@ -92,7 +88,6 @@ export async function GET(request) {
                 name: '${result.name}'
               }, window.location.origin);
               
-              // Close window after a short delay
               setTimeout(() => {
                 window.close();
               }, 2000);
@@ -104,7 +99,6 @@ export async function GET(request) {
         headers: { 'Content-Type': 'text/html' }
       })
     } else {
-      // Return error page
       return new Response(`
         <!DOCTYPE html>
         <html>

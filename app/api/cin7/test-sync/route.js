@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Direct Supabase connection
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
@@ -9,11 +8,9 @@ const supabase = createClient(
 
 export async function POST(request) {
   try {
-    // Get credentials from request body
     const body = await request.json().catch(() => ({}))
     const { apiKey, accountId } = body
     
-    // Hardcoded barbershop for testing
     const barbershopId = '550e8400-e29b-41d4-a716-446655440000'
     
     if (!apiKey || !accountId) {
@@ -31,12 +28,10 @@ export async function POST(request) {
     
     console.log('🔍 Testing Cin7 API version and fetching real products...')
     
-    // Detect which API version works (inline to avoid internal fetch issues)
     console.log('🔍 Testing Cin7 API version compatibility...')
     
     let versionResult = { version: 'unknown', compatible: false }
     
-    // Test correct Cin7 API endpoints (no version paths needed)
     const apiEndpoints = [
       'https://inventory.dearsystems.com/externalapi/products?limit=1',
       'https://inventory.dearsystems.com/ExternalApi/products?limit=1'
@@ -81,7 +76,6 @@ export async function POST(request) {
       console.log('❌ No working Cin7 endpoints found')
     }
     
-    // Skip v1 testing since we found the correct endpoints
     
     if (!versionResult.compatible) {
       return NextResponse.json({
@@ -95,7 +89,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    // Store credentials securely (inline to avoid fetch issues)
     try {
       const encryptedApiKey = Buffer.from(apiKey).toString('base64') // Simple encoding for demo
       const encryptedAccountId = Buffer.from(accountId).toString('base64')
@@ -116,7 +109,6 @@ export async function POST(request) {
       console.warn('Warning: Could not store credentials securely:', storeError.message)
     }
     
-    // Fetch products using discovered working endpoint
     const fullEndpoint = versionResult.endpoint.replace('limit=1', 'limit=50')
     const response = await fetch(fullEndpoint, {
       method: 'GET',
@@ -143,7 +135,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    // Check if response is actually JSON before parsing
     const contentType = response.headers.get('content-type') || ''
     if (!contentType.includes('application/json')) {
       const htmlText = await response.text()
@@ -163,7 +154,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    // Safely parse JSON with error handling
     let data
     try {
       data = await response.json()
@@ -183,12 +173,10 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    // Handle Cin7 API response format
     let cin7Products = data?.ProductList || data?.Products || []
     
     console.log(`Found ${cin7Products.length} products in Cin7 API ${versionResult.version}`)
     
-    // Clear existing demo products
     const { error: deleteError } = await supabase
       .from('products')
       .delete()
@@ -198,7 +186,6 @@ export async function POST(request) {
       console.error('Error clearing existing products:', deleteError)
     }
     
-    // Enhanced debugging - Log complete API response structure
     let debugInfo = { fieldAnalysis: null, sampleProduct: null }
     if (cin7Products.length > 0) {
       const firstProduct = cin7Products[0]
@@ -207,7 +194,6 @@ export async function POST(request) {
       console.log('📊 Full first product JSON:', JSON.stringify(firstProduct, null, 2))
       console.log('🏷️  All field names:', Object.keys(firstProduct))
       
-      // Comprehensive field analysis
       const allFields = Object.keys(firstProduct)
       const priceFields = allFields.filter(f => f.toLowerCase().includes('price') || f.toLowerCase().includes('cost') || f.toLowerCase().includes('sell') || f.toLowerCase().includes('tier'))
       const stockFields = allFields.filter(f => f.toLowerCase().includes('stock') || f.toLowerCase().includes('qty') || f.toLowerCase().includes('quantity') || f.toLowerCase().includes('available') || f.toLowerCase().includes('onhand') || f.toLowerCase().includes('hand') || f.toLowerCase().includes('allocated') || f.toLowerCase().includes('order'))
@@ -215,7 +201,6 @@ export async function POST(request) {
       const supplierFields = allFields.filter(f => f.toLowerCase().includes('supplier') || f.toLowerCase().includes('vendor') || f.toLowerCase().includes('brand'))
       const statusFields = allFields.filter(f => f.toLowerCase().includes('status') || f.toLowerCase().includes('active') || f.toLowerCase().includes('enabled'))
       
-      // Create comprehensive field value mapping
       const mapFieldValues = (fields) => fields.reduce((acc, field) => {
         acc[field] = firstProduct[field]
         return acc
@@ -245,21 +230,14 @@ export async function POST(request) {
       }
       
       console.log('💰 PRICE FIELDS FOUND:', priceFields)
-      console.log('💰 Price values:', debugInfo.fieldAnalysis.priceFieldValues)
       console.log('📦 INVENTORY FIELDS FOUND:', stockFields)
-      console.log('📦 Inventory values:', debugInfo.fieldAnalysis.stockFieldValues)
       console.log('🏷️  CATEGORY FIELDS:', categoryFields)
-      console.log('🏷️  Category values:', debugInfo.fieldAnalysis.categoryFieldValues)
       console.log('🏭 SUPPLIER FIELDS:', supplierFields)
-      console.log('🏭 Supplier values:', debugInfo.fieldAnalysis.supplierFieldValues)
       console.log('⚡ STATUS FIELDS:', statusFields)
-      console.log('⚡ Status values:', debugInfo.fieldAnalysis.statusFieldValues)
       console.log('=' .repeat(50))
     }
 
-    // Map and insert Cin7 products with flexible field mapping
     const productsToInsert = cin7Products.map(product => {
-      // Flexible price mapping - try multiple field variations
       const getCostPrice = () => {
         return parseFloat(product.CostPrice) || 
                parseFloat(product.DefaultCostPrice) || 
@@ -292,7 +270,6 @@ export async function POST(request) {
       const retailPrice = getRetailPrice()
       const stock = getStock()
       
-      // Log price mapping for debugging
       if (costPrice === 0 && retailPrice === 0) {
         console.log(`⚠️ No price data found for ${product.Name}:`, {
           CostPrice: product.CostPrice,
@@ -320,7 +297,6 @@ export async function POST(request) {
       }
     })
     
-    // Insert in batches to avoid timeout
     const batchSize = 10
     let insertedCount = 0
     
@@ -337,7 +313,6 @@ export async function POST(request) {
       }
     }
     
-    // Calculate pricing statistics
     const priceStats = {
       productsWithPrices: productsToInsert.filter(p => p.retail_price > 0).length,
       totalProducts: productsToInsert.length,
@@ -361,7 +336,6 @@ export async function POST(request) {
         cost_price: `$${p.cost_price}`,
         stock: p.current_stock
       })),
-      // Include comprehensive debug information
       debugInfo: debugInfo,
       fieldAnalysisReport: {
         message: "Check browser console for complete field analysis logs",
@@ -386,7 +360,6 @@ export async function POST(request) {
   }
 }
 
-// Map Cin7 categories to our system
 function mapCategory(cin7Category) {
   const categoryMap = {
     'Hair Care': 'hair_care',
@@ -397,13 +370,11 @@ function mapCategory(cin7Category) {
     'Retail': 'accessories'
   }
   
-  // Try to find a match
   for (const [key, value] of Object.entries(categoryMap)) {
     if (cin7Category?.toLowerCase().includes(key.toLowerCase())) {
       return value
     }
   }
   
-  // Default category
   return 'accessories'
 }

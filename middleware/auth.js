@@ -25,14 +25,12 @@ export async function createAuthenticatedClient() {
           try {
             cookieStore.set({ name, value, ...options })
           } catch (error) {
-            // Server Component context
           }
         },
         remove(name, options) {
           try {
             cookieStore.set({ name, value: '', ...options })
           } catch (error) {
-            // Server Component context
           }
         },
       },
@@ -49,11 +47,9 @@ export async function verifyAuth(request) {
   try {
     const supabase = await createAuthenticatedClient()
     
-    // Get session from Supabase
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
     if (sessionError || !session) {
-      // Check for API key authentication (for service-to-service calls)
       const apiKey = request.headers.get('x-api-key')
       if (apiKey && apiKey === process.env.INTERNAL_API_KEY) {
         return {
@@ -69,7 +65,6 @@ export async function verifyAuth(request) {
       }
     }
     
-    // Get user profile with role
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, email, role, shop_id')
@@ -119,7 +114,6 @@ export function hasRole(user, requiredRoles) {
   
   const userLevel = roleHierarchy[user.role] || 0
   
-  // Check if user has any of the required roles
   return requiredRoles.some(role => {
     const requiredLevel = roleHierarchy[role] || 0
     return userLevel >= requiredLevel
@@ -137,7 +131,6 @@ export function withAuth(handler, options = {}) {
   } = options
   
   return async (request, context) => {
-    // Verify authentication
     const authResult = await verifyAuth(request)
     
     if (!authResult.authenticated) {
@@ -147,7 +140,6 @@ export function withAuth(handler, options = {}) {
       )
     }
     
-    // Check if service account is allowed
     if (authResult.isService && !allowService) {
       return NextResponse.json(
         { error: 'Service accounts not allowed for this endpoint' },
@@ -155,7 +147,6 @@ export function withAuth(handler, options = {}) {
       )
     }
     
-    // Check role requirements
     if (requiredRoles.length > 0 && !hasRole(authResult.user, requiredRoles)) {
       return NextResponse.json(
         { error: 'Insufficient permissions', required: requiredRoles },
@@ -163,7 +154,6 @@ export function withAuth(handler, options = {}) {
       )
     }
     
-    // Check shop requirement
     if (requireShop && !authResult.user.shop_id) {
       return NextResponse.json(
         { error: 'Shop association required' },
@@ -171,10 +161,8 @@ export function withAuth(handler, options = {}) {
       )
     }
     
-    // Add auth context to request
     request.auth = authResult
     
-    // Call the handler
     return handler(request, context)
   }
 }
@@ -218,14 +206,12 @@ export function withRateLimit(handler, options = {}) {
     const key = keyGenerator(request)
     const now = Date.now()
     
-    // Clean old entries
     for (const [k, v] of rateLimitMap.entries()) {
       if (v.resetTime < now) {
         rateLimitMap.delete(k)
       }
     }
     
-    // Check rate limit
     let record = rateLimitMap.get(key)
     if (!record) {
       record = {
@@ -254,7 +240,6 @@ export function withRateLimit(handler, options = {}) {
       )
     }
     
-    // Add rate limit headers
     const response = await handler(request, context)
     response.headers.set('X-RateLimit-Limit', maxRequests.toString())
     response.headers.set('X-RateLimit-Remaining', (maxRequests - record.count).toString())

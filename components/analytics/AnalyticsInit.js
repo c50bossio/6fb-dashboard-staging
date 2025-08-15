@@ -13,12 +13,9 @@ export default function AnalyticsInit() {
   const { user, isLoaded } = useUser()
 
   useEffect(() => {
-    // Only run when Clerk has loaded
     if (!isLoaded) return
 
-    // Initialize analytics with user data if signed in
     if (user) {
-      // Identify user across all analytics platforms
       analytics.identify(user.id, {
         email: user.emailAddresses?.[0]?.emailAddress,
         firstName: user.firstName,
@@ -26,34 +23,29 @@ export default function AnalyticsInit() {
         createdAt: user.createdAt,
         lastSignInAt: user.lastSignInAt,
         
-        // Custom properties
         subscription_plan: user.publicMetadata?.subscriptionPlan || 'free',
         user_type: user.publicMetadata?.userType || 'individual',
         business_name: user.publicMetadata?.businessName,
         onboarding_completed: user.publicMetadata?.onboardingCompleted || false,
         last_active: new Date().toISOString(),
         
-        // Technical properties
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         language: navigator.language,
         user_agent: navigator.userAgent,
       })
 
-      // Track successful login if this is a fresh session
       const sessionStart = sessionStorage.getItem('analytics_session_start')
       if (!sessionStart) {
         analytics.events.loginCompleted('session_restored')
         sessionStorage.setItem('analytics_session_start', new Date().toISOString())
       }
 
-      // Set up session tracking
       const lastActivity = localStorage.getItem('last_activity')
       const now = new Date().toISOString()
       
       if (lastActivity) {
         const timeSinceLastActivity = new Date(now) - new Date(lastActivity)
         
-        // If more than 30 minutes since last activity, track as new session
         if (timeSinceLastActivity > 30 * 60 * 1000) {
           analytics.track('session_started', {
             time_since_last_activity: Math.round(timeSinceLastActivity / 1000),
@@ -61,7 +53,6 @@ export default function AnalyticsInit() {
           })
         }
       } else {
-        // First time visitor
         analytics.track('session_started', {
           session_type: 'first_time',
         })
@@ -69,7 +60,6 @@ export default function AnalyticsInit() {
       
       localStorage.setItem('last_activity', now)
     } else {
-      // Anonymous user tracking
       analytics.track('anonymous_visit', {
         page: window.location.pathname,
         referrer: document.referrer,
@@ -77,7 +67,6 @@ export default function AnalyticsInit() {
       })
     }
 
-    // Track app startup
     analytics.track('app_loaded', {
       environment: process.env.NODE_ENV,
       version: process.env.npm_package_version || '1.0.0',
@@ -88,13 +77,11 @@ export default function AnalyticsInit() {
       language: navigator.language,
     })
 
-    // Set up activity tracking
     let activityTimer
     
     const updateActivity = () => {
       localStorage.setItem('last_activity', new Date().toISOString())
       
-      // Clear and reset timer
       if (activityTimer) clearTimeout(activityTimer)
       activityTimer = setTimeout(() => {
         analytics.track('session_timeout', {
@@ -103,16 +90,13 @@ export default function AnalyticsInit() {
       }, 30 * 60 * 1000)
     }
 
-    // Track user activity
     const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart']
     events.forEach(event => {
       document.addEventListener(event, updateActivity, { passive: true })
     })
 
-    // Initial activity setup
     updateActivity()
 
-    // Cleanup
     return () => {
       events.forEach(event => {
         document.removeEventListener(event, updateActivity)
@@ -121,7 +105,6 @@ export default function AnalyticsInit() {
     }
   }, [user, isLoaded])
 
-  // Track page visibility changes
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -143,10 +126,8 @@ export default function AnalyticsInit() {
     }
   }, [])
 
-  // Track errors (temporarily disabled to prevent infinite recursion)
   useEffect(() => {
     const handleError = (event) => {
-      // Prevent infinite recursion by checking if this is an analytics error
       if (event.error?.message?.includes('Maximum call stack')) return
       
       try {
@@ -159,13 +140,11 @@ export default function AnalyticsInit() {
           timestamp: new Date().toISOString(),
         })
       } catch (analyticsError) {
-        // Silently ignore analytics errors to prevent recursion
         console.warn('Analytics error tracking failed:', analyticsError.message)
       }
     }
 
     const handleUnhandledRejection = (event) => {
-      // Prevent infinite recursion
       if (event.reason?.message?.includes('Maximum call stack')) return
       
       try {
@@ -176,7 +155,6 @@ export default function AnalyticsInit() {
           timestamp: new Date().toISOString(),
         })
       } catch (analyticsError) {
-        // Silently ignore analytics errors to prevent recursion
         console.warn('Analytics promise rejection tracking failed:', analyticsError.message)
       }
     }
@@ -190,11 +168,8 @@ export default function AnalyticsInit() {
     }
   }, [])
 
-  // Track performance metrics
   useEffect(() => {
-    // Track Core Web Vitals when available - using new API
     import('web-vitals').then((vitals) => {
-      // New web-vitals API uses onCLS, onFID, etc.
       if (vitals.onCLS) vitals.onCLS((metric) => analytics.track('core_web_vitals', { metric: 'CLS', value: metric.value }))
       if (vitals.onFID) vitals.onFID((metric) => analytics.track('core_web_vitals', { metric: 'FID', value: metric.value }))
       if (vitals.onFCP) vitals.onFCP((metric) => analytics.track('core_web_vitals', { metric: 'FCP', value: metric.value }))
@@ -204,7 +179,6 @@ export default function AnalyticsInit() {
       console.debug('Web vitals tracking not available:', error.message)
     })
 
-    // Track basic performance metrics
     if (typeof window !== 'undefined' && window.performance) {
       setTimeout(() => {
         const navigation = performance.getEntriesByType('navigation')[0]
@@ -221,6 +195,5 @@ export default function AnalyticsInit() {
     }
   }, [])
 
-  // This component doesn't render anything
   return null
 }

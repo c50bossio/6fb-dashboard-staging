@@ -15,7 +15,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 async function createMissingTables() {
   console.log('🚀 Creating missing marketing billing tables in Supabase...\n');
   
-  // SQL for missing tables only (marketing_accounts and marketing_payment_methods)
   const sql = `
 -- ===============================================
 -- MARKETING ACCOUNTS TABLE
@@ -139,7 +138,6 @@ COMMENT ON TABLE marketing_payment_methods IS 'Stripe payment methods for market
   try {
     console.log('📋 Executing SQL to create missing tables...');
     
-    // Split into individual statements and execute
     const statements = sql.split(';').filter(stmt => stmt.trim().length > 0);
     
     for (const statement of statements) {
@@ -163,7 +161,6 @@ COMMENT ON TABLE marketing_payment_methods IS 'Stripe payment methods for market
 
     console.log('\n🎉 Schema creation completed!');
     
-    // Verify tables were created
     console.log('\n🔍 Verifying tables were created...');
     
     const tables = ['marketing_accounts', 'marketing_payment_methods'];

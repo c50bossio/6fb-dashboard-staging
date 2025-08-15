@@ -41,7 +41,6 @@ export default function RealtimeDashboard() {
   const [metricsHistory, setMetricsHistory] = useState([])
   const [activities, setActivities] = useState([])
 
-  // Track metrics history for trends
   useEffect(() => {
     if (realtimeMetrics) {
       setMetricsHistory(prev => [
@@ -51,7 +50,6 @@ export default function RealtimeDashboard() {
     }
   }, [realtimeMetrics])
 
-  // Convert notifications into activities
   useEffect(() => {
     if (notifications.length > 0) {
       const latestNotification = notifications[0]

@@ -12,7 +12,6 @@ const path = require('path');
 console.log('🔧 Installing notification dependencies...\n');
 
 try {
-  // First, let's check if the packages are already installed
   const nodeModulesPath = path.join(process.cwd(), 'node_modules');
   const hasNodemailer = fs.existsSync(path.join(nodeModulesPath, 'nodemailer'));
   const hasTwilio = fs.existsSync(path.join(nodeModulesPath, 'twilio'));
@@ -22,7 +21,6 @@ try {
     process.exit(0);
   }
 
-  // Try to install missing packages one by one
   const packagesToInstall = [];
   
   if (!hasNodemailer) {
@@ -36,7 +34,6 @@ try {
   }
 
   if (packagesToInstall.length > 0) {
-    // Try different package managers
     const packageManagers = ['npm', 'pnpm', 'yarn'];
     let success = false;
 
@@ -44,10 +41,8 @@ try {
       try {
         console.log(`\n🔄 Trying ${pm}...`);
         
-        // Check if package manager is available
         execSync(`${pm} --version`, { stdio: 'ignore' });
         
-        // Install packages
         const installCmd = pm === 'yarn' ? 
           `${pm} add ${packagesToInstall.join(' ')}` :
           `${pm} install ${packagesToInstall.join(' ')}`;

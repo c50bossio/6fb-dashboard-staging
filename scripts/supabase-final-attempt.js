@@ -2,7 +2,6 @@
 
 import { config } from 'dotenv';
 
-// Force reload environment variables
 config({ path: '.env.local' });
 
 const SUPABASE_ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;

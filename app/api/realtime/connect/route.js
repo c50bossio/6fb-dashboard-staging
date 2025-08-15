@@ -6,7 +6,6 @@ export const runtime = 'nodejs'
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -16,11 +15,9 @@ export async function POST(request) {
 
     const { sessionId } = await request.json()
     
-    // Generate session ID if not provided
     const currentSession = sessionId || `session_${Date.now()}_${user.id}`
     
     try {
-      // Start real-time streaming (simulated for development)
       const connectionResult = await startRealtimeStreaming(user.id, currentSession)
       
       return NextResponse.json({
@@ -59,7 +56,6 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -75,7 +71,6 @@ export async function DELETE(request) {
     }
 
     try {
-      // Stop real-time streaming
       await stopRealtimeStreaming(sessionId)
       
       return NextResponse.json({
@@ -106,7 +101,6 @@ export async function DELETE(request) {
 }
 
 async function startRealtimeStreaming(userId, sessionId) {
-  // Simulate starting real-time streaming service
   const connectionInfo = {
     userId: userId,
     sessionId: sessionId,
@@ -124,7 +118,6 @@ async function startRealtimeStreaming(userId, sessionId) {
     status: 'connected'
   }
   
-  // Log the connection for development
   console.log(`🔌 Started real-time streaming for user ${userId}:`, {
     sessionId,
     services: connectionInfo.services,
@@ -135,7 +128,6 @@ async function startRealtimeStreaming(userId, sessionId) {
 }
 
 async function stopRealtimeStreaming(sessionId) {
-  // Simulate stopping real-time streaming
   console.log(`⏹️ Stopped real-time streaming for session ${sessionId}`)
   
   return {

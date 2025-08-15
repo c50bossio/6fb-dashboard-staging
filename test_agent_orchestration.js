@@ -11,7 +11,6 @@ const fs = require('fs');
 const FRONTEND_URL = 'http://localhost:9999';
 const BACKEND_URL = 'http://localhost:8001';
 
-// Test queries that should trigger agent collaboration
 const TEST_QUERIES = [
   {
     id: 'growth_strategy',
@@ -96,7 +95,6 @@ class AgentOrchestrationTester {
     };
 
     try {
-      // Test via frontend API route first
       const frontendResponse = await axios.post(`${FRONTEND_URL}/api/ai-chat`, {
         message: testCase.query,
         context: { testMode: true }
@@ -108,14 +106,12 @@ class AgentOrchestrationTester {
       testResult.response = frontendResponse.data;
       console.log('✅ Frontend API response received');
 
-      // Analyze response for orchestration patterns
       this.analyzeOrchestrationResponse(testResult);
 
     } catch (frontendError) {
       console.log('⚠️ Frontend API failed, trying backend directly...');
       
       try {
-        // Fallback to direct backend call
         const backendResponse = await axios.post(`${BACKEND_URL}/ai-chat`, {
           message: testCase.query,
           user_id: 'test-user',
@@ -136,7 +132,6 @@ class AgentOrchestrationTester {
       }
     }
 
-    // Evaluate test success
     testResult.passed = this.evaluateTestSuccess(testResult);
     this.results.tests.push(testResult);
     
@@ -150,10 +145,8 @@ class AgentOrchestrationTester {
     
     if (!response) return;
 
-    // Look for orchestration indicators in response
     const responseText = JSON.stringify(response).toLowerCase();
     
-    // Check for agent collaboration indicators
     const collaborationKeywords = [
       'primary agent', 'collaboration', 'coordinated', 'multiple agents',
       'marcus', 'sophia', 'david', 'isabella', 'collaboration rate',
@@ -179,26 +172,21 @@ class AgentOrchestrationTester {
       }
     });
 
-    // Check for coordination patterns
     if (responseText.includes('coordination') || responseText.includes('collaboration rate')) {
       testResult.orchestrationFeatures.hasCoordinationSummary = true;
       testResult.collaborationDetected = true;
     }
 
-    // Check for confidence or scoring
     if (responseText.includes('confidence') || responseText.includes('score')) {
       testResult.orchestrationFeatures.hasConfidenceScores = true;
     }
 
-    // Check for structured action items
     if (responseText.includes('action') || responseText.includes('priority') || responseText.includes('step')) {
       testResult.orchestrationFeatures.hasActionItems = true;
     }
 
-    // Remove duplicates from actual agents
     testResult.actualAgents = [...new Set(testResult.actualAgents)];
 
-    // Calculate response quality score (0-100)
     let qualityScore = 0;
     if (testResult.orchestrationFeatures.hasAgentMentions) qualityScore += 30;
     if (testResult.orchestrationFeatures.hasCollaborationTerms) qualityScore += 25;
@@ -215,7 +203,6 @@ class AgentOrchestrationTester {
   }
 
   evaluateTestSuccess(testResult) {
-    // Test passes if:
     // 1. No error occurred
     // 2. Response was received
     // 3. Either collaboration was detected OR multiple expected agents were mentioned
@@ -237,17 +224,14 @@ class AgentOrchestrationTester {
   async runAllTests() {
     console.log('🚀 Starting AI Agent Orchestration Testing...\n');
 
-    // Test basic connectivity
     const agentData = await this.testAgentEndpoint();
     const orchestratorData = await this.testOrchestrationEndpoint();
 
-    // Run complex query tests
     for (const testCase of TEST_QUERIES) {
       await this.testComplexQuery(testCase);
       await new Promise(resolve => setTimeout(resolve, 2000)); // Rate limiting
     }
 
-    // Calculate summary
     this.results.summary.totalTests = this.results.tests.length;
     this.results.summary.passedTests = this.results.tests.filter(t => t.passed).length;
     this.results.summary.failedTests = this.results.summary.totalTests - this.results.summary.passedTests;
@@ -255,7 +239,6 @@ class AgentOrchestrationTester {
     const avgQuality = this.results.tests.reduce((sum, t) => sum + t.responseQuality, 0) / this.results.tests.length;
     this.results.summary.orchestrationScore = Math.round(avgQuality);
 
-    // Save results
     const reportPath = '/Users/bossio/6FB AI Agent System/agent_orchestration_test_results.json';
     fs.writeFileSync(reportPath, JSON.stringify(this.results, null, 2));
 
@@ -309,7 +292,6 @@ class AgentOrchestrationTester {
   }
 }
 
-// Run the tests
 if (require.main === module) {
   const tester = new AgentOrchestrationTester();
   tester.runAllTests().catch(console.error);

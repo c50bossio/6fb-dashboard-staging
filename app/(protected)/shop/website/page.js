@@ -30,15 +30,12 @@ export default function ShopWebsiteCustomization() {
   const [message, setMessage] = useState({ type: '', text: '' })
   const [previewMode, setPreviewMode] = useState('desktop')
   
-  // Website settings state
   const [settings, setSettings] = useState({
-    // Basic Info
     name: 'Elite Cuts Barbershop',
     tagline: 'Where Style Meets Precision',
     description: 'Premier barbershop offering classic cuts and modern styles',
     slug: 'elite-cuts',
     
-    // Contact & Location
     phone: '(555) 123-4567',
     email: 'info@elitecuts.com',
     address: '123 Main Street',
@@ -46,7 +43,6 @@ export default function ShopWebsiteCustomization() {
     state: 'CA',
     zip_code: '90001',
     
-    // Business Hours
     business_hours: {
       monday: { open: '09:00', close: '19:00', closed: false },
       tuesday: { open: '09:00', close: '19:00', closed: false },
@@ -57,7 +53,6 @@ export default function ShopWebsiteCustomization() {
       sunday: { open: '10:00', close: '16:00', closed: false }
     },
     
-    // Branding
     logo_url: '',
     favicon_url: '',
     cover_image_url: '',
@@ -70,7 +65,6 @@ export default function ShopWebsiteCustomization() {
     body_font: 'Inter',
     theme_template: 'modern',
     
-    // Homepage Content
     hero_title: 'Welcome to Elite Cuts',
     hero_subtitle: 'Experience the perfect blend of traditional barbering and modern style',
     hero_cta_text: 'Book Your Appointment',
@@ -81,7 +75,6 @@ export default function ShopWebsiteCustomization() {
     team_title: 'Meet Our Barbers',
     team_description: 'Our skilled team of professional barbers are here to give you the perfect look',
     
-    // Features & Settings
     enable_online_booking: true,
     show_pricing: true,
     show_portfolio: true,
@@ -91,7 +84,6 @@ export default function ShopWebsiteCustomization() {
     barber_page_template: 'profile',
     booking_widget_position: 'bottom-right',
     
-    // Barber Page Management
     barber_pages: [
       {
         id: '1',
@@ -119,31 +111,26 @@ export default function ShopWebsiteCustomization() {
       }
     ],
     
-    // Social Links
     instagram_url: 'https://instagram.com/elitecuts',
     facebook_url: 'https://facebook.com/elitecuts',
     google_business_url: 'https://g.page/elitecuts',
     tiktok_url: '',
     youtube_url: '',
     
-    // SEO
     seo_title: 'Elite Cuts Barbershop - Premium Haircuts in Los Angeles',
     seo_description: 'Visit Elite Cuts for the best haircuts, beard trims, and grooming services in Los Angeles. Book online today!',
     seo_keywords: 'barbershop, haircut, Los Angeles, beard trim, mens grooming',
     google_analytics_id: '',
     
-    // Booking Rules
     require_deposit: false,
     deposit_amount: 25,
     cancellation_policy: 'Cancellations must be made at least 24 hours in advance',
     
-    // Status
     is_published: true,
     maintenance_mode: false,
     maintenance_message: 'We are updating our website. Please check back soon!'
   })
 
-  // Tabs configuration
   const tabs = [
     { id: 'general', name: 'General', icon: Cog6ToothIcon },
     { id: 'branding', name: 'Branding', icon: PaintBrushIcon },
@@ -154,7 +141,6 @@ export default function ShopWebsiteCustomization() {
     { id: 'preview', name: 'Preview', icon: EyeIcon }
   ]
 
-  // Theme templates
   const themeTemplates = [
     { id: 'modern', name: 'Modern', description: 'Clean and contemporary design' },
     { id: 'classic', name: 'Classic', description: 'Traditional barbershop aesthetic' },
@@ -162,7 +148,6 @@ export default function ShopWebsiteCustomization() {
     { id: 'bold', name: 'Bold', description: 'Strong colors and typography' }
   ]
 
-  // Font options
   const fontOptions = [
     'Inter', 'Roboto', 'Open Sans', 'Lato', 'Montserrat', 
     'Poppins', 'Raleway', 'Playfair Display', 'Bebas Neue'
@@ -173,7 +158,6 @@ export default function ShopWebsiteCustomization() {
     setMessage({ type: '', text: '' })
     
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500))
       
       setMessage({ 
@@ -181,7 +165,6 @@ export default function ShopWebsiteCustomization() {
         text: 'Website settings saved successfully!' 
       })
       
-      // Clear message after 3 seconds
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (error) {
       setMessage({ 

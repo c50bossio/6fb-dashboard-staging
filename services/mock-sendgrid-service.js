@@ -1,5 +1,3 @@
-// Mock SendGrid Service for Development
-// This mock service simulates SendGrid API calls without actually sending emails
 
 class MockSendGridService {
   constructor() {
@@ -8,7 +6,6 @@ class MockSendGridService {
     this.isDevelopment = process.env.NODE_ENV === 'development'
   }
 
-  // Mock email sending
   async sendEmail(to, subject, content, options = {}) {
     console.log('📧 [MOCK] SendGrid: Simulating email send', {
       to: Array.isArray(to) ? `${to.length} recipients` : to,
@@ -16,10 +13,8 @@ class MockSendGridService {
       preview: content.substring(0, 100) + '...'
     })
 
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    // Return mock response
     return {
       success: true,
       messageId: `mock-msg-${Date.now()}`,
@@ -35,7 +30,6 @@ class MockSendGridService {
     }
   }
 
-  // Mock campaign sending
   async sendCampaign(campaign, recipients) {
     console.log('📧 [MOCK] SendGrid: Sending campaign', {
       campaign: campaign.name,
@@ -43,7 +37,6 @@ class MockSendGridService {
       type: campaign.type
     })
 
-    // Simulate processing time based on recipient count
     const processingTime = Math.min(recipients.length * 10, 2000)
     await new Promise(resolve => setTimeout(resolve, processingTime))
 
@@ -72,7 +65,6 @@ class MockSendGridService {
     }
   }
 
-  // Mock white-label campaign sending
   async sendWhiteLabelCampaign(campaign, barbershop, recipients) {
     console.log('📧 [MOCK] SendGrid: White-label campaign', {
       shop: barbershop.name,
@@ -90,7 +82,6 @@ class MockSendGridService {
     }
   }
 
-  // Mock template management
   async createTemplate(name, subject, htmlContent, textContent) {
     console.log('📧 [MOCK] SendGrid: Creating template', { name })
     
@@ -108,7 +99,6 @@ class MockSendGridService {
     }
   }
 
-  // Mock list management
   async createContactList(name, contacts) {
     console.log('📧 [MOCK] SendGrid: Creating contact list', {
       name,
@@ -127,7 +117,6 @@ class MockSendGridService {
     }
   }
 
-  // Mock analytics
   async getCampaignAnalytics(campaignId) {
     console.log('📧 [MOCK] SendGrid: Getting campaign analytics', { campaignId })
 
@@ -159,7 +148,6 @@ class MockSendGridService {
     }
   }
 
-  // Calculate billing
   calculateBilling(recipientCount, accountType = 'shop') {
     const rates = {
       individual: 0.003, // $0.003 per email
@@ -183,7 +171,6 @@ class MockSendGridService {
   }
 }
 
-// Export singleton instance
 const mockSendGridService = new MockSendGridService()
 
 module.exports = {

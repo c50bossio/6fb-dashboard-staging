@@ -21,7 +21,6 @@ import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
-// Mock staff data
 const Staff = [
   {
     id: 'marcus',

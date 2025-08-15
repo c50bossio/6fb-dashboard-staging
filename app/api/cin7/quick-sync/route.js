@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Direct Supabase connection
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
@@ -11,10 +10,8 @@ export async function POST(request) {
   try {
     console.log('🔄 Quick sync using saved credentials')
     
-    // Get barbershop ID (could be passed in request or inferred from user)
     const barbershopId = '550e8400-e29b-41d4-a716-446655440000' // Hardcoded for demo
     
-    // Get saved credentials for this barbershop with better error handling
     console.log('🔍 Checking for saved credentials...')
     const { data: credentials, error: credError } = await supabase
       .from('cin7_credentials')
@@ -43,7 +40,6 @@ export async function POST(request) {
     
     console.log('✅ Found credentials, decrypting...')
     
-    // Decrypt saved credentials with error handling
     let apiKey, accountId
     try {
       apiKey = Buffer.from(credentials.encrypted_api_key, 'base64').toString('utf-8')
@@ -58,7 +54,6 @@ export async function POST(request) {
       }, { status: 500 })
     }
     
-    // Use the same sync logic as the main sync endpoint
     console.log('🚀 Starting sync with saved credentials...')
     
     let syncResult
@@ -74,7 +69,6 @@ export async function POST(request) {
       }, { status: 400 }) // Use 400 for sync failures, not 500
     }
     
-    // Update last sync timestamp
     await supabase
       .from('cin7_credentials')
       .update({ 
@@ -100,11 +94,9 @@ export async function POST(request) {
   }
 }
 
-// Reusable sync logic
 async function performCin7Sync(apiKey, accountId, barbershopId) {
   console.log('🔍 Starting Cin7 sync with saved credentials...')
   
-  // Test correct Cin7 API endpoints
   const apiEndpoints = [
     'https://inventory.dearsystems.com/externalapi/products?limit=50',
     'https://inventory.dearsystems.com/ExternalApi/products?limit=50'
@@ -143,7 +135,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
     throw new Error('No working Cin7 endpoint found or authentication failed')
   }
   
-  // Enhanced debugging - Log complete API response structure (same as test-sync)
   let debugInfo = { fieldAnalysis: null, sampleProduct: null }
   if (cin7Products.length > 0) {
     const firstProduct = cin7Products[0]
@@ -152,7 +143,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
     console.log('📊 Full first product JSON:', JSON.stringify(firstProduct, null, 2))
     console.log('🏷️  All field names:', Object.keys(firstProduct))
     
-    // Comprehensive field analysis
     const allFields = Object.keys(firstProduct)
     const priceFields = allFields.filter(f => f.toLowerCase().includes('price') || f.toLowerCase().includes('cost') || f.toLowerCase().includes('sell') || f.toLowerCase().includes('tier'))
     const stockFields = allFields.filter(f => f.toLowerCase().includes('stock') || f.toLowerCase().includes('qty') || f.toLowerCase().includes('quantity') || f.toLowerCase().includes('available') || f.toLowerCase().includes('onhand') || f.toLowerCase().includes('hand') || f.toLowerCase().includes('allocated') || f.toLowerCase().includes('order'))
@@ -160,7 +150,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
     const supplierFields = allFields.filter(f => f.toLowerCase().includes('supplier') || f.toLowerCase().includes('vendor') || f.toLowerCase().includes('brand'))
     const statusFields = allFields.filter(f => f.toLowerCase().includes('status') || f.toLowerCase().includes('active') || f.toLowerCase().includes('enabled'))
     
-    // Create comprehensive field value mapping
     const mapFieldValues = (fields) => fields.reduce((acc, field) => {
       acc[field] = firstProduct[field]
       return acc
@@ -190,19 +179,13 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
     }
     
     console.log('💰 PRICE FIELDS FOUND:', priceFields)
-    console.log('💰 Price values:', debugInfo.fieldAnalysis.priceFieldValues)
     console.log('📦 INVENTORY FIELDS FOUND:', stockFields)
-    console.log('📦 Inventory values:', debugInfo.fieldAnalysis.stockFieldValues)
     console.log('🏷️  CATEGORY FIELDS:', categoryFields)
-    console.log('🏷️  Category values:', debugInfo.fieldAnalysis.categoryFieldValues)
     console.log('🏭 SUPPLIER FIELDS:', supplierFields)
-    console.log('🏭 Supplier values:', debugInfo.fieldAnalysis.supplierFieldValues)
     console.log('⚡ STATUS FIELDS:', statusFields)
-    console.log('⚡ Status values:', debugInfo.fieldAnalysis.statusFieldValues)
     console.log('=' .repeat(50))
   }
   
-  // Clear existing products
   const { error: deleteError } = await supabase
     .from('products')
     .delete()
@@ -212,9 +195,7 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
     console.error('Warning: Could not clear existing products:', deleteError)
   }
   
-  // Map and insert products with enhanced field mapping
   const productsToInsert = cin7Products.map(product => {
-    // Flexible price mapping - try multiple field variations
     const getCostPrice = () => {
       return parseFloat(product.CostPrice) || 
              parseFloat(product.DefaultCostPrice) || 
@@ -247,7 +228,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
     const retailPrice = getRetailPrice()
     const stock = getStock()
     
-    // Log price mapping for debugging
     if (costPrice === 0 && retailPrice === 0) {
       console.log(`⚠️ No price data found for ${product.Name}:`, {
         CostPrice: product.CostPrice,
@@ -275,7 +255,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
     }
   })
   
-  // Insert in batches
   const batchSize = 10
   let insertedCount = 0
   
@@ -292,7 +271,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
     }
   }
   
-  // Calculate pricing statistics
   const priceStats = {
     productsWithPrices: productsToInsert.filter(p => p.retail_price > 0).length,
     totalProducts: productsToInsert.length,
@@ -318,7 +296,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId) {
   }
 }
 
-// Map Cin7 categories to our system
 function mapCategory(cin7Category) {
   const categoryMap = {
     'Hair Care': 'hair_care',

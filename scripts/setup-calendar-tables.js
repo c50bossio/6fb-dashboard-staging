@@ -19,7 +19,6 @@ console.log('')
 console.log('📝 Step 2: Copy and run this SQL:')
 console.log('-'.repeat(60))
 
-// Read and display the schema
 const schemaPath = path.join(__dirname, '..', 'database', 'calendar-schema-with-test-flag.sql')
 const schema = fs.readFileSync(schemaPath, 'utf8')
 console.log(schema)

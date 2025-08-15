@@ -6,7 +6,6 @@ import NotionIntegration from './NotionIntegration'
 
 import { Button, Badge, Alert } from "@/components/ui"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-// Using emoji alternatives instead of lucide-react for Node.js compatibility
 const Shield = () => <span>🛡️</span>
 const BookOpen = () => <span>📚</span>
 const Brain = () => <span>🧠</span>
@@ -17,7 +16,6 @@ const Plus = () => <span>➕</span>
 const Search = () => <span>🔍</span>
 const Database = () => <span>🗄️</span>
 
-// Manual Entry Tab Component
 function ManualEntryTab() {
   const [formData, setFormData] = useState({
     title: '',
@@ -73,7 +71,6 @@ function ManualEntryTab() {
           type: 'success',
           message: `Knowledge entry added successfully! Entry ID: ${result.entry_id}`
         })
-        // Reset form
         setFormData({
           title: '',
           content: '',

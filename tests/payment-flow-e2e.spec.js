@@ -15,18 +15,14 @@ test.describe('Complete Payment Flow E2E', () => {
     await page.goto('https://bookedbarber.com/register');
     await page.waitForLoadState('networkidle');
     
-    // Fill registration form
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[name="password"]', testPassword);
     await page.fill('input[name="confirmPassword"]', testPassword);
     
-    // Take screenshot before submission
     await page.screenshot({ path: 'test-results/payment-flow/01-registration.png' });
     
-    // Submit registration
     await page.click('button:has-text("Create Account")');
     
-    // Should redirect to subscribe page
     await page.waitForURL('**/subscribe', { timeout: 10000 });
     
     console.log('✅ Registration successful, redirected to pricing');
@@ -36,11 +32,9 @@ test.describe('Complete Payment Flow E2E', () => {
   test('2. Select subscription plan', async ({ page }) => {
     console.log('🔍 Testing: Subscription plan selection...');
     
-    // Assuming we're logged in from previous test
     await page.goto('https://bookedbarber.com/subscribe');
     await page.waitForLoadState('networkidle');
     
-    // Verify all three tiers are visible
     const individualButton = page.locator('button:has-text("Start as Individual")');
     const shopButton = page.locator('button:has-text("Start as Shop Owner")');
     const enterpriseButton = page.locator('button:has-text("Start as Enterprise")');
@@ -49,18 +43,14 @@ test.describe('Complete Payment Flow E2E', () => {
     await expect(shopButton).toBeVisible();
     await expect(enterpriseButton).toBeVisible();
     
-    // Click Individual plan ($35/month)
     console.log('  Selecting Individual plan ($35/month)...');
     await individualButton.click();
     
-    // Should show loading state
     const buttonText = await individualButton.textContent();
     console.log(`  Button state: ${buttonText}`);
     
-    // Wait for Stripe redirect
     await page.waitForTimeout(3000);
     
-    // Check if redirected to Stripe Checkout
     const currentUrl = page.url();
     if (currentUrl.includes('checkout.stripe.com')) {
       console.log('✅ Redirected to Stripe Checkout successfully');
@@ -75,8 +65,6 @@ test.describe('Complete Payment Flow E2E', () => {
   test('3. Complete Stripe checkout (test mode)', async ({ page }) => {
     console.log('🔍 Testing: Stripe checkout completion...');
     
-    // Note: This test requires Stripe test mode
-    // We'll use Stripe's test card numbers
     
     const testCard = {
       number: '4242424242424242',
@@ -85,14 +73,11 @@ test.describe('Complete Payment Flow E2E', () => {
       zip: '10001'
     };
     
-    // Navigate directly to test checkout if needed
-    // This would normally happen after clicking a plan
     
     console.log('  Using test card:', testCard.number);
     console.log('  Note: Manual testing required for actual Stripe checkout');
     console.log('  Test cards: https://stripe.com/docs/testing#cards');
     
-    // Document expected flow
     console.log('\n  Expected Stripe Checkout flow:');
     console.log('  1. Enter email (auto-filled from account)');
     console.log('  2. Enter card number: 4242 4242 4242 4242');
@@ -106,10 +91,8 @@ test.describe('Complete Payment Flow E2E', () => {
   test('4. Verify subscription activation', async ({ page }) => {
     console.log('🔍 Testing: Subscription activation verification...');
     
-    // Check subscription status via API
     const response = await page.request.get('https://bookedbarber.com/api/subscription/status', {
       headers: {
-        // Would need actual auth token here
         'Authorization': 'Bearer test-token'
       }
     });
@@ -142,7 +125,6 @@ test.describe('Complete Payment Flow E2E', () => {
       console.log('✅ Successfully accessed dashboard');
       await page.screenshot({ path: 'test-results/payment-flow/04-dashboard-access.png' });
       
-      // Check for subscription tier display
       const tierDisplay = page.locator('text=/Individual|Shop Owner|Enterprise/i');
       if (await tierDisplay.isVisible()) {
         const tier = await tierDisplay.textContent();
@@ -161,13 +143,11 @@ test.describe('Complete Payment Flow E2E', () => {
     await page.goto('https://bookedbarber.com/billing');
     await page.waitForLoadState('networkidle');
     
-    // Look for manage subscription button
     const manageButton = page.locator('button:has-text("Manage Subscription")');
     
     if (await manageButton.isVisible()) {
       console.log('✅ Manage subscription button found');
       
-      // Click to open Stripe Customer Portal
       await manageButton.click();
       await page.waitForTimeout(2000);
       
@@ -186,14 +166,12 @@ test.describe('Complete Payment Flow E2E', () => {
   test('7. Verify webhook processing', async ({ page }) => {
     console.log('🔍 Testing: Webhook processing verification...');
     
-    // Check if webhook events were processed
     console.log('  Webhook endpoint: https://bookedbarber.com/api/stripe/webhook');
     console.log('  Expected events:');
     console.log('    - checkout.session.completed');
     console.log('    - customer.subscription.created');
     console.log('    - invoice.payment_succeeded');
     
-    // This would need backend access to verify
     console.log('\n  Manual verification required:');
     console.log('  1. Check Stripe Dashboard > Webhooks');
     console.log('  2. Verify events were sent and received');
@@ -205,7 +183,6 @@ test.describe('Payment Failure Scenarios', () => {
   test('Handle declined card', async ({ page }) => {
     console.log('🔍 Testing: Declined card handling...');
     
-    // Test with Stripe's decline test card
     const declineCard = '4000000000000002';
     
     console.log('  Test card for decline:', declineCard);
@@ -217,7 +194,6 @@ test.describe('Payment Failure Scenarios', () => {
   test('Handle insufficient funds', async ({ page }) => {
     console.log('🔍 Testing: Insufficient funds handling...');
     
-    // Test with Stripe's insufficient funds test card
     const insufficientCard = '4000000000009995';
     
     console.log('  Test card for insufficient funds:', insufficientCard);
@@ -233,7 +209,6 @@ test.describe('Subscription Cancellation Flow', () => {
     await page.goto('https://bookedbarber.com/billing');
     await page.waitForLoadState('networkidle');
     
-    // This would open Stripe Customer Portal
     const manageButton = page.locator('button:has-text("Manage Subscription")');
     
     if (await manageButton.isVisible()) {
@@ -247,7 +222,6 @@ test.describe('Subscription Cancellation Flow', () => {
   });
 });
 
-// Summary test
 test('📊 Payment Flow Summary', async ({ page }) => {
   console.log('\n' + '='.repeat(60));
   console.log('PAYMENT FLOW E2E TEST COMPLETE');

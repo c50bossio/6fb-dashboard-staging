@@ -8,7 +8,6 @@ export default function FinalTestPage() {
   const [debugInfo, setDebugInfo] = useState('Loading...')
 
   useEffect(() => {
-    // Fetch real events from the API
     const fetchEvents = async () => {
       try {
         console.log('Fetching real events from API...')
@@ -19,7 +18,6 @@ export default function FinalTestPage() {
         console.log('Appointments found:', data.appointments?.length || 0)
         
         if (data.appointments) {
-          // Filter for RRule events only for testing
           const rruleEvents = data.appointments.filter(event => event.rrule)
           console.log('RRule events found:', rruleEvents.length)
           

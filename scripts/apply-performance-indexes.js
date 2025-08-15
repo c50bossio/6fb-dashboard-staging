@@ -9,17 +9,14 @@ const fs = require('fs')
 async function applyPerformanceIndexes() {
   console.log('🚀 Applying Performance Indexes to Supabase...')
   
-  // Create Supabase client with service role key
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 
   try {
-    // Read the SQL file
     const sqlContent = fs.readFileSync('./database/add-performance-indexes.sql', 'utf8')
     
-    // Split SQL commands by semicolon and filter out empty statements
     const sqlCommands = sqlContent
       .split(';')
       .map(cmd => cmd.trim())
@@ -30,11 +27,9 @@ async function applyPerformanceIndexes() {
     let successCount = 0
     let errorCount = 0
 
-    // Execute each command individually
     for (let i = 0; i < sqlCommands.length; i++) {
       const command = sqlCommands[i]
       
-      // Skip comments
       if (command.startsWith('--') || command.trim() === '') {
         continue
       }
@@ -55,7 +50,6 @@ async function applyPerformanceIndexes() {
           successCount++
         }
         
-        // Small delay to avoid overwhelming the database
         await new Promise(resolve => setTimeout(resolve, 100))
         
       } catch (err) {
@@ -76,7 +70,6 @@ async function applyPerformanceIndexes() {
       console.log(`   • Enhanced service popularity analysis`)
       console.log(`   • Accelerated dashboard loading times`)
       
-      // Test query performance
       console.log(`\n🔍 Testing optimized query performance...`)
       const startTime = Date.now()
       
@@ -102,7 +95,6 @@ async function applyPerformanceIndexes() {
   }
 }
 
-// Execute if run directly
 if (require.main === module) {
   applyPerformanceIndexes().catch(console.error)
 }

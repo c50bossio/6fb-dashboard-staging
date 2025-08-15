@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Direct Supabase connection
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
@@ -11,7 +10,6 @@ export async function POST(request) {
   try {
     console.log('⏰ Starting periodic Cin7 sync')
     
-    // Get all active Cin7 credentials from database
     const { data: credentials, error: credError } = await supabase
       .from('cin7_credentials')
       .select('*')
@@ -27,7 +25,6 @@ export async function POST(request) {
     
     const syncResults = []
     
-    // Process each barbershop with Cin7 integration
     for (const cred of credentials) {
       try {
         const result = await syncSingleBarbershop(cred)
@@ -46,7 +43,6 @@ export async function POST(request) {
       }
     }
     
-    // Log sync summary
     const successful = syncResults.filter(r => r.status === 'success').length
     const failed = syncResults.filter(r => r.status === 'error').length
     
@@ -72,15 +68,12 @@ export async function POST(request) {
   }
 }
 
-// Sync products for a single barbershop
 async function syncSingleBarbershop(credentials) {
   console.log(`🔄 Syncing products for barbershop ${credentials.barbershop_id}`)
   
-  // Decrypt credentials (simple base64 for demo)
   const apiKey = Buffer.from(credentials.encrypted_api_key, 'base64').toString('utf-8')
   const accountId = Buffer.from(credentials.encrypted_account_id, 'base64').toString('utf-8')
   
-  // Determine working endpoint
   const apiEndpoints = [
     'https://inventory.dearsystems.com/externalapi/products?limit=100',
     'https://inventory.dearsystems.com/ExternalApi/products?limit=100'
@@ -117,7 +110,6 @@ async function syncSingleBarbershop(credentials) {
   
   console.log(`📦 Found ${productsData.length} products from Cin7`)
   
-  // Get existing products to detect changes
   const { data: existingProducts } = await supabase
     .from('products')
     .select('sku, retail_price, current_stock, updated_at')
@@ -129,20 +121,17 @@ async function syncSingleBarbershop(credentials) {
   let newCount = 0
   let unchangedCount = 0
   
-  // Process each product
   for (const cin7Product of productsData) {
     const mappedProduct = mapCin7ProductData(cin7Product, credentials.barbershop_id)
     const existing = existingProductMap.get(mappedProduct.sku)
     
     if (existing) {
-      // Check if product data has changed
       const hasChanges = (
         existing.retail_price !== mappedProduct.retail_price ||
         existing.current_stock !== mappedProduct.current_stock
       )
       
       if (hasChanges) {
-        // Update existing product
         await supabase
           .from('products')
           .update({
@@ -154,7 +143,6 @@ async function syncSingleBarbershop(credentials) {
         
         updatedCount++
         
-        // Log significant changes
         if (existing.retail_price !== mappedProduct.retail_price) {
           console.log(`💰 Price change for ${mappedProduct.name}: $${existing.retail_price} → $${mappedProduct.retail_price}`)
         }
@@ -165,7 +153,6 @@ async function syncSingleBarbershop(credentials) {
         unchangedCount++
       }
     } else {
-      // Insert new product
       await supabase
         .from('products')
         .insert(mappedProduct)
@@ -175,7 +162,6 @@ async function syncSingleBarbershop(credentials) {
     }
   }
   
-  // Update last sync timestamp
   await supabase
     .from('cin7_credentials')
     .update({ 
@@ -197,9 +183,7 @@ async function syncSingleBarbershop(credentials) {
   }
 }
 
-// Map Cin7 product data with flexible field handling
 function mapCin7ProductData(product, barbershopId) {
-  // Flexible price mapping
   const getCostPrice = () => {
     return parseFloat(product.CostPrice) || 
            parseFloat(product.DefaultCostPrice) || 
@@ -242,7 +226,6 @@ function mapCin7ProductData(product, barbershopId) {
   }
 }
 
-// Map Cin7 categories to our system
 function mapCategory(cin7Category) {
   const categoryMap = {
     'Hair Care': 'hair_care',

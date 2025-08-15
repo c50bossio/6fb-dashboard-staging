@@ -117,7 +117,6 @@ const barberOperations = [
     description: 'Manage all booking links, QR codes, embeds, and public page',
     badge: 'All-in-One'
   }
-  // Coming Soon:
   // - My Services (manage your services and pricing)
   // - Financial Overview (detailed earnings and payouts)
   // - Product Sales (track product commissions)
@@ -161,7 +160,6 @@ const shopManagement = [
     icon: CubeIcon,
     description: 'Manage product inventory'
   }
-  // Coming Soon:
   // - Staff Management (manage all barbers)
   // - Point of Sale (process sales)
   // - Advanced Reports (detailed analytics)
@@ -195,7 +193,6 @@ const marketingOperations = [
   }
 ]
 
-// Enterprise operations
 const enterpriseOperations = [
   { 
     name: 'Enterprise Portal', 
@@ -205,7 +202,6 @@ const enterpriseOperations = [
     badge: 'NEW'
   }
 ]
-// Future features:
 // - Enterprise Dashboard (multi-location overview)
 // - Location Management (manage all shops)
 // - Cross-Shop Analytics (performance comparison)
@@ -228,15 +224,11 @@ export default function Navigation() {
   const [currentTime, setCurrentTime] = useState('--:--') // Consistent initial state
   const [isClient, setIsClient] = useState(false)
   
-  // For development, we'll assume SHOP_OWNER role
-  // In production, this would come from useAuth() context
   const userRole = 'SHOP_OWNER' // This would normally be: const { user } = useAuth() and user.role
 
-  // Client-side only initialization
   useEffect(() => {
     setIsClient(true)
     
-    // Detect mobile screen size
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 1024) // lg breakpoint
     }
@@ -244,7 +236,6 @@ export default function Navigation() {
     checkIsMobile()
     window.addEventListener('resize', checkIsMobile)
     
-    // Update time every second - only after client hydration
     const updateTime = () => {
       setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
     }
@@ -258,12 +249,10 @@ export default function Navigation() {
     }
   }, [])
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false)
   }, [pathname])
 
-  // Close mobile menu when clicking outside
   useEffect(() => {
     if (!isClient) return // Only run after client hydration
     
@@ -280,17 +269,13 @@ export default function Navigation() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [isMobileMenuOpen, isClient])
 
-  // Filter core operations based on role
   const filteredCoreOperations = coreOperations.filter(item => {
-    // Customer Management is only for shop/enterprise owners
     if (item.name === 'Customer Management') {
       return ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole)
     }
-    // Booking Calendar is available to all authenticated users
     return true
   })
 
-  // Mobile Header Component
   const MobileHeader = () => (
     <div className="lg:hidden bg-card border-b border-border px-4 py-0.5 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md h-12">
       <LogoHeader size="xsmall" showText={false} />
@@ -304,7 +289,6 @@ export default function Navigation() {
     </div>
   )
 
-  // Navigation Items Component (reusable for both desktop and mobile)
   const NavigationItems = ({ onItemClick = () => {}, collapsed = false }) => (
     <>
       {/* Main Navigation */}

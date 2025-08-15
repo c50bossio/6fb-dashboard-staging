@@ -23,7 +23,6 @@ import { useState, useEffect } from 'react'
 
 import { createClient } from '../../lib/supabase/client'
 
-// Service types with customer-friendly descriptions
 const SERVICES = [
   { 
     id: 'haircut', 
@@ -63,7 +62,6 @@ const SERVICES = [
   }
 ]
 
-// Barbers with customer-facing information
 const BARBERS = [
   { 
     id: '1', 
@@ -116,7 +114,6 @@ const SHOP_INFO = {
 }
 
 export default function CustomerBookingPage() {
-  // Booking flow state
   const [currentStep, setCurrentStep] = useState('service') // service -> barber -> time -> details -> confirmation
   const [selectedService, setSelectedService] = useState(null)
   const [selectedBarber, setSelectedBarber] = useState(null)
@@ -126,7 +123,6 @@ export default function CustomerBookingPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [bookingConfirmed, setBookingConfirmed] = useState(false)
   
-  // Customer details
   const [customerDetails, setCustomerDetails] = useState({
     firstName: '',
     lastName: '',
@@ -143,7 +139,6 @@ export default function CustomerBookingPage() {
 
   const supabase = createClient()
 
-  // Load available time slots when barber and date change
   useEffect(() => {
     if (selectedBarber && selectedDate && selectedService) {
       loadAvailableSlots()
@@ -153,10 +148,8 @@ export default function CustomerBookingPage() {
   const loadAvailableSlots = async () => {
     setIsLoading(true)
     
-    // Simulate API call to get available slots
     await new Promise(resolve => setTimeout(resolve, 800))
     
-    // Generate available slots for the selected date
     const slots = generateTimeSlots(selectedDate, selectedBarber.id)
     setAvailableSlots(slots)
     setIsLoading(false)
@@ -173,10 +166,8 @@ export default function CustomerBookingPage() {
         const slotTime = new Date(date)
         slotTime.setHours(hour, minute, 0, 0)
         
-        // Skip past times
         if (slotTime <= new Date()) continue
         
-        // Simulate some booked slots
         const isBooked = Math.random() < 0.3
         
         if (!isBooked) {
@@ -211,10 +202,8 @@ export default function CustomerBookingPage() {
     e.preventDefault()
     setIsLoading(true)
     
-    // Simulate booking creation
     await new Promise(resolve => setTimeout(resolve, 2000))
     
-    // In production, this would create the booking and send confirmations
     console.log('Booking created:', {
       service: selectedService,
       barber: selectedBarber,
@@ -227,7 +216,6 @@ export default function CustomerBookingPage() {
     setIsLoading(false)
   }
 
-  // Step components
   const ServiceSelection = () => (
     <div className="space-y-6">
       <div className="text-center">

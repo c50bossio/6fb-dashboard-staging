@@ -25,7 +25,6 @@ export async function POST(request) {
       timezone = 'America/New_York'
     } = body;
 
-    // Validate date range
     if (!start_date || !end_date) {
       return NextResponse.json(
         { error: 'Start and end dates are required' },
@@ -36,7 +35,6 @@ export async function POST(request) {
     const startDate = new Date(start_date);
     const endDate = new Date(end_date);
 
-    // Prevent excessive date ranges (max 1 year)
     const maxRange = 365 * 24 * 60 * 60 * 1000; // 1 year in milliseconds
     if (endDate - startDate > maxRange) {
       return NextResponse.json(
@@ -45,7 +43,6 @@ export async function POST(request) {
       );
     }
 
-    // Build query
     let query = supabase
       .from('bookings')
       .select(`
@@ -57,12 +54,10 @@ export async function POST(request) {
       .eq('shop_id', shop_id)
       .eq('is_test', false);
 
-    // Add barber filter if specified
     if (barber_id) {
       query = query.eq('barber_id', barber_id);
     }
 
-    // Fetch recurring appointments
     const { data: recurringAppointments, error: recurringError } = await query
       .eq('is_recurring', true);
 
@@ -74,7 +69,6 @@ export async function POST(request) {
       );
     }
 
-    // Expand each recurring appointment
     const expandedEvents = [];
     
     for (const appointment of recurringAppointments || []) {
@@ -84,7 +78,6 @@ export async function POST(request) {
       }
 
       try {
-        // Generate occurrences for this appointment
         const occurrences = RRuleService.generateOccurrences(
           appointment.recurring_pattern.rrule,
           startDate,
@@ -92,9 +85,7 @@ export async function POST(request) {
           appointment.recurring_pattern.timezone || timezone
         );
 
-        // Create event object for each occurrence
         for (const occurrence of occurrences) {
-          // Calculate end time based on duration
           const duration = appointment.recurring_pattern.duration || 'PT1H';
           const durationMinutes = parseDuration(duration);
           
@@ -138,14 +129,11 @@ export async function POST(request) {
         }
       } catch (error) {
         console.error(`Error expanding appointment ${appointment.id}:`, error);
-        // Continue with other appointments even if one fails
       }
     }
 
-    // Optionally include single appointments
     let singleEvents = [];
     if (include_single) {
-      // Build query for single appointments
       let singleQuery = supabase
         .from('bookings')
         .select(`
@@ -169,7 +157,6 @@ export async function POST(request) {
       if (singleError) {
         console.error('Error fetching single appointments:', singleError);
       } else {
-        // Format single appointments
         singleEvents = (singleAppointments || []).map(appointment => ({
           id: appointment.id,
           title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Unknown Service'}`,
@@ -200,12 +187,10 @@ export async function POST(request) {
       }
     }
 
-    // Combine and sort all events
     const allEvents = [...expandedEvents, ...singleEvents].sort((a, b) => 
       new Date(a.start) - new Date(b.start)
     );
 
-    // Return response
     return NextResponse.json({
       events: allEvents,
       meta: {

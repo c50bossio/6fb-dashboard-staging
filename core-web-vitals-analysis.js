@@ -10,7 +10,6 @@ const puppeteer = require('puppeteer');
   
   const page = await browser.newPage();
   
-  // Enable performance monitoring
   await page.setViewport({ width: 1920, height: 1080 });
   
   console.log('🚀 Navigating to login page...');
@@ -23,15 +22,12 @@ const puppeteer = require('puppeteer');
   
   const navigationTime = Date.now() - startTime;
   
-  // Wait for page to fully load and settle
   await new Promise(resolve => setTimeout(resolve, 3000));
   
-  // Get Core Web Vitals and detailed performance metrics
   const metrics = await page.evaluate(() => {
     return new Promise((resolve) => {
       const metrics = {};
       
-      // Get Navigation Timing
       const navigation = performance.getEntriesByType('navigation')[0];
       if (navigation) {
         metrics.navigationTiming = {
@@ -44,23 +40,19 @@ const puppeteer = require('puppeteer');
         };
       }
       
-      // Get Paint Timing
       const paintEntries = performance.getEntriesByType('paint');
       metrics.paintTiming = {};
       paintEntries.forEach(entry => {
         metrics.paintTiming[entry.name] = Math.round(entry.startTime);
       });
       
-      // Get Largest Contentful Paint (LCP)
       const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
       if (lcpEntries.length > 0) {
         metrics.lcp = Math.round(lcpEntries[lcpEntries.length - 1].startTime);
       }
       
-      // Get First Input Delay (FID) - needs user interaction
       metrics.fid = 'Requires user interaction';
       
-      // Get Cumulative Layout Shift (CLS)
       const clsEntries = performance.getEntriesByType('layout-shift');
       let cls = 0;
       clsEntries.forEach(entry => {
@@ -70,7 +62,6 @@ const puppeteer = require('puppeteer');
       });
       metrics.cls = Math.round(cls * 1000) / 1000;
       
-      // Memory usage
       if (performance.memory) {
         metrics.memory = {
           used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024),
@@ -79,7 +70,6 @@ const puppeteer = require('puppeteer');
         };
       }
       
-      // Count of different resource types
       const resources = performance.getEntriesByType('resource');
       metrics.resourceCounts = resources.reduce((acc, resource) => {
         const type = resource.initiatorType || 'other';
@@ -87,7 +77,6 @@ const puppeteer = require('puppeteer');
         return acc;
       }, {});
       
-      // Slow resources (>100ms)
       metrics.slowResources = resources
         .filter(r => r.duration > 100)
         .map(r => ({
@@ -142,7 +131,6 @@ const puppeteer = require('puppeteer');
     console.log(`   ${resource.duration}ms - ${resource.type} - ${resource.name}${sizeInfo}`);
   });
   
-  // Performance recommendations
   console.log('\n💡 PERFORMANCE RECOMMENDATIONS:');
   
   if (metrics.lcp > 2500) {

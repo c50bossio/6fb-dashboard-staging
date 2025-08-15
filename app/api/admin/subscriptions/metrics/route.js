@@ -14,7 +14,6 @@ async function getMetrics(request) {
   try {
     const supabase = createClient()
     
-    // Calculate date range based on period
     const now = new Date()
     let startDate = new Date()
     
@@ -32,7 +31,6 @@ async function getMetrics(request) {
         startDate.setDate(now.getDate() - 30)
     }
 
-    // Get current subscription counts and revenue
     const { data: currentMetrics } = await supabase
       .from('users')
       .select(`
@@ -45,7 +43,6 @@ async function getMetrics(request) {
       `)
       .not('subscription_tier', 'is', null)
 
-    // Calculate MRR by tier
     const tierPricing = {
       barber: 35,
       shop: 99,
@@ -71,10 +68,8 @@ async function getMetrics(request) {
     currentMetrics?.forEach(subscription => {
       const { subscription_tier, subscription_status } = subscription
       
-      // Count status breakdown
       statusBreakdown[subscription_status] = (statusBreakdown[subscription_status] || 0) + 1
       
-      // Calculate revenue for active subscriptions
       if (subscription_status === 'active' && subscription_tier in tierPricing) {
         const monthlyRevenue = tierPricing[subscription_tier]
         totalMRR += monthlyRevenue
@@ -86,14 +81,12 @@ async function getMetrics(request) {
 
     totalARR = totalMRR * 12
 
-    // Get subscription history for growth metrics
     const { data: subscriptionHistory } = await supabase
       .from('subscription_history')
       .select('*')
       .gte('created_at', startDate.toISOString())
       .order('created_at', { ascending: true })
 
-    // Calculate growth metrics
     let newSubscriptions = 0
     let canceledSubscriptions = 0
     let dailyGrowth = {}
@@ -116,11 +109,9 @@ async function getMetrics(request) {
       dailyGrowth[date].net = dailyGrowth[date].new - dailyGrowth[date].canceled
     })
 
-    // Calculate churn rate
     const totalSubscriptionsStart = activeSubscriptions + canceledSubscriptions - newSubscriptions
     const churnRate = totalSubscriptionsStart > 0 ? (canceledSubscriptions / totalSubscriptionsStart) * 100 : 0
 
-    // Get recent signups
     const { data: recentSignups } = await supabase
       .from('users')
       .select('id, email, name, subscription_tier, created_at')
@@ -129,7 +120,6 @@ async function getMetrics(request) {
       .order('created_at', { ascending: false })
       .limit(10)
 
-    // Get failed payments (payment issues)
     const { data: failedPayments } = await supabase
       .from('users')
       .select('id, email, name, subscription_tier, subscription_status, updated_at')
@@ -137,7 +127,6 @@ async function getMetrics(request) {
       .order('updated_at', { ascending: false })
       .limit(20)
 
-    // Log admin action
     await logAdminAction(
       request.adminContext.userId,
       'SUBSCRIPTION_METRICS_VIEW',
@@ -191,5 +180,4 @@ async function getMetrics(request) {
   }
 }
 
-// Export with admin auth wrapper
 export const GET = withAdminAuth(getMetrics)

@@ -32,14 +32,12 @@ export default function BookingsPage() {
     try {
       setLoading(true)
       
-      // Load services
       const servicesResponse = await fetch('/api/services')
       const servicesData = await servicesResponse.json()
       if (servicesData.success !== false) {
         setServices(servicesData.services || [])
       }
 
-      // Load user's bookings from database
       if (user?.id) {
         const bookingsResponse = await fetch(`/api/appointments?client_id=${user.id}`)
         const bookingsData = await bookingsResponse.json()
@@ -79,7 +77,6 @@ export default function BookingsPage() {
 
   const handlePaymentSuccess = (paymentIntent, data) => {
     console.log('Payment successful:', paymentIntent, data)
-    // Update booking status
     setBookings(prev => prev.map(booking => 
       booking.id === paymentModal.booking?.id 
         ? { ...booking, payment_status: 'paid' }

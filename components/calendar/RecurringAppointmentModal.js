@@ -42,7 +42,6 @@ export default function RecurringAppointmentModal({
   const [preview, setPreview] = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Generate recurrence rule string
   const generateRRule = () => {
     if (recurrenceType === 'none') return null
 
@@ -79,7 +78,6 @@ export default function RecurringAppointmentModal({
         return null
     }
 
-    // Default count if no end condition specified
     if (!count && !until) {
       count = 10
     }
@@ -96,7 +94,6 @@ export default function RecurringAppointmentModal({
     return rule.toString()
   }
 
-  // Generate preview of recurring dates
   const generatePreview = () => {
     const ruleString = generateRRule()
     if (!ruleString) {
@@ -135,7 +132,6 @@ export default function RecurringAppointmentModal({
       const rule = RRule.fromString(ruleString)
       const dates = rule.all()
 
-      // Create appointments for each occurrence
       const appointments = dates.map(date => ({
         ...appointmentData,
         scheduled_at: date.toISOString(),

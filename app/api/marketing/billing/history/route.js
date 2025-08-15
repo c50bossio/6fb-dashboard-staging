@@ -2,13 +2,11 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { isDevBypassEnabled, getTestBillingData, TEST_USER_UUID } from '@/lib/auth/dev-bypass'
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// GET - Retrieve billing history using existing transaction data
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -23,7 +21,6 @@ export async function GET(request) {
       )
     }
 
-    // Check for dev bypass mode with test user
     if (isDevBypassEnabled() && userId === TEST_USER_UUID) {
       const testData = getTestBillingData()
       const paginatedHistory = testData.history.slice(offset, offset + limit)
@@ -47,7 +44,6 @@ export async function GET(request) {
       })
     }
 
-    // Get existing transactions and transform them into marketing billing records
     const { data: transactions, error: transactionsError, count } = await supabase
       .from('transactions')
       .select('*')
@@ -62,7 +58,6 @@ export async function GET(request) {
       )
     }
 
-    // Transform transactions into marketing billing format
     const campaigns = [
       'New Client Welcome Campaign',
       'Weekend Special Promotion', 
@@ -93,7 +88,6 @@ export async function GET(request) {
       created_at: transaction.created_at
     }))
 
-    // Calculate summary statistics
     const stats = formattedTransactions.reduce((acc, transaction) => {
       acc.totalAmount += transaction.amount_charged || 0
       acc.totalPlatformFees += transaction.platform_fee || 0

@@ -16,7 +16,6 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
   
   const loadBarbers = async () => {
     try {
-      // In production, fetch barbers for specific location
       const Barbers = [
         {
           id: 'barber_1',
@@ -147,7 +146,6 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
       return barber.availability === 'Available today'
     }
     if (filterBy === 'favorites') {
-      // In production, check user's favorite barbers
       return barber.rating >= 4.8
     }
     return true
@@ -217,7 +215,6 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
               } ${barber.isAnyBarber ? 'bg-gradient-to-br from-olive-50 to-gold-50' : ''}`}
             >
               {barber.isAnyBarber ? (
-                // First Available Card
                 <div className="text-center py-4">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-olive-500 to-gold-500 rounded-full flex items-center justify-center mb-4">
                     <CalendarIcon className="h-10 w-10 text-white" />
@@ -231,7 +228,6 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
                   <p className="text-sm text-gray-600 mt-3">{barber.bio}</p>
                 </div>
               ) : (
-                // Regular Barber Card
                 <>
                   <div className="flex items-start space-x-4">
                     {/* Barber Image */}

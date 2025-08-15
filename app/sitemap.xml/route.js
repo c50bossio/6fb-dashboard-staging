@@ -9,7 +9,6 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://6fb.ai'
 
 export async function GET() {
   try {
-    // Fetch all active barbers and booking links for dynamic sitemap
     const { data: barbers } = await supabase
       .from('auth.users')
       .select('id')
@@ -23,7 +22,6 @@ export async function GET() {
 
     const currentDate = new Date().toISOString().split('T')[0]
     
-    // Static pages
     const staticPages = [
       {
         url: baseUrl,
@@ -39,7 +37,6 @@ export async function GET() {
       }
     ]
 
-    // Dynamic barber booking pages
     const barberPages = (barbers || []).map(barber => ({
       url: `${baseUrl}/book/${barber.id}`,
       lastmod: currentDate,
@@ -47,7 +44,6 @@ export async function GET() {
       priority: 0.8
     }))
 
-    // Custom booking link pages (for popular/frequently accessed links)
     const bookingLinkPages = (activeBookingLinks || [])
       .filter(link => link.url.includes('?')) // Only include parameterized links
       .map(link => ({
@@ -59,7 +55,6 @@ export async function GET() {
 
     const allPages = [...staticPages, ...barberPages, ...bookingLinkPages]
 
-    // Generate XML sitemap
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
@@ -89,7 +84,6 @@ ${allPages.map(page => `  <url>
   } catch (error) {
     console.error('Sitemap generation error:', error)
     
-    // Fallback minimal sitemap
     const fallbackSitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>

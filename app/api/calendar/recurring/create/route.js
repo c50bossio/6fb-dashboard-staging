@@ -32,7 +32,6 @@ export async function POST(request) {
 
     console.log('Creating recurring appointment with pattern:', recurrence_pattern);
 
-    // Validate required fields
     if (!barber_id || !start_time || !recurrence_pattern) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -40,17 +39,14 @@ export async function POST(request) {
       );
     }
 
-    // Calculate end time
     const { start, end, startUTC, endUTC, duration } = TimezoneService.calculateEndTime(
       start_time,
       duration_minutes,
       timezone
     );
 
-    // Create RRule from pattern
     const rrule = RRuleService.createRRuleString(recurrence_pattern);
     
-    // Validate the RRule
     const validation = RRuleService.validateRRule(rrule);
     if (!validation.valid) {
       return NextResponse.json(
@@ -59,14 +55,12 @@ export async function POST(request) {
       );
     }
 
-    // Convert to FullCalendar format
     const fullCalendarFormat = RRuleService.toFullCalendarFormat(
       rrule,
       start,
       end
     );
 
-    // Create customer if needed
     let customerId = customer_id;
     if (!customerId && client_name) {
       const { data: customerData, error: customerError } = await supabase
@@ -91,7 +85,6 @@ export async function POST(request) {
       customerId = customerData.id;
     }
 
-    // Create recurring appointment record
     const appointmentData = {
       shop_id,
       barber_id,
@@ -137,7 +130,6 @@ export async function POST(request) {
       );
     }
 
-    // Generate preview of first 5 occurrences
     const previewStart = new Date();
     const previewEnd = new Date();
     previewEnd.setMonth(previewEnd.getMonth() + 3);
@@ -149,7 +141,6 @@ export async function POST(request) {
       timezone
     ).slice(0, 5);
 
-    // Format response
     const response = {
       appointment: {
         id: data.id,

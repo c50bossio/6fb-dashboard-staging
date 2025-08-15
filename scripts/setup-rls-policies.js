@@ -8,7 +8,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables from .env.local
 const envPath = join(__dirname, '../.env.local')
 try {
   const envContent = readFileSync(envPath, 'utf8')
@@ -47,7 +46,6 @@ async function setupRLS() {
   console.log('')
 
   try {
-    // Read the RLS policies SQL file
     const sqlPath = join(__dirname, '../database/setup-rls-policies.sql')
     const sql = readFileSync(sqlPath, 'utf8')
     
@@ -56,8 +54,6 @@ async function setupRLS() {
     console.log(`   Size: ${(sql.length / 1024).toFixed(1)} KB`)
     console.log('')
     
-    // For RLS policies, we need to use a different approach since they're DDL statements
-    // Let's provide instructions for manual setup instead
     
     console.log('🔧 RLS Policy Setup Instructions')
     console.log('==================================')
@@ -74,7 +70,6 @@ async function setupRLS() {
     console.log('   ▶️  Click "Run" to execute all policies')
     console.log('')
     
-    // Let's try to at least verify that the tables exist
     console.log('🔍 Verifying database tables...')
     const tables = ['barbershops', 'barbers', 'services', 'clients', 'appointments']
     
@@ -147,7 +142,6 @@ async function testRLSAccess() {
   console.log('')
   
   try {
-    // Test public access to barbershops
     const { data: barbershops, error: shopsError } = await supabase
       .from('barbershops')
       .select('id, name, is_active')
@@ -159,7 +153,6 @@ async function testRLSAccess() {
       console.log(`   ✅ Barbershops: ${barbershops?.length || 0} accessible`)
     }
     
-    // Test public access to barbers
     const { data: barbers, error: barbersError } = await supabase
       .from('barbers')
       .select('id, name, is_available')
@@ -178,7 +171,6 @@ async function testRLSAccess() {
   console.log('')
 }
 
-// Main execution
 async function main() {
   const success = await setupRLS()
   await testRLSAccess()
@@ -192,7 +184,6 @@ async function main() {
   }
 }
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error)
 }

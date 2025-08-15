@@ -6,7 +6,6 @@ export async function GET(request) {
   try {
     const supabase = createClient()
     
-    // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -16,12 +15,10 @@ export async function GET(request) {
     const period = searchParams.get('period') || '7'
     const customerId = searchParams.get('customerId')
     
-    // Get booking analytics
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - parseInt(period))
     
-    // Total bookings query
     let bookingsQuery = supabase
       .from('bookings')
       .select('*', { count: 'exact' })
@@ -36,12 +33,10 @@ export async function GET(request) {
     
     if (bookingsError) throw bookingsError
     
-    // Calculate revenue
     const revenue = bookings
       .filter(b => b.status === 'COMPLETED')
       .reduce((sum, b) => sum + (b.service_price || 0), 0)
     
-    // Service breakdown
     const serviceBreakdown = bookings.reduce((acc, booking) => {
       const service = booking.service_name || 'Unknown Service'
       if (!acc[service]) {
@@ -52,7 +47,6 @@ export async function GET(request) {
       return acc
     }, {})
     
-    // Barber performance
     const barberPerformance = bookings.reduce((acc, booking) => {
       const barberId = booking.barber_id
       if (!acc[barberId]) {
@@ -66,7 +60,6 @@ export async function GET(request) {
       return acc
     }, {})
     
-    // Calculate average ratings
     Object.keys(barberPerformance).forEach(barberId => {
       const ratings = barberPerformance[barberId].ratings
       barberPerformance[barberId].avgRating = 
@@ -74,7 +67,6 @@ export async function GET(request) {
       delete barberPerformance[barberId].ratings
     })
     
-    // Peak hours analysis
     const hourCounts = {}
     bookings.forEach(booking => {
       const hour = new Date(booking.scheduled_at).getHours()
@@ -86,7 +78,6 @@ export async function GET(request) {
       .slice(0, 5)
       .map(([hour]) => `${hour}:00`)
     
-    // Customer segments
     const { data: customers } = await supabase
       .from('customers')
       .select('id, segment, total_visits')
@@ -97,11 +88,9 @@ export async function GET(request) {
       return acc
     }, {}) || {}
     
-    // Utilization rate
     const totalSlots = parseInt(period) * 9 * 2 * 3 // days * hours * slots/hour * barbers
     const utilizationRate = totalSlots > 0 ? (totalBookings / totalSlots * 100).toFixed(2) : 0
     
-    // Generate AI recommendations based on data
     const recommendations = []
     
     if (utilizationRate < 60) {
@@ -138,7 +127,6 @@ export async function GET(request) {
       })
     }
     
-    // Predict future demand
     const avgDailyBookings = totalBookings / parseInt(period)
     const predictions = []
     
@@ -147,7 +135,6 @@ export async function GET(request) {
       date.setDate(date.getDate() + i)
       const dayOfWeek = date.getDay()
       
-      // Simple multiplier based on day of week
       const multiplier = [5, 6].includes(dayOfWeek) ? 1.2 : 1.0 // Friday/Saturday busier
       
       const predictedBookings = Math.round(avgDailyBookings * multiplier)
@@ -162,10 +149,8 @@ export async function GET(request) {
       })
     }
     
-    // Identify patterns
     const patterns = []
     
-    // Day preference pattern
     const dayOfWeekCounts = {}
     bookings.forEach(booking => {
       const day = new Date(booking.scheduled_at).getDay()
@@ -183,7 +168,6 @@ export async function GET(request) {
       })
     }
     
-    // Build comprehensive response
     const response = {
       timestamp: new Date().toISOString(),
       analytics: {
@@ -219,12 +203,10 @@ export async function GET(request) {
   }
 }
 
-// POST endpoint to track new bookings
 export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -233,14 +215,12 @@ export async function POST(request) {
     const bookingData = await request.json()
     console.log('📊 Syncing booking data:', bookingData)
     
-    // Insert booking into database
     const { data, error } = await supabase
       .from('bookings')
       .insert([{
         ...bookingData,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-        // NO MOCK DATA - rating should come from actual customer feedback
       }])
       .select()
       .single()
@@ -250,7 +230,6 @@ export async function POST(request) {
       throw error
     }
     
-    // Update customer stats if client_id provided
     if (bookingData.client_id) {
       const { data: customer } = await supabase
         .from('customers')
@@ -270,7 +249,6 @@ export async function POST(request) {
       }
     }
     
-    // Generate AI insights for the booking
     const insights = []
     
     const bookingHour = new Date(bookingData.scheduled_at).getHours()

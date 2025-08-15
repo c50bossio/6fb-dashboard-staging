@@ -10,7 +10,6 @@ async function testConnection() {
   console.log('Testing Supabase connection...')
   
   try {
-    // Try to query a table that doesn't exist yet
     const { data, error } = await supabase
       .from('profiles')
       .select('count')

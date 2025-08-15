@@ -44,7 +44,6 @@ export default function StreamingChat({
     },
   })
 
-  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }

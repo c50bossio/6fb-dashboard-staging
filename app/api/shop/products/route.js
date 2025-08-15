@@ -5,7 +5,6 @@ export const runtime = 'edge'
 
 export async function GET(request) {
   try {
-    // SIMPLIFIED TEST: Skip auth and use service role key
     const { createClient: createServiceClient } = await import('@supabase/supabase-js')
     
     const supabase = createServiceClient(
@@ -15,14 +14,11 @@ export async function GET(request) {
     
     console.log('🔍 Products API Debug (Service Role):')
     
-    // Use the Elite Cuts owner for testing
     const userId = '64f11f63-fba4-40de-8280-867e036a6797'
     console.log('🔧 Testing with user ID:', userId)
     
-    // Development bypass for testing
     const isDevelopment = true // Force development mode for testing
     
-    // Get the user's profile to check role (skip in development)
     let profile = null
     if (userId) {
       const { data: profileData } = await supabase
@@ -33,7 +29,6 @@ export async function GET(request) {
       profile = profileData
     }
     
-    // Check permissions (skip check in development)
     if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
@@ -41,7 +36,6 @@ export async function GET(request) {
       )
     }
     
-    // Get the shop owned by this user
     console.log('🏪 Looking for barbershop with owner_id:', userId)
     const { data: shop, error: shopError } = await supabase
       .from('barbershops')
@@ -64,7 +58,6 @@ export async function GET(request) {
       })
     }
     
-    // Get all products for this shop
     console.log('📦 Looking for products with barbershop_id:', shop.id)
     const { data: products, error: productsError } = await supabase
       .from('products')
@@ -87,7 +80,6 @@ export async function GET(request) {
       })
     }
     
-    // Calculate metrics
     const metrics = {
       totalProducts: products?.length || 0,
       totalValue: products?.reduce((sum, p) => sum + (p.current_stock * p.retail_price), 0) || 0,
@@ -115,10 +107,8 @@ export async function POST(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Development bypass for testing
     const isDevelopment = true // Force development mode for testing
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (!isDevelopment && (authError || !user)) {
@@ -128,17 +118,14 @@ export async function POST(request) {
       )
     }
     
-    // Get the request body
     const productData = await request.json()
     
-    // Use the Elite Cuts owner for development testing (has products)
     let userId = user?.id
     if (isDevelopment && !userId) {
       userId = '64f11f63-fba4-40de-8280-867e036a6797' // Elite Cuts owner with products
       console.log('🔧 Development mode: Using Elite Cuts owner ID:', userId)
     }
     
-    // Get the user's profile to check role (skip in development)
     let profile = null
     if (userId) {
       const { data: profileData } = await supabase
@@ -149,7 +136,6 @@ export async function POST(request) {
       profile = profileData
     }
     
-    // Check permissions (skip check in development)
     if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
@@ -157,7 +143,6 @@ export async function POST(request) {
       )
     }
     
-    // Get the shop owned by this user
     const { data: shop } = await supabase
       .from('barbershops')
       .select('id')
@@ -171,14 +156,12 @@ export async function POST(request) {
       )
     }
     
-    // Add the barbershop_id to the product data
     const productToInsert = {
       ...productData,
       barbershop_id: shop.id,
       is_active: true
     }
     
-    // Insert the new product
     const { data: newProduct, error: insertError } = await supabase
       .from('products')
       .insert(productToInsert)

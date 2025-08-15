@@ -8,7 +8,6 @@ import { readFileSync } from 'fs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables
 const envPath = join(__dirname, '../.env.local')
 const envContent = readFileSync(envPath, 'utf8')
 const envLines = envContent.split('\n')
@@ -22,7 +21,6 @@ envLines.forEach(line => {
   }
 })
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -34,7 +32,6 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-// Test data templates
 const BARBERSHOP_NAMES = [
   'The Classic Cut', 'Modern Barber Co', 'Vintage Cuts & Styles', 
   'Sharp Edge Barbershop', 'Gentleman\'s Choice', 'Urban Style Lounge'
@@ -66,7 +63,6 @@ const CLIENT_NAMES = [
   'Steven Thompson', 'Paul Garcia', 'Joshua Martinez', 'Kenneth Robinson', 'Kevin Clark'
 ]
 
-// Utility functions
 function randomChoice(array) {
   return array[Math.floor(Math.random() * array.length)]
 }
@@ -97,7 +93,6 @@ async function createTestData() {
     console.log('   Service Key:', supabaseServiceKey ? '✅ Available' : '❌ Missing')
     console.log('')
 
-    // Step 1: Create barbershops
     console.log('1. Creating barbershops...')
     const barbershops = []
     
@@ -131,7 +126,6 @@ async function createTestData() {
       console.log(`  ✅ Created: ${name} (${data.id})`)
     }
 
-    // Step 2: Create barbers
     console.log('\n2. Creating barbers...')
     const barbers = []
     
@@ -175,7 +169,6 @@ async function createTestData() {
       }
     }
 
-    // Step 3: Create services
     console.log('\n3. Creating services...')
     const services = []
     
@@ -216,7 +209,6 @@ async function createTestData() {
       }
     }
 
-    // Step 4: Create clients
     console.log('\n4. Creating clients...')
     const clients = []
     
@@ -264,21 +256,17 @@ async function createTestData() {
       }
     }
 
-    // Step 5: Create appointments
     console.log('\n5. Creating appointments...')
     const appointments = []
     
-    // Create appointments for the next 30 days
     const now = new Date()
     const futureDate = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000))
     
     for (let day = 0; day < 30; day++) {
       const appointmentDate = new Date(now.getTime() + (day * 24 * 60 * 60 * 1000))
       
-      // Skip Sundays for some barbershops
       if (appointmentDate.getDay() === 0 && Math.random() > 0.3) continue
       
-      // Create 3-8 appointments per day per barbershop
       for (const barbershop of barbershops) {
         const shopBarbers = barbers.filter(b => b.barbershop_id === barbershop.id)
         const shopServices = services.filter(s => s.barbershop_id === barbershop.id)
@@ -291,14 +279,12 @@ async function createTestData() {
           const service = randomChoice(shopServices)
           const client = randomChoice(shopClients)
           
-          // Generate appointment time (9 AM to 6 PM)
           const hour = Math.floor(Math.random() * 9) + 9
           const minute = randomChoice([0, 15, 30, 45])
           
           const scheduledAt = new Date(appointmentDate)
           scheduledAt.setHours(hour, minute, 0, 0)
           
-          // Skip if appointment is in the past
           if (scheduledAt < now) continue
           
           const appointmentData = {
@@ -328,7 +314,6 @@ async function createTestData() {
             .single()
 
           if (error) {
-            // Skip if there's a conflict (barber already booked)
             if (error.code === '23P01') continue
             console.error(`Error creating appointment:`, error)
             continue
@@ -340,7 +325,6 @@ async function createTestData() {
       }
     }
 
-    // Summary
     console.log('\n🎉 Test data creation completed!')
     console.log('=====================================')
     console.log(`📊 Summary:`)
@@ -354,7 +338,6 @@ async function createTestData() {
     console.log('🗑️  To remove test data later: node scripts/cleanup-test-data.js')
     console.log('')
 
-    // Return data for potential use
     return {
       barbershops,
       barbers,
@@ -369,7 +352,6 @@ async function createTestData() {
   }
 }
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   createTestData().catch(console.error)
 }

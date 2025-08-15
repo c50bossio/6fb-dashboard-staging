@@ -7,7 +7,6 @@ export function useFeatureFlag(flagName, options = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   
-  // Determine source: PostHog for A/B tests, Edge Config for feature flags
   const source = options.source || 'auto' // 'posthog', 'edge', or 'auto'
 
   const checkFlag = useCallback(async () => {
@@ -18,21 +17,18 @@ export function useFeatureFlag(flagName, options = {}) {
       let enabled = false
       
       if (source === 'posthog' || source === 'auto') {
-        // Try PostHog first (for A/B testing)
         if (posthog && typeof window !== 'undefined') {
           await posthog.ready()
           const posthogValue = posthog.isFeatureEnabled(flagName)
           if (posthogValue !== undefined) {
             enabled = posthogValue
           } else if (source === 'posthog') {
-            // If PostHog is the only source and no value, use default
             enabled = options.defaultValue || false
           }
         }
       }
       
       if ((source === 'edge' || source === 'auto') && !enabled) {
-        // Try Edge Config
         const edgeEnabled = await edgeConfig.config.isFeatureEnabled(flagName)
         if (edgeEnabled !== undefined) {
           enabled = edgeEnabled
@@ -41,12 +37,10 @@ export function useFeatureFlag(flagName, options = {}) {
       
       setIsEnabled(enabled)
       
-      // Call onChange callback if provided
       if (options.onChange && enabled !== isEnabled) {
         options.onChange(enabled)
       }
       
-      // Track feature flag exposure
       if (enabled && options.trackExposure !== false) {
         if (window.analytics) {
           window.analytics.track('feature_flag_exposed', {
@@ -68,7 +62,6 @@ export function useFeatureFlag(flagName, options = {}) {
   useEffect(() => {
     checkFlag()
     
-    // Set up listeners for real-time updates
     let unsubscribePostHog
     
     if ((source === 'posthog' || source === 'auto') && posthog) {
@@ -85,7 +78,6 @@ export function useFeatureFlag(flagName, options = {}) {
       })
     }
     
-    // Poll Edge Config periodically if specified
     let pollInterval
     if ((source === 'edge' || source === 'auto') && options.pollInterval) {
       pollInterval = setInterval(checkFlag, options.pollInterval)
@@ -97,7 +89,6 @@ export function useFeatureFlag(flagName, options = {}) {
     }
   }, [flagName, source, checkFlag])
 
-  // Refresh function to manually check flag value
   const refresh = useCallback(() => {
     return checkFlag()
   }, [checkFlag])
@@ -111,7 +102,6 @@ export function useFeatureFlag(flagName, options = {}) {
   }
 }
 
-// Hook for getting multiple feature flags at once
 export function useFeatureFlags(flagNames, options = {}) {
   const [flags, setFlags] = useState({})
   const [loading, setLoading] = useState(true)
@@ -125,11 +115,9 @@ export function useFeatureFlags(flagNames, options = {}) {
       try {
         const results = {}
         
-        // Check all flags in parallel
         await Promise.all(
           flagNames.map(async (flagName) => {
             try {
-              // Check PostHog
               if (posthog && typeof window !== 'undefined') {
                 await posthog.ready()
                 const value = posthog.isFeatureEnabled(flagName)
@@ -139,7 +127,6 @@ export function useFeatureFlags(flagNames, options = {}) {
                 }
               }
               
-              // Check Edge Config
               const edgeValue = await edgeConfig.config.isFeatureEnabled(flagName)
               results[flagName] = edgeValue || false
             } catch (err) {
@@ -154,7 +141,6 @@ export function useFeatureFlags(flagNames, options = {}) {
         console.error('Error checking feature flags:', err)
         setError(err)
         
-        // Set all flags to false on error
         const errorResults = {}
         flagNames.forEach(name => {
           errorResults[name] = false
@@ -171,7 +157,6 @@ export function useFeatureFlags(flagNames, options = {}) {
   return { flags, loading, error }
 }
 
-// Hook for A/B testing with variants
 export function useExperiment(experimentName, options = {}) {
   const [variant, setVariant] = useState(options.defaultVariant || 'control')
   const [loading, setLoading] = useState(true)
@@ -185,7 +170,6 @@ export function useExperiment(experimentName, options = {}) {
       try {
         let experimentVariant = 'control'
         
-        // Check PostHog first
         if (posthog && typeof window !== 'undefined') {
           await posthog.ready()
           const posthogVariant = posthog.getFeatureFlag(experimentName)
@@ -193,19 +177,16 @@ export function useExperiment(experimentName, options = {}) {
             experimentVariant = posthogVariant
           }
         } else {
-          // Fallback to Edge Config
           const userId = options.userId || 'anonymous'
           experimentVariant = await edgeConfig.utils.getExperimentVariant(experimentName, userId)
         }
         
         setVariant(experimentVariant)
         
-        // Track experiment exposure
         if (options.trackExposure !== false && window.analytics) {
           window.analytics.experiments.trackExperimentViewed(experimentName, experimentVariant)
         }
         
-        // Call onChange callback
         if (options.onChange) {
           options.onChange(experimentVariant)
         }
@@ -221,7 +202,6 @@ export function useExperiment(experimentName, options = {}) {
     checkExperiment()
   }, [experimentName, options.userId])
   
-  // Helper to track conversion
   const trackConversion = useCallback((value) => {
     if (window.analytics) {
       window.analytics.experiments.trackExperimentConversion(experimentName, variant, value)

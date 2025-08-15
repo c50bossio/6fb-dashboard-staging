@@ -21,7 +21,6 @@ export default function TestAutomationPage() {
   const [systemHealth, setSystemHealth] = useState(null)
   const [selectedTestScenario, setSelectedTestScenario] = useState(null)
 
-  // Predefined test scenarios that combine emotions with business events
   const testScenarios = [
     {
       id: 'angry_cancellation',
@@ -102,7 +101,6 @@ export default function TestAutomationPage() {
       
       const startTime = Date.now()
       
-      // Create test context with business event
       const testContext = {
         message: scenario.message,
         emotion: scenario.emotion,
@@ -120,7 +118,6 @@ export default function TestAutomationPage() {
         }
       }
 
-      // Call automated task execution API
       const response = await fetch('/api/ai/task-execution', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -174,7 +171,6 @@ export default function TestAutomationPage() {
   const runAllTests = async () => {
     for (const scenario of testScenarios) {
       await runSingleTest(scenario)
-      // Small delay between tests
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
@@ -182,7 +178,6 @@ export default function TestAutomationPage() {
   const detectBusinessEventType = (message, emotion) => {
     const text = message.toLowerCase()
     
-    // Enhanced business event detection with new patterns
     if (text.includes('cancel')) return 'appointment_cancellation'
     if (text.includes('payment') || text.includes('bill') || text.includes('charge') || text.includes('card')) return 'payment_issue'
     if (text.includes('love') || text.includes('amazing') || text.includes('incredible')) return 'positive_feedback'

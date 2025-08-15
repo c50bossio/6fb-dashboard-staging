@@ -84,13 +84,11 @@ export async function GET(request, { params }) {
             );
         }
         
-        // Real database operation - find waitlist matches
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
             process.env.SUPABASE_SERVICE_ROLE_KEY
         );
         
-        // Query waitlist entries for the barbershop
         const { data: waitlistEntries, error } = await supabase
             .from('waitlist')
             .select(`
@@ -110,7 +108,6 @@ export async function GET(request, { params }) {
             }, { status: 500 });
         }
         
-        // Process matches with real data
         const matches = waitlistEntries?.map(entry => ({
             slot_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
             duration: entry.duration_minutes || 45,
@@ -132,11 +129,6 @@ export async function GET(request, { params }) {
             }]
         })) || [];
         
-        // In production, this would call:
-        // const matches = await waitlist_cancellation_service.find_waitlist_matches(
-        //     barbershop_id,
-        //     null, // available_slots - let service find them
-        //     days_ahead
         // );
         
         return NextResponse.json({

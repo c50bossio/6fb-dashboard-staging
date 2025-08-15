@@ -1,8 +1,5 @@
-// Production Deployment Configuration
-// Settings for deploying the campaign and billing system to production
 
 module.exports = {
-  // Application metadata
   app: {
     name: '6FB AI Agent System',
     version: '1.0.0',
@@ -11,7 +8,6 @@ module.exports = {
     repository: 'https://github.com/bookedbarber/6fb-ai-agent-system'
   },
 
-  // Deployment environments
   environments: {
     development: {
       name: 'Development',
@@ -60,9 +56,7 @@ module.exports = {
     }
   },
 
-  // Infrastructure configuration
   infrastructure: {
-    // Container settings
     docker: {
       registry: 'docker.io/bookedbarber',
       images: {
@@ -96,7 +90,6 @@ module.exports = {
       }
     },
 
-    // Cloud providers
     cloud: {
       provider: 'vercel', // or 'aws', 'gcp', 'azure'
       regions: ['us-east-1', 'eu-west-1'],
@@ -108,7 +101,6 @@ module.exports = {
       }
     },
 
-    // Database configuration
     database: {
       provider: 'supabase',
       plan: 'pro', // 'free', 'pro', 'team', 'enterprise'
@@ -123,7 +115,6 @@ module.exports = {
       }
     },
 
-    // CDN configuration
     cdn: {
       provider: 'cloudflare',
       caching: {
@@ -135,7 +126,6 @@ module.exports = {
       minification: true
     },
 
-    // Monitoring
     monitoring: {
       apm: 'sentry',
       analytics: 'posthog',
@@ -144,16 +134,13 @@ module.exports = {
     }
   },
 
-  // Security configuration
   security: {
-    // SSL/TLS
     ssl: {
       enabled: true,
       provider: 'letsencrypt',
       autoRenew: true
     },
 
-    // Headers
     headers: {
       'X-Frame-Options': 'DENY',
       'X-Content-Type-Options': 'nosniff',
@@ -162,7 +149,6 @@ module.exports = {
       'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.segment.com; style-src 'self' 'unsafe-inline';"
     },
 
-    // Rate limiting
     rateLimiting: {
       enabled: true,
       rules: {
@@ -172,7 +158,6 @@ module.exports = {
       }
     },
 
-    // Secrets management
     secrets: {
       provider: 'vault', // or 'aws-secrets-manager', 'azure-key-vault'
       rotation: {
@@ -182,9 +167,7 @@ module.exports = {
     }
   },
 
-  // Deployment scripts
   scripts: {
-    // Pre-deployment
     preDeploy: [
       'npm run test',
       'npm run lint',
@@ -192,7 +175,6 @@ module.exports = {
       'npm run test:e2e'
     ],
 
-    // Deployment
     deploy: {
       staging: [
         'docker build -t bookedbarber/6fb-frontend:staging .',
@@ -208,21 +190,18 @@ module.exports = {
       ]
     },
 
-    // Post-deployment
     postDeploy: [
       'npm run health-check',
       'npm run smoke-test',
       'npm run notify-team'
     ],
 
-    // Rollback
     rollback: [
       'kubectl rollout undo deployment/frontend-production',
       'npm run notify-team --message="Rollback initiated"'
     ]
   },
 
-  // Health checks
   healthChecks: {
     endpoints: [
       {
@@ -258,7 +237,6 @@ module.exports = {
     }
   },
 
-  // Feature flags
   featureFlags: {
     provider: 'vercel', // or 'launchdarkly', 'split.io'
     flags: {
@@ -290,7 +268,6 @@ module.exports = {
     }
   },
 
-  // Backup and disaster recovery
   backup: {
     database: {
       enabled: true,
@@ -308,7 +285,6 @@ module.exports = {
     }
   },
 
-  // Performance targets
   performance: {
     targets: {
       ttfb: 200, // Time to first byte (ms)
@@ -326,7 +302,6 @@ module.exports = {
     }
   },
 
-  // Compliance
   compliance: {
     gdpr: {
       enabled: true,
@@ -347,7 +322,6 @@ module.exports = {
     }
   },
 
-  // Notification settings
   notifications: {
     deployments: {
       enabled: true,

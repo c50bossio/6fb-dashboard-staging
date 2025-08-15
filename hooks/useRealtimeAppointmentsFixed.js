@@ -22,7 +22,6 @@ export function useRealtimeAppointments(barbershopId) {
   useEffect(() => {
     const startTime = Date.now()
     
-    // Initialize Supabase client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
@@ -51,7 +50,6 @@ export function useRealtimeAppointments(barbershopId) {
     
     console.log('🔄 Initializing real-time connection for shop:', barbershopId)
 
-    // Function to fetch appointments
     const fetchAppointments = async () => {
       try {
         console.log('📡 Fetching initial appointments...')
@@ -71,7 +69,6 @@ export function useRealtimeAppointments(barbershopId) {
 
         console.log('📡 Found', data?.length || 0, 'appointments')
 
-        // Transform to FullCalendar format
         const events = data.map(booking => {
           const isCancelled = booking.status === 'cancelled'
           return {
@@ -114,7 +111,6 @@ export function useRealtimeAppointments(barbershopId) {
       }
     }
 
-    // Common handler for real-time events
     const handleRealtimeEvent = async (eventType, payload) => {
       const eventTime = new Date().toISOString()
       console.log(`📡 Real-time ${eventType} event:`, {
@@ -134,7 +130,6 @@ export function useRealtimeAppointments(barbershopId) {
       }))
       
       if (eventType === 'INSERT' && payload.new) {
-        // Fetch complete record for INSERT
         const { data: newBooking } = await supabase
           .from('bookings')
           .select(`
@@ -184,7 +179,6 @@ export function useRealtimeAppointments(barbershopId) {
           })
         }
       } else if (eventType === 'UPDATE' && payload.new) {
-        // Fetch complete record for UPDATE
         const { data: updatedBooking } = await supabase
           .from('bookings')
           .select(`
@@ -228,8 +222,6 @@ export function useRealtimeAppointments(barbershopId) {
         const deletedId = payload.old.id
         console.log('📡 DELETE received for:', deletedId)
         
-        // Only delete if the appointment exists in our current state
-        // This ensures we only delete appointments from our shop
         setAppointments(prev => {
           const exists = prev.find(event => event.id === deletedId)
           if (exists) {
@@ -244,15 +236,12 @@ export function useRealtimeAppointments(barbershopId) {
       }
     }
 
-    // Initial fetch
     fetchAppointments()
 
-    // Set up realtime subscription with separate handlers for each event type
     console.log('📡 Setting up real-time subscription for shop:', barbershopId)
     
     const channel = supabase
       .channel(`bookings-${barbershopId}`)
-      // INSERT events with filter
       .on(
         'postgres_changes',
         {
@@ -263,7 +252,6 @@ export function useRealtimeAppointments(barbershopId) {
         },
         (payload) => handleRealtimeEvent('INSERT', payload)
       )
-      // UPDATE events with filter
       .on(
         'postgres_changes',
         {
@@ -274,8 +262,6 @@ export function useRealtimeAppointments(barbershopId) {
         },
         (payload) => handleRealtimeEvent('UPDATE', payload)
       )
-      // DELETE events - Supabase doesn't include shop_id even with REPLICA IDENTITY FULL
-      // So we track appointment IDs and only delete ones we know about
       .on(
         'postgres_changes',
         {
@@ -284,12 +270,9 @@ export function useRealtimeAppointments(barbershopId) {
           table: 'bookings'
         },
         (payload) => {
-          // Since shop_id isn't available in DELETE payload, we check if this appointment
-          // exists in our current state (which means it belongs to our shop)
           const appointmentId = payload.old?.id
           if (appointmentId) {
             console.log('📡 DELETE event for appointment:', appointmentId)
-            // We'll handle the delete since we can't filter by shop_id
             handleRealtimeEvent('DELETE', payload)
           }
         }
@@ -318,7 +301,6 @@ export function useRealtimeAppointments(barbershopId) {
         }
       })
 
-    // Cleanup subscription on unmount
     return () => {
       console.log('🧹 Cleaning up real-time subscription')
       if (channel) {
@@ -327,7 +309,6 @@ export function useRealtimeAppointments(barbershopId) {
     }
   }, [barbershopId])
 
-  // Debug log periodically
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('📊 Real-time diagnostics:', {

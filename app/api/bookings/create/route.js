@@ -3,7 +3,6 @@ import { createClient } from '../../../../lib/supabase/client'
 import { z } from 'zod'
 export const runtime = 'edge'
 
-// Validation schema for booking creation
 const bookingSchema = z.object({
   barbershop_id: z.string().min(1),
   barber_id: z.string().min(1),
@@ -24,7 +23,6 @@ async function sendNotifications(booking) {
   try {
     console.log('📧 Sending booking confirmation notifications for:', booking.id)
     
-    // Email notification
     const emailNotification = {
       to: booking.client_email,
       subject: 'Booking Confirmation',
@@ -38,7 +36,6 @@ async function sendNotifications(booking) {
       }
     }
     
-    // SMS notification (if phone provided)
     let smsNotification = null
     if (booking.client_phone) {
       smsNotification = {
@@ -63,7 +60,6 @@ async function sendNotifications(booking) {
 async function processPayment(paymentData, bookingAmount) {
   try {
     if (paymentData.payment_method === 'online') {
-      // Simulate Stripe payment processing
       return {
         success: true,
         transaction_id: `txn_${Date.now()}`,
@@ -93,7 +89,6 @@ export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -102,7 +97,6 @@ export async function POST(request) {
     const body = await request.json()
     console.log('📝 Creating booking with data:', body)
     
-    // Validate request body
     const validationResult = bookingSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json({
@@ -113,10 +107,8 @@ export async function POST(request) {
 
     const bookingData = validationResult.data
 
-    // Calculate total amount
     const total_amount = bookingData.service_price + (bookingData.tip_amount || 0)
 
-    // Check for time conflicts
     const conflictCheck = await supabase
       .from('bookings')
       .select('id, scheduled_at, duration_minutes')
@@ -128,7 +120,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to check time conflicts' }, { status: 500 })
     }
 
-    // Check for overlapping appointments
     const newStart = new Date(bookingData.scheduled_at)
     const newEnd = new Date(newStart.getTime() + bookingData.duration_minutes * 60000)
 
@@ -146,7 +137,6 @@ export async function POST(request) {
       }, { status: 409 })
     }
 
-    // Process payment if required
     let paymentResult = null
     if (bookingData.payment_method === 'online' && total_amount > 0) {
       paymentResult = await processPayment(bookingData, total_amount)
@@ -159,7 +149,6 @@ export async function POST(request) {
       }
     }
 
-    // Create booking in database
     const bookingInsert = {
       barbershop_id: bookingData.barbershop_id,
       barber_id: bookingData.barber_id,
@@ -201,7 +190,6 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    // Send notifications asynchronously
     sendNotifications(booking).then(notificationResult => {
       console.log('📧 Notification result:', notificationResult)
     }).catch(notificationError => {

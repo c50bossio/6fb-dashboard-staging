@@ -10,7 +10,6 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
-// Load environment variables
 require('dotenv').config({ path: '.env.local' });
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -19,7 +18,6 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_
   process.exit(1);
 }
 
-// Create Supabase client with service role for admin operations
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -29,7 +27,6 @@ async function runMigration() {
   console.log('🚀 Running Supabase database migration...\n');
 
   try {
-    // Read migration SQL file
     const migrationPath = path.join(__dirname, '..', 'database', 'subscription-migration.sql');
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
@@ -37,7 +34,6 @@ async function runMigration() {
     console.log(`   File: ${migrationPath}`);
     console.log(`   Size: ${Math.round(migrationSQL.length / 1024)}KB\n`);
 
-    // Split SQL into individual statements (basic approach)
     const statements = migrationSQL
       .split(';')
       .map(stmt => stmt.trim())
@@ -45,13 +41,11 @@ async function runMigration() {
 
     console.log(`📊 Found ${statements.length} SQL statements to execute\n`);
 
-    // Execute migration
     console.log('⚡ Executing migration statements...');
     
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i];
       
-      // Skip comments and empty statements
       if (!statement || statement.startsWith('--') || statement.trim() === '') {
         continue;
       }
@@ -59,13 +53,11 @@ async function runMigration() {
       try {
         console.log(`   ${i + 1}/${statements.length}: Executing...`);
         
-        // Use RPC to execute SQL
         const { data, error } = await supabase.rpc('exec', {
           query: statement + ';'
         });
 
         if (error) {
-          // Some statements might fail if they already exist (IF NOT EXISTS)
           if (error.message.includes('already exists') || 
               error.message.includes('does not exist') ||
               error.message.includes('duplicate key')) {
@@ -79,13 +71,11 @@ async function runMigration() {
         }
       } catch (err) {
         console.log(`   ⚠️  Error: ${err.message}`);
-        // Continue with other statements
       }
     }
 
     console.log('\n🎉 Migration execution completed!');
 
-    // Verify migration by checking if key tables exist
     console.log('\n🔍 Verifying migration...');
     
     const tablesToCheck = [
@@ -114,7 +104,6 @@ async function runMigration() {
       }
     }
 
-    // Check if subscription columns were added to users table
     console.log('\n🔍 Checking users table schema...');
     try {
       const { data, error } = await supabase

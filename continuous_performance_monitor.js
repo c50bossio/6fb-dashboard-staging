@@ -28,7 +28,6 @@ class ContinuousPerformanceMonitor {
         this.alerts = [];
         this.running = false;
         
-        // Load existing metrics if available
         this.loadMetricsHistory();
     }
 
@@ -40,10 +39,8 @@ class ContinuousPerformanceMonitor {
         
         this.running = true;
         
-        // Initial health check
         await this.performHealthCheck();
         
-        // Start monitoring loop
         this.monitoringInterval = setInterval(() => {
             if (this.running) {
                 this.performHealthCheck().catch(error => {
@@ -52,7 +49,6 @@ class ContinuousPerformanceMonitor {
             }
         }, this.options.interval);
         
-        // Setup graceful shutdown
         process.on('SIGINT', () => {
             console.log('\n🛑 Shutting down performance monitor...');
             this.stopMonitoring();
@@ -81,7 +77,6 @@ class ContinuousPerformanceMonitor {
         };
 
         try {
-            // Backend health check
             const backendStart = Date.now();
             const backendResponse = await fetch(`${this.options.backend_url}/health`);
             const backendTime = Date.now() - backendStart;
@@ -92,7 +87,6 @@ class ContinuousPerformanceMonitor {
                 status_code: backendResponse.status
             };
 
-            // Check API endpoints
             const apiEndpoints = [
                 '/api/v1/ai/agents/status',
                 '/api/v1/ai/performance/status',
@@ -121,7 +115,6 @@ class ContinuousPerformanceMonitor {
             
             metrics.backend.api_endpoints = apiResults;
 
-            // Frontend health check (simple)
             try {
                 const frontendStart = Date.now();
                 const frontendResponse = await fetch(`${this.options.frontend_url}/api/health`);
@@ -139,19 +132,15 @@ class ContinuousPerformanceMonitor {
                 };
             }
 
-            // Check for alerts
             metrics.alerts = this.checkAlerts(metrics);
             
-            // Log and save metrics
             this.logMetrics(metrics);
             this.metrics_history.push(metrics);
             
-            // Keep only last 1000 entries
             if (this.metrics_history.length > 1000) {
                 this.metrics_history = this.metrics_history.slice(-1000);
             }
             
-            // Save metrics every 10 checks
             if (this.metrics_history.length % 10 === 0) {
                 this.saveMetricsHistory();
             }
@@ -167,7 +156,6 @@ class ContinuousPerformanceMonitor {
     checkAlerts(metrics) {
         const alerts = [];
         
-        // Backend response time alert
         if (metrics.backend.response_time > this.options.alert_thresholds.api_response_time) {
             alerts.push({
                 type: 'performance',
@@ -177,7 +165,6 @@ class ContinuousPerformanceMonitor {
             });
         }
         
-        // Frontend response time alert
         if (metrics.frontend.response_time > this.options.alert_thresholds.frontend_load_time) {
             alerts.push({
                 type: 'performance',
@@ -187,7 +174,6 @@ class ContinuousPerformanceMonitor {
             });
         }
         
-        // Service health alerts
         if (metrics.backend.status !== 'healthy') {
             alerts.push({
                 type: 'availability',
@@ -204,7 +190,6 @@ class ContinuousPerformanceMonitor {
             });
         }
         
-        // API endpoint alerts
         if (metrics.backend.api_endpoints) {
             Object.entries(metrics.backend.api_endpoints).forEach(([endpoint, result]) => {
                 if (result.status !== 'healthy') {
@@ -228,19 +213,16 @@ class ContinuousPerformanceMonitor {
         const frontend_time = metrics.frontend.response_time || 0;
         const alert_count = metrics.alerts.length;
         
-        // Console output
         const status_emoji = (backend_status === 'healthy' && frontend_status === 'healthy') ? '✅' : '⚠️';
         const alert_emoji = alert_count > 0 ? '🚨' : '';
         
         console.log(`${status_emoji} ${timestamp} | Backend: ${backend_time}ms (${backend_status}) | Frontend: ${frontend_time}ms (${frontend_status}) ${alert_emoji}`);
         
-        // Log alerts
         metrics.alerts.forEach(alert => {
             const severity_emoji = alert.severity === 'critical' ? '🔴' : '🟡';
             console.log(`  ${severity_emoji} ${alert.type.toUpperCase()}: ${alert.message}`);
         });
         
-        // File logging
         const logEntry = {
             timestamp,
             backend: { status: backend_status, time: backend_time },
@@ -255,7 +237,6 @@ class ContinuousPerformanceMonitor {
         const timestamp = new Date().toISOString();
         const logLine = `[${timestamp}] ${level}: ${message}\n`;
         
-        // Append to log file
         fs.appendFileSync(this.options.log_file, logLine);
     }
 
@@ -287,7 +268,6 @@ class ContinuousPerformanceMonitor {
 
         const recent_metrics = this.metrics_history.slice(-100); // Last 100 entries
         
-        // Calculate averages
         const backend_times = recent_metrics
             .filter(m => m.backend && m.backend.response_time)
             .map(m => m.backend.response_time);
@@ -327,7 +307,6 @@ class ContinuousPerformanceMonitor {
     }
 }
 
-// CLI interface
 function parseArgs() {
     const args = process.argv.slice(2);
     const options = {};
@@ -362,7 +341,6 @@ function parseArgs() {
     return options;
 }
 
-// Show help
 function showHelp() {
     console.log(`
 6FB AI Agent System - Continuous Performance Monitor
@@ -389,7 +367,6 @@ Examples:
 `);
 }
 
-// Main execution
 if (require.main === module) {
     const args = process.argv.slice(2);
     
@@ -406,7 +383,6 @@ if (require.main === module) {
         process.exit(1);
     });
     
-    // Show report every 10 minutes
     setInterval(() => {
         if (monitor.running) {
             monitor.generateReport();

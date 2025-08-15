@@ -10,7 +10,6 @@ export default function RealtimeStatusIndicator({
   eventCounts,
   error 
 }) {
-  // Determine status color and icon
   const getStatusConfig = () => {
     if (error) {
       return {

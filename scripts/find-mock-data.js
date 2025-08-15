@@ -1,5 +1,3 @@
-// Find and Track Mock Data Cleanup Progress
-// Identifies all remaining mock data generators across the codebase
 
 const fs = require('fs').promises
 const path = require('path')
@@ -54,7 +52,6 @@ async function findMockDataFiles() {
   
   await scanDirectory('.', results)
   
-  // Generate progress report
   generateProgressReport(results)
   
   return results
@@ -69,13 +66,11 @@ async function scanDirectory(dirPath, results) {
       const stat = await fs.stat(fullPath)
       
       if (stat.isDirectory()) {
-        // Skip excluded directories
         if (EXCLUDE_DIRS.some(excluded => item.includes(excluded))) {
           continue
         }
         await scanDirectory(fullPath, results)
       } else if (stat.isFile()) {
-        // Skip excluded file types
         if (EXCLUDE_FILES.some(ext => item.endsWith(ext))) {
           continue
         }
@@ -139,7 +134,6 @@ function generateProgressReport(results) {
   console.log('\n📋 Files needing cleanup:')
   console.log('-' .repeat(40))
   
-  // Group by file
   const fileGroups = {}
   results.mockDataInstances.forEach(instance => {
     if (!fileGroups[instance.file]) {
@@ -148,7 +142,6 @@ function generateProgressReport(results) {
     fileGroups[instance.file].push(instance)
   })
   
-  // Sort by number of instances (highest first)
   const sortedFiles = Object.entries(fileGroups)
     .sort(([, a], [, b]) => b.length - a.length)
   
@@ -162,7 +155,6 @@ function generateProgressReport(results) {
     })
   })
   
-  // Priority summary
   console.log('\n🎯 Cleanup Priority:')
   console.log('-' .repeat(40))
   
@@ -179,7 +171,6 @@ function generateProgressReport(results) {
     console.log(`${priority}: ${count} files`)
   })
   
-  // Pattern analysis
   console.log('\n🔍 Most Common Patterns:')
   console.log('-' .repeat(40))
   
@@ -226,7 +217,6 @@ function isHighPriorityFile(file) {
   return highPriorityPatterns.some(pattern => file.includes(pattern))
 }
 
-// Create cleanup suggestions
 function generateCleanupSuggestions(results) {
   console.log('\n🛠️  Cleanup Suggestions:')
   console.log('-' .repeat(40))
@@ -245,13 +235,11 @@ function generateCleanupSuggestions(results) {
   })
 }
 
-// Run scan if called directly
 if (require.main === module) {
   findMockDataFiles()
     .then(results => {
       generateCleanupSuggestions(results)
       
-      // Exit with non-zero if mock data found
       if (results.mockDataInstances.length > 0) {
         console.log(`\n⚠️  Found ${results.mockDataInstances.length} mock data instances that need cleanup`)
         process.exit(1)

@@ -8,7 +8,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables from .env.local
 const envPath = join(__dirname, '../.env.local')
 try {
   const envContent = readFileSync(envPath, 'utf8')
@@ -37,11 +36,8 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 async function setupSupabase() {
   console.log('\n📋 Step 1: Creating barbershops table...')
   
-  // Since we can't execute raw SQL easily, let's insert test data directly
-  // and assume tables exist or will be created through the dashboard
   
   try {
-    // Test connection and try to insert a barbershop
     const testBarbershop = {
       name: 'The Classic Cut',
       slug: 'classic-cut-demo-' + Date.now(),
@@ -74,7 +70,6 @@ async function setupSupabase() {
 
     console.log('✅ Successfully created barbershop:', barbershop.name)
 
-    // Test barber creation
     console.log('\n👨‍💼 Step 2: Creating test barber...')
     const testBarber = {
       barbershop_id: barbershop.id,
@@ -97,7 +92,6 @@ async function setupSupabase() {
 
     console.log('✅ Successfully created barber:', barber.name)
 
-    // Test service creation
     console.log('\n✂️  Step 3: Creating test service...')
     const testService = {
       barbershop_id: barbershop.id,
@@ -122,7 +116,6 @@ async function setupSupabase() {
 
     console.log('✅ Successfully created service:', service.name)
 
-    // Test client creation
     console.log('\n👤 Step 4: Creating test client...')
     const testClient = {
       barbershop_id: barbershop.id,
@@ -145,7 +138,6 @@ async function setupSupabase() {
 
     console.log('✅ Successfully created client:', client.name)
 
-    // Test appointment creation
     console.log('\n📅 Step 5: Creating test appointment...')
     const appointmentTime = new Date()
     appointmentTime.setHours(appointmentTime.getHours() + 24) // Tomorrow at same time
@@ -197,7 +189,6 @@ async function setupSupabase() {
   }
 }
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   setupSupabase().then(success => {
     if (!success) {

@@ -13,7 +13,6 @@ import {
   ComposedChart, PieChart, Pie, Cell, RadialBarChart, RadialBar
 } from 'recharts'
 
-// Color palette for charts
 const COLORS = {
   primary: '#3B82F6',
   secondary: '#10B981', 
@@ -34,14 +33,12 @@ export default function ForecastingDashboard({ barbershopId }) {
   const [selectedTimeframe, setSelectedTimeframe] = useState('1_month')
   const [refreshInterval, setRefreshInterval] = useState(null)
 
-  // Fetch forecasting data
   useEffect(() => {
     const fetchForecastData = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        // Fetch data from all forecasting endpoints
         const [revenueResponse, bookingsResponse, trendsResponse] = await Promise.all([
           fetch(`/api/forecasting/revenue?barbershop_id=${barbershopId}&time_horizons=1_day,1_week,1_month,3_months,6_months,1_year`),
           fetch(`/api/forecasting/bookings?barbershop_id=${barbershopId}&forecast_days=30&granularity=daily`),
@@ -74,7 +71,6 @@ export default function ForecastingDashboard({ barbershopId }) {
 
     fetchForecastData()
 
-    // Set up auto-refresh every 5 minutes
     const interval = setInterval(fetchForecastData, 5 * 60 * 1000)
     setRefreshInterval(interval)
 
@@ -83,7 +79,6 @@ export default function ForecastingDashboard({ barbershopId }) {
     }
   }, [barbershopId])
 
-  // Process data for charts
   const chartData = useMemo(() => {
     if (!forecastData) return {}
 
@@ -231,7 +226,6 @@ export default function ForecastingDashboard({ barbershopId }) {
   )
 }
 
-// Tab Components
 function OverviewTab({ data, chartData }) {
   return (
     <div className="space-y-6">
@@ -727,7 +721,6 @@ function InsightsTab({ data }) {
   )
 }
 
-// Helper Components
 function MetricCard({ title, value, change, icon: Icon, color, bgColor }) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -813,7 +806,6 @@ function ProjectionCard({ title, data, confidence }) {
   )
 }
 
-// Helper Functions
 function getConfidenceColor(confidence) {
   if (confidence >= 0.8) return 'bg-moss-100 text-moss-900'
   if (confidence >= 0.6) return 'bg-amber-100 text-amber-900'
@@ -891,7 +883,6 @@ function processUtilizationData(bookingsData) {
   const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   const utilizationByDay = {}
   
-  // Group by day of week
   bookingsData.daily_forecasts.forEach(forecast => {
     const date = new Date(forecast.forecast_date)
     const dayName = weekdays[date.getDay() === 0 ? 6 : date.getDay() - 1]
@@ -902,7 +893,6 @@ function processUtilizationData(bookingsData) {
     utilizationByDay[dayName].push(forecast.utilization_rate)
   })
   
-  // Calculate averages
   return weekdays.map(day => ({
     day,
     utilization: utilizationByDay[day] ? 

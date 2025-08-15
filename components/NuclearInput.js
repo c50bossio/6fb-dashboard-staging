@@ -2,7 +2,6 @@ import { useRef, useEffect, useState, forwardRef, memo } from 'react'
 
 import { autoFormat, validators } from '../lib/formatters'
 
-// NUCLEAR SOLUTION: DOM-only input that completely bypasses React state
 const NuclearInput = memo(forwardRef(({ 
   type = 'text', 
   defaultValue = '', 
@@ -21,10 +20,8 @@ const NuclearInput = memo(forwardRef(({
   const [isValid, setIsValid] = useState(true)
   const [validationMessage, setValidationMessage] = useState('')
   
-  // Set initial value and handle defaultValue updates
   useEffect(() => {
     if (actualRef.current) {
-      // Update value when defaultValue changes, even after initialization
       if (!isInitialized.current || (defaultValue && defaultValue !== initialValue.current)) {
         console.log('NUCLEAR: Setting value to', defaultValue, 'for input type', type)
         actualRef.current.value = defaultValue || ''
@@ -34,21 +31,17 @@ const NuclearInput = memo(forwardRef(({
     }
   }, [defaultValue, type])
   
-  // Handle input event for auto-formatting
   const handleInput = (e) => {
     if (autoFormatting) {
       const currentValue = e.target.value
       const formattedValue = autoFormat(currentValue, type, name, placeholder)
       
       if (formattedValue !== currentValue) {
-        // Store cursor position
         const cursorPosition = e.target.selectionStart
         const lengthDiff = formattedValue.length - currentValue.length
         
-        // Apply formatted value
         e.target.value = formattedValue
         
-        // Restore cursor position (adjust for length change)
         const newCursorPosition = Math.max(0, cursorPosition + lengthDiff)
         e.target.setSelectionRange(newCursorPosition, newCursorPosition)
         
@@ -57,16 +50,13 @@ const NuclearInput = memo(forwardRef(({
     }
   }
 
-  // Handle blur event - validate and communicate with parent
   const handleBlur = (e) => {
     const value = e.target.value
     
-    // Perform validation if enabled
     if (validation && value) {
       let isValidInput = true
       let message = ''
       
-      // Auto-detect validation based on input type
       if (type === 'tel' && validators.phone) {
         isValidInput = validators.phone(value)
         message = isValidInput ? '' : 'Please enter a valid phone number'
@@ -84,29 +74,24 @@ const NuclearInput = memo(forwardRef(({
     }
   }
   
-  // Prevent React from ever interfering with this input
   useEffect(() => {
     const input = actualRef.current
     if (!input) return
     
-    // Get original value descriptor to work with native DOM behavior
     const originalDescriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')
     const originalValueGetter = originalDescriptor.get
     const originalValueSetter = originalDescriptor.set
     
     Object.defineProperty(input, 'value', {
       get() {
-        // Use the native DOM getter
         return originalValueGetter.call(input)
       },
       set(newValue) {
-        // Use native DOM setter - this will properly clear and set values
         originalValueSetter.call(input, newValue)
         console.log('NUCLEAR: Set value to:', newValue)
       }
     })
     
-    // Block external modifications
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
@@ -143,7 +128,6 @@ const NuclearInput = memo(forwardRef(({
         placeholder={placeholder}
         className={`${className} ${!isValid ? 'border-red-500 focus:ring-red-500' : ''}`}
         
-        // Aggressive anti-interference
         autoComplete="new-password"
         autoCorrect="off"
         autoCapitalize="off"
@@ -152,7 +136,6 @@ const NuclearInput = memo(forwardRef(({
         data-form-type="other"
         data-1p-ignore="true"
         
-        // Random attributes to confuse form fillers
         data-nuclear={Math.random().toString(36)}
         
         {...props}

@@ -1,14 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-// Fallback Pusher client for when real Pusher is not available
-// This uses real database data via API polling instead of mock data
 const createFallbackPusher = (key, options) => {
   let pollingIntervals = []
   
   return {
     subscribe: (channelName) => ({
       bind: (eventName, callback) => {
-        // Store callback for real data events
         if (!window.pusherCallbacks) {
           window.pusherCallbacks = {}
         }
@@ -16,7 +13,6 @@ const createFallbackPusher = (key, options) => {
         const callbackKey = `${channelName}-${eventName}`
         window.pusherCallbacks[callbackKey] = callback
         
-        // Start real data polling from database
         if (eventName === 'metrics-update') {
           startMetricsPolling(callback)
         } else if (eventName === 'notification') {
@@ -31,7 +27,6 @@ const createFallbackPusher = (key, options) => {
       }
     }),
     unsubscribe: (channelName) => {
-      // Clean up callbacks
       if (window.pusherCallbacks) {
         Object.keys(window.pusherCallbacks).forEach(key => {
           if (key.startsWith(channelName)) {
@@ -41,7 +36,6 @@ const createFallbackPusher = (key, options) => {
       }
     },
     disconnect: () => {
-      // Clean up all callbacks and intervals
       window.pusherCallbacks = {}
       pollingIntervals.forEach(interval => clearInterval(interval))
       pollingIntervals = []
@@ -49,7 +43,6 @@ const createFallbackPusher = (key, options) => {
   }
 }
 
-// Poll real metrics from database
 const startMetricsPolling = async (callback) => {
   const fetchMetrics = async () => {
     try {
@@ -67,20 +60,16 @@ const startMetricsPolling = async (callback) => {
     }
   }
   
-  // Initial fetch
   fetchMetrics()
   
-  // Poll every 5 seconds
   const interval = setInterval(fetchMetrics, 5000)
   
-  // Store interval for cleanup
   if (!window.pollingIntervals) {
     window.pollingIntervals = []
   }
   window.pollingIntervals.push(interval)
 }
 
-// Poll real notifications from database
 const startNotificationPolling = async (callback) => {
   let lastNotificationId = null
   
@@ -91,7 +80,6 @@ const startNotificationPolling = async (callback) => {
         const data = await response.json()
         const notifications = data.notifications || []
         
-        // Only send new notifications
         if (notifications.length > 0) {
           const latestNotification = notifications[0]
           if (latestNotification.id !== lastNotificationId) {
@@ -109,7 +97,6 @@ const startNotificationPolling = async (callback) => {
     }
   }
   
-  // Poll every 15 seconds
   const interval = setInterval(fetchNotifications, 15000)
   
   if (!window.pollingIntervals) {
@@ -126,7 +113,6 @@ export const useRealtime = () => {
   const [pusherClient, setPusherClient] = useState(null)
   const [channel, setChannel] = useState(null)
   
-  // Real-time data states
   const [realtimeMetrics, setRealtimeMetrics] = useState(null)
   const [notifications, setNotifications] = useState([])
   const [aiResponses, setAiResponses] = useState([])
@@ -138,7 +124,6 @@ export const useRealtime = () => {
     try {
       setConnectionError(null)
       
-      // Initialize real-time connection
       const response = await fetch('/api/realtime/connect', {
         method: 'POST',
         headers: {
@@ -155,7 +140,6 @@ export const useRealtime = () => {
         setSessionId(data.sessionId)
         setChannelName(data.channelName)
         
-        // Initialize Pusher (or fallback for development)
         const pusher = window.Pusher 
           ? new window.Pusher(data.pusherConfig.key, {
               cluster: data.pusherConfig.cluster,
@@ -168,11 +152,9 @@ export const useRealtime = () => {
         
         setPusherClient(pusher)
         
-        // Subscribe to channel
         const realtimeChannel = pusher.subscribe(data.channelName)
         setChannel(realtimeChannel)
         
-        // Bind event listeners
         realtimeChannel.bind('metrics-update', (data) => {
           setRealtimeMetrics(data.metrics)
         })
@@ -199,7 +181,6 @@ export const useRealtime = () => {
       setConnectionError(error.message)
       connectionAttempts.current++
       
-      // Retry connection with exponential backoff
       if (connectionAttempts.current < maxRetries) {
         const retryDelay = Math.pow(2, connectionAttempts.current) * 1000
         setTimeout(() => {
@@ -218,7 +199,6 @@ export const useRealtime = () => {
         })
       }
       
-      // Clean up Pusher connection
       if (channel) {
         channel.unbind('metrics-update')
         channel.unbind('notification')
@@ -232,13 +212,11 @@ export const useRealtime = () => {
         pusherClient.disconnect()
       }
       
-      // Clean up polling intervals
       if (window.pollingIntervals) {
         window.pollingIntervals.forEach(interval => clearInterval(interval))
         window.pollingIntervals = []
       }
       
-      // Reset states
       setIsConnected(false)
       setConnectionError(null)
       setPusherClient(null)
@@ -283,38 +261,31 @@ export const useRealtime = () => {
     setNotifications([])
   }, [])
   
-  // Auto-connect on mount
   useEffect(() => {
     connect()
     
-    // Auto-disconnect on unmount
     return () => {
       disconnect()
     }
   }, [])
   
   return {
-    // Connection state
     isConnected,
     connectionError,
     sessionId,
     channelName,
     
-    // Real-time data
     realtimeMetrics,
     notifications,
     aiResponses,
     
-    // Connection controls
     connect,
     disconnect,
     sendMetricEvent,
     
-    // Notification controls
     markNotificationRead,
     clearNotifications,
     
-    // Helper computed values
     unreadNotifications: notifications.filter(n => !n.read).length,
     hasRealtimeData: Boolean(realtimeMetrics),
     connectionStatus: isConnected ? 'connected' : connectionError ? 'error' : 'connecting'

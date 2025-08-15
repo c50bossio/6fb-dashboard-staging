@@ -37,11 +37,9 @@ export default function TaskExecutionDashboard({ userId }) {
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(new Date())
 
-  // Fetch task execution data
   useEffect(() => {
     fetchTaskData()
     
-    // Auto-refresh every 5 seconds
     const interval = setInterval(fetchTaskData, 5000)
     return () => clearInterval(interval)
   }, [])

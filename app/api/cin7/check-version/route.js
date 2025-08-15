@@ -13,7 +13,6 @@ export async function POST(request) {
     
     console.log('🔍 Testing Cin7 API version compatibility...')
     
-    // Test v2 API first (current implementation)
     console.log('Testing API v2...')
     try {
       const v2Response = await fetch('https://inventory.dearsystems.com/ExternalAPI/v2/products?limit=1', {
@@ -44,7 +43,6 @@ export async function POST(request) {
       console.log('V2 error:', v2Error.message)
     }
     
-    // Test v1 API with Basic auth
     console.log('Testing API v1...')
     try {
       const credentials = Buffer.from(`${accountId}:${apiKey}`).toString('base64')
@@ -75,7 +73,6 @@ export async function POST(request) {
       console.log('V1 error:', v1Error.message)
     }
     
-    // Both failed
     return NextResponse.json({
       version: 'unknown',
       compatible: false,

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
-// Dynamic import to avoid SSR issues
 const EnhancedProfessionalCalendar = dynamic(
   () => import('@/components/calendar/EnhancedProfessionalCalendar'),
   { 
@@ -24,10 +23,8 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // ALL MOCK DATA REMOVED - USING REAL DATABASE OPERATIONS ONLY
 
   useEffect(() => {
-    // Load real data from database - NO MOCK DATA
     fetchRealData()
   }, [user])
 
@@ -40,7 +37,6 @@ export default function BookingsPage() {
       
       const barbershopId = user.barbershop_id || 'demo-shop-001'
       
-      // Load real appointments and barbers via API calls
       const today = new Date()
       const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
       
@@ -49,7 +45,6 @@ export default function BookingsPage() {
         fetch(`/api/barbers?shop_id=${barbershopId}`).then(r => r.json())
       ])
       
-      // Transform barber data to resource format
       const resources = (barbersResponse.barbers || []).map((barber, index) => ({
         id: barber.id,
         title: barber.name,
@@ -77,7 +72,6 @@ export default function BookingsPage() {
     } catch (err) {
       console.error('Error fetching real data:', err)
       setError(`API error: ${err.message}`)
-      // Show empty state instead of mock data
       setEvents([])
       setResources([])
     } finally {
@@ -92,7 +86,6 @@ export default function BookingsPage() {
 
   const handleEventDrop = async (info) => {
     console.log('Event dropped:', info.event)
-    // Here you would update the appointment time via API
   }
 
   const handleDateSelect = (info) => {

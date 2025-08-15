@@ -10,7 +10,6 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: '.env.local' });
 
-// Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -27,11 +26,9 @@ async function deployMarketingTables() {
     console.log('=========================================\n');
     
     try {
-        // Read the production schema
         const schemaPath = path.join(__dirname, '..', 'database', 'production-marketing-schema.sql');
         const schema = fs.readFileSync(schemaPath, 'utf8');
         
-        // Split into individual statements
         const statements = schema
             .split(';')
             .map(s => s.trim())
@@ -43,26 +40,21 @@ async function deployMarketingTables() {
         let errorCount = 0;
         const errors = [];
         
-        // Execute each statement
         for (let i = 0; i < statements.length; i++) {
             const statement = statements[i] + ';';
             
-            // Extract statement type and name for logging
             const statementType = statement.match(/^(CREATE|ALTER|DROP)\s+(TABLE|INDEX|TRIGGER|FUNCTION)/i)?.[0] || 'SQL';
             const tableName = statement.match(/(?:TABLE|INDEX|TRIGGER|FUNCTION)\s+(?:IF\s+NOT\s+EXISTS\s+)?(\w+)/i)?.[1] || '';
             
             process.stdout.write(`${i + 1}/${statements.length} ${statementType} ${tableName}... `);
             
             try {
-                // For table creation, use direct SQL execution
                 const { data, error } = await supabase.rpc('exec_sql', {
                     sql_query: statement
                 });
                 
                 if (error) {
-                    // Try alternative approach for some statements
                     if (error.message.includes('exec_sql')) {
-                        // If exec_sql doesn't exist, we need to handle this differently
                         console.log('⚠️  exec_sql not available, skipping');
                         errors.push({
                             statement: statementType + ' ' + tableName,
@@ -91,7 +83,6 @@ async function deployMarketingTables() {
             }
         }
         
-        // Summary
         console.log('\n=========================================');
         console.log('📊 Deployment Summary:');
         console.log(`   ✅ Successful: ${successCount}`);
@@ -111,7 +102,6 @@ async function deployMarketingTables() {
             console.log('   4. Or use Supabase CLI: supabase db push');
         }
         
-        // Test if tables were created
         console.log('\n🔍 Verifying table creation...');
         await verifyTables();
         
@@ -157,5 +147,4 @@ async function verifyTables() {
     console.log('   3. Continue with Phase 1.2: Environment configuration');
 }
 
-// Run deployment
 deployMarketingTables().catch(console.error);

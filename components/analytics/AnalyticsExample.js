@@ -9,13 +9,11 @@ export default function AnalyticsExample() {
   const [showNewFeature, setShowNewFeature] = useState(false)
 
   useEffect(() => {
-    // Check feature flag
     const isEnabled = checkFeatureFlag('new_booking_flow')
     setShowNewFeature(isEnabled)
   }, [checkFeatureFlag])
 
   const handleBookingCreated = () => {
-    // Track booking creation
     trackBooking('created', {
       id: 'booking-123',
       serviceName: 'Premium Haircut',
@@ -27,7 +25,6 @@ export default function AnalyticsExample() {
   }
 
   const handlePaymentCompleted = () => {
-    // Track payment completion
     trackPayment('completed', {
       id: 'payment-789',
       amount: 50,
@@ -37,7 +34,6 @@ export default function AnalyticsExample() {
   }
 
   const handleFeatureClick = (featureName) => {
-    // Track generic feature usage
     trackFeature(featureName, {
       context: 'analytics_example',
       timestamp: new Date().toISOString(),

@@ -8,7 +8,6 @@ export default function RealtimeIndicator({ isConnected, lastUpdate, errorMessag
   const [showTooltip, setShowTooltip] = useState(false)
   const [pulseAnimation, setPulseAnimation] = useState(false)
 
-  // Trigger pulse animation when there's an update
   useEffect(() => {
     if (lastUpdate) {
       setPulseAnimation(true)

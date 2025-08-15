@@ -209,13 +209,10 @@ function BusinessRecommendationsContent() {
 
   const handleImplementRecommendation = async (recommendation) => {
     try {
-      // Track implementation (in real app, this would update backend)
       console.log('Implementing recommendation:', recommendation.id)
       
-      // Show success message (in real app, you'd have toast notifications)
       alert(`Marked "${recommendation.title}" as implemented!`)
       
-      // In real implementation, you might:
       // 1. Track this in analytics
       // 2. Update recommendation status
       // 3. Schedule follow-up check

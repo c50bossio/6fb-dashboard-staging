@@ -15,13 +15,11 @@ import {
 } from '@heroicons/react/24/outline'
 import { createClient } from '@supabase/supabase-js'
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 )
 
-// Wrap the main component in Suspense to handle useSearchParams
 function EmbedBookingPageContent() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -41,7 +39,6 @@ function EmbedBookingPageContent() {
   const [bookingComplete, setBookingComplete] = useState(false)
   const [bookingId, setBookingId] = useState(null)
 
-  // Parse embed parameters
   const theme = searchParams?.get('theme') || 'light'
   const hideHeader = searchParams?.get('hideHeader') === 'true'
   const hideFooter = searchParams?.get('hideFooter') === 'true'
@@ -55,7 +52,6 @@ function EmbedBookingPageContent() {
   }, [params.barberId])
 
   useEffect(() => {
-    // Pre-select services based on URL parameters
     if (preSelectedServices.length > 0 && availableServices.length > 0) {
       const preSelected = availableServices.filter(service => 
         preSelectedServices.includes(service.id.toString())
@@ -64,7 +60,6 @@ function EmbedBookingPageContent() {
     }
   }, [preSelectedServices, availableServices])
 
-  // Notify parent window of content height for responsive iframe
   const notifyParentOfHeight = () => {
     if (typeof window !== 'undefined' && window.parent !== window) {
       const sendHeight = () => {
@@ -75,11 +70,9 @@ function EmbedBookingPageContent() {
         }, '*')
       }
       
-      // Send height initially and on resize
       sendHeight()
       window.addEventListener('resize', sendHeight)
       
-      // Also send height when content changes
       const observer = new MutationObserver(sendHeight)
       observer.observe(document.body, { 
         childList: true, 
@@ -96,7 +89,6 @@ function EmbedBookingPageContent() {
 
   const loadBarberData = async () => {
     try {
-      // Load barber profile from database
       const { data: barber, error } = await supabase
         .from('profiles')
         .select('*')
@@ -107,7 +99,6 @@ function EmbedBookingPageContent() {
         setBarberData(barber)
       }
 
-      // Load barber services
       const { data: services } = await supabase
         .from('services')
         .select('*')
@@ -116,7 +107,6 @@ function EmbedBookingPageContent() {
       if (services && services.length > 0) {
         setAvailableServices(services)
       } else {
-        // Fallback to default services
         setAvailableServices([
           { id: 1, name: 'Classic Cut', duration: 30, price: 35, category: 'Haircuts' },
           { id: 2, name: 'Fade Cut', duration: 45, price: 45, category: 'Haircuts' },
@@ -126,7 +116,6 @@ function EmbedBookingPageContent() {
       }
     } catch (error) {
       console.error('Failed to load barber data:', error)
-      // Use fallback data
       setBarberData({
         full_name: 'Professional Barber',
         business_name: 'Premium Barbershop'
@@ -164,7 +153,6 @@ function EmbedBookingPageContent() {
   const handleBooking = async () => {
     setLoading(true)
     try {
-      // Create booking in database
       const bookingData = {
         barber_id: params.barberId,
         customer_name: customerInfo.name,
@@ -189,7 +177,6 @@ function EmbedBookingPageContent() {
         setBookingId(data.id)
         setBookingComplete(true)
         
-        // Notify parent window of successful booking
         if (window.parent !== window) {
           window.parent.postMessage({
             type: 'booking-complete',
@@ -198,13 +185,11 @@ function EmbedBookingPageContent() {
           }, '*')
         }
       } else {
-        // Fallback success for demo
         setBookingId('demo-' + Date.now())
         setBookingComplete(true)
       }
     } catch (error) {
       console.error('Booking failed:', error)
-      // Show success anyway for demo
       setBookingId('demo-' + Date.now())
       setBookingComplete(true)
     } finally {
@@ -233,7 +218,6 @@ function EmbedBookingPageContent() {
     }
   }
 
-  // Apply theme
   const isDark = theme === 'dark'
   const themeClasses = {
     bg: isDark ? 'bg-gray-900' : 'bg-white',
@@ -520,7 +504,6 @@ function EmbedBookingPageContent() {
   )
 }
 
-// Main component with Suspense wrapper
 export default function EmbedBookingPage() {
   return (
     <Suspense fallback={

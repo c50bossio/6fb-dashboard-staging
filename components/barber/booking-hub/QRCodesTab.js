@@ -16,7 +16,6 @@ export default function QRCodesTab() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate loading QR codes
     const timer = setTimeout(() => {
       const mockQRCodes = [
         {

@@ -33,7 +33,6 @@ export default function ProfilePage() {
   const [saveStatus, setSaveStatus] = useState(null) // null, 'saving', 'saved', 'error'
 
   useEffect(() => {
-    // Initialize profile data
     setProfileData({
       full_name: profile?.full_name || user?.user_metadata?.full_name || 'Dev User',
       email: user?.email || 'dev@localhost.com',
@@ -47,8 +46,6 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       setSaveStatus('saving')
-      // In a real app, you'd call updateProfile here
-      // await updateProfile(profileData)
       setTimeout(() => {
         setSaveStatus('saved')
         setIsEditing(false)
@@ -61,7 +58,6 @@ export default function ProfilePage() {
   }
 
   const handleCancel = () => {
-    // Reset to original data
     setProfileData({
       full_name: profile?.full_name || user?.user_metadata?.full_name || 'Dev User',
       email: user?.email || 'dev@localhost.com',
@@ -74,14 +70,12 @@ export default function ProfilePage() {
     setSaveStatus(null)
   }
 
-  // Mock recent activity data
   const recentActivity = [
     { id: 1, type: 'booking', message: 'Completed appointment with John Doe', time: '2 hours ago', icon: CheckCircleIcon, color: 'text-green-600' },
     { id: 2, type: 'update', message: 'Updated business hours', time: '1 day ago', icon: ClockIcon, color: 'text-olive-600' },
     { id: 3, type: 'review', message: 'Received 5-star review from Sarah M.', time: '3 days ago', icon: ChartBarIcon, color: 'text-amber-700' },
   ]
 
-  // Mock stats data
   const stats = [
     { label: 'Total Appointments', value: '247', change: '+12%', trend: 'up' },
     { label: 'Customer Rating', value: '4.9', change: '+0.2', trend: 'up' },

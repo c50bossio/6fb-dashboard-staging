@@ -55,7 +55,6 @@ export async function DELETE(request) {
             );
         }
         
-        // Real database operation - remove from waitlist
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
             process.env.SUPABASE_SERVICE_ROLE_KEY

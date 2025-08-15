@@ -10,10 +10,8 @@ const supabase = createClient(
 async function executeMigration() {
   console.log('🚀 Starting database migration...\n');
   
-  // Read the SQL file
   const sqlContent = fs.readFileSync('./FIX_APPOINTMENT_TABLES_NOW.sql', 'utf8');
   
-  // Split SQL into individual statements (removing comments and empty lines)
   const statements = sqlContent
     .split(';')
     .map(stmt => stmt.trim())
@@ -24,19 +22,14 @@ async function executeMigration() {
   let errorCount = 0;
   const errors = [];
 
-  // Execute each statement
   for (let i = 0; i < statements.length; i++) {
     const statement = statements[i];
     
-    // Skip if statement is just whitespace or comments
     if (!statement.trim() || statement.trim() === ';') continue;
     
-    // Get first 50 chars of statement for logging
     const stmtPreview = statement.substring(0, 50).replace(/\n/g, ' ');
     
     try {
-      // For ALTER TABLE and CREATE statements, we need to use raw SQL
-      // Supabase JS client doesn't support DDL directly, so we'll handle these differently
       
       if (statement.includes('ALTER TABLE') || 
           statement.includes('CREATE INDEX') || 
@@ -46,8 +39,6 @@ async function executeMigration() {
           statement.includes('CREATE POLICY') ||
           statement.includes('DROP TRIGGER')) {
         
-        // These DDL statements can't be run via Supabase JS client
-        // We'll need to handle them via direct SQL execution
         console.log(`⚠️  DDL Statement needs manual execution: ${stmtPreview}...`);
         errors.push({
           statement: stmtPreview,
@@ -56,12 +47,9 @@ async function executeMigration() {
         errorCount++;
         
       } else if (statement.includes('UPDATE customers') || statement.includes('UPDATE bookings')) {
-        // Try to execute UPDATE statements
         console.log(`📝 Executing UPDATE: ${stmtPreview}...`);
         
-        // Parse and execute UPDATE statements using Supabase client
         if (statement.includes('UPDATE customers')) {
-          // This is complex SQL that needs direct execution
           console.log(`⚠️  Complex UPDATE needs manual execution`);
           errors.push({
             statement: stmtPreview,
@@ -109,7 +97,6 @@ async function executeMigration() {
     console.log('\n⚠️  The following statements need to be run manually in Supabase SQL Editor:');
     console.log('='.repeat(60));
     
-    // Save SQL for manual execution
     const manualSQL = fs.readFileSync('./FIX_APPOINTMENT_TABLES_NOW.sql', 'utf8');
     
     console.log('\n📋 INSTRUCTIONS:');

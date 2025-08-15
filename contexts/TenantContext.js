@@ -8,7 +8,6 @@ const TenantContext = createContext()
 export const useTenant = () => {
   const context = useContext(TenantContext)
   if (!context) {
-    // During build time or server-side rendering, return default values
     if (typeof window === 'undefined' || process.env.NODE_ENV === 'build') {
       return {
         tenant: null,
@@ -29,7 +28,6 @@ const TenantProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Load tenant information based on authenticated user
   useEffect(() => {
     const loadTenant = async () => {
       if (!user) {
@@ -42,20 +40,15 @@ const TenantProvider = ({ children }) => {
         setLoading(true)
         setError(null)
 
-        // Check if user has completed onboarding
         const storedTenant = localStorage.getItem(`tenant_${user.id}`)
         
         if (storedTenant) {
-          // User has completed onboarding, load their tenant data
           const parsedTenant = JSON.parse(storedTenant)
           setTenant(parsedTenant)
         } else {
-          // New user - no tenant yet, create a default tenant for them
           console.log('🆕 New user detected, creating tenant...')
         }
 
-        // Create a default tenant for new users
-        // In production, this would create a record in Supabase
         if (!storedTenant) {
           const Tenant = {
             id: 'barbershop_demo_001',
@@ -104,14 +97,12 @@ const TenantProvider = ({ children }) => {
     loadTenant()
   }, [user])
 
-  // Tenant management functions
   const updateTenant = async (updates) => {
     if (!tenant) return
 
     try {
       setLoading(true)
       
-      // In production, this would update Supabase
       const updatedTenant = {
         ...tenant,
         ...updates,
@@ -120,7 +111,6 @@ const TenantProvider = ({ children }) => {
       
       setTenant(updatedTenant)
       
-      // Persist to localStorage for demo purposes
       localStorage.setItem(`tenant_${user.id}`, JSON.stringify(updatedTenant))
       
       console.log('✅ Tenant updated:', updatedTenant.name)
@@ -138,7 +128,6 @@ const TenantProvider = ({ children }) => {
   const setTenantData = (newTenant) => {
     setTenant(newTenant)
     
-    // Persist to localStorage for demo purposes
     if (user && newTenant) {
       localStorage.setItem(`tenant_${user.id}`, JSON.stringify(newTenant))
     }
@@ -190,7 +179,6 @@ const TenantProvider = ({ children }) => {
     getTenantFeature,
     hasSubscriptionTier,
     
-    // Computed properties for easy access
     tenantId: tenant?.id,
     tenantName: tenant?.name,
     subscriptionTier: tenant?.subscription_tier,
@@ -201,5 +189,4 @@ const TenantProvider = ({ children }) => {
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>
 }
 
-// Use only named export to avoid conflicts  
 export { TenantProvider, TenantContext }

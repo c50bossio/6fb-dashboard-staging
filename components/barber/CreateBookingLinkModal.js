@@ -34,7 +34,6 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
   const [currentStep, setCurrentStep] = useState(1)
   const [previewUrl, setPreviewUrl] = useState('')
 
-  // Mock services - in production this would come from API
   const Services = [
     { id: 1, name: 'Classic Cut', duration: 30, price: 35, category: 'Haircuts' },
     { id: 2, name: 'Fade Cut', duration: 45, price: 45, category: 'Haircuts' },
@@ -137,7 +136,6 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
       
       await onSave(linkData)
       
-      // Reset form
       setFormData({
         name: '',
         services: [],

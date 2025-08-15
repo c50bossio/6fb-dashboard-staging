@@ -9,9 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 
-// Color definitions with luminance values
 const colors = {
-  // Primary colors
   'deep-olive': { hex: '#3C4A3E', rgb: [60, 74, 62], luminance: 0.047 },
   'rich-gold': { hex: '#C5A35B', rgb: [197, 163, 91], luminance: 0.337 },
   'light-sand': { hex: '#EAE3D2', rgb: [234, 227, 210], luminance: 0.791 },
@@ -19,17 +17,14 @@ const colors = {
   'gunmetal': { hex: '#1F2320', rgb: [31, 35, 32], luminance: 0.013 },
   'warm-gray': { hex: '#BEB7A7', rgb: [190, 183, 167], luminance: 0.447 },
   
-  // Semantic colors
   'moss-green': { hex: '#6BA368', rgb: [107, 163, 104], luminance: 0.249 },
   'amber': { hex: '#E6B655', rgb: [230, 182, 85], luminance: 0.466 },
   'soft-red': { hex: '#D9534F', rgb: [217, 83, 79], luminance: 0.164 },
   
-  // Common colors
   'white': { hex: '#FFFFFF', rgb: [255, 255, 255], luminance: 1.0 },
   'black': { hex: '#000000', rgb: [0, 0, 0], luminance: 0.0 },
 };
 
-// Calculate relative luminance
 function getLuminance(rgb) {
   const [r, g, b] = rgb.map(val => {
     const sRGB = val / 255;
@@ -40,14 +35,12 @@ function getLuminance(rgb) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-// Calculate contrast ratio
 function getContrastRatio(l1, l2) {
   const lighter = Math.max(l1, l2);
   const darker = Math.min(l1, l2);
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-// Check WCAG compliance
 function checkWCAG(ratio, isLargeText = false) {
   const aaThreshold = isLargeText ? 3.0 : 4.5;
   const aaaThreshold = isLargeText ? 4.5 : 7.0;
@@ -57,13 +50,11 @@ function checkWCAG(ratio, isLargeText = false) {
   return { level: 'FAIL', pass: false };
 }
 
-// Analyze color combinations
 function analyzeColorCombinations() {
   console.log('🎨 COLOR CONTRAST ANALYSIS REPORT');
   console.log('==================================\n');
   
   const criticalCombinations = [
-    // Text on backgrounds
     { fg: 'gunmetal', bg: 'light-sand', usage: 'Light mode primary text' },
     { fg: 'warm-gray', bg: 'charcoal-olive', usage: 'Dark mode primary text' },
     { fg: 'white', bg: 'deep-olive', usage: 'Primary button text' },
@@ -72,7 +63,6 @@ function analyzeColorCombinations() {
     { fg: 'deep-olive', bg: 'light-sand', usage: 'Primary elements on light bg' },
     { fg: 'rich-gold', bg: 'charcoal-olive', usage: 'Gold accents in dark mode' },
     
-    // Status colors
     { fg: 'white', bg: 'moss-green', usage: 'Success button text' },
     { fg: 'white', bg: 'amber', usage: 'Warning button text' },
     { fg: 'white', bg: 'soft-red', usage: 'Error button text' },
@@ -111,14 +101,12 @@ function analyzeColorCombinations() {
     }
   });
   
-  // Summary
   console.log('\n📈 SUMMARY:');
   console.log('===========');
   console.log(`✅ Passing combinations: ${passes.length}`);
   console.log(`⚠️  Large text only: ${warnings.length}`);
   console.log(`❌ Failing combinations: ${issues.length}`);
   
-  // Critical issues
   if (issues.length > 0) {
     console.log('\n🚨 CRITICAL ISSUES TO FIX:');
     console.log('==========================');
@@ -130,7 +118,6 @@ function analyzeColorCombinations() {
     });
   }
   
-  // Warnings
   if (warnings.length > 0) {
     console.log('\n⚠️  WARNINGS (Large text only):');
     console.log('================================');
@@ -145,22 +132,18 @@ function analyzeColorCombinations() {
   return { issues, warnings, passes };
 }
 
-// Find problematic color usage in files
 async function findProblematicUsage() {
   console.log('\n\n🔍 SCANNING FOR PROBLEMATIC COLOR USAGE:');
   console.log('=========================================\n');
   
   const problematicPatterns = [
-    // Gold backgrounds with white text
     { pattern: 'bg-gold-[45]00.*text-white', issue: 'White text on gold - poor contrast' },
     { pattern: 'bg-gold.*text-white', issue: 'White text on gold - poor contrast' },
     { pattern: 'bg-secondary.*text-white', issue: 'White text on secondary (gold) - poor contrast' },
     
-    // Light colors on light backgrounds
     { pattern: 'bg-sand.*text-gold', issue: 'Gold text on sand - poor contrast' },
     { pattern: 'bg-sand.*text-amber', issue: 'Amber text on sand - poor contrast' },
     
-    // Dark on dark
     { pattern: 'bg-charcoal.*text-olive', issue: 'Olive text on charcoal - poor contrast' },
     { pattern: 'bg-olive.*text-charcoal', issue: 'Charcoal text on olive - poor contrast' },
   ];
@@ -215,7 +198,6 @@ async function findProblematicUsage() {
   }
 }
 
-// Generate contrast matrix
 function generateContrastMatrix() {
   console.log('\n\n📊 FULL CONTRAST MATRIX:');
   console.log('========================\n');
@@ -223,7 +205,6 @@ function generateContrastMatrix() {
   const colorNames = Object.keys(colors);
   const matrix = [];
   
-  // Header
   console.log('                ', colorNames.map(name => name.substring(0, 8).padEnd(8)).join(' '));
   console.log('                ', colorNames.map(() => '--------').join(' '));
   
@@ -246,7 +227,6 @@ function generateContrastMatrix() {
   console.log('✗ = Below WCAG AA threshold');
 }
 
-// Main execution
 async function main() {
   const results = analyzeColorCombinations();
   await findProblematicUsage();

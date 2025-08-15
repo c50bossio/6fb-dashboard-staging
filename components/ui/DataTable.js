@@ -35,7 +35,6 @@ export function DataTable({
   const [sortDirection, setSortDirection] = useState('asc')
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Filter data based on search term
   const filteredData = useMemo(() => {
     if (!searchTerm) return data
     
@@ -47,7 +46,6 @@ export function DataTable({
     )
   }, [data, searchTerm, columns])
 
-  // Sort data
   const sortedData = useMemo(() => {
     if (!sortColumn || !sortable) return filteredData
     
@@ -61,7 +59,6 @@ export function DataTable({
     })
   }, [filteredData, sortColumn, sortDirection, sortable])
 
-  // Paginate data
   const paginatedData = useMemo(() => {
     if (!pagination) return sortedData
     
@@ -235,7 +232,6 @@ export function DataTable({
                 const page = i + 1
                 const isCurrentPage = page === currentPage
                 
-                // Show first page, last page, current page, and pages around current
                 if (
                   page === 1 ||
                   page === totalPages ||

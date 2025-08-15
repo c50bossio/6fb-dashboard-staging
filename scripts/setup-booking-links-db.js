@@ -11,7 +11,6 @@ const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 const path = require('path')
 
-// Load environment variables
 require('dotenv').config()
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -31,7 +30,6 @@ async function setupDatabase() {
   console.log('🚀 Starting database setup for Booking Links system...\n')
 
   try {
-    // Read the schema file
     const schemaPath = path.join(__dirname, '../database/booking-links-schema.sql')
     
     if (!fs.existsSync(schemaPath)) {
@@ -41,8 +39,6 @@ async function setupDatabase() {
     const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
     console.log('📖 Schema file loaded successfully')
 
-    // Note: Supabase client doesn't support executing raw SQL files directly
-    // You'll need to run the SQL manually in Supabase SQL Editor or via psql
     console.log('\n⚠️  MANUAL STEP REQUIRED:')
     console.log('1. Open your Supabase dashboard: https://app.supabase.com')
     console.log('2. Go to SQL Editor')
@@ -50,7 +46,6 @@ async function setupDatabase() {
     console.log('4. Execute the SQL to create all tables and functions')
     console.log('5. Come back and run this script again to validate\n')
 
-    // Check if tables exist (basic validation)
     console.log('🔍 Checking database tables...')
     
     const tables = ['booking_links', 'link_analytics', 'qr_codes', 'link_shares', 'booking_attributions']
@@ -74,7 +69,6 @@ async function setupDatabase() {
       }
     }
 
-    // Display results
     console.log('\n📊 Database Status:')
     console.log('─'.repeat(50))
     
@@ -93,7 +87,6 @@ async function setupDatabase() {
       console.log('\n🎉 All tables are set up correctly!')
       console.log('\n🧪 Running test operations...')
       
-      // Test creating a sample booking link (if user exists)
       try {
         const { data: users } = await supabase.auth.admin.listUsers()
         
@@ -126,7 +119,6 @@ async function setupDatabase() {
           } else {
             console.log(`✅ Test link created successfully: ${createdLink.id}`)
             
-            // Test analytics tracking
             const { error: analyticsError } = await supabase
               .from('link_analytics')
               .insert({
@@ -143,7 +135,6 @@ async function setupDatabase() {
               console.log('✅ Analytics tracking test successful')
             }
 
-            // Clean up test data
             await supabase.from('link_analytics').delete().eq('link_id', createdLink.id)
             await supabase.from('booking_links').delete().eq('id', createdLink.id)
             console.log('🧹 Test data cleaned up')
@@ -178,5 +169,4 @@ async function setupDatabase() {
   }
 }
 
-// Run the setup
 setupDatabase().catch(console.error)

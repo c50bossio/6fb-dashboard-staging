@@ -7,7 +7,6 @@ import NuclearInput from './NuclearInput'
  * Provides consistent formatting across the entire application
  */
 
-// Phone Number Input with automatic formatting
 export const PhoneInput = ({ ...props }) => (
   <NuclearInput
     type="tel"
@@ -18,7 +17,6 @@ export const PhoneInput = ({ ...props }) => (
   />
 )
 
-// Email Input with validation and formatting
 export const EmailInput = ({ ...props }) => (
   <NuclearInput
     type="email"
@@ -29,7 +27,6 @@ export const EmailInput = ({ ...props }) => (
   />
 )
 
-// Currency Input
 export const CurrencyInput = ({ ...props }) => (
   <NuclearInput
     type="text"
@@ -41,7 +38,6 @@ export const CurrencyInput = ({ ...props }) => (
   />
 )
 
-// ZIP Code Input
 export const ZipInput = ({ ...props }) => (
   <NuclearInput
     type="text"
@@ -54,7 +50,6 @@ export const ZipInput = ({ ...props }) => (
   />
 )
 
-// Credit Card Input
 export const CreditCardInput = ({ ...props }) => (
   <NuclearInput
     type="text"
@@ -67,7 +62,6 @@ export const CreditCardInput = ({ ...props }) => (
   />
 )
 
-// Social Security Number Input
 export const SSNInput = ({ ...props }) => (
   <NuclearInput
     type="text"
@@ -80,7 +74,6 @@ export const SSNInput = ({ ...props }) => (
   />
 )
 
-// Time Input (12-hour format)
 export const TimeInput = ({ ...props }) => (
   <NuclearInput
     type="text"
@@ -92,7 +85,6 @@ export const TimeInput = ({ ...props }) => (
   />
 )
 
-// International Phone Input
 export const InternationalPhoneInput = ({ ...props }) => (
   <NuclearInput
     type="tel"
@@ -104,7 +96,6 @@ export const InternationalPhoneInput = ({ ...props }) => (
   />
 )
 
-// Default export with all components
 export default {
   PhoneInput,
   EmailInput,

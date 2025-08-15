@@ -24,7 +24,6 @@ export default function ClearAllPage() {
       const eqPos = cookie.indexOf('=')
       const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
       if (name) {
-        // Clear cookie with all possible paths and domains
         const paths = ['/', '/api', '/api/auth', '/dashboard', '/login']
         const domains = ['localhost', '.localhost', '', null]
         
@@ -133,7 +132,6 @@ export default function ClearAllPage() {
     
     console.log('✅ All browser data cleared!')
     
-    // Redirect to login after a short delay
     setTimeout(() => {
       router.push('/login')
     }, 3000)

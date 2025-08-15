@@ -5,6 +5,5 @@
 import { GET as flexibleGET, POST as flexiblePOST } from './route-flexible'
 export const runtime = 'edge'
 
-// Export the flexible handlers that work in both environments
 export const GET = flexibleGET
 export const POST = flexiblePOST

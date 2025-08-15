@@ -19,7 +19,6 @@ export async function POST(request) {
       )
     }
 
-    // Try to fetch the booking link, with fallback for missing table
     let bookingLink = null
     let useFallback = false
     
@@ -41,7 +40,6 @@ export async function POST(request) {
       useFallback = true
     }
 
-    // Fallback booking link data for development/demo
     if (useFallback || !bookingLink) {
       bookingLink = {
         id: linkId,
@@ -52,11 +50,9 @@ export async function POST(request) {
       }
     }
 
-    // Generate the full URL
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://6fb.ai'
     const fullUrl = `${baseUrl}${bookingLink.url}`
 
-    // Default QR code options
     const qrOptions = {
       width: options.size || 300,
       margin: options.margin || 4,
@@ -67,10 +63,8 @@ export async function POST(request) {
       errorCorrectionLevel: options.errorCorrectionLevel || 'M'
     }
 
-    // Generate QR code as data URL
     const qrCodeDataUrl = await QRCode.toDataURL(fullUrl, qrOptions)
 
-    // Store QR code data with fallback handling
     let qrRecord = {
       id: `qr-${linkId}-${Date.now()}`,
       link_id: linkId,
@@ -81,7 +75,6 @@ export async function POST(request) {
 
     if (!useFallback) {
       try {
-        // Try to store in database if tables exist
         const { data: existingQR } = await supabase
           .from('qr_codes')
           .select('*')
@@ -89,7 +82,6 @@ export async function POST(request) {
           .single()
 
         if (existingQR) {
-          // Update existing QR code
           const { data, error } = await supabase
             .from('qr_codes')
             .update({
@@ -111,7 +103,6 @@ export async function POST(request) {
             qrRecord = data
           }
         } else {
-          // Create new QR code record
           const { data, error } = await supabase
             .from('qr_codes')
             .insert({
@@ -134,7 +125,6 @@ export async function POST(request) {
           }
         }
 
-        // Update booking link to mark QR as generated
         await supabase
           .from('booking_links')
           .update({
@@ -144,7 +134,6 @@ export async function POST(request) {
           })
           .eq('id', linkId)
 
-        // Track QR generation event
         await supabase
           .from('link_analytics')
           .insert({
@@ -157,7 +146,6 @@ export async function POST(request) {
           })
       } catch (dbError) {
         console.warn('Failed to store QR in database, using fallback:', dbError.message)
-        // Continue with fallback qrRecord
       }
     }
 
@@ -185,7 +173,6 @@ export async function POST(request) {
   }
 }
 
-// Track QR code downloads
 export async function PATCH(request) {
   try {
     const body = await request.json()
@@ -198,7 +185,6 @@ export async function PATCH(request) {
       )
     }
 
-    // Increment download count
     const { data, error } = await supabase
       .from('qr_codes')
       .update({

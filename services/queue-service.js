@@ -6,7 +6,6 @@
 const Bull = require('bull');
 const Redis = require('ioredis');
 
-// Redis configuration
 const redisConfig = {
     host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || 6379,
@@ -21,11 +20,9 @@ const redisConfig = {
     }
 };
 
-// Create Redis clients
 const redisClient = new Redis(redisConfig);
 const redisSubscriber = new Redis(redisConfig);
 
-// Queue definitions
 const queues = {
     email: null,
     sms: null,
@@ -33,7 +30,6 @@ const queues = {
     analytics: null
 };
 
-// Queue configurations
 const queueConfigs = {
     email: {
         name: 'email-campaigns',
@@ -103,18 +99,15 @@ class QueueService {
         if (this.initialized) return;
 
         try {
-            // Test Redis connection
             await redisClient.ping();
             console.log('✅ Redis connection established');
 
-            // Initialize each queue
             for (const [key, config] of Object.entries(queueConfigs)) {
                 this.queues[key] = new Bull(config.name, {
                     redis: redisConfig,
                     defaultJobOptions: config.defaultJobOptions
                 });
 
-                // Set up event listeners
                 this.setupQueueListeners(key, this.queues[key]);
                 
                 console.log(`✅ Queue initialized: ${config.name}`);
@@ -224,13 +217,11 @@ class QueueService {
         const batchSize = parseInt(process.env.QUEUE_BATCH_SIZE) || 100;
         const batches = [];
         
-        // Split recipients into batches
         for (let i = 0; i < recipients.length; i += batchSize) {
             const batch = recipients.slice(i, i + batchSize);
             batches.push(batch);
         }
 
-        // Queue each batch with delay
         const jobs = [];
         for (let i = 0; i < batches.length; i++) {
             const delay = i * parseInt(process.env.QUEUE_BATCH_DELAY_MS || 1000);
@@ -423,9 +414,7 @@ class QueueService {
     }
 }
 
-// Export singleton instance
 const queueService = new QueueService();
 
-// Node.js CommonJS export for compatibility
 module.exports = queueService;
 module.exports.QueueService = QueueService;

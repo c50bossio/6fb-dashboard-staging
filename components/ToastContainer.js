@@ -34,7 +34,6 @@ export function ToastProvider({ children }) {
     setToasts([])
   }, [])
 
-  // Convenience methods
   const success = useCallback((message, options = {}) => {
     return addToast({
       type: 'success',

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import 'dotenv/config';
 
-// Simple approach using fetch to call Supabase REST API directly
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -96,7 +95,6 @@ INSERT INTO public.barbershops (
   `;
 
   try {
-    // Use Supabase SQL API
     const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/exec_sql`, {
       method: 'POST',
       headers: {
@@ -123,7 +121,6 @@ INSERT INTO public.barbershops (
 
 async function testConnection() {
   try {
-    // Test basic connection
     const response = await fetch(`${SUPABASE_URL}/rest/v1/barbershops?select=id,name&limit=1`, {
       headers: {
         'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,

@@ -46,7 +46,6 @@ export default function BillingPage() {
   const [timeRange, setTimeRange] = useState('30days')
   const [loading, setLoading] = useState(true)
   
-  // Fetch billing data on mount
   useEffect(() => {
     const fetchBillingData = async () => {
       try {
@@ -70,7 +69,6 @@ export default function BillingPage() {
     fetchBillingData()
   }, [])
 
-  // Mock daily usage data for charts
   const dailyUsageData = [
     { date: 'Jan 1', ai: 15.20, sms: 8.40, email: 2.10 },
     { date: 'Jan 5', ai: 22.50, sms: 12.20, email: 3.50 },
@@ -81,7 +79,6 @@ export default function BillingPage() {
     { date: 'Jan 30', ai: 32.10, sms: 16.20, email: 5.20 }
   ]
 
-  // Usage breakdown for pie chart
   const usageBreakdown = [
     { name: 'AI Business Coach', value: billingData.usage.ai.cost, color: '#3B82F6' },
     { name: 'SMS Marketing', value: billingData.usage.sms.cost, color: '#C5A35B' },
@@ -89,12 +86,10 @@ export default function BillingPage() {
   ]
 
   const handleDownloadInvoice = () => {
-    // In production, this would generate and download a PDF invoice
     alert('Invoice download started...')
   }
 
   const handleUpdatePayment = () => {
-    // In production, this would open Stripe checkout
     alert('Redirecting to payment update...')
   }
 

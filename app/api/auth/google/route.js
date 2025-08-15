@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server-client'
 import { NextResponse } from 'next/server'
 
-// Force Node.js runtime to support Supabase dependencies
 export const runtime = 'nodejs'
 
 export async function GET(request) {
@@ -16,7 +15,6 @@ export async function GET(request) {
     
     const supabase = createClient()
     
-    // Initiate Google OAuth with PKCE
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -39,7 +37,6 @@ export async function GET(request) {
       console.log('✅ Google OAuth URL generated successfully')
       console.log('   OAuth URL:', data.url.substring(0, 100) + '...')
       
-      // Redirect to Google OAuth
       return NextResponse.redirect(data.url)
     }
     

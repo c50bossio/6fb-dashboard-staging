@@ -64,7 +64,6 @@ export function ButtonGroup({ children, className = '' }) {
   )
 }
 
-// Specialized CTA Button with enhanced loading states
 export function CTAButton({ 
   children, 
   loading = false, 

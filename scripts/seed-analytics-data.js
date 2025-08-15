@@ -13,24 +13,19 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role for admin operations
 )
 
-// Test barbershop IDs
 const BARBERSHOP_IDS = ['demo-shop-001', 'test-shop-002', 'test-shop-003']
 
-// Utility function to generate random number in range
 const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min
 
-// Utility function to generate random decimal
 const randomDecimal = (min, max, decimals = 2) => 
   (Math.random() * (max - min) + min).toFixed(decimals)
 
 // ==========================================
-// SEED BUSINESS METRICS
 // ==========================================
 async function seedBusinessMetrics() {
   console.log('📊 Seeding business metrics...')
@@ -38,13 +33,11 @@ async function seedBusinessMetrics() {
   const metrics = []
   const today = new Date()
   
-  // Generate 30 days of historical data for each barbershop
   for (const barbershopId of BARBERSHOP_IDS) {
     for (let i = 0; i < 30; i++) {
       const date = new Date(today)
       date.setDate(date.getDate() - i)
       
-      // Generate realistic daily metrics with some variation
       const baseRevenue = random(2500, 5000)
       const baseCustomers = random(20, 40)
       const baseAppointments = random(25, 45)
@@ -53,29 +46,24 @@ async function seedBusinessMetrics() {
         barbershop_id: barbershopId,
         date: date.toISOString().split('T')[0],
         
-        // Revenue metrics
         total_revenue: baseRevenue + random(-500, 500),
         service_revenue: baseRevenue * 0.85,
         product_revenue: baseRevenue * 0.10,
         tip_revenue: baseRevenue * 0.05,
         
-        // Customer metrics
         total_customers: baseCustomers,
         new_customers: Math.floor(baseCustomers * 0.25),
         returning_customers: Math.floor(baseCustomers * 0.75),
         
-        // Appointment metrics
         total_appointments: baseAppointments,
         completed_appointments: Math.floor(baseAppointments * 0.90),
         cancelled_appointments: Math.floor(baseAppointments * 0.08),
         no_show_appointments: Math.floor(baseAppointments * 0.02),
         
-        // Efficiency metrics
         avg_service_duration: random(30, 45),
         avg_wait_time: random(5, 15),
         chair_utilization_rate: randomDecimal(65, 85),
         
-        // Satisfaction metrics
         avg_satisfaction_score: randomDecimal(4.2, 4.9),
         total_reviews: random(3, 10)
       })
@@ -94,7 +82,6 @@ async function seedBusinessMetrics() {
 }
 
 // ==========================================
-// SEED AI INSIGHTS
 // ==========================================
 async function seedAIInsights() {
   console.log('🤖 Seeding AI insights...')
@@ -145,7 +132,6 @@ async function seedAIInsights() {
   const insights = []
   
   for (const barbershopId of BARBERSHOP_IDS) {
-    // Add 5-10 insights per barbershop
     const numInsights = random(5, 10)
     for (let i = 0; i < numInsights; i++) {
       const template = insightTemplates[i % insightTemplates.length]
@@ -182,7 +168,6 @@ async function seedAIInsights() {
 }
 
 // ==========================================
-// SEED AI AGENTS
 // ==========================================
 async function seedAIAgents() {
   console.log('🤖 Seeding AI agents...')
@@ -228,7 +213,6 @@ async function seedAIAgents() {
 }
 
 // ==========================================
-// SEED BUSINESS RECOMMENDATIONS
 // ==========================================
 async function seedBusinessRecommendations() {
   console.log('💡 Seeding business recommendations...')
@@ -284,7 +268,6 @@ async function seedBusinessRecommendations() {
   const recommendations = []
   
   for (const barbershopId of BARBERSHOP_IDS) {
-    // Add 3-7 recommendations per barbershop
     const numRecs = random(3, 7)
     for (let i = 0; i < numRecs; i++) {
       const template = recommendationTemplates[i % recommendationTemplates.length]
@@ -323,7 +306,6 @@ async function seedBusinessRecommendations() {
 }
 
 // ==========================================
-// SEED TRENDING SERVICES
 // ==========================================
 async function seedTrendingServices() {
   console.log('📈 Seeding trending services...')
@@ -342,7 +324,6 @@ async function seedTrendingServices() {
   const today = new Date()
   
   for (const barbershopId of BARBERSHOP_IDS) {
-    // Generate 7 days of trending data
     for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
       const date = new Date(today)
       date.setDate(date.getDate() - dayOffset)
@@ -382,7 +363,6 @@ async function seedTrendingServices() {
 }
 
 // ==========================================
-// SEED REALTIME METRICS
 // ==========================================
 async function seedRealtimeMetrics() {
   console.log('⚡ Seeding realtime metrics...')
@@ -421,7 +401,6 @@ async function seedRealtimeMetrics() {
 }
 
 // ==========================================
-// CLEAR FUNCTIONS
 // ==========================================
 async function clearAnalyticsData() {
   console.log('🧹 Clearing all analytics data...')
@@ -450,7 +429,6 @@ async function clearAnalyticsData() {
 }
 
 // ==========================================
-// MAIN EXECUTION
 // ==========================================
 async function main() {
   const command = process.argv[2] || 'seed'
@@ -504,5 +482,4 @@ async function main() {
   }
 }
 
-// Run the script
 main()

@@ -2,10 +2,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 
-// Force Node.js runtime to support Supabase dependencies
 export const runtime = 'nodejs'
 
-// Validation schema for availability check
 const availabilitySchema = z.object({
   barber_id: z.string().min(1), // Allow any string ID (test IDs or UUIDs)
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // YYYY-MM-DD format
@@ -13,10 +11,8 @@ const availabilitySchema = z.object({
   exclude_appointment_id: z.string().optional() // Allow any string ID
 })
 
-// GET /api/appointments/availability - Check barber availability
 export async function GET(request) {
   try {
-    // Use the real Supabase configuration
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -28,7 +24,6 @@ export async function GET(request) {
     const duration_minutes = parseInt(searchParams.get('duration_minutes') || '60')
     const exclude_appointment_id = searchParams.get('exclude_appointment_id')
 
-    // Validate parameters (only include exclude_appointment_id if it exists)
     const paramsToValidate = {
       barber_id,
       date,
@@ -50,15 +45,12 @@ export async function GET(request) {
 
     const { barber_id: validBarberId, date: validDate, duration_minutes: validDuration } = validationResult.data
 
-    // Get barber's business hours and existing appointments
-    // First try barbers table (for test data), then fall back to barbershop_staff
     let barberResult = await supabase
       .from('barbers')
       .select('*')
       .eq('id', validBarberId)
       .single()
     
-    // If not found in barbers table, try barbershop_staff
     if (barberResult.error) {
       barberResult = await supabase
         .from('barbershop_staff')
@@ -71,7 +63,6 @@ export async function GET(request) {
         .single()
     }
     
-    // Try bookings table first, then appointments table
     let bookingsResult = await supabase
       .from('bookings')
       .select('id, start_time, end_time, status')
@@ -81,7 +72,6 @@ export async function GET(request) {
       .in('status', ['pending', 'confirmed', 'completed'])
       .neq('id', exclude_appointment_id || 'none')
     
-    // Fallback if bookings query fails
     if (bookingsResult.error) {
       bookingsResult = await supabase
         .from('bookings')
@@ -103,7 +93,6 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 })
     }
 
-    // Get business hours for the specific day
     const dayOfWeek = new Date(validDate).getDay()
     const businessHours = barberResult.data.barbershop?.business_hours || {
       Monday: { start: '09:00', end: '18:00' },
@@ -126,7 +115,6 @@ export async function GET(request) {
       })
     }
 
-    // Generate time slots (15-minute intervals)
     const slots = []
     const startTime = parseTime(currentDayHours.start)
     const endTime = parseTime(currentDayHours.end)
@@ -135,20 +123,16 @@ export async function GET(request) {
       const slotStart = minutesToTime(minutes)
       const slotEnd = minutesToTime(minutes + validDuration)
       
-      // Check if slot conflicts with existing appointments
       const slotStartDate = new Date(`${validDate}T${slotStart}:00`)
       const slotEndDate = new Date(`${validDate}T${slotEnd}:00`)
       
       const hasConflict = bookingsResult.data.some(booking => {
-        // Handle both bookings (start_time/end_time) and appointments (scheduled_at/duration_minutes)
         let bookingStart, bookingEnd
         
         if (booking.start_time && booking.end_time) {
-          // Bookings table format
           bookingStart = new Date(booking.start_time)
           bookingEnd = new Date(booking.end_time)
         } else if (booking.scheduled_at) {
-          // Appointments table format
           bookingStart = new Date(booking.scheduled_at)
           bookingEnd = new Date(bookingStart.getTime() + (booking.duration_minutes || 30) * 60000)
         } else {
@@ -183,10 +167,8 @@ export async function GET(request) {
   }
 }
 
-// POST /api/appointments/availability - Check specific time slot availability
 export async function POST(request) {
   try {
-    // Use the real Supabase configuration
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -211,7 +193,6 @@ export async function POST(request) {
 
     const { barber_id, scheduled_at, duration_minutes, exclude_appointment_id } = validationResult.data
 
-    // Check for conflicts
     let conflictQuery = supabase
       .from('bookings')
       .select('id, scheduled_at, duration_minutes, status')
@@ -262,7 +243,6 @@ export async function POST(request) {
   }
 }
 
-// Helper functions
 function parseTime(timeString) {
   const [hours, minutes] = timeString.split(':').map(Number)
   return hours * 60 + minutes

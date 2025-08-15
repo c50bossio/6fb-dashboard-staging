@@ -95,19 +95,16 @@ export default function OnboardingChecklist({
   const [isMinimized, setIsMinimized] = useState(minimized)
   const [showCelebration, setShowCelebration] = useState(false)
   
-  // Calculate progress
   const totalPoints = checklistItems.reduce((sum, item) => sum + item.points, 0)
   const earnedPoints = checklistItems
     .filter(item => completedItems.includes(item.id))
     .reduce((sum, item) => sum + item.points, 0)
   const progressPercentage = (earnedPoints / totalPoints) * 100
   
-  // Count completed items
   const requiredItems = checklistItems.filter(item => item.required)
   const completedRequired = requiredItems.filter(item => completedItems.includes(item.id)).length
   const totalRequired = requiredItems.length
   
-  // Check for 100% completion
   useEffect(() => {
     if (progressPercentage === 100 && !showCelebration) {
       setShowCelebration(true)
@@ -272,7 +269,6 @@ export default function OnboardingChecklist({
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    // Hide checklist for this session
                     if (onToggleMinimize) {
                       onToggleMinimize(true)
                     }

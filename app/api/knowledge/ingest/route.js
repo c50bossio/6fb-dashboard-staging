@@ -6,7 +6,6 @@ export const runtime = 'nodejs'
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -21,7 +20,6 @@ export async function POST(request) {
     }
 
     try {
-      // For now, simulate knowledge ingestion with intelligent processing
       const result = await processBusinessDataIngestion(businessData, dataType, user.id)
       
       return NextResponse.json({
@@ -51,17 +49,14 @@ export async function POST(request) {
 }
 
 async function processBusinessDataIngestion(businessData, dataType, userId) {
-  // Simulate intelligent business data processing
   const knowledgeIds = []
   const insights = []
 
-  // Process different types of business data
   if (dataType === 'customer_feedback' && businessData.feedback) {
     for (const feedback of businessData.feedback) {
       const knowledgeId = generateKnowledgeId('customer_feedback', feedback.id || Date.now())
       knowledgeIds.push(knowledgeId)
       
-      // Generate insights from feedback
       if (feedback.rating >= 4) {
         insights.push(`High satisfaction feedback: "${feedback.comment}" (${feedback.rating}/5)`)
       } else if (feedback.rating <= 2) {
@@ -75,7 +70,6 @@ async function processBusinessDataIngestion(businessData, dataType, userId) {
       const knowledgeId = generateKnowledgeId('service_performance', serviceName)
       knowledgeIds.push(knowledgeId)
       
-      // Generate insights from service metrics
       if (metrics.bookings > 20) {
         insights.push(`${serviceName} is a popular service with ${metrics.bookings} bookings`)
       }
@@ -93,7 +87,6 @@ async function processBusinessDataIngestion(businessData, dataType, userId) {
     const knowledgeId = generateKnowledgeId('revenue_patterns', 'analysis')
     knowledgeIds.push(knowledgeId)
     
-    // Generate revenue insights
     if (revenue.daily_average > 500) {
       insights.push(`Strong daily revenue performance: $${revenue.daily_average} average`)
     }
@@ -110,7 +103,6 @@ async function processBusinessDataIngestion(businessData, dataType, userId) {
     const knowledgeId = generateKnowledgeId('scheduling_analytics', 'analysis')
     knowledgeIds.push(knowledgeId)
     
-    // Generate scheduling insights
     if (scheduling.utilization_rate > 0.8) {
       insights.push(`High booking utilization: ${(scheduling.utilization_rate * 100).toFixed(1)}%`)
     }
@@ -122,7 +114,6 @@ async function processBusinessDataIngestion(businessData, dataType, userId) {
     }
   }
 
-  // Store sample business data for demonstration
   await storeSampleBusinessData(businessData, dataType, userId)
 
   return {
@@ -149,8 +140,6 @@ function hashString(str) {
 }
 
 async function storeSampleBusinessData(businessData, dataType, userId) {
-  // In a real implementation, this would store the data in Supabase
-  // For now, we'll simulate successful storage
   console.log(`📊 Stored ${dataType} business data for user ${userId}:`, {
     dataType,
     itemCount: Array.isArray(businessData) ? businessData.length : Object.keys(businessData).length,
@@ -158,10 +147,8 @@ async function storeSampleBusinessData(businessData, dataType, userId) {
   })
 }
 
-// GET endpoint to retrieve knowledge insights
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -173,7 +160,6 @@ export async function GET(request) {
     const query = searchParams.get('query') || 'business insights'
     const knowledgeType = searchParams.get('type')
 
-    // Simulate retrieving contextual insights
     const insights = await getContextualInsights(query, knowledgeType, user.id)
 
     return NextResponse.json({
@@ -195,11 +181,9 @@ export async function GET(request) {
 }
 
 async function getContextualInsights(query, knowledgeType, userId) {
-  // Simulate contextual insights based on query
   const queryLower = query.toLowerCase()
   const insights = []
 
-  // Customer-related insights
   if (queryLower.includes('customer') || queryLower.includes('satisfaction')) {
     insights.push({
       type: 'customer_insights',
@@ -215,7 +199,6 @@ async function getContextualInsights(query, knowledgeType, userId) {
     })
   }
 
-  // Revenue-related insights
   if (queryLower.includes('revenue') || queryLower.includes('money') || queryLower.includes('profit')) {
     insights.push({
       type: 'revenue_patterns',
@@ -231,7 +214,6 @@ async function getContextualInsights(query, knowledgeType, userId) {
     })
   }
 
-  // Service-related insights
   if (queryLower.includes('service') || queryLower.includes('performance')) {
     insights.push({
       type: 'service_performance',
@@ -247,7 +229,6 @@ async function getContextualInsights(query, knowledgeType, userId) {
     })
   }
 
-  // Scheduling-related insights
   if (queryLower.includes('schedule') || queryLower.includes('booking') || queryLower.includes('appointment')) {
     insights.push({
       type: 'scheduling_analytics',
@@ -263,7 +244,6 @@ async function getContextualInsights(query, knowledgeType, userId) {
     })
   }
 
-  // General business insights if no specific category
   if (insights.length === 0) {
     insights.push({
       type: 'business_metrics',

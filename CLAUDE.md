@@ -8,19 +8,20 @@ Enterprise barbershop platform: Next.js 14 (port 9999) + FastAPI (port 8001) + S
 **Core Rules:**
 1. **NO MOCK DATA** - Always use real Supabase database
 2. **FULL-STACK ONLY** - Complete features: DB schema → API → UI → tests
-3. **TEST FIRST** - Run `node test-supabase-access.js` before development
+3. **MEMORY CRITICAL** - FastAPI has memory-managed OAuth system to prevent crashes
 
 ## Quick Start Commands
 ```bash
 # Development
-./docker-dev-start.sh              # Start dev environment
-node test-supabase-access.js       # Test DB connection
+./docker-dev-start.sh              # Start dev environment with Docker
+npm run claude:health              # Test all system connections
 npm run dev                        # Start Next.js (port 9999)
 python fastapi_backend.py          # Start API (port 8001)
 
 # Health checks
-npm run health                     # API health check
+npm run health                     # API health check via curl
 curl http://localhost:9999/api/health
+curl http://localhost:8001/health
 
 # Stop everything
 docker compose down
@@ -28,30 +29,33 @@ docker compose down
 
 ## Essential Commands
 ```bash
-# Testing
-npm run test:all                # Full test suite
-npm run test                    # Unit tests
-npm run test:e2e               # End-to-end tests
-npm run test:security          # Security tests
+# Testing (Run before committing)
+npm run test:all                # Full test suite (Jest + Playwright)
+npm run test                    # Unit tests only (Jest)
+npm run test:e2e               # End-to-end tests (Playwright)
+npm run test:security          # Security scanning suite
+npm run test:nuclear           # High-impact nuclear test scenarios
 
 # Development
-npm run dev                    # Next.js dev server
-npm run build                  # Production build
+npm run dev                    # Next.js dev server (port 9999)
+npm run build                  # Production build + TypeScript check
 npm run lint                   # ESLint check
-npm run lint:fix              # Fix linting issues
+npm run lint:fix              # Auto-fix linting issues
 
-# Database
-npm run setup-db              # Setup database
-npm run cleanup-test-data     # Clean test data
-npm run seed:analytics        # Seed analytics data
+# Database Operations
+npm run setup-db              # Initialize database schema
+npm run cleanup-test-data     # Clean test data (supports --dry-run)
+npm run seed:analytics        # Seed analytics data for testing
 
-# Docker
-npm run docker:dev            # Start with Docker
-npm run docker:stop           # Stop Docker containers
+# Performance
+npm run performance:analyze   # Bundle size analysis
+npm run performance:lighthouse # Lighthouse performance test
 
-# Monitoring
-npm run monitoring:start      # Start monitoring stack
-npm run deploy:production     # Production deployment
+# Docker & Deployment
+npm run docker:dev            # Start with Docker Compose
+npm run docker:stop           # Stop all Docker containers
+npm run monitoring:start      # Start monitoring stack (Prometheus/Grafana)
+npm run deploy:production     # Full production deployment
 ```
 
 ## Architecture Overview
@@ -83,16 +87,18 @@ services/
 ```
 
 ### Backend Architecture
-- **FastAPI**: Main backend server with modular routers
-- **Routers**: Organized by feature (auth.py, ai.py, dashboard.py)
-- **Memory Management**: Critical OAuth session handling
-- **Error Monitoring**: Sentry integration for production
+- **FastAPI**: Main backend (`fastapi_backend.py`) with modular routers
+- **Routers**: Feature-based in `/routers/` (auth.py, ai.py, dashboard.py, notifications.py)
+- **Memory Management**: Production-critical OAuth session handling to prevent crashes
+- **AI Integration**: Multi-model support (OpenAI, Anthropic, Google) with caching
+- **Error Monitoring**: Sentry integration with memory tracking
 
 ### Frontend Architecture
-- **Next.js 14**: App Router with TypeScript support
-- **Real-time**: Pusher WebSocket connections
-- **State Management**: React hooks + Context API
-- **Authentication**: Supabase Auth with middleware protection
+- **Next.js 14**: App Router with TypeScript support and path aliases
+- **Real-time**: Pusher WebSocket for live updates
+- **State Management**: React hooks + Context patterns in `/contexts/`
+- **Authentication**: Supabase Auth with middleware protection (`middleware.js`)
+- **Testing**: Jest (unit) + Playwright (E2E) with comprehensive coverage
 
 ## Database Schema
 Core tables in Supabase:
@@ -126,15 +132,20 @@ NEXT_PUBLIC_PUSHER_KEY=
 ## Development Workflow
 
 ### Before Making Changes
-1. Test database connection: `node test-supabase-access.js`
-2. Check system health: `npm run health`
-3. Start dev environment: `./docker-dev-start.sh`
+1. Start dev environment: `./docker-dev-start.sh`
+2. Check system health: `npm run claude:health` (tests all connections)
+3. Verify no lint/type errors: `npm run lint && npm run build`
 
 ### After Making Changes
-1. Run linting: `npm run lint:fix`
-2. Run tests: `npm run test:all`
-3. Check TypeScript: `npm run build`
-4. Test production build works
+1. Fix any linting issues: `npm run lint:fix`
+2. Run full test suite: `npm run test:all`
+3. Verify production build: `npm run build`
+4. Check security if needed: `npm run test:security:quick`
+
+### Critical Rules
+- **NEVER** use mock data - always integrate with real Supabase
+- **ALWAYS** run tests before committing
+- **MEMORY**: Be aware of OAuth memory management in FastAPI backend
 
 ### Feature Development Checklist
 - [ ] Database schema with RLS policies
@@ -165,16 +176,18 @@ NEXT_PUBLIC_PUSHER_KEY=
 - Handle optimistic updates for better UX
 
 ## Testing Strategy
-- **Unit Tests**: Jest for business logic
-- **Integration Tests**: API endpoint testing
-- **E2E Tests**: Playwright for user workflows
-- **Security Tests**: Comprehensive security scanning
+- **Jest**: Unit tests with 80% coverage threshold (`jest.config.js`)
+- **Playwright**: E2E tests with HTML reports in `playwright-report/`
+- **Security**: Comprehensive scanning with `npm run test:security`
+- **Nuclear Tests**: High-impact scenarios for critical systems
+- **Performance**: Lighthouse and bundle analysis tools
 
-## Performance Considerations
-- Redis caching reduces AI API costs 60-70%
-- Memory management critical for OAuth stability
-- Bundle analysis available: `npm run performance:analyze`
-- Real-time updates via WebSocket connections
+## Critical Dependencies & Performance
+- **Memory Management**: `services/memory_manager.py` - Critical for OAuth stability
+- **AI Caching**: Redis reduces AI API costs 60-70%
+- **Error Monitoring**: Sentry integration with comprehensive tracking
+- **Real-time**: Pusher WebSocket for live dashboard updates
+- **Bundle Optimization**: Webpack analysis with `npm run performance:analyze`
 
 ## Deployment
 - **Development**: Docker Compose
@@ -186,30 +199,35 @@ NEXT_PUBLIC_PUSHER_KEY=
 
 ### Common Issues
 ```bash
-# Port conflicts
+# Port conflicts (9999/8001)
 sudo lsof -ti:9999 | xargs kill -9
 sudo lsof -ti:8001 | xargs kill -9
 
 # Docker issues
 docker compose down && docker compose up --build
 
-# Database connection issues
-node test-supabase-access.js
-
-# Clean restart
+# Complete reset
 rm -rf .next/ node_modules/ && npm install
+
+# Memory issues (OAuth failures)
+# Check memory_manager.py logs in FastAPI backend
 ```
 
 ### Debug Commands
 ```bash
-# View logs
+# System health check
+npm run claude:health
+
+# View service logs
 docker compose logs -f frontend
 docker compose logs -f backend
 
-# Check system status
-npm run health
+# Individual health checks
 curl http://localhost:9999/api/health
 curl http://localhost:8001/health
+
+# Test database connectivity
+# (Note: test-supabase-access.js file not found - may need to be created)
 ```
 
 ## Security Notes

@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Use service loader to get appropriate services (mock in dev, real in prod)
 let sendGridService, twilioSMSService, stripeService;
 
 try {
@@ -21,7 +19,6 @@ try {
     console.error('Failed to import marketing services:', error.message);
 }
 
-// Marketing campaigns CRUD operations
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -30,19 +27,16 @@ export async function GET(request) {
         const userId = searchParams.get('user_id');
         const limit = parseInt(searchParams.get('limit') || '50');
         
-        // Try to get campaigns from database first
         let campaigns = [];
         let error = null;
         
         try {
-            // Build query
             let query = supabase
                 .from('marketing_campaigns')
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(limit);
             
-            // Filter by user/shop if provided
             if (userId) {
                 query = query.or(`owner_id.eq.${userId},shop_id.eq.${shopId}`);
             } else if (shopId) {
@@ -60,7 +54,6 @@ export async function GET(request) {
             console.log('Database query failed, using empty array:', e.message);
         }
         
-        // If no campaigns in database, return empty array (no mock data)
         if (campaigns.length === 0) {
             campaigns = [];
         }
@@ -87,7 +80,6 @@ export async function POST(request) {
         const data = await request.json();
         console.log('📮 Campaign creation request:', data);
         
-        // Extract campaign details
         const { 
             type, 
             name, 
@@ -99,7 +91,6 @@ export async function POST(request) {
             user_id 
         } = data;
 
-        // Validate required fields
         if (!type || (!subject && !message)) {
             return NextResponse.json(
                 { 
@@ -110,10 +101,8 @@ export async function POST(request) {
             );
         }
 
-        // NO MOCK DATA - Query real customer database for recipients
         const recipients = []; // Real implementation should query customers table
         
-        // Create campaign object
         const campaign = {
             id: `campaign-${Date.now()}`,
             name: name || `${type} Campaign - ${new Date().toLocaleDateString()}`,
@@ -126,7 +115,6 @@ export async function POST(request) {
             billing_account: billing_account || 'default'
         };
 
-        // Mock shop data
         const shop = {
             id: 'shop-001',
             name: 'Test Barbershop',
@@ -136,7 +124,6 @@ export async function POST(request) {
 
         let result;
         
-        // Send campaign using appropriate mock service
         if (type === 'email' && sendGridService) {
             result = await sendGridService.sendWhiteLabelCampaign(
                 campaign,
@@ -150,7 +137,6 @@ export async function POST(request) {
                 mockRecipients
             );
         } else {
-            // Fallback if services not loaded
             result = {
                 success: true,
                 campaignId: campaign.id,
@@ -165,7 +151,6 @@ export async function POST(request) {
             };
         }
 
-        // Process billing if stripe service is available
         if (stripeService && result.cost) {
             const billingResult = await stripeService.chargeCampaign(
                 billing_account,
@@ -197,8 +182,6 @@ export async function POST(request) {
     }
 }
 
-// NO MOCK DATA - Recipients should come from real customer database
-// Real implementation would query customers table with filters
 
 export async function PUT(request) {
     try {
@@ -212,7 +195,6 @@ export async function PUT(request) {
             );
         }
 
-        // Update campaign
         const updatedCampaign = {
             id,
             ...updates,

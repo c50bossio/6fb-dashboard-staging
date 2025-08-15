@@ -17,7 +17,6 @@ export default function WorkingLoginPage() {
     setMessage('Signing in...')
 
     try {
-      // Use the API endpoint directly
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -34,7 +33,6 @@ export default function WorkingLoginPage() {
 
       setMessage('Login successful! Redirecting...')
       
-      // Use a form POST to navigate with cookies intact
       const form = document.createElement('form')
       form.method = 'GET'
       form.action = '/dashboard-simple'

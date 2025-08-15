@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 
-// Node.js built-in modules that are NOT available in Edge Runtime
 const NODE_ONLY_MODULES = [
   'crypto',
   'fs',
@@ -29,7 +28,6 @@ const NODE_ONLY_MODULES = [
   'stream/promises'
 ];
 
-// Find all API route files
 const apiRoutePattern = path.join(__dirname, '..', 'app', 'api', '**', '*.js');
 const apiRoutes = glob.sync(apiRoutePattern);
 
@@ -42,10 +40,8 @@ let nodeCount = 0;
 apiRoutes.forEach(filePath => {
   const content = fs.readFileSync(filePath, 'utf8');
   
-  // Check if file uses any Node.js built-in modules
   let usesNodeModules = false;
   for (const module of NODE_ONLY_MODULES) {
-    // Check for various import patterns
     const patterns = [
       `require('${module}')`,
       `require("${module}")`,
@@ -64,19 +60,16 @@ apiRoutes.forEach(filePath => {
     if (usesNodeModules) break;
   }
   
-  // Check for file system operations (writeFile, readFile, etc.)
   if (content.includes('writeFile') || content.includes('readFile') || 
       content.includes('mkdir') || content.includes('unlink') ||
       content.includes('createWriteStream') || content.includes('createReadStream')) {
     usesNodeModules = true;
   }
   
-  // Check for Stripe webhook (requires raw body access)
   if (content.includes('stripe.webhooks.constructEvent')) {
     usesNodeModules = true;
   }
   
-  // If it uses Node modules, remove Edge Runtime export
   if (usesNodeModules && content.includes("export const runtime = 'edge'")) {
     const updatedContent = content.replace("export const runtime = 'edge'\n", '');
     fs.writeFileSync(filePath, updatedContent, 'utf8');

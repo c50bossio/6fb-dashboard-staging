@@ -40,7 +40,6 @@ async function validateMarketingData() {
     if (!result.error) {
       console.log(`✅ Table '${tableName}' exists`);
       
-      // Get schema
       const schema = await supabaseQuery.getTableSchema(tableName);
       if (schema.data) {
         console.log(`   Columns: ${schema.data.map(col => col.column_name).join(', ')}`);

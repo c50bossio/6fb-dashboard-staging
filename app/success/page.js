@@ -13,44 +13,36 @@ export default function SuccessPage() {
   const [error, setError] = useState(null)
   
   useEffect(() => {
-    // Simplified session detection that bypasses authentication for testing
     const handleSessionDetection = async () => {
       console.log('🔄 Success page: Starting session detection...')
       
-      // For now, bypass authentication and go directly to welcome
-      // This is a temporary fix to allow the user to complete onboarding
       const sessionId = searchParams.get('session_id')
       
       if (sessionId) {
         console.log('✅ Stripe session detected, bypassing auth check temporarily')
         console.log('📦 Session ID:', sessionId)
         
-        // Get plan information from URL params
         const plan = searchParams.get('plan') || 'shop'
         const billing = searchParams.get('billing') || 'monthly'
         
         console.log('📦 Plan:', plan, 'Billing:', billing)
         
-        // Show success briefly then redirect to welcome
         setLoading(false)
         
         setTimeout(() => {
           console.log('🔄 Redirecting to welcome page for onboarding...')
-          // Pass session ID and plan info to welcome page
           router.push(`/welcome?stripe_session=${sessionId}&setup=initial&plan=${plan}&billing=${billing}`)
         }, 2000)
         
         return
       }
       
-      // If user is already authenticated, proceed normally
       if (user) {
         console.log('✅ User session available, initializing...')
         initializeUser()
         return
       }
       
-      // Otherwise, redirect to welcome after a brief wait
       console.log('⚠️ No session detected, redirecting to welcome for setup...')
       setLoading(false)
       
@@ -60,7 +52,6 @@ export default function SuccessPage() {
     }
     
     handleSessionDetection()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, searchParams])
 
   const initializeUser = async () => {
@@ -75,7 +66,6 @@ export default function SuccessPage() {
       
       setLoading(true)
       
-      // Create user profile in database
       const response = await fetch('/api/user/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -88,7 +78,6 @@ export default function SuccessPage() {
         console.log('✅ User profile created successfully:', result.profile?.email)
         setLoading(false)
         
-        // Show success state briefly before redirecting to welcome/onboarding
         setTimeout(() => {
           console.log('🔄 Redirecting to welcome page for account setup...')
           router.push('/welcome')
@@ -97,12 +86,10 @@ export default function SuccessPage() {
       } else {
         console.error('❌ Profile creation failed:', result)
         
-        // Determine if we should show retry option
         const canRetry = !['PERMISSION_DENIED', 'AUTH_REQUIRED'].includes(result.code)
         
         setLoading(false)
         
-        // Show error state with options
         setError({
           type: result.code || 'UNKNOWN_ERROR',
           message: result.error || 'Account setup failed',
@@ -116,7 +103,6 @@ export default function SuccessPage() {
       console.error('❌ User initialization network error:', error)
       setLoading(false)
       
-      // Show network error
       setError({
         type: 'NETWORK_ERROR',
         message: 'Connection failed',
@@ -132,7 +118,6 @@ export default function SuccessPage() {
     setError(null)
     setLoading(true)
     
-    // Wait a moment then retry
     setTimeout(() => {
       initializeUser()
     }, 1000)

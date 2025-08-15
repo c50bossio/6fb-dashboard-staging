@@ -15,7 +15,6 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 
-// Import new onboarding components
 import RoleSelector from '../../components/onboarding/RoleSelector'
 import GoalsSelector from '../../components/onboarding/GoalsSelector'
 import ProgressTracker from '../../components/onboarding/ProgressTracker'
@@ -36,7 +35,6 @@ export default function WelcomePage() {
   const [showOAuthError, setShowOAuthError] = useState(false)
   const [stripeSessionId, setStripeSessionId] = useState(null)
   
-  // Onboarding data state - Pre-populate role based on subscription plan
   const planFromUrl = searchParams.get('plan')
   const getRoleFromPlan = (plan) => {
     switch(plan) {
@@ -52,12 +50,10 @@ export default function WelcomePage() {
   }
   
   const [onboardingData, setOnboardingData] = useState({
-    // Step 1: Role & Goals - Pre-select based on subscription
     role: getRoleFromPlan(planFromUrl),
     goals: [],
     businessSize: '',
     
-    // Step 2: Business Info
     businessName: '',
     businessAddress: '',
     businessPhone: '',
@@ -65,22 +61,17 @@ export default function WelcomePage() {
     businessHours: null,
     customDomain: '',
     
-    // Step 3: Services
     services: [],
     
-    // Step 4: Branding (optional)
     primaryColor: '#3B82F6',
     secondaryColor: '#1F2937',
     logoUrl: '',
     bio: '',
     
-    // Progress tracking
     completedSteps: []
   })
 
-  // Define onboarding steps based on role and subscription
   const getSteps = () => {
-    // Skip role selection if we have a pre-selected role from subscription
     const hasPreselectedRole = getRoleFromPlan(planFromUrl) !== null
     
     const baseSteps = hasPreselectedRole ? [
@@ -95,8 +86,6 @@ export default function WelcomePage() {
       { id: 'preview', label: 'Preview', sublabel: 'See your page', timeEstimate: 1 }
     ]
     
-    // Add financial step for shop owners and enterprise owners
-    // Check both the current role and plan from URL to ensure financial step is included
     const currentRole = onboardingData.role
     const planRole = getRoleFromPlan(planFromUrl)
     const needsFinancialStep = currentRole === 'shop_owner' || 
@@ -121,7 +110,6 @@ export default function WelcomePage() {
   const steps = getSteps()
 
   useEffect(() => {
-    // Check for OAuth error parameters and Stripe session
     const error = searchParams.get('error')
     const from = searchParams.get('from')
     const stripeSession = searchParams.get('stripe_session')
@@ -129,11 +117,9 @@ export default function WelcomePage() {
     
     console.log('👋 Welcome page loaded, error:', error, 'from:', from, 'stripe_session:', stripeSession)
     
-    // Handle Stripe session recovery
     if (stripeSession && setup === 'initial') {
       console.log('💳 Stripe session detected, user paid but needs account setup')
       setStripeSessionId(stripeSession)
-      // Allow user to continue with onboarding even without auth session
       return
     }
     
@@ -144,16 +130,12 @@ export default function WelcomePage() {
       return
     }
     
-    // Handle successful payment redirect without session
     if (from === 'payment_success') {
       console.log('✅ User completed payment, allowing onboarding')
-      // Continue with normal onboarding flow
       return
     }
     
-    // Don't redirect immediately - give auth time to load
     const timer = setTimeout(() => {
-      // If coming from payment success, don't require auth
       if ((from === 'payment_success' || stripeSession) && !user) {
         console.log('💳 Payment successful but no auth - allowing onboarding anyway')
         return
@@ -168,7 +150,6 @@ export default function WelcomePage() {
     return () => clearTimeout(timer)
   }, [user, profile, router, searchParams, showOAuthError])
 
-  // Load saved progress from backend
   useEffect(() => {
     if (user?.id) {
       loadSavedProgress()
@@ -187,7 +168,6 @@ export default function WelcomePage() {
       if (response.ok) {
         const data = await response.json()
         if (data.steps && data.steps.length > 0) {
-          // Merge all step data into onboardingData
           let mergedData = { ...onboardingData }
           data.steps.forEach(step => {
             if (step.step_data) {
@@ -196,7 +176,6 @@ export default function WelcomePage() {
           })
           setOnboardingData(mergedData)
           
-          // Set current step based on progress
           if (data.currentStep) {
             setCurrentStep(data.currentStep)
           }
@@ -204,7 +183,6 @@ export default function WelcomePage() {
       }
     } catch (error) {
       console.error('Error loading saved progress:', error)
-      // Fall back to localStorage if API fails
       const savedData = localStorage.getItem(`onboarding_${user.id}`)
       if (savedData) {
         setOnboardingData(JSON.parse(savedData))
@@ -214,10 +192,8 @@ export default function WelcomePage() {
 
   const saveProgress = async (data, stepName = null) => {
     if (user?.id) {
-      // Save to localStorage as backup
       localStorage.setItem(`onboarding_${user.id}`, JSON.stringify(data))
       
-      // Save to backend if step name provided
       if (stepName && !isSaving) {
         setIsSaving(true)
         try {
@@ -248,11 +224,9 @@ export default function WelcomePage() {
     const updatedData = { ...onboardingData, ...stepData }
     setOnboardingData(updatedData)
     
-    // Save progress with step name
     const stepName = steps[currentStep]?.id
     saveProgress(updatedData, stepName)
     
-    // Move to next step
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1)
     }
@@ -268,7 +242,6 @@ export default function WelcomePage() {
   const handleCompleteSetup = async () => {
     setIsLoading(true)
     try {
-      // Call the complete onboarding API endpoint
       const response = await fetch('/api/onboarding/complete', {
         method: 'POST',
         headers: {
@@ -282,23 +255,18 @@ export default function WelcomePage() {
       const result = await response.json()
       
       if (response.ok && result.success) {
-        // Clear onboarding data from localStorage
         if (user?.id) {
           localStorage.removeItem(`onboarding_${user.id}`)
         }
         
-        // Show checklist on dashboard
         localStorage.setItem('show_onboarding_checklist', 'true')
         
-        // Store barbershop ID for future use
         if (result.barbershopId) {
           localStorage.setItem('barbershop_id', result.barbershopId)
         }
         
-        // Redirect to dashboard
         router.push('/dashboard')
       } else {
-        // Handle partial success or errors
         if (result.results?.errors && result.results.errors.length > 0) {
           const errorMessages = result.results.errors.map(e => e.error).join(', ')
           alert(`Some steps completed with errors: ${errorMessages}`)
@@ -315,19 +283,16 @@ export default function WelcomePage() {
   }
 
   const handleSkipSetup = () => {
-    // Allow users to skip and complete later
     localStorage.setItem('show_onboarding_checklist', 'true')
     router.push('/dashboard')
   }
 
   const handleStepClick = (stepIndex) => {
-    // Allow going back to previous steps
     if (stepIndex <= currentStep) {
       setCurrentStep(stepIndex)
     }
   }
 
-  // Generate business slug from name
   const generateSlug = (name) => {
     return name.toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -348,7 +313,6 @@ export default function WelcomePage() {
     router.push('/login')
   }
 
-  // Show OAuth error state
   if (showOAuthError && errorType === 'session_timeout') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">

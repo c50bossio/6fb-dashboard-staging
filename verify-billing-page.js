@@ -2,7 +2,6 @@
 
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c';
 
@@ -35,7 +34,6 @@ async function verifyBillingSystem() {
   // 2. Check API endpoints
   console.log('\n🔌 API ENDPOINTS:');
   
-  // Test billing API
   try {
     const response = await fetch('http://localhost:9999/api/marketing/billing?userId=demo-user-001');
     const data = await response.json();
@@ -61,7 +59,6 @@ async function verifyBillingSystem() {
     if (response.ok) {
       console.log('   ✅ /dashboard/campaigns: Page loads successfully');
       
-      // Check for JavaScript errors
       const html = await response.text();
       if (html.includes('MarketingBillingDashboard')) {
         console.log('   ✅ Billing component: Found in page');
@@ -79,7 +76,6 @@ async function verifyBillingSystem() {
   console.log('\n' + '=' .repeat(50));
   console.log('📋 SUMMARY:\n');
   
-  // Check if we have any data
   const { data: accounts } = await supabase
     .from('marketing_accounts')
     .select('*')

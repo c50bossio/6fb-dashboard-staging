@@ -1,4 +1,3 @@
-// Mobile-responsive utility components
 
 export const MobileContainer = ({ children, className = '' }) => {
   return (

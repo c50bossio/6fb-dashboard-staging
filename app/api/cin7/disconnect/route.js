@@ -8,7 +8,6 @@ const supabase = createClient(
 
 export async function POST(request) {
   try {
-    // Get user from request headers
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
       return NextResponse.json(
@@ -17,7 +16,6 @@ export async function POST(request) {
       )
     }
 
-    // Extract user from auth token
     const token = authHeader.replace('Bearer ', '')
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
@@ -28,7 +26,6 @@ export async function POST(request) {
       )
     }
 
-    // Soft delete - just mark as inactive
     const { error } = await supabase
       .from('cin7_connections')
       .update({

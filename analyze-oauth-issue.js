@@ -1,5 +1,3 @@
-// Comprehensive OAuth Flow Analysis
-// Run this to understand exactly what's happening
 
 const { createClient } = require('@supabase/supabase-js')
 
@@ -16,7 +14,6 @@ async function analyzeOAuthIssue() {
   console.log('---------------------------------')
   
   try {
-    // Test basic connection
     const { data, error } = await supabase
       .from('profiles')
       .select('count')
@@ -61,7 +58,6 @@ async function analyzeOAuthIssue() {
   console.log('4. Profile creation/fetch failing')
   console.log('   → Database operation blocking redirect')
   
-  console.log('\n4️⃣ DEBUG STEPS TO RUN IN BROWSER')
   console.log('----------------------------------')
   console.log('1. Open Chrome DevTools (F12)')
   console.log('2. Go to Network tab')
@@ -97,7 +93,6 @@ async function analyzeOAuthIssue() {
   console.log('\n6️⃣ TESTING PROFILE OPERATIONS')
   console.log('-------------------------------')
   
-  // Test if we can query profiles
   try {
     const { data: profiles, error } = await supabase
       .from('profiles')

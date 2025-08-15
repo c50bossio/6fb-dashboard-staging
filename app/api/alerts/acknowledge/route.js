@@ -19,7 +19,6 @@ export async function POST(request) {
       reason 
     } = body;
     
-    // Validate required fields
     if (!alert_id || !user_id || !action) {
       return NextResponse.json(
         { error: 'alert_id, user_id, and action are required' },
@@ -27,7 +26,6 @@ export async function POST(request) {
       );
     }
     
-    // Validate action type
     const validActions = ['acknowledge', 'dismiss', 'resolve', 'snooze'];
     if (!validActions.includes(action)) {
       return NextResponse.json(
@@ -36,12 +34,10 @@ export async function POST(request) {
       );
     }
     
-    // Record the start time for response time tracking
     const startTime = Date.now();
     
     let result;
     
-    // Handle different alert actions
     switch (action) {
       case 'acknowledge':
         result = await handleAcknowledge(alert_id, user_id, notes, startTime);
@@ -63,12 +59,10 @@ export async function POST(request) {
         throw new Error(`Unhandled action: ${action}`);
     }
     
-    // Send real-time update to connected clients
     try {
       await sendRealtimeUpdate(alert_id, user_id, action, result);
     } catch (realtimeError) {
       console.error('Real-time update failed:', realtimeError);
-      // Don't fail the request if real-time update fails
     }
     
     return NextResponse.json({
@@ -109,7 +103,6 @@ export async function GET(request) {
     const barbershopId = searchParams.get('barbershop_id');
     const days = parseInt(searchParams.get('days') || '7');
     
-    // Validate required parameters
     if (!userId || !barbershopId) {
       return NextResponse.json(
         { error: 'user_id and barbershop_id are required parameters' },
@@ -117,7 +110,6 @@ export async function GET(request) {
       );
     }
     
-    // Get acknowledgment history
     const historyResponse = await fetch('http://localhost:8001/intelligent-alerts/acknowledgment-history', {
       method: 'POST',
       headers: {
@@ -137,10 +129,8 @@ export async function GET(request) {
     
     const historyData = await historyResponse.json();
     
-    // Calculate response time statistics
     const responseTimeStats = calculateResponseTimeStats(historyData.interactions || []);
     
-    // Generate user engagement insights
     const engagementInsights = generateEngagementInsights(historyData);
     
     return NextResponse.json({
@@ -170,7 +160,6 @@ export async function GET(request) {
   }
 }
 
-// Helper functions for different alert actions
 
 async function handleAcknowledge(alertId, userId, notes, startTime) {
   const acknowledgeResponse = await fetch('http://localhost:8001/intelligent-alerts/acknowledge', {
@@ -223,9 +212,7 @@ async function handleDismiss(alertId, userId, feedback, reason, startTime) {
   
   const result = await dismissResponse.json();
   
-  // Additional processing for feedback learning
   if (feedback && feedback.includes('spam')) {
-    // Trigger anti-spam learning
     try {
       await fetch('http://localhost:8001/intelligent-alerts/learn-spam-pattern', {
         method: 'POST',
@@ -285,7 +272,6 @@ async function handleResolve(alertId, userId, notes, reason, startTime) {
 }
 
 async function handleSnooze(alertId, userId, snoozeUntil, notes, startTime) {
-  // Validate snooze_until
   if (!snoozeUntil) {
     throw new Error('snooze_until is required for snooze action');
   }

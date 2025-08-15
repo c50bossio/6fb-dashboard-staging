@@ -8,13 +8,11 @@ export function useSupabaseUser() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -38,21 +36,18 @@ export function useSupabaseQuery(table, filters = {}, options = {}) {
         setLoading(true)
         let query = supabase.from(table).select(options.select || '*')
 
-        // Apply filters
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined) {
             query = query.eq(key, value)
           }
         })
 
-        // Apply ordering
         if (options.orderBy) {
           query = query.order(options.orderBy, { 
             ascending: options.ascending ?? false 
           })
         }
 
-        // Apply limit
         if (options.limit) {
           query = query.limit(options.limit)
         }

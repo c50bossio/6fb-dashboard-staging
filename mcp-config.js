@@ -30,7 +30,6 @@ if (!config.supabaseUrl || !config.supabaseKey) {
 
 async function startMcpServer() {
   try {
-    // Test Supabase connection first
     console.log('🔍 Testing Supabase connection...');
     const supabase = createClient(config.supabaseUrl, config.supabaseKey);
     
@@ -41,7 +40,6 @@ async function startMcpServer() {
       console.log('✅ Supabase connection successful');
     }
 
-    // Initialize MCP Server
     console.log('🚀 Starting Supabase MCP Server...');
     
     const server = new McpServer({
@@ -50,14 +48,12 @@ async function startMcpServer() {
       projectRef: config.projectRef
     });
 
-    // Start the server
     await server.start();
     
     console.log('✅ Supabase MCP Server is running!');
     console.log('📡 Claude Code can now access Supabase via MCP tools');
     console.log('🔗 Available tools: query tables, manage data, execute SQL');
     
-    // Keep the process running
     process.on('SIGINT', async () => {
       console.log('\n🛑 Shutting down MCP server...');
       await server.stop();
@@ -71,5 +67,4 @@ async function startMcpServer() {
   }
 }
 
-// Start the server
 startMcpServer();

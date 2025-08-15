@@ -22,7 +22,6 @@ import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { Card } from '../../../../components/ui'
 import { useTenant } from '../../../../contexts/TenantContext'
 
-// AI-Powered Widget Components
 function StrategicPricingWidget({ onRefresh, loading }) {
   const [pricingInsights, setPricingInsights] = useState(null)
   const [widgetLoading, setWidgetLoading] = useState(true)

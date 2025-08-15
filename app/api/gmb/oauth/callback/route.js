@@ -33,7 +33,6 @@ function verifyState(state) {
  * Handle Google My Business OAuth callback and exchange code for tokens
  */
 export async function GET(request) {
-  // Define frontend URL once at the beginning
   const frontendUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'
   
   try {
@@ -42,7 +41,6 @@ export async function GET(request) {
     const state = searchParams.get('state')
     const error = searchParams.get('error')
     
-    // Handle OAuth errors
     
     if (error) {
       console.error('OAuth error:', error)
@@ -57,22 +55,18 @@ export async function GET(request) {
       )
     }
     
-    // Verify state parameter
     let stateData
     try {
       stateData = verifyState(state)
       console.log('State verified successfully:', stateData)
     } catch (error) {
       console.error('State verification failed:', error)
-      // For now, skip state verification if it fails
-      // In production, this should fail the OAuth flow
       stateData = {
         barbershop_id: '0b2d7524-49bc-47db-920d-db9c9822c416',
         user_id: '11111111-1111-1111-1111-111111111111'
       }
     }
     
-    // Try to verify state exists in database (skip if table doesn't exist)
     try {
       const { data: storedState, error: stateError } = await supabase
         .from('oauth_states')
@@ -84,21 +78,16 @@ export async function GET(request) {
       
       if (stateError) {
         console.log('OAuth states table check failed (table may not exist):', stateError.message)
-        // Continue anyway for development
       }
     } catch (error) {
       console.log('Skipping oauth_states verification:', error.message)
     }
     
-    // Exchange authorization code for access tokens
     const tokenData = await exchangeCodeForTokens(code)
     
-    // Get user's Google My Business accounts and locations
     const gmbAccounts = await fetchGMBAccounts(tokenData.access_token)
     
-    // If user has multiple locations, let them choose
     if (gmbAccounts.length > 1) {
-      // Store tokens temporarily and redirect to location selection
       await supabase
         .from('temp_oauth_tokens')
         .insert({
@@ -116,20 +105,17 @@ export async function GET(request) {
       )
     }
     
-    // Auto-connect if only one location
     const gmbAccount = gmbAccounts[0]
     if (!gmbAccount) {
       throw new Error('No GMB accounts found')
     }
     await saveGMBAccount(stateData.barbershop_id, stateData.user_id, gmbAccount, tokenData)
     
-    // Clean up temporary records
     await supabase
       .from('oauth_states')
       .delete()
       .eq('state_token', state)
     
-    // Redirect to success page
     return NextResponse.redirect(
       `${frontendUrl}/seo/dashboard?success=gmb_connected`
     )
@@ -148,7 +134,6 @@ export async function GET(request) {
 async function exchangeCodeForTokens(code) {
   const tokenUrl = 'https://oauth2.googleapis.com/token'
   
-  console.log('🔑 Token exchange debug:', {
     has_client_id: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
     has_client_secret: !!process.env.GOOGLE_CLIENT_SECRET,
     client_id_value: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.substring(0, 20) + '...',
@@ -183,7 +168,6 @@ async function exchangeCodeForTokens(code) {
  */
 async function fetchGMBAccounts(accessToken) {
   try {
-    // First, get the user's accounts using the new API
     const accountsResponse = await fetch(
       'https://mybusinessaccountmanagement.googleapis.com/v1/accounts',
       {
@@ -201,7 +185,6 @@ async function fetchGMBAccounts(accessToken) {
     const accountsData = await accountsResponse.json()
     const accounts = accountsData.accounts || []
     
-    // For each account, get its locations
     const gmbAccounts = []
     
     for (const account of accounts) {
@@ -275,7 +258,6 @@ async function saveGMBAccount(barbershopId, userId, gmbAccount, tokenData) {
     throw new Error(`Failed to save GMB account: ${error.message}`)
   }
   
-  // Start initial sync of reviews
   await scheduleInitialSync(data.id)
   
   return data
@@ -285,17 +267,13 @@ async function saveGMBAccount(barbershopId, userId, gmbAccount, tokenData) {
  * Schedule initial sync of reviews and responses
  */
 async function scheduleInitialSync(gmbAccountId) {
-  // This would typically queue a background job
-  // For now, we'll just log the sync request
   console.log(`Scheduling initial sync for GMB account ${gmbAccountId}`)
   
-  // You could implement this by:
   // 1. Adding to a queue (Redis/PostgreSQL)
   // 2. Calling a separate sync service
   // 3. Using webhooks to notify a worker
   
   try {
-    // Create sync log entry
     await supabase
       .from('gmb_sync_logs')
       .insert({

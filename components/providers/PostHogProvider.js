@@ -7,14 +7,12 @@ import { useEffect } from 'react'
 
 import { posthog } from '@/lib/posthog'
 
-// Analytics tracker component
 function PostHogTracker() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { user } = useUser()
   const client = usePostHog()
 
-  // Track page views
   useEffect(() => {
     if (pathname && client) {
       let url = window.origin + pathname
@@ -28,7 +26,6 @@ function PostHogTracker() {
     }
   }, [pathname, searchParams, client])
 
-  // Identify user when they sign in
   useEffect(() => {
     if (user && client) {
       client.identify(user.id, {
@@ -37,7 +34,6 @@ function PostHogTracker() {
         lastName: user.lastName,
         createdAt: user.createdAt,
         lastSignInAt: user.lastSignInAt,
-        // Add custom user properties
         subscription_plan: user.publicMetadata?.subscriptionPlan || 'free',
         user_type: user.publicMetadata?.userType || 'barber',
         onboarding_completed: user.publicMetadata?.onboardingCompleted || false,
@@ -48,10 +44,8 @@ function PostHogTracker() {
   return null
 }
 
-// Main PostHog provider wrapper
 export default function PostHogProviderWrapper({ children }) {
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-    // If PostHog is not configured, just render children
     return children
   }
 
@@ -63,13 +57,11 @@ export default function PostHogProviderWrapper({ children }) {
   )
 }
 
-// Hook for easy analytics access throughout the app
 export function useAnalytics() {
   const client = usePostHog()
   const { user } = useUser()
 
   return {
-    // Track custom events
     track: (event, properties = {}) => {
       if (client) {
         client.capture(event, {
@@ -80,7 +72,6 @@ export function useAnalytics() {
       }
     },
 
-    // Business-specific tracking methods
     trackBookingStarted: (serviceType, price) => {
       if (client) {
         client.capture('booking_started', {
@@ -148,14 +139,12 @@ export function useAnalytics() {
       }
     },
 
-    // Set user properties
     setUserProperties: (properties) => {
       if (client && user) {
         client.people.set(properties)
       }
     },
 
-    // Track revenue
     trackRevenue: (amount, properties = {}) => {
       if (client) {
         client.capture('revenue', {
@@ -167,7 +156,6 @@ export function useAnalytics() {
       }
     },
 
-    // Feature flags
     isFeatureEnabled: (flagName) => {
       if (client) {
         return client.isFeatureEnabled(flagName)
@@ -182,7 +170,6 @@ export function useAnalytics() {
       return null
     },
 
-    // A/B testing
     getExperimentVariant: (experimentName) => {
       if (client) {
         return client.getFeatureFlag(experimentName)
@@ -190,7 +177,6 @@ export function useAnalytics() {
       return 'control'
     },
 
-    // Reset (on logout)
     reset: () => {
       if (client) {
         client.reset()

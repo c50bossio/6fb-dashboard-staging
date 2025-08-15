@@ -39,7 +39,6 @@ export async function POST(request) {
 
     console.log('Stripe webhook received:', event.type)
 
-    // Handle the event
     switch (event.type) {
       case 'customer.subscription.created':
         await handleSubscriptionCreated(event.data.object)
@@ -104,8 +103,6 @@ async function handleSubscriptionCreated(subscription) {
   }
 
   try {
-    // Update tenant subscription in database
-    // In production, this would use the TokenBillingService
     const subscriptionData = {
       tenant_id: tenantId,
       stripe_subscription_id: subscription.id,
@@ -122,10 +119,7 @@ async function handleSubscriptionCreated(subscription) {
 
     console.log('Subscription data to save:', subscriptionData)
     
-    // TODO: Save to database via TokenBillingService
-    // await tokenBillingService.updateSubscription(tenantId, subscriptionData)
 
-    // Send welcome email
     await sendSubscriptionEmail(tenantId, 'welcome', {
       plan_name: planName,
       trial_end: subscriptionData.trial_end
@@ -156,7 +150,6 @@ async function handleSubscriptionUpdated(subscription) {
       updated_at: new Date()
     }
 
-    // Handle specific status changes
     if (subscription.status === 'active') {
       console.log(`Subscription ${subscription.id} is now active`)
       await sendSubscriptionEmail(tenantId, 'activated', {
@@ -174,8 +167,6 @@ async function handleSubscriptionUpdated(subscription) {
       })
     }
 
-    // TODO: Update database
-    // await tokenBillingService.updateSubscription(tenantId, subscriptionData)
 
   } catch (error) {
     console.error('Error handling subscription updated:', error)
@@ -193,7 +184,6 @@ async function handleSubscriptionDeleted(subscription) {
   }
 
   try {
-    // Mark subscription as canceled in database
     const subscriptionData = {
       tenant_id: tenantId,
       status: 'canceled',
@@ -201,10 +191,7 @@ async function handleSubscriptionDeleted(subscription) {
       updated_at: new Date()
     }
 
-    // TODO: Update database
-    // await tokenBillingService.updateSubscription(tenantId, subscriptionData)
 
-    // Send cancellation confirmation
     await sendSubscriptionEmail(tenantId, 'cancellation_confirmed', {
       canceled_at: new Date()
     })
@@ -228,7 +215,6 @@ async function handlePaymentSucceeded(invoice) {
   }
 
   try {
-    // Record successful payment
     const paymentData = {
       tenant_id: tenantId,
       stripe_invoice_id: invoice.id,
@@ -241,10 +227,7 @@ async function handlePaymentSucceeded(invoice) {
       status: 'paid'
     }
 
-    // TODO: Save payment record
-    // await tokenBillingService.recordPayment(tenantId, paymentData)
 
-    // Send payment confirmation
     await sendSubscriptionEmail(tenantId, 'payment_succeeded', {
       amount: paymentData.amount_paid,
       invoice_url: invoice.hosted_invoice_url
@@ -268,7 +251,6 @@ async function handlePaymentFailed(invoice) {
   }
 
   try {
-    // Record failed payment
     const paymentData = {
       tenant_id: tenantId,
       stripe_invoice_id: invoice.id,
@@ -281,10 +263,7 @@ async function handlePaymentFailed(invoice) {
       failed_at: new Date()
     }
 
-    // TODO: Save failed payment record
-    // await tokenBillingService.recordFailedPayment(tenantId, paymentData)
 
-    // Send payment failure notification
     await sendSubscriptionEmail(tenantId, 'payment_failed', {
       amount_due: paymentData.amount_due,
       next_attempt: paymentData.next_payment_attempt,
@@ -310,7 +289,6 @@ async function handleTrialWillEnd(subscription) {
   }
 
   try {
-    // Send trial ending reminder
     await sendSubscriptionEmail(tenantId, 'trial_ending', {
       trial_end_date: trialEnd,
       days_remaining: Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)),
@@ -336,7 +314,6 @@ async function handleCheckoutCompleted(session) {
   }
 
   try {
-    // Record successful checkout
     const checkoutData = {
       tenant_id: tenantId,
       stripe_checkout_session_id: session.id,
@@ -349,10 +326,7 @@ async function handleCheckoutCompleted(session) {
       completed_at: new Date()
     }
 
-    // TODO: Save checkout record
-    // await tokenBillingService.recordCheckout(tenantId, checkoutData)
 
-    // Send checkout confirmation
     await sendSubscriptionEmail(tenantId, 'checkout_completed', {
       plan_name: planName,
       amount: checkoutData.amount_total,
@@ -370,7 +344,6 @@ async function handleCustomerCreated(customer) {
   console.log('Customer created:', customer.id)
   
   try {
-    // Log customer creation for analytics
     console.log(`New Stripe customer created: ${customer.id} (${customer.email})`)
 
   } catch (error) {
@@ -388,7 +361,6 @@ async function handleInvoiceCreated(invoice) {
   }
 
   try {
-    // Check if this is a usage-based invoice (token overages)
     const hasUsageCharges = invoice.lines.data.some(line => 
       line.description && line.description.includes('token')
     )
@@ -396,7 +368,6 @@ async function handleInvoiceCreated(invoice) {
     if (hasUsageCharges) {
       console.log(`Usage-based invoice created for tenant ${tenantId}`)
       
-      // Send usage invoice notification
       await sendSubscriptionEmail(tenantId, 'usage_invoice', {
         invoice_amount: invoice.amount_due / 100,
         invoice_url: invoice.hosted_invoice_url,
@@ -410,7 +381,6 @@ async function handleInvoiceCreated(invoice) {
 }
 
 async function sendSubscriptionEmail(tenantId, emailType, data) {
-  // Mock email sending - in production, integrate with email service
   console.log(`Sending ${emailType} email to tenant ${tenantId}:`, data)
   
   const emailTemplates = {
@@ -427,7 +397,6 @@ async function sendSubscriptionEmail(tenantId, emailType, data) {
 
   const message = emailTemplates[emailType] || `Unknown email type: ${emailType}`
   
-  // TODO: Integrate with actual email service (SendGrid, Resend, etc.)
   console.log(`EMAIL [${emailType}]: ${message}`)
   
   return true

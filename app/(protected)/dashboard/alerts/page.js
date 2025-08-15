@@ -20,7 +20,6 @@ const AlertsDashboardPage = () => {
   const [integrationStatus, setIntegrationStatus] = useState(null);
   const [activeTab, setActiveTab] = useState('alerts');
   
-  // Mock user data - in production, this would come from authentication
   useEffect(() => {
     const User = {
       id: 'user_001',
@@ -49,7 +48,6 @@ const AlertsDashboardPage = () => {
   
   const fetchIntegrationStatus = async () => {
     try {
-      // This would call the alert integration service health endpoint
       const IntegrationStatus = {
         service_integrations: {
           realtime_service: true,
@@ -198,7 +196,6 @@ const AlertsDashboardPage = () => {
   );
 };
 
-// System Health Indicator Component
 const SystemHealthIndicator = ({ status }) => {
   const getHealthColor = () => {
     if (!status) return 'gray';
@@ -217,7 +214,6 @@ const SystemHealthIndicator = ({ status }) => {
   );
 };
 
-// Integration Status Indicator Component
 const IntegrationStatusIndicator = ({ status }) => {
   const getIntegrationHealth = () => {
     if (!status) return { healthy: 0, total: 0 };
@@ -242,7 +238,6 @@ const IntegrationStatusIndicator = ({ status }) => {
   );
 };
 
-// Alert Creation Demo Component
 const AlertCreationDemo = ({ barbershopId, userId }) => {
   const [selectedType, setSelectedType] = useState('revenue_anomaly');
   const [customTitle, setCustomTitle] = useState('');
@@ -422,7 +417,6 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
   );
 };
 
-// Alert Analytics Dashboard Component
 const AlertAnalyticsDashboard = ({ integrationStatus }) => {
   return (
     <div className="space-y-6">
@@ -476,7 +470,6 @@ const AlertAnalyticsDashboard = ({ integrationStatus }) => {
   );
 };
 
-// Alert Configuration Dashboard Component
 const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
   return (
     <div className="space-y-6">
@@ -501,7 +494,6 @@ const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
   );
 };
 
-// System Monitoring Dashboard Component
 const SystemMonitoringDashboard = ({ systemStatus, integrationStatus }) => {
   return (
     <div className="space-y-6">

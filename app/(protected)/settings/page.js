@@ -21,7 +21,6 @@ import ProtectedRoute from '../../../components/ProtectedRoute'
 import { Card } from '../../../components/ui'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
-// Settings Section Component
 function SettingsSection({ title, description, icon: Icon, children }) {
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
@@ -43,7 +42,6 @@ function SettingsSection({ title, description, icon: Icon, children }) {
   )
 }
 
-// Settings Item Component
 function SettingsItem({ label, description, value, onChange, type = "text", options = [] }) {
   return (
     <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
@@ -98,12 +96,10 @@ function SettingsItem({ label, description, value, onChange, type = "text", opti
   )
 }
 
-// Main Settings Component
 function Settings() {
   const { user } = useAuth()
   const [showSaveNotification, setShowSaveNotification] = useState(false)
   
-  // Profile Settings State
   const [profile, setProfile] = useState({
     name: user?.user_metadata?.full_name || 'Unknown User',
     email: user?.email || 'john@example.com',
@@ -112,7 +108,6 @@ function Settings() {
     shopName: 'Elite Barbershop'
   })
   
-  // Notification Settings State
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     smsNotifications: true,
@@ -123,7 +118,6 @@ function Settings() {
     weeklyAnalytics: true
   })
   
-  // Appearance Settings State
   const [appearance, setAppearance] = useState({
     theme: 'light',
     compactMode: false,
@@ -131,7 +125,6 @@ function Settings() {
     defaultView: 'dashboard'
   })
   
-  // Privacy Settings State
   const [privacy, setPrivacy] = useState({
     profileVisibility: 'team',
     shareAnalytics: true,
@@ -139,9 +132,7 @@ function Settings() {
     twoFactorAuth: false
   })
   
-  // Handle Save
   const handleSave = () => {
-    // Here you would normally save to backend
     setShowSaveNotification(true)
     setTimeout(() => setShowSaveNotification(false), 3000)
   }

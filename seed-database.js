@@ -75,7 +75,6 @@ async function seedDatabase() {
       }
     }
     
-    // Insert appointments in batches
     const batchSize = 50
     for (let i = 0; i < appointments.length; i += batchSize) {
       const batch = appointments.slice(i, i + batchSize)
@@ -114,7 +113,6 @@ async function seedDatabase() {
       })
     }
     
-    // Insert transactions in batches
     for (let i = 0; i < transactions.length; i += batchSize) {
       const batch = transactions.slice(i, i + batchSize)
       const { error: transError } = await supabase
@@ -200,5 +198,4 @@ async function seedDatabase() {
   }
 }
 
-// Run the seed
 seedDatabase()

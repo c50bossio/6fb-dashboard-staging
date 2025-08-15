@@ -56,7 +56,6 @@ class PerformanceAnalyzer {
         const context = await browser.newContext();
         const page = await context.newPage();
 
-        // Enable performance metrics collection
         await page.addInitScript(() => {
             window.performanceObserver = new PerformanceObserver((list) => {
                 window.performanceEntries = window.performanceEntries || [];
@@ -66,7 +65,6 @@ class PerformanceAnalyzer {
         });
 
         try {
-            // Test main pages
             const pages = [
                 { name: 'Dashboard', url: '/' },
                 { name: 'AI Chat', url: '/ai-chat' },
@@ -90,18 +88,13 @@ class PerformanceAnalyzer {
                     continue;
                 }
 
-                // Wait for page to be fully interactive
                 await page.waitForLoadState('networkidle');
                 
-                // Collect Core Web Vitals and performance metrics
                 const metrics = await page.evaluate(() => {
                     return new Promise((resolve) => {
-                        // Get Web Vitals
                         if (typeof window.webVitals !== 'undefined') {
-                            // Use web-vitals library if available
                             resolve(window.webVitals);
                         } else {
-                            // Fallback to manual measurement
                             const navigation = performance.getEntriesByType('navigation')[0];
                             const paint = performance.getEntriesByType('paint');
                             const resources = performance.getEntriesByType('resource');
@@ -110,7 +103,6 @@ class PerformanceAnalyzer {
                             const fcp = paint.find(entry => entry.name === 'first-contentful-paint')?.startTime || 0;
                             
                             resolve({
-                                // Navigation timing
                                 domainLookup: navigation.domainLookupEnd - navigation.domainLookupStart,
                                 connection: navigation.connectEnd - navigation.connectStart,
                                 request: navigation.responseStart - navigation.requestStart,
@@ -119,19 +111,16 @@ class PerformanceAnalyzer {
                                 domComplete: navigation.domComplete - navigation.domContentLoadedEventStart,
                                 loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
                                 
-                                // Core Web Vitals (estimated)
                                 lcp: lcp,
                                 fcp: fcp,
                                 ttfb: navigation.responseStart - navigation.requestStart,
                                 
-                                // Resource analysis
                                 totalResources: resources.length,
                                 totalSize: resources.reduce((acc, resource) => acc + (resource.transferSize || 0), 0),
                                 javascriptResources: resources.filter(r => r.name.includes('.js')).length,
                                 cssResources: resources.filter(r => r.name.includes('.css')).length,
                                 imageResources: resources.filter(r => r.initiatorType === 'img').length,
                                 
-                                // Memory usage
                                 jsHeapSizeUsed: performance.memory?.usedJSHeapSize || 0,
                                 jsHeapSizeTotal: performance.memory?.totalJSHeapSize || 0,
                                 jsHeapSizeLimit: performance.memory?.jsHeapSizeLimit || 0
@@ -149,14 +138,12 @@ class PerformanceAnalyzer {
                     metrics: metrics
                 };
 
-                // Performance scoring
                 const score = this.calculatePerformanceScore(metrics);
                 this.results.frontend.pages[pageInfo.name].performanceScore = score;
 
                 console.log(`    ✅ Load time: ${loadTime}ms, Score: ${score}/100`);
             }
 
-            // Bundle size analysis
             console.log('  Analyzing JavaScript bundle size...');
             await this.analyzeBundleSize(page);
 
@@ -169,7 +156,6 @@ class PerformanceAnalyzer {
     }
 
     async analyzeBundleSize(page) {
-        // Navigate to any page to load the bundles
         await page.goto('http://localhost:9999/', { waitUntil: 'networkidle' });
         
         const bundleAnalysis = await page.evaluate(() => {
@@ -205,7 +191,6 @@ class PerformanceAnalyzer {
     async analyzeBackendPerformance() {
         console.log('🔧 Analyzing Backend Performance...');
         
-        // Test key API endpoints
         const endpoints = [
             { name: 'Health Check', url: '/health', method: 'GET' },
             { name: 'AI Orchestrator', url: '/ai/orchestrator/status', method: 'GET' },
@@ -221,7 +206,6 @@ class PerformanceAnalyzer {
             const times = [];
             const errors = [];
             
-            // Test each endpoint 5 times for average
             for (let i = 0; i < 5; i++) {
                 try {
                     const startTime = Date.now();
@@ -285,7 +269,6 @@ class PerformanceAnalyzer {
         const page = await context.newPage();
 
         try {
-            // Test key barbershop workflows
             const workflows = [
                 {
                     name: 'Dashboard Load and Navigation',
@@ -293,7 +276,6 @@ class PerformanceAnalyzer {
                         const startTime = Date.now();
                         await page.goto('http://localhost:9999/', { waitUntil: 'networkidle' });
                         
-                        // Navigate to different sections
                         const navigationTime = Date.now();
                         await page.click('text=Analytics', { timeout: 5000 }).catch(() => {});
                         await page.waitForTimeout(1000);
@@ -311,7 +293,6 @@ class PerformanceAnalyzer {
                         const startTime = Date.now();
                         await page.goto('http://localhost:9999/ai-chat', { waitUntil: 'networkidle' });
                         
-                        // Wait for AI chat interface to be ready
                         await page.waitForSelector('[data-testid="chat-interface"], .chat-container, #chat-messages', 
                             { timeout: 10000 }).catch(() => {});
                         
@@ -327,7 +308,6 @@ class PerformanceAnalyzer {
                         const startTime = Date.now();
                         await page.goto('http://localhost:9999/dashboard/analytics', { waitUntil: 'networkidle' });
                         
-                        // Wait for charts to load
                         await page.waitForSelector('canvas, .recharts-wrapper, .chart-container', 
                             { timeout: 10000 }).catch(() => {});
                         
@@ -368,7 +348,6 @@ class PerformanceAnalyzer {
     calculatePerformanceScore(metrics) {
         let score = 100;
         
-        // Penalize slow Core Web Vitals
         if (metrics.lcp > 2500) score -= 20; // LCP > 2.5s
         else if (metrics.lcp > 1200) score -= 10; // LCP > 1.2s
         
@@ -378,11 +357,9 @@ class PerformanceAnalyzer {
         if (metrics.ttfb > 800) score -= 15; // TTFB > 800ms
         else if (metrics.ttfb > 500) score -= 8; // TTFB > 500ms
         
-        // Penalize large bundle sizes (estimated from resource count)
         if (metrics.totalSize > 2000000) score -= 20; // > 2MB
         else if (metrics.totalSize > 1000000) score -= 10; // > 1MB
         
-        // Penalize high memory usage
         if (metrics.jsHeapSizeUsed > 50000000) score -= 15; // > 50MB
         else if (metrics.jsHeapSizeUsed > 25000000) score -= 8; // > 25MB
         
@@ -392,7 +369,6 @@ class PerformanceAnalyzer {
     generateRecommendations() {
         const recommendations = [];
         
-        // Frontend recommendations
         if (this.results.frontend.pages) {
             Object.entries(this.results.frontend.pages).forEach(([pageName, pageData]) => {
                 if (pageData.loadTime > 3000) {
@@ -415,7 +391,6 @@ class PerformanceAnalyzer {
             });
         }
 
-        // Backend recommendations
         if (this.results.backend.endpoints) {
             Object.entries(this.results.backend.endpoints).forEach(([endpointName, endpointData]) => {
                 if (endpointData.averageResponseTime > 1000) {
@@ -438,7 +413,6 @@ class PerformanceAnalyzer {
             });
         }
 
-        // Workflow recommendations
         if (this.results.workflows.tests) {
             Object.entries(this.results.workflows.tests).forEach(([workflowName, workflowData]) => {
                 if (!workflowData.success) {
@@ -461,7 +435,6 @@ class PerformanceAnalyzer {
             });
         }
 
-        // General system recommendations
         if (this.results.system) {
             recommendations.push({
                 category: 'Monitoring',
@@ -487,11 +460,9 @@ class PerformanceAnalyzer {
         this.results.recommendations = this.generateRecommendations();
         this.results.summary = this.generateSummary();
         
-        // Save detailed results to JSON
         const reportPath = path.join(__dirname, 'performance_analysis_results.json');
         await fs.promises.writeFile(reportPath, JSON.stringify(this.results, null, 2));
         
-        // Generate human-readable report
         const readableReport = this.generateReadableReport();
         const readableReportPath = path.join(__dirname, 'PERFORMANCE_ANALYSIS_REPORT.md');
         await fs.promises.writeFile(readableReportPath, readableReport);
@@ -510,7 +481,6 @@ class PerformanceAnalyzer {
             totalTests: 0
         };
 
-        // Calculate overall score from frontend pages
         if (this.results.frontend.pages) {
             const scores = Object.values(this.results.frontend.pages)
                 .filter(page => page.performanceScore)
@@ -521,13 +491,11 @@ class PerformanceAnalyzer {
             }
         }
 
-        // Count issues
         this.results.recommendations.forEach(rec => {
             if (rec.priority === 'Critical') summary.criticalIssues++;
             else if (rec.priority === 'High') summary.warnings++;
         });
 
-        // Count test results
         if (this.results.workflows.tests) {
             Object.values(this.results.workflows.tests).forEach(test => {
                 summary.totalTests++;
@@ -686,7 +654,6 @@ ${this.results.recommendations
     }
 }
 
-// Run the analysis
 if (require.main === module) {
     const analyzer = new PerformanceAnalyzer();
     analyzer.runComprehensiveAnalysis().catch(console.error);

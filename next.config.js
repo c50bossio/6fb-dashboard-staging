@@ -1,27 +1,19 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
-    // Temporarily ignore ESLint during builds for deployment
-    // We'll fix issues incrementally post-deployment
     ignoreDuringBuilds: true,
   },
   
-  // TypeScript configuration
   typescript: {
-    // Allow production builds even with TypeScript errors
-    // We'll fix these incrementally
     ignoreBuildErrors: true,
   },
   
-  // Remove experimental runtime config - will configure per route instead
   
   images: {
     domains: ['localhost', '127.0.0.1'],
     formats: ['image/avif', 'image/webp'],
   },
   
-  // Add webpack configuration for path aliases
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -33,7 +25,6 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Allow iframe embedding for embed routes
         source: '/book/:barberId/embed',
         headers: [
           {

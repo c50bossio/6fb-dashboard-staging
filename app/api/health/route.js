@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-// Force Node.js runtime to support Supabase dependencies
 export const runtime = 'nodejs'
 
 export async function GET(request) {
@@ -23,7 +22,6 @@ export async function GET(request) {
     }
   }
 
-  // Check Supabase
   try {
     const supabase = createClient()
     const { data, error } = await supabase.from('profiles').select('count').limit(1)
@@ -38,11 +36,9 @@ export async function GET(request) {
     }
   }
 
-  // Check Stripe
   try {
     if (process.env.STRIPE_SECRET_KEY && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
       if (testConnections) {
-        // Import dynamically to avoid issues if Stripe isn't configured
         const { default: Stripe } = await import('stripe')
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
           apiVersion: '2023-10-16'
@@ -71,9 +67,7 @@ export async function GET(request) {
     }
   }
 
-  // Clerk removed - using Supabase authentication only
 
-  // Check OpenAI
   try {
     if (process.env.OPENAI_API_KEY) {
       const validKey = process.env.OPENAI_API_KEY.startsWith('sk-')
@@ -88,7 +82,6 @@ export async function GET(request) {
     health.services.openai = { status: 'error', message: error.message }
   }
 
-  // Check Anthropic
   try {
     if (process.env.ANTHROPIC_API_KEY) {
       const validKey = process.env.ANTHROPIC_API_KEY.startsWith('sk-ant-')
@@ -103,7 +96,6 @@ export async function GET(request) {
     health.services.anthropic = { status: 'error', message: error.message }
   }
 
-  // Check Pusher
   try {
     const hasConfig = process.env.PUSHER_APP_ID && 
                      process.env.NEXT_PUBLIC_PUSHER_KEY && 
@@ -118,7 +110,6 @@ export async function GET(request) {
     health.services.pusher = { status: 'error', message: error.message }
   }
 
-  // Check PostHog
   try {
     health.services.posthog = {
       status: process.env.NEXT_PUBLIC_POSTHOG_KEY ? 'configured' : 'not_configured',
@@ -128,7 +119,6 @@ export async function GET(request) {
     health.services.posthog = { status: 'error', message: error.message }
   }
 
-  // Check Sentry
   try {
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       const validDSN = process.env.NEXT_PUBLIC_SENTRY_DSN.includes('sentry.io')
@@ -143,7 +133,6 @@ export async function GET(request) {
     health.services.sentry = { status: 'error', message: error.message }
   }
 
-  // Check Novu
   try {
     const hasConfig = process.env.NOVU_API_KEY && process.env.NEXT_PUBLIC_NOVU_APP_IDENTIFIER
     health.services.novu = {
@@ -153,7 +142,6 @@ export async function GET(request) {
     health.services.novu = { status: 'error', message: error.message }
   }
 
-  // Check Edge Config
   try {
     health.services.edgeConfig = {
       status: process.env.EDGE_CONFIG ? 'configured' : 'not_configured'
@@ -162,12 +150,10 @@ export async function GET(request) {
     health.services.edgeConfig = { status: 'error', message: error.message }
   }
 
-  // Calculate overall health status
   const errors = Object.values(health.services).filter(s => s.status === 'error')
   const unconfigured = Object.values(health.services).filter(s => s.status === 'not_configured')
   const healthy = Object.values(health.services).filter(s => s.status === 'healthy' || s.status === 'configured')
 
-  // Critical services that must be configured
   const criticalServices = ['supabase', 'stripe']
   const criticalErrors = criticalServices.filter(service => 
     health.services[service]?.status === 'error'
@@ -187,7 +173,6 @@ export async function GET(request) {
     health.status = 'partial'
   }
 
-  // Add detailed statistics if requested
   if (detailed) {
     health.statistics = {
       total_services: Object.keys(health.services).length,
@@ -199,7 +184,6 @@ export async function GET(request) {
     }
   }
 
-  // Add system info
   health.system = {
     node_version: process.version,
     platform: process.platform,
@@ -212,7 +196,6 @@ export async function GET(request) {
     response_time_ms: Date.now() - startTime,
   }
 
-  // Determine HTTP status code
   let httpStatus = 200
   if (health.status === 'unhealthy') httpStatus = 503
   else if (health.status === 'degraded') httpStatus = 206
@@ -228,10 +211,8 @@ export async function GET(request) {
   })
 }
 
-// HEAD request for simple uptime checks (used by load balancers)
 export async function HEAD() {
   try {
-    // Quick check of critical environment variables
     const critical = [
       'NEXT_PUBLIC_SUPABASE_URL',
       'NEXT_PUBLIC_SUPABASE_ANON_KEY'

@@ -8,7 +8,6 @@
 const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 
-// Supabase configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
 
@@ -26,10 +25,8 @@ async function setupDatabase() {
   try {
     console.log('📊 Creating production database schema...')
     
-    // Read the migration SQL file
     const migrationSQL = fs.readFileSync('migrate-to-production-db.sql', 'utf8')
     
-    // Split by statements and execute each one
     const statements = migrationSQL
       .split(';')
       .map(stmt => stmt.trim())
@@ -51,7 +48,6 @@ async function setupDatabase() {
       
       if (error) {
         console.error(`❌ Error executing statement ${i + 1}:`, error.message)
-        // Continue with other statements
       } else {
         console.log(`   ✅ Statement ${i + 1} executed successfully`)
       }
@@ -59,7 +55,6 @@ async function setupDatabase() {
     
     console.log('✅ Database schema setup complete!')
     
-    // Test the tables were created
     console.log('🔍 Verifying table creation...')
     
     const { data: tables, error: tablesError } = await supabase
@@ -88,11 +83,9 @@ async function setupDatabase() {
   }
 }
 
-// Alternative: Direct SQL execution using node-postgres
 async function setupDatabaseDirect() {
   console.log('🔄 Attempting direct SQL execution...')
   
-  // Create the core tables manually
   const coreSQL = `
     -- Enable required extensions
     CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -162,7 +155,6 @@ async function setupDatabaseDirect() {
     console.error('❌ Error:', error.message)
     console.log('💡 Creating tables individually...')
     
-    // Create tables one by one
     const tables = [
       {
         name: 'tenants',
@@ -195,7 +187,6 @@ async function setupDatabaseDirect() {
   }
 }
 
-// Run the setup
 if (process.argv[2] === 'direct') {
   setupDatabaseDirect()
 } else {

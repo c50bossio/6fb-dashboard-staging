@@ -1,5 +1,0 @@
-[start]
-cmd = "python3 main.py"
-
-[variables]
-NIXPACKS_START_CMD = "python3 main.py"

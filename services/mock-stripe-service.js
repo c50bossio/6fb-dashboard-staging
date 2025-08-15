@@ -1,5 +1,3 @@
-// Mock Stripe Service for Development
-// This mock service simulates Stripe API calls without actually processing payments
 
 class MockStripeService {
   constructor() {
@@ -8,7 +6,6 @@ class MockStripeService {
     this.isDevelopment = process.env.NODE_ENV === 'development'
   }
 
-  // Mock payment intent creation
   async createPaymentIntent(amount, currency = 'usd', metadata = {}) {
     console.log('💳 [MOCK] Stripe: Creating payment intent', {
       amount,
@@ -30,7 +27,6 @@ class MockStripeService {
     }
   }
 
-  // Mock charge for campaign billing
   async chargeCampaign(accountId, amount, description) {
     console.log('💳 [MOCK] Stripe: Charging for campaign', {
       accountId,
@@ -58,7 +54,6 @@ class MockStripeService {
     }
   }
 
-  // Mock customer creation
   async createCustomer(email, name, metadata = {}) {
     console.log('💳 [MOCK] Stripe: Creating customer', {
       email,
@@ -75,7 +70,6 @@ class MockStripeService {
     }
   }
 
-  // Mock payment method attachment
   async attachPaymentMethod(customerId, paymentMethodId) {
     console.log('💳 [MOCK] Stripe: Attaching payment method', {
       customerId,
@@ -97,7 +91,6 @@ class MockStripeService {
     }
   }
 
-  // Mock subscription creation for recurring billing
   async createSubscription(customerId, priceId, metadata = {}) {
     console.log('💳 [MOCK] Stripe: Creating subscription', {
       customerId,
@@ -124,7 +117,6 @@ class MockStripeService {
     }
   }
 
-  // Mock invoice creation
   async createInvoice(customerId, items, metadata = {}) {
     console.log('💳 [MOCK] Stripe: Creating invoice', {
       customerId,
@@ -160,7 +152,6 @@ class MockStripeService {
     }
   }
 
-  // Mock refund
   async createRefund(chargeId, amount, reason = 'requested_by_customer') {
     console.log('💳 [MOCK] Stripe: Creating refund', {
       chargeId,
@@ -180,7 +171,6 @@ class MockStripeService {
     }
   }
 
-  // Mock balance transaction for platform fees
   async getBalanceTransaction(transactionId) {
     console.log('💳 [MOCK] Stripe: Getting balance transaction', {
       transactionId
@@ -199,7 +189,6 @@ class MockStripeService {
     }
   }
 
-  // Mock checkout session for adding payment methods
   async createCheckoutSession(customerId, mode = 'setup', successUrl, cancelUrl) {
     console.log('💳 [MOCK] Stripe: Creating checkout session', {
       customerId,
@@ -219,15 +208,12 @@ class MockStripeService {
     }
   }
 
-  // Mock webhook signature verification
   verifyWebhookSignature(payload, signature) {
     console.log('💳 [MOCK] Stripe: Verifying webhook signature')
     
-    // In mock mode, always return true
     return true
   }
 
-  // Mock billing history
   async getBillingHistory(customerId, limit = 10) {
     console.log('💳 [MOCK] Stripe: Getting billing history', {
       customerId,
@@ -260,7 +246,6 @@ class MockStripeService {
   }
 }
 
-// Export singleton instance
 const mockStripeService = new MockStripeService()
 
 module.exports = {

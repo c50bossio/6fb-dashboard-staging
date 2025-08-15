@@ -10,7 +10,6 @@ const SimpleTimeRangePicker = ({
   showLabels = true,
   className = ""
 }) => {
-  // Calculate duration
   const calculateDuration = () => {
     if (!openTime || !closeTime) return null
     
@@ -35,7 +34,6 @@ const SimpleTimeRangePicker = ({
 
   const duration = calculateDuration()
 
-  // Validation
   const hasError = openTime && closeTime && !duration
 
   return (

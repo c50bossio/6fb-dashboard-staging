@@ -7,7 +7,6 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Real Supabase credentials
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
 
@@ -45,7 +44,6 @@ async function verifyTables() {
 
   for (const tableName of tablesToCheck) {
     try {
-      // Try to select from the table
       const { data, error } = await supabase
         .from(tableName)
         .select('*')
@@ -79,7 +77,6 @@ async function verifyTables() {
   console.log(`\n❌ Missing Tables (${missingTables.length}):`)
   missingTables.forEach(t => console.log(`   - ${t}`))
 
-  // Check specific columns in barbershops table
   if (existingTables.includes('barbershops')) {
     console.log('\n📋 Barbershops Table Schema:')
     const { data, error } = await supabase
@@ -93,7 +90,6 @@ async function verifyTables() {
     }
   }
 
-  // Check if we need to create appointments and transactions tables
   console.log('\n' + '=' .repeat(50))
   console.log('🔧 RECOMMENDATIONS')
   console.log('=' .repeat(50))
@@ -114,7 +110,6 @@ async function verifyTables() {
     console.log('   - Payment tracking')
   }
 
-  // Try alternative table names
   console.log('\n🔍 Checking alternative table names...')
   const alternativeNames = [
     'appointment',
@@ -143,7 +138,6 @@ async function verifyTables() {
   return { existingTables, missingTables }
 }
 
-// Run verification
 verifyTables().then(result => {
   console.log('\n✨ Verification complete!')
 }).catch(err => {

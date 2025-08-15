@@ -3,7 +3,6 @@ export const runtime = 'edge'
 
 export async function POST(request) {
   try {
-    // Get authorization header
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
       return NextResponse.json({ 
@@ -12,8 +11,6 @@ export async function POST(request) {
       }, { status: 401 })
     }
 
-    // TODO: Implement proper admin role verification
-    // For now, this is a placeholder - in production, verify the user has SUPER_ADMIN or KNOWLEDGE_ADMIN role
     
     const body = await request.json()
     const {
@@ -26,7 +23,6 @@ export async function POST(request) {
       source = 'expert_insights'
     } = body
 
-    // Validate required fields
     if (!title || !content || !domain) {
       return NextResponse.json({ 
         success: false, 
@@ -34,7 +30,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Call the Enhanced Business Knowledge Service to store
     const response = await fetch('http://localhost:8001/api/v1/knowledge/enhanced/store', {
       method: 'POST',
       headers: {
@@ -80,7 +75,6 @@ export async function POST(request) {
   }
 }
 
-// Only allow POST method
 export async function GET() {
   return NextResponse.json({ 
     success: false, 

@@ -33,7 +33,6 @@ export default function BookingDetailPage() {
   const loadBookingDetails = async () => {
     setLoading(true)
     try {
-      // In production, fetch from API
       const Booking = {
         id: params.id,
         confirmationNumber: 'BK-' + params.id.slice(-6).toUpperCase(),
@@ -138,7 +137,6 @@ export default function BookingDetailPage() {
         url: window.location.href
       })
     } else {
-      // Fallback to copy link
       navigator.clipboard.writeText(window.location.href)
       alert('Link copied to clipboard!')
     }

@@ -55,7 +55,6 @@ async function verifyBillingSetup() {
     console.log(`✅ Found ${accounts.length} marketing account(s)`);
     checks.data.passed++;
     
-    // Check payment methods for first account
     const { data: methods } = await supabase
       .from('marketing_payment_methods')
       .select('*')
@@ -78,7 +77,6 @@ async function verifyBillingSetup() {
   console.log('----------------------');
   
   try {
-    // Test billing API
     const billingResponse = await fetch('http://localhost:9999/api/marketing/billing?user_id=demo-user-001');
     const billingData = await billingResponse.json();
     
@@ -90,7 +88,6 @@ async function verifyBillingSetup() {
       checks.api.failed++;
     }
     
-    // Test payment methods API
     if (billingData.accounts && billingData.accounts[0]) {
       const pmResponse = await fetch(`http://localhost:9999/api/marketing/billing/payment-methods?account_id=${billingData.accounts[0].id}`);
       const pmData = await pmResponse.json();
@@ -180,5 +177,4 @@ async function verifyBillingSetup() {
   }
 }
 
-// Run verification
 verifyBillingSetup().catch(console.error);

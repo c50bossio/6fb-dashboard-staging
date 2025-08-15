@@ -12,7 +12,6 @@ export default function PredictiveAnalyticsPanel({ data }) {
   const [lastUpdated, setLastUpdated] = useState(null)
 
   useEffect(() => {
-    // Use the data passed from UnifiedDashboard
     if (data?.predictions) {
       setPredictions(data.predictions)
       setLastUpdated(new Date())
@@ -21,7 +20,6 @@ export default function PredictiveAnalyticsPanel({ data }) {
       loadPredictions()
     }
     
-    // Auto-refresh predictions every 10 minutes
     const interval = setInterval(loadPredictions, 10 * 60 * 1000)
     return () => clearInterval(interval)
   }, [data, selectedForecastType, selectedTimeHorizon])
@@ -41,7 +39,6 @@ export default function PredictiveAnalyticsPanel({ data }) {
     } catch (err) {
       console.error('Failed to load predictions:', err)
       setError('Connection error - using demo predictions')
-      // Load mock predictions as fallback
       setPredictions(await generateDemoPredictions())
       setLastUpdated(new Date())
     } finally {

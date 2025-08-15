@@ -23,7 +23,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { createClient } from '../../../../lib/supabase/client'
 
-// Customer segments
 const SEGMENTS = {
   vip: { name: 'VIP', color: 'purple', minVisits: 10 },
   regular: { name: 'Regular', color: 'blue', minVisits: 5 },
@@ -50,12 +49,10 @@ export default function CustomersEnhancedPage() {
   const { user } = useAuth()
   const supabase = createClient()
 
-  // Load customers
   useEffect(() => {
     loadCustomers()
   }, [])
 
-  // Filter customers when search or segment changes
   useEffect(() => {
     filterCustomers()
   }, [searchTerm, selectedSegment, customers])
@@ -64,7 +61,6 @@ export default function CustomersEnhancedPage() {
     try {
       setLoading(true)
       
-      // For now, use demo data
       const demoCustomers = [
         {
           id: 1,
@@ -120,7 +116,6 @@ export default function CustomersEnhancedPage() {
         }
       ]
 
-      // Add segment to each customer
       const customersWithSegments = demoCustomers.map(customer => ({
         ...customer,
         segment: getCustomerSegment(customer)
@@ -173,12 +168,10 @@ export default function CustomersEnhancedPage() {
   const filterCustomers = () => {
     let filtered = [...customers]
 
-    // Filter by segment
     if (selectedSegment !== 'all') {
       filtered = filtered.filter(c => c.segment === selectedSegment)
     }
 
-    // Filter by search term
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
       filtered = filtered.filter(c => 
@@ -226,7 +219,6 @@ export default function CustomersEnhancedPage() {
     }
   }
 
-  // Customer Form Modal
   const CustomerFormModal = ({ customer, onSave, onClose }) => {
     const [formData, setFormData] = useState({
       name: customer?.name || '',
@@ -348,7 +340,6 @@ export default function CustomersEnhancedPage() {
     )
   }
 
-  // Customer Details Modal
   const CustomerDetailsModal = ({ customer, onClose }) => {
     if (!customer) return null
 

@@ -22,7 +22,6 @@ async function getSupportTickets(request) {
   try {
     const supabase = createClient()
     
-    // Build query for support tickets
     let query = supabase
       .from('support_tickets')
       .select(`
@@ -36,7 +35,6 @@ async function getSupportTickets(request) {
         )
       `)
 
-    // Apply filters
     if (status !== 'all') {
       query = query.eq('status', status)
     }
@@ -45,10 +43,8 @@ async function getSupportTickets(request) {
       query = query.eq('priority', priority)
     }
 
-    // Only show subscription/billing related tickets
     query = query.or('category.eq.billing,category.eq.subscription,category.eq.payment')
 
-    // Apply sorting and pagination
     query = query
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -66,7 +62,6 @@ async function getSupportTickets(request) {
       )
     }
 
-    // Get total count
     const { count: totalCount } = await supabase
       .from('support_tickets')
       .select('*', { count: 'exact', head: true })
@@ -74,7 +69,6 @@ async function getSupportTickets(request) {
       .eq(priority ? 'priority' : 'id', priority || 'id')
       .or('category.eq.billing,category.eq.subscription,category.eq.payment')
 
-    // Log admin action
     await logAdminAction(
       request.adminContext.userId,
       'SUPPORT_TICKETS_VIEW',
@@ -137,7 +131,6 @@ async function createSupportTicket(request) {
     const supabase = createClient()
 
     if (action === 'create') {
-      // Create new internal support ticket
       if (!userId || !subject || !description) {
         return new Response(
           JSON.stringify({ 
@@ -176,7 +169,6 @@ async function createSupportTicket(request) {
         throw error
       }
 
-      // Log admin action
       await logAdminAction(
         request.adminContext.userId,
         'SUPPORT_TICKET_CREATE',
@@ -199,7 +191,6 @@ async function createSupportTicket(request) {
       )
 
     } else if (action === 'update') {
-      // Update existing support ticket
       if (!ticketId) {
         return new Response(
           JSON.stringify({ error: 'Missing ticketId for update' }),
@@ -237,7 +228,6 @@ async function createSupportTicket(request) {
         throw error
       }
 
-      // Log admin action
       await logAdminAction(
         request.adminContext.userId,
         'SUPPORT_TICKET_UPDATE',
@@ -258,7 +248,6 @@ async function createSupportTicket(request) {
       )
 
     } else if (action === 'escalate') {
-      // Escalate ticket priority and notify team
       if (!ticketId) {
         return new Response(
           JSON.stringify({ error: 'Missing ticketId for escalation' }),
@@ -283,7 +272,6 @@ async function createSupportTicket(request) {
         throw error
       }
 
-      // Log admin action
       await logAdminAction(
         request.adminContext.userId,
         'SUPPORT_TICKET_ESCALATE',
@@ -321,6 +309,5 @@ async function createSupportTicket(request) {
   }
 }
 
-// Export with admin auth wrapper
 export const GET = withAdminAuth(getSupportTickets)
 export const POST = withAdminAuth(createSupportTicket)

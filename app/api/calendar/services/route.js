@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -10,7 +9,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function GET(request) {
   try {
-    // Try to fetch from services table
     const { data: services, error } = await supabase
       .from('services')
       .select('*')
@@ -20,7 +18,6 @@ export async function GET(request) {
     if (error) {
       console.log('Services table not found, using default services...')
       
-      // Return default services if table doesn't exist
       return NextResponse.json({
         services: [
           { id: '1', name: 'Haircut', price: 35, duration: 30, description: 'Professional haircut' },
@@ -35,7 +32,6 @@ export async function GET(request) {
       })
     }
     
-    // Format services for the frontend
     const formattedServices = services.map(service => ({
       id: service.id,
       name: service.name,
@@ -65,7 +61,6 @@ export async function POST(request) {
   try {
     const body = await request.json()
     
-    // Insert new service
     const { data, error } = await supabase
       .from('services')
       .insert([{

@@ -5,7 +5,6 @@ export async function GET(request) {
   try {
     const supabase = createClient()
     
-    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -15,7 +14,6 @@ export async function GET(request) {
       )
     }
     
-    // Get user subscription details
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select(`
@@ -49,7 +47,6 @@ export async function GET(request) {
       )
     }
     
-    // Calculate usage percentages
     const smsUsagePercent = userData.sms_credits_included > 0 
       ? Math.round((userData.sms_credits_used / userData.sms_credits_included) * 100)
       : 0
@@ -62,7 +59,6 @@ export async function GET(request) {
       ? Math.round((userData.ai_tokens_used / userData.ai_tokens_included) * 100)
       : 0
     
-    // Get subscription history (last 5 payments)
     const { data: history } = await supabase
       .from('subscription_history')
       .select('*')
@@ -70,7 +66,6 @@ export async function GET(request) {
       .order('created_at', { ascending: false })
       .limit(5)
     
-    // Format the response
     const response = {
       user: {
         id: userData.id,
@@ -131,7 +126,6 @@ export async function GET(request) {
   }
 }
 
-// Get feature list based on subscription tier
 function getFeaturesByTier(tier) {
   const features = {
     barber: {
@@ -183,13 +177,11 @@ function getFeaturesByTier(tier) {
   }
 }
 
-// POST endpoint to update usage (for internal use)
 export async function POST(request) {
   try {
     const supabase = createClient()
     const { type, amount } = await request.json()
     
-    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -199,7 +191,6 @@ export async function POST(request) {
       )
     }
     
-    // Validate usage type
     const validTypes = ['sms', 'email', 'ai']
     if (!validTypes.includes(type) || !amount || amount < 0) {
       return NextResponse.json(
@@ -208,7 +199,6 @@ export async function POST(request) {
       )
     }
     
-    // Get current usage
     const { data: currentData } = await supabase
       .from('users')
       .select(`
@@ -229,7 +219,6 @@ export async function POST(request) {
       )
     }
     
-    // Calculate new usage
     let updateData = {}
     let overageAmount = 0
     
@@ -259,7 +248,6 @@ export async function POST(request) {
         break
     }
     
-    // Update usage in database
     const { error: updateError } = await supabase
       .from('users')
       .update(updateData)
@@ -273,7 +261,6 @@ export async function POST(request) {
       )
     }
     
-    // If there's overage, create overage record
     if (overageAmount > 0) {
       await supabase
         .from('overage_charges')
@@ -285,7 +272,6 @@ export async function POST(request) {
         })
     }
     
-    // Track usage in usage_tracking table
     await supabase
       .from('usage_tracking')
       .insert({

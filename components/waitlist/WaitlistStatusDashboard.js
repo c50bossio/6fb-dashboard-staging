@@ -37,7 +37,6 @@ const WaitlistStatusDashboard = ({ customerId }) => {
     useEffect(() => {
         fetchWaitlistStatus();
         
-        // Refresh every 30 seconds
         const interval = setInterval(fetchWaitlistStatus, 30000);
         return () => clearInterval(interval);
     }, [customerId]);
@@ -59,7 +58,6 @@ const WaitlistStatusDashboard = ({ customerId }) => {
             const result = await response.json();
             
             if (result.success) {
-                // Remove from local state
                 setWaitlistEntries(prev => prev.filter(entry => entry.waitlist_id !== waitlistId));
                 setSelectedEntry(null);
             } else {

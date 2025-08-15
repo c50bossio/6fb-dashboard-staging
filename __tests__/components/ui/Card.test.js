@@ -6,7 +6,7 @@ import {
   CardDescription, 
   CardContent, 
   CardFooter 
-} from '@/components/ui/Card'
+} from '@/components/ui/card'
 
 describe('Card Component', () => {
   it('renders card with default styling', () => {
@@ -26,7 +26,6 @@ describe('Card Component', () => {
     expect(screen.getByText('Test Description')).toBeInTheDocument()
     expect(screen.getByText('Test content')).toBeInTheDocument()
     
-    // Check default styling classes
     const card = screen.getByText('Test Title').closest('div').parentElement
     expect(card).toHaveClass('rounded-xl', 'border', 'bg-white', 'border-gray-200')
   })
@@ -108,7 +107,6 @@ describe('Card Component', () => {
     expect(title).toBeInTheDocument()
     expect(description).toBeInTheDocument()
 
-    // Check if they have appropriate heading semantics
     expect(title.tagName).toBe('H3')
   })
 
@@ -207,7 +205,6 @@ describe('Card Component', () => {
       </Card>
     )
 
-    // Test for common card styling patterns used in the app
     const card = screen.getByText('Styled Card').closest('[class*="bg-"]')
     expect(card).toBeInTheDocument()
   })
@@ -221,7 +218,6 @@ describe('Card Component', () => {
       </Card>
     )
 
-    // Should render without errors even with empty sections
     expect(document.body).toBeInTheDocument()
   })
 

@@ -11,7 +11,6 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 
-// Common service templates based on location/type
 const serviceTemplates = {
   barbershop: [
     { name: 'Haircut', duration: 30, price: 35, icon: '✂️', description: 'Classic haircut and style' },
@@ -40,11 +39,9 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
   const [showCustomForm, setShowCustomForm] = useState(false)
   const [pricingSuggestion, setPricingSuggestion] = useState(null)
   
-  // Get appropriate templates
   const templates = serviceTemplates[businessType] || serviceTemplates.barbershop
 
   useEffect(() => {
-    // If no services selected, pre-select first 3 common ones
     if (services.length === 0) {
       const defaultServices = templates.slice(0, 3).map(template => ({
         ...template,
@@ -55,10 +52,8 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
     }
   }, [])
 
-  // Simulate AI pricing suggestions based on location
   useEffect(() => {
     if (location) {
-      // This would be an API call in production
       const mockSuggestion = {
         message: 'Based on your area, most barbershops charge:',
         ranges: {
@@ -75,10 +70,8 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
     const existingIndex = services.findIndex(s => s.name === template.name)
     
     if (existingIndex >= 0) {
-      // Remove service
       setServices(services.filter((_, i) => i !== existingIndex))
     } else {
-      // Add service
       setServices([...services, {
         ...template,
         id: Math.random().toString(36).substr(2, 9),

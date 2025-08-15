@@ -45,7 +45,6 @@ export default function ProductInventory() {
 
   const checkCin7Connection = async () => {
     try {
-      // Fetch detailed credential info first (more reliable)
       const credResponse = await fetch('/api/cin7/credentials')
       if (credResponse.ok) {
         const credData = await credResponse.json()
@@ -61,7 +60,6 @@ export default function ProductInventory() {
           setCin7Status(null)
         }
       } else {
-        // No credentials found
         setHasCredentials(false)
         setCin7Connected(false)
         setCredentialInfo(null)
@@ -69,7 +67,6 @@ export default function ProductInventory() {
       }
     } catch (error) {
       console.error('Error checking Cin7 connection:', error)
-      // On error, assume no credentials
       setHasCredentials(false)
       setCin7Connected(false)
       setCredentialInfo(null)
@@ -79,7 +76,6 @@ export default function ProductInventory() {
 
   const loadProducts = async () => {
     try {
-      // Use the main products API
       const response = await fetch('/api/shop/products')
       if (response.ok) {
         const data = await response.json()
@@ -92,7 +88,6 @@ export default function ProductInventory() {
         })
       } else {
         console.error('Error loading products - using fallback')
-        // Fallback to test endpoint if main API fails
         const fallbackResponse = await fetch('/api/test-products')
         if (fallbackResponse.ok) {
           const fallbackData = await fallbackResponse.json()
@@ -156,7 +151,6 @@ export default function ProductInventory() {
 
   const handleCin7Connect = async (credentials) => {
     try {
-      // Use the test-sync endpoint with secure credential handling
       const response = await fetch('/api/cin7/test-sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -173,7 +167,6 @@ export default function ProductInventory() {
         setHasCredentials(true)
         setShowCin7Modal(false)
         
-        // Show detailed success message
         const sampleProducts = data.sample?.map(p => `• ${p.name} - $${p.retail_price} (Stock: ${p.stock})`).join('\n') || ''
         alert(`🎉 Success! Synchronized ${data.count} products from your Cin7 warehouse!\n\nCredentials saved for quick sync.\n\n${sampleProducts ? 'Sample products:\n' + sampleProducts : ''}`)
         
@@ -182,7 +175,6 @@ export default function ProductInventory() {
         const error = await response.json()
         console.error('Sync error details:', error)
         
-        // Show detailed error message
         let errorMessage = `❌ Sync failed: ${error.message || error.error || 'Unknown error'}`
         if (error.suggestions && error.suggestions.length > 0) {
           errorMessage += '\n\nSuggestions:\n' + error.suggestions.map(s => `• ${s}`).join('\n')
@@ -209,13 +201,11 @@ export default function ProductInventory() {
         const data = await response.json()
         setCin7Status('synced')
         
-        // Show quick sync success message
         alert(`✅ Quick sync complete! Updated ${data.insertedCount} products from Cin7.`)
         loadProducts() // Reload to show updated products
       } else {
         const error = await response.json()
         if (error.needsSetup) {
-          // No credentials found, prompt for setup
           setCin7Connected(false)
           setHasCredentials(false)
           setShowCin7Modal(true)
@@ -250,7 +240,6 @@ export default function ProductInventory() {
       })
       
       if (response.ok) {
-        // Update UI state
         setHasCredentials(false)
         setCin7Connected(false)
         setCredentialInfo(null)
@@ -277,7 +266,6 @@ export default function ProductInventory() {
       })
       
       if (response.ok) {
-        // Refresh credential info
         await checkCin7Connection()
         setShowEditCredentials(false)
         setShowCredentialManager(false)

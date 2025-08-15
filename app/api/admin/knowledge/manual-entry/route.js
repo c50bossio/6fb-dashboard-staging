@@ -6,7 +6,6 @@ export async function POST(request) {
     const body = await request.json()
     const { title, content, domain, tags, confidence } = body
 
-    // Validate required fields
     if (!title?.trim() || !content?.trim()) {
       return NextResponse.json({ 
         success: false, 
@@ -14,7 +13,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Create knowledge entry object
     const knowledgeEntry = {
       id: `manual_${Date.now()}_${process.hrtime.bigint().toString(36)}`,
       title: title.trim(),
@@ -27,12 +25,10 @@ export async function POST(request) {
       updated_at: new Date().toISOString()
     }
 
-    // In a real implementation, this would:
     // 1. Save to vector database (ChromaDB)
     // 2. Generate embeddings for the content
     // 3. Add to knowledge base for AI retrieval
     
-    // For now, we'll simulate storage and return success
     console.log('📝 New knowledge entry added:', {
       id: knowledgeEntry.id,
       title: knowledgeEntry.title,
@@ -40,7 +36,6 @@ export async function POST(request) {
       confidence: knowledgeEntry.confidence
     })
 
-    // Simulate calling the knowledge base service
     try {
       const response = await fetch('http://localhost:8001/api/v1/knowledge/add-entry', {
         method: 'POST',
@@ -61,14 +56,12 @@ export async function POST(request) {
           timestamp: new Date().toISOString()
         })
       } else {
-        // Backend not available, store locally for now
         console.log('⚠️ Backend not available, storing entry locally')
       }
     } catch (backendError) {
       console.log('⚠️ Backend connection failed, storing locally:', backendError.message)
     }
 
-    // Return success even if backend is not available
     return NextResponse.json({
       success: true,
       message: 'Knowledge entry processed successfully',

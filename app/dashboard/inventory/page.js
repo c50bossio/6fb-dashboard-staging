@@ -23,7 +23,6 @@ import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 import Cin7ConnectionModal from '../../../components/cin7/Cin7ConnectionModal'
 
-// Product categories
 const PRODUCT_CATEGORIES = [
   { id: 'hair-products', name: 'Hair Products', icon: CubeIcon },
   { id: 'tools', name: 'Tools & Equipment', icon: CubeIcon },
@@ -32,7 +31,6 @@ const PRODUCT_CATEGORIES = [
   { id: 'supplies', name: 'Shop Supplies', icon: CubeIcon }
 ]
 
-// Mock inventory data
 const Inventory = [
   {
     id: 'hair-gel-01',
@@ -200,7 +198,6 @@ export default function InventoryPage() {
   const [cin7Status, setCin7Status] = useState(null)
   const [isSyncing, setIsSyncing] = useState(false)
 
-  // Check Cin7 connection status on mount
   useEffect(() => {
     if (user) {
       checkCin7Status()
@@ -247,7 +244,6 @@ export default function InventoryPage() {
       
       const data = await response.json()
       if (data.success) {
-        // Refresh inventory data
         window.location.reload()
       }
     } catch (error) {
@@ -299,7 +295,6 @@ export default function InventoryPage() {
     return Math.min(100, (current / max) * 100)
   }
 
-  // Calculate totals
   const totalItems = inventory.length
   const lowStockItems = inventory.filter(i => i.status === 'low' || i.status === 'critical').length
   const totalValue = inventory.reduce((sum, item) => sum + (item.current_stock * item.unit_cost), 0)

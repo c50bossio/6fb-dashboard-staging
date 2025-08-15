@@ -8,12 +8,10 @@ import { anthropic as anthropicClient, DEFAULT_CLAUDE_MODEL } from '@/lib/anthro
 import { getGeminiModel, convertToGeminiFormat } from '@/lib/gemini'
 import { AIBusinessContextService } from '@/lib/ai-business-context'
 
-// Initialize OpenAI
 const openaiClient = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 })
 
-// Initialize AI Business Context Service
 const aiBusinessContext = new AIBusinessContextService()
 
 export const runtime = 'edge'
@@ -33,12 +31,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Messages are required' }, { status: 400 })
     }
 
-    // Add business context if requested
     let enhancedMessages = [...messages]
     if (includeBusinessContext) {
       try {
         const businessPrompt = await aiBusinessContext.getAISystemPrompt(barbershopId)
-        // Update or add system message with business context
         const systemIndex = enhancedMessages.findIndex(m => m.role === 'system')
         if (systemIndex >= 0) {
           enhancedMessages[systemIndex].content += '\n\n' + businessPrompt
@@ -50,11 +46,9 @@ export async function POST(request) {
         }
       } catch (error) {
         console.error('Failed to get business context:', error)
-        // Continue without business context
       }
     }
 
-    // Route to appropriate provider with enhanced messages
     switch (provider) {
       case 'openai':
         return handleOpenAI(enhancedMessages, model, stream)
@@ -79,7 +73,6 @@ export async function POST(request) {
   }
 }
 
-// Handle OpenAI requests
 async function handleOpenAI(messages, model = 'gpt-4o-mini', stream) {
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 })
@@ -106,13 +99,11 @@ async function handleOpenAI(messages, model = 'gpt-4o-mini', stream) {
   }
 }
 
-// Handle Anthropic/Claude requests
 async function handleAnthropic(messages, model = DEFAULT_CLAUDE_MODEL, stream) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: 'Anthropic API key not configured' }, { status: 500 })
   }
 
-  // Extract system message if present
   const systemMessage = messages.find(m => m.role === 'system')?.content || undefined
   const claudeMessages = messages
     .filter(m => m.role !== 'system')
@@ -149,7 +140,6 @@ async function handleAnthropic(messages, model = DEFAULT_CLAUDE_MODEL, stream) {
   }
 }
 
-// Handle Google Gemini requests
 async function handleGemini(messages, model = 'gemini-1.5-flash', stream) {
   if (!process.env.GOOGLE_GEMINI_API_KEY) {
     return NextResponse.json({ error: 'Google Gemini API key not configured' }, { status: 500 })
@@ -158,13 +148,10 @@ async function handleGemini(messages, model = 'gemini-1.5-flash', stream) {
   try {
     const geminiModel = getGeminiModel(model)
     
-    // Convert messages to Gemini format
     const geminiMessages = convertToGeminiFormat(messages)
     
-    // Extract system message if present
     const systemMessage = messages.find(m => m.role === 'system')?.content
     
-    // Create chat with history
     const chat = geminiModel.startChat({
       history: geminiMessages.slice(0, -1),
       generationConfig: {
@@ -175,14 +162,12 @@ async function handleGemini(messages, model = 'gemini-1.5-flash', stream) {
       },
     })
 
-    // Get the last message
     const lastMessage = messages[messages.length - 1].content
     const prompt = systemMessage ? `${systemMessage}\n\n${lastMessage}` : lastMessage
 
     if (stream) {
       const result = await chat.sendMessageStream(prompt)
       
-      // Create a readable stream
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
         async start(controller) {

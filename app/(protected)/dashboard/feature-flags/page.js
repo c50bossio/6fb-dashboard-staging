@@ -186,7 +186,6 @@ export async function GET(req) {
   const isEnabled = await getFeatureFlag('advanced_analytics')
   
   if (isEnabled) {
-    // Return advanced analytics data
   }
 }`}
               </pre>

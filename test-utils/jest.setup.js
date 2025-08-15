@@ -4,7 +4,6 @@ import 'intersection-observer'
 import 'whatwg-fetch'
 import ResizeObserver from 'resize-observer-polyfill'
 
-// Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
@@ -12,10 +11,8 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {}
 }
 
-// Mock ResizeObserver
 global.ResizeObserver = ResizeObserver
 
-// Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
@@ -30,12 +27,10 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Mock window.scrollTo
 Object.defineProperty(window, 'scrollTo', {
   value: jest.fn()
 })
 
-// Mock localStorage
 const localStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
@@ -44,7 +39,6 @@ const localStorageMock = {
 }
 global.localStorage = localStorageMock
 
-// Mock sessionStorage
 const sessionStorageMock = {
   getItem: jest.fn(),
   setItem: jest.fn(),
@@ -53,10 +47,8 @@ const sessionStorageMock = {
 }
 global.sessionStorage = sessionStorageMock
 
-// Mock fetch globally
 global.fetch = jest.fn()
 
-// Mock console methods to reduce noise in tests
 const originalError = console.error
 const originalWarn = console.warn
 
@@ -70,7 +62,6 @@ afterAll(() => {
   console.warn = originalWarn
 })
 
-// Reset all mocks after each test
 afterEach(() => {
   jest.clearAllMocks()
 })

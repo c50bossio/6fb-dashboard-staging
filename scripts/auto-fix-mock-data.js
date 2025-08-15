@@ -11,7 +11,6 @@ const fs = require('fs').promises;
 const path = require('path');
 const glob = require('glob');
 
-// Color codes for console output
 const colors = {
   blue: (text) => `\x1b[34m${text}\x1b[0m`,
   green: (text) => `\x1b[32m${text}\x1b[0m`,
@@ -27,9 +26,7 @@ class MockDataFixer {
     this.failedCount = 0;
     this.skippedCount = 0;
     
-    // Replacement patterns
     this.replacements = [
-      // Replace mock function names
       {
         pattern: /generateMock([A-Z]\w*)/g,
         replacement: 'fetchReal$1FromDatabase',
@@ -46,7 +43,6 @@ class MockDataFixer {
         description: 'Remove Mock prefix from getters'
       },
       
-      // Replace common test data
       {
         pattern: /['"]John Doe['"]/g,
         replacement: 'await getUserFromDatabase()',
@@ -63,7 +59,6 @@ class MockDataFixer {
         description: 'Replace Test User with database test user'
       },
       
-      // Replace test emails
       {
         pattern: /['"]test@test\.com['"]/g,
         replacement: 'process.env.TEST_EMAIL || "dev@barbershop.com"',
@@ -75,14 +70,12 @@ class MockDataFixer {
         description: 'Replace example email with environment variable'
       },
       
-      // Replace Service string
       {
         pattern: /['"]Service['"]/g,
         replacement: '"Unknown Service"',
         description: 'Replace generic Service with Unknown Service'
       },
       
-      // Replace mock data comments
       {
         pattern: /\/\/\s*Mock data.*/g,
         replacement: '// Database data',
@@ -94,7 +87,6 @@ class MockDataFixer {
         description: 'Update mock data JSDoc comments'
       },
       
-      // Replace const mockX = declarations
       {
         pattern: /const mock(\w+)\s*=/g,
         replacement: 'const $1 =',
@@ -106,14 +98,12 @@ class MockDataFixer {
         description: 'Remove mock prefix from let declarations'
       },
       
-      // Replace Math.random() data generators
       {
         pattern: /Math\.random\(\)\s*\*\s*(\d+).*?\/\/.*?(?:customer|user|service|booking)/gi,
         replacement: 'await getRandomFromDatabase($1)',
         description: 'Replace Math.random generators with database queries'
       },
       
-      // Replace Array.from with length
       {
         pattern: /Array\.from\(\{\s*length:\s*(\d+)\s*\}/g,
         replacement: 'await fetchFromDatabase({ limit: $1 }',
@@ -121,7 +111,6 @@ class MockDataFixer {
       }
     ];
     
-    // Files to skip
     this.skipFiles = [
       'node_modules',
       '.next',
@@ -182,11 +171,9 @@ class MockDataFixer {
       const result = this.applyReplacements(content, filePath);
       
       if (result.modified) {
-        // Backup original file
         const backupPath = `${filePath}.backup-${Date.now()}`;
         await fs.writeFile(backupPath, content);
         
-        // Write modified content
         await fs.writeFile(filePath, result.content);
         
         this.fixedCount++;
@@ -246,7 +233,6 @@ class MockDataFixer {
         results.push(result);
       }
       
-      // Progress indicator
       if ((this.fixedCount + this.failedCount + this.skippedCount) % 100 === 0) {
         process.stdout.write(colors.gray('.'));
       }
@@ -426,21 +412,16 @@ module.exports = {
   }
 }
 
-// Main execution
 async function main() {
   const fixer = new MockDataFixer();
   
   try {
-    // Run auto-fix
     const results = await fixer.fixAllFiles();
     
-    // Generate report
     fixer.generateReport(results);
     
-    // Create helper functions file
     await fixer.createHelperFunctions();
     
-    // Save detailed results
     const reportPath = 'mock-data-fixes.json';
     await fs.writeFile(reportPath, JSON.stringify({
       timestamp: new Date().toISOString(),
@@ -469,7 +450,6 @@ async function main() {
   }
 }
 
-// Run if executed directly
 if (require.main === module) {
   main();
 }

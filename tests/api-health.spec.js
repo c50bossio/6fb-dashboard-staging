@@ -2,24 +2,19 @@ import { test, expect } from '@playwright/test'
 
 test.describe('API Health Check', () => {
   test('backend health endpoint responds correctly', async ({ page }) => {
-    // Test the backend API health endpoint
     const response = await page.request.get('http://localhost:8001/health')
     
-    // Should return 200 status
     expect(response.status()).toBe(200)
     
-    // Should return JSON
     const responseBody = await response.json()
     expect(responseBody).toBeDefined()
     
-    // Should have status field
     expect(responseBody.status).toBeDefined()
     
     console.log('Backend API Health Response:', responseBody)
   })
 
   test('frontend health endpoint responds', async ({ page }) => {
-    // Test frontend API health
     try {
       const response = await page.request.get('http://localhost:9999/api/health')
       
@@ -36,16 +31,13 @@ test.describe('API Health Check', () => {
   })
 
   test('basic connectivity test', async ({ page }) => {
-    // Test that we can reach the frontend
     const response = await page.request.get('http://localhost:9999/')
     
     expect(response.status()).toBe(200)
     console.log('Frontend main page accessible')
     
-    // Test that we can reach the backend
     const backendResponse = await page.request.get('http://localhost:8001/')
     
-    // Backend might return different status codes, just check it responds
     expect([200, 404, 422, 307].includes(backendResponse.status())).toBe(true)
     console.log('Backend accessible, status:', backendResponse.status())
   })

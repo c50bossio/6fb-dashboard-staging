@@ -15,8 +15,6 @@ export default function LocationStep({ bookingData, onNext }) {
   
   const loadLocations = async () => {
     try {
-      // In production, fetch from API
-      // Database data
       const Locations = [
         {
           id: 'loc_1',

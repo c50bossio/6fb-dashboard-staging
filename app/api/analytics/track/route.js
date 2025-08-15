@@ -8,7 +8,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Helper function to parse user agent
 function parseUserAgent(userAgent) {
   const ua = userAgent?.toLowerCase() || ''
   
@@ -36,15 +35,12 @@ function parseUserAgent(userAgent) {
   return { deviceType, browser, os }
 }
 
-// Helper function to get geographic data from IP (simplified)
 async function getGeographicData(ipAddress) {
-  // In production, you would use a service like:
   // - ipapi.co
   // - ipinfo.io 
   // - MaxMind GeoIP
   
   try {
-    // Example with ipapi.co (free tier)
     const response = await fetch(`https://ipapi.co/${ipAddress}/json/`)
     const data = await response.json()
     
@@ -82,7 +78,6 @@ export async function POST(request) {
       utmContent = null
     } = body
 
-    // Validate required fields
     if (!linkId || !eventType) {
       return NextResponse.json(
         { error: 'linkId and eventType are required' },
@@ -90,7 +85,6 @@ export async function POST(request) {
       )
     }
 
-    // Validate event type
     const validEventTypes = ['click', 'view', 'conversion', 'share', 'qr_scan']
     if (!validEventTypes.includes(eventType)) {
       return NextResponse.json(
@@ -99,20 +93,16 @@ export async function POST(request) {
       )
     }
 
-    // Extract request information
     const userAgent = headersList.get('user-agent')
     const ipAddress = headersList.get('x-forwarded-for') || 
                      headersList.get('x-real-ip') || 
                      headersList.get('cf-connecting-ip') ||
                      '127.0.0.1'
 
-    // Parse user agent for device info
     const { deviceType, browser, os } = parseUserAgent(userAgent)
     
-    // Get geographic data (async)
     const geoData = await getGeographicData(ipAddress.split(',')[0])
 
-    // Verify the booking link exists and is active
     const { data: bookingLink, error: linkError } = await supabase
       .from('booking_links')
       .select('id, active, barber_id')
@@ -133,7 +123,6 @@ export async function POST(request) {
       )
     }
 
-    // Insert analytics record
     const analyticsData = {
       link_id: linkId,
       event_type: eventType,
@@ -166,7 +155,6 @@ export async function POST(request) {
       )
     }
 
-    // If this is a conversion event, also create booking attribution
     if (eventType === 'conversion' && bookingId) {
       await supabase
         .from('booking_attributions')
@@ -184,8 +172,6 @@ export async function POST(request) {
         })
     }
 
-    // The database trigger will automatically update the counters in booking_links table
-    // So we don't need to manually update clicks/conversions here
 
     return NextResponse.json({
       success: true,
@@ -206,7 +192,6 @@ export async function POST(request) {
   }
 }
 
-// Get analytics summary for a specific link
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -223,7 +208,6 @@ export async function GET(request) {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
-    // Get analytics summary
     const { data: analytics, error } = await supabase
       .from('link_analytics')
       .select('*')
@@ -234,7 +218,6 @@ export async function GET(request) {
       throw error
     }
 
-    // Process analytics data
     const summary = {
       totalEvents: analytics.length,
       clicks: analytics.filter(a => a.event_type === 'click').length,
@@ -245,14 +228,12 @@ export async function GET(request) {
         .filter(a => a.event_type === 'conversion')
         .reduce((sum, a) => sum + (parseFloat(a.conversion_value) || 0), 0),
       
-      // Device breakdown
       devices: {
         mobile: analytics.filter(a => a.device_type === 'mobile').length,
         tablet: analytics.filter(a => a.device_type === 'tablet').length,
         desktop: analytics.filter(a => a.device_type === 'desktop').length
       },
       
-      // Top countries
       countries: analytics.reduce((acc, a) => {
         if (a.country) {
           acc[a.country] = (acc[a.country] || 0) + 1
@@ -260,14 +241,12 @@ export async function GET(request) {
         return acc
       }, {}),
       
-      // Hourly distribution
       hourlyDistribution: analytics.reduce((acc, a) => {
         const hour = a.hour_of_day
         acc[hour] = (acc[hour] || 0) + 1
         return acc
       }, {}),
       
-      // Daily trend
       dailyTrend: analytics.reduce((acc, a) => {
         const date = new Date(a.timestamp).toISOString().split('T')[0]
         if (!acc[date]) {

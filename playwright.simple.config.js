@@ -1,4 +1,3 @@
-// Simplified Playwright config for dashboard investigation
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({

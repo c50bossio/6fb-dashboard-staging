@@ -1,4 +1,3 @@
-// Simple shop data seeding for testing
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
@@ -128,5 +127,4 @@ async function createBasicShopData() {
   }
 }
 
-// Run the seeding
 createBasicShopData()

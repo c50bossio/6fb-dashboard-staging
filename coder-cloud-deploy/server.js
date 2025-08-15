@@ -3,7 +3,6 @@ const { spawn } = require('child_process');
 const app = express();
 const port = process.env.PORT || 7080;
 
-// Download and install Coder
 const downloadCoder = () => {
   return new Promise((resolve, reject) => {
     console.log('Downloading Coder...');
@@ -23,7 +22,6 @@ const downloadCoder = () => {
   });
 };
 
-// Start Coder server
 const startCoder = () => {
   console.log('Starting Coder server...');
   const coder = spawn('coder', [
@@ -49,12 +47,10 @@ const startCoder = () => {
   });
 };
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'coder-proxy' });
 });
 
-// Start the setup process
 const setup = async () => {
   try {
     await downloadCoder();

@@ -20,7 +20,6 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { generatePageTitle, generateMetaDescription } from '../../../lib/seo-utils'
 
-// Wrap the main component in Suspense to handle useSearchParams
 function BookingPageContent() {
   const params = useParams()
   const searchParams = useSearchParams()
@@ -40,7 +39,6 @@ function BookingPageContent() {
     smsConsent: false
   })
 
-  // Parse URL parameters
   const urlServices = searchParams?.get('services')?.split(',') || []
   const urlTimeSlots = searchParams?.get('timeSlots')?.split(',') || []
   const urlDuration = searchParams?.get('duration')
@@ -52,21 +50,17 @@ function BookingPageContent() {
     loadBarberData()
   }, [params.barberId])
 
-  // Track page view and analytics
   useEffect(() => {
     const trackPageView = async () => {
       try {
-        // Check if this is from a booking link
         const linkId = searchParams?.get('linkId')
         if (linkId) {
-          // Generate or get session ID
           let sessionId = sessionStorage.getItem('booking_session_id')
           if (!sessionId) {
             sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
             sessionStorage.setItem('booking_session_id', sessionId)
           }
 
-          // Track the page view
           await fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -90,13 +84,11 @@ function BookingPageContent() {
       }
     }
 
-    // Delay tracking to ensure page is loaded
     const timer = setTimeout(trackPageView, 1000)
     return () => clearTimeout(timer)
   }, [searchParams])
 
   useEffect(() => {
-    // Pre-select services based on URL parameters
     if (urlServices.length > 0 && availableServices.length > 0) {
       const preSelectedServices = availableServices.filter(service => 
         urlServices.includes(service.id.toString()) || 
@@ -110,7 +102,6 @@ function BookingPageContent() {
     try {
       setLoading(true)
       
-      // Database data
       const Barber = {
         id: params.barberId,
         name: 'Marcus Johnson',
@@ -185,7 +176,6 @@ function BookingPageContent() {
   }
 
   const generateAvailableSlots = () => {
-    // Generate next 7 days of availability
     const slots = []
     const today = new Date()
     
@@ -226,7 +216,6 @@ function BookingPageContent() {
   const handleBooking = async () => {
     setLoading(true)
     try {
-      // Create booking
       const bookingData = {
         barberId: params.barberId,
         services: selectedServices,
@@ -239,7 +228,6 @@ function BookingPageContent() {
         smsConsent: customerInfo.smsConsent // Include SMS consent preference
       }
 
-      // In production, this would call the booking API
       const response = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -249,12 +237,10 @@ function BookingPageContent() {
       if (response.ok) {
         const booking = await response.json()
         
-        // Track conversion if this came from a booking link
         const linkId = searchParams?.get('linkId')
         if (linkId) {
           const sessionId = sessionStorage.getItem('booking_session_id')
           
-          // Track conversion analytics
           await fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -330,7 +316,6 @@ function BookingPageContent() {
     )
   }
 
-  // Generate SEO-optimized page title and description
   const searchParamsObj = Object.fromEntries(searchParams?.entries() || [])
   const pageTitle = barberData ? generatePageTitle(barberData, searchParamsObj) : 'Book Appointment'
   const metaDescription = barberData ? generateMetaDescription(barberData, searchParamsObj) : 'Book your appointment online'
@@ -792,7 +777,6 @@ function BookingPageContent() {
   )
 }
 
-// Main component wrapped with Suspense
 export default function BookingPage() {
   return (
     <Suspense fallback={

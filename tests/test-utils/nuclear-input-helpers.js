@@ -76,10 +76,8 @@ export class NuclearInputTestUtils {
     
     await this.typeSlowly(input, expectedText, 50, user)
     
-    // Verify no corruption occurred
     expect(input.value).toBe(expectedText)
     
-    // Test rapid typing
     await user.clear(input)
     await this.typeRapidly(input, expectedText, user)
     expect(input.value).toBe(expectedText)
@@ -137,19 +135,15 @@ export class NuclearInputTestUtils {
   static async testInterferenceResistance(input, userValue, interferenceValue) {
     input.focus()
     
-    // Simulate user typing
     fireEvent.change(input, { target: { value: userValue } })
     
-    // Attempt external interference
     await act(async () => {
       try {
         input.value = interferenceValue
       } catch (e) {
-        // Expected to fail due to nuclear protection
       }
     })
     
-    // User value should be preserved
     expect(input.value).toBe(userValue)
   }
 
@@ -407,10 +401,8 @@ export class PlaywrightHelpers {
     if (shopName) {
       await page.waitForSelector(`text=${shopName}`, { timeout: 10000 })
     } else {
-      // Wait for any shop name to appear
       await page.waitForSelector('[data-testid="settings-loaded"]', { timeout: 10000 })
         .catch(() => {
-          // Fallback: wait for edit button
           return page.waitForSelector('button:has-text("Edit")', { timeout: 10000 })
         })
     }
@@ -529,7 +521,6 @@ export class AssertionHelpers {
   }
 }
 
-// Export utility instances for convenience
 export const nuclearUtils = NuclearInputTestUtils
 export const testData = TestDataGenerator
 export const API = MockAPIFactory

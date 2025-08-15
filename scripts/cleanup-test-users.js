@@ -3,7 +3,6 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: '.env.local' });
 
-// Initialize Supabase admin client (requires service role key)
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -32,7 +31,6 @@ async function cleanupTestUsers() {
   try {
     console.log('🔍 Finding test users...');
     
-    // Get all users with test emails
     const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers();
     
     if (error) {
@@ -40,7 +38,6 @@ async function cleanupTestUsers() {
       return;
     }
     
-    // Filter test users (emails containing 'test' or from our test domains)
     const testUsers = users.filter(user => {
       const email = user.email?.toLowerCase() || '';
       return (
@@ -73,7 +70,6 @@ async function cleanupTestUsers() {
     console.log('Option 2: Delete via service role (if configured)');
     console.log('Option 3: Keep for testing (recommended)');
     
-    // If we have service role access, offer to delete
     console.log('\n🔧 SQL Commands to Delete (use in Supabase SQL Editor):');
     console.log('─'.repeat(50));
     

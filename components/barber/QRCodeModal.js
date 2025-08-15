@@ -42,12 +42,10 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
     
     setLoading(true)
     try {
-      // Import QR code library dynamically
       const QRCode = (await import('qrcode')).default
       
       const fullUrl = `${window.location.origin}${bookingLink.url}`
       
-      // Generate QR code with custom options
       const qrCodeDataUrl = await QRCode.toDataURL(fullUrl, {
         width: qrOptions.size,
         margin: qrOptions.margin,
@@ -55,7 +53,6 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
         errorCorrectionLevel: qrOptions.errorCorrectionLevel
       })
       
-      // If we need to add text or logo, use canvas
       if (qrOptions.includeText || qrOptions.logoUrl) {
         await drawEnhancedQR(qrCodeDataUrl, fullUrl)
       } else {
@@ -77,20 +74,16 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
     const qrImage = new Image()
     
     qrImage.onload = () => {
-      // Set canvas size
       const padding = 40
       const textHeight = qrOptions.includeText ? 60 : 0
       canvas.width = qrOptions.size + (padding * 2)
       canvas.height = qrOptions.size + (padding * 2) + textHeight
       
-      // Fill background
       ctx.fillStyle = qrOptions.color.light
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       
-      // Draw QR code
       ctx.drawImage(qrImage, padding, padding, qrOptions.size, qrOptions.size)
       
-      // Add text if enabled
       if (qrOptions.includeText) {
         const text = qrOptions.customText || `Scan to book with ${bookingLink.name}`
         ctx.fillStyle = qrOptions.color.dark
@@ -98,14 +91,12 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
         ctx.textAlign = 'center'
         ctx.fillText(text, canvas.width / 2, canvas.height - 30)
         
-        // Add URL in smaller text
         ctx.font = '10px system-ui, -apple-system, sans-serif'
         ctx.fillStyle = '#666666'
         const displayUrl = url.length > 50 ? url.substring(0, 47) + '...' : url
         ctx.fillText(displayUrl, canvas.width / 2, canvas.height - 12)
       }
       
-      // Convert canvas to data URL
       setQrDataUrl(canvas.toDataURL('image/png'))
     }
     
@@ -119,8 +110,6 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
     link.download = `booking-qr-${bookingLink.name.toLowerCase().replace(/\s+/g, '-')}.${format}`
     
     if (format === 'svg') {
-      // For SVG, we'd need to generate it differently
-      // For now, just use PNG
       link.href = qrDataUrl
     } else {
       link.href = qrDataUrl
@@ -200,7 +189,6 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
     if (!qrDataUrl) return
     
     try {
-      // Convert data URL to blob
       const response = await fetch(qrDataUrl)
       const blob = await response.blob()
       const file = new File([blob], `qr-code-${bookingLink.name}.png`, { type: 'image/png' })
@@ -212,13 +200,11 @@ export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
           files: [file]
         })
       } else {
-        // Fallback to copying the link
         await navigator.clipboard.writeText(`${window.location.origin}${bookingLink.url}`)
         alert('Link copied to clipboard!')
       }
     } catch (error) {
       console.error('Failed to share QR code:', error)
-      // Fallback to copying the link
       try {
         await navigator.clipboard.writeText(`${window.location.origin}${bookingLink.url}`)
         alert('Link copied to clipboard!')

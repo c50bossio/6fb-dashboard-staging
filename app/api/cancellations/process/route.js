@@ -93,7 +93,6 @@ export async function POST(request) {
         const supabase = createClient(cookieStore);
         const body = await request.json();
         
-        // Validate required fields
         const requiredFields = ['booking_id', 'reason'];
         const missingFields = requiredFields.filter(field => !body[field]);
         
@@ -107,7 +106,6 @@ export async function POST(request) {
             );
         }
         
-        // Validate reason
         const validReasons = ['customer_request', 'no_show', 'barber_unavailable', 'emergency', 'weather', 'system_error'];
         if (!validReasons.includes(body.reason)) {
             return NextResponse.json(
@@ -119,7 +117,6 @@ export async function POST(request) {
             );
         }
         
-        // Get current user for authorization
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         
         if (authError || !user) {
@@ -129,7 +126,6 @@ export async function POST(request) {
             );
         }
         
-        // Fetch the actual booking from database - NO MOCK DATA
         const { data: booking, error: bookingError } = await supabase
             .from('bookings')
             .select(`
@@ -154,7 +150,6 @@ export async function POST(request) {
             );
         }
         
-        // Check if booking is already cancelled
         if (booking.status === 'cancelled') {
             return NextResponse.json(
                 { 
@@ -166,7 +161,6 @@ export async function POST(request) {
             );
         }
         
-        // Calculate refund based on policy and timing
         const scheduledAt = new Date(booking.scheduled_at);
         const now = new Date();
         const hoursUntil = (scheduledAt - now) / (1000 * 60 * 60);
@@ -176,7 +170,6 @@ export async function POST(request) {
         let policy_applied = {};
         const total_amount = booking.total_amount || booking.services?.price || 0;
         
-        // Get shop's cancellation policy (if exists)
         const { data: shopPolicy } = await supabase
             .from('cancellation_policies')
             .select('*')
@@ -199,7 +192,6 @@ export async function POST(request) {
                 refund_percentage: Math.round((refund_amount / total_amount) * 100)
             };
         } else if (body.reason === 'barber_unavailable' || body.reason === 'system_error') {
-            // Full refund for shop/system issues
             refund_amount = total_amount;
             cancellation_fee = 0;
             policy_applied = {
@@ -208,7 +200,6 @@ export async function POST(request) {
                 refund_percentage: 100
             };
         } else if (hoursUntil >= 24) {
-            // Full refund minus small fee
             cancellation_fee = shopPolicy?.early_cancellation_fee || 5.00;
             refund_amount = total_amount - cancellation_fee;
             policy_applied = {
@@ -217,7 +208,6 @@ export async function POST(request) {
                 refund_percentage: Math.round((refund_amount / total_amount) * 100)
             };
         } else if (hoursUntil >= 2) {
-            // Partial refund
             cancellation_fee = shopPolicy?.late_cancellation_fee || 5.00;
             refund_amount = (total_amount * 0.5) - cancellation_fee;
             policy_applied = {
@@ -226,7 +216,6 @@ export async function POST(request) {
                 refund_percentage: 50
             };
         } else {
-            // No refund
             cancellation_fee = total_amount;
             refund_amount = 0;
             policy_applied = {
@@ -236,7 +225,6 @@ export async function POST(request) {
             };
         }
         
-        // Update booking status to cancelled
         const { error: updateError } = await supabase
             .from('bookings')
             .update({
@@ -261,7 +249,6 @@ export async function POST(request) {
             );
         }
         
-        // Create cancellation record
         const cancellationRecord = {
             booking_id: body.booking_id,
             reason: body.reason,
@@ -281,7 +268,6 @@ export async function POST(request) {
         
         const cancellation_id = cancellation?.id || `cancel_${Date.now()}`;
         
-        // Check for waitlist customers for this time slot - REAL DATA ONLY
         const { data: waitlistCustomers, error: waitlistError } = await supabase
             .from('waitlist')
             .select('*')
@@ -293,7 +279,6 @@ export async function POST(request) {
         
         const waitlist_count = waitlistCustomers?.length || 0;
         
-        // Mark waitlist customers as notified (in production, send actual notifications)
         if (waitlist_count > 0) {
             const waitlistIds = waitlistCustomers.map(w => w.id);
             await supabase
@@ -302,7 +287,6 @@ export async function POST(request) {
                 .in('id', waitlistIds);
         }
         
-        // Create notification for the customer
         await supabase
             .from('notifications')
             .insert({
@@ -345,7 +329,6 @@ export async function POST(request) {
             message: `Cancellation processed successfully. ${refund_amount > 0 ? `Refund of $${refund_amount.toFixed(2)} will be processed.` : 'No refund applicable based on cancellation policy.'}`
         };
         
-        // Add next steps based on result
         if (result.waitlist_notifications_sent > 0) {
             result.next_steps.push({
                 action: 'waitlist_notified',

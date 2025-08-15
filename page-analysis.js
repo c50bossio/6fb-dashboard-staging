@@ -38,7 +38,6 @@ async function analyzeAllPages() {
       try {
         await page.goto(pageInfo.url, { waitUntil: 'networkidle2', timeout: 10000 });
         
-        // Basic page analysis
         const pageAnalysis = await page.evaluate(() => {
           return {
             title: document.title,
@@ -60,11 +59,9 @@ async function analyzeAllPages() {
           };
         });
         
-        // Take screenshot
         const screenshotPath = `/Users/bossio/6FB AI Agent System/test-results/${pageInfo.name.toLowerCase()}-analysis.png`;
         await page.screenshot({ path: screenshotPath, fullPage: true });
         
-        // Check for specific barbershop elements
         const barbershopElements = await page.evaluate(() => {
           const keywords = ['barber', 'appointment', 'booking', 'schedule', 'service', 'cut', 'style', 'client', 'customer'];
           const pageText = document.body.textContent.toLowerCase();
@@ -95,11 +92,9 @@ async function analyzeAllPages() {
         };
       }
       
-      // Wait between page loads
       await page.waitForTimeout(1000);
     }
 
-    // Responsive testing on key pages
     console.log('📱 Testing responsive design...');
     const viewports = [
       { name: 'Mobile', width: 375, height: 667 },
@@ -125,7 +120,6 @@ async function analyzeAllPages() {
       };
     }
 
-    // Generate overall assessment
     const successfulPages = Object.values(analysis.pages).filter(p => p.loadedSuccessfully).length;
     const totalPages = pagesToTest.length;
     
@@ -137,7 +131,6 @@ async function analyzeAllPages() {
       overallRating: successfulPages === totalPages ? 'Good' : 'Needs Improvement'
     };
 
-    // Generate specific recommendations
     analysis.recommendations = [
       'Consider adding consistent navigation across all pages',
       'Implement a sidebar for better dashboard organization',
@@ -149,7 +142,6 @@ async function analyzeAllPages() {
       'Implement proper error handling and error pages'
     ];
 
-    // Identify critical issues
     if (successfulPages < totalPages) {
       analysis.criticalIssues.push('Some pages failed to load properly');
     }
@@ -164,7 +156,6 @@ async function analyzeAllPages() {
     analysis.error = error.message;
   }
 
-  // Save comprehensive analysis
   const reportPath = '/Users/bossio/6FB AI Agent System/test-results/comprehensive-page-analysis.json';
   fs.writeFileSync(reportPath, JSON.stringify(analysis, null, 2));
   
@@ -181,5 +172,4 @@ async function analyzeAllPages() {
   return analysis;
 }
 
-// Run the analysis
 analyzeAllPages().catch(console.error);

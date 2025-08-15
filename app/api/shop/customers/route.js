@@ -8,7 +8,6 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 20
     const offset = parseInt(searchParams.get('offset')) || 0
     
-    // Mock customer data for Elite Cuts Barbershop
     const allCustomers = [
       {
         id: 'cust-001',
@@ -156,7 +155,6 @@ export async function GET(request) {
       }
     ]
     
-    // Filter customers based on search
     let filteredCustomers = allCustomers
     if (search) {
       const searchLower = search.toLowerCase()
@@ -168,10 +166,8 @@ export async function GET(request) {
       )
     }
     
-    // Apply pagination
     const paginatedCustomers = filteredCustomers.slice(offset, offset + limit)
     
-    // Calculate summary statistics
     const summary = {
       total_customers: filteredCustomers.length,
       active_customers: filteredCustomers.filter(c => c.status === 'active').length,
@@ -209,7 +205,6 @@ export async function POST(request) {
   try {
     const customerData = await request.json()
     
-    // Mock creating a new customer
     const newCustomer = {
       id: `cust-${Date.now()}`,
       ...customerData,

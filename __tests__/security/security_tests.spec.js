@@ -6,21 +6,17 @@
 import { test, expect } from '@playwright/test';
 import { createHash, randomBytes } from 'crypto';
 
-// Security test configuration
 const SECURITY_CONFIG = {
-  // Password requirements
   MIN_PASSWORD_LENGTH: 8,
   REQUIRE_UPPERCASE: true,
   REQUIRE_LOWERCASE: true,
   REQUIRE_NUMBERS: true,
   REQUIRE_SPECIAL_CHARS: true,
 
-  // Session security
   SESSION_TIMEOUT: 3600000, // 1 hour
   MAX_LOGIN_ATTEMPTS: 5,
   LOCKOUT_DURATION: 900000, // 15 minutes
 
-  // Input validation
   MAX_INPUT_LENGTH: 1000,
   SQL_INJECTION_PATTERNS: [
     "'; DROP TABLE",
@@ -38,7 +34,6 @@ const SECURITY_CONFIG = {
   ]
 };
 
-// Security test utilities
 class SecurityTester {
   constructor(page) {
     this.page = page;
@@ -52,10 +47,8 @@ class SecurityTester {
         await this.page.fill(inputSelector, pattern);
         await this.page.keyboard.press('Enter');
         
-        // Wait for response
         await this.page.waitForTimeout(1000);
         
-        // Check for error messages or unexpected behavior
         const errorMessages = await this.page.locator('.error, [data-testid="error"]').count();
         const hasDbError = await this.page.locator('text=/database|sql|mysql|postgresql/i').count() > 0;
         
@@ -66,7 +59,6 @@ class SecurityTester {
           errorMessages
         });
         
-        // Clear input for next test
         await this.page.fill(inputSelector, '');
       } catch (error) {
         results.push({
@@ -87,16 +79,13 @@ class SecurityTester {
       try {
         await this.page.fill(inputSelector, pattern);
         
-        // Submit or trigger the input
         await this.page.keyboard.press('Enter');
         await this.page.waitForTimeout(500);
         
-        // Check if script executed (XSS vulnerability)
         const alertFired = await this.page.evaluate(() => {
           return window.xssTriggered || false;
         });
         
-        // Check if content was properly escaped
         const rawContent = await this.page.locator(inputSelector).inputValue();
         const displayedContent = await this.page.textContent('body');
         
@@ -112,7 +101,6 @@ class SecurityTester {
           rawContent
         });
         
-        // Clear input
         await this.page.fill(inputSelector, '');
       } catch (error) {
         results.push({
@@ -127,7 +115,6 @@ class SecurityTester {
   }
 
   async testCSRF(targetUrl, formData) {
-    // Attempt CSRF attack by making cross-origin request
     const csrfResult = await this.page.evaluate(async (url, data) => {
       try {
         const response = await fetch(url, {
@@ -213,7 +200,6 @@ class SecurityTester {
           results.successfulRequests++;
         }
         
-        // Small delay to simulate rapid requests
         if (i < requestCount - 1) {
           await this.page.waitForTimeout(timeWindow / requestCount);
         }
@@ -230,7 +216,6 @@ class SecurityTester {
   }
 }
 
-// Authentication security tests
 test.describe('Authentication Security', () => {
   let securityTester;
 
@@ -257,7 +242,6 @@ test.describe('Authentication Security', () => {
       'MyP@ssw0rd2024!'
     ];
     
-    // Test weak passwords are rejected
     for (const password of weakPasswords) {
       await page.fill('[data-testid="password-input"]', password);
       await page.blur('[data-testid="password-input"]');
@@ -271,7 +255,6 @@ test.describe('Authentication Security', () => {
       console.log(`Weak password "${password}" correctly rejected:`, strengthResult);
     }
     
-    // Test strong passwords are accepted
     for (const password of strongPasswords) {
       await page.fill('[data-testid="password-input"]', password);
       await page.blur('[data-testid="password-input"]');
@@ -295,7 +278,6 @@ test.describe('Authentication Security', () => {
     let loginAttempts = 0;
     let isLocked = false;
     
-    // Attempt multiple failed logins
     for (let i = 0; i < SECURITY_CONFIG.MAX_LOGIN_ATTEMPTS + 2; i++) {
       await page.fill('[data-testid="email-input"]', testEmail);
       await page.fill('[data-testid="password-input"]', wrongPassword);
@@ -303,10 +285,8 @@ test.describe('Authentication Security', () => {
       
       loginAttempts++;
       
-      // Wait for response
       await page.waitForTimeout(1000);
       
-      // Check for lockout message
       const lockoutMessage = page.locator('[data-testid="account-locked"]');
       const rateLimitMessage = page.locator('[data-testid="rate-limited"]');
       
@@ -316,16 +296,13 @@ test.describe('Authentication Security', () => {
         break;
       }
       
-      // Check for generic error (last attempt before lockout)
       const errorMessage = page.locator('[data-testid="signin-error"]');
       await expect(errorMessage).toBeVisible();
     }
     
-    // Verify brute force protection is active
     expect(isLocked).toBe(true);
     expect(loginAttempts).toBeLessThanOrEqual(SECURITY_CONFIG.MAX_LOGIN_ATTEMPTS + 1);
     
-    // Verify legitimate login is also blocked during lockout
     await page.fill('[data-testid="email-input"]', testEmail);
     await page.fill('[data-testid="password-input"]', 'correctpassword');
     await page.click('[data-testid="signin-button"]');
@@ -335,16 +312,13 @@ test.describe('Authentication Security', () => {
   });
 
   test('Session management security', async ({ page }) => {
-    // Login with valid credentials
     await page.goto('/auth/signin');
     await page.fill('[data-testid="email-input"]', 'test@example.com');
     await page.fill('[data-testid="password-input"]', 'TestPassword123!');
     await page.click('[data-testid="signin-button"]');
     
-    // Verify successful login
     await expect(page.locator('[data-testid="dashboard"]')).toBeVisible();
     
-    // Check session token is set securely
     const cookies = await page.context().cookies();
     const sessionCookie = cookies.find(c => c.name.includes('session') || c.name.includes('token'));
     
@@ -360,55 +334,43 @@ test.describe('Authentication Security', () => {
       });
     }
     
-    // Test session timeout
     await page.evaluate((timeout) => {
-      // Mock session expiry
       localStorage.setItem('sessionExpiry', Date.now() - timeout);
     }, SECURITY_CONFIG.SESSION_TIMEOUT);
     
-    // Navigate to protected page
     await page.goto('/dashboard/settings');
     
-    // Should be redirected to login
     await expect(page.locator('[data-testid="signin-form"]')).toBeVisible();
   });
 
   test('Multi-factor authentication', async ({ page }) => {
-    // This test assumes MFA is implemented
     await page.goto('/auth/signin');
     
-    // Login with MFA-enabled account
     await page.fill('[data-testid="email-input"]', 'mfa-user@example.com');
     await page.fill('[data-testid="password-input"]', 'TestPassword123!');
     await page.click('[data-testid="signin-button"]');
     
-    // Should be prompted for MFA code
     const mfaPrompt = page.locator('[data-testid="mfa-prompt"]');
     await expect(mfaPrompt).toBeVisible();
     
-    // Test invalid MFA code
     await page.fill('[data-testid="mfa-code"]', '000000');
     await page.click('[data-testid="verify-mfa"]');
     
     const mfaError = page.locator('[data-testid="mfa-error"]');
     await expect(mfaError).toBeVisible();
     
-    // Test valid MFA code (mock)
     await page.fill('[data-testid="mfa-code"]', '123456');
     await page.click('[data-testid="verify-mfa"]');
     
-    // Should proceed to dashboard
     await expect(page.locator('[data-testid="dashboard"]')).toBeVisible();
   });
 
   test('JWT token security', async ({ page }) => {
-    // Login to get JWT token
     await page.goto('/auth/signin');
     await page.fill('[data-testid="email-input"]', 'test@example.com');
     await page.fill('[data-testid="password-input"]', 'TestPassword123!');
     await page.click('[data-testid="signin-button"]');
     
-    // Extract JWT token from requests
     let jwtToken = null;
     
     page.on('request', request => {
@@ -418,30 +380,25 @@ test.describe('Authentication Security', () => {
       }
     });
     
-    // Make API request to trigger JWT usage
     await page.goto('/dashboard/analytics');
     await page.waitForTimeout(2000);
     
     if (jwtToken) {
-      // Decode JWT payload (for testing purposes)
       const payload = JSON.parse(atob(jwtToken.split('.')[1]));
       
       console.log('JWT payload:', payload);
       
-      // Verify JWT contains required claims
       expect(payload.exp).toBeDefined(); // Expiration
       expect(payload.iat).toBeDefined(); // Issued at
       expect(payload.sub).toBeDefined(); // Subject (user ID)
       expect(payload.role).toBeDefined(); // User role
       
-      // Verify token expiration is reasonable
       const currentTime = Math.floor(Date.now() / 1000);
       const tokenLifetime = payload.exp - payload.iat;
       
       expect(tokenLifetime).toBeLessThanOrEqual(3600); // Max 1 hour
       expect(payload.exp).toBeGreaterThan(currentTime); // Not expired
       
-      // Test with tampered token
       const tamperedToken = jwtToken.slice(0, -10) + 'tampered123';
       
       const response = await page.request.get('/api/dashboard/analytics', {
@@ -457,7 +414,6 @@ test.describe('Authentication Security', () => {
   });
 });
 
-// Input validation and injection tests
 test.describe('Input Validation Security', () => {
   let securityTester;
 
@@ -467,7 +423,6 @@ test.describe('Input Validation Security', () => {
   });
 
   test('SQL injection prevention', async ({ page }) => {
-    // Test various forms with SQL injection attempts
     const testForms = [
       { url: '/dashboard/customers', selector: '[data-testid="search-input"]' },
       { url: '/dashboard/appointments', selector: '[data-testid="filter-input"]' },
@@ -481,18 +436,15 @@ test.describe('Input Validation Security', () => {
       
       console.log(`SQL injection test results for ${form.url}:`, results);
       
-      // All SQL injection attempts should be blocked
       const blockedCount = results.filter(r => r.blocked).length;
       expect(blockedCount).toBe(results.length);
       
-      // No database errors should be exposed
       const dbErrorCount = results.filter(r => r.hasDbError).length;
       expect(dbErrorCount).toBe(0);
     }
   });
 
   test('XSS prevention', async ({ page }) => {
-    // Test XSS in various input fields
     const testForms = [
       { url: '/profile/edit', selector: '[data-testid="name-input"]' },
       { url: '/dashboard/ai-agent', selector: '[data-testid="message-input"]' },
@@ -507,11 +459,9 @@ test.describe('Input Validation Security', () => {
         
         console.log(`XSS test results for ${form.url}:`, results);
         
-        // All XSS attempts should be blocked
         const blockedCount = results.filter(r => r.blocked).length;
         expect(blockedCount).toBe(results.length);
         
-        // No scripts should execute
         const scriptExecutions = results.filter(r => r.alertFired).length;
         expect(scriptExecutions).toBe(0);
       } catch (error) {
@@ -521,7 +471,6 @@ test.describe('Input Validation Security', () => {
   });
 
   test('CSRF protection', async ({ page }) => {
-    // Test CSRF protection on state-changing operations
     const csrfTests = [
       {
         url: '/api/appointments/create',
@@ -542,7 +491,6 @@ test.describe('Input Validation Security', () => {
       
       console.log(`CSRF test result for ${test.url}:`, result);
       
-      // CSRF attempts should be blocked
       expect(result.blocked).toBe(true);
       expect([401, 403]).toContain(result.status);
     }
@@ -551,13 +499,11 @@ test.describe('Input Validation Security', () => {
   test('Input length validation', async ({ page }) => {
     await page.goto('/profile/edit');
     
-    // Test extremely long input
     const longInput = 'A'.repeat(SECURITY_CONFIG.MAX_INPUT_LENGTH + 100);
     
     await page.fill('[data-testid="bio-input"]', longInput);
     await page.click('[data-testid="save-profile"]');
     
-    // Should show validation error
     const validationError = page.locator('[data-testid="bio-error"]');
     await expect(validationError).toBeVisible();
     
@@ -570,7 +516,6 @@ test.describe('Input Validation Security', () => {
   test('File upload security', async ({ page }) => {
     await page.goto('/profile/edit');
     
-    // Test malicious file uploads
     const maliciousFiles = [
       { name: 'script.js', content: 'alert("xss")' },
       { name: 'exploit.php', content: '<?php system($_GET["cmd"]); ?>' },
@@ -580,7 +525,6 @@ test.describe('Input Validation Security', () => {
     
     for (const file of maliciousFiles) {
       try {
-        // Create temporary file
         const buffer = Buffer.from(file.content);
         
         await page.setInputFiles('[data-testid="avatar-upload"]', {
@@ -592,7 +536,6 @@ test.describe('Input Validation Security', () => {
         await page.click('[data-testid="upload-button"]');
         await page.waitForTimeout(1000);
         
-        // Check for rejection
         const uploadError = page.locator('[data-testid="upload-error"]');
         const isRejected = await uploadError.isVisible();
         
@@ -606,7 +549,6 @@ test.describe('Input Validation Security', () => {
   });
 });
 
-// API security tests
 test.describe('API Security', () => {
   let securityTester;
 
@@ -631,11 +573,9 @@ test.describe('API Security', () => {
       
       console.log(`Rate limiting test for ${endpoint}:`, rateLimitResults);
       
-      // Rate limiting should be effective
       expect(rateLimitResults.rateLimitingEffective).toBe(true);
       expect(rateLimitResults.blockedRequests).toBeGreaterThan(0);
       
-      // Response time shouldn't degrade too much under load
       expect(rateLimitResults.averageResponseTime).toBeLessThan(5000);
     }
   });
@@ -663,10 +603,8 @@ test.describe('API Security', () => {
           headers: attempt.headers
         });
         
-        // All attempts should be rejected
         expect([401, 403]).toContain(response.status());
         
-        // Response shouldn't leak sensitive information
         const responseText = await response.text();
         expect(responseText.toLowerCase()).not.toContain('password');
         expect(responseText.toLowerCase()).not.toContain('secret');
@@ -681,7 +619,6 @@ test.describe('API Security', () => {
   });
 
   test('API parameter pollution', async ({ page }) => {
-    // Test parameter pollution attacks
     const pollutionTests = [
       {
         endpoint: '/api/users/search',
@@ -696,7 +633,6 @@ test.describe('API Security', () => {
     for (const test of pollutionTests) {
       const url = new URL(`http://localhost:8000${test.endpoint}`);
       
-      // Add polluted parameters
       Object.entries(test.params).forEach(([key, value]) => {
         if (Array.isArray(value)) {
           value.forEach(v => url.searchParams.append(key, v));
@@ -707,7 +643,6 @@ test.describe('API Security', () => {
       
       const response = await page.request.get(url.toString());
       
-      // Should handle parameter pollution gracefully
       expect([400, 422]).toContain(response.status()); // Bad request or validation error
       
       console.log(`Parameter pollution test for ${test.endpoint}:`, {
@@ -730,7 +665,6 @@ test.describe('API Security', () => {
       const responseText = await response.text();
       const responseHeaders = response.headers();
       
-      // Check for information disclosure in response
       const sensitiveInfo = [
         'server',
         'x-powered-by',
@@ -753,7 +687,6 @@ test.describe('API Security', () => {
         console.warn(`Information disclosure found in ${endpoint}:`, disclosures);
       }
       
-      // Common security headers should be present
       expect(responseHeaders['x-content-type-options']).toBe('nosniff');
       expect(responseHeaders['x-frame-options']).toBeDefined();
       expect(responseHeaders['x-xss-protection']).toBeDefined();
@@ -761,7 +694,6 @@ test.describe('API Security', () => {
   });
 });
 
-// Data protection and privacy tests
 test.describe('Data Protection', () => {
   test('PII data encryption', async ({ page }) => {
     await page.goto('/auth/signin');
@@ -769,18 +701,14 @@ test.describe('Data Protection', () => {
     await page.fill('[data-testid="password-input"]', 'TestPassword123!');
     await page.click('[data-testid="signin-button"]');
     
-    // Navigate to profile page
     await page.goto('/profile/view');
     
-    // Check that sensitive data is not exposed in client-side code
     const pageSource = await page.content();
     
-    // PII should not be in plain text in HTML source
     expect(pageSource).not.toMatch(/ssn|social.security|credit.card/i);
     expect(pageSource).not.toMatch(/\d{3}-\d{2}-\d{4}/); // SSN pattern
     expect(pageSource).not.toMatch(/\d{4}\s\d{4}\s\d{4}\s\d{4}/); // Credit card pattern
     
-    // Check localStorage and sessionStorage for sensitive data
     const localStorage = await page.evaluate(() => JSON.stringify(window.localStorage));
     const sessionStorage = await page.evaluate(() => JSON.stringify(window.sessionStorage));
     
@@ -791,19 +719,15 @@ test.describe('Data Protection', () => {
   });
 
   test('Data retention compliance', async ({ page }) => {
-    // Test data deletion functionality
     await page.goto('/profile/settings');
     
-    // Look for data deletion options
     const deleteButton = page.locator('[data-testid="delete-account"]');
     if (await deleteButton.isVisible()) {
       await deleteButton.click();
       
-      // Should show confirmation dialog
       const confirmDialog = page.locator('[data-testid="delete-confirmation"]');
       await expect(confirmDialog).toBeVisible();
       
-      // Should explain data deletion process
       const deletionInfo = await confirmDialog.textContent();
       expect(deletionInfo.toLowerCase()).toContain('permanently delete');
       expect(deletionInfo.toLowerCase()).toMatch(/\d+\s*days?/); // Should mention retention period
@@ -811,12 +735,10 @@ test.describe('Data Protection', () => {
       console.log('Data deletion process properly implemented');
     }
     
-    // Test data export functionality (GDPR compliance)
     const exportButton = page.locator('[data-testid="export-data"]');
     if (await exportButton.isVisible()) {
       await exportButton.click();
       
-      // Should initiate data export process
       const exportStatus = page.locator('[data-testid="export-status"]');
       await expect(exportStatus).toBeVisible();
       
@@ -827,27 +749,22 @@ test.describe('Data Protection', () => {
   test('Cookie consent and tracking', async ({ page }) => {
     await page.goto('/');
     
-    // Should show cookie consent banner
     const cookieBanner = page.locator('[data-testid="cookie-consent"]');
     await expect(cookieBanner).toBeVisible();
     
-    // Should allow granular consent
     const necessaryCookies = page.locator('[data-testid="necessary-cookies"]');
     const analyticalCookies = page.locator('[data-testid="analytical-cookies"]');
     const marketingCookies = page.locator('[data-testid="marketing-cookies"]');
     
-    // Necessary cookies should be pre-checked and disabled
     if (await necessaryCookies.isVisible()) {
       expect(await necessaryCookies.isChecked()).toBe(true);
       expect(await necessaryCookies.isDisabled()).toBe(true);
     }
     
-    // Analytical and marketing should be optional
     if (await analyticalCookies.isVisible()) {
       expect(await analyticalCookies.isDisabled()).toBe(false);
     }
     
-    // Test declining all optional cookies
     if (await analyticalCookies.isVisible()) {
       await analyticalCookies.uncheck();
     }
@@ -857,7 +774,6 @@ test.describe('Data Protection', () => {
     
     await page.click('[data-testid="accept-cookies"]');
     
-    // Verify only necessary cookies are set
     const cookies = await page.context().cookies();
     const trackingCookies = cookies.filter(c => 
       c.name.includes('analytics') || 
@@ -871,13 +787,11 @@ test.describe('Data Protection', () => {
   });
 
   test('Audit trail and logging', async ({ page }) => {
-    // Login and perform various actions
     await page.goto('/auth/signin');
     await page.fill('[data-testid="email-input"]', 'audit@test.com');
     await page.fill('[data-testid="password-input"]', 'TestPassword123!');
     await page.click('[data-testid="signin-button"]');
     
-    // Perform auditable actions
     await page.goto('/profile/edit');
     await page.fill('[data-testid="name-input"]', 'Updated Name');
     await page.click('[data-testid="save-profile"]');
@@ -888,7 +802,6 @@ test.describe('Data Protection', () => {
     await page.fill('[data-testid="new-password"]', 'NewPassword123!');
     await page.click('[data-testid="update-password"]');
     
-    // Check audit logs (if accessible)
     await page.goto('/admin/audit-logs');
     
     const auditTable = page.locator('[data-testid="audit-table"]');
@@ -896,7 +809,6 @@ test.describe('Data Protection', () => {
       const logEntries = await auditTable.locator('tbody tr').count();
       expect(logEntries).toBeGreaterThan(0);
       
-      // Verify log entries contain required information
       const firstEntry = auditTable.locator('tbody tr').first();
       const entryText = await firstEntry.textContent();
       
@@ -909,7 +821,6 @@ test.describe('Data Protection', () => {
   });
 });
 
-// Security headers and configuration tests
 test.describe('Security Configuration', () => {
   test('Security headers validation', async ({ page }) => {
     const response = await page.goto('/');
@@ -917,7 +828,6 @@ test.describe('Security Configuration', () => {
     
     console.log('Security headers:', headers);
     
-    // Required security headers
     const requiredHeaders = {
       'x-content-type-options': 'nosniff',
       'x-frame-options': ['DENY', 'SAMEORIGIN'],
@@ -940,7 +850,6 @@ test.describe('Security Configuration', () => {
       }
     });
     
-    // Headers that should NOT be present
     const forbiddenHeaders = ['server', 'x-powered-by', 'x-aspnet-version'];
     forbiddenHeaders.forEach(header => {
       expect(headers[header.toLowerCase()]).toBeUndefined();
@@ -961,13 +870,11 @@ test.describe('Security Configuration', () => {
       cspMap[key] = values;
     });
     
-    // Verify important CSP directives
     expect(cspMap['default-src']).toBeDefined();
     expect(cspMap['script-src']).toBeDefined();
     expect(cspMap['object-src']).toContain("'none'");
     expect(cspMap['base-uri']).toContain("'self'");
     
-    // Should not allow unsafe inline scripts/styles
     expect(cspMap['script-src']).not.toContain("'unsafe-inline'");
     expect(cspMap['style-src']).not.toContain("'unsafe-inline'");
     
@@ -975,15 +882,12 @@ test.describe('Security Configuration', () => {
   });
 
   test('HTTPS enforcement', async ({ page }) => {
-    // This test would be more relevant in a production environment
-    // Test that HTTP requests are redirected to HTTPS
     
     try {
       const httpResponse = await page.request.get('http://localhost:3000/', {
         maxRedirects: 0
       });
       
-      // Should redirect to HTTPS
       expect([301, 302, 307, 308]).toContain(httpResponse.status());
       
       const location = httpResponse.headers()['location'];
@@ -996,7 +900,6 @@ test.describe('Security Configuration', () => {
   });
 
   test('Vulnerability disclosure', async ({ page }) => {
-    // Check for security.txt file
     const securityTxtResponse = await page.request.get('/.well-known/security.txt');
     
     if (securityTxtResponse.ok()) {

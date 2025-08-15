@@ -1,22 +1,14 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
-// TODO: These are Python services, need JavaScript implementations
-// import { FranchiseManagementService } from '../../../../../services/franchise_management_service'
-// import { MultiTenantAuthService } from '../../../../../services/multi_tenant_authentication'
 
 export async function GET(request) {
   try {
-    // Initialize services - TODO: Implement JavaScript versions
-    // const franchiseService = new FranchiseManagementService()
-    // const authService = new MultiTenantAuthService()
     
-    // Temporary mock response
     return NextResponse.json({
       error: "Franchise services not implemented in JavaScript yet",
       message: "This endpoint requires Python services to be ported to JavaScript"
     }, { status: 501 })
     
-    // Get session token from headers
     const authorization = request.headers.get('authorization')
     const sessionToken = authorization?.replace('Bearer ', '')
     
@@ -27,7 +19,6 @@ export async function GET(request) {
       )
     }
     
-    // Validate user session
     const authResult = await authService.validate_session(sessionToken)
     
     if (!authResult.success) {
@@ -39,7 +30,6 @@ export async function GET(request) {
     
     const userSession = authResult.user_session
     
-    // Check cross-location customer viewing permissions
     const crossLocationCheck = await authService.check_cross_location_permission(
       userSession,
       'VIEW_ALL_LOCATIONS'
@@ -62,10 +52,8 @@ export async function GET(request) {
       }
     }
     
-    // Get franchise ID
     const franchiseId = userSession.primary_franchise_id
     
-    // Fetch cross-location customers
     const customersResult = await franchiseService.get_cross_location_customers(franchiseId)
     
     if (!customersResult.success) {
@@ -75,7 +63,6 @@ export async function GET(request) {
       )
     }
     
-    // Add pagination support
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '25')
@@ -83,7 +70,6 @@ export async function GET(request) {
     
     let customers = customersResult.data
     
-    // Apply search filter if provided
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase()
       customers = customers.filter(customer => 
@@ -93,12 +79,10 @@ export async function GET(request) {
       )
     }
     
-    // Apply pagination
     const startIndex = (page - 1) * limit
     const endIndex = startIndex + limit
     const paginatedCustomers = customers.slice(startIndex, endIndex)
     
-    // Calculate summary statistics
     const totalCustomers = customers.length
     const totalLifetimeValue = customers.reduce((sum, customer) => sum + (customer.lifetime_value || 0), 0)
     const avgLocationsPerCustomer = customers.length > 0 

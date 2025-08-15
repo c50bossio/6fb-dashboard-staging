@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-// Get sync settings
 export async function GET(request) {
   try {
     const supabase = createClient()
@@ -12,13 +11,11 @@ export async function GET(request) {
       return NextResponse.json({ success: false, error: 'Missing barber_id' }, { status: 400 })
     }
 
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get settings from database (calendar_settings table)
     const { data: settings, error } = await supabase
       .from('calendar_settings')
       .select('*')
@@ -33,7 +30,6 @@ export async function GET(request) {
       }, { status: 500 })
     }
 
-    // Default settings if none exist
     const defaultSettings = {
       autoCreateEvents: true,
       syncDirection: 'both',
@@ -58,7 +54,6 @@ export async function GET(request) {
   }
 }
 
-// Update sync settings
 export async function POST(request) {
   try {
     const supabase = createClient()
@@ -69,13 +64,11 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: 'Missing barber_id' }, { status: 400 })
     }
 
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Save settings to database using upsert
     const { data: savedSettings, error } = await supabase
       .from('calendar_settings')
       .upsert({

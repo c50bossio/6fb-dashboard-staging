@@ -12,7 +12,6 @@ export default function FeatureFlag({ flag, children, fallback = null }) {
   return isEnabled ? children : fallback
 }
 
-// Component for A/B testing
 export function ABTest({ experiment, variants, fallback = null }) {
   const { variant } = useABTest(experiment)
 

@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -19,17 +18,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
     }
 
-    // Generate session ID if not provided
     const currentSession = sessionId || `session_${Date.now()}_${user.id}`
 
     try {
-      // Use enhanced AI chat with RAG integration (mock for development)
       const response = await generateEnhancedAIResponse(message, currentSession, businessContext)
       
-      // Store conversation in Supabase
       await storeConversation(supabase, user.id, currentSession, message, response)
       
-      // Record interaction for learning
       const agentType = response.agent_details?.agent || 'master_coach'
       await agentLearning.recordInteraction({
         agentId: agentType,
@@ -45,7 +40,6 @@ export async function POST(request) {
         timestamp: Date.now()
       })
       
-      // Recall relevant memories for enhanced context
       const memories = await agentLearning.recall(agentType, message, businessContext)
       
       return NextResponse.json({
@@ -66,7 +60,6 @@ export async function POST(request) {
     } catch (aiError) {
       console.error('AI processing error:', aiError)
       
-      // Fallback response
       const fallbackResponse = generateFallbackResponse(message)
       
       return NextResponse.json({
@@ -91,14 +84,11 @@ export async function POST(request) {
 
 async function generateEnhancedAIResponse(message, sessionId, businessContext) {
   try {
-    // First try using the specialized AI agents (Marcus, Sophia, David)
     console.log('🤖 Using specialized AI agents for enhanced response...')
     
-    // Import the specialized agents directly
     const { execSync } = require('child_process')
     const path = require('path')
     
-    // Call the AI orchestrator service from Python backend
     const pythonScript = `
 import sys
 import os
@@ -125,22 +115,18 @@ async def get_agent_response():
 asyncio.run(get_agent_response())
 `
     
-    // Write temporary Python script
     const fs = require('fs')
     const tempFile = `/tmp/agent_call_${Date.now()}.py`
     fs.writeFileSync(tempFile, pythonScript)
     
     try {
-      // Execute Python script and get response
       const result = execSync(`cd "${process.cwd()}" && python "${tempFile}"`, { 
         encoding: 'utf8',
         timeout: 10000 
       })
       
-      // Clean up temp file
       fs.unlinkSync(tempFile)
       
-      // Parse the response from Python
       const lines = result.split('\n')
       const startIndex = lines.findIndex(line => line.includes('AGENT_RESPONSE_START'))
       const endIndex = lines.findIndex(line => line.includes('AGENT_RESPONSE_END'))
@@ -166,11 +152,9 @@ asyncio.run(get_agent_response())
       }
     } catch (pythonError) {
       console.error('Python agent call failed:', pythonError)
-      // Clean up temp file on error
       try { fs.unlinkSync(tempFile) } catch {}
     }
     
-    // If specialized agents fail, fallback to enhanced mock
     console.log('🔄 Falling back to enhanced mock response...')
     return await generateIntelligentResponse(message, sessionId, businessContext)
     
@@ -181,7 +165,6 @@ asyncio.run(get_agent_response())
 }
 
 async function getContextualKnowledge(message, businessContext) {
-  // Simulate retrieving contextual knowledge from RAG system
   const messageLower = message.toLowerCase()
   const insights = {
     relevantKnowledge: [],
@@ -189,7 +172,6 @@ async function getContextualKnowledge(message, businessContext) {
     confidence: 0.0
   }
   
-  // Customer service knowledge
   if (/\b(customer|client|satisfaction|retention|feedback)\b/.test(messageLower)) {
     insights.relevantKnowledge.push({
       content: "Customer satisfaction analysis shows 4.2/5 average rating with high praise for beard trimming services",
@@ -200,7 +182,6 @@ async function getContextualKnowledge(message, businessContext) {
     insights.keyInsights.push("Customer retention rate is 73% indicating strong loyalty")
   }
   
-  // Revenue knowledge
   if (/\b(revenue|money|profit|income|pricing)\b/.test(messageLower)) {
     insights.relevantKnowledge.push({
       content: "Peak revenue hours are 10am-2pm and 5pm-7pm, generating 65% of daily income",
@@ -211,7 +192,6 @@ async function getContextualKnowledge(message, businessContext) {
     insights.keyInsights.push("Premium services have 40% higher margins than basic cuts")
   }
   
-  // Scheduling knowledge
   if (/\b(schedule|booking|appointment|time|availability)\b/.test(messageLower)) {
     insights.relevantKnowledge.push({
       content: "Booking utilization highest on Fridays (89%) and Saturdays (94%)",
@@ -222,7 +202,6 @@ async function getContextualKnowledge(message, businessContext) {
     insights.keyInsights.push("No-show rate reduced to 8% with reminder system")
   }
   
-  // Service performance knowledge
   if (/\b(service|performance|popular|booking)\b/.test(messageLower)) {
     insights.relevantKnowledge.push({
       content: "Haircut + beard trim combo is most popular service with 35% of all bookings",
@@ -233,7 +212,6 @@ async function getContextualKnowledge(message, businessContext) {
     insights.keyInsights.push("Average service time is 28 minutes allowing efficient scheduling")
   }
   
-  // Calculate confidence based on relevance
   if (insights.relevantKnowledge.length > 0) {
     insights.confidence = insights.relevantKnowledge.reduce((sum, k) => sum + k.similarity, 0) / insights.relevantKnowledge.length
   }
@@ -242,10 +220,8 @@ async function getContextualKnowledge(message, businessContext) {
 }
 
 async function generateIntelligentResponse(message, sessionId, businessContext, contextualInsights = null) {
-  // Classify message type
   const messageType = classifyMessage(message)
   
-  // Generate contextual response based on message type
   const responses = {
     business_analysis: generateBusinessAnalysisResponse(message, businessContext),
     customer_service: generateCustomerServiceResponse(message, businessContext),
@@ -270,27 +246,22 @@ async function generateIntelligentResponse(message, sessionId, businessContext, 
 function classifyMessage(message) {
   const messageLower = message.toLowerCase()
   
-  // Business analysis keywords
   if (/\b(revenue|profit|analytics|performance|metrics|kpi|growth|sales|business)\b/.test(messageLower)) {
     return 'business_analysis'
   }
   
-  // Customer service keywords
   if (/\b(customer|client|service|complaint|feedback|satisfaction|retention|review)\b/.test(messageLower)) {
     return 'customer_service'
   }
   
-  // Scheduling keywords
   if (/\b(schedule|appointment|booking|calendar|time|availability|slot|busy|free)\b/.test(messageLower)) {
     return 'scheduling'
   }
   
-  // Financial keywords
   if (/\b(money|cost|price|payment|expense|budget|financial|income|profit|loss)\b/.test(messageLower)) {
     return 'financial'
   }
   
-  // Marketing keywords
   if (/\b(marketing|promotion|social media|advertising|brand|instagram|facebook|attract)\b/.test(messageLower)) {
     return 'marketing'
   }
@@ -299,12 +270,10 @@ function classifyMessage(message) {
 }
 
 function generateBusinessAnalysisResponse(message, context, contextualInsights = null) {
-  // Use contextual insights if available
   const dataInsights = []
   const specificMetrics = []
   
   if (contextualInsights && contextualInsights.relevantKnowledge.length > 0) {
-    // Extract specific data from knowledge base
     contextualInsights.relevantKnowledge.forEach(knowledge => {
       if (knowledge.type === 'revenue_patterns') {
         dataInsights.push("Your revenue data shows clear patterns we can optimize")
@@ -316,7 +285,6 @@ function generateBusinessAnalysisResponse(message, context, contextualInsights =
       }
     })
     
-    // Add key insights
     if (contextualInsights.keyInsights.length > 0) {
       specificMetrics.push(...contextualInsights.keyInsights)
     }
@@ -336,7 +304,6 @@ function generateBusinessAnalysisResponse(message, context, contextualInsights =
     "Set up automated follow-up messages 2-3 weeks after appointments"
   ]
 
-  // Build response with contextual data
   let responseText = `${insights[0]} Let me break down key insights from your business data:
 
 **Revenue Analysis:**`
@@ -631,6 +598,5 @@ async function storeConversation(supabase, userId, sessionId, message, response)
       })
   } catch (error) {
     console.error('Failed to store conversation:', error)
-    // Don't fail the request if storage fails
   }
 }

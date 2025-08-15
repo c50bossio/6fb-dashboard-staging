@@ -105,11 +105,9 @@ class CrossBrowserTester {
   }
 
   async testJavaScriptExecution(url) {
-    // Simulate JavaScript execution test using curl and HTML parsing
     try {
       const response = execSync(`curl -s "${url}"`, { encoding: 'utf8' });
       
-      // Check for common JavaScript indicators
       const hasReact = response.includes('react') || response.includes('React');
       const hasNextJs = response.includes('next') || response.includes('Next');
       const hasScripts = response.includes('<script');
@@ -135,7 +133,6 @@ class CrossBrowserTester {
   }
 
   async testResponsiveDesign(url) {
-    // Test if responsive meta tags and CSS are present
     try {
       const response = execSync(`curl -s "${url}"`, { encoding: 'utf8' });
       
@@ -168,14 +165,12 @@ class CrossBrowserTester {
     console.log('🚀 Starting Cross-Browser Compatibility Tests...');
     console.log('=' .repeat(60));
 
-    // Check system health first
     const systemHealthy = await this.checkSystemHealth();
     if (!systemHealthy) {
       console.log('❌ System health check failed. Please ensure services are running.');
       return this.testResults;
     }
 
-    // Simulate different browser environments by testing various aspects
     const browsers = [
       { name: 'Chrome/Chromium', userAgent: 'Chrome', supported: true },
       { name: 'Firefox', userAgent: 'Firefox', supported: true },
@@ -194,7 +189,6 @@ class CrossBrowserTester {
         overall: { passed: 0, failed: 0, warnings: 0 }
       };
 
-      // Test each page
       for (const page of this.testResults.pages) {
         console.log(`  📄 Testing ${page.name} (${page.path})`);
         const url = `${this.baseUrl}${page.path}`;
@@ -235,7 +229,6 @@ class CrossBrowserTester {
         this.testResults.browsers[browser.name].pages[page.name] = pageResult;
         this.testResults.summary.totalTests++;
         
-        // Log results
         if (pageResult.errors.length === 0) {
           console.log(`    ✅ ${page.name}: OK (${loadTest.loadTime}ms)`);
         } else {
@@ -244,7 +237,6 @@ class CrossBrowserTester {
         }
       }
 
-      // Test responsive design for different viewports
       console.log(`  📱 Testing responsive design...`);
       for (const viewport of this.testResults.deviceViewports) {
         const responsiveResult = await this.testResponsiveDesign(this.baseUrl);
@@ -257,7 +249,6 @@ class CrossBrowserTester {
       }
     }
 
-    // Calculate summary statistics
     for (const browserName in this.testResults.browsers) {
       const browser = this.testResults.browsers[browserName];
       this.testResults.summary.passed += browser.overall.passed;
@@ -280,7 +271,6 @@ class CrossBrowserTester {
       recommendations: []
     };
 
-    // Generate recommendations based on results
     if (this.testResults.summary.failed > 0) {
       report.recommendations.push('🔧 Critical issues found that need immediate attention');
     }
@@ -293,7 +283,6 @@ class CrossBrowserTester {
       report.recommendations.push('✅ Excellent cross-browser compatibility detected');
     }
 
-    // Check for specific browser issues
     for (const browserName in this.testResults.browsers) {
       const browser = this.testResults.browsers[browserName];
       if (browser.overall.failed > 0) {
@@ -311,7 +300,6 @@ class CrossBrowserTester {
     const report = this.generateReport();
     const filepath = path.join(__dirname, 'test-results', filename);
     
-    // Ensure directory exists
     const dir = path.dirname(filepath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -324,10 +312,8 @@ class CrossBrowserTester {
   }
 }
 
-// Export for use in other tests
 module.exports = CrossBrowserTester;
 
-// Run if called directly
 if (require.main === module) {
   (async () => {
     const tester = new CrossBrowserTester();

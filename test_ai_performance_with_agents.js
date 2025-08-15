@@ -41,7 +41,6 @@ async function testAIPerformanceWithAgents() {
     };
 
     try {
-        // Step 1: Record initial performance metrics
         await logStep(1, 'Recording initial performance baseline');
         
         const baselineMetrics = [
@@ -81,7 +80,6 @@ async function testAIPerformanceWithAgents() {
 
         await wait(1000);
 
-        // Step 2: Test real-time metrics after recording
         await logStep(2, 'Checking real-time metrics after baseline');
         
         try {
@@ -104,26 +102,20 @@ async function testAIPerformanceWithAgents() {
             results.tests_failed++;
         }
 
-        // Step 3: Simulate AI agent workload
         await logStep(3, 'Simulating AI agent workload with varying performance');
         
         const workloadSimulations = [
-            // Fast responses
             { component: 'specialized_agents', metric: 'response_time', value: 0.8, scenario: 'fast_response' },
             { component: 'specialized_agents', metric: 'confidence_score', value: 0.95, scenario: 'fast_response' },
             
-            // Slow responses (stress testing)
             { component: 'ai_orchestrator', metric: 'response_time', value: 3.2, scenario: 'slow_response' },
             { component: 'ai_orchestrator', metric: 'confidence_score', value: 0.72, scenario: 'slow_response' },
             
-            // High confidence responses
             { component: 'recommendations_engine', metric: 'confidence_score', value: 0.98, scenario: 'high_confidence' },
             { component: 'recommendations_engine', metric: 'response_time', value: 1.9, scenario: 'high_confidence' },
             
-            // Error simulation
             { component: 'ai_orchestrator', metric: 'success_rate', value: 0.82, scenario: 'error_simulation' },
             
-            // Recovery simulation
             { component: 'ai_orchestrator', metric: 'response_time', value: 1.4, scenario: 'recovery' },
             { component: 'ai_orchestrator', metric: 'success_rate', value: 0.97, scenario: 'recovery' }
         ];
@@ -154,7 +146,6 @@ async function testAIPerformanceWithAgents() {
                     });
                 }
                 
-                // Small delay between metrics
                 await wait(200);
                 
             } catch (error) {
@@ -175,7 +166,6 @@ async function testAIPerformanceWithAgents() {
 
         await wait(2000);
 
-        // Step 4: Check updated real-time metrics
         await logStep(4, 'Checking real-time metrics after workload');
         
         try {
@@ -199,7 +189,6 @@ async function testAIPerformanceWithAgents() {
                     'Component breakdown': JSON.stringify(componentSummary)
                 });
                 
-                // Show sample metric values
                 console.log('\n   📊 Sample Current Metrics:');
                 Object.entries(metrics).forEach(([component, componentMetrics]) => {
                     Object.entries(componentMetrics).forEach(([metric, data]) => {
@@ -217,7 +206,6 @@ async function testAIPerformanceWithAgents() {
             results.tests_failed++;
         }
 
-        // Step 5: Generate performance report
         await logStep(5, 'Generating comprehensive performance report');
         
         try {
@@ -233,7 +221,6 @@ async function testAIPerformanceWithAgents() {
                     'Optimization opportunities': (report.optimization_opportunities || []).length
                 });
                 
-                // Show component health details
                 if (report.component_health) {
                     console.log('\n   🏥 Component Health Summary:');
                     Object.entries(report.component_health).forEach(([component, health]) => {
@@ -241,7 +228,6 @@ async function testAIPerformanceWithAgents() {
                     });
                 }
                 
-                // Show optimization opportunities
                 if (report.optimization_opportunities && report.optimization_opportunities.length > 0) {
                     console.log('\n   💡 Top Optimization Opportunities:');
                     report.optimization_opportunities.slice(0, 3).forEach((opp, idx) => {
@@ -259,7 +245,6 @@ async function testAIPerformanceWithAgents() {
             results.tests_failed++;
         }
 
-        // Step 6: Test monitoring status after activity
         await logStep(6, 'Checking monitoring system status after activity');
         
         try {
@@ -284,7 +269,6 @@ async function testAIPerformanceWithAgents() {
             results.tests_failed++;
         }
 
-        // Step 7: Test component-specific health checks
         await logStep(7, 'Testing component-specific health checks');
         
         const components = ['ai_orchestrator', 'specialized_agents', 'recommendations_engine'];
@@ -315,7 +299,6 @@ async function testAIPerformanceWithAgents() {
         results.tests_failed++;
     }
 
-    // Final Results and Analysis
     console.log('\n' + '='.repeat(60));
     console.log('🎯 AI Performance Monitoring with Agents - Final Results');
     console.log('='.repeat(60));
@@ -332,7 +315,6 @@ async function testAIPerformanceWithAgents() {
 
     console.log('\n🔍 System Performance Analysis:');
     
-    // Analyze performance trends
     if (results.performance_data.realtime_after_workload) {
         const metrics = results.performance_data.realtime_after_workload;
         const totalComponents = Object.keys(metrics).length;
@@ -340,7 +322,6 @@ async function testAIPerformanceWithAgents() {
         
         console.log(`   📈 Active monitoring: ${totalComponents} components, ${totalMetrics} metric streams`);
         
-        // Analyze response times
         const responseTimes = [];
         Object.values(metrics).forEach(componentMetrics => {
             if (componentMetrics.response_time) {
@@ -376,7 +357,6 @@ async function testAIPerformanceWithAgents() {
     console.log('   ⚡ Performance data can be used for system optimization');
     console.log('   🎯 Ready for production AI performance monitoring');
 
-    // Save detailed results
     const detailedResults = {
         test_date: new Date().toISOString(),
         success_rate: successRate,
@@ -401,7 +381,6 @@ async function testAIPerformanceWithAgents() {
     return results;
 }
 
-// Check if axios is available
 try {
     require('axios');
 } catch (error) {
@@ -409,7 +388,6 @@ try {
     process.exit(1);
 }
 
-// Run the test
 testAIPerformanceWithAgents().catch(error => {
     console.error('❌ Test execution error:', error);
     process.exit(1);

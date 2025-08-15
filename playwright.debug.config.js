@@ -25,12 +25,10 @@ module.exports = defineConfig({
       name: 'debug-chromium',
       use: { 
         ...devices['Desktop Chrome'],
-        // No storage state - run tests independently
       },
     },
   ],
 
-  // No web server - assume it's already running
   timeout: 60 * 1000,
   expect: {
     timeout: 10 * 1000,

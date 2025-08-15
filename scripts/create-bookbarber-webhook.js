@@ -8,7 +8,6 @@
 
 const Stripe = require('stripe');
 
-// Load environment variables
 require('dotenv').config({ path: '.env.local' });
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -24,7 +23,6 @@ async function createBookBarberWebhook() {
   console.log('🔗 Creating BookedBarber webhook endpoint...\n');
 
   try {
-    // Check if webhook already exists
     const existingWebhooks = await stripe.webhookEndpoints.list({
       limit: 100
     });
@@ -46,7 +44,6 @@ async function createBookBarberWebhook() {
       return;
     }
 
-    // Create new webhook endpoint
     console.log('Creating new webhook endpoint for bookbarber.com...');
     
     const webhook = await stripe.webhookEndpoints.create({

@@ -27,7 +27,6 @@ import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
-// Quick action items
 const QUICK_ACTIONS = [
   { 
     name: 'Open Shop', 
@@ -59,7 +58,6 @@ const QUICK_ACTIONS = [
   }
 ]
 
-// NO MOCK DATA - Operations data comes from real API calls
 
 export default function OperationsPage() {
   const { user, profile } = useAuth()
@@ -72,7 +70,6 @@ export default function OperationsPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Load real operations data from database
   useEffect(() => {
     loadOperationsData()
   }, [])
@@ -86,7 +83,6 @@ export default function OperationsPage() {
       if (data.success) {
         setOperationalData(data.data)
       } else {
-        // NO MOCK DATA - show empty state when API fails
         setOperationalData({
           shopStatus: 'unknown',
           openTime: 'N/A',
@@ -117,7 +113,6 @@ export default function OperationsPage() {
       }
     } catch (error) {
       console.error('Failed to load operations data:', error)
-      // Same empty state on error
       setOperationalData({
         shopStatus: 'error',
         openTime: 'N/A',
@@ -178,7 +173,6 @@ export default function OperationsPage() {
     }
   }
 
-  // Show loading state
   if (loading) {
     return (
       <ProtectedRoute>

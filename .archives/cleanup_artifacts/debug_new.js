@@ -1,7 +1,6 @@
 const puppeteer = require('puppeteer');
 
 async function debugLoginPage() {
-    console.log('🔍 Starting login page debugging...');
     
     const browser = await puppeteer.launch({ 
         headless: false, 
@@ -11,7 +10,6 @@ async function debugLoginPage() {
     
     const page = await browser.newPage();
     
-    // Collect console messages
     const consoleMessages = [];
     page.on('console', msg => {
         consoleMessages.push({
@@ -21,7 +19,6 @@ async function debugLoginPage() {
         });
     });
     
-    // Collect errors
     const errors = [];
     page.on('pageerror', error => {
         errors.push(error.toString());
@@ -34,7 +31,6 @@ async function debugLoginPage() {
             timeout: 30000 
         });
         
-        // Wait for potential debugging logs
         console.log('⏳ Waiting for page to fully load and logs to appear...');
         await page.waitForTimeout(5000);
         
@@ -46,7 +42,6 @@ async function debugLoginPage() {
         
         console.log('🔍 Checking form state...');
         
-        // Check form elements
         const formState = await page.evaluate(() => {
             const emailInput = document.querySelector('input[type="email"]');
             const passwordInput = document.querySelector('input[type="password"]');
@@ -71,7 +66,6 @@ async function debugLoginPage() {
         console.log(`  Password input: found=${formState.passwordFound}, disabled=${formState.passwordDisabled}, bg=${formState.passwordBackground}`);
         console.log(`  Submit button: found=${formState.buttonFound}, text="${formState.buttonText}", disabled=${formState.buttonDisabled}, bg=${formState.buttonBackground}`);
         
-        // Try to interact with email field to test if it's truly functional
         if (formState.emailFound && !formState.emailDisabled) {
             console.log('🧪 Testing email field interaction...');
             await page.focus('input[type="email"]');
@@ -84,7 +78,6 @@ async function debugLoginPage() {
         }
         
     } catch (error) {
-        console.log(`❌ Error during debugging: ${error.message}`);
         errors.push(error.message);
     }
     
@@ -93,7 +86,6 @@ async function debugLoginPage() {
         console.log(`  [${msg.type.toUpperCase()}] ${msg.text}`);
     });
     
-    console.log('\n🔥 DEBUG Messages (Filtered):');
     const debugMessages = consoleMessages.filter(msg => 
         msg.text.includes('🔥') || 
         msg.text.toUpperCase().includes('LOGIN') || 

@@ -6,11 +6,9 @@ export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
-    // Temporary bypass for development
     const isDevelopment = process.env.NODE_ENV === 'development'
     const effectiveUser = user || { id: 'demo-user-' + Date.now(), email: 'demo@example.com' }
     
@@ -24,7 +22,6 @@ export async function GET(request) {
     const userId = effectiveUser.id
 
     try {
-      // Call Python Enhanced Business Knowledge Service
       const response = await fetch(`http://localhost:8001/enhanced-knowledge/retrieve`, {
         method: 'POST',
         headers: {
@@ -63,7 +60,6 @@ export async function GET(request) {
     } catch (error) {
       console.error('Enhanced RAG system error:', error)
       
-      // Fallback to simulated advanced RAG
       const fallbackResult = await generateAdvancedRAGFallback(query, domain, effectiveUser)
       
       return NextResponse.json({
@@ -87,11 +83,9 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
-    // Temporary bypass for development
     const isDevelopment = process.env.NODE_ENV === 'development'
     const effectiveUser = user || { id: 'demo-user-' + Date.now(), email: 'demo@example.com' }
     
@@ -128,7 +122,6 @@ export async function POST(request) {
 }
 
 async function generateAdvancedRAGFallback(query, domain, user) {
-  // Advanced RAG simulation with sophisticated business knowledge
   
   const knowledgeDatabase = {
     barbershop_operations: [
@@ -233,12 +226,10 @@ async function generateAdvancedRAGFallback(query, domain, user) {
     ]
   }
 
-  // Intelligent document selection based on query
   let relevantDocs = []
   const queryLower = query.toLowerCase()
   
   if (domain === 'all') {
-    // Search across all domains
     for (const [domainKey, docs] of Object.entries(knowledgeDatabase)) {
       for (const doc of docs) {
         const relevanceScore = calculateRelevanceScore(queryLower, doc)
@@ -248,7 +239,6 @@ async function generateAdvancedRAGFallback(query, domain, user) {
       }
     }
   } else {
-    // Search specific domain
     const domainDocs = knowledgeDatabase[domain] || []
     for (const doc of domainDocs) {
       const relevanceScore = calculateRelevanceScore(queryLower, doc)
@@ -256,11 +246,9 @@ async function generateAdvancedRAGFallback(query, domain, user) {
     }
   }
 
-  // Sort by relevance and take top results
   relevantDocs.sort((a, b) => b.relevance_score - a.relevance_score)
   relevantDocs = relevantDocs.slice(0, 5)
 
-  // Generate contextual insights
   const keyInsights = generateContextualInsights(relevantDocs, queryLower)
   const recommendedActions = generateRecommendedActions(relevantDocs)
   const knowledgeGaps = identifyKnowledgeGaps(queryLower, relevantDocs)
@@ -290,12 +278,10 @@ async function generateAdvancedRAGFallback(query, domain, user) {
 function calculateRelevanceScore(query, document) {
   let score = 0
   
-  // Check title relevance
   if (document.title.toLowerCase().includes(query)) {
     score += 0.4
   }
   
-  // Check content relevance
   const contentWords = query.split(' ')
   const docContent = document.content.toLowerCase()
   
@@ -305,14 +291,12 @@ function calculateRelevanceScore(query, document) {
     }
   }
   
-  // Check tag relevance
   for (const tag of document.relevance_tags) {
     if (query.includes(tag) || tag.includes(query.split(' ')[0])) {
       score += 0.1
     }
   }
   
-  // Boost for high confidence documents
   score *= document.confidence_score
   
   return Math.min(score, 1.0)
@@ -321,7 +305,6 @@ function calculateRelevanceScore(query, document) {
 function generateContextualInsights(documents, query) {
   const insights = []
   
-  // Extract key metrics and patterns
   const allMetrics = {}
   documents.forEach(doc => {
     Object.entries(doc.business_metrics).forEach(([metric, value]) => {
@@ -330,7 +313,6 @@ function generateContextualInsights(documents, query) {
     })
   })
   
-  // Generate insights from metrics
   Object.entries(allMetrics).forEach(([metric, values]) => {
     const avgValue = values.reduce((sum, val) => sum + val, 0) / values.length
     if (avgValue > 20) {
@@ -338,7 +320,6 @@ function generateContextualInsights(documents, query) {
     }
   })
   
-  // Query-specific insights
   if (query.includes('revenue') || query.includes('profit')) {
     insights.push("Revenue optimization through premium services and upselling shows highest ROI potential")
   }
@@ -358,7 +339,6 @@ function generateRecommendedActions(documents) {
   const actions = []
   
   documents.slice(0, 3).forEach(doc => {
-    // Extract actionable items from business metrics
     Object.entries(doc.business_metrics).forEach(([metric, value]) => {
       if (value > 15) {
         actions.push(`Implement ${doc.title.toLowerCase()} to achieve ${value}% improvement in ${metric.replace('_', ' ')}`)
@@ -366,7 +346,6 @@ function generateRecommendedActions(documents) {
     })
   })
   
-  // General strategic actions
   const domains = [...new Set(documents.map(doc => doc.domain))]
   
   if (domains.includes('revenue_optimization')) {
@@ -387,7 +366,6 @@ function generateRecommendedActions(documents) {
 function identifyKnowledgeGaps(query, documents) {
   const gaps = []
   
-  // Check for missing domains
   const allDomains = ['barbershop_operations', 'customer_experience', 'revenue_optimization', 'marketing_strategies', 'staff_management']
   const coveredDomains = [...new Set(documents.map(doc => doc.domain))]
   const missingDomains = allDomains.filter(domain => !coveredDomains.includes(domain))
@@ -396,7 +374,6 @@ function identifyKnowledgeGaps(query, documents) {
     gaps.push(`Limited knowledge available for ${domain.replace('_', ' ')}`)
   })
   
-  // Query-specific gaps
   if (query.includes('competitor') && !documents.some(doc => doc.content.toLowerCase().includes('competitor'))) {
     gaps.push("Competitive analysis information not available")
   }

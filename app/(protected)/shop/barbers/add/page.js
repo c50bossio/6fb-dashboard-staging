@@ -23,7 +23,6 @@ export default function AddBarber() {
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(1) // 1: Basic Info, 2: Financial, 3: Schedule, 4: Review
   const [barberData, setBarberData] = useState({
-    // Basic Information
     email: '',
     fullName: '',
     phone: '',
@@ -31,13 +30,11 @@ export default function AddBarber() {
     specialty: '',
     yearsExperience: 0,
     
-    // Financial Arrangement
     financialModel: 'commission', // 'commission' or 'booth_rent'
     commissionRate: 60, // Barber gets 60%
     boothRentAmount: 0,
     productCommission: 20,
     
-    // Schedule & Availability
     defaultSchedule: {
       monday: { enabled: true, start: '09:00', end: '18:00' },
       tuesday: { enabled: true, start: '09:00', end: '18:00' },
@@ -48,13 +45,11 @@ export default function AddBarber() {
       sunday: { enabled: false, start: '00:00', end: '00:00' }
     },
     
-    // Permissions
     canManageOwnSchedule: true,
     canViewOwnReports: true,
     canManageOwnClients: true,
     canSellProducts: true,
     
-    // Customization
     enableCustomPage: true,
     customPageSlug: '',
     profilePhotoUrl: ''
@@ -64,7 +59,6 @@ export default function AddBarber() {
     setLoading(true)
     
     try {
-      // First, create the user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: barberData.email,
         password: generateTempPassword(), // Generate temporary password
@@ -83,7 +77,6 @@ export default function AddBarber() {
         return
       }
       
-      // Get the shop ID
       const { data: shop } = await supabase
         .from('barbershops')
         .select('id')
@@ -96,7 +89,6 @@ export default function AddBarber() {
         return
       }
       
-      // Add barber to barbershop_staff
       const { error: staffError } = await supabase
         .from('barbershop_staff')
         .insert({
@@ -120,7 +112,6 @@ export default function AddBarber() {
         return
       }
       
-      // Create barber customization
       const { error: customError } = await supabase
         .from('barber_customizations')
         .insert({
@@ -138,7 +129,6 @@ export default function AddBarber() {
         console.error('Error creating barber customization:', customError)
       }
       
-      // Set up default availability
       const availabilityPromises = Object.entries(barberData.defaultSchedule)
         .filter(([_, schedule]) => schedule.enabled)
         .map(([day, schedule], index) => {
@@ -161,7 +151,6 @@ export default function AddBarber() {
       
       await Promise.all(availabilityPromises)
       
-      // Send welcome email (mock)
       console.log('Sending welcome email to:', barberData.email)
       
       alert(`Barber ${barberData.fullName} added successfully! They will receive an email to set up their password.`)
@@ -176,7 +165,6 @@ export default function AddBarber() {
   }
 
   const generateTempPassword = () => {
-    // Generate a secure temporary password
     return `Temp${Math.random().toString(36).substring(2, 10)}!`
   }
 
@@ -194,7 +182,6 @@ export default function AddBarber() {
   }
 
   const nextStep = () => {
-    // Validate current step
     if (step === 1) {
       if (!barberData.email || !barberData.fullName) {
         alert('Please fill in all required fields')

@@ -11,13 +11,11 @@ export function useAIAgent() {
   const [messages, setMessages] = useState([])
   const [insights, setInsights] = useState([])
 
-  // Initialize or load session
   useEffect(() => {
     async function initSession() {
       if (!user) return
 
       try {
-        // Get user from Supabase
         const { data: supabaseUser } = await supabase
           .from('users')
           .select('id')
@@ -25,7 +23,6 @@ export function useAIAgent() {
           .single()
 
         if (supabaseUser) {
-          // Check for existing active session
           const { data: existingSession } = await supabase
             .from('ai_sessions')
             .select('*')
@@ -39,7 +36,6 @@ export function useAIAgent() {
             setSessionId(existingSession.id)
             await loadMessages(existingSession.id)
           } else {
-            // Create new session
             const newSessionId = await businessCoach.createSession(supabaseUser.id)
             setSessionId(newSessionId)
           }
@@ -53,7 +49,6 @@ export function useAIAgent() {
     initSession()
   }, [user])
 
-  // Load messages for a session
   const loadMessages = async (sessionId) => {
     try {
       const { data, error } = await supabase
@@ -69,7 +64,6 @@ export function useAIAgent() {
     }
   }
 
-  // Send message to AI
   const sendMessage = useCallback(async (message, context = {}) => {
     if (!sessionId) {
       setError('No active session')
@@ -80,7 +74,6 @@ export function useAIAgent() {
     setError(null)
 
     try {
-      // Optimistically add user message
       const userMessage = {
         role: 'user',
         content: message,
@@ -88,10 +81,8 @@ export function useAIAgent() {
       }
       setMessages(prev => [...prev, userMessage])
 
-      // Get AI response
       const response = await businessCoach.chat(sessionId, message, context)
 
-      // Add AI message
       const aiMessage = {
         role: 'assistant',
         content: response.response,
@@ -99,7 +90,6 @@ export function useAIAgent() {
       }
       setMessages(prev => [...prev, aiMessage])
 
-      // Update insights
       if (response.insights.length > 0) {
         setInsights(prev => [...prev, ...response.insights])
       }
@@ -107,7 +97,6 @@ export function useAIAgent() {
       return response
     } catch (err) {
       setError(err.message)
-      // Remove optimistic user message on error
       setMessages(prev => prev.slice(0, -1))
       return null
     } finally {
@@ -115,7 +104,6 @@ export function useAIAgent() {
     }
   }, [sessionId])
 
-  // Specialized coaching methods
   const coachMarketing = useCallback(async (question, businessData) => {
     if (!sessionId) return null
     
@@ -161,7 +149,6 @@ export function useAIAgent() {
     }
   }, [sessionId])
 
-  // Create new session
   const startNewSession = useCallback(async () => {
     if (!user) return
 

@@ -12,13 +12,11 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-// Migration statistics
 const stats = {
   customers: { created: 0, errors: 0 },
   services: { created: 0, errors: 0 },
@@ -69,7 +67,6 @@ async function createBarbershopData() {
   log('🏪 Creating realistic barbershop data...', 'info')
   
   try {
-    // Create customers (30 realistic customers)
     log('👥 Creating customers...', 'info')
     const customers = [
       { name: 'John Smith', email: 'john.smith@gmail.com', phone: '(555) 123-4567' },
@@ -116,7 +113,6 @@ async function createBarbershopData() {
       log(`✅ Created ${createdCustomers.length} customers`, 'success')
     }
 
-    // Create services (typical barbershop services)
     log('✂️  Creating services...', 'info')
     const services = [
       { name: 'Classic Haircut', description: 'Traditional men\'s haircut with styling', price: 25.00, duration_minutes: 30 },
@@ -143,7 +139,6 @@ async function createBarbershopData() {
       log(`✅ Created ${createdServices.length} services`, 'success')
     }
 
-    // Create barbers (3 experienced barbers)
     log('💇 Creating barbers...', 'info')
     const barbers = [
       { 
@@ -230,11 +225,9 @@ async function createAppointmentHistory(customers, services, barbers) {
   const appointments = []
   const now = new Date()
   
-  // Create appointments over the last 6 months
   for (let week = 0; week < 26; week++) { // 26 weeks = ~6 months
     const weekStart = new Date(now.getTime() - (week * 7 * 24 * 60 * 60 * 1000))
     
-    // Each week has 15-20 appointments (realistic for small barbershop)
     const appointmentsThisWeek = 15 + Math.floor(Math.random() * 6)
     
     for (let i = 0; i < appointmentsThisWeek; i++) {
@@ -242,12 +235,10 @@ async function createAppointmentHistory(customers, services, barbers) {
       const service = services[Math.floor(Math.random() * services.length)]
       const barber = barbers[Math.floor(Math.random() * barbers.length)]
       
-      // Random day of the week (Monday-Saturday)
       const dayOffset = Math.floor(Math.random() * 6)
       const appointmentDay = new Date(weekStart)
       appointmentDay.setDate(appointmentDay.getDate() + dayOffset)
       
-      // Random time between 9 AM and 5 PM
       const hour = 9 + Math.floor(Math.random() * 8)
       const minute = Math.random() < 0.5 ? 0 : 30
       
@@ -257,7 +248,6 @@ async function createAppointmentHistory(customers, services, barbers) {
       const endTime = new Date(startTime)
       endTime.setMinutes(endTime.getMinutes() + service.duration_minutes)
       
-      // Status distribution (realistic completion rates)
       const statusRand = Math.random()
       let status
       if (week < 2) status = 'pending'      // Recent appointments
@@ -282,7 +272,6 @@ async function createAppointmentHistory(customers, services, barbers) {
 
   log(`Created ${appointments.length} appointments to insert`, 'info')
 
-  // Insert appointments in batches of 100
   const batchSize = 100
   let createdAppointments = []
   
@@ -324,7 +313,6 @@ async function createPaymentHistory(appointments) {
     return []
   }
 
-  // Create payments for completed appointments (about 85% have payments)
   const completedAppointments = appointments.filter(apt => apt.status === 'completed')
   const appointmentsWithPayments = completedAppointments.slice(0, Math.min(786, completedAppointments.length))
   
@@ -349,7 +337,6 @@ async function createPaymentHistory(appointments) {
 
   log(`Creating ${payments.length} payments to insert`, 'info')
 
-  // Insert payments in batches
   const batchSize = 100
   
   for (let i = 0; i < payments.length; i += batchSize) {
@@ -414,22 +401,17 @@ async function main() {
   log('Following SUPABASE_PRODUCTION_RULE.md - Creating real barbershop data!', 'info')
   
   try {
-    // Test connection first
     const connectionOk = await testConnection()
     if (!connectionOk) {
       process.exit(1)
     }
     
-    // Create base data
     const { customers, services, barbers } = await createBarbershopData()
     
-    // Create appointment history
     const appointments = await createAppointmentHistory(customers, services, barbers)
     
-    // Create payment history
     await createPaymentHistory(appointments)
     
-    // Print summary
     printSummary()
     
   } catch (error) {
@@ -439,7 +421,6 @@ async function main() {
   }
 }
 
-// Run migration
 if (require.main === module) {
   main()
 }

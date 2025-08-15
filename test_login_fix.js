@@ -1,14 +1,10 @@
-// Test script to verify login fix
-// Run this in browser console after navigating to http://localhost:9999/login
 
 console.log('🔍 Testing login after authentication provider fix...');
 
-// Wait for page to load
 setTimeout(async () => {
     try {
         console.log('🔍 Page loaded. Current URL:', window.location.href);
         
-        // Check if form elements exist
         const emailField = document.querySelector('input[type="email"]');
         const passwordField = document.querySelector('input[type="password"]');
         const submitButton = document.querySelector('button[type="submit"]');
@@ -29,11 +25,9 @@ setTimeout(async () => {
             className: submitButton.className
         });
         
-        // Fill the form
         emailField.value = 'demo@barbershop.com';
         passwordField.value = 'demo123';
         
-        // Trigger events
         emailField.dispatchEvent(new Event('input', { bubbles: true }));
         emailField.dispatchEvent(new Event('change', { bubbles: true }));
         passwordField.dispatchEvent(new Event('input', { bubbles: true }));
@@ -41,13 +35,11 @@ setTimeout(async () => {
         
         console.log('✅ Form filled');
         
-        // Wait a moment then submit
         await new Promise(resolve => setTimeout(resolve, 100));
         
         console.log('🔍 Submitting form...');
         submitButton.click();
         
-        // Monitor for 15 seconds
         let redirected = false;
         for (let i = 0; i < 15; i++) {
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -63,19 +55,16 @@ setTimeout(async () => {
                 errorCount: errorMessages.length
             });
             
-            // Check for success
             if (currentUrl.includes('/dashboard')) {
                 console.log('✅ SUCCESS: Redirected to dashboard!');
                 redirected = true;
                 break;
             }
             
-            // Check for errors
             if (errorMessages.length > 0) {
                 console.log('❌ Errors found:', Array.from(errorMessages).map(el => el.textContent));
             }
             
-            // Check if button is stuck in loading
             if (currentButton && currentButton.textContent.includes('Signing in')) {
                 console.log('⏳ Button still in loading state...');
             }

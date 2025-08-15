@@ -3,11 +3,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
-// Initialize Supabase client once at module level
 let supabaseClient = null
 
 function getSupabaseClient() {
-  // Always create a fresh client for now to debug the issue
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   
@@ -21,7 +19,6 @@ function getSupabaseClient() {
     return null
   }
   
-  // Create fresh client each time for debugging
   const client = createClient(supabaseUrl, supabaseAnonKey, {
     realtime: {
       params: {
@@ -37,7 +34,6 @@ function getSupabaseClient() {
 export function useRealtimeAppointmentsV2(shopId) {
   console.log('🚀 useRealtimeAppointmentsV2 HOOK CALLED with shopId:', shopId)
   
-  // State management
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -50,29 +46,24 @@ export function useRealtimeAppointmentsV2(shopId) {
     connected: false
   })
   
-  // Use refs to prevent re-subscriptions
   const channelRef = useRef(null)
   const supabaseRef = useRef(null)
   
-  // Debug logging
   const log = useCallback((message, data = {}) => {
     const timestamp = new Date().toISOString()
     console.log(`[${timestamp}] 🔄 WebSocket V2: ${message}`, data)
     
-    // Store in window for debugging
     if (typeof window !== 'undefined') {
       if (!window.websocketLogs) {
         window.websocketLogs = []
       }
       window.websocketLogs.push({ timestamp, message, data })
-      // Keep only last 50 logs
       if (window.websocketLogs.length > 50) {
         window.websocketLogs.shift()
       }
     }
   }, [])
   
-  // Transform booking to FullCalendar event format
   const transformToEvent = useCallback((booking) => {
     const isCancelled = booking.status === 'cancelled'
     
@@ -101,7 +92,6 @@ export function useRealtimeAppointmentsV2(shopId) {
     }
   }, [])
   
-  // Fetch initial appointments
   const fetchAppointments = useCallback(async (supabase) => {
     try {
       log('Fetching appointments for shop', { shopId })
@@ -132,7 +122,6 @@ export function useRealtimeAppointmentsV2(shopId) {
     }
   }, [shopId, transformToEvent, log])
   
-  // Handle realtime events
   const handleRealtimeEvent = useCallback((eventType, payload) => {
     const eventData = payload.new || payload.old
     
@@ -142,7 +131,6 @@ export function useRealtimeAppointmentsV2(shopId) {
       status: eventData?.status
     })
     
-    // Update stats
     setStats(prev => ({
       ...prev,
       [eventType.toLowerCase() + 's']: prev[eventType.toLowerCase() + 's'] + 1
@@ -150,13 +138,11 @@ export function useRealtimeAppointmentsV2(shopId) {
     
     setLastUpdate(new Date().toISOString())
     
-    // Handle different event types
     switch (eventType) {
       case 'INSERT':
         if (payload.new && payload.new.shop_id === shopId) {
           const newEvent = transformToEvent(payload.new)
           setAppointments(prev => {
-            // Check if already exists (prevent duplicates)
             if (prev.find(apt => apt.id === newEvent.id)) {
               log('Skipping duplicate INSERT', { id: newEvent.id })
               return prev
@@ -203,18 +189,15 @@ export function useRealtimeAppointmentsV2(shopId) {
     }
   }, [shopId, transformToEvent, log])
   
-  // Main effect to set up subscription
   useEffect(() => {
     console.log('🔄 V2 useEffect running for shopId:', shopId)
     
-    // Store in window for debugging
     if (typeof window !== 'undefined') {
       window.v2HookRunning = true
       window.v2ShopId = shopId
       window.v2Timestamp = new Date().toISOString()
     }
     
-    // Get or create Supabase client
     const supabase = getSupabaseClient()
     if (!supabase) {
       console.error('❌ V2: Supabase client initialization failed')
@@ -227,17 +210,14 @@ export function useRealtimeAppointmentsV2(shopId) {
     
     log('Initializing WebSocket V2', { shopId })
     
-    // Fetch initial data
     fetchAppointments(supabase)
     
-    // Clean up any existing channel
     if (channelRef.current) {
       log('Cleaning up existing channel')
       supabase.removeChannel(channelRef.current)
       channelRef.current = null
     }
     
-    // Create new channel for this shop
     const channelName = `bookings-v2-${shopId}`
     log('Creating channel', { channelName })
     
@@ -252,7 +232,6 @@ export function useRealtimeAppointmentsV2(shopId) {
           filter: `shop_id=eq.${shopId}`
         },
         (payload) => {
-          // Log raw payload for debugging
           log('Raw payload received', {
             eventType: payload.eventType,
             table: payload.table,
@@ -268,7 +247,6 @@ export function useRealtimeAppointmentsV2(shopId) {
         console.log('🔔 V2 SUBSCRIPTION STATUS:', status, 'Error:', err)
         log('Channel subscription status', { status, error: err })
         
-        // Store all statuses in window for debugging
         if (typeof window !== 'undefined') {
           if (!window.v2SubscriptionHistory) window.v2SubscriptionHistory = []
           window.v2SubscriptionHistory.push({ 
@@ -285,7 +263,6 @@ export function useRealtimeAppointmentsV2(shopId) {
           setStats(prev => ({ ...prev, connected: true }))
           log('✅ WebSocket connected successfully!')
           
-          // Store success in window
           if (typeof window !== 'undefined') {
             window.websocketV2Connected = true
             window.websocketV2Status = status
@@ -306,7 +283,6 @@ export function useRealtimeAppointmentsV2(shopId) {
     
     channelRef.current = channel
     
-    // Cleanup function
     return () => {
       log('Cleaning up WebSocket V2')
       if (channelRef.current && supabaseRef.current) {
@@ -317,7 +293,6 @@ export function useRealtimeAppointmentsV2(shopId) {
     }
   }, [shopId, fetchAppointments, handleRealtimeEvent, log])
   
-  // Manual refresh function
   const refresh = useCallback(async () => {
     if (supabaseRef.current) {
       log('Manual refresh triggered')
@@ -325,7 +300,6 @@ export function useRealtimeAppointmentsV2(shopId) {
     }
   }, [fetchAppointments, log])
   
-  // Return hook data
   return {
     appointments,
     loading,
@@ -334,7 +308,6 @@ export function useRealtimeAppointmentsV2(shopId) {
     lastUpdate,
     stats,
     refresh,
-    // Expose log function for external debugging
     log
   }
 }

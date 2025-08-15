@@ -1,6 +1,5 @@
 import { useRef, useEffect, forwardRef, memo } from 'react'
 
-// Comprehensive debugging input to track value corruption
 const DebugInput = memo(forwardRef(({ 
   type = 'text', 
   defaultValue = '', 
@@ -16,7 +15,6 @@ const DebugInput = memo(forwardRef(({
   const eventCounter = useRef(0)
   const valueHistory = useRef([])
   
-  // Log helper function
   const debugLog = (event, data) => {
     eventCounter.current++
     const timestamp = new Date().toISOString().split('T')[1].split('.')[0]
@@ -28,15 +26,12 @@ const DebugInput = memo(forwardRef(({
     }
     
     valueHistory.current.push(logEntry)
-    console.log(`🔍 ${debugLabel} DEBUG #${eventCounter.current} [${timestamp}]:`, logEntry)
     
-    // Keep only last 20 entries to prevent memory issues
     if (valueHistory.current.length > 20) {
       valueHistory.current = valueHistory.current.slice(-20)
     }
   }
   
-  // Set initial value and log it
   useEffect(() => {
     if (actualRef.current && defaultValue) {
       actualRef.current.value = defaultValue
@@ -48,13 +43,11 @@ const DebugInput = memo(forwardRef(({
     }
   }, [defaultValue])
   
-  // Track all possible events that could modify the input
   const setupEventListeners = () => {
     if (!actualRef.current) return
     
     const input = actualRef.current
     
-    // Input events
     const handleInput = (e) => {
       debugLog('INPUT', {
         value: e.target.value,
@@ -122,7 +115,6 @@ const DebugInput = memo(forwardRef(({
       })
     }
     
-    // Value mutation observer
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
@@ -135,7 +127,6 @@ const DebugInput = memo(forwardRef(({
       })
     })
     
-    // Set up all event listeners
     input.addEventListener('input', handleInput)
     input.addEventListener('change', handleChange)
     input.addEventListener('keydown', handleKeyDown)
@@ -145,14 +136,12 @@ const DebugInput = memo(forwardRef(({
     input.addEventListener('paste', handlePaste)
     input.addEventListener('cut', handleCut)
     
-    // Watch for direct value changes
     observer.observe(input, {
       attributes: true,
       attributeOldValue: true,
       attributeFilter: ['value']
     })
     
-    // Cleanup function
     return () => {
       input.removeEventListener('input', handleInput)
       input.removeEventListener('change', handleChange)
@@ -171,7 +160,6 @@ const DebugInput = memo(forwardRef(({
     return cleanup
   }, [])
   
-  // Periodic value check to catch external modifications
   useEffect(() => {
     const interval = setInterval(() => {
       if (actualRef.current) {
@@ -191,7 +179,6 @@ const DebugInput = memo(forwardRef(({
     return () => clearInterval(interval)
   }, [])
   
-  // Expose debug methods globally for manual inspection
   useEffect(() => {
     window[`debug_${debugLabel.toLowerCase()}`] = {
       getHistory: () => valueHistory.current,

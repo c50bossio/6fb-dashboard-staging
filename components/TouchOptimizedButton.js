@@ -17,7 +17,6 @@ export default function TouchOptimizedButton({
 
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 ease-out select-none outline-none focus:ring-2 focus:ring-offset-2'
   
-  // Touch-friendly sizing (minimum 44px touch target)
   const sizeClasses = {
     small: 'px-3 py-2 text-sm min-h-[40px] min-w-[40px]',
     medium: 'px-4 py-3 text-base min-h-[44px] min-w-[44px]',
@@ -51,7 +50,6 @@ export default function TouchOptimizedButton({
 
   const handleClick = (e) => {
     if (!disabled && !loading && onClick) {
-      // Add haptic feedback on supported devices
       if (navigator.vibrate) {
         navigator.vibrate(10) // Very brief vibration
       }
@@ -90,7 +88,6 @@ export default function TouchOptimizedButton({
   )
 }
 
-// Specialized touch-optimized buttons
 export function TouchFAB({ onClick, icon, className = '', ...props }) {
   return (
     <TouchOptimizedButton
@@ -113,7 +110,6 @@ export function TouchCard({ children, onClick, className = '', ...props }) {
 
   const handleClick = (e) => {
     if (onClick) {
-      // Add haptic feedback
       if (navigator.vibrate) {
         navigator.vibrate(10)
       }
@@ -141,7 +137,6 @@ export function TouchCard({ children, onClick, className = '', ...props }) {
   )
 }
 
-// Touch-optimized input with larger touch targets
 export function TouchInput({ 
   label, 
   placeholder, 
@@ -181,7 +176,6 @@ export function TouchInput({
   )
 }
 
-// Touch-optimized textarea
 export function TouchTextarea({ 
   label, 
   placeholder, 

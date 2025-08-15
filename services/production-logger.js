@@ -1,11 +1,8 @@
-// Production Logger Service
-// Centralized logging with different levels and destinations
 
 const fs = require('fs');
 const path = require('path');
 const { config } = require('./production-config');
 
-// Log levels
 const LogLevel = {
   DEBUG: 0,
   INFO: 1,
@@ -14,7 +11,6 @@ const LogLevel = {
   FATAL: 4
 };
 
-// Map string levels to numeric
 const levelMap = {
   'debug': LogLevel.DEBUG,
   'info': LogLevel.INFO,
@@ -23,7 +19,6 @@ const levelMap = {
   'fatal': LogLevel.FATAL
 };
 
-// Colors for console output
 const colors = {
   debug: '\x1b[36m', // Cyan
   info: '\x1b[32m',  // Green
@@ -44,13 +39,11 @@ class ProductionLogger {
     this.maxLogSize = options.maxLogSize || 10 * 1024 * 1024; // 10MB
     this.metadata = options.metadata || {};
     
-    // Create log directory if it doesn't exist
     if (this.enableFile && !fs.existsSync(this.logDir)) {
       fs.mkdirSync(this.logDir, { recursive: true });
     }
   }
 
-  // Format log message
   formatMessage(level, message, data = {}) {
     const timestamp = new Date().toISOString();
     const logEntry = {
@@ -64,7 +57,6 @@ class ProductionLogger {
       pid: process.pid
     };
 
-    // Add stack trace for errors
     if (data.error && data.error.stack) {
       logEntry.stack = data.error.stack;
     }
@@ -72,7 +64,6 @@ class ProductionLogger {
     return logEntry;
   }
 
-  // Console output
   logToConsole(level, logEntry) {
     if (!this.enableConsole) return;
 
@@ -81,7 +72,6 @@ class ProductionLogger {
     const timestamp = logEntry.timestamp.split('T')[1].split('.')[0];
     
     if (config.environment.isDevelopment) {
-      // Pretty print in development
       console.log(`${timestamp} ${prefix} [${this.name}] ${logEntry.message}`);
       if (Object.keys(logEntry).length > 4) {
         const { timestamp, level, logger, message, ...rest } = logEntry;
@@ -90,12 +80,10 @@ class ProductionLogger {
         }
       }
     } else {
-      // JSON format in production
       console.log(JSON.stringify(logEntry));
     }
   }
 
-  // File logging
   logToFile(level, logEntry) {
     if (!this.enableFile) return;
 
@@ -103,7 +91,6 @@ class ProductionLogger {
     const filename = `${this.name}-${date}.log`;
     const filepath = path.join(this.logDir, filename);
 
-    // Check file size and rotate if needed
     try {
       const stats = fs.statSync(filepath);
       if (stats.size > this.maxLogSize) {
@@ -111,29 +98,20 @@ class ProductionLogger {
         fs.renameSync(filepath, rotatedFile);
       }
     } catch (err) {
-      // File doesn't exist yet, that's ok
     }
 
-    // Append to log file
     const logLine = JSON.stringify(logEntry) + '\n';
     fs.appendFileSync(filepath, logLine);
   }
 
-  // Remote logging (e.g., to logging service)
   async logToRemote(level, logEntry) {
     if (!this.enableRemote) return;
 
-    // Send to remote logging service (Datadog, Loggly, etc.)
     if (config.monitoring.logs === 'datadog' && process.env.DATADOG_API_KEY) {
       try {
-        // In production, you would send to Datadog API
-        // await fetch('https://http-intake.logs.datadoghq.com/v1/input', {
-        //   method: 'POST',
-        //   headers: {
         //     'DD-API-KEY': process.env.DATADOG_API_KEY,
         //     'Content-Type': 'application/json'
         //   },
-        //   body: JSON.stringify(logEntry)
         // });
       } catch (error) {
         console.error('Failed to send log to remote service:', error);
@@ -141,18 +119,15 @@ class ProductionLogger {
     }
   }
 
-  // Main logging method
   log(level, message, data = {}) {
     const numericLevel = levelMap[level] || LogLevel.INFO;
     
-    // Skip if below minimum level
     if (numericLevel < this.minLevel) {
       return;
     }
 
     const logEntry = this.formatMessage(level, message, data);
 
-    // Log to different destinations
     this.logToConsole(level, logEntry);
     this.logToFile(level, logEntry);
     this.logToRemote(level, logEntry);
@@ -160,7 +135,6 @@ class ProductionLogger {
     return logEntry;
   }
 
-  // Convenience methods
   debug(message, data) {
     return this.log('debug', message, data);
   }
@@ -181,7 +155,6 @@ class ProductionLogger {
     return this.log('fatal', message, data);
   }
 
-  // Create child logger with additional metadata
   child(metadata) {
     return new ProductionLogger({
       name: this.name,
@@ -194,7 +167,6 @@ class ProductionLogger {
     });
   }
 
-  // Performance logging
   time(label) {
     const start = Date.now();
     return {
@@ -209,17 +181,14 @@ class ProductionLogger {
     };
   }
 
-  // Request logging middleware
   requestLogger() {
     return (req, res, next) => {
       const start = Date.now();
       const requestId = req.headers['x-request-id'] || 
                        `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      // Add request ID to request object
       req.requestId = requestId;
 
-      // Log request
       this.info('Request received', {
         requestId,
         method: req.method,
@@ -228,7 +197,6 @@ class ProductionLogger {
         userAgent: req.headers['user-agent']
       });
 
-      // Override res.end to log response
       const originalEnd = res.end;
       res.end = (...args) => {
         const duration = Date.now() - start;
@@ -248,7 +216,6 @@ class ProductionLogger {
     };
   }
 
-  // Audit logging for sensitive operations
   audit(action, details) {
     return this.info(`AUDIT: ${action}`, {
       audit: true,
@@ -259,7 +226,6 @@ class ProductionLogger {
     });
   }
 
-  // Clean up old log files
   cleanup(daysToKeep = 30) {
     if (!this.enableFile) return;
 
@@ -277,13 +243,11 @@ class ProductionLogger {
   }
 }
 
-// Create default logger instances
 const logger = new ProductionLogger({ name: 'app' });
 const apiLogger = new ProductionLogger({ name: 'api' });
 const auditLogger = new ProductionLogger({ name: 'audit' });
 const performanceLogger = new ProductionLogger({ name: 'performance' });
 
-// Export logger factory
 function createLogger(name, options = {}) {
   return new ProductionLogger({ name, ...options });
 }

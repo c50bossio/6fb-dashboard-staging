@@ -50,7 +50,6 @@ export default function BillingPage() {
   const handleManageSubscription = async () => {
     setLoading(true)
     try {
-      // Create Stripe portal session
       const response = await fetch('/api/stripe/create-portal-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

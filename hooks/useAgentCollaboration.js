@@ -10,11 +10,9 @@ export function useAgentCollaboration() {
   const [isLoading, setIsLoading] = useState(false)
   const abortControllerRef = useRef(null)
 
-  // Process agent response and extract collaboration data
   const processAgentResponse = useCallback((response) => {
     if (!response) return null
 
-    // Check if this is a collaborative response from the agent manager
     if (response.primary_agent && response.collaborative_responses) {
       const collaborationInfo = {
         primary_agent: response.primary_agent,
@@ -30,7 +28,6 @@ export function useAgentCollaboration() {
       setCollaborationData(collaborationInfo)
       setIsCollaborating(collaborationInfo.is_collaborative)
       
-      // Extract active agents
       const agents = [response.primary_agent]
       if (response.collaborative_responses) {
         agents.push(...response.collaborative_responses.map(r => 
@@ -41,7 +38,6 @@ export function useAgentCollaboration() {
       }
       setActiveAgents(agents)
 
-      // Add to history
       setCollaborationHistory(prev => [
         collaborationInfo,
         ...prev.slice(0, 9) // Keep last 10 collaborations
@@ -50,7 +46,6 @@ export function useAgentCollaboration() {
       return collaborationInfo
     }
 
-    // Handle single agent response
     if (response.agent_id || response.provider) {
       const singleAgentInfo = {
         primary_agent: response.agent_id || response.provider || 'AI Assistant',
@@ -73,7 +68,6 @@ export function useAgentCollaboration() {
     return null
   }, [])
 
-  // Fetch agent status from the backend
   const fetchAgentStatus = useCallback(async () => {
     try {
       const response = await fetch('/api/ai/agents/status')
@@ -87,9 +81,7 @@ export function useAgentCollaboration() {
     return null
   }, [])
 
-  // Send a message to the agent system and process collaboration
   const sendToAgents = useCallback(async (message, context = {}) => {
-    // Cancel any ongoing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
@@ -117,7 +109,6 @@ export function useAgentCollaboration() {
 
       const data = await response.json()
       
-      // Process the response for collaboration data
       const collaborationInfo = processAgentResponse(data)
       
       return {
@@ -139,14 +130,12 @@ export function useAgentCollaboration() {
     }
   }, [processAgentResponse])
 
-  // Clear collaboration data
   const clearCollaboration = useCallback(() => {
     setCollaborationData(null)
     setIsCollaborating(false)
     setActiveAgents([])
   }, [])
 
-  // Get collaboration statistics
   const getCollaborationStats = useCallback(() => {
     if (!collaborationHistory.length) {
       return {
@@ -161,7 +150,6 @@ export function useAgentCollaboration() {
     const multiAgentCollaborations = collaborationHistory.filter(c => c.is_collaborative).length
     const avgScore = collaborationHistory.reduce((sum, c) => sum + c.collaboration_score, 0) / totalCollaborations
 
-    // Find most active agent
     const agentCounts = {}
     collaborationHistory.forEach(collab => {
       agentCounts[collab.primary_agent] = (agentCounts[collab.primary_agent] || 0) + 1
@@ -183,7 +171,6 @@ export function useAgentCollaboration() {
     }
   }, [collaborationHistory])
 
-  // Cancel any ongoing requests on unmount
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -193,23 +180,19 @@ export function useAgentCollaboration() {
   }, [])
 
   return {
-    // Current collaboration state
     collaborationData,
     isCollaborating,
     activeAgents,
     isLoading,
 
-    // History and stats
     collaborationHistory,
     getCollaborationStats,
 
-    // Actions
     sendToAgents,
     processAgentResponse,
     clearCollaboration,
     fetchAgentStatus,
 
-    // Utilities
     hasCollaborationData: !!collaborationData,
     collaborationScore: collaborationData?.collaboration_score || 0,
     totalConfidence: collaborationData?.total_confidence || 0,
@@ -217,7 +200,6 @@ export function useAgentCollaboration() {
   }
 }
 
-// Hook for just monitoring agent activity (no message sending)
 export function useAgentStatus() {
   const [agentStatus, setAgentStatus] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -242,7 +224,6 @@ export function useAgentStatus() {
   useEffect(() => {
     fetchStatus()
     
-    // Poll for updates every 30 seconds
     const interval = setInterval(fetchStatus, 30000)
     return () => clearInterval(interval)
   }, [fetchStatus])

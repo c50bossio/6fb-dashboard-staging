@@ -3,7 +3,6 @@
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: '.env.local' });
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -35,7 +34,6 @@ async function createDemoUsers() {
 
   for (const testUser of demoUsers) {
     try {
-      // Create user with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: testUser.email,
         password: testUser.password,
@@ -76,5 +74,4 @@ async function createDemoUsers() {
   console.log('3. Access the dashboard at http://localhost:9999/dashboard');
 }
 
-// Run the script
 createDemoUsers();

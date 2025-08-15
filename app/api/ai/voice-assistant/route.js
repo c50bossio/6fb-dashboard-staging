@@ -28,10 +28,8 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Detect which agent should respond based on the command
     const detectedAgent = detectAgentFromCommand(voiceCommand)
     
-    // Process the voice command with agent context
     const result = await processVoiceCommand(
       voiceCommand, 
       original_command || voiceCommand, 
@@ -41,7 +39,6 @@ export async function POST(request) {
       confidence || 0.9
     )
     
-    // Get voice profile for the detected agent
     const voiceProfile = getVoiceProfile(detectedAgent)
     
     return NextResponse.json({
@@ -70,7 +67,6 @@ export async function POST(request) {
 async function processVoiceCommand(command, originalCommand, sessionId, barbershopId, agentType, confidence) {
   const commandLower = command.toLowerCase()
   
-  // Classify the voice command
   const classification = classifyVoiceCommand(commandLower)
   
   let response = {
@@ -117,11 +113,9 @@ async function processVoiceCommand(command, originalCommand, sessionId, barbersh
       response = await handleGeneralCommand(command, sessionId, barbershopId)
   }
 
-  // Format response for the specific agent's voice
   const voiceProfile = getVoiceProfile(agentType)
   const speechText = formatForSpeech(response.message, agentType)
   
-  // Add voice synthesis information with agent personality
   response.voice_response = {
     speak: true,
     text: speechText,
@@ -131,10 +125,8 @@ async function processVoiceCommand(command, originalCommand, sessionId, barbersh
     preferredVoices: voiceProfile.voicePreferences
   }
 
-  // Add contextual suggestions
   response.suggestions = generateVoiceSuggestions(classification.type)
   
-  // Add agent context
   response.agent_context = {
     type: agentType,
     name: voiceProfile.name,
@@ -194,7 +186,6 @@ function classifyVoiceCommand(command) {
  */
 async function handleBusinessStatusCommand(command, barbershopId) {
   try {
-    // Get business health data
     const healthResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/business-monitor?barbershop_id=${barbershopId}`)
     const healthData = await healthResponse.json()
     
@@ -268,7 +259,6 @@ async function handleRevenueCommand(command, barbershopId) {
       
       message += `This month you've earned $${monthlyRevenue} total. `
       
-      // Add context based on time of day
       const hour = new Date().getHours()
       if (hour < 12) {
         message += "The day is still young, plenty of time to reach your goal!"
@@ -330,7 +320,6 @@ async function handleBookingCommand(command, barbershopId) {
         message += "There's capacity for more bookings today. Consider reaching out to customers. "
       }
       
-      // Add next appointment info
       const nextApptTime = getNextAppointmentTime()
       message += `Your next appointment is at ${nextApptTime}. `
       
@@ -544,7 +533,6 @@ async function handleGeneralCommand(command, sessionId, barbershopId) {
  * Generate voice-friendly response text
  */
 function generateVoiceFriendlyResponse(message, commandType) {
-  // Make responses more conversational for voice
   let voiceText = message
     .replace(/\$/g, ' dollars')
     .replace(/\%/g, ' percent')
@@ -553,7 +541,6 @@ function generateVoiceFriendlyResponse(message, commandType) {
     .replace(/\&/g, ' and')
     .replace(/\#/g, ' number')
     
-  // Remove markdown and special characters
   voiceText = voiceText
     .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
     .replace(/\*(.*?)\*/g, '$1')     // Remove italics

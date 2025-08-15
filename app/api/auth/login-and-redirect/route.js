@@ -28,13 +28,11 @@ export async function POST(request) {
       )
     }
 
-    // Create response with redirect
     const response = NextResponse.json({
       user: data.user,
       message: 'Login successful, redirecting...'
     })
 
-    // The server client should handle cookies automatically
     return response
     
   } catch (error) {

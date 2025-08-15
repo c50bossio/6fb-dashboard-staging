@@ -9,7 +9,6 @@ import NuclearInput from './NuclearInput'
  * Provides country code dropdown + formatted phone number input
  */
 
-// Popular countries for barbershop businesses with their calling codes
 const COUNTRY_CODES = [
   { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸', format: '(XXX) XXX-XXXX' },
   { code: 'CA', name: 'Canada', dialCode: '+1', flag: '🇨🇦', format: '(XXX) XXX-XXXX' },
@@ -42,10 +41,8 @@ const formatByCountry = (value, countryCode) => {
   const country = COUNTRY_CODES.find(c => c.code === countryCode)
   if (!country) return value
   
-  // Remove all non-digit characters
   const digits = value.replace(/[^\d]/g, '')
   
-  // Apply country-specific formatting
   switch (countryCode) {
     case 'US':
     case 'CA':
@@ -90,7 +87,6 @@ const formatByCountry = (value, countryCode) => {
       return `${digits.slice(0, 5)} ${digits.slice(5, 10)}`
     
     default:
-      // Generic formatting: add spaces every 3-4 digits
       const groups = digits.match(/.{1,3}/g) || []
       return groups.join(' ')
   }
@@ -144,12 +140,9 @@ const InternationalPhoneInput = memo(forwardRef(({
   const dropdownRef = useRef(null)
   const actualRef = ref || phoneInputRef
   
-  // Initialize phone number from defaultValue
   useEffect(() => {
     if (defaultValue) {
-      // Try to parse existing phone number
       if (defaultValue.startsWith('+')) {
-        // Find matching country code
         const matchingCountry = COUNTRY_CODES.find(c => 
           defaultValue.startsWith(c.dialCode)
         )
@@ -166,7 +159,6 @@ const InternationalPhoneInput = memo(forwardRef(({
     }
   }, [defaultValue, selectedCountry])
   
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -184,7 +176,6 @@ const InternationalPhoneInput = memo(forwardRef(({
     setSelectedCountry(countryCode)
     setIsDropdownOpen(false)
     
-    // Reformat current phone number for new country
     if (phoneNumber) {
       const newFormatted = formatByCountry(phoneNumber, countryCode)
       setPhoneNumber(newFormatted)
@@ -201,7 +192,6 @@ const InternationalPhoneInput = memo(forwardRef(({
     const formatted = formatByCountry(value, selectedCountry)
     setPhoneNumber(formatted)
     
-    // Update the actual input value
     if (actualRef.current) {
       actualRef.current.value = formatted
     }
@@ -210,13 +200,11 @@ const InternationalPhoneInput = memo(forwardRef(({
   const handleBlur = (e) => {
     const value = e.target.value
     
-    // Validate phone number
     const isValidNumber = validatePhoneLength(value, selectedCountry)
     setIsValid(isValidNumber)
     setValidationMessage(isValidNumber ? '' : `Please enter a valid ${selectedCountryData.name} phone number`)
     
     if (onBlur) {
-      // Provide both formatted and E.164 versions
       const e164 = toE164Format(value, selectedCountryData.dialCode)
       const eventWithData = {
         ...e,
@@ -330,14 +318,12 @@ InternationalPhoneInput.displayName = 'InternationalPhoneInput'
 
 export default InternationalPhoneInput
 
-// Helper function for components that need E.164 format
 export const getE164Format = (phoneNumber, countryCode) => {
   const country = COUNTRY_CODES.find(c => c.code === countryCode)
   if (!country) return phoneNumber
   return toE164Format(phoneNumber, country.dialCode)
 }
 
-// Validation helper
 export const isValidInternationalPhone = (phoneNumber, countryCode) => {
   return validatePhoneLength(phoneNumber, countryCode)
 }

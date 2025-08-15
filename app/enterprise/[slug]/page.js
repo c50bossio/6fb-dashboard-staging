@@ -37,7 +37,6 @@ export default function EnterprisePortalPage() {
   const [mapView, setMapView] = useState(false)
   const [featuredIndex, setFeaturedIndex] = useState(0)
 
-  // Demo data - in production this would be fetched from API
   useEffect(() => {
     const loadEnterpriseData = async () => {
       try {
@@ -50,19 +49,16 @@ export default function EnterprisePortalPage() {
           description: 'Premier barbershop chain with 12 locations throughout Los Angeles, offering consistent quality and exceptional service across the city.',
           slug: enterpriseSlug,
           
-          // Branding
           logo_url: '',
           primary_color: '#1E40AF',
           secondary_color: '#3B82F6',
           accent_color: '#10B981',
           
-          // Content
           hero_title: 'Find Your Perfect Barbershop',
           hero_subtitle: 'With 12 locations across Los Angeles, excellence is always nearby',
           about_content: 'Elite Barber Group has been setting the standard for premium grooming services since 2010. Our network of expertly trained barbers and state-of-the-art facilities ensures you receive the same exceptional experience at every location.',
           mission_statement: 'To provide exceptional grooming experiences that make every client look and feel their best, backed by the consistency and reliability of a trusted network.',
           
-          // Enterprise Stats
           total_locations: 12,
           total_barbers: 84,
           total_reviews: 3421,
@@ -70,7 +66,6 @@ export default function EnterprisePortalPage() {
           years_established: 2010,
           clients_served: 50000,
           
-          // Locations
           locations: [
             {
               id: 1,
@@ -242,16 +237,13 @@ export default function EnterprisePortalPage() {
             }
           ],
           
-          // Features
           show_location_map: true,
           enable_online_booking: true,
           enable_location_comparison: true,
           
-          // Social
           instagram_url: 'https://instagram.com/elitebarbergroup',
           facebook_url: 'https://facebook.com/elitebarbergroup',
           
-          // Awards
           awards: [
             'Best Barbershop Chain 2023 - LA Weekly',
             'Customer Choice Award 2022 - Yelp',
@@ -270,7 +262,6 @@ export default function EnterprisePortalPage() {
     loadEnterpriseData()
   }, [enterpriseSlug])
 
-  // Rotate featured locations
   useEffect(() => {
     if (enterpriseData?.locations) {
       const interval = setInterval(() => {

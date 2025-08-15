@@ -6,7 +6,6 @@ export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -23,7 +22,6 @@ export async function GET(request) {
       let predictiveData
 
       if (useAdvancedForecasting) {
-        // Try to use our advanced forecasting system
         try {
           predictiveData = await generateAdvancedPredictiveAnalytics(barbershopId, forecastType)
         } catch (advancedError) {
@@ -31,7 +29,6 @@ export async function GET(request) {
           predictiveData = await generatePredictiveAnalytics(barbershopId, forecastType)
         }
       } else {
-        // Use basic predictive analytics
         predictiveData = await generatePredictiveAnalytics(barbershopId, forecastType)
       }
       
@@ -44,7 +41,6 @@ export async function GET(request) {
     } catch (analyticsError) {
       console.error('Predictive analytics error:', analyticsError)
       
-      // Return fallback analytics
       const fallbackData = generateFallbackAnalytics(barbershopId, forecastType)
       
       return NextResponse.json({
@@ -66,7 +62,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -76,7 +71,6 @@ export async function POST(request) {
 
     const { action, data } = await request.json()
     
-    // Handle different analytics actions
     const response = await handleAnalyticsAction(action, data, user.id)
     
     return NextResponse.json({
@@ -96,9 +90,7 @@ export async function POST(request) {
 }
 
 async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
-  // Integration with our advanced forecasting system
   try {
-    // Fetch data from all advanced forecasting endpoints
     const [revenueResponse, bookingsResponse, trendsResponse] = await Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/forecasting/revenue?barbershop_id=${barbershopId}&time_horizons=1_day,1_week,1_month,3_months`),
       fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/forecasting/bookings?barbershop_id=${barbershopId}&forecast_days=7`),
@@ -111,7 +103,6 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
       trendsResponse.json()
     ])
 
-    // Combine and enhance the data for compatibility with existing analytics
     const enhancedAnalytics = {
       forecast_id: `enhanced_${barbershopId}_${Date.now()}`,
       barbershop_id: barbershopId,
@@ -119,7 +110,6 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
       generated_at: new Date().toISOString(),
       confidence_level: revenueData.data?.overall_confidence || 0.85,
       
-      // Enhanced revenue forecast
       revenue_forecast: {
         current: revenueData.data?.forecasts?.['1_day']?.predicted_revenue || 520,
         predictions: {
@@ -146,7 +136,6 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
         model_type: revenueData.data?.forecasts?.['1_month']?.model_used || 'ensemble_ml'
       },
       
-      // Enhanced demand forecast
       demand_forecast: {
         current_utilization: bookingsData.data?.summary?.overall_utilization || 0.78,
         predictions: {
@@ -178,7 +167,6 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
         confidence: bookingsData.data?.model_performance?.accuracy_score || 0.84
       },
       
-      // Enhanced customer behavior predictions
       customer_behavior_forecast: {
         retention_rate: {
           current: 0.78,
@@ -212,7 +200,6 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
         }
       },
       
-      // Enhanced AI insights
       ai_insights: [
         ...(revenueData.data?.business_insights || []).slice(0, 2),
         ...(bookingsData.data?.business_insights || []).slice(0, 2),
@@ -228,14 +215,12 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
         recommendations: insight.recommendations || []
       })),
       
-      // Strategic recommendations
       recommendations: [
         ...(revenueData.data?.recommendations || []).slice(0, 2),
         ...(bookingsData.data?.business_insights?.[0]?.recommendations || []).slice(0, 2),
         ...(trendsData.data?.strategic_recommendations?.map(rec => rec.expected_impact) || []).slice(0, 2)
       ].filter(rec => rec && rec.length > 0),
       
-      // Enhanced model performance
       model_performance: {
         accuracy_score: Math.max(
           revenueData.data?.forecasts?.['1_month']?.accuracy_metrics?.r2_score || 0.84,
@@ -254,7 +239,6 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
         advanced_features_enabled: true
       },
       
-      // Additional metadata
       advanced_forecasting: {
         enabled: true,
         model_types: ['random_forest', 'gradient_boosting', 'linear_regression'],
@@ -276,14 +260,11 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
 }
 
 async function generatePredictiveAnalytics(barbershopId, forecastType) {
-  // Use real database data for predictions instead of simulation
   const supabase = createClient()
   
   try {
-    // Get real data from database for the specified shop
     const shopId = barbershopId || 'demo-shop-001'
     
-    // Fetch real business metrics
     const { data: customers } = await supabase
       .from('customers')
       .select('total_spent, total_visits, created_at, last_visit_at')
@@ -300,23 +281,19 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
       .eq('shop_id', shopId)
       .gte('start_time', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
     
-    // Calculate real metrics from database
     const totalCustomers = customers?.length || 0
     const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
     const totalAppointments = customers?.reduce((sum, c) => sum + (c.total_visits || 0), 0) || 0
     const avgServicePrice = services?.reduce((sum, s) => sum + (s.price || 0), 0) / Math.max(1, services?.length || 1) || 0
     
-    // Calculate utilization based on real bookings
     const currentTime = new Date()
     const isPeakHour = (10 <= currentTime.getHours() <= 14) || (17 <= currentTime.getHours() <= 19)
     const isWeekend = currentTime.getDay() === 0 || currentTime.getDay() === 6
     
-    // Base real metrics from database
     const baseRevenue = Math.round(totalRevenue / Math.max(1, Math.ceil((Date.now() - (customers?.[0]?.created_at ? new Date(customers[0].created_at).getTime() : Date.now() - 30 * 24 * 60 * 60 * 1000)) / (30 * 24 * 60 * 60 * 1000)))) // Monthly average
     const baseBookings = Math.round(totalAppointments / Math.max(1, totalCustomers)) // Avg bookings per customer
     const baseUtilization = bookings?.filter(b => b.status === 'completed').length / Math.max(1, bookings?.length || 1) || 0.75
     
-    // Apply context-based predictions
     let revenueMultiplier = 1.0
     let bookingMultiplier = 1.0
     
@@ -330,7 +307,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
       bookingMultiplier *= 1.15
     }
   
-    // Generate comprehensive forecast based on real data
     const predictiveAnalytics = {
       forecast_id: `ai_forecast_${barbershopId}_${Date.now()}`,
       barbershop_id: barbershopId,
@@ -338,7 +314,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
       generated_at: currentTime.toISOString(),
       confidence_level: totalCustomers > 5 ? 0.84 : 0.65, // Lower confidence with less data
       
-      // Revenue predictions based on real database metrics
       revenue_forecast: {
         current: baseRevenue || 0,
         predictions: {
@@ -365,7 +340,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
         model_type: 'real_data_projections'
       },
     
-    // Demand predictions
     demand_forecast: {
       current_utilization: baseUtilization + (isPeakHour ? 0.15 : 0),
       predictions: {
@@ -381,7 +355,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
       confidence: 0.89
     },
     
-      // Customer behavior predictions based on real data
       customer_behavior_forecast: {
         retention_rate: {
           current: totalCustomers > 0 ? Math.min(0.95, (customers?.filter(c => c.last_visit_at && new Date(c.last_visit_at) > new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)).length || 0) / totalCustomers) : 0,
@@ -409,7 +382,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
         }
       },
     
-    // AI-generated insights
     ai_insights: [
       {
         type: 'revenue_opportunity',
@@ -455,7 +427,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
       }
     ],
     
-    // Strategic recommendations
     recommendations: [
       'Implement predictive scheduling to optimize staff allocation',
       'Launch targeted marketing campaigns during predicted low-demand periods',
@@ -464,7 +435,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
       'Optimize appointment booking flow to reduce no-show rates'
     ],
     
-    // Performance metrics
     model_performance: {
       accuracy_score: 0.84,
       features_analyzed: [
@@ -483,7 +453,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
     
   } catch (error) {
     console.error('Database error in predictive analytics:', error)
-    // Return error state instead of mock data - follow NO MOCK DATA policy
     return {
       forecast_id: `error_${barbershopId}_${Date.now()}`,
       barbershop_id: barbershopId,
@@ -513,8 +482,6 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
 }
 
 function generateHourlyDemandForecast() {
-  // NO MOCK DATA - return empty state with helpful message
-  // Real forecasting requires actual booking history data
   return [{
     hour: 'No Data',
     predicted_utilization: 0,
@@ -526,7 +493,6 @@ function generateHourlyDemandForecast() {
 }
 
 function generateDailyDemandForecast() {
-  // NO MOCK DATA - return empty state instead
   return [{
     day: 'No Data',
     predicted_utilization: 0,
@@ -539,7 +505,6 @@ function generateDailyDemandForecast() {
 }
 
 function generateWeeklyDemandForecast() {
-  // NO MOCK DATA - return empty state
   return [{
     week: 'No Data',
     predicted_utilization: 0,
@@ -552,7 +517,6 @@ function generateWeeklyDemandForecast() {
 }
 
 function generateFallbackAnalytics(barbershopId, forecastType) {
-  // NO MOCK DATA - return empty state with helpful instructions
   return {
     forecast_id: `empty_${barbershopId}_${Date.now()}`,
     barbershop_id: barbershopId,

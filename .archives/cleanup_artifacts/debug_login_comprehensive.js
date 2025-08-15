@@ -1,15 +1,11 @@
-// Comprehensive login debug script
-// Run this in browser console at http://localhost:9999/login
 
 console.clear();
 console.log('=== Login Debug Session Started ===');
 
-// Set up error tracking
 let errors = [];
 let networkRequests = [];
 let authStateChanges = [];
 
-// Monitor console errors
 const originalError = console.error;
 console.error = function(...args) {
     errors.push({
@@ -20,7 +16,6 @@ console.error = function(...args) {
     originalError.apply(console, arguments);
 };
 
-// Monitor network requests
 const originalFetch = window.fetch;
 window.fetch = function(...args) {
     const url = args[0];
@@ -53,7 +48,6 @@ window.fetch = function(...args) {
         });
 };
 
-// Function to test login programmatically
 window.testLogin = async function() {
     console.log('🧪 Starting automated login test...');
     
@@ -66,11 +60,9 @@ window.testLogin = async function() {
         return;
     }
     
-    // Clear any existing values
     emailField.value = '';
     passwordField.value = '';
     
-    // Fill in demo credentials
     console.log('📝 Filling in demo credentials...');
     emailField.value = 'demo@barbershop.com';
     emailField.dispatchEvent(new Event('input', { bubbles: true }));
@@ -87,13 +79,11 @@ window.testLogin = async function() {
         buttonText: submitButton.textContent
     });
     
-    // Wait a moment for React state to update
     await new Promise(resolve => setTimeout(resolve, 100));
     
     console.log('🚀 Clicking submit button...');
     submitButton.click();
     
-    // Monitor for changes
     let checkCount = 0;
     const checkInterval = setInterval(() => {
         checkCount++;
@@ -111,7 +101,6 @@ window.testLogin = async function() {
             console.log(window.getLoginDebugReport());
         }
         
-        // If we've been redirected, stop monitoring
         if (window.location.pathname !== '/login') {
             clearInterval(checkInterval);
             console.log('✅ Redirected to:', window.location.pathname);
@@ -119,7 +108,6 @@ window.testLogin = async function() {
     }, 1000);
 };
 
-// Function to get debug report
 window.getLoginDebugReport = function() {
     return {
         timestamp: new Date().toISOString(),
@@ -141,6 +129,5 @@ window.getLoginDebugReport = function() {
 console.log('🔧 Debug monitoring set up!');
 console.log('📋 Available commands:');
 console.log('  - window.testLogin() - Automated login test');
-console.log('  - window.getLoginDebugReport() - Get debug report');
 console.log('');
 console.log('📊 Current form state:', window.getLoginDebugReport().formState);

@@ -9,7 +9,6 @@ async function seedData() {
   try {
     console.log('Creating tables and seeding data...');
     
-    // Check if tables exist first
     const { data: existingAppts } = await supabase
       .from('appointments')
       .select('id')
@@ -18,7 +17,6 @@ async function seedData() {
     if (existingAppts && existingAppts.length > 0) {
       console.log('Tables already exist with data. Skipping seed.');
       
-      // Show current counts
       const { count: aptCount } = await supabase
         .from('appointments')
         .select('*', { count: 'exact', head: true });
@@ -32,7 +30,6 @@ async function seedData() {
       return;
     }
     
-    // Insert sample data using Supabase client
     const testUserId = 'f9730252-8997-45ee-8750-6f9843cbf4e3';
     let appointmentsCreated = 0;
     let transactionsCreated = 0;
@@ -42,7 +39,6 @@ async function seedData() {
       const serviceType = i % 3 === 0 ? 'haircut' : i % 3 === 1 ? 'beard_trim' : 'full_service';
       const price = i % 3 === 0 ? 35 : i % 3 === 1 ? 25 : 55;
       
-      // Morning appointment
       const startTime = new Date(Date.now() - (i * 24 * 60 * 60 * 1000));
       startTime.setHours(10, 0, 0, 0);
       const endTime = new Date(startTime);
@@ -62,7 +58,6 @@ async function seedData() {
       if (!aptError && apt) {
         appointmentsCreated++;
         
-        // Create transaction
         const { data: tx, error: txError } = await supabase.from('transactions').insert({
           appointment_id: appointmentId,
           customer_id: testUserId,
@@ -80,7 +75,6 @@ async function seedData() {
         console.log('Appointment error:', aptError.message);
       }
       
-      // Afternoon appointment (50% chance)
       if (i % 2 === 0) {
         const afternoonId = crypto.randomUUID();
         const afternoonStart = new Date(Date.now() - (i * 24 * 60 * 60 * 1000));
@@ -123,7 +117,6 @@ async function seedData() {
     console.log('Appointments created:', appointmentsCreated);
     console.log('Transactions created:', transactionsCreated);
     
-    // Calculate and show statistics
     const { data: allTransactions } = await supabase
       .from('transactions')
       .select('amount')
@@ -138,7 +131,6 @@ async function seedData() {
   } catch (error) {
     console.error('Error:', error);
     
-    // If tables don't exist, show message
     if (error.message && error.message.includes('relation') && error.message.includes('does not exist')) {
       console.log('\n⚠️  Tables do not exist in Supabase.');
       console.log('Please create the tables first using Supabase dashboard or migration.');

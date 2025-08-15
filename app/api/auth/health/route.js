@@ -10,7 +10,6 @@ export async function GET() {
     const startTime = Date.now()
     const supabase = createClient()
     
-    // Comprehensive authentication system health check
     const authHealth = {
       timestamp: new Date().toISOString(),
       system_status: 'healthy',
@@ -19,7 +18,6 @@ export async function GET() {
       recommendations: []
     }
 
-    // Component 1: Supabase Configuration
     try {
       const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
       const hasAnonKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -44,7 +42,6 @@ export async function GET() {
       }
     }
 
-    // Component 2: Database Connectivity
     try {
       const dbStartTime = Date.now()
       const { data, error } = await supabase
@@ -70,7 +67,6 @@ export async function GET() {
       }
     }
 
-    // Component 3: Current Session Status
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
@@ -113,7 +109,6 @@ export async function GET() {
       }
     }
 
-    // Component 4: User Profile System
     if (authHealth.session_info?.user_id) {
       try {
         const profileStartTime = Date.now()
@@ -159,7 +154,6 @@ export async function GET() {
       }
     }
 
-    // Component 5: Authentication Features
     try {
       const features = {
         email_auth: true,
@@ -184,7 +178,6 @@ export async function GET() {
       }
     }
 
-    // Component 6: Security Configuration
     try {
       const security = {
         https_required: process.env.NODE_ENV === 'production',
@@ -207,7 +200,6 @@ export async function GET() {
       }
     }
 
-    // Determine overall system status
     const componentStatuses = Object.values(authHealth.components).map(c => c.status)
     const hasErrors = componentStatuses.includes('error')
     const hasUnhealthy = componentStatuses.includes('unhealthy')
@@ -221,7 +213,6 @@ export async function GET() {
       authHealth.system_status = 'healthy'
     }
 
-    // Add general recommendations
     if (authHealth.system_status === 'healthy') {
       authHealth.recommendations.unshift('✅ Authentication system is fully operational')
     }
@@ -230,14 +221,12 @@ export async function GET() {
       authHealth.recommendations.push('🚧 Development mode active - dev bypass authentication available')
     }
 
-    // Performance metrics
     authHealth.performance = {
       total_response_time_ms: Date.now() - startTime,
       database_response_time_ms: authHealth.components.database?.response_time_ms || 0,
       profile_response_time_ms: authHealth.components.user_profile?.response_time_ms || 0
     }
 
-    // Return appropriate HTTP status
     const httpStatus = authHealth.system_status === 'unhealthy' ? 503 : 
                       authHealth.system_status === 'degraded' ? 206 : 200
 
@@ -264,7 +253,6 @@ export async function GET() {
   }
 }
 
-// Calculate profile completeness score
 function calculateProfileCompleteness(profile) {
   const fields = [
     'full_name',

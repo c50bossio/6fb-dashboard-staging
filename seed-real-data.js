@@ -7,7 +7,6 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Real Supabase credentials
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
 
@@ -21,7 +20,6 @@ async function seedDatabase() {
     // 1. First, let's check what tables exist
     console.log('\n🔍 Checking existing tables...')
     
-    // Check for appointments table
     const { data: appointments, error: apptCheckError } = await supabase
       .from('appointments')
       .select('id')
@@ -29,7 +27,6 @@ async function seedDatabase() {
     
     console.log('Appointments table:', apptCheckError ? '❌ Not found' : '✅ Exists')
     
-    // Check for transactions table
     const { data: transactions, error: transCheckError } = await supabase
       .from('transactions')
       .select('id')
@@ -37,7 +34,6 @@ async function seedDatabase() {
     
     console.log('Transactions table:', transCheckError ? '❌ Not found' : '✅ Exists')
     
-    // Check for barbershops table
     const { data: shops, error: shopCheckError } = await supabase
       .from('barbershops')
       .select('id')
@@ -49,7 +45,6 @@ async function seedDatabase() {
     console.log('\n📍 Getting barbershop...')
     let testShopId = null
     
-    // First try to get existing shop
     const { data: existingShop } = await supabase
       .from('barbershops')
       .select('id, name')
@@ -60,7 +55,6 @@ async function seedDatabase() {
       console.log('Using existing shop:', existingShop.name, '(' + existingShop.id + ')')
       testShopId = existingShop.id
     } else {
-      // Create new shop if none exists
       const newShopId = 'shop_' + Date.now()
       const { data: shop, error: shopError } = await supabase
         .from('barbershops')
@@ -94,7 +88,6 @@ async function seedDatabase() {
     const services = ['Haircut', 'Beard Trim', 'Hair & Beard', 'Fade', 'Line Up', 'Hot Shave']
     const statuses = ['completed', 'completed', 'completed', 'confirmed', 'cancelled']
     
-    // Create appointments for the past 30 days
     for (let daysAgo = 30; daysAgo >= 0; daysAgo--) {
       const appointmentDate = new Date()
       appointmentDate.setDate(appointmentDate.getDate() - daysAgo)
@@ -126,7 +119,6 @@ async function seedDatabase() {
       }
     }
     
-    // Insert appointments
     const { data: insertedAppts, error: apptError } = await supabase
       .from('appointments')
       .insert(appointmentsList)
@@ -166,7 +158,6 @@ async function seedDatabase() {
       })
     }
     
-    // Insert transactions
     const { data: insertedTrans, error: transError } = await supabase
       .from('transactions')
       .insert(transactionsList)
@@ -205,5 +196,4 @@ async function seedDatabase() {
   }
 }
 
-// Run the seed
 seedDatabase()

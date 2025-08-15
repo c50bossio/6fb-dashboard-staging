@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(req) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -15,13 +14,11 @@ export async function POST(req) {
 
     const { type, data, batch } = await req.json()
 
-    // Handle batch triggers
     if (batch) {
       const result = await triggerBatch(batch)
       return NextResponse.json(result)
     }
 
-    // Handle single triggers based on type
     let result
     switch (type) {
       case 'booking_update':

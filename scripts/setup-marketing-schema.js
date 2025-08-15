@@ -9,7 +9,6 @@ const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 const path = require('path')
 
-// Use environment variables or MCP server credentials
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTIxMjUzMiwiZXhwIjoyMDUwNzg4NTMyfQ.VwP1RlHkKwMqNl0XDLPabxJZKgMkGRBu84hvOeLI8gQ'
 
@@ -18,7 +17,6 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 async function checkAndCreateMarketingTables() {
   console.log('🚀 Setting up Marketing Schema in Supabase...\n')
 
-  // List of marketing tables to check/create
   const marketingTables = [
     'marketing_accounts',
     'marketing_payment_methods', 
@@ -31,7 +29,6 @@ async function checkAndCreateMarketingTables() {
     'email_unsubscribes'
   ]
 
-  // Check existing tables
   console.log('📋 Checking existing tables...')
   const { data: existingTables, error: tablesError } = await supabase
     .from('information_schema.tables')
@@ -46,7 +43,6 @@ async function checkAndCreateMarketingTables() {
     console.log(`   Found ${existingTableNames.length} existing marketing tables:`, existingTableNames)
   }
 
-  // Read the marketing schema file
   const schemaPath = path.join(__dirname, '../database/marketing-campaigns-schema.sql')
   
   if (!fs.existsSync(schemaPath)) {
@@ -57,7 +53,6 @@ async function checkAndCreateMarketingTables() {
   const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
   console.log('📄 Read marketing schema file:', schemaPath)
 
-  // Split the schema into individual statements for better error handling
   const statements = schemaSQL
     .split(';')
     .map(s => s.trim())
@@ -71,15 +66,12 @@ async function checkAndCreateMarketingTables() {
   for (let i = 0; i < statements.length; i++) {
     const statement = statements[i] + ';'
     
-    // Skip comments and empty statements
     if (statement.trim().length < 10) continue
     
     try {
-      // Execute each statement
       const { error } = await supabase.rpc('exec_sql', { sql: statement })
       
       if (error) {
-        // Check if it's just a "already exists" error, which is okay
         if (error.message?.includes('already exists') || 
             error.message?.includes('duplicate')) {
           console.log(`   ⏭️  Skipped: ${statement.substring(0, 50)}... (already exists)`)
@@ -103,7 +95,6 @@ async function checkAndCreateMarketingTables() {
   console.log(`   ⏭️  Skipped (already exists): ${skipCount}`)
   console.log(`   📋 Total statements: ${statements.length}`)
 
-  // Verify tables were created
   console.log('\n🔍 Verifying marketing tables...')
   
   for (const tableName of marketingTables) {
@@ -127,15 +118,12 @@ async function checkAndCreateMarketingTables() {
   return true
 }
 
-// Alternative method using direct SQL execution
 async function applySchemaDirectly() {
   console.log('\n🔄 Attempting alternative schema application method...')
   
-  // Read schema file
   const schemaPath = path.join(__dirname, '../database/marketing-campaigns-schema.sql')
   const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
   
-  // Try to create a simple test table first
   const testTableSQL = `
     CREATE TABLE IF NOT EXISTS marketing_test (
       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -161,7 +149,6 @@ async function applySchemaDirectly() {
   }
 }
 
-// Run the setup
 async function main() {
   try {
     const success = await applySchemaDirectly()

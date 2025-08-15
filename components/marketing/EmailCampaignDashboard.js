@@ -27,7 +27,6 @@ const EmailCampaignDashboard = ({ userId }) => {
     const [selectedCampaign, setSelectedCampaign] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
 
-    // Load initial data
     useEffect(() => {
         loadDashboardData();
     }, [userId]);
@@ -36,7 +35,6 @@ const EmailCampaignDashboard = ({ userId }) => {
         try {
             setLoading(true);
             
-            // Load campaigns, templates, and segments in parallel
             const [campaignsRes, templatesRes, segmentsRes] = await Promise.all([
                 fetch(`/api/campaigns?userId=${userId}`),
                 fetch(`/api/email-templates?userId=${userId}`),

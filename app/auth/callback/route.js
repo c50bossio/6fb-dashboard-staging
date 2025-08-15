@@ -13,13 +13,11 @@ export async function GET(request) {
     try {
       const supabase = createClient()
       
-      // Exchange the code for a session using the official Supabase method
       console.log('🔄 Exchanging code for session...')
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
       
       if (error) {
         console.error('❌ Code exchange error:', error.message)
-        // Handle flow state expired error more gracefully
         if (error.code === 'flow_state_expired' || error.code === 'flow_state_not_found') {
           console.log('⚠️ Flow state expired - redirecting to restart OAuth')
           return NextResponse.redirect(new URL('/pricing?error=oauth_expired', origin))
@@ -34,7 +32,6 @@ export async function GET(request) {
           refresh_token: data.session.refresh_token ? 'present' : 'missing'
         })
         
-        // Check if user already has an active subscription
         console.log('🔍 Checking for existing subscription...')
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
@@ -50,15 +47,11 @@ export async function GET(request) {
             hasShopName: !!profile.shop_name
           })
           
-          // User already paid - redirect to welcome or dashboard
-          // Individual barbers don't need stripe_customer_id in some cases
           const welcomeUrl = new URL('/welcome', origin)
           welcomeUrl.searchParams.set('from', 'oauth_success')
           
           console.log('🎉 Redirecting existing subscriber to welcome:', welcomeUrl.toString())
           
-          // Let Supabase handle session persistence automatically
-          // The exchangeCodeForSession already set the session correctly
           return NextResponse.redirect(welcomeUrl.toString())
         }
         
@@ -67,21 +60,17 @@ export async function GET(request) {
           console.log('Profile error:', profileError.message)
         }
         
-        // Get plan data from URL parameters
         const plan = searchParams.get('plan') || 'shop'
         const billing = searchParams.get('billing') || 'monthly'
         
         console.log('📦 Plan data:', { plan, billing })
         
-        // Create checkout URL for new users who need to pay
         const checkoutUrl = new URL('/api/stripe/checkout', origin)
         checkoutUrl.searchParams.set('plan', plan)
         checkoutUrl.searchParams.set('billing', billing)
         
         console.log('🔄 Redirecting to checkout:', checkoutUrl.toString())
         
-        // Let Supabase handle session persistence automatically
-        // The exchangeCodeForSession already set the session correctly
         return NextResponse.redirect(checkoutUrl.toString())
       }
       
@@ -94,7 +83,6 @@ export async function GET(request) {
     }
   }
   
-  // No code parameter - redirect back to pricing
   console.error('❌ No authorization code received')
   return NextResponse.redirect(new URL('/pricing?error=no_code', origin))
 }

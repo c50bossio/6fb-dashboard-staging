@@ -20,7 +20,6 @@ export async function POST(request) {
 
     const sessionId = session_id || generateSessionId()
     
-    // Get conversation context from memory
     let conversationContext = null
     try {
       const memoryResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/memory`, {
@@ -42,7 +41,6 @@ export async function POST(request) {
       console.warn('Memory retrieval failed:', memoryError.message)
     }
 
-    // Try to call the Python AI orchestrator service
     let aiResponse;
     
     try {
@@ -73,11 +71,9 @@ export async function POST(request) {
     } catch (pythonError) {
       console.warn('Python AI service unavailable, using enhanced fallback:', pythonError.message);
       
-      // Enhanced fallback with analytics awareness and conversation context
       aiResponse = await getEnhancedFallbackResponse(message, business_context, barbershop_id, conversationContext);
     }
 
-    // Ensure response includes analytics enhancement status
     const responseData = {
       success: true,
       message: aiResponse.response || aiResponse.message || "I'd be happy to help with your business questions.",
@@ -86,19 +82,16 @@ export async function POST(request) {
       session_id: aiResponse.session_id || session_id,
       message_type: aiResponse.message_type || 'general',
       
-      // Enhancement metadata
       analytics_enhanced: aiResponse.analytics_enhanced || false,
       knowledge_enhanced: aiResponse.knowledge_enhanced || false,
       agent_enhanced: aiResponse.agent_enhanced || false,
       
-      // Additional context
       contextual_insights: aiResponse.contextual_insights || null,
       agent_details: aiResponse.agent_details || null,
       
       timestamp: new Date().toISOString(),
     };
 
-    // Store conversation in memory
     try {
       await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/memory`, {
         method: 'POST',
@@ -119,7 +112,6 @@ export async function POST(request) {
       console.warn('Failed to store conversation in memory:', memoryError.message)
     }
 
-    // Log analytics enhancement for monitoring
     if (responseData.analytics_enhanced) {
       console.log('✅ AI response enhanced with real analytics data');
     }
@@ -146,10 +138,8 @@ async function getEnhancedFallbackResponse(message, businessContext, barbershopI
   let analyticsData = null;
   let analyticsEnhanced = false;
 
-  // Enhanced context analysis for follow-up questions and conversation continuity
   const contextAnalysis = analyzeConversationContext(message, conversationContext);
   
-  // Try to get analytics data for business-related questions
   if (needsAnalyticsData(message) || contextAnalysis.needsAnalytics) {
     try {
       let analyticsUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?format=formatted`;
@@ -175,7 +165,6 @@ async function getEnhancedFallbackResponse(message, businessContext, barbershopI
     }
   }
 
-  // Generate intelligent response with enhanced context awareness
   const response = generateContextAwareResponse(messageType, message, analyticsData, conversationContext, contextAnalysis);
   
   return {
@@ -244,7 +233,6 @@ function needsAnalyticsData(message) {
 function analyzeConversationContext(message, conversationContext) {
   const messageLower = message.toLowerCase();
   
-  // Check for follow-up indicators
   const followUpIndicators = [
     'that', 'this', 'it', 'those', 'these', 'them', 'they',
     'aggressive', 'too much', 'too high', 'expensive', 'cheap',
@@ -262,10 +250,8 @@ function analyzeConversationContext(message, conversationContext) {
   let needsAnalytics = false;
   
   if (isFollowUp && conversationContext?.messages?.length > 0) {
-    // Get the last few messages to understand context
     const recentMessages = conversationContext.messages.slice(-3);
     
-    // Look for the topic being referenced
     for (let msg of recentMessages.reverse()) {
       if (msg.messageType && msg.messageType !== 'general') {
         referencedTopic = msg.messageType;
@@ -274,14 +260,12 @@ function analyzeConversationContext(message, conversationContext) {
       }
     }
     
-    // Check if the follow-up expresses concern about aggressiveness/pricing
     if (/aggressive|too much|too high|expensive|steep|crazy|extreme|harsh/.test(messageLower)) {
       actualType = 'pricing_concern';
       referencedTopic = 'financial';
       needsAnalytics = true;
     }
     
-    // Check for other concern patterns
     if (/difficult|hard|complex|complicated|overwhelm/.test(messageLower)) {
       actualType = 'implementation_concern';
       needsAnalytics = true;
@@ -303,12 +287,10 @@ function analyzeConversationContext(message, conversationContext) {
 function generateContextAwareResponse(messageType, message, analyticsData, conversationContext, contextAnalysis) {
   const messageLower = message.toLowerCase();
   
-  // Handle follow-up questions with specific context
   if (contextAnalysis.isFollowUp && contextAnalysis.actualType) {
     return generateFollowUpResponse(contextAnalysis.actualType, message, analyticsData, conversationContext);
   }
   
-  // Add conversation context if available
   let contextPrefix = ""
   if (conversationContext && conversationContext.messages && conversationContext.messages.length > 0) {
     const lastMessage = conversationContext.messages[conversationContext.messages.length - 1]
@@ -361,7 +343,6 @@ function generateFollowUpResponse(actualType, message, analyticsData, conversati
       return `I hear you - implementing new strategies can feel overwhelming! Let's break it down into simple, manageable steps:\n\n✅ **WEEK 1: Start Small**\n• Pick just ONE recommendation to try\n• Test with 2-3 customers only\n• Track what works and what doesn't\n\n⚡ **WEEK 2-3: Build Momentum**\n• Expand successful elements\n• Make small adjustments based on feedback\n• Don't try to change everything at once\n\n🎯 **MONTH 2+: Scale Gradually**\n• Only add new strategies once current ones are working smoothly\n• Always prioritize what feels natural to you and your business\n\nWhich single change feels most manageable to start with?`;
       
     default:
-      // For other follow-ups, try to understand what they're referencing
       if (conversationContext?.messages?.length > 0) {
         const lastMessage = conversationContext.messages[conversationContext.messages.length - 1];
         return `I see you're asking about "${message}" in relation to our previous discussion. Could you help me understand what specific aspect you'd like me to clarify or expand on? I want to make sure I give you the most relevant advice.`;
@@ -374,6 +355,5 @@ function generateFollowUpResponse(actualType, message, analyticsData, conversati
  * Generate session ID if not provided
  */
 function generateSessionId() {
-  // NO RANDOM - use deterministic session ID
   return `session_${Date.now()}_${process.hrtime.bigint().toString(36)}`;
 }

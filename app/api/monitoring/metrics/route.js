@@ -7,7 +7,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Simulated metrics for demonstration
 let metricsCache = {
   lastUpdate: null,
   data: null
@@ -18,25 +17,19 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const range = searchParams.get('range') || '1h'
     
-    // Check cache (5 second TTL)
     if (metricsCache.lastUpdate && Date.now() - metricsCache.lastUpdate < 5000) {
       return NextResponse.json(metricsCache.data)
     }
     
-    // Calculate time range
     const now = new Date()
     const startTime = getStartTime(now, range)
     
-    // Fetch system metrics
     const systemMetrics = await getSystemMetrics()
     
-    // Fetch performance metrics
     const performanceMetrics = await getPerformanceMetrics(startTime, now)
     
-    // Fetch error metrics
     const errorMetrics = await getErrorMetrics(startTime, now)
     
-    // Fetch service status
     const serviceStatus = await getServiceStatus()
     
     const metrics = {
@@ -47,7 +40,6 @@ export async function GET(request) {
       timestamp: now.toISOString()
     }
     
-    // Update cache
     metricsCache = {
       lastUpdate: Date.now(),
       data: metrics
@@ -65,8 +57,6 @@ export async function GET(request) {
 }
 
 async function getSystemMetrics() {
-  // Real system metrics would come from monitoring services
-  // For now return zeros instead of mock data - follow NO MOCK DATA policy
   return {
     uptime: 0,
     cpu: 0,
@@ -80,7 +70,6 @@ async function getSystemMetrics() {
 
 async function getPerformanceMetrics(startTime, endTime) {
   try {
-    // Fetch from database or monitoring service
     const { data: metrics } = await supabase
       .from('performance_metrics')
       .select('*')
@@ -99,7 +88,6 @@ async function getPerformanceMetrics(startTime, endTime) {
     console.error('Failed to fetch performance metrics:', error)
   }
   
-  // Return empty arrays instead of mock data - follow NO MOCK DATA policy
   return {
     responseTime: [],
     throughput: [],
@@ -110,7 +98,6 @@ async function getPerformanceMetrics(startTime, endTime) {
 
 async function getErrorMetrics(startTime, endTime) {
   try {
-    // Fetch error counts from database
     const { data: errors, count } = await supabase
       .from('error_logs')
       .select('*', { count: 'exact' })
@@ -130,7 +117,6 @@ async function getErrorMetrics(startTime, endTime) {
     console.error('Failed to fetch error metrics:', error)
   }
   
-  // Return zeros instead of mock data - follow NO MOCK DATA policy
   return {
     total: 0,
     critical: 0,
@@ -165,7 +151,6 @@ async function getServiceStatus() {
           status = 'critical'
         }
       } else {
-        // No endpoint available - return unknown status instead of mock data
         status = 'unknown'
         responseTime = 0
       }
@@ -207,7 +192,6 @@ function getStartTime(now, range) {
 
 export async function POST(request) {
   try {
-    // Store metrics data point
     const body = await request.json()
     
     const { error } = await supabase

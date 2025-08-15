@@ -8,10 +8,8 @@ export async function GET(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Development bypass for testing
     const isDevelopment = process.env.NODE_ENV === 'development'
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (!isDevelopment && (authError || !user)) {
@@ -21,7 +19,6 @@ export async function GET(request) {
       )
     }
     
-    // Use the first shop owner for development testing
     let userId = user?.id
     if (isDevelopment && !userId) {
       const { data: devUser } = await supabase
@@ -33,7 +30,6 @@ export async function GET(request) {
       userId = devUser?.id
     }
     
-    // Get the user's profile to check role (skip in development)
     let profile = null
     if (userId) {
       const { data: profileData } = await supabase
@@ -44,7 +40,6 @@ export async function GET(request) {
       profile = profileData
     }
     
-    // Only shop owners and above can access metrics (skip check in development)
     if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
@@ -52,7 +47,6 @@ export async function GET(request) {
       )
     }
     
-    // Get the shop owned by this user
     if (!userId) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -67,60 +61,49 @@ export async function GET(request) {
       .single()
     
     if (!shop) {
-      // Return empty state instead of mock data - follow NO MOCK DATA policy
       return NextResponse.json({
-        // All metrics set to 0 or empty
         totalRevenue: 0,
         monthlyRevenue: 0,
         todayRevenue: 0,
         weeklyRevenue: 0,
         revenueChange: 0,
         
-        // Booking metrics
         totalBookings: 0,
         todayBookings: 0,
         weeklyBookings: 0,
         monthlyBookings: 0,
         bookingsChange: 0,
         
-        // Staff metrics
         activeBarbers: 0,
         totalStaff: 0,
         barbersWorking: 0,
         
-        // Customer metrics
         totalClients: 0,
         newClientsThisMonth: 0,
         returningClients: 0,
         clientRetentionRate: 0,
         
-        // Rating & Reviews
         avgRating: 0,
         totalReviews: 0,
         newReviewsThisWeek: 0,
         ratingTrend: 0,
         
-        // Today's schedule
         appointmentsCompleted: 0,
         appointmentsUpcoming: 0,
         appointmentsCancelled: 0,
         
-        // Financial breakdown
         serviceRevenue: 0,
         productRevenue: 0,
         tipRevenue: 0,
         
-        // Commission breakdown
         totalCommissions: 0,
         pendingPayouts: 0,
         completedPayouts: 0,
         
-        // Performance indicators
         averageServiceTime: 0,
         chairUtilization: 0,
         averageTicketValue: 0,
         
-        // Trends - all neutral
         trends: {
           revenue: { value: 0, direction: 'neutral' },
           bookings: { value: 0, direction: 'neutral' },
@@ -128,25 +111,21 @@ export async function GET(request) {
           rating: { value: 0, direction: 'neutral' }
         },
         
-        // Informational message instead of mock alerts
         alerts: [{
           type: 'info',
           message: 'No barbershop found. Please ensure you have a barbershop associated with your account.'
         }],
         
-        // Real-time data
         currentTime: new Date().toISOString(),
         isOpen: false,
         nextAppointment: null,
         lastUpdate: new Date().toISOString(),
         
-        // Add helpful metadata
         dataAvailable: false,
         message: 'No barbershop data available. Metrics will populate once barbershop is configured.'
       })
     }
     
-    // Get active barbers count
     const { count: activeBarbers } = await supabase
       .from('barbershop_staff')
       .select('*', { count: 'exact', head: true })
@@ -154,7 +133,6 @@ export async function GET(request) {
       .eq('role', 'BARBER')
       .eq('is_active', true)
     
-    // Get today's date for filtering
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const todayISO = today.toISOString()
@@ -163,7 +141,6 @@ export async function GET(request) {
     tomorrow.setDate(tomorrow.getDate() + 1)
     const tomorrowISO = tomorrow.toISOString()
     
-    // Get today's bookings count
     const { count: todayBookings } = await supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
@@ -172,7 +149,6 @@ export async function GET(request) {
       .lt('start_time', tomorrowISO)
       .in('status', ['confirmed', 'completed'])
     
-    // Get this month's bookings
     const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
     const firstDayOfMonthISO = firstDayOfMonth.toISOString()
     
@@ -183,7 +159,6 @@ export async function GET(request) {
       .gte('start_time', firstDayOfMonthISO)
       .in('status', ['confirmed', 'completed'])
     
-    // Get revenue data (simplified - in production, you'd calculate from actual transactions)
     const { data: revenueData } = await supabase
       .from('transactions')
       .select('amount')
@@ -193,7 +168,6 @@ export async function GET(request) {
     
     const monthlyRevenue = revenueData?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
     
-    // Get total revenue
     const { data: totalRevenueData } = await supabase
       .from('transactions')
       .select('amount')
@@ -202,13 +176,11 @@ export async function GET(request) {
     
     const totalRevenue = totalRevenueData?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
     
-    // Get total clients
     const { count: totalClients } = await supabase
       .from('customers')
       .select('*', { count: 'exact', head: true })
       .eq('barbershop_id', shop.id)
     
-    // Get average rating
     const { data: reviews } = await supabase
       .from('reviews')
       .select('rating')
@@ -218,7 +190,6 @@ export async function GET(request) {
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
       : 0
     
-    // Calculate changes by comparing with previous period
     const revenueChange = await calculateRevenueChange(supabase, shop.id, monthlyRevenue)
     const bookingsChange = await calculateBookingsChange(supabase, shop.id, monthlyBookings)
     
@@ -237,7 +208,6 @@ export async function GET(request) {
   } catch (error) {
     console.error('Error in /api/shop/metrics:', error)
     
-    // Return default metrics on error
     return NextResponse.json({
       totalRevenue: 0,
       monthlyRevenue: 0,
@@ -252,10 +222,8 @@ export async function GET(request) {
   }
 }
 
-// Helper functions to calculate real percentage changes
 async function calculateRevenueChange(supabase, shopId, currentMonthRevenue) {
   try {
-    // Get previous month's revenue
     const today = new Date()
     const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
     const previousMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
@@ -272,7 +240,6 @@ async function calculateRevenueChange(supabase, shopId, currentMonthRevenue) {
     
     if (previousRevenue === 0) return 0
     
-    // Calculate percentage change
     const change = ((currentMonthRevenue - previousRevenue) / previousRevenue) * 100
     return Math.round(change * 10) / 10 // Round to 1 decimal place
     
@@ -284,7 +251,6 @@ async function calculateRevenueChange(supabase, shopId, currentMonthRevenue) {
 
 async function calculateBookingsChange(supabase, shopId, currentMonthBookings) {
   try {
-    // Get previous month's bookings
     const today = new Date()
     const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
     const previousMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
@@ -299,7 +265,6 @@ async function calculateBookingsChange(supabase, shopId, currentMonthBookings) {
     
     if (!previousBookings || previousBookings === 0) return 0
     
-    // Calculate percentage change
     const change = ((currentMonthBookings - previousBookings) / previousBookings) * 100
     return Math.round(change * 10) / 10 // Round to 1 decimal place
     

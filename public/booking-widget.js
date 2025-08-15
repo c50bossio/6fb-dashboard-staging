@@ -19,7 +19,6 @@
 (function() {
   'use strict';
   
-  // Default configuration
   const DEFAULT_CONFIG = {
     width: '100%',
     height: '600px',
@@ -37,14 +36,12 @@
     onError: null
   };
 
-  // Get the current script tag
   const currentScript = document.currentScript || 
     (function() {
       const scripts = document.getElementsByTagName('script');
       return scripts[scripts.length - 1];
     })();
 
-  // Extract base URL from script source
   const scriptSrc = currentScript ? currentScript.src : '';
   const BASE_URL = scriptSrc ? 
     scriptSrc.replace('/booking-widget.js', '') : 
@@ -63,7 +60,6 @@
   }
 
   BookingWidget.prototype.init = function() {
-    // Find container
     const containerId = this.config.container || 'booking-widget-container';
     this.container = typeof containerId === 'string' ? 
       document.getElementById(containerId) : 
@@ -74,7 +70,6 @@
       return;
     }
 
-    // Validate required config
     if (!this.config.barberId) {
       this.handleError('barberId is required');
       return;
@@ -86,12 +81,10 @@
   };
 
   BookingWidget.prototype.createWidget = function() {
-    // Create iframe wrapper for responsive behavior
     const wrapper = document.createElement('div');
     wrapper.className = this.config.className + '-wrapper';
     wrapper.style.cssText = this.getWrapperStyles();
 
-    // Create iframe
     this.iframe = document.createElement('iframe');
     this.iframe.src = this.buildEmbedUrl();
     this.iframe.className = this.config.className;
@@ -100,7 +93,6 @@
     this.iframe.setAttribute('allowfullscreen', '');
     this.iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms allow-popups');
     
-    // Accessibility attributes
     this.iframe.setAttribute('role', 'application');
     this.iframe.setAttribute('aria-label', 'Booking appointment form');
     this.iframe.setAttribute('title', 'Book an appointment');
@@ -108,7 +100,6 @@
     wrapper.appendChild(this.iframe);
     this.container.appendChild(wrapper);
 
-    // Setup auto-resize if enabled
     if (this.config.autoResize) {
       this.setupAutoResize();
     }
@@ -117,7 +108,6 @@
   BookingWidget.prototype.buildEmbedUrl = function() {
     const params = new URLSearchParams();
     
-    // Add theme and styling parameters
     if (this.config.theme !== 'light') params.append('theme', this.config.theme);
     if (this.config.hideHeader) params.append('hideHeader', 'true');
     if (this.config.hideFooter) params.append('hideFooter', 'true');
@@ -125,12 +115,10 @@
       params.append('color', this.config.primaryColor.replace('#', ''));
     }
     
-    // Add service selection
     if (this.config.services && this.config.services.length > 0) {
       params.append('services', this.config.services.join(','));
     }
     
-    // Add tracking parameters
     params.append('widget', 'true');
     params.append('ref', window.location.hostname);
     
@@ -170,9 +158,7 @@
   };
 
   BookingWidget.prototype.setupAutoResize = function() {
-    // Listen for resize messages from iframe
     this.resizeHandler = (event) => {
-      // Verify message origin
       const iframeSrc = this.iframe.src;
       const messageOrigin = event.origin;
       
@@ -191,9 +177,7 @@
   };
 
   BookingWidget.prototype.setupEventListeners = function() {
-    // Listen for messages from iframe
     this.messageHandler = (event) => {
-      // Verify message origin
       const iframeSrc = this.iframe.src;
       const messageOrigin = event.origin;
       
@@ -218,7 +202,6 @@
 
     window.addEventListener('message', this.messageHandler);
 
-    // Handle iframe load
     this.iframe.onload = () => {
       this.handleWidgetReady();
     };
@@ -239,7 +222,6 @@
       }
     }
 
-    // Dispatch custom event
     const event = new CustomEvent('bookingWidgetReady', {
       detail: { widget: this }
     });
@@ -257,7 +239,6 @@
       }
     }
 
-    // Dispatch custom event
     const event = new CustomEvent('bookingComplete', {
       detail: data
     });
@@ -275,7 +256,6 @@
       }
     }
 
-    // Show user-friendly error message
     if (this.container) {
       this.container.innerHTML = `
         <div style="
@@ -295,7 +275,6 @@
   };
 
   BookingWidget.prototype.trackAnalytics = function(event, data) {
-    // Send analytics to the embed tracking API
     fetch(`${BASE_URL}/api/barber/embed-settings`, {
       method: 'PATCH',
       headers: {
@@ -314,7 +293,6 @@
   };
 
   BookingWidget.prototype.destroy = function() {
-    // Cleanup event listeners
     if (this.messageHandler) {
       window.removeEventListener('message', this.messageHandler);
     }
@@ -322,7 +300,6 @@
       window.removeEventListener('message', this.resizeHandler);
     }
 
-    // Remove DOM elements
     if (this.iframe && this.iframe.parentNode && this.iframe.parentNode.parentNode) {
       this.iframe.parentNode.parentNode.removeChild(this.iframe.parentNode);
     }
@@ -330,7 +307,6 @@
     this.trackAnalytics('widget-destroy');
   };
 
-  // Global BookingWidget object
   window.BookingWidget = {
     version: '1.0.0',
     
@@ -338,7 +314,6 @@
       return new BookingWidget(config);
     },
 
-    // Utility method to create widget from data attributes
     initFromScript: function(scriptElement) {
       const dataConfig = scriptElement.getAttribute('data-config');
       let config = {};
@@ -352,7 +327,6 @@
         }
       }
 
-      // Extract individual data attributes as fallback
       const attributes = scriptElement.attributes;
       for (let i = 0; i < attributes.length; i++) {
         const attr = attributes[i];
@@ -366,11 +340,9 @@
     }
   };
 
-  // Auto-initialize if script has data-config attribute
   if (currentScript) {
     const autoInit = currentScript.getAttribute('data-auto-init');
     if (autoInit !== 'false') {
-      // Wait for DOM to be ready
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
           window.BookingWidget.initFromScript(currentScript);
@@ -381,7 +353,6 @@
     }
   }
 
-  // Expose constructor for advanced usage
   window.BookingWidget.Widget = BookingWidget;
 
 })();

@@ -31,7 +31,6 @@ export default function SystemHealthMonitor({
   const refreshTimer = useRef(null)
   const healthHistory = useRef([])
 
-  // Initialize health monitoring
   useEffect(() => {
     loadHealthData()
     startPeriodicRefresh()
@@ -45,28 +44,23 @@ export default function SystemHealthMonitor({
 
   const loadHealthData = async () => {
     try {
-      // Call real health API endpoint
       const healthResponse = await fetch('/api/health')
       const healthData = healthResponse.ok 
         ? await healthResponse.json()
         : getEmptyHealthState()
 
-      // Process and validate health data
       const processedData = processHealthData(healthData)
       setHealthData(processedData)
       
-      // Store in history for trending
       healthHistory.current.push({
         timestamp: Date.now(),
         ...processedData
       })
       
-      // Keep only last 100 entries (about 16 minutes at 10s intervals)
       if (healthHistory.current.length > 100) {
         healthHistory.current.shift()
       }
       
-      // Generate alerts
       const newAlerts = generateAlerts(processedData)
       setAlerts(newAlerts)
       
@@ -75,7 +69,6 @@ export default function SystemHealthMonitor({
       
     } catch (error) {
       console.error('Failed to load health data:', error)
-      // NO MOCK DATA - show error state when API fails
       const errorData = getEmptyHealthState()
       errorData.status = 'error'
       errorData.error = 'Health data unavailable'
@@ -85,7 +78,6 @@ export default function SystemHealthMonitor({
   }
 
   const getEmptyHealthState = () => {
-    // NO MOCK DATA - return empty state structure
     const baseTime = Date.now()
     return {
       status: 'unknown',
@@ -157,10 +149,8 @@ export default function SystemHealthMonitor({
   }
 
   const processHealthData = (data) => {
-    // Add calculated fields and validate thresholds
     const processed = { ...data }
     
-    // Calculate overall system status
     const services = Object.values(data.services || {})
     const hasUnhealthyServices = services.some(service => service.status !== 'healthy')
     const hasHighResourceUsage = 
@@ -172,7 +162,6 @@ export default function SystemHealthMonitor({
       processed.status = 'degraded'
     }
     
-    // Add performance trends
     if (healthHistory.current.length > 1) {
       const previous = healthHistory.current[healthHistory.current.length - 1]
       processed.trends = {
@@ -188,7 +177,6 @@ export default function SystemHealthMonitor({
   const generateAlerts = (data) => {
     const alerts = []
     
-    // Service alerts
     Object.entries(data.services || {}).forEach(([service, status]) => {
       if (status.status !== 'healthy') {
         alerts.push({
@@ -213,7 +201,6 @@ export default function SystemHealthMonitor({
       }
     })
     
-    // Resource alerts
     if (data.resources?.cpu?.usage > 80) {
       alerts.push({
         id: 'cpu-high',
@@ -247,7 +234,6 @@ export default function SystemHealthMonitor({
       })
     }
     
-    // Performance alerts
     if (data.performance?.errorRate > 5) {
       alerts.push({
         id: 'error-rate-high',

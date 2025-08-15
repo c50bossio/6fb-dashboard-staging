@@ -30,7 +30,6 @@ async function createSimpleUser() {
   };
 
   try {
-    // Create user in Supabase Auth
     const { data, error } = await supabase.auth.admin.createUser({
       email: testUser.email,
       password: testUser.password,
@@ -42,7 +41,6 @@ async function createSimpleUser() {
       if (error.message.includes('already exists')) {
         console.log('User already exists, updating password...');
         
-        // Get user ID first
         const { data: users } = await supabase.auth.admin.listUsers();
         const existingUser = users?.users?.find(u => u.email === testUser.email);
         

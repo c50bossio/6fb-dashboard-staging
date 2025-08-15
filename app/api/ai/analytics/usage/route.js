@@ -6,7 +6,6 @@ export const runtime = 'edge'
  * Tracks AI conversations, response quality, and user satisfaction
  */
 
-// In-memory storage for demo purposes (replace with database in production)
 let usageMetrics = {
   totalConversations: 0,
   conversationsByAgent: {},
@@ -53,40 +52,33 @@ export async function POST(request) {
 
 export async function GET() {
   try {
-    // Calculate dynamic metrics
     const now = new Date()
     const todayKey = now.toISOString().split('T')[0]
     const hourKey = now.getHours()
 
-    // Get conversations from last 24 hours
     const last24HoursData = usageMetrics.last24Hours.filter(item => 
       (now - new Date(item.timestamp)) < (24 * 60 * 60 * 1000)
     )
 
-    // Calculate satisfaction score
     const avgSatisfaction = usageMetrics.satisfactionRatings.length > 0
       ? usageMetrics.satisfactionRatings.reduce((a, b) => a + b, 0) / usageMetrics.satisfactionRatings.length
       : 4.2
 
-    // Get top agents by usage
     const topAgents = Object.entries(usageMetrics.conversationsByAgent)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 5)
       .map(([agent, count]) => ({ agent, count }))
 
-    // Get popular topics
     const topTopics = Object.entries(usageMetrics.commonTopics)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 5)
       .map(([topic, count]) => ({ topic, count }))
 
-    // Calculate hourly distribution
     const hourlyDistribution = await fetchFromDatabase({ limit: 24 }, (_, hour) => ({
       hour,
       count: usageMetrics.messagesByHour[hour] || 0
     }))
 
-    // Get peak hours
     const peakHours = hourlyDistribution
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
@@ -96,7 +88,6 @@ export async function GET() {
       success: true,
       timestamp: now.toISOString(),
       
-      // Overview Metrics
       overview: {
         totalConversations: usageMetrics.totalConversations,
         conversationsToday: last24HoursData.length,
@@ -104,14 +95,12 @@ export async function GET() {
         averageResponseTime: Math.round(usageMetrics.responseTimeStats.average * 100) / 100
       },
 
-      // Agent Performance
       agentPerformance: {
         totalAgents: Object.keys(usageMetrics.conversationsByAgent).length,
         topPerformers: topAgents,
         mostActiveAgent: topAgents[0]?.agent || 'N/A'
       },
 
-      // Usage Patterns
       usagePatterns: {
         peakHours,
         hourlyDistribution: hourlyDistribution.slice(6, 23), // 6 AM to 11 PM
@@ -119,7 +108,6 @@ export async function GET() {
         dailyAverage: Math.round(usageMetrics.totalConversations / Math.max(1, Math.ceil((now - new Date('2025-01-01')) / (1000 * 60 * 60 * 24))))
       },
 
-      // Quality Metrics
       qualityMetrics: {
         satisfactionScore: avgSatisfaction,
         totalRatings: usageMetrics.satisfactionRatings.length,
@@ -127,7 +115,6 @@ export async function GET() {
         conversationSuccessRate: Math.min(95, 85 + (avgSatisfaction - 3) * 10) // Simulated
       },
 
-      // Recent Activity
       recentActivity: last24HoursData.slice(-10).map(item => ({
         timestamp: item.timestamp,
         agent: item.agent || 'AI Assistant',
@@ -136,7 +123,6 @@ export async function GET() {
         satisfaction: item.satisfaction || null
       })),
 
-      // System Health
       systemHealth: {
         status: avgSatisfaction > 3.5 && usageMetrics.responseTimeStats.average < 3.0 ? 'Excellent' : 
                 avgSatisfaction > 3.0 && usageMetrics.responseTimeStats.average < 5.0 ? 'Good' : 'Needs Attention',
@@ -161,16 +147,13 @@ async function trackConversation(data) {
   
   usageMetrics.totalConversations++
   
-  // Track by agent
   if (agent) {
     usageMetrics.conversationsByAgent[agent] = (usageMetrics.conversationsByAgent[agent] || 0) + 1
   }
   
-  // Track by hour
   const hour = new Date().getHours()
   usageMetrics.messagesByHour[hour] = (usageMetrics.messagesByHour[hour] || 0) + 1
   
-  // Add to recent activity
   usageMetrics.last24Hours.push({
     timestamp: new Date().toISOString(),
     agent,
@@ -179,7 +162,6 @@ async function trackConversation(data) {
     sessionId
   })
   
-  // Keep only last 1000 entries
   if (usageMetrics.last24Hours.length > 1000) {
     usageMetrics.last24Hours = usageMetrics.last24Hours.slice(-1000)
   }
@@ -205,7 +187,6 @@ async function trackSatisfaction(data) {
   if (typeof rating === 'number' && rating >= 1 && rating <= 5) {
     usageMetrics.satisfactionRatings.push(rating)
     
-    // Keep only last 500 ratings
     if (usageMetrics.satisfactionRatings.length > 500) {
       usageMetrics.satisfactionRatings = usageMetrics.satisfactionRatings.slice(-500)
     }

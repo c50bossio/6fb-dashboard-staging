@@ -3,7 +3,6 @@
 import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 
-// Initialize Supabase client with service role key
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -24,7 +23,6 @@ async function analyzeServiceData() {
   console.log('🔍 Analyzing service data inconsistencies...')
   
   try {
-    // Get all services
     const { data: services, error: servicesError } = await supabase
       .from('services')
       .select('id, name, price, duration_minutes')
@@ -41,7 +39,6 @@ async function analyzeServiceData() {
       console.log(`  - ${service.name} (${service.duration_minutes}min, $${service.price})`)
     })
     
-    // Get all bookings and check for service data issues
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
       .select('id, service_id, customer_id, start_time, end_time, status')
@@ -55,7 +52,6 @@ async function analyzeServiceData() {
     
     console.log(`\n📅 Found ${bookings.length} bookings`)
     
-    // Check for orphaned service references
     const serviceIds = new Set(services.map(s => s.id))
     const orphanedBookings = bookings.filter(booking => 
       booking.service_id && !serviceIds.has(booking.service_id)
@@ -103,7 +99,6 @@ async function fixOrphanedBookings(servicesList, orphanedBookingIds, nullService
     return
   }
   
-  // Create a map of service names to service objects for random assignment
   const availableServices = servicesList.filter(s => s.name !== "Unknown Service")
   
   if (availableServices.length === 0) {
@@ -113,12 +108,10 @@ async function fixOrphanedBookings(servicesList, orphanedBookingIds, nullService
   
   console.log(`📋 Available services for assignment: ${availableServices.map(s => s.name).join(', ')}`)
   
-  // Fix orphaned bookings (invalid service_id)
   if (orphanedBookingIds.length > 0) {
     console.log(`\n🔧 Fixing ${orphanedBookingIds.length} bookings with invalid service_id...`)
     
     for (const bookingId of orphanedBookingIds) {
-      // Randomly assign a valid service
       const randomService = availableServices[Math.floor(Math.random() * availableServices.length)]
       
       const { error } = await supabase
@@ -138,12 +131,10 @@ async function fixOrphanedBookings(servicesList, orphanedBookingIds, nullService
     }
   }
   
-  // Fix NULL service_id bookings
   if (nullServiceBookingIds.length > 0) {
     console.log(`\n🔧 Fixing ${nullServiceBookingIds.length} bookings with NULL service_id...`)
     
     for (const bookingId of nullServiceBookingIds) {
-      // Randomly assign a valid service
       const randomService = availableServices[Math.floor(Math.random() * availableServices.length)]
       
       const { error } = await supabase
@@ -167,7 +158,6 @@ async function fixOrphanedBookings(servicesList, orphanedBookingIds, nullService
 async function verifyFixes() {
   console.log('\n✅ Verifying fixes...')
   
-  // Re-run analysis to verify fixes
   const analysis = await analyzeServiceData()
   
   if (analysis && analysis.orphanedBookings === 0 && analysis.nullServiceBookings === 0) {
@@ -184,7 +174,6 @@ async function main() {
   console.log('This script identifies and fixes bookings with invalid or missing service data\n')
   
   try {
-    // Step 1: Analyze current state
     const analysis = await analyzeServiceData()
     
     if (!analysis) {
@@ -192,14 +181,12 @@ async function main() {
       process.exit(1)
     }
     
-    // Step 2: Fix issues if any exist
     if (analysis.orphanedBookings > 0 || analysis.nullServiceBookings > 0) {
       console.log('\n❓ Do you want to fix these issues? This will:')
       console.log('   - Assign random valid services to orphaned bookings')
       console.log('   - Update pricing and duration based on assigned service')
       console.log('   - Only affect test data (is_test=true)')
       
-      // For automated execution, proceed with fixes
       console.log('\n🔧 Proceeding with automatic fixes...')
       
       await fixOrphanedBookings(
@@ -208,7 +195,6 @@ async function main() {
         analysis.nullServiceBookingIds
       )
       
-      // Step 3: Verify fixes
       const success = await verifyFixes()
       
       if (success) {
@@ -230,5 +216,4 @@ async function main() {
   }
 }
 
-// Run the script
 main().catch(console.error)

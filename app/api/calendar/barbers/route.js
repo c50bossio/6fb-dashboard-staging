@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -10,7 +9,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function GET(request) {
   try {
-    // First, try to fetch from barbers table if it exists
     let { data: barbers, error } = await supabase
       .from('barbers')
       .select('*')
@@ -20,7 +18,6 @@ export async function GET(request) {
     if (error) {
       console.log('Barbers table not found, trying profiles with barber role...')
       
-      // Fallback: fetch profiles with role='barber' or create mock data
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -35,7 +32,6 @@ export async function GET(request) {
         }, { status: 500 })
       }
       
-      // Transform profiles to barber format
       barbers = profiles.map((profile, index) => ({
         id: profile.id,
         name: profile.full_name || profile.email || `Barber ${index + 1}`,
@@ -48,9 +44,7 @@ export async function GET(request) {
       return NextResponse.json({ barbers, source: 'profiles' })
     }
     
-    // Transform barbers data for FullCalendar resources
     const resources = barbers.map(barber => {
-      // Add location based on barber name (matching mock data structure)
       let location = 'Downtown' // default
       if (barber.name && (barber.name.includes('Sarah') || barber.name.includes('Lisa'))) {
         location = 'Uptown'

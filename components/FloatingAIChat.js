@@ -27,7 +27,6 @@ export default function FloatingAIChat() {
   const [realTimeMetrics, setRealTimeMetrics] = useState(null)
   const [businessContext, setBusinessContext] = useState(null)
   const [contextLoaded, setContextLoaded] = useState(false)
-  // Helper function for currency formatting
   const formatCurrency = (value) => {
     if (!value) return '$0'
     return new Intl.NumberFormat('en-US', {
@@ -81,10 +80,8 @@ export default function FloatingAIChat() {
   const messagesEndRef = useRef(null)
   const getQuickActions = () => {
     if (contextLoaded && businessContext) {
-      // Enhanced quick actions based on actual business context
       const actions = []
       
-      // Revenue-based actions
       if (businessContext.analytics?.revenue) {
         actions.push({
           icon: '💰',
@@ -93,7 +90,6 @@ export default function FloatingAIChat() {
         })
       }
       
-      // Booking-based actions
       if (businessContext.analytics?.bookings?.today) {
         actions.push({
           icon: '📅',
@@ -102,7 +98,6 @@ export default function FloatingAIChat() {
         })
       }
       
-      // Alert-based actions
       if (businessContext.alerts?.active_alerts?.length > 0) {
         actions.push({
           icon: '⚠️',
@@ -111,7 +106,6 @@ export default function FloatingAIChat() {
         })
       }
       
-      // Prediction-based actions
       if (businessContext.predictions?.revenue_forecast) {
         actions.push({
           icon: '🔮',
@@ -120,7 +114,6 @@ export default function FloatingAIChat() {
         })
       }
       
-      // Customer insights
       if (businessContext.analytics?.customers) {
         actions.push({
           icon: '👥',
@@ -132,7 +125,6 @@ export default function FloatingAIChat() {
       return actions.slice(0, 5) // Limit to 5 actions
     }
     
-    // Fallback basic actions
     return [
       { icon: '💰', text: "Today's Revenue", query: "How much revenue have I made today?" },
       { icon: '📅', text: 'Next Appointments', query: "Show me my next appointments" },
@@ -144,13 +136,11 @@ export default function FloatingAIChat() {
   const [isVoiceListening, setIsVoiceListening] = useState(false)
   const recognitionRef = useRef(null)
   
-  // Emotion Recognition State
   const [emotionAnalysis, setEmotionAnalysis] = useState(null)
   const [isAnalyzingEmotion, setIsAnalyzingEmotion] = useState(false)
   const [userEmotionHistory, setUserEmotionHistory] = useState([])
   const [currentMood, setCurrentMood] = useState('neutral')
 
-  // Fetch comprehensive business context from enhanced APIs
   useEffect(() => {
     const fetchShopData = async () => {
       if (!user) return
@@ -158,7 +148,6 @@ export default function FloatingAIChat() {
       const supabase = createClient()
       
       try {
-        // Get user's shop data
         const { data: profileData } = await supabase
           .from('profiles')
           .select('shop_id, role, barbershop_name')
@@ -168,28 +157,21 @@ export default function FloatingAIChat() {
         if (profileData?.shop_id) {
           console.log('🔄 Loading comprehensive business context...')
           
-          // Load multiple data sources concurrently for better performance
           const [shopInfo, analytics, predictions, alerts] = await Promise.allSettled([
-            // Basic shop info
             supabase.from('barbershops').select('*').eq('id', profileData.shop_id).single(),
             
-            // Analytics data from our enhanced API
             fetch(`/api/analytics/live-data?barbershop_id=${profileData.shop_id}`).then(r => r.json()),
             
-            // Predictive analytics with seasonal/customer insights
             fetch(`/api/ai/predictive?type=comprehensive&shopId=${profileData.shop_id}`).then(r => r.json()),
             
-            // Intelligent alerts
             fetch(`/api/alerts/intelligent?barbershop_id=${profileData.shop_id}`).then(r => r.json())
           ])
 
-          // Process results and set up comprehensive business context
           const shopData = shopInfo.status === 'fulfilled' ? shopInfo.value.data : null
           const analyticsData = analytics.status === 'fulfilled' && analytics.value.success ? analytics.value.data : null
           const predictionsData = predictions.status === 'fulfilled' && predictions.value.success ? predictions.value.predictions : null
           const alertsData = alerts.status === 'fulfilled' && alerts.value.success ? alerts.value : null
 
-          // Get basic metrics for fallback
           const { data: customers } = await supabase
             .from('customers')
             .select('total_spent, total_visits, created_at')
@@ -226,7 +208,6 @@ export default function FloatingAIChat() {
             capacity_utilization: analyticsData?.capacity_utilization || 0.75
           })
 
-          // Set comprehensive business context for AI
           setBusinessContext({
             shop: {
               name: shopData?.name || profileData.barbershop_name,
@@ -289,7 +270,6 @@ export default function FloatingAIChat() {
     fetchShopData()
   }, [user])
 
-  // Initialize persistent session ID and position
   useEffect(() => {
     let existingSession = null
     let savedPosition = 'bottom-right'
@@ -301,7 +281,6 @@ export default function FloatingAIChat() {
       console.warn('LocalStorage not available')
     }
     
-    // Set saved position
     setPosition(savedPosition)
     
     if (existingSession) {
@@ -325,7 +304,6 @@ export default function FloatingAIChat() {
     scrollToBottom()
   }, [messages])
 
-  // Position utilities
   const getPositionClasses = (pos) => {
     switch(pos) {
       case 'top-left':
@@ -349,7 +327,6 @@ export default function FloatingAIChat() {
     }
   }
 
-  // Drag handling
   const handleMouseDown = (e) => {
     if (e.target.closest('.drag-handle')) {
       setIsDragging(true)
@@ -380,7 +357,6 @@ export default function FloatingAIChat() {
     if (isDragging) {
       setIsDragging(false)
       
-      // Snap to nearest corner
       const windowWidth = window.innerWidth
       const windowHeight = window.innerHeight
       const rect = widgetRef.current?.getBoundingClientRect()
@@ -403,7 +379,6 @@ export default function FloatingAIChat() {
         
         savePosition(newPosition)
         
-        // Reset inline styles to use CSS classes
         widgetRef.current.style.left = ''
         widgetRef.current.style.top = ''
         widgetRef.current.style.right = ''
@@ -412,7 +387,6 @@ export default function FloatingAIChat() {
     }
   }
 
-  // Add event listeners for dragging
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
@@ -425,7 +399,6 @@ export default function FloatingAIChat() {
     }
   }, [isDragging, dragOffset])
 
-  // Emotion Recognition Functions
   const analyzeMessageEmotion = async (messageText) => {
     if (!messageText.trim()) return null
 
@@ -459,7 +432,6 @@ export default function FloatingAIChat() {
         setEmotionAnalysis(analysis)
         setCurrentMood(analysis.emotion)
         
-        // Add to emotion history
         setUserEmotionHistory(prev => [...prev, {
           emotion: analysis.emotion,
           confidence: analysis.confidence,
@@ -512,23 +484,19 @@ export default function FloatingAIChat() {
     return colors[emotion] || 'text-gray-400'
   }
 
-  // Automated Task Execution Integration
   const processAutomatedTriggers = async (emotionAnalysis, messageText) => {
     try {
       console.log('🤖 Processing automated triggers for emotion:', emotionAnalysis.emotion)
       
-      // Create trigger context
       const triggerContext = {
         message: messageText,
         emotion: emotionAnalysis.emotion,
         emotionConfidence: emotionAnalysis.confidence,
         userId: user?.id,
         timestamp: new Date().toISOString(),
-        // Add business event context if relevant
         businessEvent: detectBusinessEvent(messageText, emotionAnalysis)
       }
 
-      // Call automated task execution API
       const response = await fetch('/api/ai/task-execution', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -545,7 +513,6 @@ export default function FloatingAIChat() {
       if (result.success) {
         console.log(`✅ Automated triggers processed: ${result.result.triggers_processed} triggers`)
         
-        // Show user notification if any actions were triggered
         if (result.result.triggers_processed > 0) {
           showAutomationNotification(result.result.triggers_processed, emotionAnalysis.emotion)
         }
@@ -558,11 +525,9 @@ export default function FloatingAIChat() {
     }
   }
 
-  // Detect business events from message content
   const detectBusinessEvent = (messageText, emotionAnalysis) => {
     const text = messageText.toLowerCase()
     
-    // Appointment cancellation detection
     if (text.includes('cancel') && (text.includes('appointment') || text.includes('booking'))) {
       return {
         type: 'appointment_cancellation',
@@ -574,7 +539,6 @@ export default function FloatingAIChat() {
       }
     }
     
-    // Payment related issues
     if ((text.includes('payment') || text.includes('pay') || text.includes('bill')) && 
         (emotionAnalysis.emotion === 'frustrated' || emotionAnalysis.emotion === 'angry')) {
       return {
@@ -587,7 +551,6 @@ export default function FloatingAIChat() {
       }
     }
     
-    // Service quality issues
     if ((text.includes('service') || text.includes('quality') || text.includes('disappointed')) && 
         (emotionAnalysis.emotion === 'angry' || emotionAnalysis.emotion === 'frustrated')) {
       return {
@@ -600,7 +563,6 @@ export default function FloatingAIChat() {
       }
     }
     
-    // Positive feedback
     if ((text.includes('love') || text.includes('amazing') || text.includes('excellent')) && 
         (emotionAnalysis.emotion === 'happy' || emotionAnalysis.emotion === 'excited')) {
       return {
@@ -616,7 +578,6 @@ export default function FloatingAIChat() {
     return null
   }
 
-  // Show notification when automated actions are triggered
   const showAutomationNotification = (triggerCount, emotion) => {
     const notification = {
       id: Date.now(),
@@ -626,10 +587,8 @@ export default function FloatingAIChat() {
       icon: '⚡'
     }
     
-    // Add to messages as system notification
     setMessages(prev => [...prev, notification])
     
-    // Auto-remove after 5 seconds
     setTimeout(() => {
       setMessages(prev => prev.filter(msg => msg.id !== notification.id))
     }, 5000)
@@ -637,14 +596,11 @@ export default function FloatingAIChat() {
 
   const analyzeVoiceEmotion = async (transcript, speechEvent) => {
     try {
-      // Basic voice emotion analysis using speech recognition confidence and transcript
       const confidence = speechEvent.results?.[0]?.[0]?.confidence || 0.8
       
-      // Simulate voice feature analysis (in real implementation, would analyze audio)
       const voiceFeatures = {
         confidence: confidence,
         transcript: transcript,
-        // Placeholder for real voice analysis
         pitch: 'normal',
         tempo: 'normal', 
         volume: 'normal'
@@ -678,10 +634,8 @@ export default function FloatingAIChat() {
     setMessage('')
     setIsLoading(true)
 
-    // Analyze emotion before sending
     const emotionAnalysis = await analyzeMessageEmotion(currentMessage)
 
-    // Trigger automated actions based on emotion analysis
     if (emotionAnalysis) {
       await processAutomatedTriggers(emotionAnalysis, currentMessage)
     }
@@ -703,7 +657,6 @@ export default function FloatingAIChat() {
     try {
       const startTime = Date.now()
       
-      // Enhanced context with emotion analysis
       const enhancedBusinessContext = {
         ...businessContext,
         current_emotion: emotionAnalysis ? {
@@ -715,7 +668,6 @@ export default function FloatingAIChat() {
         mood_trend: currentMood
       }
       
-      // Call the AI chat API with emotion-enhanced context
       const response = await fetch('/api/ai/analytics-enhanced-chat', {
         method: 'POST',
         headers: {
@@ -725,18 +677,15 @@ export default function FloatingAIChat() {
           message: currentMessage,
           session_id: sessionId,
           business_context: enhancedBusinessContext && contextLoaded ? {
-            // Enhanced comprehensive business context with emotion
             shop: enhancedBusinessContext.shop,
             analytics: enhancedBusinessContext.analytics,
             predictions: enhancedBusinessContext.predictions,
             alerts: enhancedBusinessContext.alerts,
             
-            // NEW: Emotion context for empathetic responses
             current_emotion: enhancedBusinessContext.current_emotion,
             emotion_history: enhancedBusinessContext.emotion_history,
             mood_trend: enhancedBusinessContext.mood_trend,
             
-            // Legacy compatibility for existing API
             shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
             customer_count: realTimeMetrics?.total_customers || 0,
             monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
@@ -747,7 +696,6 @@ export default function FloatingAIChat() {
             today_appointments: realTimeMetrics?.today_appointments || 0,
             total_revenue: realTimeMetrics?.total_revenue || 0,
             
-            // Enhanced context indicators
             context_version: '2.1', // Updated for emotion support
             context_loaded: contextLoaded,
             emotion_enabled: true,
@@ -760,7 +708,6 @@ export default function FloatingAIChat() {
               emotion_analysis: !!emotionAnalysis
             }
           } : {
-            // Fallback basic context
             shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
             customer_count: realTimeMetrics?.total_customers || 0,
             monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
@@ -780,11 +727,9 @@ export default function FloatingAIChat() {
       const data = await response.json()
       const responseTime = (Date.now() - startTime) / 1000 // Convert to seconds
       
-      // Parse response for smart actions
       const responseText = data.response || data.message || "I'm here to help! What would you like to know about your business?"
       const smartActions = []
       
-      // Detect mentions of specific features and add action buttons
       if (responseText.toLowerCase().includes('appointment') || responseText.toLowerCase().includes('booking')) {
         smartActions.push({ text: 'Open Calendar', link: '/dashboard/calendar', icon: '📅' })
       }
@@ -808,7 +753,6 @@ export default function FloatingAIChat() {
 
       setMessages(prev => [...prev, aiMessage])
       
-      // Track analytics
       try {
         await fetch('/api/ai/analytics/usage', {
           method: 'POST',
@@ -886,8 +830,6 @@ export default function FloatingAIChat() {
       setMessage(transcript)
       setIsVoiceListening(false)
       
-      // Analyze voice emotion (basic implementation)
-      // In a full implementation, this would analyze audio features
       const voiceEmotionHint = await analyzeVoiceEmotion(transcript, event)
       if (voiceEmotionHint) {
         console.log('🎤 Voice emotion detected:', voiceEmotionHint)
@@ -931,7 +873,6 @@ export default function FloatingAIChat() {
       
       setShowRating(null)
       
-      // Update the message to show it was rated
       setMessages(prev => prev.map(msg => 
         msg.id === messageId 
           ? { ...msg, rated: rating }

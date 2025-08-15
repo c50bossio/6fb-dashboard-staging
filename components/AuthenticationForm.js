@@ -36,7 +36,6 @@ export default function AuthenticationForm({ mode = 'login' }) {
       [name]: value
     }))
     
-    // Clear errors when user starts typing
     if (error) setError('')
   }
 
@@ -75,7 +74,6 @@ export default function AuthenticationForm({ mode = 'login' }) {
       }
     }
 
-    // Check if CAPTCHA is required and verified
     if (showTurnstile && !turnstileToken) {
       setError('Please complete the CAPTCHA verification')
       return false
@@ -97,23 +95,19 @@ export default function AuthenticationForm({ mode = 'login' }) {
 
     try {
       if (mode === 'login') {
-        // Login
         const result = await signIn({
           email: formData.email,
           password: formData.password
         })
         
         if (result.user) {
-          // Track login with PostHog
           posthog.capture('user_login', {
             email: formData.email,
             timestamp: new Date().toISOString()
           })
           
-          // Set user in Sentry
           setUser(result.user)
           
-          // Send welcome notification via Novu
           if (isFeatureEnabled('welcomeNotifications')) {
             try {
               await triggerNotification(
@@ -133,7 +127,6 @@ export default function AuthenticationForm({ mode = 'login' }) {
         }
         
       } else if (mode === 'register') {
-        // Registration
         const metadata = {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -148,14 +141,12 @@ export default function AuthenticationForm({ mode = 'login' }) {
         })
         
         if (result.user) {
-          // Track registration with PostHog
           posthog.capture('user_registration', {
             email: formData.email,
             shopName: formData.shopName,
             timestamp: new Date().toISOString()
           })
           
-          // Create Stripe customer if billing is enabled
           if (isFeatureEnabled('billingIntegration')) {
             try {
               await createCustomer(
@@ -168,11 +159,9 @@ export default function AuthenticationForm({ mode = 'login' }) {
               )
             } catch (stripeError) {
               console.warn('Stripe customer creation failed:', stripeError)
-              // Don't fail registration for Stripe errors
             }
           }
           
-          // Send welcome notification
           try {
             await triggerNotification(
               NOTIFICATION_TEMPLATES.WELCOME_EMAIL,
@@ -195,11 +184,9 @@ export default function AuthenticationForm({ mode = 'login' }) {
         }
         
       } else if (mode === 'reset') {
-        // Password reset
         await resetPassword(formData.email)
         setSuccess('Password reset email sent! Check your inbox.')
         
-        // Track password reset with PostHog
         posthog.capture('password_reset_requested', {
           email: formData.email,
           timestamp: new Date().toISOString()
@@ -210,13 +197,11 @@ export default function AuthenticationForm({ mode = 'login' }) {
       console.error('Authentication error:', err)
       setError(err.message || 'An error occurred. Please try again.')
       
-      // Show CAPTCHA after failed attempts (security feature)
       if (err.message?.includes('Too many') || err.message?.includes('rate limit')) {
         setShowTurnstile(true)
         setTurnstileReset(prev => prev + 1) // Reset CAPTCHA
       }
       
-      // Log error to Sentry
       captureException(err, {
         tags: {
           operation: mode,

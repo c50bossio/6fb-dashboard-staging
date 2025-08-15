@@ -13,7 +13,6 @@ const fs = require('fs')
 const path = require('path')
 require('dotenv').config({ path: '.env.local' })
 
-// Initialize Supabase client with service role key for admin operations
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -23,7 +22,6 @@ async function createAnalyticsTables() {
   console.log('📊 Creating analytics tables...')
   
   try {
-    // Define table creation SQL statements individually for better error handling
     const tables = [
       {
         name: 'business_metrics',
@@ -214,7 +212,6 @@ async function createAnalyticsTables() {
       }
     ]
     
-    // Create each table
     for (const table of tables) {
       try {
         const { error } = await supabase.rpc('exec_sql', { 
@@ -222,8 +219,6 @@ async function createAnalyticsTables() {
         }).single()
         
         if (error) {
-          // If RPC doesn't exist, try direct query (for newer Supabase versions)
-          // This is a fallback - in production you'd use migrations
           console.log(`⚠️  Could not create ${table.name} via RPC, skipping...`)
         } else {
           console.log(`✅ Created table: ${table.name}`)
@@ -233,7 +228,6 @@ async function createAnalyticsTables() {
       }
     }
     
-    // Create indexes
     const indexes = [
       'CREATE INDEX IF NOT EXISTS idx_business_metrics_barbershop_date ON business_metrics(barbershop_id, date DESC)',
       'CREATE INDEX IF NOT EXISTS idx_ai_insights_barbershop ON ai_insights(barbershop_id)',
@@ -269,5 +263,4 @@ async function main() {
   }
 }
 
-// Run the script
 main()

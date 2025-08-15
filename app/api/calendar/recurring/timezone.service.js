@@ -1,5 +1,4 @@
 
-// Use require for CommonJS compatibility with Next.js
 const { DateTime, IANAZone } = require('luxon');
 
 /**
@@ -17,12 +16,10 @@ class TimezoneService {
    * @returns {string} IANA timezone identifier
    */
   static getCurrentTimezone() {
-    // Check for configured timezone
     if (process.env.NEXT_PUBLIC_DEFAULT_TIMEZONE) {
       return process.env.NEXT_PUBLIC_DEFAULT_TIMEZONE;
     }
     
-    // Use browser timezone if available
     if (typeof window !== 'undefined' && Intl?.DateTimeFormat) {
       return Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
@@ -93,21 +90,17 @@ class TimezoneService {
   static handleDSTTransition(appointmentDate, timezone = this.DEFAULT_TIMEZONE) {
     const dt = DateTime.fromJSDate(appointmentDate, { zone: timezone });
     
-    // Check if this date is during a DST transition
     const dayBefore = dt.minus({ days: 1 });
     const dayAfter = dt.plus({ days: 1 });
     
     const isDSTTransition = dayBefore.isInDST !== dt.isInDST || 
                             dt.isInDST !== dayAfter.isInDST;
     
-    // Calculate the adjustment needed
     let adjustedTime = dt;
     if (isDSTTransition) {
-      // Preserve wall clock time during DST transitions
       const targetHour = dt.hour;
       const targetMinute = dt.minute;
       
-      // Recreate the datetime with the same wall clock time
       adjustedTime = DateTime.fromObject({
         year: dt.year,
         month: dt.month,
@@ -187,19 +180,15 @@ class TimezoneService {
   static parseDateTime(dateTimeStr, timezone = this.DEFAULT_TIMEZONE) {
     let dt;
     
-    // Try to parse as ISO string first
     try {
       dt = DateTime.fromISO(dateTimeStr, { zone: timezone });
     } catch (e) {
-      // Try RFC2822 format
       try {
         dt = DateTime.fromRFC2822(dateTimeStr, { zone: timezone });
       } catch (e2) {
-        // Try SQL format
         try {
           dt = DateTime.fromSQL(dateTimeStr, { zone: timezone });
         } catch (e3) {
-          // Default to current time if parsing fails
           console.error('Failed to parse datetime:', dateTimeStr);
           dt = DateTime.now().setZone(timezone);
         }
@@ -249,7 +238,6 @@ class TimezoneService {
    * @returns {Object} Business hours configuration
    */
   static getBusinessHours(timezone = this.DEFAULT_TIMEZONE) {
-    // This could be configured per barbershop
     return {
       daysOfWeek: [1, 2, 3, 4, 5, 6], // Monday - Saturday
       startTime: '09:00',
@@ -271,12 +259,10 @@ class TimezoneService {
     
     const businessHours = this.getBusinessHours(timezone);
     
-    // Check day of week (1 = Monday, 7 = Sunday)
     if (!businessHours.daysOfWeek.includes(dt.weekday)) {
       return false;
     }
     
-    // Check time
     const [startHour, startMinute] = businessHours.startTime.split(':').map(Number);
     const [endHour, endMinute] = businessHours.endTime.split(':').map(Number);
     

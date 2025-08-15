@@ -23,7 +23,6 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
   useEffect(() => {
     loadBusinessData()
     
-    // Update every 5 minutes
     const interval = setInterval(() => {
       loadBusinessData()
     }, 5 * 60 * 1000)
@@ -35,7 +34,6 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
     try {
       setLoading(true)
       
-      // Load business health status
       const healthResponse = await fetch(`/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
       const healthData = await healthResponse.json()
       
@@ -44,7 +42,6 @@ export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
         setAlerts(healthData.data.alerts || [])
       }
       
-      // Load daily business pulse
       const pulseResponse = await fetch(`/api/ai/daily-report?barbershop_id=${barbershop_id}&type=business_pulse`)
       const pulseData = await pulseResponse.json()
       

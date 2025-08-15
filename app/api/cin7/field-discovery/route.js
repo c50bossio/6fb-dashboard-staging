@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Direct Supabase connection
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
@@ -25,7 +24,6 @@ export async function POST(request) {
 
     console.log('🔍 Starting Dynamic Field Discovery for Cin7 API...')
     
-    // Test multiple API endpoints to discover the correct format
     const apiEndpoints = [
       'https://inventory.dearsystems.com/externalapi/products?limit=5',
       'https://inventory.dearsystems.com/ExternalApi/products?limit=5',
@@ -36,7 +34,6 @@ export async function POST(request) {
     let discoveryResult = null
     let workingEndpoint = null
     
-    // Step 1: Discover working endpoint and API version
     for (const endpoint of apiEndpoints) {
       try {
         console.log(`🔍 Testing endpoint: ${endpoint}`)
@@ -60,7 +57,6 @@ export async function POST(request) {
           }
         } else if (response.status === 401 || response.status === 403) {
           console.log(`🔐 Endpoint exists but needs valid credentials: ${endpoint}`)
-          // Continue testing other endpoints with current credentials
         }
       } catch (error) {
         console.log(`❌ Endpoint failed: ${endpoint} - ${error.message}`)
@@ -79,7 +75,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    // Step 2: Analyze API response structure
     const products = discoveryResult?.ProductList || discoveryResult?.Products || []
     
     if (products.length === 0) {
@@ -93,13 +88,10 @@ export async function POST(request) {
     
     console.log(`📊 Analyzing ${products.length} products for field discovery...`)
     
-    // Step 3: Comprehensive field analysis
     const fieldAnalysis = analyzeProductFields(products)
     
-    // Step 4: Create optimized field mapping strategy
     const mappingStrategy = createOptimalMapping(fieldAnalysis)
     
-    // Step 5: Store field mapping configuration
     await storeFieldMappingConfig(barbershopId, {
       endpoint: workingEndpoint,
       apiVersion: detectApiVersion(workingEndpoint),
@@ -108,7 +100,6 @@ export async function POST(request) {
       discoveredAt: new Date().toISOString()
     })
     
-    // Step 6: Test the mapping with actual data
     const testResults = testFieldMapping(products.slice(0, 3), mappingStrategy)
     
     return NextResponse.json({
@@ -161,13 +152,11 @@ function analyzeProductFields(products) {
   const fieldTypes = new Map()
   const fieldValues = new Map()
   
-  // Analyze each product to build comprehensive field understanding
   products.forEach(product => {
     Object.entries(product).forEach(([key, value]) => {
       allFields.add(key)
       fieldFrequency.set(key, (fieldFrequency.get(key) || 0) + 1)
       
-      // Determine field type and sample values
       const type = typeof value
       fieldTypes.set(key, type)
       
@@ -180,7 +169,6 @@ function analyzeProductFields(products) {
     })
   })
   
-  // Categorize fields by purpose
   const fieldCategories = categorizeFields(Array.from(allFields), fieldValues)
   
   return {
@@ -239,9 +227,7 @@ function categorizeFields(fields, fieldValues) {
  */
 function createOptimalMapping(fieldAnalysis) {
   const selectBestField = (fields, preferredOrder = []) => {
-    // Sort by data quality first, then by preferred order
     const sortedFields = fields.sort((a, b) => {
-      // Check if either field is in preferred order
       const aIndex = preferredOrder.findIndex(pref => a.field.toLowerCase().includes(pref.toLowerCase()))
       const bIndex = preferredOrder.findIndex(pref => b.field.toLowerCase().includes(pref.toLowerCase()))
       
@@ -251,7 +237,6 @@ function createOptimalMapping(fieldAnalysis) {
       if (aIndex !== -1) return -1 // Only 'a' is preferred
       if (bIndex !== -1) return 1  // Only 'b' is preferred
       
-      // Neither in preferred order, use data quality
       return b.dataQuality - a.dataQuality
     })
     
@@ -301,7 +286,6 @@ function testFieldMapping(products, mappingStrategy) {
       sku: getFieldValue(product, mappingStrategy.identifierMapping.sku)
     }
     
-    // Check mapping success
     const hasValidPrice = mapped.retailPrice > 0 || mapped.costPrice > 0
     const hasValidStock = mapped.currentStock >= 0
     const hasValidName = mapped.name && mapped.name.length > 0
@@ -343,7 +327,6 @@ function getFieldValue(product, fieldName) {
   
   const value = product[fieldName]
   
-  // Try to parse as number if it looks numeric
   if (typeof value === 'string' && !isNaN(parseFloat(value))) {
     return parseFloat(value)
   }

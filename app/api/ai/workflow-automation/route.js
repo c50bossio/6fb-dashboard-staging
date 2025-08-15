@@ -42,7 +42,6 @@ export async function GET(request) {
       return NextResponse.json({ success: true, workflows })
     }
     
-    // Get automation dashboard
     const dashboard = await getAutomationDashboard(barbershop_id)
     return dashboard
   } catch (error) {
@@ -182,7 +181,6 @@ async function getAutomationDashboard(barbershop_id) {
 async function createAutomation(barbershop_id, parameters) {
   const { trigger_type, conditions, actions, name, description } = parameters
   
-  // Simulate workflow creation
   const workflow = {
     id: `workflow_${Date.now()}`,
     name: name || 'Custom Workflow',
@@ -198,7 +196,6 @@ async function createAutomation(barbershop_id, parameters) {
     failure_count: 0
   }
   
-  // Validate workflow configuration
   const validation = validateWorkflow(workflow)
   if (!validation.valid) {
     return NextResponse.json({
@@ -221,10 +218,8 @@ async function createAutomation(barbershop_id, parameters) {
 async function triggerWorkflow(barbershop_id, parameters) {
   const { workflow_id, override_conditions } = parameters
   
-  // Get current business data to evaluate conditions
   const businessData = await getCurrentBusinessData(barbershop_id)
   
-  // Simulate workflow execution
   const execution = {
     execution_id: `exec_${Date.now()}`,
     workflow_id,
@@ -236,7 +231,6 @@ async function triggerWorkflow(barbershop_id, parameters) {
     success: true
   }
   
-  // Execute predefined workflow actions
   const workflowActions = await getWorkflowActions(workflow_id)
   
   for (const action of workflowActions) {
@@ -368,7 +362,6 @@ async function checkTriggerConditions(barbershop_id, parameters) {
  */
 
 async function getCurrentBusinessData(barbershop_id) {
-  // In production, fetch real data from database
   return {
     daily_revenue: 380,
     monthly_revenue: 4850,
@@ -382,7 +375,6 @@ async function getCurrentBusinessData(barbershop_id) {
 }
 
 async function getActiveWorkflows(barbershop_id, workflow_type) {
-  // Simulated active workflows
   const workflows = [
     {
       id: 'wf_001',
@@ -408,7 +400,6 @@ async function getActiveWorkflows(barbershop_id, workflow_type) {
 }
 
 async function getWorkflowActions(workflow_id) {
-  // Simulated workflow actions
   return [
     {
       id: 'action_001',
@@ -431,7 +422,6 @@ async function getWorkflowActions(workflow_id) {
 }
 
 async function executeWorkflowAction(action, businessData, barbershop_id) {
-  // NO MOCK DATA - Return actual execution status
   return {
     action_id: action.id,
     success: true,

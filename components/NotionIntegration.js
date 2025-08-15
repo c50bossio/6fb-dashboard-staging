@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 
 import { Button, Badge, Alert } from "@/components/ui"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-// Using emoji alternatives instead of lucide-react for Node.js compatibility
 const Database = () => <span>🗄️</span>
 const Download = () => <span>⬇️</span>
 const CheckCircle = () => <span>✅</span>

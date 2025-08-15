@@ -17,7 +17,6 @@ async function createVisibleAppointment() {
   const shopId = 'demo-shop-001' // Same as calendar
   
   try {
-    // Create appointment for today in the visible time range
     const now = new Date()
     const startTime = new Date(now)
     startTime.setHours(14, 0, 0, 0) // 2 PM today

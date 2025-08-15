@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -25,7 +24,6 @@ module.exports = {
         },
       },
       spacing: {
-        // Touch-friendly spacing
         'touch': '44px',      // Minimum touch target size
         'touch-lg': '48px',   // Large touch target
         'touch-xl': '56px',   // Extra large touch target
@@ -35,7 +33,6 @@ module.exports = {
         'safe-right': 'env(safe-area-inset-right)',
       },
       fontSize: {
-        // Mobile-optimized typography
         'mobile-xs': ['0.75rem', { lineHeight: '1rem' }],
         'mobile-sm': ['0.875rem', { lineHeight: '1.25rem' }],
         'mobile-base': ['1rem', { lineHeight: '1.5rem' }],
@@ -111,7 +108,6 @@ module.exports = {
   plugins: [
     function({ addUtilities, theme, addComponents }) {
       const newUtilities = {
-        // Touch-friendly utilities
         '.touch-target': {
           minWidth: theme('spacing.touch'),
           minHeight: theme('spacing.touch'),
@@ -133,7 +129,6 @@ module.exports = {
           alignItems: 'center',
           justifyContent: 'center',
         },
-        // Mobile-specific utilities
         '.mobile-container': {
           paddingLeft: theme('spacing.4'),
           paddingRight: theme('spacing.4'),
@@ -148,7 +143,6 @@ module.exports = {
           '-webkit-tap-highlight-color': 'transparent',
           touchAction: 'manipulation',
         },
-        // Gesture utilities
         '.swipeable': {
           touchAction: 'pan-x',
           userSelect: 'none',
@@ -173,12 +167,10 @@ module.exports = {
           scrollSnapAlign: 'start',
           scrollSnapStop: 'always',
         },
-        // iOS-specific utilities
         '.ios-bounce-disable': {
           '-webkit-overflow-scrolling': 'touch',
           overscrollBehavior: 'none',
         },
-        // Safe area utilities
         '.safe-area-full': {
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
@@ -188,7 +180,6 @@ module.exports = {
       }
 
       const newComponents = {
-        // Mobile card component
         '.mobile-card': {
           backgroundColor: theme('colors.white'),
           borderRadius: theme('borderRadius.lg'),
@@ -200,7 +191,6 @@ module.exports = {
             boxShadow: theme('boxShadow.touch-active'),
           },
         },
-        // Mobile button component
         '.mobile-btn': {
           minHeight: theme('spacing.touch'),
           padding: `${theme('spacing.3')} ${theme('spacing.6')}`,
@@ -215,7 +205,6 @@ module.exports = {
             transform: 'scale(0.96)',
           },
         },
-        // Mobile navigation
         '.mobile-nav': {
           position: 'fixed',
           bottom: '0',

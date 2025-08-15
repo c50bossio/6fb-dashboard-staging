@@ -21,7 +21,6 @@ import { StatCard, Card, Badge, Alert, StatusBadge } from '../ui'
 import { useTenant } from '@/contexts/TenantContext'
 import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
 
-// Fallback component in case ArrowTrendingUpIcon is not available
 const SafeArrowTrendingUpIcon = ArrowTrendingUpIcon || (() => <span>↗</span>)
 
 const MetricsOverview = React.memo(function MetricsOverview({ 
@@ -67,7 +66,6 @@ const MetricsOverview = React.memo(function MetricsOverview({
     )
   }
 
-  // Use tenant analytics data if available, fallback to dashboardStats
   const metrics = [
     {
       title: "Today's Conversations",
@@ -140,9 +138,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
     if (onMetricClick) {
       onMetricClick(metric);
     } else {
-      // Default behavior - show more details
       console.log(`📊 Metric clicked: ${metric.title}`, metric);
-      // You could show a modal or navigate to a detailed view
     }
   }
 

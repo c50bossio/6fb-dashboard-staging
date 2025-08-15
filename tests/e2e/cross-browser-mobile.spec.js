@@ -7,7 +7,6 @@
 
 const { test, expect, devices } = require('@playwright/test')
 
-// Define test devices
 const testDevices = [
   { name: 'Desktop Chrome', ...devices['Desktop Chrome'] },
   { name: 'Desktop Firefox', ...devices['Desktop Firefox'] },
@@ -22,7 +21,6 @@ testDevices.forEach(device => {
     test.use({ ...device })
 
     test.beforeEach(async ({ page }) => {
-      // Mock API responses
       await page.route('/api/v1/settings/**', async (route) => {
         if (route.request().method() === 'GET') {
           await route.fulfill({
@@ -59,7 +57,6 @@ testDevices.forEach(device => {
     })
 
     test('nuclear input typing works correctly', async ({ page }) => {
-      // Skip mobile-specific interactions for desktop browsers
       const isMobile = device.name.includes('iPhone') || device.name.includes('Galaxy')
       const isTablet = device.name.includes('iPad')
 
@@ -72,11 +69,9 @@ testDevices.forEach(device => {
       const testPhone = '+1 (555) 999-0000'
       
       if (isMobile) {
-        // Mobile typing behavior
         await phoneInput.tap()
         await page.keyboard.type(testPhone, { delay: 50 })
       } else {
-        // Desktop typing behavior
         await phoneInput.click()
         await phoneInput.type(testPhone, { delay: 30 })
       }
@@ -95,11 +90,9 @@ testDevices.forEach(device => {
       const emailInput = page.locator('input[placeholder="Enter email address"]')
 
       if (isMobile) {
-        // Test mobile-specific interactions
         await phoneInput.tap()
         await page.keyboard.type('+1 555 MOBILE', { delay: 100 })
         
-        // Mobile blur behavior
         await page.tap('body')
         await expect(phoneInput).not.toBeFocused()
 
@@ -107,7 +100,6 @@ testDevices.forEach(device => {
         await page.keyboard.type('mobile@test.com', { delay: 100 })
         
       } else if (isTablet) {
-        // Test tablet-specific interactions
         await phoneInput.click()
         await phoneInput.type('+1 555 TABLET', { delay: 50 })
         
@@ -115,7 +107,6 @@ testDevices.forEach(device => {
         await emailInput.type('tablet@test.com', { delay: 50 })
         
       } else {
-        // Desktop interactions
         await phoneInput.click()
         await phoneInput.type('+1 555 DESKTOP', { delay: 20 })
         
@@ -123,7 +114,6 @@ testDevices.forEach(device => {
         await emailInput.type('desktop@test.com', { delay: 20 })
       }
 
-      // Verify values based on device type
       if (isMobile) {
         expect(await phoneInput.inputValue()).toBe('+1 555 MOBILE')
         expect(await emailInput.inputValue()).toBe('mobile@test.com')
@@ -137,17 +127,13 @@ testDevices.forEach(device => {
     })
 
     test('responsive layout adjustments work correctly', async ({ page }) => {
-      // Check if layout adapts to viewport
       const viewport = page.viewportSize()
       
       if (viewport.width < 768) {
-        // Mobile layout checks
         await expect(page.locator('.grid')).toHaveClass(/grid-cols-1/)
       } else if (viewport.width < 1024) {
-        // Tablet layout checks
         await expect(page.locator('.lg\\:grid-cols-2')).toBeVisible()
       } else {
-        // Desktop layout checks
         await expect(page.locator('.lg\\:grid-cols-2')).toBeVisible()
       }
     })
@@ -165,15 +151,12 @@ testDevices.forEach(device => {
 
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       
-      // Test touch interactions
       await phoneInput.tap()
       await expect(phoneInput).toBeFocused()
 
-      // Type with touch keyboard
       await page.keyboard.type('+1 555 TOUCH-TEST')
       expect(await phoneInput.inputValue()).toBe('+1 555 TOUCH-TEST')
 
-      // Test touch blur
       await page.tap('body')
       await expect(phoneInput).not.toBeFocused()
     })
@@ -184,19 +167,15 @@ testDevices.forEach(device => {
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.clear()
 
-      // Test browser-specific behaviors
       if (device.name.includes('Safari')) {
-        // Safari-specific tests
         await phoneInput.type('+1 555 SAFARI-TEST', { delay: 80 })
         
-        // Safari might handle property descriptors differently
         await page.evaluate(() => {
           const input = document.querySelector('input[placeholder="Enter phone number"]')
           if (input) {
             try {
               input.value = 'safari-interference'
             } catch (e) {
-              // Expected to be blocked
             }
           }
         })
@@ -204,10 +183,8 @@ testDevices.forEach(device => {
         expect(await phoneInput.inputValue()).toBe('+1 555 SAFARI-TEST')
         
       } else if (device.name.includes('Firefox')) {
-        // Firefox-specific tests
         await phoneInput.type('+1 555 FIREFOX-TEST', { delay: 60 })
         
-        // Firefox property descriptor handling
         const isProtected = await page.evaluate(() => {
           const input = document.querySelector('input[placeholder="Enter phone number"]')
           try {
@@ -222,21 +199,17 @@ testDevices.forEach(device => {
         expect(isProtected).toBe(true)
         
       } else if (device.name.includes('Chrome')) {
-        // Chrome-specific tests
         await phoneInput.type('+1 555 CHROME-TEST', { delay: 40 })
         
-        // Chrome autofill resistance
         await page.evaluate(() => {
           const input = document.querySelector('input[placeholder="Enter phone number"]')
           if (input) {
-            // Simulate autofill attempt
             const event = new Event('input', { bubbles: true })
             input.value = 'autofill-attempt'
             input.dispatchEvent(event)
           }
         })
         
-        // Value should remain user-entered
         expect(await phoneInput.inputValue()).toBe('+1 555 CHROME-TEST')
       }
     })
@@ -247,7 +220,6 @@ testDevices.forEach(device => {
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.clear()
 
-      // Measure typing performance
       const startTime = Date.now()
       
       const testString = '+1 (555) PERFORMANCE-TEST-WITH-LONG-STRING-TO-MEASURE-TYPING-SPEED'
@@ -258,8 +230,6 @@ testDevices.forEach(device => {
 
       expect(await phoneInput.inputValue()).toBe(testString)
       
-      // Performance should be reasonable regardless of device
-      // Allow more time for mobile devices due to touch latency
       const maxTime = device.name.includes('iPhone') || device.name.includes('Galaxy') ? 8000 : 5000
       expect(typingDuration).toBeLessThan(maxTime)
     })
@@ -273,7 +243,6 @@ testDevices.forEach(device => {
 
       await page.click('button:has-text("Edit")')
 
-      // Test tab navigation
       await page.keyboard.press('Tab')
       let focused = await page.locator(':focus').getAttribute('placeholder')
       
@@ -282,12 +251,10 @@ testDevices.forEach(device => {
       
       expect(focused).not.toBe(nextFocused)
 
-      // Test arrow key navigation within inputs
       const phoneInput = page.locator('input[placeholder="Enter phone number"]')
       await phoneInput.click()
       await phoneInput.type('12345')
       
-      // Move cursor with arrow keys
       await page.keyboard.press('ArrowLeft')
       await page.keyboard.press('ArrowLeft')
       await page.keyboard.type('X')
@@ -297,12 +264,10 @@ testDevices.forEach(device => {
   })
 })
 
-// Additional cross-browser compatibility tests
 test.describe('Cross-Browser Feature Detection', () => {
   test('detects and handles missing browser features gracefully', async ({ page, browserName }) => {
     await page.goto('http://localhost:9999/dashboard/settings')
     
-    // Test feature detection
     const hasFeatureSupport = await page.evaluate(() => {
       return {
         mutationObserver: typeof MutationObserver !== 'undefined',
@@ -311,11 +276,9 @@ test.describe('Cross-Browser Feature Detection', () => {
       }
     })
 
-    // All modern browsers should support these features
     expect(hasFeatureSupport.mutationObserver).toBe(true)
     expect(hasFeatureSupport.propertyDescriptors).toBe(true)
 
-    // Test nuclear input still works even if some features are missing
     await page.route('/api/v1/settings/**', async (route) => {
       if (route.request().method() === 'GET') {
         await route.fulfill({
@@ -369,7 +332,6 @@ test.describe('Cross-Browser Feature Detection', () => {
     
     await page.click('button:has-text("Edit")')
     
-    // Test JavaScript engine specific behaviors
     const engineBehavior = await page.evaluate((browser) => {
       const input = document.createElement('input')
       const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')
@@ -387,7 +349,6 @@ test.describe('Cross-Browser Feature Detection', () => {
     expect(engineBehavior.hasSet).toBe(true)
     expect(engineBehavior.hasGet).toBe(true)
 
-    // Test that nuclear input works regardless of engine
     const phoneInput = page.locator('input[placeholder="Enter phone number"]')
     await phoneInput.clear()
     await phoneInput.type(`ENGINE-${browserName.toUpperCase()}-TEST`)

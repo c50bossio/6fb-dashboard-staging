@@ -2,7 +2,6 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
-// Cancel appointment (soft delete)
 export async function POST(request) {
   try {
     const { appointmentId } = await request.json()
@@ -14,14 +13,11 @@ export async function POST(request) {
       )
     }
 
-    // Initialize Supabase client
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
     )
 
-    // Soft delete: Update status to 'cancelled' instead of deleting
-    // First get the current appointment
     const { data: current } = await supabase
       .from('bookings')
       .select('notes')
@@ -31,7 +27,6 @@ export async function POST(request) {
     const currentNotes = current?.notes || ''
     const cancelNote = `${currentNotes} [Cancelled at ${new Date().toLocaleString()}]`
     
-    // Update the appointment
     const { data, error } = await supabase
       .from('bookings')
       .update({
@@ -50,7 +45,6 @@ export async function POST(request) {
       )
     }
 
-    // The UPDATE event will trigger real-time updates automatically
     console.log('✅ Appointment cancelled (soft delete):', appointmentId)
 
     return NextResponse.json({

@@ -48,10 +48,8 @@ async function fixRoles() {
     }
   }
   
-  // Link shop owner to barbershop
   console.log('\n🔗 Linking shop owner to barbershop...')
   
-  // Get shop owner ID
   const { data: owner } = await supabase
     .from('profiles')
     .select('id')
@@ -59,7 +57,6 @@ async function fixRoles() {
     .single()
   
   if (owner) {
-    // Update barbershop owner
     const { error: shopError } = await supabase
       .from('barbershops')
       .update({ owner_id: owner.id })
@@ -71,7 +68,6 @@ async function fixRoles() {
       console.log('❌ Failed to link shop owner:', shopError.message)
     }
     
-    // Also update Premium Cuts if it exists
     await supabase
       .from('barbershops')
       .update({ owner_id: owner.id })

@@ -43,7 +43,6 @@ class ContextCleaner {
     this.log('📊 Measuring context before cleanup...');
     
     try {
-      // Count relevant files for context
       const extensions = ['.js', '.jsx', '.ts', '.tsx', '.py', '.md', '.json'];
       const excludeDirs = ['node_modules', '.git', '.next', 'dist', 'coverage'];
       
@@ -68,7 +67,6 @@ class ContextCleaner {
             }
           }
         } catch (err) {
-          // Skip directories we can't read
         }
       };
 
@@ -94,7 +92,6 @@ class ContextCleaner {
         fs.mkdirSync(this.backupDir, { recursive: true });
       }
       
-      // Backup important config files
       const criticalFiles = [
         'package.json',
         'next.config.js',
@@ -147,7 +144,6 @@ class ContextCleaner {
           }
         }
       } catch (error) {
-        // Pattern might not match anything, continue
       }
     }
     
@@ -167,7 +163,6 @@ class ContextCleaner {
       '*-debug.js'
     ];
     
-    // Exclude legitimate test directories
     const excludePaths = [
       'tests/',
       '__tests__/',
@@ -183,7 +178,6 @@ class ContextCleaner {
         const files = execSync(command, { encoding: 'utf8' }).trim().split('\n').filter(f => f);
         
         for (const file of files) {
-          // Skip if in legitimate test directory
           const isLegitTest = excludePaths.some(dir => file.includes(dir));
           if (isLegitTest) continue;
           
@@ -199,7 +193,6 @@ class ContextCleaner {
           }
         }
       } catch (error) {
-        // Pattern might not match anything, continue
       }
     }
     
@@ -238,7 +231,6 @@ class ContextCleaner {
           }
         }
       } catch (error) {
-        // Pattern might not match anything, continue
       }
     }
     
@@ -292,7 +284,6 @@ class ContextCleaner {
         }
       }
     } catch (error) {
-      // Directory might not be accessible
     }
     return totalSize;
   }
@@ -301,13 +292,11 @@ class ContextCleaner {
     if (this.aggressive) {
       this.log('📁 Organizing remaining test files...');
       
-      // Move scattered test files to proper directories
       const testDir = path.join('.', '__tests__');
       if (!fs.existsSync(testDir) && !this.dryRun) {
         fs.mkdirSync(testDir, { recursive: true });
       }
       
-      // This is a placeholder for more complex organization logic
       this.log('Test file organization completed', 'success');
     }
   }
@@ -321,7 +310,6 @@ class ContextCleaner {
     this.log('📝 Committing cleanup changes to git...');
     
     try {
-      // Check if there are changes to commit
       const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
       
       if (status) {
@@ -400,15 +388,12 @@ irrelevant files that consume context window space.
     }
     
     try {
-      // Pre-cleanup measurements
       await this.measureContextBefore();
       
-      // Safety backup
       if (!this.dryRun) {
         this.createBackup();
       }
       
-      // Cleanup operations
       this.removeLogFiles();
       this.removeTestDebugFiles();
       this.removeBackupFiles();
@@ -418,7 +403,6 @@ irrelevant files that consume context window space.
         this.organizeTestFiles();
       }
       
-      // Post-cleanup
       this.commitChanges();
       await this.measureContextAfter();
       this.generateReport();
@@ -438,7 +422,6 @@ irrelevant files that consume context window space.
   }
 }
 
-// CLI interface
 if (require.main === module) {
   const cleaner = new ContextCleaner();
   

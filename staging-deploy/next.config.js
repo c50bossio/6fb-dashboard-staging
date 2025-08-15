@@ -1,30 +1,23 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Production optimizations
   compress: true,
   poweredByHeader: false,
   generateEtags: false,
   
-  // Enable TypeScript checking during build for code quality
   typescript: {
     ignoreBuildErrors: false,
   },
   
-  // Docker/standalone configuration
   output: 'standalone',
   
-  // Custom server port configuration
   env: {
     PORT: process.env.PORT || '9999',
     CUSTOM_KEY: process.env.CUSTOM_KEY || 'development',
     BUNDLE_ANALYZE: process.env.ANALYZE || 'false',
-    // Google OAuth configuration (server-side only)
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/callback',
   },
   
-  // Bundle optimization
   experimental: {
     optimizeCss: false,
     optimizePackageImports: [
@@ -33,11 +26,9 @@ const nextConfig = {
       'recharts',
       'framer-motion'
     ],
-    // Enable modern builds
     esmExternals: true,
   },
 
-  // Performance optimizations
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
@@ -46,9 +37,7 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
-    // Production optimizations
     if (!dev) {
       config.optimization = {
         ...config.optimization,
@@ -88,7 +77,6 @@ const nextConfig = {
         },
       }
       
-      // Tree shaking optimization
       config.optimization.usedExports = true
       config.optimization.sideEffects = false
     }
@@ -96,7 +84,6 @@ const nextConfig = {
     return config
   },
 
-  // Headers for performance
   async headers() {
     return [
       {
@@ -132,7 +119,6 @@ const nextConfig = {
     ]
   },
 
-  // API rewrites for backend integration
   async rewrites() {
     return [
       {
@@ -144,7 +130,6 @@ const nextConfig = {
     ]
   },
 
-  // Transpile packages - removed workspace packages since they're now local
 }
 
 module.exports = nextConfig

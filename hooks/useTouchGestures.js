@@ -25,18 +25,15 @@ export function useTouchGestures(options = {}) {
   const longPressTimer = useRef(null)
   const elementRef = useRef(null)
 
-  // Calculate distance between two touch points
   const getDistance = (touch1, touch2) => {
     const dx = touch1.clientX - touch2.clientX
     const dy = touch1.clientY - touch2.clientY
     return Math.sqrt(dx * dx + dy * dy)
   }
 
-  // Handle touch start
   const handleTouchStart = useCallback((e) => {
     if (preventDefault) e.preventDefault()
 
-    // Handle pinch gesture start
     if (e.touches.length === 2) {
       setIsPinching(true)
       const distance = getDistance(e.touches[0], e.touches[1])
@@ -44,14 +41,12 @@ export function useTouchGestures(options = {}) {
       return
     }
 
-    // Single touch
     setTouchStart({
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
       time: Date.now()
     })
 
-    // Start long press timer
     if (onLongPress) {
       longPressTimer.current = setTimeout(() => {
         onLongPress(e)
@@ -59,11 +54,9 @@ export function useTouchGestures(options = {}) {
     }
   }, [onLongPress, longPressDelay, preventDefault])
 
-  // Handle touch move
   const handleTouchMove = useCallback((e) => {
     if (preventDefault) e.preventDefault()
 
-    // Handle pinch zoom
     if (isPinching && e.touches.length === 2 && initialPinchDistance) {
       const currentDistance = getDistance(e.touches[0], e.touches[1])
       const scale = currentDistance / initialPinchDistance
@@ -74,7 +67,6 @@ export function useTouchGestures(options = {}) {
       return
     }
 
-    // Cancel long press on move
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current)
       longPressTimer.current = null
@@ -86,18 +78,15 @@ export function useTouchGestures(options = {}) {
     })
   }, [isPinching, initialPinchDistance, onPinchZoom, preventDefault])
 
-  // Handle touch end
   const handleTouchEnd = useCallback((e) => {
     if (preventDefault) e.preventDefault()
 
-    // Reset pinch
     if (isPinching) {
       setIsPinching(false)
       setInitialPinchDistance(null)
       return
     }
 
-    // Clear long press timer
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current)
       longPressTimer.current = null
@@ -105,16 +94,13 @@ export function useTouchGestures(options = {}) {
 
     if (!touchStart || !touchEnd) return
 
-    // Calculate swipe distance and direction
     const deltaX = touchEnd.x - touchStart.x
     const deltaY = touchEnd.y - touchStart.y
     const absDeltaX = Math.abs(deltaX)
     const absDeltaY = Math.abs(deltaY)
     const timeDiff = Date.now() - touchStart.time
 
-    // Check if it's a swipe (not too slow)
     if (timeDiff < 1000) {
-      // Horizontal swipe
       if (absDeltaX > absDeltaY && absDeltaX > swipeThreshold) {
         if (deltaX > 0 && onSwipeRight) {
           onSwipeRight()
@@ -123,7 +109,6 @@ export function useTouchGestures(options = {}) {
         }
       }
       
-      // Vertical swipe
       else if (absDeltaY > absDeltaX && absDeltaY > swipeThreshold) {
         if (deltaY > 0 && onSwipeDown) {
           onSwipeDown()
@@ -133,7 +118,6 @@ export function useTouchGestures(options = {}) {
       }
     }
 
-    // Reset
     setTouchStart(null)
     setTouchEnd(null)
   }, [
@@ -148,7 +132,6 @@ export function useTouchGestures(options = {}) {
     preventDefault
   ])
 
-  // Attach event listeners
   useEffect(() => {
     const element = elementRef.current
     if (!element) return
@@ -171,7 +154,6 @@ export function useTouchGestures(options = {}) {
   return elementRef
 }
 
-// Hook for pull-to-refresh
 export function usePullToRefresh(onRefresh, options = {}) {
   const { threshold = 100, resistance = 2.5 } = options
   const [isPulling, setIsPulling] = useState(false)
@@ -233,7 +215,6 @@ export function usePullToRefresh(onRefresh, options = {}) {
   }
 }
 
-// Hook for detecting mobile viewport
 export function useMobileViewport() {
   const [viewport, setViewport] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 0,
@@ -263,7 +244,6 @@ export function useMobileViewport() {
     window.addEventListener('resize', handleResize)
     window.addEventListener('orientationchange', handleResize)
 
-    // Initial call
     handleResize()
 
     return () => {

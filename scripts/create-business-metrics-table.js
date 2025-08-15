@@ -18,7 +18,6 @@ async function createBusinessMetricsTable() {
   try {
     const schema = fs.readFileSync('./database/business-metrics-schema.sql', 'utf8')
     
-    // Split the schema into individual statements
     const statements = schema
       .split(';')
       .map(stmt => stmt.trim())
@@ -36,10 +35,8 @@ async function createBusinessMetricsTable() {
         })
         
         if (error) {
-          // Try alternative approach for table creation
           if (statement.includes('CREATE TABLE')) {
             console.log('   Trying direct table creation...')
-            // For table creation, we can use the raw SQL approach
             const { error: rawError } = await supabase.from('_').select('1').limit(0)  // This will fail but establish connection
             console.log(`   ⚠️ Table creation attempted: ${error.message}`)
           } else if (statement.includes('CREATE INDEX')) {
@@ -57,7 +54,6 @@ async function createBusinessMetricsTable() {
       }
     }
     
-    // Test if business_metrics table exists
     console.log('\n🔍 Verifying business_metrics table...')
     const { data: tableCheck, error: checkError } = await supabase
       .from('business_metrics')
@@ -73,14 +69,12 @@ async function createBusinessMetricsTable() {
       console.log('✅ business_metrics table verified and accessible')
     }
     
-    // Seed some sample metrics data
     console.log('\n📊 Creating sample business metrics...')
     
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
     
-    // Get a barbershop ID to use for sample data
     const { data: barbershops } = await supabase
       .from('barbershops')
       .select('id')
@@ -165,5 +159,4 @@ async function createBusinessMetricsTable() {
   }
 }
 
-// Run the script
 createBusinessMetricsTable().catch(console.error)

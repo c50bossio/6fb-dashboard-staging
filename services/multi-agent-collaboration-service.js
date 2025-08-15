@@ -52,7 +52,6 @@ export class MultiAgentCollaborationService {
    */
   defineCollaborationPatterns() {
     return {
-      // Revenue optimization requires financial + marketing + operations
       revenue_optimization: {
         lead: 'marcus',
         support: ['sophia', 'david'],
@@ -60,7 +59,6 @@ export class MultiAgentCollaborationService {
         description: 'Comprehensive revenue optimization strategy'
       },
       
-      // Customer growth requires marketing + financial + operations
       customer_growth: {
         lead: 'sophia',
         support: ['marcus', 'david'],
@@ -68,7 +66,6 @@ export class MultiAgentCollaborationService {
         description: 'Customer acquisition and retention strategy'
       },
       
-      // Business expansion requires all agents
       business_expansion: {
         lead: 'master_coach',
         support: ['marcus', 'sophia', 'david'],
@@ -76,7 +73,6 @@ export class MultiAgentCollaborationService {
         description: 'Complete business growth and expansion plan'
       },
       
-      // Crisis management requires rapid collaboration
       crisis_management: {
         lead: 'master_coach',
         support: ['marcus', 'sophia', 'david'],
@@ -84,7 +80,6 @@ export class MultiAgentCollaborationService {
         description: 'Emergency response and recovery plan'
       },
       
-      // Pricing strategy requires finance + marketing
       pricing_strategy: {
         lead: 'marcus',
         support: ['sophia'],
@@ -92,7 +87,6 @@ export class MultiAgentCollaborationService {
         description: 'Optimal pricing strategy based on costs and market'
       },
       
-      // Schedule optimization requires operations + finance
       schedule_optimization: {
         lead: 'david',
         support: ['marcus'],
@@ -135,7 +129,6 @@ export class MultiAgentCollaborationService {
       ]
     }
 
-    // Check for high complexity indicators
     for (const indicator of complexityIndicators.high) {
       if (queryLower.includes(indicator)) {
         return { 
@@ -146,7 +139,6 @@ export class MultiAgentCollaborationService {
       }
     }
 
-    // Check for medium complexity
     for (const indicator of complexityIndicators.medium) {
       if (queryLower.includes(indicator)) {
         return { 
@@ -157,7 +149,6 @@ export class MultiAgentCollaborationService {
       }
     }
 
-    // Check if query spans multiple domains
     const domainKeywords = {
       financial: ['revenue', 'profit', 'cost', 'price', 'money'],
       marketing: ['customer', 'promotion', 'marketing', 'social', 'brand'],
@@ -194,17 +185,14 @@ export class MultiAgentCollaborationService {
     const collaborationId = `collab_${Date.now()}`
     console.log(`🤝 Starting multi-agent collaboration: ${collaborationId}`)
 
-    // Analyze query complexity
     const complexity = this.analyzeQueryComplexity(query)
     
     if (!complexity.requiresCollaboration) {
       return null // Let single agent handle it
     }
 
-    // Determine collaboration pattern
     const pattern = this.selectCollaborationPattern(query, complexity)
     
-    // Initialize collaboration session
     const session = {
       id: collaborationId,
       query,
@@ -219,7 +207,6 @@ export class MultiAgentCollaborationService {
     this.activeCollaborations.set(collaborationId, session)
 
     try {
-      // Execute collaboration based on pattern
       let result
       switch (pattern.pattern) {
         case 'sequential':
@@ -241,7 +228,6 @@ export class MultiAgentCollaborationService {
           result = await this.executeParallelCollaboration(session, query, context, businessData)
       }
 
-      // Synthesize final response
       const synthesis = await this.synthesizeResponses(session, result)
       
       session.status = 'completed'
@@ -272,7 +258,6 @@ export class MultiAgentCollaborationService {
   selectCollaborationPattern(query, complexity) {
     const queryLower = query.toLowerCase()
 
-    // Check for specific patterns
     if (queryLower.includes('grow') || queryLower.includes('expand')) {
       return this.collaborationPatterns.business_expansion
     }
@@ -297,12 +282,10 @@ export class MultiAgentCollaborationService {
       return this.collaborationPatterns.schedule_optimization
     }
 
-    // Default to business expansion for high complexity
     if (complexity.complexity === 'high') {
       return this.collaborationPatterns.business_expansion
     }
 
-    // Default to customer growth for medium complexity
     return this.collaborationPatterns.customer_growth
   }
 
@@ -316,7 +299,6 @@ export class MultiAgentCollaborationService {
     for (const agentId of session.agents) {
       const agent = this.agents[agentId]
       
-      // Build context including previous agent's response
       const agentContext = {
         ...context,
         previousAnalysis: previousResponse,
@@ -377,7 +359,6 @@ export class MultiAgentCollaborationService {
     const coordinator = this.agents[session.pattern.lead]
     const supportAgents = session.pattern.support
 
-    // Get initial analysis from support agents
     const supportResponses = await Promise.all(
       supportAgents.map(agentId => {
         const agent = this.agents[agentId]
@@ -390,7 +371,6 @@ export class MultiAgentCollaborationService {
       })
     )
 
-    // Coordinator synthesizes all responses
     const coordinatorContext = {
       ...context,
       expertAnalysis: supportResponses,
@@ -419,7 +399,6 @@ export class MultiAgentCollaborationService {
    * Execute rapid response collaboration (crisis mode)
    */
   async executeRapidResponseCollaboration(session, query, context, businessData) {
-    // All agents provide immediate, focused responses
     const urgentContext = {
       ...context,
       mode: 'urgent',
@@ -433,7 +412,6 @@ export class MultiAgentCollaborationService {
       businessData
     )
 
-    // Sort by priority/urgency
     responses.sort((a, b) => {
       const priorityOrder = ['master_coach', 'marcus', 'david', 'sophia']
       return priorityOrder.indexOf(a.agentId) - priorityOrder.indexOf(b.agentId)
@@ -449,7 +427,6 @@ export class MultiAgentCollaborationService {
     const leadAgent = this.agents[session.pattern.lead]
     const supportAgents = session.pattern.support
 
-    // Lead agent provides initial analysis
     const leadResponse = await this.getAgentResponse(
       leadAgent,
       query,
@@ -457,7 +434,6 @@ export class MultiAgentCollaborationService {
       businessData
     )
 
-    // Support agents provide additional insights
     const supportContext = {
       ...context,
       leadAnalysis: leadResponse,
@@ -491,10 +467,8 @@ export class MultiAgentCollaborationService {
    * Get individual agent response
    */
   async getAgentResponse(agent, query, context, businessData) {
-    // Simulate agent thinking (in production, this would call the AI API)
     const agentPrompt = this.buildAgentPrompt(agent, query, context, businessData)
     
-    // For now, return a structured response based on agent expertise
     return {
       analysis: `${agent.name}'s analysis of the situation based on ${agent.role} expertise`,
       recommendations: this.generateAgentRecommendations(agent, query, businessData),
@@ -602,7 +576,6 @@ export class MultiAgentCollaborationService {
       expected_outcomes: []
     }
 
-    // Extract key insights from each response
     responses.forEach(r => {
       if (r.response.recommendations) {
         synthesis.key_insights.push({
@@ -612,7 +585,6 @@ export class MultiAgentCollaborationService {
       }
     })
 
-    // Build action plan
     synthesis.action_plan = [
       {
         priority: 1,
@@ -634,26 +606,22 @@ export class MultiAgentCollaborationService {
       }
     ]
 
-    // Identify consensus points
     synthesis.consensus_points = [
       'All agents agree on the need for immediate action',
       'Revenue optimization is a shared priority',
       'Customer experience improvements are critical'
     ]
 
-    // Create summary
     synthesis.summary = `Based on collaborative analysis from ${responses.length} specialized agents, 
       we've identified ${synthesis.key_insights.length} key insights and developed a 
       ${synthesis.action_plan.length}-step action plan. The team consensus indicates 
       ${session.complexity.complexity} complexity requiring coordinated effort across 
       ${session.agents.join(', ')}.`
 
-    // Priority actions
     synthesis.priority_actions = responses
       .flatMap(r => r.response.recommendations || [])
       .slice(0, 5)
 
-    // Expected outcomes
     synthesis.expected_outcomes = [
       '15-20% revenue increase within 30 days',
       'Improved customer retention by 10%',
@@ -672,7 +640,6 @@ export class MultiAgentCollaborationService {
     
     const avgConfidence = confidences.reduce((a, b) => a + b, 0) / confidences.length
     
-    // Adjust based on collaboration pattern success
     const patternBonus = session.pattern.pattern === 'hierarchical' ? 0.05 : 0
     
     return Math.min(0.95, avgConfidence + patternBonus)
@@ -697,6 +664,5 @@ export class MultiAgentCollaborationService {
   }
 }
 
-// Export singleton instance
 export const multiAgentCollaboration = new MultiAgentCollaborationService()
 export default multiAgentCollaboration

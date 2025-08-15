@@ -4,7 +4,6 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
-// Validation schema for updates
 const updateAppointmentSchema = z.object({
   scheduled_at: z.string().datetime().optional(),
   duration_minutes: z.number().min(15).max(480).optional(),
@@ -18,13 +17,11 @@ const updateAppointmentSchema = z.object({
   barber_notes: z.string().max(500).optional(),
 })
 
-// GET /api/appointments/[id] - Get single appointment
 export async function GET(request, { params }) {
   try {
     const supabase = createClient()
     const { id } = params
     
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -58,13 +55,11 @@ export async function GET(request, { params }) {
   }
 }
 
-// PATCH /api/appointments/[id] - Update appointment
 export async function PATCH(request, { params }) {
   try {
     const supabase = createClient()
     const { id } = params
     
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -72,7 +67,6 @@ export async function PATCH(request, { params }) {
 
     const body = await request.json()
     
-    // Validate request body
     const validationResult = updateAppointmentSchema.safeParse(body)
     if (!validationResult.success) {
       return NextResponse.json({
@@ -83,9 +77,7 @@ export async function PATCH(request, { params }) {
 
     const updateData = validationResult.data
 
-    // If updating time, check for conflicts
     if (updateData.scheduled_at || updateData.duration_minutes) {
-      // Get current appointment details
       const { data: currentAppointment, error: fetchError } = await supabase
         .from('bookings')
         .select('barber_id, scheduled_at, duration_minutes')
@@ -99,7 +91,6 @@ export async function PATCH(request, { params }) {
       const newScheduledAt = updateData.scheduled_at || currentAppointment.scheduled_at
       const newDuration = updateData.duration_minutes || currentAppointment.duration_minutes
 
-      // Check for conflicts
       const conflictCheck = await supabase
         .from('bookings')
         .select('id, scheduled_at, duration_minutes')
@@ -127,7 +118,6 @@ export async function PATCH(request, { params }) {
       }
     }
 
-    // Recalculate total if price or tip changes
     if (updateData.service_price !== undefined || updateData.tip_amount !== undefined) {
       const { data: current, error: currentError } = await supabase
         .from('bookings')
@@ -142,7 +132,6 @@ export async function PATCH(request, { params }) {
       }
     }
 
-    // Update appointment
     const { data: appointment, error } = await supabase
       .from('bookings')
       .update({
@@ -175,13 +164,11 @@ export async function PATCH(request, { params }) {
   }
 }
 
-// DELETE /api/appointments/[id] - Delete/Cancel appointment
 export async function DELETE(request, { params }) {
   try {
     const supabase = createClient()
     const { id } = params
     
-    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -191,7 +178,6 @@ export async function DELETE(request, { params }) {
     const hardDelete = searchParams.get('hard') === 'true'
 
     if (hardDelete) {
-      // Permanently delete appointment
       const { error } = await supabase
         .from('bookings')
         .delete()
@@ -206,7 +192,6 @@ export async function DELETE(request, { params }) {
         message: 'Appointment deleted permanently'
       })
     } else {
-      // Soft delete by marking as cancelled
       const { data: appointment, error } = await supabase
         .from('bookings')
         .update({

@@ -32,7 +32,6 @@ export default function ShopAnalytics() {
 
   const loadAnalyticsData = async () => {
     try {
-      // Mock comprehensive analytics data
       const mockData = {
         overview: {
           totalRevenue: 18750,

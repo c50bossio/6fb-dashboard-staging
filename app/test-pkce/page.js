@@ -8,12 +8,10 @@ export default function TestPKCEPage() {
   const [supabase, setSupabase] = useState(null)
   
   useEffect(() => {
-    // Initialize Supabase client
     const client = createClient()
     setSupabase(client)
     addLog('Supabase client initialized')
     
-    // Check for PKCE verifier immediately
     checkPKCEVerifier()
   }, [])
   
@@ -26,7 +24,6 @@ export default function TestPKCEPage() {
   const checkPKCEVerifier = () => {
     addLog('Checking for PKCE verifier...')
     
-    // Check all possible PKCE storage keys
     const possibleKeys = [
       'sb-dfhqjdoydihajmjxniee-auth-token-code-verifier',
       'sb-dfhqjdoydihajmjxniee-auth-token',
@@ -50,7 +47,6 @@ export default function TestPKCEPage() {
               found = true
             }
           } catch {
-            // Not JSON
           }
         }
       }
@@ -60,7 +56,6 @@ export default function TestPKCEPage() {
       addLog('❌ No PKCE verifier found in localStorage', 'error')
     }
     
-    // Also check all localStorage keys
     const allKeys = Object.keys(localStorage)
     addLog(`Total localStorage keys: ${allKeys.length}`)
     allKeys.forEach(key => {
@@ -78,7 +73,6 @@ export default function TestPKCEPage() {
     
     addLog('Starting OAuth flow...')
     
-    // Clear old auth data first
     const authKeys = Object.keys(localStorage).filter(k => 
       k.includes('sb-') || k.includes('supabase') || k.includes('auth')
     )
@@ -88,7 +82,6 @@ export default function TestPKCEPage() {
     })
     
     try {
-      // Start OAuth with debug logging
       addLog('Calling signInWithOAuth...')
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -104,17 +97,14 @@ export default function TestPKCEPage() {
       
       addLog('OAuth initiated successfully', 'success')
       
-      // Immediately check if PKCE verifier was stored
       setTimeout(() => {
         addLog('Checking if PKCE verifier was stored...')
         checkPKCEVerifier()
       }, 100)
       
-      // Show redirect URL
       if (data?.url) {
         addLog(`Redirect URL: ${data.url.substring(0, 100)}...`)
         
-        // Wait a moment to check storage, then redirect
         setTimeout(() => {
           addLog('Redirecting to Google...')
           window.location.href = data.url
@@ -130,17 +120,14 @@ export default function TestPKCEPage() {
   const testManualPKCE = () => {
     addLog('Testing manual PKCE storage...')
     
-    // Generate a test verifier
     const testVerifier = 'test_verifier_' + Math.random().toString(36).substring(7)
     
-    // Try storing it in the expected location
     const key = 'sb-dfhqjdoydihajmjxniee-auth-token-code-verifier'
     localStorage.setItem(key, testVerifier)
     
     addLog(`Manually stored verifier at: ${key}`, 'success')
     addLog(`Value: ${testVerifier}`)
     
-    // Verify it was stored
     const retrieved = localStorage.getItem(key)
     if (retrieved === testVerifier) {
       addLog('✅ localStorage is working correctly', 'success')

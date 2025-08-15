@@ -17,7 +17,6 @@ const TimeRangePicker = ({
 }) => {
   const [hasError, setHasError] = useState(false)
 
-  // Error boundary effect
   useEffect(() => {
     const handleError = (error) => {
       console.warn('TimeRangePicker error, falling back to simple version:', error)
@@ -28,7 +27,6 @@ const TimeRangePicker = ({
     return () => window.removeEventListener('error', handleError)
   }, [])
 
-  // If there's an error, use the simple fallback
   if (hasError) {
     return (
       <SimpleTimeRangePicker
@@ -41,7 +39,6 @@ const TimeRangePicker = ({
       />
     )
   }
-  // Validate time range
   const validateTimeRange = (open, close) => {
     try {
       if (!open || !close) return null
@@ -49,7 +46,6 @@ const TimeRangePicker = ({
       const [openHour, openMin] = open.split(':').map(Number)
       const [closeHour, closeMin] = close.split(':').map(Number)
       
-      // Check if parsing was successful
       if (isNaN(openHour) || isNaN(openMin) || isNaN(closeHour) || isNaN(closeMin)) {
         return "Invalid time format"
       }
@@ -74,7 +70,6 @@ const TimeRangePicker = ({
 
   const validationError = error || validateTimeRange(openTime, closeTime)
 
-  // Calculate duration
   const calculateDuration = () => {
     try {
       if (!openTime || !closeTime || validationError) return null

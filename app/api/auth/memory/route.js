@@ -5,13 +5,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-// Memory tracking for OAuth operations
 const oauthSessions = new Map()
 const OAUTH_SESSION_TTL = 5 * 60 * 1000 // 5 minutes
 
 export async function GET(request) {
   try {
-    // Get memory usage statistics
     const memoryUsage = process.memoryUsage()
     const memoryStats = {
       rss: Math.round(memoryUsage.rss / 1024 / 1024), // MB
@@ -21,10 +19,8 @@ export async function GET(request) {
       arrayBuffers: Math.round(memoryUsage.arrayBuffers / 1024 / 1024), // MB
     }
     
-    // Calculate memory pressure (0-1 scale)
     const memoryPressure = memoryUsage.heapUsed / memoryUsage.heapTotal
     
-    // Count active OAuth sessions
     const currentTime = Date.now()
     let activeOAuthSessions = 0
     let expiredSessions = []
@@ -37,7 +33,6 @@ export async function GET(request) {
       }
     }
     
-    // Clean up expired sessions
     expiredSessions.forEach(sessionId => {
       oauthSessions.delete(sessionId)
     })
@@ -77,7 +72,6 @@ export async function POST(request) {
           }, { status: 400 })
         }
         
-        // Register OAuth session for tracking
         oauthSessions.set(sessionId, {
           createdAt: Date.now(),
           ...sessionData
@@ -94,7 +88,6 @@ export async function POST(request) {
         
       case 'cleanup':
         if (sessionId) {
-          // Clean up specific session
           const deleted = oauthSessions.delete(sessionId)
           console.log(`🧹 OAuth session cleanup: ${sessionId} - ${deleted ? 'found and removed' : 'not found'}`)
           
@@ -105,7 +98,6 @@ export async function POST(request) {
             totalSessions: oauthSessions.size
           })
         } else {
-          // Clean up all expired sessions
           const currentTime = Date.now()
           let cleanedCount = 0
           
@@ -116,7 +108,6 @@ export async function POST(request) {
             }
           }
           
-          // Force garbage collection if memory pressure is high
           const memoryUsage = process.memoryUsage()
           const memoryPressure = memoryUsage.heapUsed / memoryUsage.heapTotal
           
@@ -136,11 +127,9 @@ export async function POST(request) {
         }
         
       case 'force-cleanup':
-        // Emergency cleanup - clear all OAuth sessions
         const clearedCount = oauthSessions.size
         oauthSessions.clear()
         
-        // Force garbage collection
         if (global.gc) {
           global.gc()
           console.log('🚨 Emergency cleanup: forced garbage collection')

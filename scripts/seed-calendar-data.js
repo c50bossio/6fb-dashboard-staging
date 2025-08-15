@@ -4,7 +4,6 @@ import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 import { faker } from '@faker-js/faker'
 
-// Initialize Supabase client with service role key
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -21,7 +20,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
-// Configuration
 const CONFIG = {
   shopId: 'demo-shop-001',
   numberOfBarbers: 4,
@@ -32,7 +30,6 @@ const CONFIG = {
   isTestData: true // Mark all data as test data
 }
 
-// Predefined data for consistency
 const BARBER_NAMES = [
   'John Smith',
   'Sarah Johnson',
@@ -60,7 +57,6 @@ const SERVICES = [
   { name: 'Shave', duration: 30, price: 30, description: 'Traditional hot towel shave' }
 ]
 
-// Helper functions
 function getRandomElement(array) {
   return array[Math.floor(Math.random() * array.length)]
 }
@@ -75,7 +71,6 @@ async function clearTestData() {
   console.log('🧹 Clearing existing test data...')
   
   try {
-    // Delete test bookings first (due to foreign key constraints)
     const { error: bookingsError } = await supabase
       .from('bookings')
       .delete()
@@ -85,7 +80,6 @@ async function clearTestData() {
       console.log('Note: bookings table not found or no test data to clear')
     }
 
-    // Delete test customers
     const { error: customersError } = await supabase
       .from('customers')
       .delete()
@@ -95,7 +89,6 @@ async function clearTestData() {
       console.log('Note: customers table not found or no test data to clear')
     }
 
-    // Delete test services
     const { error: servicesError } = await supabase
       .from('services')
       .delete()
@@ -105,7 +98,6 @@ async function clearTestData() {
       console.log('Note: services table not found or no test data to clear')
     }
 
-    // Delete test barbers
     const { error: barbersError } = await supabase
       .from('barbers')
       .delete()
@@ -127,7 +119,6 @@ async function seedBarbers() {
   const barbers = []
   for (let i = 0; i < CONFIG.numberOfBarbers; i++) {
     barbers.push({
-      // Don't set ID - let Supabase auto-generate it
       shop_id: CONFIG.shopId,
       name: BARBER_NAMES[i] || faker.person.fullName(),
       email: faker.internet.email(),
@@ -165,7 +156,6 @@ async function seedServices() {
   console.log('✂️  Creating test services...')
   
   const services = SERVICES.map((service, index) => ({
-    // Don't set ID - let Supabase auto-generate it
     shop_id: CONFIG.shopId,
     name: service.name,
     description: service.description,
@@ -204,7 +194,6 @@ async function seedCustomers() {
     const lastName = faker.person.lastName()
     
     customers.push({
-      // Don't set ID - let Supabase auto-generate it
       shop_id: CONFIG.shopId,
       name: `${firstName} ${lastName}`,
       email: faker.internet.email({ firstName, lastName }),
@@ -249,7 +238,6 @@ async function seedRecurringAppointments(barbers, services, customers) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   
-  // Create 3 recurring appointments with different patterns
   const recurringPatterns = [
     {
       name: 'Weekly Friday haircut',
@@ -274,15 +262,12 @@ async function seedRecurringAppointments(barbers, services, customers) {
     const service = services[i % services.length]
     const customer = customers[i % customers.length]
     
-    // Set start date to next occurrence of the pattern
     const startDate = new Date()
     if (pattern.name.includes('Friday')) {
-      // Next Friday at 2pm
       const daysUntilFriday = (5 - startDate.getDay() + 7) % 7 || 7
       startDate.setDate(startDate.getDate() + daysUntilFriday)
       startDate.setHours(14, 0, 0, 0)
     } else if (pattern.name.includes('Monday')) {
-      // Next Monday at 10am
       const daysUntilMonday = (1 - startDate.getDay() + 7) % 7 || 7
       startDate.setDate(startDate.getDate() + daysUntilMonday)
       startDate.setHours(10, 0, 0, 0)
@@ -297,7 +282,6 @@ async function seedRecurringAppointments(barbers, services, customers) {
     endDate.setMinutes(endDate.getMinutes() + service.duration_minutes)
     
     recurringAppointments.push({
-      // Don't set ID - let Supabase auto-generate it
       shop_id: CONFIG.shopId,
       barber_id: barber.id,
       customer_id: customer.id,
@@ -353,15 +337,12 @@ async function seedAppointments(barbers, services, customers) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   
-  // Generate appointments for each day
   for (let day = 0; day < CONFIG.daysToGenerate; day++) {
     const currentDate = new Date(today)
     currentDate.setDate(today.getDate() + day - 7) // Start from 7 days ago
     
-    // Skip Sundays
     if (currentDate.getDay() === 0) continue
     
-    // Generate appointments for each barber
     for (const barber of barbers) {
       const appointmentCount = Math.floor(Math.random() * 3) + CONFIG.appointmentsPerBarberPerDay - 2
       const timeSlots = generateDayTimeSlots(currentDate)
@@ -375,7 +356,6 @@ async function seedAppointments(barbers, services, customers) {
         const endTime = new Date(startTime)
         endTime.setMinutes(endTime.getMinutes() + service.duration_minutes)
         
-        // Determine status based on date
         let status = 'confirmed'
         if (currentDate < today) {
           status = Math.random() > 0.1 ? 'completed' : 'cancelled'
@@ -387,7 +367,6 @@ async function seedAppointments(barbers, services, customers) {
         }
         
         appointments.push({
-          // Don't set ID - let Supabase auto-generate it
           shop_id: CONFIG.shopId,
           barber_id: barber.id,
           customer_id: customer.id,
@@ -405,7 +384,6 @@ async function seedAppointments(barbers, services, customers) {
     }
   }
 
-  // Insert in batches to avoid overwhelming the database
   const batchSize = 50
   let totalInserted = 0
   
@@ -452,7 +430,6 @@ function generateDayTimeSlots(date) {
     { hour: 17, minute: 0 }
   ]
   
-  // Randomly select time slots
   const selectedSlots = []
   for (const slot of workHours) {
     if (Math.random() > 0.3) { // 70% chance of having an appointment at this time
@@ -476,10 +453,8 @@ async function main() {
   console.log('')
 
   try {
-    // Clear existing test data
     await clearTestData()
     
-    // Seed data in order (respecting foreign key constraints)
     const barbers = await seedBarbers()
     const services = await seedServices()
     const customers = await seedCustomers()
@@ -501,5 +476,4 @@ async function main() {
   }
 }
 
-// Run the script
 main().catch(console.error)

@@ -20,7 +20,6 @@ export async function DELETE(request) {
       soft_delete = true // Soft delete by default for history preservation
     } = body;
 
-    // Validate required fields
     if (!appointment_id) {
       return NextResponse.json(
         { error: 'Appointment ID is required' },
@@ -35,7 +34,6 @@ export async function DELETE(request) {
       );
     }
 
-    // Fetch the appointment
     const { data: appointment, error: fetchError } = await supabase
       .from('bookings')
       .select('*')
@@ -104,20 +102,17 @@ async function deleteThisOnly(appointment, occurrenceDate, softDelete) {
     const exceptions = appointment.recurring_pattern?.exceptions || [];
     const deletions = appointment.recurring_pattern?.deletions || {};
     
-    // Add this date to exceptions list
     const occurrenceKey = new Date(occurrenceDate).toISOString().split('T')[0];
     
     if (!exceptions.includes(occurrenceKey)) {
       exceptions.push(occurrenceKey);
     }
     
-    // Record the deletion
     deletions[occurrenceKey] = {
       deleted_at: new Date().toISOString(),
       soft_delete: softDelete
     };
 
-    // Update the recurring pattern with the exception
     const updatedPattern = {
       ...appointment.recurring_pattern,
       exceptions,
@@ -135,7 +130,6 @@ async function deleteThisOnly(appointment, occurrenceDate, softDelete) {
       return { error: 'Failed to update recurring pattern', status: 500 };
     }
 
-    // Also delete any exception appointments for this date
     if (!softDelete) {
       await supabase
         .from('bookings')
@@ -171,20 +165,16 @@ async function deleteThisOnly(appointment, occurrenceDate, softDelete) {
  */
 async function deleteThisAndFuture(appointment, occurrenceDate, softDelete) {
   try {
-    // Update the RRule to end before this date
     const untilDate = new Date(occurrenceDate);
     untilDate.setDate(untilDate.getDate() - 1); // End the day before
     
-    // Update the RRule with UNTIL
     let updatedRRule = appointment.recurring_pattern.rrule;
     const untilStr = untilDate.toISOString()
       .replace(/[-:]/g, '')
       .replace(/\\.\\d{3}/, '');
     
-    // Remove existing UNTIL if present
     updatedRRule = updatedRRule.replace(/UNTIL=[^;\\n]+[;\\n]?/, '');
     
-    // Add new UNTIL
     if (updatedRRule.includes(';')) {
       updatedRRule += `;UNTIL=${untilStr}`;
     } else if (updatedRRule.includes('\\n')) {
@@ -193,7 +183,6 @@ async function deleteThisAndFuture(appointment, occurrenceDate, softDelete) {
       updatedRRule += `;UNTIL=${untilStr}`;
     }
 
-    // Update the appointment
     const updatedPattern = {
       ...appointment.recurring_pattern,
       rrule: updatedRRule,
@@ -213,7 +202,6 @@ async function deleteThisAndFuture(appointment, occurrenceDate, softDelete) {
       return { error: 'Failed to update recurring pattern', status: 500 };
     }
 
-    // Delete any future exception appointments
     const deleteQuery = supabase
       .from('bookings')
       .eq('parent_id', appointment.id);
@@ -249,7 +237,6 @@ async function deleteAll(appointment, softDelete) {
     let result;
 
     if (softDelete) {
-      // Soft delete: Update status to cancelled
       const { data, error } = await supabase
         .from('bookings')
         .update({ 
@@ -264,7 +251,6 @@ async function deleteAll(appointment, softDelete) {
         return { error: 'Failed to cancel appointment', status: 500 };
       }
 
-      // Also cancel any exception appointments
       await supabase
         .from('bookings')
         .update({ status: 'cancelled' })
@@ -272,7 +258,6 @@ async function deleteAll(appointment, softDelete) {
 
       result = data;
     } else {
-      // Hard delete: Remove from database
       const { error } = await supabase
         .from('bookings')
         .delete()
@@ -282,7 +267,6 @@ async function deleteAll(appointment, softDelete) {
         return { error: 'Failed to delete appointment', status: 500 };
       }
 
-      // Also delete any exception appointments
       await supabase
         .from('bookings')
         .delete()
@@ -323,7 +307,6 @@ export async function POST(request) {
       );
     }
 
-    // Restore the appointment
     const { data, error } = await supabase
       .from('bookings')
       .update({ 
@@ -349,7 +332,6 @@ export async function POST(request) {
       );
     }
 
-    // Also restore any exception appointments
     await supabase
       .from('bookings')
       .update({ status: 'confirmed' })

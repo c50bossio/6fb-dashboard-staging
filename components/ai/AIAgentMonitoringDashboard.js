@@ -40,7 +40,6 @@ export default function AIAgentMonitoringDashboard({
   const refreshTimer = useRef(null)
   const metricsHistory = useRef(new Map())
 
-  // Initialize connections and start monitoring
   useEffect(() => {
     initializeMonitoring()
     return cleanup
@@ -50,11 +49,9 @@ export default function AIAgentMonitoringDashboard({
     try {
       setIsLoading(true)
       
-      // Initialize WebSocket connection
       wsManager.current = getWebSocketManager()
       streamingClient.current = getStreamingClient()
       
-      // Set up WebSocket event listeners
       wsManager.current.on('connected', handleWebSocketConnected)
       wsManager.current.on('disconnected', handleWebSocketDisconnected)
       wsManager.current.on('agent_status', handleAgentStatusUpdate)
@@ -62,16 +59,13 @@ export default function AIAgentMonitoringDashboard({
       wsManager.current.on('collaboration', handleCollaborationUpdate)
       wsManager.current.on('error', handleWebSocketError)
       
-      // Connect to WebSocket
       await wsManager.current.connect({
         userId: 'dashboard_monitor',
         sessionId: `monitor_${Date.now()}`
       })
       
-      // Start periodic refresh
       startPeriodicRefresh()
       
-      // Initial data load
       await loadSystemMetrics()
       
     } catch (error) {
@@ -92,7 +86,6 @@ export default function AIAgentMonitoringDashboard({
     }
   }
 
-  // WebSocket event handlers
   const handleWebSocketConnected = useCallback(() => {
     setConnectionStatus('connected')
     setError(null)
@@ -120,7 +113,6 @@ export default function AIAgentMonitoringDashboard({
       }].sort((a, b) => a.name.localeCompare(b.name))
     })
     
-    // Store metrics history
     if (!metricsHistory.current.has(agent)) {
       metricsHistory.current.set(agent, [])
     }
@@ -132,14 +124,12 @@ export default function AIAgentMonitoringDashboard({
       metrics
     })
     
-    // Keep only last 100 entries
     if (history.length > 100) {
       history.shift()
     }
   }, [])
 
   const handleAgentMessage = useCallback((data) => {
-    // Update agent activity indicators
     setAgentStatuses(prev => prev.map(agent => 
       agent.id === data.agent 
         ? { ...agent, lastActivity: Date.now() }
@@ -148,7 +138,6 @@ export default function AIAgentMonitoringDashboard({
   }, [])
 
   const handleCollaborationUpdate = useCallback((data) => {
-    // Handle multi-agent collaboration updates
     const { agents, task, progress } = data
     
     setSystemMetrics(prev => ({
@@ -163,16 +152,12 @@ export default function AIAgentMonitoringDashboard({
     setConnectionStatus('error')
   }, [])
 
-  // Load system-wide metrics
   const loadSystemMetrics = async () => {
     try {
-      // Get cache statistics
       const cacheStats = streamingClient.current?.getCacheStats() || {}
       
-      // Get connection status
       const wsStatus = wsManager.current?.getConnectionStatus() || {}
       
-      // Simulate system metrics (in production, these would come from actual monitoring)
       const systemMetrics = {
         totalAgents: 7,
         activeAgents: agentStatuses.filter(a => a.status === 'active').length,
@@ -191,7 +176,6 @@ export default function AIAgentMonitoringDashboard({
       setSystemMetrics(systemMetrics)
       setLastUpdated(Date.now())
       
-      // Check for alerts
       checkForAlerts(systemMetrics)
       
     } catch (error) {
@@ -199,7 +183,6 @@ export default function AIAgentMonitoringDashboard({
     }
   }
 
-  // Check for system alerts
   const checkForAlerts = (metrics) => {
     let alertCount = 0
     
@@ -212,7 +195,6 @@ export default function AIAgentMonitoringDashboard({
     setAlertsCount(alertCount)
   }
 
-  // Start periodic refresh
   const startPeriodicRefresh = () => {
     if (refreshTimer.current) {
       clearInterval(refreshTimer.current)
@@ -223,14 +205,12 @@ export default function AIAgentMonitoringDashboard({
     }, refreshInterval)
   }
 
-  // Manual refresh
   const handleRefresh = async () => {
     setIsLoading(true)
     await loadSystemMetrics()
     setIsLoading(false)
   }
 
-  // Helper functions
   const getAgentDisplayName = (agentId) => {
     const names = {
       'marcus': 'Marcus (Strategy)',

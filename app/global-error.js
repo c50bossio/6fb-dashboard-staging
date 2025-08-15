@@ -4,10 +4,8 @@ import { useEffect } from 'react'
 
 export default function GlobalError({ error, reset }) {
   useEffect(() => {
-    // Log error for debugging
     console.error('Global error caught:', error)
     
-    // Try to send to Sentry if available
     try {
       if (typeof window !== 'undefined' && window.Sentry) {
         window.Sentry.captureException(error)

@@ -4,7 +4,6 @@ const path = require('path');
 
 const port = 9999;
 
-// Simple server to serve Next.js app files
 const server = http.createServer((req, res) => {
   let filePath = '';
   
@@ -171,14 +170,12 @@ function serveNextJSPage(res, filePath, pageType) {
         function selectAgent(agentId) {
           selectedAgent = agentId;
           
-          // Update UI
           document.querySelectorAll('.agent-card').forEach(card => {
             card.classList.remove('border-blue-500', 'bg-blue-50');
           });
           
           event.target.closest('.agent-card').classList.add('border-blue-500', 'bg-blue-50');
           
-          // Update selected agent display
           const agentNames = {
             'master_coach': '🎯 Master Coach',
             'financial': '💰 Financial Agent', 
@@ -190,11 +187,9 @@ function serveNextJSPage(res, filePath, pageType) {
           
           document.getElementById('selected-agent').textContent = 'Chatting with: ' + agentNames[agentId];
           
-          // Enable input
           document.getElementById('message-input').disabled = false;
           document.getElementById('send-button').disabled = false;
           
-          // Clear messages and show welcome
           const messagesDiv = document.getElementById('chat-messages');
           messagesDiv.innerHTML = '<div class="bg-blue-50 p-4 rounded-lg"><strong>' + agentNames[agentId] + ':</strong> Hello! I\\'m ready to help you optimize your barbershop business. What would you like to discuss?</div>';
         }
@@ -205,14 +200,11 @@ function serveNextJSPage(res, filePath, pageType) {
           
           if (!message || !selectedAgent) return;
           
-          // Add user message
           const messagesDiv = document.getElementById('chat-messages');
           messagesDiv.innerHTML += '<div class="text-right"><div class="bg-gray-100 p-3 rounded-lg inline-block max-w-xs"><strong>You:</strong> ' + message + '</div></div>';
           
-          // Clear input
           input.value = '';
           
-          // Simulate AI response
           setTimeout(() => {
             const responses = {
               'master_coach': 'As your Master Coach, I recommend focusing on your $500/day goal. Let\\'s analyze your current revenue streams and identify 3 key optimization areas.',
@@ -230,7 +222,6 @@ function serveNextJSPage(res, filePath, pageType) {
           messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
-        // Allow Enter key to send message
         document.getElementById('message-input').addEventListener('keypress', function(e) {
           if (e.key === 'Enter') {
             sendMessage();

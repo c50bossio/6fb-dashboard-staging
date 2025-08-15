@@ -8,7 +8,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables from .env.local
 const envPath = join(__dirname, '../.env.local')
 try {
   const envContent = readFileSync(envPath, 'utf8')
@@ -26,7 +25,6 @@ try {
   console.log('Warning: Could not load .env.local file')
 }
 
-// Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -46,11 +44,9 @@ async function setupDatabase() {
   try {
     console.log('🚀 Setting up calendar database tables...\n')
     
-    // Read the SQL file
     const sqlPath = join(__dirname, '../database/setup-calendar-tables.sql')
     const sql = readFileSync(sqlPath, 'utf8')
     
-    // Split SQL into individual statements (basic splitting by semicolon)
     const statements = sql
       .split(';')
       .map(stmt => stmt.trim())
@@ -58,11 +54,9 @@ async function setupDatabase() {
     
     console.log(`📝 Found ${statements.length} SQL statements to execute\n`)
     
-    // Execute each statement
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i]
       
-      // Skip comments and empty statements
       if (!statement || statement.startsWith('--') || statement.startsWith('/*')) {
         continue
       }
@@ -70,11 +64,9 @@ async function setupDatabase() {
       try {
         console.log(`⚡ Executing statement ${i + 1}/${statements.length}...`)
         
-        // Execute the SQL statement using raw query
         let success = false
         
         try {
-          // Try using raw SQL via REST API
           const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
             method: 'POST',
             headers: {
@@ -96,13 +88,11 @@ async function setupDatabase() {
           console.log(`   └─ ⚠️  REST API failed: ${restError.message}`)
         }
         
-        // If REST API failed, try alternative approach
         if (!success) {
           if (statement.toUpperCase().includes('CREATE EXTENSION')) {
             console.log(`   └─ 🔌 Extension statement - may require superuser privileges`)
             success = true // Consider extension statements as successful
           } else if (statement.toUpperCase().includes('CREATE TABLE')) {
-            // For table creation, we can try a different approach
             console.log(`   └─ 📋 Table creation - continuing (may already exist)`)
             success = true
           } else if (statement.toUpperCase().includes('CREATE INDEX')) {
@@ -137,7 +127,6 @@ async function checkExistingTables() {
   try {
     console.log('🔍 Checking existing tables...\n')
     
-    // Try to query some basic table info
     const tables = [
       'barbershops', 'barbers', 'services', 'clients', 'appointments'
     ]
@@ -164,7 +153,6 @@ async function checkExistingTables() {
   }
 }
 
-// Main execution
 async function main() {
   console.log('🏪 6FB AI Agent System - Database Setup')
   console.log('=====================================\n')
@@ -173,7 +161,6 @@ async function main() {
   await setupDatabase()
 }
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error)
 }

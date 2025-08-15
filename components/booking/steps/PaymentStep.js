@@ -5,10 +5,8 @@ import { CreditCardIcon, CurrencyDollarIcon, ShieldCheckIcon, LockClosedIcon, Ba
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
-// Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder')
 
-// Card Element Component
 function CardInput({ onCardComplete }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -49,7 +47,6 @@ function CardInput({ onCardComplete }) {
   )
 }
 
-// Main Payment Step Component
 function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -69,7 +66,6 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
     phone: ''
   })
   
-  // Calculate payment amounts
   const totalAmount = bookingData.price || 0
   const depositAmount = shopSettings.depositRequired 
     ? (shopSettings.depositPercentage 
@@ -89,8 +85,6 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   
   const loadSavedCards = async () => {
     try {
-      // In production, fetch from API
-      // Mock saved cards for now
       const Cards = [
         {
           id: 'card_1',
@@ -110,7 +104,6 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
         }
       ]
       
-      // setSavedCards(mockCards)
       setSavedCards([]) // Start with no saved cards for demo
     } catch (error) {
       console.error('Error loading saved cards:', error)
@@ -160,23 +153,17 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       }
       
       if (paymentMethod === 'online') {
-        // Process online payment
         if (useNewCard) {
-          // Create payment intent and confirm with Stripe
-          // In production, this would call your backend API
           
-          // For demo, simulate payment processing
           await new Promise(resolve => setTimeout(resolve, 2000))
           
           paymentData.paymentIntentId = 'pi_mock_' + Date.now()
           paymentData.paymentStatus = 'succeeded'
         } else {
-          // Use saved card
           paymentData.cardId = selectedCard
           paymentData.paymentStatus = 'succeeded'
         }
       } else {
-        // In-person payment
         paymentData.paymentStatus = 'pending'
         paymentData.paymentNote = 'Payment to be collected at appointment'
       }
@@ -497,7 +484,6 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   )
 }
 
-// Wrapper with Stripe Elements
 export default function PaymentStep(props) {
   return (
     <Elements stripe={stripePromise}>

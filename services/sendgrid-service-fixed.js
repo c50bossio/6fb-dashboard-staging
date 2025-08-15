@@ -20,18 +20,15 @@ const crypto = require('crypto');
 
 class EnhancedSendGridService {
     constructor() {
-        // Environment configuration
         this.apiKey = process.env.SENDGRID_API_KEY;
         this.fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@bookedbarber.com';
         this.fromName = process.env.SENDGRID_FROM_NAME || 'BookedBarber';
         this.platformDomain = process.env.PLATFORM_DOMAIN || 'bookedbarber.com';
         
-        // API configuration
         this.sendGridApiBase = 'https://api.sendgrid.com/v3';
         this.retryAttempts = 3;
         this.retryDelay = 1000; // 1 second base delay
         
-        // Validation and initialization
         this.initializeService();
     }
 
@@ -41,7 +38,6 @@ class EnhancedSendGridService {
     async initializeService() {
         console.log('🔧 Initializing Enhanced SendGrid Service...');
         
-        // Check if API key exists
         if (!this.apiKey || this.apiKey.includes('placeholder')) {
             console.warn('⚠️  SendGrid API key not configured or is placeholder');
             this.testMode = true;
@@ -49,10 +45,8 @@ class EnhancedSendGridService {
             return;
         }
 
-        // Set API key
         sgMail.setApiKey(this.apiKey);
         
-        // Validate API key
         try {
             await this.validateApiKey();
             this.testMode = false;
@@ -101,7 +95,6 @@ class EnhancedSendGridService {
                     }
                 }
                 
-                // Wait before retry
                 await this.delay(this.retryDelay * attempt);
             }
         }
@@ -122,7 +115,6 @@ class EnhancedSendGridService {
                 'Content-Type': 'application/json'
             };
 
-            // Check authenticated domains
             const domainsResponse = await axios.get(`${this.sendGridApiBase}/whitelabel/domains`, { headers });
             
             const ourDomain = 'em3014.6fbmentorship.com';
@@ -139,7 +131,6 @@ class EnhancedSendGridService {
                 };
             }
 
-            // Check verified senders as fallback
             const sendersResponse = await axios.get(`${this.sendGridApiBase}/verified_senders`, { headers });
             const senderFound = sendersResponse.data.results.find(s => s.from_email === this.fromEmail);
 
@@ -209,10 +200,8 @@ class EnhancedSendGridService {
             } catch (error) {
                 console.log(`❌ Email send attempt ${attempt} failed: ${error.message}`);
                 
-                // Parse SendGrid error details
                 const errorDetails = this.parseEmailError(error);
                 
-                // Check if we should retry
                 if (attempt === this.retryAttempts || !this.shouldRetryError(error)) {
                     return {
                         success: false,
@@ -222,7 +211,6 @@ class EnhancedSendGridService {
                     };
                 }
                 
-                // Wait before retry with exponential backoff
                 await this.delay(this.retryDelay * Math.pow(2, attempt - 1));
             }
         }
@@ -242,13 +230,11 @@ class EnhancedSendGridService {
             errorDetails.httpStatus = error.response.status;
             errorDetails.httpBody = error.response.body;
 
-            // Parse specific SendGrid errors
             if (error.response.body && error.response.body.errors) {
                 errorDetails.sendgridErrors = error.response.body.errors;
                 errorDetails.type = this.categorizeError(error.response.body.errors[0]);
             }
 
-            // Common error types
             switch (error.response.status) {
                 case 400:
                     errorDetails.type = 'BAD_REQUEST';
@@ -298,12 +284,10 @@ class EnhancedSendGridService {
         
         const status = error.response.status;
         
-        // Don't retry client errors (4xx) except rate limiting
         if (status >= 400 && status < 500 && status !== 429) {
             return false;
         }
         
-        // Retry server errors (5xx) and rate limiting (429)
         return status >= 500 || status === 429;
     }
 
@@ -320,10 +304,8 @@ class EnhancedSendGridService {
         }
 
         try {
-            // Build email content
             const emailContent = this.buildWhiteLabelEmailContent(campaign, barbershop);
             
-            // Prepare message
             const msg = {
                 from: {
                     email: this.fromEmail,
@@ -350,7 +332,6 @@ class EnhancedSendGridService {
                 }
             };
 
-            // Send with retry logic
             const result = await this.sendEmailWithRetry(msg);
             
             if (result.success) {
@@ -531,35 +512,28 @@ class EnhancedSendGridService {
 
 module.exports = EnhancedSendGridService;
 
-// Export singleton instance
 const enhancedSendGridService = new EnhancedSendGridService();
 module.exports.enhancedSendGridService = enhancedSendGridService;
 
-// Test runner for direct execution
 if (require.main === module) {
     console.log('🚀 Running Enhanced SendGrid Service Tests...\n');
     
     const runTests = async () => {
         const service = new EnhancedSendGridService();
         
-        // Wait for initialization
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Display service status
         console.log('📊 Service Status:');
         console.log(JSON.stringify(service.getServiceStatus(), null, 2));
         
-        // Test domain verification
         console.log('\n📋 Testing Domain Verification...');
         const domainStatus = await service.checkDomainVerification();
         console.log('Domain Status:', domainStatus);
         
-        // Test email sending
         console.log('\n📧 Testing Email Send...');
         const emailResult = await service.sendTestEmail();
         console.log('Email Result:', emailResult);
         
-        // Test white-label campaign
         console.log('\n🏷️  Testing White-label Campaign...');
         const campaign = {
             id: 'test-campaign-001',

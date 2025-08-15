@@ -19,22 +19,17 @@ async function testAIPerformanceSystem() {
     const page = await browser.newPage();
 
     try {
-        // Step 1: Navigate to the application
         console.log('📍 Step 1: Navigating to application...');
         await page.goto('http://localhost:9999', { waitUntil: 'networkidle0' });
         
-        // Take initial screenshot
         await page.screenshot({ path: 'test-results/ai-performance-01-home.png', fullPage: true });
         console.log('✅ Home page loaded successfully');
 
-        // Step 2: Check authentication status
         console.log('\n📍 Step 2: Checking authentication...');
         
-        // Wait for the page to load and check if we're authenticated
         await page.waitForTimeout(2000);
         
         const isAuthenticated = await page.evaluate(() => {
-            // Check if we have user data or authentication indicators
             return !!(document.querySelector('[data-testid="user-profile"]') || 
                      document.querySelector('.user-menu') ||
                      document.body.textContent.includes('Dashboard') ||
@@ -44,41 +39,32 @@ async function testAIPerformanceSystem() {
         if (!isAuthenticated) {
             console.log('🔐 Not authenticated, attempting to access AI Performance page directly...');
             
-            // Try to navigate to AI performance page to see the authentication flow
             await page.goto('http://localhost:9999/ai-performance', { waitUntil: 'networkidle0' });
             await page.screenshot({ path: 'test-results/ai-performance-02-auth-required.png', fullPage: true });
             
-            // Check if we get redirected to login or see an auth component
             const currentUrl = page.url();
             console.log(`📍 Current URL: ${currentUrl}`);
             
-            // For testing purposes, let's continue and see what fallback data is shown
             console.log('📊 Testing with fallback/demo data...');
         } else {
             console.log('✅ User is authenticated');
         }
 
-        // Step 3: Navigate to AI Performance page
         console.log('\n📍 Step 3: Testing AI Performance Monitoring page...');
         await page.goto('http://localhost:9999/ai-performance', { waitUntil: 'networkidle0' });
         
-        // Wait for page to load
         await page.waitForTimeout(3000);
         
-        // Take screenshot of the AI performance page
         await page.screenshot({ path: 'test-results/ai-performance-03-main-page.png', fullPage: true });
 
-        // Step 4: Test page components and functionality
         console.log('\n📍 Step 4: Testing AI Performance components...');
 
-        // Check if main heading exists
         const hasMainHeading = await page.evaluate(() => {
             return !!(document.querySelector('h1') && 
                      document.querySelector('h1').textContent.includes('AI Performance'));
         });
         console.log(`📊 Main heading found: ${hasMainHeading ? '✅' : '❌'}`);
 
-        // Check for metrics cards
         const metricsCards = await page.$$eval('[class*="grid"]', elements => {
             return elements.filter(el => 
                 el.textContent.includes('response_time') || 
@@ -88,10 +74,8 @@ async function testAIPerformanceSystem() {
         });
         console.log(`📊 Metrics cards found: ${metricsCards}`);
 
-        // Step 5: Test tab navigation
         console.log('\n📍 Step 5: Testing tab navigation...');
         
-        // Look for tab buttons
         const tabs = await page.$$eval('button', buttons => {
             return buttons.filter(btn => 
                 btn.textContent.includes('Real-time') ||
@@ -101,9 +85,7 @@ async function testAIPerformanceSystem() {
         });
         console.log(`📊 Tabs found: ${tabs.join(', ')}`);
 
-        // Test clicking different tabs
         if (tabs.length > 0) {
-            // Try to click Health tab
             try {
                 await page.click('button:has-text("Component Health"), button:contains("Health")');
                 await page.waitForTimeout(1000);
@@ -127,7 +109,6 @@ async function testAIPerformanceSystem() {
                 }
             }
 
-            // Try to click Optimization tab
             try {
                 await page.waitForTimeout(500);
                 const optimizationClicked = await page.evaluate(() => {
@@ -149,7 +130,6 @@ async function testAIPerformanceSystem() {
             }
         }
 
-        // Step 6: Test refresh functionality
         console.log('\n📍 Step 6: Testing refresh functionality...');
         
         const refreshClicked = await page.evaluate(() => {
@@ -169,10 +149,8 @@ async function testAIPerformanceSystem() {
             await page.screenshot({ path: 'test-results/ai-performance-06-after-refresh.png', fullPage: true });
         }
 
-        // Step 7: Test API endpoints directly
         console.log('\n📍 Step 7: Testing API endpoints...');
         
-        // Test FastAPI endpoints directly
         const fastApiStatus = await page.evaluate(async () => {
             try {
                 const response = await fetch('http://localhost:8001/api/v1/ai/performance/status');
@@ -205,7 +183,6 @@ async function testAIPerformanceSystem() {
             console.log(`   Active metrics: ${Object.keys(metrics).length}`);
         }
 
-        // Step 8: Test performance data visualization
         console.log('\n📍 Step 8: Testing performance data visualization...');
         
         const visualElements = await page.evaluate(() => {
@@ -224,26 +201,21 @@ async function testAIPerformanceSystem() {
         console.log(`   Status indicators: ${visualElements.statusIndicators}`);
         console.log(`   Progress bars: ${visualElements.progressBars}`);
 
-        // Step 9: Test responsive design
         console.log('\n📍 Step 9: Testing responsive design...');
         
-        // Test mobile view
         await page.setViewport({ width: 375, height: 667 });
         await page.waitForTimeout(1000);
         await page.screenshot({ path: 'test-results/ai-performance-07-mobile-view.png', fullPage: true });
         console.log('✅ Mobile view tested');
         
-        // Test tablet view
         await page.setViewport({ width: 768, height: 1024 });
         await page.waitForTimeout(1000);
         await page.screenshot({ path: 'test-results/ai-performance-08-tablet-view.png', fullPage: true });
         console.log('✅ Tablet view tested');
         
-        // Return to desktop view
         await page.setViewport({ width: 1400, height: 900 });
         await page.waitForTimeout(1000);
 
-        // Step 10: Final system health check
         console.log('\n📍 Step 10: Final system health check...');
         
         const finalScreenshot = await page.screenshot({ 
@@ -253,12 +225,9 @@ async function testAIPerformanceSystem() {
         
         const pageErrors = await page.evaluate(() => {
             const errors = [];
-            // Check for console errors (would need to be collected during navigation)
-            // Check for missing images or broken links
             const brokenImages = Array.from(document.querySelectorAll('img')).filter(img => !img.complete);
             if (brokenImages.length > 0) errors.push(`${brokenImages.length} broken images`);
             
-            // Check for empty required sections
             const emptyContainers = Array.from(document.querySelectorAll('[class*="empty"], [class*="no-data"]'));
             if (emptyContainers.length > 0) errors.push(`${emptyContainers.length} empty containers found`);
             
@@ -271,7 +240,6 @@ async function testAIPerformanceSystem() {
             console.log(`⚠️ Page issues found: ${pageErrors.join(', ')}`);
         }
 
-        // Summary
         console.log('\n🎯 AI Performance Monitoring System Test Summary:');
         console.log('=====================================');
         console.log('✅ Page Loading: Success');
@@ -314,11 +282,9 @@ async function testAIPerformanceSystem() {
     }
 }
 
-// Create test results directory
 const fs = require('fs');
 if (!fs.existsSync('test-results')) {
     fs.mkdirSync('test-results');
 }
 
-// Run the test
 testAIPerformanceSystem().catch(console.error);

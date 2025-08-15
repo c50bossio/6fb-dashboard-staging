@@ -11,19 +11,14 @@ export async function GET(request) {
   try {
     const startTime = Date.now()
     
-    // Check database connectivity
     const dbHealth = await checkDatabaseHealth()
     
-    // Check file system access
     const fsHealth = await checkFileSystemHealth()
     
-    // Get system metrics
     const systemMetrics = await getSystemMetrics()
     
-    // Get service metrics
     const serviceMetrics = await getServiceMetrics()
     
-    // Calculate overall health status
     const overallStatus = calculateOverallStatus([
       dbHealth.status,
       fsHealth.status,
@@ -90,7 +85,6 @@ async function checkDatabaseHealth() {
   try {
     const supabase = createClient()
     
-    // Test basic connectivity with a simple query
     const { data, error } = await supabase
       .from('profiles')
       .select('id')
@@ -131,11 +125,9 @@ async function checkFileSystemHealth() {
   const startTime = Date.now()
   
   try {
-    // Check if we can read package.json
     const packagePath = path.join(process.cwd(), 'package.json')
     const packageExists = fs.existsSync(packagePath)
     
-    // Check if we can write to temp directory
     const tempDir = path.join(process.cwd(), 'tmp')
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true })
@@ -145,7 +137,6 @@ async function checkFileSystemHealth() {
     fs.writeFileSync(testFile, 'health check', 'utf8')
     const canRead = fs.readFileSync(testFile, 'utf8') === 'health check'
     
-    // Clean up
     fs.unlinkSync(testFile)
     
     const responseTime = Date.now() - startTime
@@ -179,10 +170,8 @@ async function getSystemMetrics() {
     const memUsage = process.memoryUsage()
     const cpuUsage = process.cpuUsage()
     
-    // Calculate CPU usage percentage (approximation)
     const cpuPercent = ((cpuUsage.user + cpuUsage.system) / 1000000) / process.uptime() * 100
     
-    // Memory usage as percentage (approximation based on heap)
     const memPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100
     
     return {
@@ -230,7 +219,6 @@ async function getServiceMetrics() {
   const services = {}
   
   try {
-    // Frontend service (this endpoint itself)
     services.frontend = {
       status: 'healthy',
       responseTime: 0, // Will be calculated by caller
@@ -238,7 +226,6 @@ async function getServiceMetrics() {
       lastCheck: Date.now()
     }
     
-    // Check if FastAPI backend is available
     try {
       const backendUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8001'
       const backendStart = Date.now()
@@ -263,14 +250,12 @@ async function getServiceMetrics() {
       }
     }
     
-    // Cache service (simple check)
     services.cache = {
       status: 'healthy', // Assume healthy since it's browser-based IndexedDB
       type: 'indexeddb',
       lastCheck: Date.now()
     }
     
-    // WebSocket service status
     services.websocket = {
       status: 'healthy', // Assume healthy - would need more complex check
       connections: 0, // Would track active connections

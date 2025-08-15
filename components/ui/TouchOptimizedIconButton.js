@@ -21,7 +21,6 @@ export default function TouchOptimizedIconButton({
 
   const baseClasses = 'inline-flex items-center justify-center rounded-lg transition-all duration-150 ease-out select-none outline-none focus:ring-2 focus:ring-offset-2 relative'
   
-  // Touch-friendly sizing (minimum 44px touch target)
   const sizeClasses = {
     small: 'min-h-[44px] min-w-[44px] p-3',
     medium: 'min-h-[44px] min-w-[44px] p-3',
@@ -61,7 +60,6 @@ export default function TouchOptimizedIconButton({
 
   const handleClick = (e) => {
     if (!disabled && !loading && onClick) {
-      // Add haptic feedback on supported devices
       if (navigator.vibrate) {
         navigator.vibrate(8) // Very brief vibration
       }

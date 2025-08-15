@@ -27,7 +27,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       router.push('/dashboard')
@@ -47,7 +46,6 @@ export default function LoginPage() {
     setIsLoading(true)
     setError('')
 
-    // Track login attempt
     loginTracking.trackLoginAttempt('email')
 
     try {
@@ -56,12 +54,9 @@ export default function LoginPage() {
         password: formData.password 
       })
       
-      // Track successful login
       loginTracking.trackLoginSuccess('email', result?.user?.id)
       
-      // The auth provider will handle the redirect
     } catch (err) {
-      // Track login failure
       loginTracking.trackLoginFailure('email', err.message || 'Unknown error')
       
       setError(err.message || 'Login failed. Please try again.')
@@ -76,10 +71,8 @@ export default function LoginPage() {
       setIsLoading(true)
       setError('')
       
-      // Track OAuth attempt
       loginTracking.trackOAuthAttempt('google')
       
-      // Use standard OAuth without plan data (login page context)
       if (!signInWithGoogle) {
         throw new Error('Google sign-in not available. Please refresh the page.')
       }
@@ -88,17 +81,14 @@ export default function LoginPage() {
       const result = await signInWithGoogle() // No plan parameters for standard login
       console.log('✅ OAuth initiated successfully')
       
-      // Track successful login attempt (actual success tracked by auth provider)
       if (result) {
         loginTracking.trackOAuthAttempt('google')
       }
       
-      // The OAuth callback will handle the redirect based on user status
       
     } catch (err) {
       console.error('❌ Google sign-in error:', err)
       
-      // Track login failure
       loginTracking.trackLoginFailure('google', err.message || 'Unknown error')
       
       setError(err.message || 'Google sign-in failed.')

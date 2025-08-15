@@ -26,7 +26,6 @@ export function OAuthHandler() {
         try {
           const supabase = createClient()
           
-          // Exchange the code for a session
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
           
           if (exchangeError) {
@@ -37,7 +36,6 @@ export function OAuthHandler() {
           
           console.log('✅ OAuth session established:', data?.user?.email)
           
-          // Check if profile exists
           if (data?.user) {
             const { data: profile, error: profileError } = await supabase
               .from('profiles')
@@ -46,7 +44,6 @@ export function OAuthHandler() {
               .single()
             
             if (profileError && profileError.code === 'PGRST116') {
-              // Create profile if it doesn't exist
               console.log('📝 Creating profile for OAuth user')
               
               await supabase
@@ -63,16 +60,13 @@ export function OAuthHandler() {
             }
           }
           
-          // Clean URL by removing code parameter
           const newUrl = new URL(window.location.href)
           newUrl.searchParams.delete('code')
           newUrl.searchParams.delete('error')
           newUrl.searchParams.delete('error_description')
           
-          // Replace URL without code parameter
           window.history.replaceState({}, '', newUrl.toString())
           
-          // Reload to trigger auth state update
           window.location.reload()
           
         } catch (err) {

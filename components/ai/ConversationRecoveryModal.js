@@ -21,7 +21,6 @@ export default function ConversationRecoveryModal({ onRecover, onDismiss }) {
   const recoveryManager = getRecoveryManager()
 
   useEffect(() => {
-    // Check for recovery data on mount
     const checkRecovery = () => {
       const recovery = recoveryManager.getRecoveryData()
       if (recovery) {
@@ -32,7 +31,6 @@ export default function ConversationRecoveryModal({ onRecover, onDismiss }) {
 
     checkRecovery()
 
-    // Listen for recovery events
     const handleRecoveryEvent = (event) => {
       const { type, data } = event.detail
       

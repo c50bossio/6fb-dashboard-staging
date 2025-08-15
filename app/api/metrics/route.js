@@ -1,10 +1,7 @@
-// Prometheus Metrics Endpoint for 6FB AI Agent System Frontend
-// Exposes application metrics in Prometheus format
 
 import { NextResponse } from 'next/server';
 export const runtime = 'edge'
 
-// Simple in-memory metrics store
 const metrics = {
   http_requests_total: new Map(),
   http_request_duration_seconds: new Map(),
@@ -15,21 +12,17 @@ const metrics = {
   performance_vitals: new Map()
 };
 
-// Initialize metrics if not already done
 function initializeMetrics() {
   if (!global.metricsInitialized) {
-    // HTTP request counters
     metrics.http_requests_total.set('GET_200', 0);
     metrics.http_requests_total.set('POST_200', 0);
     metrics.http_requests_total.set('GET_404', 0);
     metrics.http_requests_total.set('GET_500', 0);
     
-    // Page view counters
     metrics.page_views_total.set('dashboard', 0);
     metrics.page_views_total.set('calendar', 0);
     metrics.page_views_total.set('settings', 0);
     
-    // AI agent request counters
     metrics.ai_agent_requests_total.set('master_coach', 0);
     metrics.ai_agent_requests_total.set('financial', 0);
     metrics.ai_agent_requests_total.set('operations', 0);
@@ -38,7 +31,6 @@ function initializeMetrics() {
   }
 }
 
-// Helper function to format metrics for Prometheus
 function formatMetric(name, value, labels = {}, help = '', type = 'counter') {
   let output = '';
   
@@ -59,13 +51,11 @@ function formatMetric(name, value, labels = {}, help = '', type = 'counter') {
   return output;
 }
 
-// Collect and format all metrics
 function collectMetrics() {
   initializeMetrics();
   
   let output = '';
   
-  // HTTP request metrics
   output += formatMetric(
     'http_requests_total',
     metrics.http_requests_total.get('GET_200') || 0,
@@ -98,7 +88,6 @@ function collectMetrics() {
     ''
   );
   
-  // Response time histogram (simplified)
   const avgResponseTime = 0.15; // Placeholder - implement actual tracking
   output += formatMetric(
     'http_request_duration_seconds',
@@ -116,7 +105,6 @@ function collectMetrics() {
     ''
   );
   
-  // Page view metrics
   for (const [page, count] of metrics.page_views_total) {
     output += formatMetric(
       'page_views_total',
@@ -127,7 +115,6 @@ function collectMetrics() {
     );
   }
   
-  // Active user sessions
   output += formatMetric(
     'user_sessions_active',
     metrics.user_sessions_active,
@@ -136,7 +123,6 @@ function collectMetrics() {
     'gauge'
   );
   
-  // Booking conversion rate
   output += formatMetric(
     'booking_conversion_rate',
     metrics.booking_conversion_rate,
@@ -145,7 +131,6 @@ function collectMetrics() {
     'gauge'
   );
   
-  // AI agent request metrics
   for (const [agent, count] of metrics.ai_agent_requests_total) {
     output += formatMetric(
       'ai_agent_requests_total',
@@ -156,7 +141,6 @@ function collectMetrics() {
     );
   }
   
-  // Core Web Vitals metrics
   const vitals = {
     lcp: 1200,  // Largest Contentful Paint in ms
     fid: 50,    // First Input Delay in ms (deprecated, using INP)
@@ -176,7 +160,6 @@ function collectMetrics() {
     );
   }
   
-  // System resource metrics (client-side approximation)
   output += formatMetric(
     'memory_usage_mb',
     performance?.memory?.usedJSHeapSize ? 
@@ -186,7 +169,6 @@ function collectMetrics() {
     'gauge'
   );
   
-  // Feature usage metrics
   const featureUsage = {
     calendar_views: 150,
     ai_chat_messages: 89,
@@ -204,7 +186,6 @@ function collectMetrics() {
     );
   }
   
-  // Error rate metrics
   output += formatMetric(
     'javascript_errors_total',
     0, // Placeholder - implement actual error tracking
@@ -213,7 +194,6 @@ function collectMetrics() {
     'counter'
   );
   
-  // Network performance metrics
   output += formatMetric(
     'network_requests_total',
     metrics.http_requests_total.get('GET_200') + 
@@ -232,7 +212,6 @@ function collectMetrics() {
     ''
   );
   
-  // Build information
   output += formatMetric(
     'build_info',
     1,
@@ -248,7 +227,6 @@ function collectMetrics() {
   return output;
 }
 
-// Increment metric helper
 export function incrementMetric(metricName, labels = {}) {
   if (metricName === 'http_requests_total') {
     const key = `${labels.method}_${labels.code}`;
@@ -263,7 +241,6 @@ export function incrementMetric(metricName, labels = {}) {
   }
 }
 
-// Set gauge metric helper
 export function setGaugeMetric(metricName, value) {
   if (metricName === 'user_sessions_active') {
     metrics.user_sessions_active = value;
@@ -272,10 +249,8 @@ export function setGaugeMetric(metricName, value) {
   }
 }
 
-// Main metrics endpoint handler
 export async function GET(request) {
   try {
-    // Collect current metrics
     const metricsOutput = collectMetrics();
     
     return new NextResponse(metricsOutput, {

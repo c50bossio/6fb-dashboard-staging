@@ -27,21 +27,18 @@ export default function ShopSettings() {
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
   const [shopData, setShopData] = useState({
-    // General Info
     name: '',
     description: '',
     email: '',
     phone: '',
     website: '',
     
-    // Address
     address: '',
     city: '',
     state: '',
     zip: '',
     country: 'USA',
     
-    // Business Hours
     hours: {
       monday: { open: '09:00', close: '18:00', closed: false },
       tuesday: { open: '09:00', close: '18:00', closed: false },
@@ -52,7 +49,6 @@ export default function ShopSettings() {
       sunday: { open: '00:00', close: '00:00', closed: true }
     },
     
-    // Payment Settings
     payment: {
       acceptCash: true,
       acceptCard: true,
@@ -64,14 +60,12 @@ export default function ShopSettings() {
       depositAmount: 0
     },
     
-    // Commission Settings
     commission: {
       defaultRate: 60, // Barber gets 60%
       productCommission: 20, // Barber gets 20% on products
       tipHandling: 'barber', // 'barber' or 'shop'
     },
     
-    // Booking Settings
     booking: {
       advanceBookingDays: 30,
       minBookingHours: 2,
@@ -83,7 +77,6 @@ export default function ShopSettings() {
       bufferTime: 15 // Minutes between appointments
     },
     
-    // Notifications
     notifications: {
       emailBookings: true,
       emailCancellations: true,
@@ -104,7 +97,6 @@ export default function ShopSettings() {
     try {
       setLoading(true)
       
-      // Get shop data
       const { data: shop, error } = await supabase
         .from('barbershops')
         .select('*')
@@ -113,10 +105,8 @@ export default function ShopSettings() {
       
       if (error) {
         console.error('Error loading shop:', error)
-        // Keep default empty data on error - no mock data
         alert('Failed to load shop settings. Please check your connection.')
       } else if (shop) {
-        // Merge shop data with defaults
         setShopData(prev => ({
           ...prev,
           name: shop.name || prev.name,
@@ -128,7 +118,6 @@ export default function ShopSettings() {
           city: shop.city || prev.city,
           state: shop.state || prev.state,
           zip: shop.zip || prev.zip,
-          // Parse JSON fields if they exist
           hours: shop.business_hours ? JSON.parse(shop.business_hours) : prev.hours,
           payment: shop.payment_settings ? JSON.parse(shop.payment_settings) : prev.payment,
           commission: shop.commission_settings ? JSON.parse(shop.commission_settings) : prev.commission,

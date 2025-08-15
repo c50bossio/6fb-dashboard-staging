@@ -8,7 +8,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 async function createGMBTablesViaInsert() {
   console.log('🏗️ Creating GMB tables by attempting insert operations...\n');
   
-  // Define the table structures by attempting to insert test data
   const tableTests = [
     {
       name: 'oauth_states',
@@ -85,7 +84,6 @@ async function createGMBTablesViaInsert() {
     console.log(`📋 Testing table: ${table.name}`);
     
     try {
-      // First, try to query the table to see if it exists
       const { data: existsData, error: existsError } = await supabase
         .from(table.name)
         .select('*')
@@ -98,7 +96,6 @@ async function createGMBTablesViaInsert() {
         console.log(`✅ ${table.name}: Already exists`);
         results.push({ table: table.name, exists: true });
         
-        // Clean up any test data if the table exists
         try {
           if (table.name === 'oauth_states') {
             await supabase.from(table.name).delete().eq('state_token', 'test_token_delete_me');
@@ -137,7 +134,6 @@ async function createGMBTablesViaInsert() {
     console.log(`\n🛠️ To create missing tables, execute this SQL in Supabase SQL Editor:`);
     console.log(`\n-- Copy and paste this into Supabase Dashboard → SQL Editor:`);
     
-    // Provide simplified table creation SQL
     const simplifiedSQL = `
 -- Essential GMB tables (simplified for manual creation)
 
@@ -231,6 +227,5 @@ CREATE INDEX IF NOT EXISTS idx_sync_logs_account ON gmb_sync_logs(gmb_account_id
   return results;
 }
 
-// Run the test
 createGMBTablesViaInsert()
   .catch(console.error);

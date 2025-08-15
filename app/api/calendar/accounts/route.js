@@ -10,12 +10,7 @@ export async function GET(request) {
       return NextResponse.json({ success: false, error: 'Missing barber_id' }, { status: 400 })
     }
 
-    // In a real implementation, get connected accounts from the database
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // accounts = service.get_connected_accounts(barber_id)
     
-    // Mock connected accounts data for demo
     const Accounts = [
       {
         account_id: 'google_demo_123',
@@ -64,7 +59,6 @@ export async function GET(request) {
   }
 }
 
-// Delete connected account
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -74,12 +68,7 @@ export async function DELETE(request) {
       return NextResponse.json({ success: false, error: 'Missing account_id' }, { status: 400 })
     }
 
-    // In a real implementation, disconnect the account
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // success = service.disconnect_account(account_id)
     
-    // Mock successful disconnection
     const success = true
 
     if (success) {

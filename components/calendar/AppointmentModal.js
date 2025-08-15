@@ -38,11 +38,9 @@ export default function AppointmentModal({
   const [selectedService, setSelectedService] = useState(services[0])
   const [calculatedEndTime, setCalculatedEndTime] = useState('')
 
-  // Reset form when modal opens/closes
   useEffect(() => {
     if (isOpen) {
       if (existingAppointment) {
-        // Edit mode
         const appointment = existingAppointment.extendedProps
         setFormData({
           customerName: appointment.customer || '',
@@ -54,14 +52,12 @@ export default function AppointmentModal({
           status: appointment.status || 'pending'
         })
       } else if (selectedSlot) {
-        // Create mode
         setFormData(prev => ({
           ...prev,
           barberId: selectedSlot.resourceId || ''
         }))
       }
     } else {
-      // Reset form
       setFormData({
         customerName: '',
         customerPhone: '',
@@ -74,7 +70,6 @@ export default function AppointmentModal({
     }
   }, [isOpen, existingAppointment, selectedSlot])
 
-  // Update selected service and calculate end time
   useEffect(() => {
     const service = services.find(s => s.id === formData.service)
     setSelectedService(service)

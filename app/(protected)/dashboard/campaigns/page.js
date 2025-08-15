@@ -27,11 +27,9 @@ export default function CampaignsPage() {
     smsCampaigns: 0
   })
 
-  // Load campaigns on mount
   useEffect(() => {
     console.log('🔄 useEffect triggered - authLoading:', authLoading, 'user:', user?.id, 'profile:', profile?.email)
     
-    // Timeout fallback to prevent infinite loading
     const loadingTimeout = setTimeout(() => {
       console.log('⏰ Loading timeout reached - forcing initialLoading to false')
       console.log('   Auth state at timeout: authLoading:', authLoading, 'user:', user?.id, 'profile:', profile?.email)
@@ -71,7 +69,6 @@ export default function CampaignsPage() {
         console.log('✅ Campaigns loaded:', data)
         setCampaigns(data.campaigns || [])
         
-        // Calculate campaign stats
         const campaigns = data.campaigns || []
         setCampaignStats({
           totalCampaigns: campaigns.length,
@@ -117,7 +114,6 @@ export default function CampaignsPage() {
         estimated_cost: calculateEstimatedCost(formData.get('segment'))
       }
 
-      // Create campaign in database
       const response = await fetch('/api/marketing/campaigns', {
         method: 'POST',
         headers: {
@@ -129,14 +125,12 @@ export default function CampaignsPage() {
       if (response.ok) {
         const result = await response.json()
         
-        // If not scheduled, launch immediately
         if (!campaignData.scheduled_at) {
           showNotification('success', `${selectedCampaignType} campaign launched successfully!`)
         } else {
           showNotification('success', `${selectedCampaignType} campaign scheduled successfully!`)
         }
         
-        // Refresh campaigns list
         loadCampaigns()
         setShowCreateModal(false)
       } else {
@@ -159,7 +153,6 @@ export default function CampaignsPage() {
   }
 
   const calculateEstimatedCost = (segment) => {
-    // Mock cost calculation based on segment
     const segmentCosts = {
       'all_customers': 50.00,
       'recent_customers': 25.00,

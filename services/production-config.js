@@ -1,13 +1,9 @@
-// Production Configuration for Marketing Services
-// This file manages the transition from development mocks to production services
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isStaging = process.env.NODE_ENV === 'staging';
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Service Configuration
 const config = {
-  // Environment flags
   environment: {
     isDevelopment,
     isStaging,
@@ -16,7 +12,6 @@ const config = {
     debugMode: process.env.DEBUG_MODE === 'true'
   },
 
-  // SendGrid Configuration
   sendgrid: {
     apiKey: process.env.SENDGRID_API_KEY,
     fromEmail: process.env.SENDGRID_FROM_EMAIL || 'noreply@bookedbarber.com',
@@ -31,7 +26,6 @@ const config = {
     sandbox: isDevelopment || isStaging
   },
 
-  // Twilio Configuration
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
     authToken: process.env.TWILIO_AUTH_TOKEN,
@@ -43,7 +37,6 @@ const config = {
     validityPeriod: parseInt(process.env.TWILIO_VALIDITY_PERIOD || '3600')
   },
 
-  // Stripe Configuration
   stripe: {
     secretKey: process.env.STRIPE_SECRET_KEY,
     publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
@@ -54,47 +47,38 @@ const config = {
     telemetry: !isDevelopment
   },
 
-  // Rate Limiting Configuration
   rateLimits: {
-    // Email rate limits (per hour)
     email: {
       perUser: parseInt(process.env.EMAIL_RATE_LIMIT_USER || '100'),
       perShop: parseInt(process.env.EMAIL_RATE_LIMIT_SHOP || '1000'),
       perPlatform: parseInt(process.env.EMAIL_RATE_LIMIT_PLATFORM || '10000'),
       burstLimit: parseInt(process.env.EMAIL_BURST_LIMIT || '50')
     },
-    // SMS rate limits (per hour)
     sms: {
       perUser: parseInt(process.env.SMS_RATE_LIMIT_USER || '50'),
       perShop: parseInt(process.env.SMS_RATE_LIMIT_SHOP || '500'),
       perPlatform: parseInt(process.env.SMS_RATE_LIMIT_PLATFORM || '5000'),
       burstLimit: parseInt(process.env.SMS_BURST_LIMIT || '20')
     },
-    // API rate limits (per minute)
     api: {
       perUser: parseInt(process.env.API_RATE_LIMIT_USER || '60'),
       perIP: parseInt(process.env.API_RATE_LIMIT_IP || '100')
     }
   },
 
-  // Spending Limits Configuration
   spendingLimits: {
-    // Monthly limits in USD
     defaultLimits: {
       individual: parseFloat(process.env.LIMIT_INDIVIDUAL || '100'),
       shop: parseFloat(process.env.LIMIT_SHOP || '1000'),
       enterprise: parseFloat(process.env.LIMIT_ENTERPRISE || '10000')
     },
-    // Alert thresholds (percentage of limit)
     alertThresholds: {
       warning: parseFloat(process.env.ALERT_THRESHOLD_WARNING || '0.75'),
       critical: parseFloat(process.env.ALERT_THRESHOLD_CRITICAL || '0.90')
     },
-    // Auto-suspend when limit reached
     autoSuspend: process.env.AUTO_SUSPEND_ON_LIMIT === 'true'
   },
 
-  // Monitoring Configuration
   monitoring: {
     sentry: {
       dsn: process.env.SENTRY_DSN,
@@ -115,33 +99,27 @@ const config = {
     }
   },
 
-  // Security Configuration
   security: {
-    // API Security
     apiKeys: {
       required: isProduction,
       rotationDays: parseInt(process.env.API_KEY_ROTATION_DAYS || '90')
     },
-    // Encryption
     encryption: {
       algorithm: 'aes-256-gcm',
       keyDerivation: 'pbkdf2',
       iterations: parseInt(process.env.ENCRYPTION_ITERATIONS || '100000')
     },
-    // CORS Settings
     cors: {
       origin: process.env.CORS_ORIGIN || (isDevelopment ? '*' : 'https://bookedbarber.com'),
       credentials: true,
       maxAge: 86400
     },
-    // Content Security Policy
     csp: {
       enabled: isProduction,
       reportUri: process.env.CSP_REPORT_URI
     }
   },
 
-  // Retry Configuration
   retry: {
     maxAttempts: parseInt(process.env.MAX_RETRY_ATTEMPTS || '3'),
     initialDelay: parseInt(process.env.RETRY_INITIAL_DELAY || '1000'),
@@ -150,7 +128,6 @@ const config = {
     jitter: process.env.RETRY_JITTER === 'true'
   },
 
-  // Queue Configuration
   queue: {
     redis: {
       url: process.env.REDIS_URL,
@@ -174,7 +151,6 @@ const config = {
     }
   },
 
-  // Feature Flags
   features: {
     emailCampaigns: process.env.FEATURE_EMAIL_CAMPAIGNS !== 'false',
     smsCampaigns: process.env.FEATURE_SMS_CAMPAIGNS !== 'false',
@@ -185,7 +161,6 @@ const config = {
     apiAccess: process.env.FEATURE_API_ACCESS === 'true'
   },
 
-  // Compliance Configuration
   compliance: {
     gdpr: {
       enabled: process.env.GDPR_ENABLED !== 'false',
@@ -211,11 +186,9 @@ const config = {
   }
 };
 
-// Validation function to ensure required config is present
 function validateConfig() {
   const errors = [];
 
-  // Check production requirements
   if (isProduction) {
     if (!config.sendgrid.apiKey) errors.push('SENDGRID_API_KEY is required in production');
     if (!config.twilio.accountSid) errors.push('TWILIO_ACCOUNT_SID is required in production');
@@ -223,7 +196,6 @@ function validateConfig() {
     if (!config.monitoring.sentry.dsn) errors.push('SENTRY_DSN is recommended for production');
   }
 
-  // Check staging requirements
   if (isStaging) {
     if (!config.sendgrid.apiKey && !config.environment.useMockServices) {
       errors.push('SendGrid API key or mock services required for staging');
@@ -233,7 +205,6 @@ function validateConfig() {
   return errors;
 }
 
-// Get service status
 function getServiceStatus() {
   return {
     environment: process.env.NODE_ENV,

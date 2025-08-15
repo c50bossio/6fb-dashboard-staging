@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
-// GET - Fetch public barbershop data by slug
 export async function GET(request, { params }) {
   try {
     const { slug } = params
@@ -12,7 +11,6 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
     }
 
-    // Fetch barbershop by slug with all public data
     const { data: barbershop, error } = await supabase
       .from('barbershops')
       .select(`
@@ -35,14 +33,12 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Barbershop not found or not enabled' }, { status: 404 })
     }
 
-    // Also fetch business hours
     const { data: businessHours } = await supabase
       .from('business_hours')
       .select('*')
       .eq('barbershop_id', barbershop.id)
       .order('day_of_week')
 
-    // Fetch team members
     const { data: teamMembers } = await supabase
       .from('team_members')
       .select('*')
@@ -50,7 +46,6 @@ export async function GET(request, { params }) {
       .eq('is_active', true)
       .order('display_order')
 
-    // Fetch testimonials
     const { data: testimonials } = await supabase
       .from('customer_testimonials')
       .select('*')
@@ -59,7 +54,6 @@ export async function GET(request, { params }) {
       .order('display_order')
       .limit(6)
 
-    // Combine all data
     const publicData = {
       ...barbershop,
       business_hours: businessHours || [],

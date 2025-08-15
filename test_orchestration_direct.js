@@ -10,7 +10,6 @@ const fs = require('fs')
 
 const BACKEND_URL = 'http://localhost:8001'
 
-// Test queries designed to trigger agent orchestration
 const ORCHESTRATION_TESTS = [
   {
     id: 'complex_growth_strategy',
@@ -83,7 +82,6 @@ class DirectOrchestrationTester {
       this.results.system_info.backend_available = true
       console.log('✅ FastAPI backend is available')
       
-      // Test AI endpoint
       const testResponse = await axios.post(`${BACKEND_URL}/api/v1/ai/enhanced-chat`, {
         message: "Hello, testing AI service",
         session_id: "system_test",
@@ -154,10 +152,8 @@ class DirectOrchestrationTester {
       testResult.response = response.data
       console.log('✅ Response received')
       
-      // Analyze the response for orchestration patterns
       this.analyzeResponse(testResult)
       
-      // Evaluate success
       testResult.success = this.evaluateTest(testResult)
       
       console.log(`🎯 Analysis Results:`)
@@ -185,7 +181,6 @@ class DirectOrchestrationTester {
     
     const analysis = testResult.analysis
 
-    // Analyze agent mentions
     const agentPatterns = {
       'financial': ['financial', 'revenue', 'pricing', 'profit', 'cost', 'budget', 'marcus'],
       'marketing': ['marketing', 'brand', 'customer', 'social', 'promotion', 'advertising', 'sophia'],
@@ -198,7 +193,6 @@ class DirectOrchestrationTester {
       }
     })
 
-    // Check domain coverage
     const domainKeywords = {
       'finance': ['price', 'revenue', 'profit', 'cost', 'budget', 'roi', 'margin'],
       'marketing': ['brand', 'customer', 'social media', 'promotion', 'advertising', 'positioning'],
@@ -211,7 +205,6 @@ class DirectOrchestrationTester {
       }
     })
 
-    // Look for collaboration indicators
     const collaborationTerms = [
       'comprehensive', 'integrated', 'holistic', 'coordinated', 'strategic',
       'multi-faceted', 'combined approach', 'synergy', 'alignment',
@@ -224,35 +217,27 @@ class DirectOrchestrationTester {
       }
     })
 
-    // Check for structured response
     if (response.contextual_insights || response.recommendations || 
         responseText.includes('strategy:') || responseText.includes('action plan:')) {
       analysis.structured_response = true
     }
 
-    // Extract metrics
     analysis.confidence = Math.round((response.confidence || 0) * 100)
     analysis.response_length = response.response.length
 
-    // Calculate orchestration score
     let score = 0
     
-    // Domain coverage (0-40 points)
     const domainCoverage = analysis.domain_coverage.length / testResult.expected_domains.length
     score += Math.round(domainCoverage * 40)
     
-    // Agent mentions (0-30 points)
     score += Math.min(analysis.agent_mentions.length * 10, 30)
     
-    // Collaboration terms (0-20 points)
     score += Math.min(analysis.collaboration_terms.length * 5, 20)
     
-    // Structured response (0-10 points)
     if (analysis.structured_response) score += 10
 
     analysis.orchestration_score = Math.min(score, 100)
 
-    // Remove duplicates
     analysis.agent_mentions = [...new Set(analysis.agent_mentions)]
     analysis.domain_coverage = [...new Set(analysis.domain_coverage)]
     analysis.collaboration_terms = [...new Set(analysis.collaboration_terms)]
@@ -261,7 +246,6 @@ class DirectOrchestrationTester {
   evaluateTest(testResult) {
     const analysis = testResult.analysis
     
-    // Success criteria:
     // 1. Response received
     // 2. Orchestration score >= 60 for high complexity, >= 40 for medium
     // 3. At least 2 domains covered for multi-domain queries
@@ -279,31 +263,25 @@ class DirectOrchestrationTester {
   async runAllTests() {
     console.log('🚀 Starting Direct AI Agent Orchestration Testing...\n')
 
-    // Check system status
     const systemReady = await this.checkSystemStatus()
     if (!systemReady) {
       console.log('❌ System not ready for testing')
       return this.results
     }
 
-    // Run tests
     console.log('\n📋 Running Orchestration Tests...')
     for (const testCase of ORCHESTRATION_TESTS) {
       const result = await this.testOrchestration(testCase)
       this.results.tests.push(result)
       
-      // Rate limiting between tests
       await new Promise(resolve => setTimeout(resolve, 3000))
     }
 
-    // Calculate summary
     this.calculateSummary()
     
-    // Save results
     const reportPath = '/Users/bossio/6FB AI Agent System/direct_orchestration_results.json'
     fs.writeFileSync(reportPath, JSON.stringify(this.results, null, 2))
     
-    // Print report
     this.printReport()
     
     return this.results
@@ -329,7 +307,6 @@ class DirectOrchestrationTester {
       )
     }
 
-    // Analyze orchestration features
     const features = this.results.orchestration_features
     tests.forEach(test => {
       test.analysis.agent_mentions.forEach(agent => {
@@ -351,12 +328,10 @@ class DirectOrchestrationTester {
     console.log('🎯 DIRECT AI AGENT ORCHESTRATION TEST REPORT')
     console.log('='.repeat(80))
     
-    // System status
     console.log(`🔧 System Status:`)
     console.log(`   Backend Available: ${this.results.system_info.backend_available ? '✅' : '❌'}`)
     console.log(`   AI Service: ${this.results.system_info.ai_service_status}`)
     
-    // Overall results
     const analysis = this.results.analysis
     console.log(`\n📊 Overall Results:`)
     console.log(`   Total Tests: ${analysis.total_tests}`)
@@ -366,7 +341,6 @@ class DirectOrchestrationTester {
     console.log(`   Average Response Length: ${analysis.avg_response_length} characters`)
     console.log(`   🏆 Overall Collaboration Score: ${analysis.collaboration_score}/100`)
 
-    // Orchestration analysis
     console.log(`\n🤖 Agent Orchestration Analysis:`)
     Object.entries(this.results.orchestration_features.agent_mentions).forEach(([agent, count]) => {
       console.log(`   ${agent.charAt(0).toUpperCase() + agent.slice(1)} Agent: ${count}/${analysis.total_tests} tests`)
@@ -374,7 +348,6 @@ class DirectOrchestrationTester {
     console.log(`   Multi-domain Responses: ${this.results.orchestration_features.multi_domain_responses}/${analysis.total_tests}`)
     console.log(`   Collaboration Terms Used: ${this.results.orchestration_features.collaboration_indicators.length}`)
 
-    // Individual results
     console.log(`\n📋 Test Results Summary:`)
     this.results.tests.forEach((test, idx) => {
       console.log(`\n${idx + 1}. ${test.success ? '✅' : '❌'} ${test.id} (${test.complexity} complexity):`)
@@ -387,7 +360,6 @@ class DirectOrchestrationTester {
       }
     })
 
-    // Assessment
     console.log(`\n💡 Orchestration System Assessment:`)
     if (analysis.collaboration_score >= 80) {
       console.log(`   🎉 EXCELLENT - Strong multi-agent orchestration detected!`)
@@ -415,7 +387,6 @@ class DirectOrchestrationTester {
   }
 }
 
-// Run the tests
 if (require.main === module) {
   const tester = new DirectOrchestrationTester()
   tester.runAllTests().catch(console.error)

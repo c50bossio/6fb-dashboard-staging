@@ -9,7 +9,6 @@ const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 const path = require('path')
 
-// Load environment variables
 require('dotenv').config({ path: '.env.local' })
 
 const supabase = createClient(
@@ -21,11 +20,9 @@ async function setupCin7Tables() {
   console.log('🔧 Setting up Cin7 integration tables in Supabase...\n')
 
   try {
-    // Read the SQL schema file
     const schemaPath = path.join(__dirname, '..', 'database', 'cin7-schema.sql')
     const schema = fs.readFileSync(schemaPath, 'utf8')
 
-    // Split the schema into individual statements
     const statements = schema
       .split(';')
       .map(s => s.trim())
@@ -36,16 +33,13 @@ async function setupCin7Tables() {
     let successCount = 0
     let errorCount = 0
 
-    // Execute each statement
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i]
       
-      // Skip if it's just a comment
       if (statement.startsWith('--') || statement.length < 10) {
         continue
       }
 
-      // Get a description of what we're doing
       let description = 'Executing statement'
       if (statement.includes('CREATE TABLE')) {
         const match = statement.match(/CREATE TABLE (?:IF NOT EXISTS )?(\w+)/)
@@ -70,13 +64,11 @@ async function setupCin7Tables() {
       process.stdout.write(`${i + 1}/${statements.length} - ${description}... `)
 
       try {
-        // Execute the statement using Supabase's SQL execution
         const { error } = await supabase.rpc('exec_sql', {
           sql: statement + ';'
         })
 
         if (error) {
-          // Some errors are expected (like "already exists")
           if (error.message.includes('already exists') || 
               error.message.includes('duplicate')) {
             console.log('✓ (already exists)')
@@ -122,12 +114,10 @@ async function setupCin7Tables() {
   }
 }
 
-// Alternative approach if exec_sql doesn't work
 async function setupCin7TablesAlternative() {
   console.log('\n🔄 Trying alternative approach...\n')
 
   try {
-    // Test if cin7_connections table exists
     const { error: testError } = await supabase
       .from('cin7_connections')
       .select('id')
@@ -145,7 +135,6 @@ async function setupCin7TablesAlternative() {
     console.log('   3. Paste and run in the SQL editor')
     console.log('\n   Or run this simplified version:')
     
-    // Print a simplified version for manual execution
     console.log('\n' + '='.repeat(60))
     console.log('-- Simplified Cin7 Tables (copy and run in Supabase):')
     console.log('='.repeat(60) + '\n')
@@ -190,8 +179,6 @@ ALTER TABLE inventory ADD COLUMN IF NOT EXISTS cin7_last_sync TIMESTAMPTZ;
   }
 }
 
-// Run the setup
 setupCin7Tables().then(() => {
-  // If main approach fails, try alternative
   setupCin7TablesAlternative()
 })

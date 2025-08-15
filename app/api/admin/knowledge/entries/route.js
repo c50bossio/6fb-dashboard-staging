@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request) {
   try {
-    // Get authorization header
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
       return NextResponse.json({ 
@@ -14,10 +13,7 @@ export async function GET(request) {
       }, { status: 401 })
     }
 
-    // TODO: Implement proper admin role verification
-    // For now, this is a placeholder - in production, verify the user has SUPER_ADMIN or KNOWLEDGE_ADMIN role
 
-    // Get all global knowledge entries from Enhanced Business Knowledge Service
     const response = await fetch('http://localhost:8001/enhanced-knowledge/status')
     
     if (!response.ok) {
@@ -26,7 +22,6 @@ export async function GET(request) {
 
     const statusData = await response.json()
     
-    // Return mock data for now - in production, this would fetch actual entries
     const Entries = [
       {
         id: 'global_1',

@@ -1,5 +1,3 @@
-// Login Debug Script - To be pasted into browser console
-// This script monitors all aspects of the login process
 
 console.log('🔍 Login Debug Script Started');
 
@@ -57,7 +55,6 @@ window.fetch = async function(...args) {
             duration: endTime - startTime
         });
         
-        // Try to log response body for API calls
         if (url.includes('/api/') || url.includes('supabase')) {
             try {
                 const responseText = await responseClone.text();
@@ -149,12 +146,10 @@ observer.observe(document.body, {
 window.debugLogin = async function(email = 'demo@barbershop.com', password = 'demo123') {
     console.log('🔍 Starting programmatic login test...');
     
-    // Clear previous logs
     debugLogs = [];
     networkLogs = [];
     loadingStateChanges = [];
     
-    // Find and fill email field
     const emailField = document.querySelector('input[type="email"], input[name="email"]');
     const passwordField = document.querySelector('input[type="password"], input[name="password"]');
     const submitButton = document.querySelector('button[type="submit"], input[type="submit"]');
@@ -180,9 +175,7 @@ window.debugLogin = async function(email = 'demo@barbershop.com', password = 'de
     console.log('🚀 Clicking submit button...');
     submitButton.click();
     
-    // Wait 10 seconds and then report results
     setTimeout(() => {
-        console.log('📊 LOGIN DEBUG REPORT:');
         console.log('===== CONSOLE LOGS =====');
         debugLogs.forEach(log => console.log(log));
         
@@ -198,14 +191,12 @@ window.debugLogin = async function(email = 'demo@barbershop.com', password = 'de
         console.log('User state in local storage:', localStorage.getItem('auth'));
         console.log('Cookies:', document.cookie);
         
-        // Check for any visible error messages
         const errorElements = document.querySelectorAll('.error, .text-red-500, .text-red-600, [class*="error"]');
         if (errorElements.length > 0) {
             console.log('===== VISIBLE ERRORS =====');
             errorElements.forEach(el => console.log(el.textContent));
         }
         
-        // Check button states
         const currentButton = document.querySelector('button[type="submit"]');
         if (currentButton) {
             console.log('===== SUBMIT BUTTON STATE =====');
@@ -219,7 +210,6 @@ window.debugLogin = async function(email = 'demo@barbershop.com', password = 'de
 
 // 7. Auto-start the login test
 console.log('🔍 Debug script loaded. Auto-starting login test in 2 seconds...');
-console.log('🔍 Or call debugLogin() manually to test with different credentials');
 
 setTimeout(() => {
     if (window.location.pathname.includes('/login')) {

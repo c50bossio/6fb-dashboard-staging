@@ -7,7 +7,6 @@ export default function BookingsPage() {
   const router = useRouter()
   
   useEffect(() => {
-    // Redirect to the stable calendar implementation
     router.push('/dashboard/calendar')
   }, [router])
   

@@ -5,7 +5,6 @@ export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -19,7 +18,6 @@ export async function GET(request) {
     const serviceType = searchParams.get('service_type') || 'all'
 
     try {
-      // Get real historical booking data from database
       const endDate = new Date()
       const startDate = new Date(endDate.getTime() - (forecastDays * 2) * 24 * 60 * 60 * 1000) // 2x forecast period for historical analysis
 
@@ -43,7 +41,6 @@ export async function GET(request) {
         throw error
       }
 
-      // Calculate real metrics from historical data
       const forecast = generateRealBookingForecast(
         barbershopId,
         historicalBookings || [],
@@ -62,7 +59,6 @@ export async function GET(request) {
     } catch (dbError) {
       console.error('Database error in booking forecast:', dbError)
       
-      // Return empty state instead of mock data - follow NO MOCK DATA policy
       return NextResponse.json({
         success: true,
         data: {
@@ -108,7 +104,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -169,10 +164,8 @@ export async function POST(request) {
   }
 }
 
-// REAL DATABASE OPERATIONS FOR BOOKING FORECASTING
 function generateRealBookingForecast(barbershopId, historicalBookings, forecastDays, serviceType) {
   if (!historicalBookings || historicalBookings.length < 7) {
-    // Insufficient data for meaningful forecasting
     return {
       barbershop_id: barbershopId,
       forecast_type: 'booking_demand',
@@ -203,7 +196,6 @@ function generateRealBookingForecast(barbershopId, historicalBookings, forecastD
     }
   }
 
-  // Calculate real patterns from historical data
   const patterns = analyzeRealBookingPatterns(historicalBookings)
   const forecasts = generateRealDailyForecasts(patterns, forecastDays)
   
@@ -220,10 +212,8 @@ function generateRealBookingForecast(barbershopId, historicalBookings, forecastD
       total_days: forecastDays
     },
     
-    // Real forecasts based on historical patterns
     daily_forecasts: forecasts,
     
-    // Summary from real data
     summary: {
       total_predicted_bookings: forecasts.reduce((sum, f) => sum + f.predicted_bookings, 0),
       average_daily_bookings: Math.round(patterns.avgDailyBookings * 10) / 10,
@@ -234,7 +224,6 @@ function generateRealBookingForecast(barbershopId, historicalBookings, forecastD
       based_on_bookings: historicalBookings.length
     },
     
-    // Real patterns from database
     historical_patterns: {
       daily_average: patterns.avgDailyBookings,
       weekly_distribution: patterns.weeklyDistribution,
@@ -244,7 +233,6 @@ function generateRealBookingForecast(barbershopId, historicalBookings, forecastD
       no_show_rate: patterns.noShowRate
     },
     
-    // Business insights based on real data
     business_insights: generateRealBusinessInsights(patterns, historicalBookings)
   }
 }
@@ -252,7 +240,6 @@ function generateRealBookingForecast(barbershopId, historicalBookings, forecastD
 function analyzeRealBookingPatterns(historicalBookings) {
   const totalBookings = historicalBookings.length
   
-  // Calculate daily averages
   const bookingsByDate = {}
   const hourCounts = {}
   const dayOfWeekCounts = [0, 0, 0, 0, 0, 0, 0] // Sunday = 0
@@ -265,20 +252,15 @@ function analyzeRealBookingPatterns(historicalBookings) {
     const hour = date.getHours()
     const dayOfWeek = date.getDay()
     
-    // Count by date
     bookingsByDate[dateKey] = (bookingsByDate[dateKey] || 0) + 1
     
-    // Count by hour
     hourCounts[hour] = (hourCounts[hour] || 0) + 1
     
-    // Count by day of week
     dayOfWeekCounts[dayOfWeek]++
     
-    // Count by service
     const serviceName = booking.services?.name || 'Unknown'
     serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1
     
-    // Count by status
     if (booking.status === 'completed') statusCounts.completed++
     else if (booking.status === 'cancelled') statusCounts.cancelled++
     else if (booking.status === 'no_show') statusCounts.no_show++
@@ -287,18 +269,15 @@ function analyzeRealBookingPatterns(historicalBookings) {
   const totalDays = Object.keys(bookingsByDate).length || 1
   const avgDailyBookings = totalBookings / totalDays
   
-  // Find peak day of week
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const peakDayIndex = dayOfWeekCounts.indexOf(Math.max(...dayOfWeekCounts))
   const peakDay = dayNames[peakDayIndex]
   
-  // Find busiest hours
   const sortedHours = Object.entries(hourCounts)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 3)
     .map(([hour]) => `${hour}:00`)
   
-  // Find most popular service
   const popularService = Object.entries(serviceCounts)
     .sort(([,a], [,b]) => b - a)[0]
   
@@ -338,7 +317,6 @@ function generateRealDailyForecasts(patterns, forecastDays) {
     const forecastDate = new Date(Date.now() + dayOffset * 24 * 60 * 60 * 1000)
     const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][forecastDate.getDay()]
     
-    // Use real weekly distribution if available
     const weeklyMultiplier = patterns.weeklyDistribution?.[dayName] || 0.8
     const predictedBookings = Math.max(1, Math.round(baseAverage * (weeklyMultiplier / 0.14))) // Normalize to 7-day average
     
@@ -420,7 +398,6 @@ function generateRealBusinessInsights(patterns, historicalBookings) {
   return insights
 }
 
-// REAL DATABASE FUNCTIONS FOR POST ACTIONS
 
 async function analyzeBookingTrendsFromDatabase(supabase, barbershopId, parameters) {
   const period = parameters?.period || '30_days'
@@ -529,5 +506,3 @@ function getPopularServices(bookings) {
     .map(([service, count]) => ({ service, count }))
 }
 
-// ALL MOCK DATA GENERATION FUNCTIONS REMOVED
-// Using real database operations only per NO_MOCK_DATA_POLICY

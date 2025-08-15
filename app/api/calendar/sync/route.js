@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'edge'
 
-// Sync appointment to external calendar
 export async function POST(request) {
   try {
     const data = await request.json()
@@ -16,7 +15,6 @@ export async function POST(request) {
       )
     }
 
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -24,7 +22,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get booking details from database
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .select(`
@@ -49,7 +46,6 @@ export async function POST(request) {
       }, { status: 404 })
     }
 
-    // Get calendar account details
     const { data: calendarAccount, error: accountError } = await supabase
       .from('calendar_accounts')
       .select('*')
@@ -65,7 +61,6 @@ export async function POST(request) {
       }, { status: 404 })
     }
 
-    // Store sync record in database
     const { data: syncRecord, error: syncError } = await supabase
       .from('calendar_syncs')
       .insert({
@@ -87,7 +82,6 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    // NO MOCK DATA - Return real sync request status
     return NextResponse.json({
       success: true,
       sync_id: syncRecord.id,
@@ -115,14 +109,12 @@ export async function POST(request) {
   }
 }
 
-// Get sync status for appointments
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const barber_id = searchParams.get('barber_id')
     const account_id = searchParams.get('account_id')
     
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -130,7 +122,6 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Build query for sync history
     let query = supabase
       .from('calendar_syncs')
       .select(`
@@ -153,16 +144,13 @@ export async function GET(request) {
       .order('sync_requested_at', { ascending: false })
       .limit(100)
 
-    // Filter by barber_id if provided (through bookings relation)
     if (barber_id) {
       query = query.eq('bookings.barber_id', barber_id)
     }
 
-    // Filter by account_id if provided
     if (account_id) {
       query = query.eq('account_id', account_id)
     } else {
-      // Only show syncs for user's accounts
       query = query.eq('user_id', user.id)
     }
 
@@ -177,7 +165,6 @@ export async function GET(request) {
       }, { status: 500 })
     }
 
-    // NO MOCK DATA - Return real sync history or empty state
     const history = syncHistory || []
     
     return NextResponse.json({

@@ -8,10 +8,8 @@ export async function GET(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Development bypass for testing
     const isDevelopment = process.env.NODE_ENV === 'development'
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (!isDevelopment && (authError || !user)) {
@@ -21,7 +19,6 @@ export async function GET(request) {
       )
     }
     
-    // Use the first shop owner for development testing
     let userId = user?.id
     if (isDevelopment && !userId) {
       const { data: devUser } = await supabase
@@ -33,7 +30,6 @@ export async function GET(request) {
       userId = devUser?.id
     }
     
-    // Get the user's profile to check role (skip in development)
     let profile = null
     if (userId) {
       const { data: profileData } = await supabase
@@ -44,7 +40,6 @@ export async function GET(request) {
       profile = profileData
     }
     
-    // Only shop owners and above can access shop info (skip check in development)
     if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
@@ -52,7 +47,6 @@ export async function GET(request) {
       )
     }
     
-    // Get the shop owned by this user
     const { data: shop, error: shopError } = await supabase
       .from('barbershops')
       .select(`
@@ -85,7 +79,6 @@ export async function GET(request) {
     if (shopError) {
       console.error('Error fetching shop:', shopError)
       
-      // Return empty state instead of mock data - follow NO MOCK DATA policy
       return NextResponse.json({
         error: 'Shop not found',
         message: 'No barbershop is associated with this account. Please create or link a barbershop.',
@@ -111,7 +104,6 @@ export async function PUT(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -121,17 +113,14 @@ export async function PUT(request) {
       )
     }
     
-    // Get the request body
     const updates = await request.json()
     
-    // Get the user's profile to check role
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
     
-    // Only shop owners and above can update shop info
     if (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
@@ -139,7 +128,6 @@ export async function PUT(request) {
       )
     }
     
-    // Update the shop
     const { data: updatedShop, error: updateError } = await supabase
       .from('barbershops')
       .update(updates)

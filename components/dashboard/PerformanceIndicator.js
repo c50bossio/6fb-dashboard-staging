@@ -22,18 +22,15 @@ export default function PerformanceIndicator({ className = '' }) {
   useEffect(() => {
     loadPerformanceData();
     
-    // Update every 30 seconds
     const interval = setInterval(loadPerformanceData, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const loadPerformanceData = async () => {
     try {
-      // Load cache statistics
       const cacheResponse = await fetch('/api/cache/stats?detailed=true');
       const cacheData = await cacheResponse.json();
 
-      // Test API response time
       const startTime = Date.now();
       const apiResponse = await fetch('/api/analytics/live-data?barbershop_id=demo-shop-001');
       const apiResponseTime = Date.now() - startTime;
@@ -84,7 +81,6 @@ export default function PerformanceIndicator({ className = '' }) {
   const cachePerf = performanceData?.cache?.cache_performance;
   const apiPerf = performanceData?.api;
 
-  // Determine overall performance status
   const getPerformanceStatus = () => {
     const cacheHitRate = cachePerf ? parseInt(cachePerf.hit_rate) : 0;
     const apiSpeed = apiPerf?.responseTime || 1000;

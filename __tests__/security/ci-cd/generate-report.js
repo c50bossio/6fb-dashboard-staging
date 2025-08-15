@@ -29,13 +29,10 @@ class CICDReportGenerator {
     console.log(`📁 Output directory: ${this.outputDir}`);
 
     try {
-      // Ensure output directory exists
       await fs.mkdir(this.outputDir, { recursive: true });
 
-      // Collect all security results
       await this.collectSecurityResults();
 
-      // Generate various report formats
       await this.generateJSONReport();
       await this.generateSARIFReport();
       await this.generateSummaryReport();
@@ -76,7 +73,6 @@ class CICDReportGenerator {
           const dirPath = path.join(this.inputDir, entry.name);
           const files = await fs.readdir(dirPath);
           
-          // Process each result file
           for (const file of files) {
             const filePath = path.join(dirPath, file);
             
@@ -84,7 +80,6 @@ class CICDReportGenerator {
               const content = await fs.readFile(filePath, 'utf8');
               const data = JSON.parse(content);
               
-              // Categorize results based on file name patterns
               if (file.includes('sast')) {
                 this.results.sast = this.results.sast || [];
                 this.results.sast.push({ tool: this.extractToolName(file), data });
@@ -113,7 +108,6 @@ class CICDReportGenerator {
 
     } catch (error) {
       console.warn(`⚠️ Could not read input directory: ${error.message}`);
-      // Continue with empty results
     }
   }
 
@@ -161,7 +155,6 @@ class CICDReportGenerator {
       if (!Array.isArray(tools)) return;
 
       tools.forEach(({ tool, data }) => {
-        // Handle different data structures from various tools
         const toolFindings = this.extractFindingsFromTool(tool, data, category);
         findings.push(...toolFindings);
       });
@@ -277,7 +270,6 @@ class CICDReportGenerator {
           break;
 
         default:
-          // Generic handling for custom tools
           if (data.findings) {
             findings.push(...data.findings.map(f => ({ ...f, tool, category })));
           } else if (data.results) {
@@ -312,7 +304,6 @@ class CICDReportGenerator {
     const seen = new Set();
 
     findings.forEach(finding => {
-      // Create a signature for deduplication
       const signature = `${finding.title}-${finding.file}-${finding.line}-${finding.severity}`;
       
       if (!seen.has(signature)) {
@@ -351,7 +342,6 @@ class CICDReportGenerator {
       toolCounts[tool] = (toolCounts[tool] || 0) + 1;
     });
 
-    // Calculate security score
     const criticalPenalty = severityCounts.CRITICAL * 20;
     const highPenalty = severityCounts.HIGH * 10;
     const mediumPenalty = severityCounts.MEDIUM * 5;
@@ -359,7 +349,6 @@ class CICDReportGenerator {
     
     const securityScore = Math.max(0, 100 - criticalPenalty - highPenalty - mediumPenalty - lowPenalty);
     
-    // Determine risk level
     let riskLevel = 'LOW';
     if (securityScore < 50) riskLevel = 'CRITICAL';
     else if (securityScore < 70) riskLevel = 'HIGH';
@@ -387,7 +376,6 @@ class CICDReportGenerator {
       runs: []
     };
 
-    // Group findings by tool
     const toolGroups = {};
     findings.forEach(finding => {
       const tool = finding.tool || 'unknown';
@@ -397,7 +385,6 @@ class CICDReportGenerator {
       toolGroups[tool].push(finding);
     });
 
-    // Create SARIF run for each tool
     Object.entries(toolGroups).forEach(([tool, toolFindings]) => {
       const run = {
         tool: {
@@ -646,13 +633,11 @@ ${this.generateRecommendations(findings).map(rec => `- **${rec.priority}**: ${re
     const recommendations = [];
     const categories = {};
 
-    // Count findings by category
     findings.forEach(finding => {
       const category = finding.category || 'general';
       categories[category] = (categories[category] || 0) + 1;
     });
 
-    // Generate recommendations for top categories
     Object.entries(categories)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 10)
@@ -728,12 +713,10 @@ ${this.generateRecommendations(findings).map(rec => `- **${rec.priority}**: ${re
   }
 }
 
-// CLI execution
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const options = {};
 
-  // Parse command line arguments
   for (let i = 0; i < args.length; i += 2) {
     const key = args[i].replace('--', '');
     const value = args[i + 1];

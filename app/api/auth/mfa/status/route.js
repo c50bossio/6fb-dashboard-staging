@@ -7,7 +7,6 @@ export async function GET(request) {
   try {
     const supabase = createClient()
     
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) {
       return NextResponse.json(
@@ -16,7 +15,6 @@ export async function GET(request) {
       )
     }
 
-    // Get user's MFA methods
     const { data: mfaMethods, error: mfaError } = await supabase
       .from('user_mfa_methods')
       .select('*')
@@ -30,24 +28,20 @@ export async function GET(request) {
       )
     }
 
-    // Get user profile for role-based requirements
     const { data: profile } = await supabase
       .from('profiles')
       .select('role, mfa_enabled, mfa_enforced')
       .eq('id', user.id)
       .single()
 
-    // Check if MFA is required for this user's role
     const { data: mfaRequired } = await supabase.rpc('mfa_required_for_user', {
       p_user_id: user.id
     })
 
-    // Process MFA methods
     const activeMethods = mfaMethods?.filter(method => method.is_verified) || []
     const totpMethod = activeMethods.find(method => method.method_type === 'totp')
     const backupCodesMethod = activeMethods.find(method => method.method_type === 'backup_codes')
 
-    // Get recent security events
     const { data: recentEvents } = await supabase
       .from('security_events')
       .select('event_type, created_at, event_details')
@@ -88,7 +82,6 @@ export async function GET(request) {
       recommendations: []
     }
 
-    // Add recommendations based on status
     if (!response.mfa.enabled && response.mfa.required) {
       response.recommendations.push({
         type: 'warning',
@@ -111,7 +104,6 @@ export async function GET(request) {
       })
     }
 
-    // Check for suspicious activity
     const failedAttempts = recentEvents?.filter(event => 
       event.event_type === 'mfa_verify_failed' && 
       new Date(event.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours

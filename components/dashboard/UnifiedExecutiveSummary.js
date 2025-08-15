@@ -17,7 +17,6 @@ export default function UnifiedExecutiveSummary({ data }) {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [greeting, setGreeting] = useState('')
   
-  // Use actual metrics from data, no fake fallbacks
   const metrics = data?.metrics || {
     revenue: 0,
     customers: 0,
@@ -25,7 +24,6 @@ export default function UnifiedExecutiveSummary({ data }) {
     satisfaction: 0
   }
 
-  // Use real today's metrics from data
   const todayMetrics = data?.todayMetrics || {
     revenue: data?.dailyRevenue || 0,
     bookings: data?.todayBookings || 0,
@@ -33,7 +31,6 @@ export default function UnifiedExecutiveSummary({ data }) {
     nextAppointment: data?.nextAppointment || 'No appointments'
   }
 
-  // Calculate health score based on metrics
   const calculateHealthScore = () => {
     const revenueScore = metrics.revenue > 140000 ? 25 : metrics.revenue > 100000 ? 20 : 15
     const customerScore = metrics.customers > 1000 ? 25 : metrics.customers > 500 ? 20 : 15
@@ -46,7 +43,6 @@ export default function UnifiedExecutiveSummary({ data }) {
   const healthStatus = healthScore >= 90 ? 'Excellent' : healthScore >= 70 ? 'Good' : healthScore >= 50 ? 'Fair' : 'Needs Attention'
   const healthColor = healthScore >= 90 ? 'green' : healthScore >= 70 ? 'blue' : healthScore >= 50 ? 'yellow' : 'red'
 
-  // Get AI insights - handle both object and string formats
   const rawInsights = data?.insights || []
   const aiInsights = rawInsights.length > 0 
     ? rawInsights.map(insight => 
@@ -64,7 +60,6 @@ export default function UnifiedExecutiveSummary({ data }) {
       setCurrentTime(new Date())
     }, 60000) // Update every minute
 
-    // Set greeting based on time
     const hour = new Date().getHours()
     if (hour < 12) setGreeting('Good morning')
     else if (hour < 17) setGreeting('Good afternoon')

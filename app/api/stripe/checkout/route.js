@@ -19,29 +19,24 @@ const PLAN_CONFIGS = {
   }
 }
 
-// Helper function to create test mode products if they don't exist
 async function getOrCreateTestPrice(plan, billing, amount, stripe) {
   const isTestMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')
   
   if (!isTestMode) {
-    // Use regular price IDs for live mode
     return PLAN_CONFIGS[plan][billing].priceId
   }
   
   try {
-    // In test mode, create a price dynamically
     const planName = plan.charAt(0).toUpperCase() + plan.slice(1)
     const billingLabel = billing === 'monthly' ? 'Monthly' : 'Yearly'
     
     console.log('🔧 Creating test mode product and price for:', planName, billingLabel)
     
-    // Create product
     const product = await stripe.products.create({
       name: `${planName} Plan - ${billingLabel} (Test)`,
       description: `Test mode ${planName} subscription - ${billingLabel.toLowerCase()} billing`
     })
     
-    // Create price
     const price = await stripe.prices.create({
       unit_amount: amount,
       currency: 'usd',
@@ -56,7 +51,6 @@ async function getOrCreateTestPrice(plan, billing, amount, stripe) {
     
   } catch (error) {
     console.error('❌ Error creating test price:', error.message)
-    // Fallback: use configured price ID anyway (might fail but we'll see the error)
     return PLAN_CONFIGS[plan][billing].priceId
   }
 }
@@ -70,7 +64,6 @@ export async function GET(request) {
     console.log('💳 Creating Stripe checkout:', { plan, billing })
     console.log('🌐 Request origin:', origin)
     
-    // Verify user is authenticated
     const supabase = createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -80,14 +73,11 @@ export async function GET(request) {
     
     console.log('✅ User authenticated for checkout:', user.email)
     
-    // DEVELOPMENT MODE: Skip Stripe and simulate successful checkout (only if explicitly enabled)
     if (process.env.DEVELOPMENT_MODE === 'true') {
       console.log('🧪 DEVELOPMENT MODE: Simulating successful checkout')
       
-      // Create a mock session ID for development
       const mockSessionId = 'cs_dev_' + Math.random().toString(36).substring(2, 15)
       
-      // Redirect directly to success page with mock session
       const successUrl = new URL('/success', origin)
       successUrl.searchParams.set('session_id', mockSessionId)
       successUrl.searchParams.set('plan', plan)
@@ -97,7 +87,6 @@ export async function GET(request) {
       return NextResponse.redirect(successUrl.toString())
     }
     
-    // Get plan configuration
     const planConfig = PLAN_CONFIGS[plan]?.[billing]
     if (!planConfig) {
       return NextResponse.redirect(new URL('/pricing?error=invalid_plan', request.url))
@@ -105,11 +94,9 @@ export async function GET(request) {
     
     console.log('📦 Plan config:', planConfig)
     
-    // Get or create price ID (handles test mode dynamically)
     const priceId = await getOrCreateTestPrice(plan, billing, planConfig.amount, stripe)
     console.log('💰 Using price ID:', priceId)
     
-    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -137,7 +124,6 @@ export async function GET(request) {
     
     console.log('✅ Stripe session created:', session.id)
     
-    // Redirect to Stripe Checkout
     return NextResponse.redirect(session.url)
     
   } catch (error) {

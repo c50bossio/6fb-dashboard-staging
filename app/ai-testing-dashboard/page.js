@@ -140,7 +140,6 @@ export default function AITestingDashboard() {
     setIsRunningTests(true)
     
     try {
-      // Test the feature endpoint
       const response = await fetch(feature.testUrl.startsWith('/api') 
         ? feature.testUrl 
         : feature.testUrl, {
@@ -181,7 +180,6 @@ export default function AITestingDashboard() {
     
     for (const feature of features) {
       await runTest(feature)
-      // Add delay between tests
       await new Promise(resolve => setTimeout(resolve, 500))
     }
     

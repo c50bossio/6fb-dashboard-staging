@@ -9,7 +9,6 @@ const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 const path = require('path')
 
-// Load environment variables
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') })
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -27,27 +26,22 @@ async function runMigration() {
   try {
     console.log('🔄 Starting database migration for recurring appointments...')
     
-    // Read migration SQL file
     const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '001-add-recurring-fields.sql')
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8')
     
     console.log('📄 Loaded migration file:', migrationPath)
     
-    // Check current table structure before migration
     console.log('\n📊 Checking current bookings table structure...')
     const { data: beforeColumns, error: beforeError } = await supabase.rpc('get_table_columns', {
       table_name: 'bookings'
     })
     
     if (beforeError && beforeError.code !== 'PGRST202') {
-      // Try alternative method if RPC doesn't exist
       console.log('ℹ️  Using alternative method to check table structure')
     }
     
-    // Execute migration
     console.log('\n🚀 Executing migration...')
     
-    // Split SQL into individual statements and execute them
     const statements = migrationSQL
       .split(';')
       .map(stmt => stmt.trim())
@@ -60,10 +54,8 @@ async function runMigration() {
         const { error } = await supabase.rpc('exec_sql', { sql: statement })
         
         if (error) {
-          // Try direct query if RPC fails
           const { error: directError } = await supabase.from('_').select().limit(0) // This will fail, but let's try the migration differently
           
-          // For now, let's assume the migration works if no error
           console.log(`   ✅ Statement ${i + 1} completed (using fallback method)`)
         } else {
           console.log(`   ✅ Statement ${i + 1} completed`)
@@ -71,7 +63,6 @@ async function runMigration() {
       }
     }
     
-    // Verify migration success
     console.log('\n✅ Migration completed successfully!')
     console.log('\n📋 New table structure should include:')
     console.log('   - is_recurring (BOOLEAN)')
@@ -79,7 +70,6 @@ async function runMigration() {
     console.log('   - customer_id (TEXT)')
     console.log('   - service_id (TEXT)')
     
-    // Test that we can query the new fields
     const { data: testQuery, error: testError } = await supabase
       .from('bookings')
       .select('id, is_recurring, recurring_pattern')
@@ -105,7 +95,6 @@ async function runMigration() {
   }
 }
 
-// Handle command line arguments
 const args = process.argv.slice(2)
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`
@@ -129,7 +118,6 @@ The migration is safe and will not modify existing data.
   process.exit(0)
 }
 
-// Run migration
 if (require.main === module) {
   runMigration()
 }

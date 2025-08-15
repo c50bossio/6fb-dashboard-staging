@@ -15,7 +15,6 @@ export async function POST(request) {
 
     const supabase = createClient()
     
-    // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) {
       return NextResponse.json(
@@ -24,7 +23,6 @@ export async function POST(request) {
       )
     }
 
-    // Verify password first
     const { error: passwordError } = await supabase.auth.signInWithPassword({
       email: user.email,
       password: password
@@ -37,7 +35,6 @@ export async function POST(request) {
       )
     }
 
-    // Check if MFA is enforced for this user
     const { data: profile } = await supabase
       .from('profiles')
       .select('role, mfa_enforced')
@@ -51,7 +48,6 @@ export async function POST(request) {
       )
     }
 
-    // Get user's MFA method
     const { data: mfaMethod, error: mfaError } = await supabase
       .from('user_mfa_methods')
       .select('*')
@@ -67,14 +63,12 @@ export async function POST(request) {
       )
     }
 
-    // Verify the MFA token
     const isValidToken = authenticator.verify({
       token,
       secret: mfaMethod.secret_key
     })
 
     if (!isValidToken) {
-      // Try backup code verification
       const { data: backupResult } = await supabase.rpc('verify_backup_code', {
         p_user_id: user.id,
         p_code: token
@@ -95,7 +89,6 @@ export async function POST(request) {
       }
     }
 
-    // Delete all MFA methods for user
     const { error: deleteMfaError } = await supabase
       .from('user_mfa_methods')
       .delete()
@@ -109,7 +102,6 @@ export async function POST(request) {
       )
     }
 
-    // Update user profile
     await supabase
       .from('profiles')
       .update({ 
@@ -118,7 +110,6 @@ export async function POST(request) {
       })
       .eq('id', user.id)
 
-    // Log security event
     await supabase.rpc('log_security_event', {
       p_user_id: user.id,
       p_event_type: 'mfa_disabled',

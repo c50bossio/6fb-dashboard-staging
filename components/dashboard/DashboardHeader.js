@@ -33,7 +33,6 @@ const DashboardHeader = React.memo(function DashboardHeader({
   }
 
   const getLastLoginTime = () => {
-    // Use actual user profile data if available
     if (profile?.last_login_at) {
       const lastLogin = new Date(profile.last_login_at)
       return lastLogin.toLocaleDateString('en-US', { 
@@ -43,7 +42,6 @@ const DashboardHeader = React.memo(function DashboardHeader({
         minute: '2-digit'
       })
     }
-    // Return 'First login' if no previous login data
     return 'First login'
   }
 

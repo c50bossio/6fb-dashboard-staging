@@ -30,15 +30,11 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
     try {
       setLoading(true)
       
-      // Load capacity planning data from multiple sources
       const [predictiveData, alertsData, analyticsData] = await Promise.allSettled([
-        // Enhanced predictive analytics with capacity insights
         fetch(`/api/ai/predictive?type=comprehensive&shopId=${barbershop_id}&focus=capacity`).then(r => r.json()),
         
-        // Intelligent alerts for capacity-related issues
         fetch(`/api/alerts/intelligent?barbershop_id=${barbershop_id}`).then(r => r.json()),
         
-        // Real-time analytics for current capacity
         fetch(`/api/analytics/live-data?barbershop_id=${barbershop_id}&metric=capacity`).then(r => r.json())
       ])
 
@@ -46,11 +42,9 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       const alerts = alertsData.status === 'fulfilled' && alertsData.value.success ? alertsData.value : null
       const analytics = analyticsData.status === 'fulfilled' && analyticsData.value.success ? analyticsData.value.data : null
 
-      // Process and combine data for capacity planning
       const capacityAnalysis = generateCapacityAnalysis(predictions, alerts, analytics)
       setCapacityData(capacityAnalysis)
       
-      // Generate AI-powered recommendations
       const capacityRecommendations = generateCapacityRecommendations(capacityAnalysis, optimizationFocus)
       setRecommendations(capacityRecommendations)
 
@@ -64,7 +58,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
     } catch (error) {
       console.error('Failed to load capacity data:', error)
       
-      // Fallback to demo data
       const demoCapacity = generateDemoCapacityData()
       setCapacityData(demoCapacity)
       setRecommendations(generateCapacityRecommendations(demoCapacity, optimizationFocus))
@@ -77,16 +70,13 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
     const now = new Date()
     const currentHour = now.getHours()
     
-    // Calculate current capacity utilization
     const currentUtilization = analytics?.capacity_utilization || 0.75
     const peakHours = analytics?.peak_hours || [10, 11, 14, 15, 16, 17]
     const lowHours = analytics?.low_hours || [9, 12, 13, 18, 19]
     
-    // Seasonal patterns from predictions
     const seasonalDemand = predictions?.seasonalAnalysis?.current_season_impact || 1.0
     const weeklyPattern = predictions?.demandForecast?.weekly_pattern || generateWeeklyPattern()
     
-    // Alert-based capacity issues
     const capacityAlerts = alerts?.alerts?.filter(alert => 
       alert.category === 'operations' || alert.category === 'capacity'
     ) || []
@@ -120,7 +110,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
     const recommendations = []
     const { current, patterns, constraints, bottlenecks, opportunities } = analysis
 
-    // High utilization recommendations
     if (current.utilization > 0.85) {
       recommendations.push({
         id: 'high-utilization',
@@ -140,7 +129,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       })
     }
 
-    // Low utilization recommendations
     if (current.utilization < 0.50) {
       recommendations.push({
         id: 'low-utilization',
@@ -160,7 +148,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       })
     }
 
-    // Peak hour optimization
     if (opportunities.peak_optimization) {
       recommendations.push({
         id: 'peak-optimization',
@@ -180,7 +167,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       })
     }
 
-    // Bottleneck resolution
     bottlenecks.forEach((bottleneck, idx) => {
       recommendations.push({
         id: `bottleneck-${idx}`,
@@ -195,7 +181,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       })
     })
 
-    // Seasonal preparation
     if (current.seasonal_impact > 1.1) {
       recommendations.push({
         id: 'seasonal-prep',
@@ -215,7 +200,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       })
     }
 
-    // Focus-based recommendations
     if (focus === 'revenue') {
       recommendations.push({
         id: 'revenue-optimization',
@@ -255,7 +239,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
     return recommendations.slice(0, 6) // Limit to top 6 recommendations
   }
 
-  // Helper functions for capacity analysis
   const generateHourlyPattern = (peakHours, lowHours) => {
     const pattern = {}
     for (let hour = 9; hour <= 19; hour++) {
@@ -289,7 +272,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
   const identifyBottlenecks = (analytics, alerts) => {
     const bottlenecks = []
     
-    // Check for common bottlenecks
     if (analytics?.avg_wait_time > 15) {
       bottlenecks.push({
         type: 'Wait Time',
@@ -303,7 +285,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       })
     }
 
-    // Alert-based bottlenecks
     alerts.forEach(alert => {
       if (alert.category === 'operations') {
         bottlenecks.push({
@@ -619,4 +600,3 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
   )
 }
 
-// NO MOCK DATA - All data comes from real API calls to enhanced analytics systems

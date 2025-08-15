@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { getFeatureFlag, getAllFeatureFlags, getUserFeatureFlags } from '@/lib/feature-flags'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
-// Hook for a single feature flag
 export function useFeatureFlag(flagName) {
   const [isEnabled, setIsEnabled] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -16,15 +15,12 @@ export function useFeatureFlag(flagName) {
         setLoading(true)
         
         if (user?.id) {
-          // Get user-specific flags
           const userFlags = await getUserFeatureFlags(user.id, {
             email: user.email,
             created_at: user.created_at,
-            // Add more user properties as needed
           })
           setIsEnabled(userFlags[flagName] ?? false)
         } else {
-          // Get general flag
           const value = await getFeatureFlag(flagName)
           setIsEnabled(value)
         }
@@ -42,7 +38,6 @@ export function useFeatureFlag(flagName) {
   return { isEnabled, loading }
 }
 
-// Hook for all feature flags
 export function useFeatureFlags() {
   const [flags, setFlags] = useState({})
   const [loading, setLoading] = useState(true)
@@ -54,15 +49,12 @@ export function useFeatureFlags() {
         setLoading(true)
         
         if (user?.id) {
-          // Get user-specific flags
           const userFlags = await getUserFeatureFlags(user.id, {
             email: user.email,
             created_at: user.created_at,
-            // Add more user properties as needed
           })
           setFlags(userFlags)
         } else {
-          // Get general flags
           const allFlags = await getAllFeatureFlags()
           setFlags(allFlags)
         }
@@ -80,7 +72,6 @@ export function useFeatureFlags() {
   return { flags, loading }
 }
 
-// Hook for A/B testing
 export function useABTest(experimentName, variants = ['control', 'variant']) {
   const [variant, setVariant] = useState('control')
   const { user } = useAuth()
@@ -91,7 +82,6 @@ export function useABTest(experimentName, variants = ['control', 'variant']) {
       return
     }
 
-    // Simple hash-based assignment
     const hash = user.id.split('').reduce((acc, char) => {
       return char.charCodeAt(0) + ((acc << 5) - acc)
     }, 0)

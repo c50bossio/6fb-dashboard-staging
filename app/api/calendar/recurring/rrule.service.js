@@ -1,5 +1,4 @@
 
-// Use require for CommonJS compatibility with Next.js
 const { RRule, RRuleSet, rrulestr } = require('rrule');
 const { DateTime } = require('luxon');
 
@@ -27,17 +26,14 @@ class RRuleService {
       timezone = 'America/New_York'
     } = options;
 
-    // Convert start date to UTC for RRule
     const dtstart = DateTime.fromISO(startDate, { zone: timezone }).toUTC().toJSDate();
     
-    // Build RRule options
     const rruleOptions = {
       freq: RRule[frequency.toUpperCase()],
       interval: interval,
       dtstart: dtstart
     };
 
-    // Add optional parameters
     if (daysOfWeek && daysOfWeek.length > 0) {
       rruleOptions.byweekday = daysOfWeek.map(day => {
         const dayMap = {
@@ -76,7 +72,6 @@ class RRuleService {
    * @returns {RRule} RRule instance
    */
   static parseRule(rruleString) {
-    // Handle both with and without DTSTART prefix
     if (rruleString.includes('DTSTART')) {
       return rrulestr(rruleString);
     } else {
@@ -97,7 +92,6 @@ class RRuleService {
       const rule = this.parseRule(rruleString);
       const occurrences = rule.between(startDate, endDate, true);
       
-      // Convert to timezone-aware dates
       return occurrences.map(date => {
         const dt = DateTime.fromJSDate(date, { zone: 'UTC' }).setZone(timezone);
         return {
@@ -121,7 +115,6 @@ class RRuleService {
    * @returns {Object} FullCalendar event object with RRule
    */
   static toFullCalendarFormat(rruleString, startTime, endTime) {
-    // Ensure DTSTART is included for FullCalendar
     if (!rruleString.includes('DTSTART')) {
       const dtstart = new Date(startTime)
         .toISOString()
@@ -131,7 +124,6 @@ class RRuleService {
       rruleString = `DTSTART:${dtstart}\n${rruleString}`;
     }
 
-    // Calculate duration for FullCalendar
     const start = new Date(startTime);
     const end = new Date(endTime);
     const durationMs = end - start;
@@ -213,10 +205,8 @@ class RRuleService {
     try {
       const rule = this.parseRule(rruleString);
       
-      // Check for potential issues
       const warnings = [];
       
-      // Check if count is too high
       if (rruleString.includes('COUNT')) {
         const countMatch = rruleString.match(/COUNT=(\d+)/);
         if (countMatch && parseInt(countMatch[1]) > 365) {
@@ -224,7 +214,6 @@ class RRuleService {
         }
       }
 
-      // Check if interval is reasonable
       if (rruleString.includes('INTERVAL')) {
         const intervalMatch = rruleString.match(/INTERVAL=(\d+)/);
         if (intervalMatch && parseInt(intervalMatch[1]) > 12) {
@@ -232,7 +221,6 @@ class RRuleService {
         }
       }
 
-      // Generate test occurrences to verify
       const testOccurrences = rule.between(
         new Date(),
         new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
@@ -263,11 +251,9 @@ class RRuleService {
   static createRRuleWithExceptions(rruleString, exceptions = []) {
     const rruleSet = new RRuleSet();
     
-    // Add the main rule
     const rule = this.parseRule(rruleString);
     rruleSet.rrule(rule);
     
-    // Add exception dates
     exceptions.forEach(exDate => {
       rruleSet.exdate(new Date(exDate));
     });

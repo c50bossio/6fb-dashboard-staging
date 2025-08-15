@@ -27,7 +27,6 @@ export async function GET(request) {
   } catch (error) {
     console.error('Error fetching AI dashboard data:', error)
     
-    // Return empty state instead of mock data - follow NO MOCK DATA policy
     return NextResponse.json({
       error: 'Performance dashboard unavailable',
       message: 'Unable to connect to backend service. Please ensure the backend is running.',

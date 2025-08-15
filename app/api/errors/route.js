@@ -10,7 +10,6 @@ export async function POST(request) {
   try {
     const errorData = await request.json()
     
-    // Capture error with Sentry
     const eventId = Sentry.captureMessage(
       errorData.message || 'Unknown frontend error',
       {
@@ -34,7 +33,6 @@ export async function POST(request) {
       }
     )
     
-    // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.error('Frontend error reported:', {
         message: errorData.message,
@@ -51,7 +49,6 @@ export async function POST(request) {
   } catch (error) {
     console.error('Failed to report error:', error)
     
-    // Still return success to avoid error loops
     return NextResponse.json({
       success: false,
       error: 'Failed to process error report',
@@ -59,7 +56,6 @@ export async function POST(request) {
   }
 }
 
-// OPTIONS for CORS
 export async function OPTIONS(request) {
   return new NextResponse(null, {
     status: 200,

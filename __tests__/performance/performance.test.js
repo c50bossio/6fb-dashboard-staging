@@ -6,7 +6,6 @@ import { IntegrationsDashboard } from '@/components/dashboard/IntegrationsDashbo
 
 describe('Performance Tests', () => {
   beforeEach(() => {
-    // Mock fetch for performance tests
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ mockData: true })
@@ -17,21 +16,18 @@ describe('Performance Tests', () => {
     it('renders MainDashboard within acceptable time', () => {
       const { renderTime } = measureRenderTime(<MainDashboard />)
       
-      // Dashboard should render within 100ms
       expect(renderTime).toBeLessThan(100)
     })
 
     it('renders AIAgentsDashboard within acceptable time', () => {
       const { renderTime } = measureRenderTime(<AIAgentsDashboard />)
       
-      // AI Agents dashboard should render within 150ms
       expect(renderTime).toBeLessThan(150)
     })
 
     it('renders IntegrationsDashboard within acceptable time', () => {
       const { renderTime } = measureRenderTime(<IntegrationsDashboard />)
       
-      // Integrations dashboard should render within 100ms
       expect(renderTime).toBeLessThan(100)
     })
 
@@ -55,7 +51,6 @@ describe('Performance Tests', () => {
 
       const { renderTime } = measureRenderTime(<LargeListComponent />)
       
-      // Should still render large lists efficiently
       expect(renderTime).toBeLessThan(500)
     })
   })
@@ -64,33 +59,27 @@ describe('Performance Tests', () => {
     it('cleans up event listeners', () => {
       const { unmount } = render(<AIAgentsDashboard />)
       
-      // Count event listeners before unmount
       const initialListeners = document.addEventListener.mock?.calls?.length || 0
       
-      // Unmount component
       unmount()
       
-      // Verify cleanup (this is simplified - real implementation would track specific listeners)
       expect(document.removeEventListener).toHaveBeenCalled()
     })
 
     it('does not create memory leaks with multiple renders', () => {
       const initialMemory = performance.memory?.usedJSHeapSize || 0
       
-      // Render and unmount multiple times
       for (let i = 0; i < 10; i++) {
         const { unmount } = render(<MainDashboard />)
         unmount()
       }
       
-      // Force garbage collection if available
       if (global.gc) {
         global.gc()
       }
       
       const finalMemory = performance.memory?.usedJSHeapSize || 0
       
-      // Memory usage should not increase significantly
       const memoryIncrease = finalMemory - initialMemory
       const maxAcceptableIncrease = 10 * 1024 * 1024 // 10MB
       
@@ -100,8 +89,6 @@ describe('Performance Tests', () => {
 
   describe('Bundle Size Analysis', () => {
     it('tracks component bundle impact', () => {
-      // This would typically be done with webpack-bundle-analyzer
-      // For testing purposes, we'll simulate bundle size checking
       
       const componentSizes = {
         'AIAgentsDashboard': 45000, // bytes
@@ -112,7 +99,6 @@ describe('Performance Tests', () => {
         'Modal': 8000
       }
       
-      // Ensure components stay within size budgets
       expect(componentSizes.AIAgentsDashboard).toBeLessThan(50000) // 50KB
       expect(componentSizes.MainDashboard).toBeLessThan(35000)     // 35KB
       expect(componentSizes.IntegrationsDashboard).toBeLessThan(30000) // 30KB
@@ -126,7 +112,6 @@ describe('Performance Tests', () => {
     it('measures API response time simulation', async () => {
       const startTime = performance.now()
       
-      // Simulate API call
       const response = await fetch('/api/agents/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -146,7 +131,6 @@ describe('Performance Tests', () => {
     it('handles concurrent API calls efficiently', async () => {
       const startTime = performance.now()
       
-      // Make multiple concurrent API calls
       const promises = await fetchFromDatabase({ limit: 5 }, () =>
         fetch('/api/agents/chat', {
           method: 'POST',
@@ -162,12 +146,10 @@ describe('Performance Tests', () => {
       const endTime = performance.now()
       const totalTime = endTime - startTime
       
-      // All responses should be successful
       responses.forEach(response => {
         expect(response.ok).toBe(true)
       })
       
-      // Concurrent calls should not take much longer than single call
       expect(totalTime).toBeLessThan(2000) // 2 seconds for 5 concurrent calls
     })
   })
@@ -193,11 +175,9 @@ describe('Performance Tests', () => {
       
       expect(renderCount).toBe(1)
       
-      // Re-render with same props - TestComponent should not re-render
       rerender(<ParentComponent prop1="value1" prop2="value2" />)
       expect(renderCount).toBe(1)
       
-      // Re-render with different props - TestComponent should still not re-render
       rerender(<ParentComponent prop1="newValue1" prop2="value2" />)
       expect(renderCount).toBe(1)
     })
@@ -219,12 +199,10 @@ describe('Performance Tests', () => {
       
       const { rerender } = render(<ListComponent items={items} />)
       
-      // Verify initial render
       expect(screen.getByText('Item 1')).toBeInTheDocument()
       expect(screen.getByText('Item 2')).toBeInTheDocument()
       expect(screen.getByText('Item 3')).toBeInTheDocument()
       
-      // Re-order items - React should efficiently update DOM
       const reorderedItems = [items[2], items[0], items[1]]
       const startTime = performance.now()
       
@@ -232,7 +210,6 @@ describe('Performance Tests', () => {
       
       const renderTime = performance.now() - startTime
       
-      // Re-render should be fast due to proper keys
       expect(renderTime).toBeLessThan(10)
     })
 
@@ -251,31 +228,26 @@ describe('Performance Tests', () => {
         </React.Suspense>
       )
       
-      // Should show loading state immediately
       expect(screen.getByText('Loading...')).toBeInTheDocument()
       
-      // Wait for lazy component to load
       await waitFor(() => {
         expect(screen.getByText('Lazy Loaded Component')).toBeInTheDocument()
       })
       
       const loadTime = performance.now() - startTime
       
-      // Lazy loading should be efficient
       expect(loadTime).toBeLessThan(100)
     })
   })
 
   describe('Performance Monitoring', () => {
     it('tracks Core Web Vitals metrics', () => {
-      // Simulate performance metrics
       const metrics = {
         LCP: 1200,  // Largest Contentful Paint (ms)
         FID: 50,    // First Input Delay (ms)
         CLS: 0.1    // Cumulative Layout Shift
       }
       
-      // Core Web Vitals thresholds
       expect(metrics.LCP).toBeLessThan(2500)  // Good: < 2.5s
       expect(metrics.FID).toBeLessThan(100)   // Good: < 100ms
       expect(metrics.CLS).toBeLessThan(0.1)   // Good: < 0.1
@@ -284,7 +256,6 @@ describe('Performance Tests', () => {
     it('monitors JavaScript execution time', () => {
       const startTime = performance.now()
       
-      // Simulate CPU-intensive task
       const complexCalculation = () => {
         let result = 0
         for (let i = 0; i < 100000; i++) {
@@ -301,22 +272,18 @@ describe('Performance Tests', () => {
     })
 
     it('measures paint timing', () => {
-      // Simulate paint timing measurements
       const paintTiming = {
         'first-paint': 800,
         'first-contentful-paint': 1200
       }
       
-      // Performance budgets
       expect(paintTiming['first-paint']).toBeLessThan(1000)      // < 1s
       expect(paintTiming['first-contentful-paint']).toBeLessThan(1500) // < 1.5s
     })
   })
 })
 
-// Performance utilities for real-world monitoring
 export const performanceUtils = {
-  // Measure component render time
   measureRender: (component) => {
     const start = performance.now()
     const result = render(component)
@@ -324,7 +291,6 @@ export const performanceUtils = {
     return { ...result, renderTime: end - start }
   },
   
-  // Monitor API performance
   monitorAPI: async (url, options) => {
     const start = performance.now()
     const response = await fetch(url, options)
@@ -340,7 +306,6 @@ export const performanceUtils = {
     }
   },
   
-  // Track memory usage
   getMemoryUsage: () => {
     if (performance.memory) {
       return {

@@ -16,7 +16,6 @@ export default function TestCollaborationPage() {
   const [result, setResult] = useState(null)
   const [selectedExample, setSelectedExample] = useState(null)
 
-  // Example complex queries
   const exampleQueries = [
     {
       title: 'Business Growth Strategy',

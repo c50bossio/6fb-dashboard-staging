@@ -9,7 +9,6 @@
 
 const Stripe = require('stripe');
 
-// Load environment variables
 require('dotenv').config({ path: '.env.local' });
 
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -25,7 +24,6 @@ async function verifyWebhookConfig() {
   console.log('🔍 Verifying Stripe webhook configuration...\n');
 
   try {
-    // List webhook endpoints
     console.log('📋 Current webhook endpoints:');
     const webhooks = await stripe.webhookEndpoints.list({
       limit: 10
@@ -48,11 +46,9 @@ async function verifyWebhookConfig() {
       console.log(`   Events: ${webhook.enabled_events.length} events`);
       console.log(`   Events: ${webhook.enabled_events.join(', ')}`);
       
-      // Check if it's the bookbarber webhook
       if (webhook.url.includes('bookbarber.com') || webhook.url.includes('localhost')) {
         console.log(`   ✅ BookedBarber webhook found!`);
         
-        // Check required events
         const requiredEvents = [
           'checkout.session.completed',
           'customer.subscription.created',
@@ -74,13 +70,11 @@ async function verifyWebhookConfig() {
       }
     });
 
-    // Check environment variables
     console.log('\n🔧 Environment Variable Check:');
     console.log(`STRIPE_SECRET_KEY: ${process.env.STRIPE_SECRET_KEY ? '✅ Set' : '❌ Missing'}`);
     console.log(`STRIPE_WEBHOOK_SECRET: ${process.env.STRIPE_WEBHOOK_SECRET ? '✅ Set' : '❌ Missing'}`);
     console.log(`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ? '✅ Set' : '❌ Missing'}`);
     
-    // Check product price IDs
     console.log('\n💰 Product Price IDs:');
     console.log(`STRIPE_BARBER_PRICE_ID: ${process.env.STRIPE_BARBER_PRICE_ID || '❌ Missing'}`);
     console.log(`STRIPE_SHOP_PRICE_ID: ${process.env.STRIPE_SHOP_PRICE_ID || '❌ Missing'}`);

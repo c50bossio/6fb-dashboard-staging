@@ -11,24 +11,20 @@ export default function OAuthTestPage() {
   const [cookieData, setCookieData] = useState(null)
 
   useEffect(() => {
-    // Capture URL data
     setUrlData({
       hash: window.location.hash,
       search: window.location.search,
       pathname: window.location.pathname
     })
     
-    // Capture cookie data
     setCookieData(document.cookie)
     
-    // Test localStorage
     console.log('📦 localStorage items:')
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i)
       console.log(`  ${key}:`, localStorage.getItem(key))
     }
     
-    // Try to manually decode the session cookie
     const cookies = document.cookie.split(';')
     const authCookie = cookies.find(c => c.trim().startsWith('sb-auth-token='))
     let cookieValue = null
@@ -50,11 +46,9 @@ export default function OAuthTestPage() {
       }
     }
     
-    // Try to get session directly with additional debugging
     const supabase = createClient()
     console.log('🔍 Checking Supabase session...')
     
-    // First attempt: normal session check
     supabase.auth.getSession().then(({ data, error }) => {
       console.log('🔍 Initial session check result:')
       console.log('  - Session exists:', !!data?.session)
@@ -62,14 +56,12 @@ export default function OAuthTestPage() {
       console.log('  - Error:', error)
       setSessionData({ data, error })
       
-      // If no session but we have a cookie, try manual session restoration
       if (!data?.session && authCookie && cookieValue && cookieValue.startsWith('base64-')) {
         console.log('🔧 No session detected but cookie exists - attempting manual restoration')
         try {
           const decoded = atob(cookieValue.replace('base64-', ''))
           const sessionObj = JSON.parse(decoded)
           
-          // Try to set the session manually
           supabase.auth.setSession({
             access_token: sessionObj.access_token,
             refresh_token: sessionObj.refresh_token
@@ -80,7 +72,6 @@ export default function OAuthTestPage() {
               error: result.error
             })
             
-            // Update session data with manual result
             if (result.data?.session) {
               setSessionData({ data: result.data, error: result.error })
             }

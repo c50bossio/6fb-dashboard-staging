@@ -17,7 +17,6 @@ async function createMarketingTables() {
     console.log('🚀 Creating Marketing Tables in Supabase');
     console.log('========================================\n');
     
-    // SQL statements for creating tables
     const sqlStatements = [
         // 1. Marketing campaigns table
         `CREATE TABLE IF NOT EXISTS marketing_campaigns (
@@ -139,7 +138,6 @@ async function createMarketingTables() {
         )`
     ];
     
-    // Create indexes
     const indexStatements = [
         `CREATE INDEX IF NOT EXISTS idx_campaigns_owner ON marketing_campaigns(owner_id, owner_type)`,
         `CREATE INDEX IF NOT EXISTS idx_campaigns_status ON marketing_campaigns(status)`,
@@ -158,7 +156,6 @@ async function createMarketingTables() {
     let successCount = 0;
     let errorCount = 0;
     
-    // Execute table creation statements
     console.log('📋 Creating Tables...\n');
     for (let i = 0; i < sqlStatements.length; i++) {
         const tableName = [
@@ -173,7 +170,6 @@ async function createMarketingTables() {
         ][i];
         
         try {
-            // Try to execute SQL directly via Supabase
             const { error } = await supabase
                 .from(tableName)
                 .select('*')
@@ -218,5 +214,4 @@ async function createMarketingTables() {
     }
 }
 
-// Run the script
 createMarketingTables().catch(console.error);

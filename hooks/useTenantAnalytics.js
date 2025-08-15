@@ -26,7 +26,6 @@ export const useTenantAnalytics = (dateRange = '30d', filters = {}) => {
         setLoading(true)
         setError(null)
 
-        // Fetch real analytics data from API
         const response = await fetch('/api/analytics/tenant', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -75,7 +74,6 @@ export const usePlatformAnalytics = (dateRange = '30d') => {
         setLoading(true)
         setError(null)
 
-        // Fetch real platform analytics from API
         const response = await fetch('/api/analytics/platform', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -164,7 +162,6 @@ function transformTenantAnalytics(tenant, rawData, dateRange, filters) {
       engagement_trend: 'increasing'
     },
 
-    // Time series data for charts
     daily_stats: generateDailyStats(30, baseMultiplier),
     
     benchmarks: {

@@ -37,7 +37,6 @@ import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { Card } from '../../../../components/ui'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
-// Navigation Breadcrumb Component
 function AnalyticsBreadcrumb({ level, levelData, onNavigate }) {
   const levels = [
     { id: 'enterprise', name: 'Enterprise Overview', icon: BuildingStorefrontIcon },
@@ -86,7 +85,6 @@ function AnalyticsBreadcrumb({ level, levelData, onNavigate }) {
   )
 }
 
-// AI-Enhanced Insights Widget
 function AIAnalyticsInsights({ level, levelData }) {
   const [insights, setInsights] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -174,7 +172,6 @@ function AIAnalyticsInsights({ level, levelData }) {
   )
 }
 
-// Enterprise Level Analytics
 function EnterpriseAnalytics({ onDrillDown }) {
   const [enterpriseData, setEnterpriseData] = useState({
     locations: [],
@@ -188,12 +185,10 @@ function EnterpriseAnalytics({ onDrillDown }) {
   useEffect(() => {
     const fetchEnterpriseData = async () => {
       try {
-        // Fetch location performance data from real database
         const response = await fetch('/api/analytics/live-data?format=json')
         const result = await response.json()
         
         if (result.success && result.data) {
-          // Process real data into enterprise format
           setEnterpriseData({
             locations: result.data.locations || [],
             totalRevenue: result.data.total_revenue || 0,
@@ -210,7 +205,6 @@ function EnterpriseAnalytics({ onDrillDown }) {
     }
     
     fetchEnterpriseData()
-    // Refresh every 30 seconds
     const interval = setInterval(fetchEnterpriseData, 30000)
     return () => clearInterval(interval)
   }, [])
@@ -388,7 +382,6 @@ function EnterpriseAnalytics({ onDrillDown }) {
   )
 }
 
-// Location Level Analytics
 function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
   const [barberData, setBarberData] = useState([])
   const [weeklyTrends, setWeeklyTrends] = useState([])
@@ -397,7 +390,6 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
   useEffect(() => {
     const fetchLocationData = async () => {
       try {
-        // Fetch barber performance data from real database
         const response = await fetch(`/api/analytics/live-data?barbershop_id=${locationData.id}&format=json`)
         const result = await response.json()
         
@@ -593,7 +585,6 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
   )
 }
 
-// Individual Barber Analytics
 function BarberAnalytics({ barberData, onNavigateUp }) {
   const [performanceData, setPerformanceData] = useState([])
   const [serviceBreakdown, setServiceBreakdown] = useState([])
@@ -602,7 +593,6 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
   useEffect(() => {
     const fetchBarberData = async () => {
       try {
-        // Fetch individual barber performance from real database
         const response = await fetch(`/api/analytics/live-data?barber_id=${barberData.id}&format=json`)
         const result = await response.json()
         
@@ -785,7 +775,6 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
   )
 }
 
-// Main Analytics Component
 function KnowledgeEnhancedAnalytics() {
   const [currentLevel, setCurrentLevel] = useState('enterprise')
   const [currentData, setCurrentData] = useState(null)

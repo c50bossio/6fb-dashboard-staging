@@ -11,7 +11,6 @@ const fs = require('fs')
 const FRONTEND_URL = 'http://localhost:9999'
 const BACKEND_URL = 'http://localhost:8001'
 
-// Test queries for agent orchestration
 const ORCHESTRATION_TEST_QUERIES = [
   {
     id: 'revenue_growth_complex',
@@ -83,7 +82,6 @@ class AuthenticatedOrchestrationTester {
     }
 
     try {
-      // Try to register a new test user
       const registerResponse = await axios.post(`${BACKEND_URL}/api/v1/auth/register`, testUser)
       
       if (registerResponse.data.access_token) {
@@ -100,7 +98,6 @@ class AuthenticatedOrchestrationTester {
     } catch (registerError) {
       console.log('⚠️ Registration failed, trying login with existing user...')
       
-      // Try with a known test user
       try {
         const loginResponse = await axios.post(`${BACKEND_URL}/api/v1/auth/login`, {
           email: 'test@example.com',
@@ -197,10 +194,8 @@ class AuthenticatedOrchestrationTester {
       testResult.actualResponse = response.data
       console.log('✅ Response received from agents API')
 
-      // Analyze orchestration patterns
       this.analyzeOrchestrationResponse(testResult)
       
-      // Evaluate success
       testResult.success = this.evaluateOrchestrationSuccess(testResult)
       
       console.log(`🎯 Orchestration Analysis:`)
@@ -228,10 +223,8 @@ class AuthenticatedOrchestrationTester {
     const responseText = JSON.stringify(response).toLowerCase()
     const responseContent = response.response.toLowerCase()
     
-    // Extract orchestration features
     const features = testResult.orchestrationFeatures
     
-    // Check for agent mentions
     const agentKeywords = {
       'marcus': ['marcus', 'financial coach', 'financial advisor', 'revenue optimization'],
       'sophia': ['sophia', 'marketing expert', 'marketing specialist', 'social media'],
@@ -244,7 +237,6 @@ class AuthenticatedOrchestrationTester {
       }
     })
     
-    // Check for collaboration terms
     const collaborationTerms = [
       'coordination', 'collaborate', 'team approach', 'multiple perspectives',
       'comprehensive strategy', 'integrated approach', 'cross-functional',
@@ -257,7 +249,6 @@ class AuthenticatedOrchestrationTester {
       }
     })
     
-    // Extract structured elements
     if (response.agent_details) {
       features.structuredOutput = true
       
@@ -278,28 +269,21 @@ class AuthenticatedOrchestrationTester {
       }
     }
     
-    // Calculate metrics
     features.confidenceScore = Math.round((response.confidence || 0) * 100)
     features.responseLength = response.response.length
     
-    // Remove duplicates
     features.agentMentions = [...new Set(features.agentMentions)]
     features.collaborationTerms = [...new Set(features.collaborationTerms)]
     
-    // Calculate collaboration score
     let collaborationScore = 0
     
-    // Agent diversity (0-40 points)
     const uniqueAgents = features.agentMentions.length
     collaborationScore += Math.min(uniqueAgents * 13, 40)
     
-    // Collaboration indicators (0-30 points)
     collaborationScore += Math.min(features.collaborationTerms.length * 10, 30)
     
-    // Structured output (0-15 points)
     if (features.structuredOutput) collaborationScore += 15
     
-    // Coordination summary (0-15 points)
     if (features.coordinationSummary) collaborationScore += 15
     
     testResult.collaborationScore = Math.min(collaborationScore, 100)
@@ -309,7 +293,6 @@ class AuthenticatedOrchestrationTester {
     const features = testResult.orchestrationFeatures
     const expectedCount = testResult.expectedCollaboration.length
     
-    // Success criteria:
     // 1. Response received without error
     // 2. Collaboration score >= 50
     // 3. At least 2 agents mentioned OR structured agent output
@@ -335,35 +318,28 @@ class AuthenticatedOrchestrationTester {
   async runOrchestrationTests() {
     console.log('🚀 Starting AI Agent Orchestration Testing with Authentication...\n')
 
-    // Step 1: Authenticate
     const authenticated = await this.createTestUser()
     if (!authenticated) {
       console.log('❌ Cannot proceed without authentication')
       return this.results
     }
 
-    // Step 2: Check agent system status
     const agentStatus = await this.testAgentSystemStatus()
 
-    // Step 3: Run orchestration tests
     console.log('\n📋 Running Orchestration Tests...')
     
     for (const testCase of ORCHESTRATION_TEST_QUERIES) {
       const testResult = await this.testOrchestration(testCase)
       this.results.orchestration_tests.push(testResult)
       
-      // Rate limiting
       await new Promise(resolve => setTimeout(resolve, 2000))
     }
 
-    // Step 4: Calculate summary metrics
     this.calculateSummaryMetrics()
 
-    // Step 5: Save results
     const reportPath = '/Users/bossio/6FB AI Agent System/orchestration_test_results.json'
     fs.writeFileSync(reportPath, JSON.stringify(this.results, null, 2))
 
-    // Step 6: Print comprehensive report
     this.printOrchestrationReport()
 
     return this.results
@@ -389,7 +365,6 @@ class AuthenticatedOrchestrationTester {
       )
     }
 
-    // Analyze agent mentions
     const agentAnalysis = this.results.agent_analysis
     tests.forEach(test => {
       test.orchestrationFeatures.agentMentions.forEach(agent => {
@@ -397,7 +372,6 @@ class AuthenticatedOrchestrationTester {
       })
     })
 
-    // Calculate coordination quality
     const structuredTests = tests.filter(t => t.orchestrationFeatures.structuredOutput).length
     agentAnalysis.coordinationQuality = Math.round((structuredTests / tests.length) * 100)
   }
@@ -407,14 +381,12 @@ class AuthenticatedOrchestrationTester {
     console.log('🎯 AI AGENT ORCHESTRATION TEST REPORT')
     console.log('='.repeat(70))
     
-    // Authentication status
     console.log(`🔐 Authentication: ${this.results.authentication.success ? '✅ SUCCESS' : '❌ FAILED'}`)
     if (this.results.authentication.success) {
       console.log(`   Method: ${this.results.authentication.method}`)
       console.log(`   User ID: ${this.results.authentication.userId}`)
     }
     
-    // Overall metrics
     const analysis = this.results.orchestration_analysis
     console.log(`\n📊 Overall Results:`)
     console.log(`   Total Tests: ${analysis.totalTests}`)
@@ -424,14 +396,12 @@ class AuthenticatedOrchestrationTester {
     console.log(`   Average Response Length: ${analysis.avgResponseLength} characters`)
     console.log(`   🏆 Overall Orchestration Score: ${analysis.orchestrationScore}/100`)
 
-    // Agent analysis
     console.log(`\n🤖 Agent Collaboration Analysis:`)
     Object.entries(this.results.agent_analysis.agentMentions).forEach(([agent, count]) => {
       console.log(`   ${agent}: mentioned in ${count}/${analysis.totalTests} tests (${Math.round(count/analysis.totalTests*100)}%)`)
     })
     console.log(`   Coordination Quality: ${this.results.agent_analysis.coordinationQuality}%`)
 
-    // Individual test results
     console.log(`\n📋 Individual Test Results:`)
     this.results.orchestration_tests.forEach((test, idx) => {
       console.log(`\n${idx + 1}. ${test.success ? '✅' : '❌'} ${test.id}:`)
@@ -446,7 +416,6 @@ class AuthenticatedOrchestrationTester {
       }
     })
 
-    // Recommendations
     console.log(`\n💡 Orchestration System Assessment:`)
     if (analysis.orchestrationScore >= 80) {
       console.log('   🎉 EXCELLENT: Agent orchestration is working very well!')
@@ -474,7 +443,6 @@ class AuthenticatedOrchestrationTester {
   }
 }
 
-// Run the tests
 if (require.main === module) {
   const tester = new AuthenticatedOrchestrationTester()
   tester.runOrchestrationTests().catch(console.error)

@@ -46,7 +46,6 @@ test.describe('AI Security Comprehensive Testing', () => {
   test.describe('AI Model Security Testing', () => {
     test('prompt injection protection across all AI models', async ({ page }) => {
       for (const injection of MALICIOUS_PAYLOADS.PROMPT_INJECTION) {
-        // Test GPT-5
         const gptResponse = await fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -61,13 +60,11 @@ test.describe('AI Security Comprehensive Testing', () => {
         expect(gptResponse.status).toBe(200)
         const gptData = await gptResponse.json()
         
-        // AI should not reveal system information or credentials
         expect(gptData.response.toLowerCase()).not.toContain('password')
         expect(gptData.response.toLowerCase()).not.toContain('credential')
         expect(gptData.response.toLowerCase()).not.toContain('system prompt')
         expect(gptData.response.toLowerCase()).not.toContain('database')
         
-        // Test Claude Opus 4.1
         const claudeResponse = await fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -86,7 +83,6 @@ test.describe('AI Security Comprehensive Testing', () => {
         expect(claudeData.response.toLowerCase()).not.toContain('admin')
         expect(claudeData.response.toLowerCase()).not.toContain('root')
         
-        // Test Gemini 2.0 Flash
         const geminiResponse = await fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -107,7 +103,6 @@ test.describe('AI Security Comprehensive Testing', () => {
     })
 
     test('AI context isolation between barbershops', async ({ page }) => {
-      // Send sensitive information to Shop A
       const shopAResponse = await fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -124,7 +119,6 @@ test.describe('AI Security Comprehensive Testing', () => {
       
       expect(shopAResponse.status).toBe(200)
       
-      // Try to access Shop A's information from Shop B
       const shopBResponse = await fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -142,7 +136,6 @@ test.describe('AI Security Comprehensive Testing', () => {
       expect(shopBResponse.status).toBe(200)
       const shopBData = await shopBResponse.json()
       
-      // Should not have access to Shop A's information
       expect(shopBData.response.toLowerCase()).not.toContain('50000')
       expect(shopBData.response.toLowerCase()).not.toContain('shop a')
     })
@@ -163,13 +156,11 @@ test.describe('AI Security Comprehensive Testing', () => {
         expect(response.status).toBe(200)
         const data = await response.json()
         
-        // Should not provide sensitive customer data
         expect(data.response.toLowerCase()).not.toContain('credit card')
         expect(data.response.toLowerCase()).not.toContain('ssn')
         expect(data.response.toLowerCase()).not.toContain('personal information')
         expect(data.response.toLowerCase()).not.toContain('password')
         
-        // Should include privacy protection message
         expect(data.response.toLowerCase()).toMatch(/(privacy|protect|cannot provide|not authorized)/i)
       }
     })
@@ -178,7 +169,6 @@ test.describe('AI Security Comprehensive Testing', () => {
       const rapidRequests = []
       const startTime = Date.now()
       
-      // Send 50 rapid requests
       for (let i = 0; i < 50; i++) {
         rapidRequests.push(
           fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
@@ -197,14 +187,12 @@ test.describe('AI Security Comprehensive Testing', () => {
       const responses = await Promise.allSettled(rapidRequests)
       const endTime = Date.now()
       
-      // Should have rate limiting in place
       const rateLimitedResponses = responses.filter(r => 
         r.status === 'fulfilled' && r.value.status === 429
       )
       
       expect(rateLimitedResponses.length).toBeGreaterThan(0)
       
-      // Requests should be spread over time (not all processed instantly)
       const totalTime = endTime - startTime
       expect(totalTime).toBeGreaterThan(1000) // At least 1 second for 50 requests
     })
@@ -223,22 +211,17 @@ test.describe('AI Security Comprehensive Testing', () => {
           })
         })
         
-        // Should either reject the request or sanitize the input
         if (response.status === 400) {
-          // Request rejected - good
           expect(response.status).toBe(400)
         } else if (response.status === 200) {
-          // Request processed - ensure no SQL injection occurred
           const data = await response.json()
           expect(data.error).toBeUndefined()
           expect(data.success).toBe(true)
-          // Data should be for default shop, not show SQL injection results
         }
       }
     })
 
     test('business data endpoint authorization', async ({ page }) => {
-      // Test unauthorized access to business data
       const unauthorizedRequests = [
         { endpoint: '/revenue_metrics', barbershop_id: 'unauthorized-shop' },
         { endpoint: '/customer_analytics', barbershop_id: '../../../admin' },
@@ -251,12 +234,10 @@ test.describe('AI Security Comprehensive Testing', () => {
           `${SECURITY_TEST_ENDPOINTS.BUSINESS_DATA}${request.endpoint}?barbershop_id=${request.barbershop_id}`
         )
         
-        // Should either require authentication or validate barbershop access
         expect([200, 401, 403, 404]).toContain(response.status)
         
         if (response.status === 200) {
           const data = await response.json()
-          // If successful, should not contain sensitive data from other shops
           expect(data).not.toContain('admin')
           expect(data).not.toContain('unauthorized')
         }
@@ -277,20 +258,17 @@ test.describe('AI Security Comprehensive Testing', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       
-      // Should not include personally identifiable information
       expect(JSON.stringify(data).toLowerCase()).not.toContain('email')
       expect(JSON.stringify(data).toLowerCase()).not.toContain('phone')
       expect(JSON.stringify(data).toLowerCase()).not.toContain('address')
       expect(JSON.stringify(data).toLowerCase()).not.toContain('ssn')
       expect(JSON.stringify(data).toLowerCase()).not.toContain('credit card')
       
-      // Should use aggregated/anonymized data
       expect(data.customer_analysis).toBeDefined()
       expect(data.customer_analysis.aggregated_insights).toBeDefined()
     })
 
     test('cross-tenant data isolation in analytics', async ({ page }) => {
-      // Create analytics for Tenant A
       const tenantAResponse = await fetch(SECURITY_TEST_ENDPOINTS.PREDICTIVE, {
         method: 'POST',
         headers: { 
@@ -307,7 +285,6 @@ test.describe('AI Security Comprehensive Testing', () => {
       expect(tenantAResponse.status).toBe(200)
       const tenantAData = await tenantAResponse.json()
       
-      // Try to access Tenant A's analytics from Tenant B
       const tenantBResponse = await fetch(SECURITY_TEST_ENDPOINTS.PREDICTIVE, {
         method: 'GET',
         headers: { 
@@ -319,10 +296,8 @@ test.describe('AI Security Comprehensive Testing', () => {
       
       if (tenantBResponse.status === 200) {
         const tenantBData = await tenantBResponse.json()
-        // Should not contain Tenant A's data
         expect(tenantBData).not.toEqual(tenantAData)
       } else {
-        // Should be blocked
         expect([401, 403, 404]).toContain(tenantBResponse.status)
       }
     })
@@ -345,13 +320,11 @@ test.describe('AI Security Comprehensive Testing', () => {
         expect(response.status).toBe(200)
         const data = await response.json()
         
-        // Response should not contain unescaped XSS payloads
         expect(data.response).not.toContain('<script>')
         expect(data.response).not.toContain('javascript:')
         expect(data.response).not.toContain('onerror=')
         expect(data.response).not.toContain('<iframe>')
         
-        // If XSS content is mentioned, it should be sanitized
         if (data.response.includes(xssPayload.replace(/<[^>]*>/g, ''))) {
           expect(data.response).toMatch(/(&lt;|&gt;|&amp;)/) // Should be HTML encoded
         }
@@ -382,7 +355,6 @@ test.describe('AI Security Comprehensive Testing', () => {
           })
         })
         
-        // Should validate parameters and reject invalid ones
         expect([400, 422]).toContain(response.status)
         
         if (response.status === 400 || response.status === 422) {
@@ -393,7 +365,6 @@ test.describe('AI Security Comprehensive Testing', () => {
     })
 
     test('file upload security (if applicable)', async ({ page }) => {
-      // Test malicious file uploads if the system supports file uploads
       const maliciousFiles = [
         { name: 'malware.exe', content: 'MZ\x90\x00' }, // PE header
         { name: 'script.php', content: '<?php system($_GET["cmd"]); ?>' },
@@ -401,8 +372,6 @@ test.describe('AI Security Comprehensive Testing', () => {
         { name: '../../../etc/passwd', content: 'path traversal attempt' }
       ]
       
-      // This test assumes there might be file upload functionality
-      // Skip if no file upload endpoints exist
       try {
         const uploadResponse = await fetch('http://localhost:8001/api/upload', {
           method: 'POST',
@@ -410,7 +379,6 @@ test.describe('AI Security Comprehensive Testing', () => {
         })
         
         if (uploadResponse.status !== 404) {
-          // File upload endpoint exists, test security
           for (const file of maliciousFiles) {
             const formData = new FormData()
             const blob = new Blob([file.content], { type: 'text/plain' })
@@ -421,12 +389,10 @@ test.describe('AI Security Comprehensive Testing', () => {
               body: formData
             })
             
-            // Should reject malicious files
             expect([400, 403, 415, 422]).toContain(maliciousUpload.status)
           }
         }
       } catch (error) {
-        // No file upload endpoint - skip this test
         console.log('No file upload endpoint found - skipping file security tests')
       }
     })
@@ -441,15 +407,12 @@ test.describe('AI Security Comprehensive Testing', () => {
       ]
       
       for (const endpoint of protectedEndpoints) {
-        // Test without authentication
         const noAuthResponse = await fetch(endpoint, {
           method: 'GET'
         })
         
-        // Should require authentication
         expect([401, 403, 405]).toContain(noAuthResponse.status)
         
-        // Test with invalid authentication
         const invalidAuthResponse = await fetch(endpoint, {
           method: 'GET',
           headers: {
@@ -494,7 +457,6 @@ test.describe('AI Security Comprehensive Testing', () => {
     })
 
     test('session management security', async ({ page }) => {
-      // Test session timeout
       const sessionResponse = await fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
         method: 'POST',
         headers: {
@@ -511,7 +473,6 @@ test.describe('AI Security Comprehensive Testing', () => {
       
       expect([401, 403]).toContain(sessionResponse.status)
       
-      // Test concurrent session limits
       const concurrentSessions = []
       for (let i = 0; i < 10; i++) {
         concurrentSessions.push(
@@ -533,7 +494,6 @@ test.describe('AI Security Comprehensive Testing', () => {
       
       const sessionResponses = await Promise.all(concurrentSessions)
       
-      // Some sessions should be limited or rejected
       const rejectedSessions = sessionResponses.filter(r => r.status === 429 || r.status === 403)
       expect(rejectedSessions.length).toBeGreaterThan(0)
     })
@@ -541,7 +501,6 @@ test.describe('AI Security Comprehensive Testing', () => {
 
   test.describe('Data Encryption and Privacy', () => {
     test('data transmission encryption', async ({ page }) => {
-      // Verify HTTPS is enforced
       try {
         const httpResponse = await fetch('http://localhost:8001/api/ai/unified-chat', {
           method: 'POST',
@@ -554,16 +513,13 @@ test.describe('AI Security Comprehensive Testing', () => {
           })
         })
         
-        // Should redirect to HTTPS or reject HTTP
         expect([301, 302, 403, 426]).toContain(httpResponse.status)
       } catch (error) {
-        // Connection refused on HTTP is also acceptable
         expect(error.code).toMatch(/(ECONNREFUSED|ENOTFOUND)/)
       }
     })
 
     test('sensitive data masking in logs', async ({ page }) => {
-      // Send request with potentially sensitive data
       const response = await fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -581,13 +537,11 @@ test.describe('AI Security Comprehensive Testing', () => {
       expect(response.status).toBe(200)
       const data = await response.json()
       
-      // Response should not echo back sensitive data patterns
       expect(data.response).not.toMatch(/\d{4}-\d{4}-\d{4}-\d{4}/) // Credit card pattern
       expect(data.response).not.toMatch(/\d{3}-\d{2}-\d{4}/) // SSN pattern
     })
 
     test('data retention and deletion compliance', async ({ page }) => {
-      // Test GDPR-style data deletion
       const deletionResponse = await fetch('http://localhost:8001/api/data-deletion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -598,7 +552,6 @@ test.describe('AI Security Comprehensive Testing', () => {
         })
       })
       
-      // Should have data deletion endpoint
       expect([200, 202, 404]).toContain(deletionResponse.status)
       
       if (deletionResponse.status === 200 || deletionResponse.status === 202) {
@@ -610,7 +563,6 @@ test.describe('AI Security Comprehensive Testing', () => {
 
   test.describe('Security Monitoring and Logging', () => {
     test('security event logging', async ({ page }) => {
-      // Trigger security events
       const securityEvents = [
         { event: 'failed_auth', data: { invalid_token: 'malicious_token' } },
         { event: 'rate_limit_exceeded', data: { ip: '192.168.1.100' } },
@@ -624,16 +576,13 @@ test.describe('AI Security Comprehensive Testing', () => {
           body: JSON.stringify(event)
         })
         
-        // Security logging endpoint should exist and log events
         expect([200, 201, 404]).toContain(response.status)
       }
     })
 
     test('anomaly detection for AI usage patterns', async ({ page }) => {
-      // Send unusual pattern of requests
       const unusualRequests = []
       
-      // Rapid-fire requests (potential bot behavior)
       for (let i = 0; i < 20; i++) {
         unusualRequests.push(
           fetch(SECURITY_TEST_ENDPOINTS.AI_CHAT, {
@@ -651,7 +600,6 @@ test.describe('AI Security Comprehensive Testing', () => {
       
       const responses = await Promise.allSettled(unusualRequests)
       
-      // Some requests should be flagged or rate-limited
       const flaggedResponses = responses.filter(r => 
         r.status === 'fulfilled' && (r.value.status === 429 || r.value.status === 403)
       )

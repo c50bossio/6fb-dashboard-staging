@@ -1,4 +1,3 @@
-// Minimal shop data seeding script
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co'
@@ -135,7 +134,6 @@ async function seedShopData() {
       }
     ]
     
-    // Check if products already exist
     const { data: existingProducts } = await supabase
       .from('products')
       .select('id')
@@ -204,5 +202,4 @@ async function seedShopData() {
   }
 }
 
-// Run the seeding
 seedShopData()

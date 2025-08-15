@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 
-// GMB Integration Component
 function GMBIntegrationTab() {
   const [gmbStatus, setGmbStatus] = useState('not_connected')
   const [loading, setLoading] = useState(false)
@@ -10,17 +9,13 @@ function GMBIntegrationTab() {
   const [attribution, setAttribution] = useState({})
   const [userContext, setUserContext] = useState(null)
 
-  // Get user context on component mount
   useEffect(() => {
     const fetchUserContext = async () => {
       try {
-        // Use the real barbershop ID that was created
         console.log('Fetching user context...')
         const response = await fetch('/api/analytics/live-data?barbershop_id=0b2d7524-49bc-47db-920d-db9c9822c416')
         console.log('User context response:', response.status)
         
-        // Always set the user context regardless of API response
-        // This ensures GMB connection works in development
         setUserContext({
           userId: '11111111-1111-1111-1111-111111111111', // Development test user
           barbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416' // Real UUID from database
@@ -28,7 +23,6 @@ function GMBIntegrationTab() {
         console.log('User context set successfully')
       } catch (error) {
         console.error('Failed to fetch user context:', error)
-        // Always fallback to the real barbershop UUID
         setUserContext({
           userId: '11111111-1111-1111-1111-111111111111',
           barbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416'
@@ -37,7 +31,6 @@ function GMBIntegrationTab() {
       }
     }
     
-    // Set context immediately for development, then try to fetch
     setUserContext({
       userId: '11111111-1111-1111-1111-111111111111',
       barbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416'
@@ -46,7 +39,6 @@ function GMBIntegrationTab() {
     fetchUserContext()
   }, [])
 
-  // Mock data for demonstration
   const mockReviews = [
     {
       id: 1,
@@ -89,7 +81,6 @@ function GMBIntegrationTab() {
     setLoading(true)
     try {
       console.log('Making GMB OAuth request...')
-      // Call the GMB OAuth endpoint with real user context
       const response = await fetch(`/api/gmb/oauth?barbershop_id=${userContext.barbershopId}&user_id=${userContext.userId}`)
       const data = await response.json()
       
@@ -97,7 +88,6 @@ function GMBIntegrationTab() {
       
       if (data.success) {
         console.log('Redirecting to Google OAuth:', data.auth_url)
-        // Redirect to Google OAuth
         window.location.href = data.auth_url
       } else {
         console.error('GMB OAuth failed:', data.error)
@@ -328,14 +318,12 @@ function GMBIntegrationTab() {
   )
 }
 
-// Basic working SEO Dashboard with functional tabs
 export default function SEODashboard() {
   const [loading, setLoading] = useState(true)
   const [seoData, setSeoData] = useState(null)
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d')
   const [activeTab, setActiveTab] = useState('overview')
 
-  // Demo data - in production would be fetched from API
   useEffect(() => {
     const loadSEOData = async () => {
       try {

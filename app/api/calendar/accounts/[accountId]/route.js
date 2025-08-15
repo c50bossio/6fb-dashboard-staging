@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
-// Delete specific account
 export async function DELETE(request, { params }) {
   try {
     const { accountId } = params
@@ -10,12 +9,7 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ success: false, error: 'Missing account ID' }, { status: 400 })
     }
 
-    // In a real implementation, disconnect the specific account
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // success = service.disconnect_account(accountId)
     
-    // Mock successful disconnection
     const success = true
 
     if (success) {

@@ -11,7 +11,6 @@ const fs = require('fs').promises;
 const path = require('path');
 const glob = require('glob');
 
-// Simple console colors without chalk dependency
 const colors = {
   blue: (text) => `\x1b[34m${text}\x1b[0m`,
   green: (text) => `\x1b[32m${text}\x1b[0m`,
@@ -26,7 +25,6 @@ class MockDataScanner {
     this.violations = [];
     this.scannedFiles = 0;
     this.mockPatterns = [
-      // Function patterns
       /generate(Mock|Fake|Dummy|Test|Sample|Random)(?:Data)?/gi,
       /create(Mock|Fake|Dummy|Test|Sample)(?:Data)?/gi,
       /make(Mock|Fake|Dummy|Test|Sample)(?:Data)?/gi,
@@ -34,14 +32,12 @@ class MockDataScanner {
       /getFake(?:Data)?/gi,
       /getDummy(?:Data)?/gi,
       
-      // Variable patterns
       /(?:const|let|var)\s+mock/gi,
       /(?:const|let|var)\s+fake/gi,
       /(?:const|let|var)\s+dummy/gi,
       /(?:const|let|var)\s+sample/gi,
       /(?:const|let|var)\s+testData/gi,
       
-      // Data patterns
       /Customer\s+\d+/g,
       /Test\s+User/gi,
       /John\s+Doe/gi,
@@ -50,17 +46,14 @@ class MockDataScanner {
       /foo@example\.com/gi,
       /Lorem\s+ipsum/gi,
       
-      // Specific problematic patterns
       /["']Service["']/g,  // Just "Service" as a string
       /title:\s*["'].*Service["']/g,  // title with just "Service"
       /Array\.from\(\{.*length:/g,  // Array.from with length (common mock pattern)
       /Math\.random\(\).*(?:Customer|User|Product|Service)/gi,
       
-      // Hardcoded arrays
       /\[\s*\{[\s\S]*?name:\s*["'](?:Test|Mock|Fake|Dummy)/gi
     ];
 
-    // Files/directories to skip
     this.ignorePaths = [
       'node_modules',
       '.next',
@@ -158,7 +151,6 @@ class MockDataScanner {
     for (const file of files) {
       await this.scanFile(file);
       
-      // Progress indicator
       if (this.scannedFiles % 50 === 0) {
         process.stdout.write(colors.gray('.'));
       }
@@ -200,7 +192,6 @@ class MockDataScanner {
 
     console.log(colors.yellow(`📁 ${fileCount} files contain mock data:\n`));
 
-    // Sort files by number of violations (worst first)
     const sortedFiles = Object.entries(groupedViolations)
       .sort((a, b) => b[1].length - a[1].length);
 
@@ -208,7 +199,6 @@ class MockDataScanner {
       const relativePath = path.relative(process.cwd(), file);
       console.log(colors.cyan(`\n${relativePath}`) + colors.gray(` (${violations.length} violations)`));
       
-      // Show first 3 violations per file
       violations.slice(0, 3).forEach(v => {
         console.log(colors.gray(`  Line ${v.line}:`) + colors.red(` ${v.match}`));
         console.log(colors.gray(`    ${v.context}`));
@@ -307,7 +297,6 @@ echo "Use the database seed scripts for test data instead of mock generators."
   }
 }
 
-// Main execution
 async function main() {
   const scanner = new MockDataScanner();
   
@@ -315,7 +304,6 @@ async function main() {
     await scanner.scanProject();
     scanner.generateReport();
     
-    // Generate reports if requested
     if (process.argv.includes('--json')) {
       await scanner.generateJsonReport('mock-data-report.json');
     }
@@ -324,7 +312,6 @@ async function main() {
       await scanner.generateFixScript('fix-mock-data.sh');
     }
 
-    // Exit with error code if violations found (for CI/CD)
     if (scanner.violations.length > 0) {
       process.exit(1);
     }
@@ -334,7 +321,6 @@ async function main() {
   }
 }
 
-// Run if executed directly
 if (require.main === module) {
   main();
 }

@@ -37,7 +37,6 @@ export async function GET(request) {
     const barbershop_id = searchParams.get('barbershop_id') || 'demo'
     const report_type = searchParams.get('type') || 'business_pulse'
     
-    // Generate quick business pulse report
     const report = await generateBusinessPulse(barbershop_id)
     return report
   } catch (error) {
@@ -54,7 +53,6 @@ export async function GET(request) {
  */
 async function generateDailyReport(barbershop_id, date_range) {
   try {
-    // Fetch analytics data
     const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershop_id}`)
     const analyticsData = await analyticsResponse.json()
     
@@ -69,10 +67,8 @@ async function generateDailyReport(barbershop_id, date_range) {
       barbershop_id,
       date: today.toISOString().split('T')[0],
       
-      // Performance Summary
       performance_summary: generatePerformanceSummary(metrics),
       
-      // Key Metrics
       key_metrics: {
         revenue: {
           today: metrics.daily_revenue || 420,
@@ -93,7 +89,6 @@ async function generateDailyReport(barbershop_id, date_range) {
         }
       },
       
-      // Today's Highlights
       highlights: [
         {
           type: 'achievement',
@@ -115,16 +110,12 @@ async function generateDailyReport(barbershop_id, date_range) {
         }
       ],
       
-      // Alerts & Opportunities
       alerts: generateDailyAlerts(metrics),
       
-      // Tomorrow's Focus
       tomorrows_focus: generateTomorrowsFocus(metrics),
       
-      // AI Insights
       ai_insights: generateDailyInsights(metrics),
       
-      // Quick Actions
       suggested_actions: [
         {
           action: 'Send thank-you messages to today\'s customers',
@@ -164,7 +155,6 @@ async function generateWeeklyReport(barbershop_id, date_range) {
     barbershop_id,
     week_ending: new Date().toISOString().split('T')[0],
     
-    // Weekly Summary
     weekly_summary: {
       total_revenue: 2450,
       total_bookings: 42,
@@ -174,7 +164,6 @@ async function generateWeeklyReport(barbershop_id, date_range) {
       customer_retention_rate: 68
     },
     
-    // Weekly Trends
     daily_breakdown: [
       { day: 'Monday', revenue: 320, bookings: 6, satisfaction: 4.5 },
       { day: 'Tuesday', revenue: 180, bookings: 3, satisfaction: 4.8 },
@@ -185,7 +174,6 @@ async function generateWeeklyReport(barbershop_id, date_range) {
       { day: 'Sunday', revenue: 240, bookings: 4, satisfaction: 4.9 }
     ],
     
-    // Weekly Achievements
     achievements: [
       '🎯 Revenue target exceeded by 12%',
       '👥 Served 42 customers this week',
@@ -193,7 +181,6 @@ async function generateWeeklyReport(barbershop_id, date_range) {
       '📈 30% increase vs last week'
     ],
     
-    // Areas for Improvement
     improvement_areas: [
       {
         area: 'Tuesday Performance',
@@ -207,7 +194,6 @@ async function generateWeeklyReport(barbershop_id, date_range) {
       }
     ],
     
-    // Next Week's Strategy
     next_week_strategy: [
       '🎯 Launch Tuesday promotion campaign',
       '📱 Increase social media posting frequency',
@@ -232,7 +218,6 @@ async function generateMonthlyReport(barbershop_id, date_range) {
     barbershop_id,
     month: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     
-    // Monthly Performance
     monthly_performance: {
       total_revenue: 10500,
       total_bookings: 180,
@@ -242,7 +227,6 @@ async function generateMonthlyReport(barbershop_id, date_range) {
       customer_lifetime_value: 285
     },
     
-    // Growth Metrics
     growth_metrics: {
       revenue_growth: '+18%',
       customer_growth: '+12%',
@@ -250,7 +234,6 @@ async function generateMonthlyReport(barbershop_id, date_range) {
       referral_rate: '15%'
     },
     
-    // Monthly Highlights
     highlights: [
       '🚀 Best month ever! Revenue up 18% vs last month',
       '👥 Added 25 new customers through referrals and marketing',
@@ -258,7 +241,6 @@ async function generateMonthlyReport(barbershop_id, date_range) {
       '⭐ Maintained 4.6/5 average customer satisfaction'
     ],
     
-    // Strategic Insights
     strategic_insights: [
       {
         insight: 'Premium Services Success',
@@ -274,7 +256,6 @@ async function generateMonthlyReport(barbershop_id, date_range) {
       }
     ],
     
-    // Next Month Goals
     next_month_goals: [
       '🎯 Achieve $12,000 revenue (+14% growth)',
       '👥 Acquire 30 new customers',
@@ -297,7 +278,6 @@ async function generateBusinessPulse(barbershop_id) {
     const currentTime = new Date()
     const greeting = getTimeBasedGreeting()
     
-    // Fetch real-time data
     const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershop_id}`)
     const analyticsData = await analyticsResponse.json()
     const metrics = analyticsData.success ? analyticsData.data : {}
@@ -307,7 +287,6 @@ async function generateBusinessPulse(barbershop_id) {
       timestamp: currentTime.toISOString(),
       barbershop_id,
       
-      // Quick Status
       business_status: {
         overall_health: '🟢 Excellent',
         revenue_trend: '📈 Growing',
@@ -315,7 +294,6 @@ async function generateBusinessPulse(barbershop_id) {
         booking_trend: '📅 Strong'
       },
       
-      // Today's Snapshot
       todays_snapshot: {
         revenue: `$${metrics.daily_revenue || 420}`,
         bookings: metrics.daily_bookings || 8,
@@ -323,7 +301,6 @@ async function generateBusinessPulse(barbershop_id) {
         capacity_utilization: '85%'
       },
       
-      // Key Alerts
       urgent_alerts: [
         {
           type: 'opportunity',
@@ -331,7 +308,6 @@ async function generateBusinessPulse(barbershop_id) {
         }
       ],
       
-      // Today's Priority Actions
       priority_actions: [
         {
           action: 'Follow up with 3 customers who missed appointments this week',
@@ -345,14 +321,12 @@ async function generateBusinessPulse(barbershop_id) {
         }
       ],
       
-      // Quick Insights
       quick_insights: [
         '💡 Your premium services are performing 40% better than standard cuts',
         '📊 Tuesday bookings are consistently 50% lower - opportunity for promotion',
         '🎯 You\'re on track to exceed monthly revenue goal by 8%'
       ],
       
-      // Weather Impact (if applicable)
       external_factors: {
         weather_impact: getWeatherImpact(),
         local_events: 'No major events affecting business today'
@@ -400,7 +374,6 @@ function generatePerformanceSummary(metrics) {
 function generateDailyAlerts(metrics) {
   const alerts = []
   
-  // Revenue alert
   if ((metrics.daily_revenue || 420) > 500) {
     alerts.push({
       type: 'success',
@@ -410,7 +383,6 @@ function generateDailyAlerts(metrics) {
     })
   }
   
-  // Booking volume alert
   if ((metrics.daily_bookings || 8) < 5) {
     alerts.push({
       type: 'warning',
@@ -459,7 +431,6 @@ function getTimeBasedGreeting() {
 }
 
 function getNextAppointment() {
-  // Simulate next appointment
   const now = new Date()
   const nextAppt = new Date(now.getTime() + 45 * 60 * 1000) // 45 minutes from now
   return nextAppt.toLocaleTimeString('en-US', { 
@@ -470,7 +441,6 @@ function getNextAppointment() {
 }
 
 function getWeatherImpact() {
-  // Simulate weather impact analysis
   const impacts = [
     'Sunny weather may increase walk-in customers by 15%',
     'Rainy day - customers more likely to keep appointments',

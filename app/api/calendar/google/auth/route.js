@@ -11,12 +11,7 @@ export async function GET(request) {
       return NextResponse.json({ success: false, error: 'Missing barber_id' }, { status: 400 })
     }
 
-    // In a real implementation, import the CalendarSyncService
-    // from services.calendar_sync_service import CalendarSyncService
-    // service = CalendarSyncService()
-    // auth_url = service.get_google_auth_url(barber_id)
     
-    // For demo purposes, return a mock auth URL
     const AuthUrl = `https://accounts.google.com/oauth2/auth?client_id=demo&redirect_uri=${encodeURIComponent(
       'http://localhost:9999/api/calendar/google/callback'
     )}&scope=${encodeURIComponent(

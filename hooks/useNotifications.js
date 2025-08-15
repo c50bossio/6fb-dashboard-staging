@@ -79,7 +79,6 @@ export function useNotifications() {
   };
 }
 
-// Helper function to create notification data
 export const createNotificationData = {
   appointmentConfirmation: (appointment, customer, shop = {}) => ({
     customerName: customer.name,

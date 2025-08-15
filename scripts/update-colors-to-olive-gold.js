@@ -9,9 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 
-// Color mapping from old to new
 const colorMappings = {
-  // Blue to Olive mappings
   'bg-blue-50': 'bg-olive-50',
   'bg-blue-100': 'bg-olive-100',
   'bg-blue-200': 'bg-olive-200',
@@ -91,7 +89,6 @@ const colorMappings = {
   'via-blue-800': 'via-olive-800',
   'via-blue-900': 'via-olive-900',
   
-  // Purple to Gold mappings
   'bg-purple-50': 'bg-gold-50',
   'bg-purple-100': 'bg-gold-100',
   'bg-purple-200': 'bg-gold-200',
@@ -171,7 +168,6 @@ const colorMappings = {
   'via-purple-800': 'via-gold-800',
   'via-purple-900': 'via-gold-900',
   
-  // Indigo to Olive mappings (secondary blue variant)
   'bg-indigo-500': 'bg-olive-500',
   'bg-indigo-600': 'bg-olive-600',
   'bg-indigo-700': 'bg-olive-700',
@@ -181,7 +177,6 @@ const colorMappings = {
   'border-indigo-500': 'border-olive-500',
   'border-indigo-600': 'border-olive-600',
   
-  // Violet to Gold mappings (secondary purple variant)
   'bg-violet-500': 'bg-gold-500',
   'bg-violet-600': 'bg-gold-600',
   'bg-violet-700': 'bg-gold-700',
@@ -191,7 +186,6 @@ const colorMappings = {
   'border-violet-500': 'border-gold-500',
   'border-violet-600': 'border-gold-600',
   
-  // Common composite patterns
   'hover:bg-blue-500': 'hover:bg-olive-500',
   'hover:bg-blue-600': 'hover:bg-olive-600',
   'hover:bg-blue-700': 'hover:bg-olive-700',
@@ -210,7 +204,6 @@ const colorMappings = {
   'focus:border-blue-500': 'focus:border-olive-500',
   'focus:border-purple-500': 'focus:border-gold-500',
   
-  // Dark mode variants
   'dark:bg-blue-500': 'dark:bg-olive-500',
   'dark:bg-blue-600': 'dark:bg-olive-600',
   'dark:bg-purple-500': 'dark:bg-gold-500',
@@ -218,12 +211,10 @@ const colorMappings = {
   'dark:text-blue-400': 'dark:text-olive-400',
   'dark:text-purple-400': 'dark:text-gold-400',
   
-  // Special gradients
   'from-blue-600 to-purple-600': 'from-olive-600 to-gold-600',
   'from-blue-500 to-purple-500': 'from-olive-500 to-gold-500',
   'from-indigo-500 to-purple-600': 'from-olive-500 to-gold-600',
   
-  // Hex color replacements
   '#2563eb': '#3C4A3E', // Blue-600 to Deep Olive
   '#3b82f6': '#546355', // Blue-500 to Olive-500
   '#1d4ed8': '#2A352D', // Blue-700 to Olive-700
@@ -236,14 +227,12 @@ const colorMappings = {
   '#8B5CF6': '#C5A35B', // Purple uppercase
   '#7C3AED': '#C5A35B', // Purple uppercase
   
-  // RGB color replacements
   'rgb(59, 130, 246)': 'rgb(60, 74, 62)', // Blue to Olive
   'rgb(124, 58, 237)': 'rgb(197, 163, 91)', // Purple to Gold
   'rgba(59, 130, 246': 'rgba(60, 74, 62', // Blue with alpha
   'rgba(124, 58, 237': 'rgba(197, 163, 91', // Purple with alpha
 };
 
-// File patterns to search
 const filePatterns = [
   'app/**/*.{js,jsx,ts,tsx}',
   'components/**/*.{js,jsx,ts,tsx}',
@@ -257,7 +246,6 @@ function updateFile(filePath) {
     let content = fs.readFileSync(filePath, 'utf8');
     let hasChanges = false;
     
-    // Apply all color mappings
     for (const [oldColor, newColor] of Object.entries(colorMappings)) {
       const regex = new RegExp(escapeRegExp(oldColor), 'g');
       const newContent = content.replace(regex, newColor);

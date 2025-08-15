@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-// Direct Supabase connection for webhook processing
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
@@ -11,11 +10,9 @@ export async function POST(request) {
   try {
     console.log('🔔 Cin7 webhook received')
     
-    // Parse webhook payload
     const body = await request.json().catch(() => ({}))
     console.log('📦 Webhook payload:', JSON.stringify(body, null, 2))
     
-    // Cin7 webhook structure varies by event type
     const eventType = body.EventType || body.event_type || 'unknown'
     const productData = body.Product || body.product || body.data
     
@@ -26,10 +23,8 @@ export async function POST(request) {
       return NextResponse.json({ status: 'no_data' })
     }
     
-    // Map webhook data to our product format
     const updatedProduct = mapCin7ProductData(productData)
     
-    // Find the product in our database by SKU
     const { data: existingProduct } = await supabase
       .from('products')
       .select('id, barbershop_id')
@@ -37,7 +32,6 @@ export async function POST(request) {
       .single()
     
     if (existingProduct) {
-      // Update existing product
       const { error: updateError } = await supabase
         .from('products')
         .update({
@@ -53,12 +47,10 @@ export async function POST(request) {
       
       console.log(`✅ Updated product: ${updatedProduct.name}`)
       
-      // Log the change for real-time notifications
       await logProductChange('updated', existingProduct.id, updatedProduct, existingProduct.barbershop_id)
       
     } else {
       console.log(`ℹ️ Product not found in database: ${updatedProduct.sku}`)
-      // Optionally trigger a full sync if product doesn't exist
     }
     
     return NextResponse.json({ 
@@ -76,9 +68,7 @@ export async function POST(request) {
   }
 }
 
-// Map Cin7 webhook product data to our format
 function mapCin7ProductData(productData) {
-  // Flexible price mapping for webhook data
   const getCostPrice = () => {
     return parseFloat(productData.CostPrice) || 
            parseFloat(productData.DefaultCostPrice) || 
@@ -118,10 +108,8 @@ function mapCin7ProductData(productData) {
   }
 }
 
-// Log product changes for real-time notifications
 async function logProductChange(action, productId, newData, barbershopId) {
   try {
-    // Create a product change log entry
     await supabase
       .from('product_change_logs')
       .insert({
@@ -135,17 +123,12 @@ async function logProductChange(action, productId, newData, barbershopId) {
     
     console.log(`📝 Logged ${action} for product ${productId}`)
     
-    // Could trigger real-time notifications here
-    // await notifyBarbershopOwners(barbershopId, { action, product: newData })
     
   } catch (error) {
     console.warn('⚠️ Failed to log product change:', error.message)
   }
 }
 
-// Verify webhook signature (if Cin7 provides one)
 function verifyWebhookSignature(payload, signature, secret) {
-  // Implementation depends on Cin7's webhook signature method
-  // This is a placeholder for security verification
   return true
 }

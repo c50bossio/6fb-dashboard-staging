@@ -12,7 +12,6 @@ async function listActiveSubscriptions(email = null) {
   console.log('📋 Fetching active subscriptions...\n');
   
   try {
-    // Search for customers by email if provided
     let customerId = null;
     if (email) {
       const customers = await stripe.customers.list({
@@ -27,7 +26,6 @@ async function listActiveSubscriptions(email = null) {
       
       console.log(`Found ${customers.data.length} customer(s) with email ${email}\n`);
       
-      // Get all subscriptions for these customers
       let allSubscriptions = [];
       for (const customer of customers.data) {
         const subscriptions = await stripe.subscriptions.list({
@@ -40,7 +38,6 @@ async function listActiveSubscriptions(email = null) {
       
       return allSubscriptions;
     } else {
-      // Get all active subscriptions
       const subscriptions = await stripe.subscriptions.list({
         status: 'active',
         limit: 20
@@ -83,7 +80,6 @@ async function cancelSubscription(subscriptionId, immediately = false) {
   console.log(`\n🔄 Canceling subscription: ${subscriptionId}`);
   
   try {
-    // Cancel the subscription
     const canceledSubscription = await stripe.subscriptions.cancel(
       subscriptionId,
       {
@@ -137,12 +133,10 @@ async function main() {
     process.exit(1);
   }
   
-  // Detect if using live or test keys
   const isLiveMode = process.env.STRIPE_SECRET_KEY.startsWith('sk_live_');
   console.log(`Mode: ${isLiveMode ? '⚠️  LIVE MODE (Real Subscriptions)' : '✅ TEST MODE'}\n`);
   
   if (args.length === 0) {
-    // No arguments - list recent active subscriptions
     const subscriptions = await listActiveSubscriptions();
     await displaySubscriptions(subscriptions);
     
@@ -151,10 +145,8 @@ async function main() {
     console.log('  node scripts/stripe-cancel-subscriptions.js --email <email>     # Cancel all for email');
     console.log('  node scripts/stripe-cancel-subscriptions.js --all               # Cancel ALL active subscriptions');
   } else if (args[0] === '--email' && args[1]) {
-    // Cancel all subscriptions for an email
     await cancelAllForEmail(args[1]);
   } else if (args[0] === '--all') {
-    // Cancel ALL active subscriptions (dangerous!)
     console.log('⚠️  WARNING: This will cancel ALL active subscriptions!');
     const subscriptions = await listActiveSubscriptions();
     await displaySubscriptions(subscriptions);
@@ -169,7 +161,6 @@ async function main() {
       console.log(`\n✅ Canceled ${canceledCount} out of ${subscriptions.length} subscription(s)`);
     }
   } else if (args[0].startsWith('sub_')) {
-    // Cancel specific subscription ID
     await cancelSubscription(args[0]);
   } else {
     console.log('Invalid arguments.');
@@ -181,7 +172,6 @@ async function main() {
   }
 }
 
-// Run the script
 main().catch(error => {
   console.error('❌ Script error:', error.message);
   process.exit(1);

@@ -6,16 +6,13 @@ export default function AuthDebugger() {
   const { user, loading } = useAuth()
   
   const forceReload = () => {
-    // Clear all local storage
     localStorage.clear()
     sessionStorage.clear()
     
-    // Force reload the page
     window.location.reload()
   }
   
   const clearAuthStorage = () => {
-    // Clear only Supabase auth storage
     const keys = Object.keys(localStorage).filter(key => 
       key.startsWith('sb-') || key.includes('supabase')
     )
@@ -24,7 +21,6 @@ export default function AuthDebugger() {
     window.location.reload()
   }
   
-  // Only show in development
   if (process.env.NODE_ENV === 'production') return null
   
   return (

@@ -10,7 +10,6 @@ const puppeteer = require('puppeteer');
   
   const page = await browser.newPage();
   
-  // Enable performance monitoring
   await page.evaluateOnNewDocument(() => {
     window.performanceMetrics = {
       startTime: Date.now(),
@@ -34,7 +33,6 @@ const puppeteer = require('puppeteer');
     });
   });
   
-  // Track network requests
   const networkRequests = [];
   page.on('response', (response) => {
     networkRequests.push({
@@ -44,7 +42,6 @@ const puppeteer = require('puppeteer');
     });
   });
   
-  // Track console messages
   const consoleMessages = [];
   page.on('console', (msg) => {
     consoleMessages.push({
@@ -65,10 +62,8 @@ const puppeteer = require('puppeteer');
     const navigationTime = Date.now() - startTime;
     console.log(`⏱️  Navigation completed in ${navigationTime}ms`);
     
-    // Wait for page to fully load
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Get performance metrics
     const metrics = await page.evaluate(() => {
       const timing = performance.timing;
       
@@ -86,7 +81,6 @@ const puppeteer = require('puppeteer');
       };
     });
     
-    // Get slowest resources
     const resources = await page.evaluate(() => {
       return performance.getEntriesByType('resource')
         .map(r => ({
@@ -99,7 +93,6 @@ const puppeteer = require('puppeteer');
         .slice(0, 10);
     });
     
-    // Test form functionality
     console.log('🧪 Testing form functionality...');
     try {
       const emailInput = await page.$('input[type="email"], input[name="email"], input[placeholder*="email" i]');
@@ -123,7 +116,6 @@ const puppeteer = require('puppeteer');
       console.log(`   ⚠️ Form test error: ${e.message}`);
     }
     
-    // Results
     console.log('\n📊 Performance Results:');
     console.log(`   Page Title: ${metrics.title}`);
     console.log(`   DOM Content Loaded: ${metrics.domContentLoaded}ms (${(metrics.domContentLoaded/1000).toFixed(2)}s)`);
@@ -155,7 +147,6 @@ const puppeteer = require('puppeteer');
       });
     }
     
-    // Performance comparison
     const currentLoadTime = metrics.loadComplete / 1000;
     const previousBaseline = 5.3;
     const improvement = ((previousBaseline - currentLoadTime) / previousBaseline) * 100;

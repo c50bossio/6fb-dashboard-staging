@@ -16,7 +16,6 @@ async function checkEmailDeliveryIssues() {
   console.log('Project Reference:', projectRef)
   console.log('Project URL:', supabaseUrl)
   
-  // Check 1: Verify URL configuration
   console.log('\n🔗 STEP 1: URL Configuration Check')
   console.log('─'.repeat(40))
   
@@ -27,7 +26,6 @@ async function checkEmailDeliveryIssues() {
   console.log('Dashboard redirect URL:', dashboardUrl)
   console.log('Expected redirect in emails:', dashboardUrl)
   
-  // Check 2: Common Supabase email issues
   console.log('\n⚙️ STEP 2: Common Supabase Email Issues')
   console.log('─'.repeat(40))
   
@@ -51,7 +49,6 @@ async function checkEmailDeliveryIssues() {
   console.log('  - Missing proper sender information')
   console.log('  - Solution: Customize email templates')
   
-  // Check 3: Test with different email providers
   console.log('\n📮 STEP 3: Email Provider Compatibility')
   console.log('─'.repeat(40))
   
@@ -70,7 +67,6 @@ async function checkEmailDeliveryIssues() {
     console.log(`    Notes: ${provider.notes}`)
   })
   
-  // Check 4: Immediate troubleshooting steps
   console.log('\n🚨 STEP 4: Immediate Action Items')
   console.log('─'.repeat(40))
   
@@ -90,12 +86,10 @@ async function checkEmailDeliveryIssues() {
   console.log('   → Add SMTP settings in Supabase Dashboard')
   console.log('   → This will significantly improve delivery rates')
   
-  console.log('\n4. DEBUG EMAIL TEMPLATES:')
   console.log('   → Check Authentication → Email Templates')
   console.log('   → Ensure confirmation template is enabled')
   console.log('   → Verify template contains proper confirmation link')
   
-  // Check 5: Create a manual verification URL
   console.log('\n🔧 STEP 5: Manual Testing URLs')
   console.log('─'.repeat(40))
   
@@ -104,7 +98,6 @@ async function checkEmailDeliveryIssues() {
   console.log('Email Templates:', `https://supabase.com/dashboard/project/${projectRef}/auth/templates`)
   console.log('User Management:', `https://supabase.com/dashboard/project/${projectRef}/auth/users`)
   
-  // Check 6: Alternative verification method
   console.log('\n🔄 STEP 6: Alternative Testing Method')
   console.log('─'.repeat(40))
   

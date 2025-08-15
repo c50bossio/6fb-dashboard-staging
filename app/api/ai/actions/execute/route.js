@@ -6,7 +6,6 @@ export const maxDuration = 30
 
 export async function POST(request) {
   try {
-    // Check authentication
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
@@ -24,10 +23,8 @@ export async function POST(request) {
     }
 
     try {
-      // Call Python executable agents service
       const executionResult = await executeActionViaPython(action_type, parameters)
       
-      // Log action execution for audit trail
       await logActionExecution(supabase, user.id, action_type, parameters, executionResult)
       
       return NextResponse.json({
@@ -43,7 +40,6 @@ export async function POST(request) {
     } catch (executionError) {
       console.error('Action execution error:', executionError)
       
-      // Fallback to JavaScript execution for basic actions
       const fallbackResult = await executeActionFallback(action_type, parameters)
       
       return NextResponse.json({
@@ -83,7 +79,6 @@ async function executeActionViaPython(actionType, parameters) {
         action_type: actionType,
         parameters: {
           ...parameters,
-          // Enhanced execution context
           user_context: parameters.context || {},
           business_name: parameters.context?.business_name || 'Elite Cuts Barbershop',
           priority: parameters.priority || 'medium',
@@ -134,7 +129,6 @@ async function executeActionFallback(actionType, parameters) {
   console.log('🔄 Executing action via JavaScript fallback:', actionType)
   
   try {
-    // Enhanced fallback execution with business logic
     const result = await routeAndExecuteFallback(actionType, parameters)
     
     return {
@@ -150,7 +144,6 @@ async function executeActionFallback(actionType, parameters) {
   } catch (fallbackError) {
     console.error('Fallback execution failed:', fallbackError)
     
-    // Final emergency response
     return {
       success: false,
       message: 'Action execution temporarily unavailable',
@@ -164,7 +157,6 @@ async function executeActionFallback(actionType, parameters) {
   }
 }
 
-// Enhanced fallback routing with actual action simulation
 async function routeAndExecuteFallback(actionType, parameters) {
   const task = parameters.task || 'Unknown task'
   const priority = parameters.priority || 'medium'
@@ -273,6 +265,5 @@ async function logActionExecution(supabase, userId, actionType, parameters, resu
       })
   } catch (error) {
     console.error('Failed to log action execution:', error)
-    // Don't fail the request if logging fails
   }
 }

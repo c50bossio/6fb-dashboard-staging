@@ -18,7 +18,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function setupDatabase() {
   try {
-    // Test connection
     console.log('🔍 Testing Supabase connection...')
     const { data: testData, error: testError } = await supabase
       .from('profiles')
@@ -32,7 +31,6 @@ async function setupDatabase() {
     
     console.log('✅ Supabase connection successful')
     
-    // Try to create tables using raw SQL via REST API
     console.log('📝 Creating booking_links table...')
     
     const createTableSQL = `
@@ -67,7 +65,6 @@ async function setupDatabase() {
       CREATE POLICY "booking_links_all" ON booking_links FOR ALL USING (true);
     `
     
-    // Use the SQL editor endpoint
     const response = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
       method: 'POST',
       headers: {
@@ -84,7 +81,6 @@ async function setupDatabase() {
     if (!response.ok) {
       console.log('⚠️  Direct SQL execution not available, using alternative approach...')
       
-      // Alternative: Try to insert a test record to see if table exists
       const { data, error } = await supabase
         .from('booking_links')
         .select('id')

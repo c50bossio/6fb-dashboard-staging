@@ -57,7 +57,6 @@ async function refundCharge(chargeId) {
   console.log(`\n🔄 Processing refund for charge: ${chargeId}`);
   
   try {
-    // First check if charge exists and is refundable
     const charge = await stripe.charges.retrieve(chargeId);
     
     if (charge.refunded) {
@@ -73,7 +72,6 @@ async function refundCharge(chargeId) {
     const amount = (charge.amount / 100).toFixed(2);
     console.log(`💰 Refunding $${amount} to ${charge.billing_details?.email || charge.receipt_email || 'customer'}...`);
     
-    // Create the refund
     const refund = await stripe.refunds.create({
       charge: chargeId,
       reason: 'requested_by_customer', // Can be: duplicate, fraudulent, or requested_by_customer
@@ -114,7 +112,6 @@ async function refundByEmail(email) {
   console.log(`\n🔍 Searching for charges from: ${email}\n`);
   
   try {
-    // Search for charges by email
     const charges = await stripe.charges.search({
       query: `receipt_email:"${email}"`,
       limit: 100,
@@ -153,25 +150,20 @@ async function main() {
     process.exit(1);
   }
   
-  // Detect if using live or test keys
   const isLiveMode = process.env.STRIPE_SECRET_KEY.startsWith('sk_live_');
   console.log(`Mode: ${isLiveMode ? '⚠️  LIVE MODE (Real Money)' : '✅ TEST MODE'}\n`);
   
   if (args.length === 0) {
-    // No arguments - list recent charges
     await listRecentCharges();
     console.log('\nUsage:');
     console.log('  node scripts/stripe-refund.js <charge_id>        # Refund specific charge');
     console.log('  node scripts/stripe-refund.js --last             # Refund most recent charge');
     console.log('  node scripts/stripe-refund.js --email <email>    # Refund all charges for email');
   } else if (args[0] === '--last') {
-    // Refund the last charge
     await refundLastCharge();
   } else if (args[0] === '--email' && args[1]) {
-    // Refund all charges for an email
     await refundByEmail(args[1]);
   } else if (args[0].startsWith('ch_')) {
-    // Refund specific charge ID
     await refundCharge(args[0]);
   } else {
     console.log('Invalid arguments.');
@@ -183,7 +175,6 @@ async function main() {
   }
 }
 
-// Run the script
 main().catch(error => {
   console.error('❌ Script error:', error.message);
   process.exit(1);

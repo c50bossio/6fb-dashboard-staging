@@ -6,7 +6,6 @@
 import { faker } from '@faker-js/faker';
 import crypto from 'crypto';
 
-// Base factory class for common functionality
 class BaseFactory {
   static sequence = 0;
   
@@ -23,7 +22,6 @@ class BaseFactory {
   }
 }
 
-// User-related factories
 export class UserFactory extends BaseFactory {
   static create(overrides = {}) {
     const defaults = {
@@ -132,7 +130,6 @@ export class UserFactory extends BaseFactory {
   }
 }
 
-// Shop-related factories
 export class ShopFactory extends BaseFactory {
   static create(overrides = {}) {
     const defaults = {
@@ -197,7 +194,6 @@ export class ShopFactory extends BaseFactory {
   }
 }
 
-// Service-related factories
 export class ServiceFactory extends BaseFactory {
   static create(overrides = {}) {
     const serviceTypes = [
@@ -273,7 +269,6 @@ export class ServiceFactory extends BaseFactory {
   }
 }
 
-// Appointment-related factories
 export class AppointmentFactory extends BaseFactory {
   static create(overrides = {}) {
     const scheduledTime = faker.date.future();
@@ -375,7 +370,6 @@ export class AppointmentFactory extends BaseFactory {
   }
 }
 
-// Business analytics factories
 export class AnalyticsFactory extends BaseFactory {
   static createRevenueData(shopId, dateRange = 30) {
     const data = [];
@@ -432,7 +426,6 @@ export class AnalyticsFactory extends BaseFactory {
   }
 }
 
-// AI Agent and conversation factories
 export class ConversationFactory extends BaseFactory {
   static create(overrides = {}) {
     const defaults = {
@@ -530,7 +523,6 @@ export class ConversationFactory extends BaseFactory {
   }
 }
 
-// Review and feedback factories
 export class ReviewFactory extends BaseFactory {
   static create(overrides = {}) {
     const defaults = {
@@ -601,7 +593,6 @@ export class ReviewFactory extends BaseFactory {
   static createBatch(count, overrides = {}) {
     const reviews = [];
     for (let i = 0; i < count; i++) {
-      // Create mostly positive reviews (80/20 split)
       const isPositive = Math.random() < 0.8;
       reviews.push(
         isPositive 
@@ -613,7 +604,6 @@ export class ReviewFactory extends BaseFactory {
   }
 }
 
-// Vector embedding and AI knowledge factories
 export class VectorEmbeddingFactory extends BaseFactory {
   static create(overrides = {}) {
     const defaults = {
@@ -671,7 +661,6 @@ export class VectorEmbeddingFactory extends BaseFactory {
   }
 }
 
-// Payment and transaction factories
 export class PaymentFactory extends BaseFactory {
   static create(overrides = {}) {
     const defaults = {
@@ -742,7 +731,6 @@ export class PaymentFactory extends BaseFactory {
   }
 }
 
-// Notification factories
 export class NotificationFactory extends BaseFactory {
   static create(overrides = {}) {
     const defaults = {
@@ -795,7 +783,6 @@ export class NotificationFactory extends BaseFactory {
   }
 }
 
-// Database mock utilities
 export class DatabaseMock {
   constructor() {
     this.data = {
@@ -811,7 +798,6 @@ export class DatabaseMock {
   }
 
   seed() {
-    // Create users
     this.data.users = [
       ...UserFactory.createBatch(50, 'CLIENT'),
       ...UserFactory.createBatch(20, 'BARBER'),
@@ -819,20 +805,17 @@ export class DatabaseMock {
       ...UserFactory.createBatch(2, 'ENTERPRISE_OWNER')
     ];
 
-    // Create shops
     this.data.shops = [];
     const shopOwners = this.data.users.filter(u => u.role === 'SHOP_OWNER');
     shopOwners.forEach(owner => {
       this.data.shops.push(ShopFactory.create({ owner_id: owner.id }));
     });
 
-    // Create services for each shop
     this.data.services = [];
     this.data.shops.forEach(shop => {
       this.data.services.push(...ServiceFactory.createBatch(8, { shop_id: shop.id }));
     });
 
-    // Create appointments
     this.data.appointments = [];
     const clients = this.data.users.filter(u => u.role === 'CLIENT');
     const barbers = this.data.users.filter(u => u.role === 'BARBER');
@@ -853,7 +836,6 @@ export class DatabaseMock {
       }));
     }
 
-    // Create reviews for completed appointments
     const completedAppointments = this.data.appointments.filter(a => a.status === 'completed');
     this.data.reviews = completedAppointments.slice(0, 50).map(appointment => {
       return ReviewFactory.create({
@@ -864,7 +846,6 @@ export class DatabaseMock {
       });
     });
 
-    // Create payments
     this.data.payments = this.data.appointments.map(appointment => {
       return PaymentFactory.create({
         appointment_id: appointment.id,
@@ -928,13 +909,11 @@ export class DatabaseMock {
   }
 }
 
-// Export all factories and utilities
 export {
   BaseFactory,
   DatabaseMock
 };
 
-// Convenience function to reset all sequences
 export function resetAllSequences() {
   BaseFactory.resetSequence();
   UserFactory.resetSequence();
@@ -948,7 +927,6 @@ export function resetAllSequences() {
   NotificationFactory.resetSequence();
 }
 
-// Quick setup function for common test scenarios
 export function createTestScenario(scenario = 'basic') {
   const db = new DatabaseMock();
   

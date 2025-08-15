@@ -16,9 +16,7 @@ import {
 } from '@heroicons/react/24/outline'
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useCallback, useRef, memo } from 'react'
-// Import only essential icons for initial load
 
-// Lazy load heavy/optional icons
 const KeyIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.KeyIcon })))
 const EyeIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.EyeIcon })))
 const EyeSlashIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.EyeSlashIcon })))
@@ -35,7 +33,6 @@ import TimeRangePicker from '../../../../components/TimeRangePicker'
 import MFASetup from '../../../../components/auth/MFASetup'
 import SubscriptionDashboard from '../../../../components/billing/SubscriptionDashboard'
 
-// Lazy load charts to improve initial page load with loading fallback
 const ChartLoadingSpinner = () => (
   <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
     <div className="text-center">
@@ -118,11 +115,9 @@ export default function SettingsPage() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
 
-  // Create stable refs to prevent re-renders
   const phoneInputRef = useRef(null)
   const emailInputRef = useRef(null)
 
-  // NUCLEAR SOLUTION: Only update state on blur to prevent re-renders during typing
   const handlePhoneBlur = useCallback((e) => {
     const displayValue = e.target.value
     const e164Value = e.target.e164 || displayValue  // Use E.164 for Twilio if available
@@ -153,7 +148,6 @@ export default function SettingsPage() {
     }))
   }, [])
 
-  // Handle section changes and update URL hash
   const handleSectionChange = (sectionId) => {
     setActiveSection(sectionId)
     if (typeof window !== 'undefined') {
@@ -161,14 +155,11 @@ export default function SettingsPage() {
     }
   }
 
-  // Initialize from URL hash after component mounts (client-side only)
   useEffect(() => {
     const hash = window.location.hash.replace('#', '')
     const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
     
-    // Explicitly block API section access
     if (hash === 'api') {
-      // Redirect to general section and update URL
       setActiveSection('general')
       window.location.hash = 'general'
       setIsInitialized(true)
@@ -180,7 +171,6 @@ export default function SettingsPage() {
     }
     setIsInitialized(true)
     
-    // Simulate faster initial load by setting page ready
     const timer = setTimeout(() => {
       setPageLoading(false)
     }, 100)
@@ -188,13 +178,11 @@ export default function SettingsPage() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Listen for hash changes (back/forward navigation)
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '')
       const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
       
-      // Explicitly block API section access
       if (hash === 'api') {
         setActiveSection('general')
         window.location.hash = 'general'
@@ -239,11 +227,9 @@ export default function SettingsPage() {
   })
   const [timeRange, setTimeRange] = useState('30days')
   
-  // Load settings on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        // Load barbershop settings
         const barbershopResponse = await fetch('/api/v1/settings/barbershop', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -259,7 +245,6 @@ export default function SettingsPage() {
           }))
         }
 
-        // Load business hours separately
         const businessHoursResponse = await fetch('/api/v1/settings/business-hours', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -280,13 +265,11 @@ export default function SettingsPage() {
     
     loadSettings()
     
-    // Load notification data if on notifications tab
     if (activeSection === 'notifications') {
       fetchNotificationHistory()
       fetchQueueStatus()
     }
     
-    // Load billing data if on billing tab
     if (activeSection === 'billing') {
       fetchBillingData()
     }
@@ -360,7 +343,6 @@ export default function SettingsPage() {
       const result = await response.json()
       setTestResult(result)
       
-      // Refresh history after sending
       setTimeout(fetchNotificationHistory, 1000)
     } catch (error) {
       setTestResult({
@@ -391,7 +373,6 @@ export default function SettingsPage() {
       <PhoneIcon className="h-5 w-5 text-gold-500" />
   }
 
-  // Edit/Save/Cancel handlers
   const handleEdit = (section) => {
     setEditStates(prev => ({ ...prev, [section]: true }))
     setErrors(prev => ({ ...prev, [section]: null }))
@@ -401,7 +382,6 @@ export default function SettingsPage() {
   const handleCancel = (section) => {
     setEditStates(prev => ({ ...prev, [section]: false }))
     setErrors(prev => ({ ...prev, [section]: null }))
-    // TODO: Restore original values from backup
   }
 
   const handleSave = async (section) => {
@@ -414,7 +394,6 @@ export default function SettingsPage() {
       
       switch (section) {
         case 'barbershop':
-          // Validate email format
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
           if (!emailRegex.test(settings.barbershop.email)) {
             setErrors(prev => ({ ...prev, [section]: 'Invalid email format' }))
@@ -432,10 +411,8 @@ export default function SettingsPage() {
           break
           
         case 'businessHours':
-          // Basic validation - just ensure we have valid data structure
           let hasValidationError = false
           try {
-            // Just ensure the structure is valid JSON
             JSON.stringify(settings.businessHours)
           } catch (error) {
             setErrors(prev => ({ ...prev, [section]: 'Invalid business hours data format' }))
@@ -468,18 +445,15 @@ export default function SettingsPage() {
           break
           
         case 'paymentMethod':
-          // Simulate payment method update
           response = { ok: true }
           break
           
         case 'subscription':
-          // Simulate subscription update
           response = { ok: true }
           break
       }
       
       if (!response.ok) {
-        // Get detailed error message from response
         let errorMessage = `Failed to save ${section} settings`
         try {
           const errorData = await response.json()
@@ -495,7 +469,6 @@ export default function SettingsPage() {
       setSuccessMessages(prev => ({ ...prev, [section]: 'Settings saved successfully!' }))
       setEditStates(prev => ({ ...prev, [section]: false }))
       
-      // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessages(prev => ({ ...prev, [section]: null }))
       }, 3000)
@@ -582,7 +555,6 @@ export default function SettingsPage() {
   }
 
   const handleDownloadInvoice = () => {
-    // Create a proper download experience
     setTestResult({
       success: true,
       message: "Invoice download will be available soon. You'll be notified when ready."
@@ -591,7 +563,6 @@ export default function SettingsPage() {
   }
 
   const handleUpdatePayment = () => {
-    // Show a proper modal or redirect to payment page
     setTestResult({
       success: true,
       message: "Payment method update is coming soon. Contact support for immediate changes."
@@ -600,7 +571,6 @@ export default function SettingsPage() {
   }
 
   const handleViewBillingHistory = () => {
-    // Navigate to billing history or show in modal
     setTestResult({
       success: true,
       message: "Billing history feature is being developed. Current month details are shown above."
@@ -608,7 +578,6 @@ export default function SettingsPage() {
     setTimeout(() => setTestResult(null), 3000)
   }
 
-  // Helper function to format 24-hour time to 12-hour format
   const formatTime12Hour = (time24) => {
     if (!time24) return 'Not set'
     const [hours, minutes] = time24.split(':').map(Number)
@@ -617,7 +586,6 @@ export default function SettingsPage() {
     return `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`
   }
 
-  // Helper function to calculate shift duration
   const calculateShiftDuration = (openTime, closeTime) => {
     if (!openTime || !closeTime) return ''
     
@@ -640,7 +608,6 @@ export default function SettingsPage() {
     }
   }
 
-  // Mock daily usage data for charts
   const dailyUsageData = [
     { date: 'Jan 1', ai: 15.20, sms: 8.40, email: 2.10 },
     { date: 'Jan 5', ai: 22.50, sms: 12.20, email: 3.50 },
@@ -651,14 +618,12 @@ export default function SettingsPage() {
     { date: 'Jan 30', ai: 32.10, sms: 16.20, email: 5.20 }
   ]
 
-  // Usage breakdown for pie chart
   const usageBreakdown = [
     { name: 'AI Business Coach', value: billingData.usage.ai.cost, color: '#3B82F6' },
     { name: 'SMS Marketing', value: billingData.usage.sms.cost, color: '#C5A35B' },
     { name: 'Email Campaigns', value: billingData.usage.email.cost, color: '#10B981' }
   ]
 
-  // Memoized EditableCard component to prevent unnecessary re-renders
   const EditableCard = memo(({ title, icon: Icon, section, children, className = "" }) => {
     const isEditing = editStates[section]
     const isLoading = loading[section]
@@ -719,7 +684,6 @@ export default function SettingsPage() {
     )
   })
 
-  // Show loading briefly while determining correct section from URL
   if (!isInitialized || pageLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

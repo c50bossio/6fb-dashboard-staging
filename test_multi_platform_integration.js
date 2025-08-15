@@ -7,7 +7,6 @@ import sqlite3 from 'sqlite3'
 import { promisify } from 'util'
 import fs from 'fs'
 
-// Import our components
 import GoogleCalendarAdapter from './lib/adapters/google-calendar-adapter.js'
 import AcuityAdapter from './lib/adapters/acuity-adapter.js'
 import SquareAdapter from './lib/adapters/square-adapter.js'
@@ -27,7 +26,6 @@ class MultiPlatformIntegrationTester {
    * Initialize test database
    */
   async initTestDatabase() {
-    // Remove existing test database
     if (fs.existsSync(TEST_DATABASE_PATH)) {
       fs.unlinkSync(TEST_DATABASE_PATH)
     }
@@ -37,7 +35,6 @@ class MultiPlatformIntegrationTester {
     this.db.allAsync = promisify(this.db.all.bind(this.db))
     this.db.runAsync = promisify(this.db.run.bind(this.db))
 
-    // Load schema
     const schema = fs.readFileSync('./database/multi-platform-integration-schema.sql', 'utf8')
     const statements = schema.split(';').filter(stmt => stmt.trim())
     
@@ -59,7 +56,6 @@ class MultiPlatformIntegrationTester {
     try {
       await this.initTestDatabase()
       
-      // Test individual components
       await this.testPlatformAdapters()
       await this.testSyncOrchestrator()
       await this.testBusinessContextEngine()
@@ -67,7 +63,6 @@ class MultiPlatformIntegrationTester {
       await this.testConflictResolution()
       await this.testDataQuality()
       
-      // Print results
       this.printTestResults()
       
     } catch (error) {
@@ -83,13 +78,10 @@ class MultiPlatformIntegrationTester {
   async testPlatformAdapters() {
     console.log('📊 Testing Platform Adapters...')
 
-    // Test Google Calendar Adapter
     await this.testGoogleCalendarAdapter()
     
-    // Test Acuity Adapter
     await this.testAcuityAdapter()
     
-    // Test Square Adapter
     await this.testSquareAdapter()
   }
 
@@ -101,7 +93,6 @@ class MultiPlatformIntegrationTester {
     const testName = 'Google Calendar Adapter'
     
     try {
-      // Test normalization with mock data
       const GoogleEvent = {
         id: 'google-event-123',
         summary: 'Haircut with John Doe',
@@ -118,7 +109,6 @@ class MultiPlatformIntegrationTester {
 
       const normalized = await adapter.normalizeAppointment(mockGoogleEvent, this.barbershopId)
       
-      // Validate normalized data structure
       this.assert(normalized.id === 'google-event-123', 'ID mapping')
       this.assert(normalized.platformId === 'google', 'Platform ID')
       this.assert(normalized.client.name === await getUserFromDatabase(), 'Client name extraction')
@@ -144,7 +134,6 @@ class MultiPlatformIntegrationTester {
     const testName = 'Acuity Adapter'
     
     try {
-      // Test normalization with mock Acuity appointment
       const AcuityAppointment = {
         id: 12345,
         firstName: 'Jane',
@@ -170,7 +159,6 @@ class MultiPlatformIntegrationTester {
 
       const normalized = await adapter.normalizeAppointment(mockAcuityAppointment, this.barbershopId)
       
-      // Validate normalized data
       this.assert(normalized.id === '12345', 'ID conversion')
       this.assert(normalized.platformId === 'acuity', 'Platform ID')
       this.assert(normalized.client.name === 'Jane Smith', 'Client name combination')
@@ -199,7 +187,6 @@ class MultiPlatformIntegrationTester {
     const testName = 'Square Adapter'
     
     try {
-      // Test normalization with mock Square booking
       const SquareBooking = {
         id: 'BOOKING_123',
         location_id: 'LOCATION_456',
@@ -222,7 +209,6 @@ class MultiPlatformIntegrationTester {
 
       const normalized = await adapter.normalizeAppointment(mockSquareBooking, this.barbershopId)
       
-      // Validate normalized data
       this.assert(normalized.id === 'BOOKING_123', 'ID mapping')
       this.assert(normalized.platformId === 'square', 'Platform ID')
       this.assert(normalized.scheduling.duration === 60, 'Duration extraction')
@@ -244,16 +230,12 @@ class MultiPlatformIntegrationTester {
     console.log('🔄 Testing Sync Orchestrator...')
 
     try {
-      // Create test integrations
       await this.createTestIntegrations()
       
-      // Test rate limiting
       await this.testRateLimiting()
       
-      // Test sync orchestration
       await this.testSyncExecution()
       
-      // Test conflict resolution
       await this.testConflictDetection()
       
     } catch (error) {
@@ -300,14 +282,12 @@ class MultiPlatformIntegrationTester {
     const testName = 'Rate Limiting'
     
     try {
-      // Test rate limit checking
       const googleAllowed = await syncOrchestrator.checkRateLimit('google')
       const trafftAllowed = await syncOrchestrator.checkRateLimit('trafft')
       
       this.assert(googleAllowed === true, 'Google rate limit check - initial')
       this.assert(trafftAllowed === true, 'Trafft rate limit check - initial')
       
-      // Simulate multiple requests
       for (let i = 0; i < 10; i++) {
         syncOrchestrator.updateRateLimit('trafft')
       }
@@ -328,11 +308,8 @@ class MultiPlatformIntegrationTester {
     const testName = 'Sync Execution'
     
     try {
-      // Create mock appointments in database
       await this.createRealAppointments()
       
-      // Test orchestration (would normally call external APIs)
-      // For testing, we'll check the database setup and logic
       
       const integrations = await this.db.allAsync(`
         SELECT * FROM integrations WHERE barbershop_id = ? AND is_active = 1
@@ -340,7 +317,6 @@ class MultiPlatformIntegrationTester {
       
       this.assert(integrations.length === 3, 'Active integrations count')
       
-      // Test date range calculation
       const dateRange = syncOrchestrator.getSyncDateRange(integrations[0], 'incremental')
       this.assert(dateRange.dateFrom && dateRange.dateTo, 'Date range calculation')
       
@@ -441,7 +417,6 @@ class MultiPlatformIntegrationTester {
       }
     ]
 
-    // Get integration IDs
     const integrations = await this.db.allAsync(`
       SELECT id, platform FROM integrations WHERE barbershop_id = ?
     `, [this.barbershopId])
@@ -482,7 +457,6 @@ class MultiPlatformIntegrationTester {
     const testName = 'Conflict Detection'
     
     try {
-      // Check for potential conflicts in our mock data
       const conflicts = await this.db.allAsync(`
         SELECT 
           a1.id as id1, a1.platform_id as platform1,
@@ -512,13 +486,10 @@ class MultiPlatformIntegrationTester {
     console.log('🧠 Testing Business Context Engine...')
     
     try {
-      // Test base data generation
       await this.testBaseDataGeneration()
       
-      // Test insight calculations
       await this.testInsightCalculations()
       
-      // Test agent-specific context
       await this.testAgentContextGeneration()
       
     } catch (error) {
@@ -605,7 +576,6 @@ class MultiPlatformIntegrationTester {
     const testName = 'Integration Workflows'
     
     try {
-      // Test complete workflow: sync → conflict resolution → context generation
       
       // 1. Simulate sync completion
       await this.db.runAsync(`
@@ -640,7 +610,6 @@ class MultiPlatformIntegrationTester {
     const testName = 'Conflict Resolution'
     
     try {
-      // Test platform priority resolution
       const appointment1 = {
         id: 1,
         platformId: 'google',
@@ -655,13 +624,11 @@ class MultiPlatformIntegrationTester {
         payment: { total: 50 }
       }
       
-      // Test platform priority resolver
       const platformResolver = syncOrchestrator.conflictResolvers.get('platform_priority')
       const winner = platformResolver(appointment1, appointment2)
       
       this.assert(winner.platformId === 'trafft', 'Platform priority resolution (Trafft > Google)')
       
-      // Test revenue priority resolver
       const revenueResolver = syncOrchestrator.conflictResolvers.get('revenue_priority')
       const revenueWinner = revenueResolver(appointment1, appointment2)
       
@@ -750,7 +717,6 @@ class MultiPlatformIntegrationTester {
         })
     }
     
-    // Group by category
     const categories = [...new Set(this.testResults.map(r => r.category))]
     console.log('\n📊 Results by Category:')
     categories.forEach(category => {
@@ -777,7 +743,6 @@ class MultiPlatformIntegrationTester {
       this.db.close()
     }
     
-    // Clean up test database file
     if (fs.existsSync(TEST_DATABASE_PATH)) {
       fs.unlinkSync(TEST_DATABASE_PATH)
     }
@@ -786,6 +751,5 @@ class MultiPlatformIntegrationTester {
   }
 }
 
-// Run tests
 const tester = new MultiPlatformIntegrationTester()
 tester.runAllTests().catch(console.error)

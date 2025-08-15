@@ -8,10 +8,8 @@ export async function POST(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    // Get the request body
     const { contextType, contextId } = await request.json()
     
-    // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -21,21 +19,16 @@ export async function POST(request) {
       )
     }
     
-    // Clear context if switching to primary
     if (contextType === 'primary') {
-      // Remove context cookie
       cookieStore.delete('view_context')
       cookieStore.delete('view_context_type')
       
-      // In production, you would also end any active view session in the database
-      // For now, just return success
       return NextResponse.json({ 
         success: true,
         message: 'Switched to primary view'
       })
     }
     
-    // Validate that the user has permission to view as this context
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -49,7 +42,6 @@ export async function POST(request) {
       )
     }
     
-    // Set context cookies
     const response = NextResponse.json({ 
       success: true,
       message: `Switched to ${contextType} view`,
@@ -57,7 +49,6 @@ export async function POST(request) {
       contextType
     })
     
-    // Set secure, httpOnly cookies for context
     response.cookies.set('view_context', contextId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -72,7 +63,6 @@ export async function POST(request) {
       maxAge: 8 * 60 * 60 // 8 hours
     })
     
-    // In production, you would also:
     // 1. Verify the user has access to this specific barber/shop
     // 2. Create a record in user_view_sessions table
     // 3. Log the context switch for audit purposes
@@ -93,7 +83,6 @@ export async function GET(request) {
   try {
     const cookieStore = cookies()
     
-    // Get current context from cookies
     const contextId = cookieStore.get('view_context')?.value
     const contextType = cookieStore.get('view_context_type')?.value
     
@@ -104,8 +93,6 @@ export async function GET(request) {
       })
     }
     
-    // In production, you would fetch the full context details from the database
-    // For now, return the basic context info
     return NextResponse.json({ 
       context: {
         id: contextId,

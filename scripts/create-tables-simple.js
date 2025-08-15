@@ -8,7 +8,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables from .env.local
 const envPath = join(__dirname, '../.env.local')
 try {
   const envContent = readFileSync(envPath, 'utf8')
@@ -34,12 +33,9 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 async function createTables() {
   console.log('🏗️  Creating database tables using Supabase SDK...\n')
   
-  // Just verify we can create some test data for now
-  // Since the calendar system needs data, let's create test data directly
   
   console.log('🔍 Checking if we can work with existing data...')
   
-  // Try to use the existing system tables if they exist
   const testData = {
     barbershops: [
       {
@@ -97,7 +93,6 @@ async function createTables() {
   return testData
 }
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   createTables().catch(console.error)
 }

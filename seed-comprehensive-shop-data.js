@@ -1,5 +1,3 @@
-// Comprehensive Shop Data Seeding Script
-// Creates realistic test data for complete barbershop management system
 
 import { createClient } from '@supabase/supabase-js'
 
@@ -8,7 +6,6 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1Ni
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Helper function to generate random dates
 function randomDate(start, end) {
   return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
 }
@@ -27,7 +24,6 @@ async function seedCompleteShopData() {
     let ownerId = 'test-shop-owner-uuid'
     let shopId
     
-    // Create/verify shop owner exists
     const { data: existingProfile } = await supabase
       .from('profiles')
       .select('id')
@@ -47,7 +43,6 @@ async function seedCompleteShopData() {
         })
     }
     
-    // Create/verify barbershop exists
     const { data: existingShop } = await supabase
       .from('barbershops')
       .select('id')
@@ -118,7 +113,6 @@ async function seedCompleteShopData() {
     ]
     
     for (const barber of barbers) {
-      // Create profile if doesn't exist
       const { data: existingBarber } = await supabase
         .from('profiles')
         .select('id')
@@ -134,7 +128,6 @@ async function seedCompleteShopData() {
           avatar_url: barber.avatar_url
         })
         
-        // Add to barbershop staff
         await supabase.from('barbershop_staff').insert({
           barbershop_id: shopId,
           user_id: barber.id,
@@ -256,7 +249,6 @@ async function seedCompleteShopData() {
     const statuses = ['completed', 'completed', 'completed', 'completed', 'cancelled', 'no_show']
     const paymentMethods = ['cash', 'card', 'card', 'card', 'online']
     
-    // Create appointments over the last 3 months
     for (let i = 0; i < 150; i++) {
       const customer = insertedCustomers[Math.floor(Math.random() * insertedCustomers.length)]
       const service = insertedServices[Math.floor(Math.random() * insertedServices.length)]
@@ -290,7 +282,6 @@ async function seedCompleteShopData() {
       })
     }
     
-    // Add today's appointments
     const today = new Date()
     const todayAppointments = [
       { hour: 9, customer: insertedCustomers[0], service: insertedServices[0], barber: barbers[0], status: 'completed' },
@@ -346,7 +337,6 @@ async function seedCompleteShopData() {
         const commissionAmount = (apt.total_amount * commissionRate) / 100
         const shopAmount = apt.total_amount - commissionAmount
         
-        // Service transaction
         transactions.push({
           barbershop_id: shopId,
           appointment_id: apt.id,
@@ -365,7 +355,6 @@ async function seedCompleteShopData() {
           description: `Service: ${apt.service_name}`
         })
         
-        // Tip transaction if there's a tip
         if (apt.tip_amount > 0) {
           transactions.push({
             barbershop_id: shopId,
@@ -463,5 +452,4 @@ async function seedCompleteShopData() {
   }
 }
 
-// Run the seeding
 seedCompleteShopData()

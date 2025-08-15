@@ -25,7 +25,6 @@ export default function SkipLinks() {
   )
 }
 
-// Higher-order component to wrap page content with proper skip targets
 export function withSkipTargets(WrappedComponent) {
   return function SkipTargetWrapper(props) {
     return (
@@ -40,7 +39,6 @@ export function withSkipTargets(WrappedComponent) {
   }
 }
 
-// Touch-friendly skip link component for mobile
 export function MobileSkipLinks() {
   return (
     <div className="md:hidden sr-only focus-within:not-sr-only">

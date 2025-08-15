@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic'
 
-// Dynamically import AI Business Assistant with real API connections
 const AIAgentChat = dynamic(() => import('@/components/ai/AIAgentChat'), {
   ssr: false,
   loading: () => (

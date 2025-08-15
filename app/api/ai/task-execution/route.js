@@ -155,7 +155,6 @@ export async function GET(request) {
 async function processTriggers(context, userId, businessContext) {
   console.log('🎭 Processing triggers for context:', context)
 
-  // Create comprehensive context for trigger evaluation
   const triggerContext = {
     userId: userId,
     message: context.message,
@@ -182,7 +181,6 @@ async function processTriggers(context, userId, businessContext) {
 async function executeManualTask(context, userId, overrideSafety, approvedBy) {
   console.log('🔧 Executing manual task:', context)
 
-  // Create manual trigger
   const manualTrigger = {
     type: 'manual',
     requestedBy: userId,
@@ -202,7 +200,6 @@ async function executeManualTask(context, userId, overrideSafety, approvedBy) {
   const task = await automatedTaskExecutionService.createTask(manualTrigger, triggerContext)
   
   if (overrideSafety && approvedBy) {
-    // Bypass safety for approved manual tasks
     task.requiresApproval = false
   }
 

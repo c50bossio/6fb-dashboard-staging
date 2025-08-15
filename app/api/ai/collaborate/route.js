@@ -28,10 +28,8 @@ export async function POST(request) {
       forceCollaboration
     })
 
-    // Fetch current business data for context
     const businessData = await fetchBusinessData(barbershopId)
 
-    // Check if collaboration is needed
     const complexityAnalysis = multiAgentCollaboration.analyzeQueryComplexity(query)
     
     if (!complexityAnalysis.requiresCollaboration && !forceCollaboration) {
@@ -43,7 +41,6 @@ export async function POST(request) {
       })
     }
 
-    // Orchestrate multi-agent collaboration
     const collaborationResult = await multiAgentCollaboration.orchestrateCollaboration(
       query,
       context,
@@ -57,7 +54,6 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    // Format the collaborative response
     const response = {
       success: true,
       collaborationRequired: true,
@@ -152,11 +148,9 @@ async function fetchBusinessData(barbershopId) {
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:9999'
   
   try {
-    // Fetch analytics data
     const analyticsRes = await fetch(`${baseUrl}/api/analytics/live-data?barbershop_id=${barbershopId}`)
     const analyticsData = await analyticsRes.json()
     
-    // Compile business context
     return {
       revenue: {
         daily: analyticsData.data?.daily_revenue || 420,
@@ -190,7 +184,6 @@ async function fetchBusinessData(barbershopId) {
   } catch (error) {
     console.error('Failed to fetch business data:', error)
     
-    // Return default data
     return {
       revenue: { daily: 400, monthly: 8000, margin: 60, average: 40 },
       customers: { total: 100, retention: 65, cac: 30 },

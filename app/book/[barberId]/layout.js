@@ -2,7 +2,6 @@ import { generateBarberMetadata, generateStructuredData } from '../../../lib/seo
 
 export async function generateMetadata({ params, searchParams }) {
   try {
-    // In production, fetch real barber data from API
     const Barber = {
       id: params.barberId,
       name: 'Marcus Johnson',
@@ -48,7 +47,6 @@ export async function generateMetadata({ params, searchParams }) {
 }
 
 export default function BookingLayout({ children, params }) {
-  // Generate structured data for the page
   const structuredData = generateStructuredData({
     id: params.barberId,
     name: 'Marcus Johnson',

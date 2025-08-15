@@ -12,27 +12,23 @@ export default function BookingSuccessPage() {
   const [addedToCalendar, setAddedToCalendar] = useState(false)
   
   useEffect(() => {
-    // Trigger confetti animation
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 }
     })
     
-    // Load booking details
     loadBooking()
   }, [])
   
   const loadBooking = async () => {
     try {
-      // Fetch booking from API
       const response = await fetch(`/api/bookings/${params.id}`)
       
       if (response.ok) {
         const data = await response.json()
         setBooking(data)
       } else {
-        // If booking not found, show empty state
         console.error('Booking not found')
         setBooking(null)
       }
@@ -48,7 +44,6 @@ export default function BookingSuccessPage() {
     const startDate = new Date(booking.dateTime)
     const endDate = new Date(startDate.getTime() + booking.service.duration * 60000)
     
-    // Format for Google Calendar
     const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
       `Barbershop Appointment - ${booking.service.name}`
     )}&dates=${startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}/${endDate

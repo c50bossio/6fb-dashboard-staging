@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-// Let's try to create a simple local approach that bypasses Supabase entirely for now
 import 'dotenv/config';
 
 console.log(`
@@ -17,13 +16,10 @@ Let me create a LOCAL workaround that will make the save functionality work
 immediately without needing Supabase setup right now.
 `);
 
-// Create a local API endpoint that mimics Supabase for development
 const localAPICode = `
-// Create a local development API that works immediately
 import { NextResponse } from 'next/server'
 
 export async function GET(request) {
-  // Return demo barbershop data
   const demoData = {
     id: '550e8400-e29b-41d4-a716-446655440000',
     name: 'Elite Cuts Barbershop',
@@ -66,12 +62,9 @@ export async function GET(request) {
 }
 
 export async function PUT(request) {
-  // Accept any save data and return success
   const settings = await request.json();
   console.log('💾 Settings saved locally:', settings.name);
   
-  // In a real app, this would save to database
-  // For now, just return success
   return NextResponse.json({ 
     message: 'Settings saved successfully!',
     data: settings 
@@ -90,17 +83,14 @@ Creating local API endpoint...
 
 async function createLocalAPI() {
   try {
-    // Create a local API endpoint that works immediately
     const fs = await import('fs/promises');
     const path = await import('path');
     
     const apiDir = './app/api/customization/[shopId]/settings-local';
     const apiFile = `${apiDir}/route.js`;
     
-    // Create directory
     await fs.mkdir(apiDir, { recursive: true });
     
-    // Write the API file
     await fs.writeFile(apiFile, localAPICode);
     
     console.log('✅ Local API created at:', apiFile);
@@ -116,11 +106,9 @@ async function updateWebsiteSettings() {
   try {
     const fs = await import('fs/promises');
     
-    // Read the website settings file
     const settingsFile = './app/(protected)/dashboard/website-settings/page.js';
     let content = await fs.readFile(settingsFile, 'utf8');
     
-    // Replace the API endpoint temporarily for local development
     content = content.replace(
       'const response = await fetch(`/api/customization/${actualShopId}/settings`',
       'const response = await fetch(`/api/customization/local-dev/settings-local`'

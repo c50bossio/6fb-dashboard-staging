@@ -27,7 +27,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
 
-  // Get plan data from URL params
   const planId = searchParams.get('plan') || 'shop'
   const billingPeriod = searchParams.get('billing') || 'monthly'
   const selectedPlan = PLANS[planId]
@@ -78,7 +77,6 @@ export default function RegisterPage() {
       setLoading(true)
       console.log('📧 Creating account for:', formData.email)
       
-      // Create account with Supabase
       const { user } = await signUp({
         email: formData.email,
         password: formData.password,
@@ -93,7 +91,6 @@ export default function RegisterPage() {
       
       console.log('✅ Account created:', user?.email)
       
-      // Redirect to Stripe checkout
       const checkoutUrl = `/api/stripe/checkout?plan=${planId}&billing=${billingPeriod}`
       console.log('🔄 Redirecting to checkout:', checkoutUrl)
       window.location.href = checkoutUrl
@@ -109,7 +106,6 @@ export default function RegisterPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }

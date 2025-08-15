@@ -16,10 +16,8 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
   
   const loadServices = async () => {
     try {
-      // Get barber-specific services with their custom durations and prices
       const barberServices = bookingData.barberDetails?.services || []
       
-      // If "Any Barber" is selected, show standard services
       const standardServices = [
         {
           id: 'srv_1',
@@ -93,7 +91,6 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
         }
       ]
       
-      // If specific barber selected, use their services with custom durations
       let finalServices = standardServices
       
       if (barberServices.length > 0 && !bookingData.barberDetails?.isAnyBarber) {
@@ -113,7 +110,6 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
         }).filter(service => barberServices.some(bs => bs.id === service.id))
       }
       
-      // Add-on services
       const addOnServices = [
         {
           id: 'addon_1',
@@ -159,7 +155,6 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
       
       setServices(finalServices)
       
-      // Store add-ons separately for easy access
       window.availableAddOns = addOnServices
       
       setLoading(false)
@@ -211,7 +206,6 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
     }
   }
   
-  // Group services by category
   const groupedServices = services.reduce((acc, service) => {
     if (!acc[service.category]) {
       acc[service.category] = []

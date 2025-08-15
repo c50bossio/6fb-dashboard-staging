@@ -11,7 +11,6 @@ const supabase = createClient(
 async function checkDatabase() {
   console.log('🔍 Checking database contents...\n');
   
-  // Check barbers
   const { data: barbers, error: barbersError } = await supabase
     .from('barbers')
     .select('*')
@@ -27,7 +26,6 @@ async function checkDatabase() {
     console.log('   No barbers found');
   }
   
-  // Check services
   const { data: services, error: servicesError } = await supabase
     .from('services')
     .select('*')
@@ -43,7 +41,6 @@ async function checkDatabase() {
     console.log('   No services found');
   }
   
-  // Check customers
   const { data: customers, error: customersError } = await supabase
     .from('customers')
     .select('*')
@@ -59,7 +56,6 @@ async function checkDatabase() {
     console.log('   No customers found');
   }
   
-  // Check bookings
   const { data: bookings, error: bookingsError } = await supabase
     .from('bookings')
     .select('*')
@@ -77,16 +73,13 @@ async function checkDatabase() {
     console.log('   No bookings found');
   }
   
-  // Try to list all tables
   console.log('\n📊 Available tables in database:');
   const { data: tables, error: tablesError } = await supabase
     .rpc('get_tables', {});
   
   if (tablesError) {
-    // Try alternate method
     console.log('   Using alternate method to check tables...');
     
-    // Test each table we expect
     const expectedTables = ['barbers', 'services', 'customers', 'bookings', 'profiles', 'appointments'];
     for (const table of expectedTables) {
       const { count, error } = await supabase

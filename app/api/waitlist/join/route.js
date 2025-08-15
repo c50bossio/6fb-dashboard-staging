@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 export const runtime = 'edge'
-// TODO: Implement waitlist service in JavaScript/TypeScript
-// import { waitlist_cancellation_service } from '../../../../services/waitlist_cancellation_service.py';
 
 /**
  * @swagger
@@ -98,7 +96,6 @@ export async function POST(request) {
     try {
         const body = await request.json();
         
-        // Validate required fields
         const requiredFields = ['customer_id', 'barbershop_id', 'service_id'];
         const missingFields = requiredFields.filter(field => !body[field]);
         
@@ -112,13 +109,11 @@ export async function POST(request) {
             );
         }
         
-        // Parse dates if provided
         let preferred_dates = null;
         if (body.preferred_dates && Array.isArray(body.preferred_dates)) {
             preferred_dates = body.preferred_dates.map(date => new Date(date));
         }
         
-        // Use real database operations for waitlist - NO MOCK DATA
         const { createClient } = await import('@supabase/supabase-js');
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -126,7 +121,6 @@ export async function POST(request) {
         );
         
         try {
-            // Check if customer is already on waitlist for this service
             const { data: existingEntry } = await supabase
                 .from('waitlist')
                 .select('id, position')
@@ -144,7 +138,6 @@ export async function POST(request) {
                 }, { status: 400 });
             }
             
-            // Get current waitlist count to determine position
             const { count: currentCount } = await supabase
                 .from('waitlist')
                 .select('id', { count: 'exact', head: true })
@@ -152,10 +145,8 @@ export async function POST(request) {
                 .eq('service_id', body.service_id)
                 .eq('status', 'active');
             
-            // Calculate position (urgent priority goes first)
             const position = body.priority === 'urgent' ? 1 : (currentCount || 0) + 1;
             
-            // Create waitlist entry
             const { data: waitlistEntry, error } = await supabase
                 .from('waitlist')
                 .insert([{
@@ -184,7 +175,6 @@ export async function POST(request) {
                 throw error;
             }
             
-            // Calculate estimated wait time based on position and historical data
             const estimated_wait_time = position <= 3 ? '1-2 days' : position <= 7 ? '2-4 days' : '5-7 days';
             
             const result = {

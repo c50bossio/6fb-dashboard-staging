@@ -23,7 +23,6 @@ export function VoiceAssistant({
   const recognitionRef = useRef(null)
   const timeoutRef = useRef(null)
   
-  // Check browser support
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     const speechSynthesis = window.speechSynthesis
@@ -46,7 +45,6 @@ export function VoiceAssistant({
     }
   }, [])
   
-  // Initialize speech recognition
   const initializeRecognition = (SpeechRecognition) => {
     const recognition = new SpeechRecognition()
     
@@ -62,7 +60,6 @@ export function VoiceAssistant({
       setTranscript('')
       if (onListeningChange) onListeningChange(true)
       
-      // Auto-stop after 10 seconds of silence
       timeoutRef.current = setTimeout(() => {
         stopListening()
       }, 10000)
@@ -78,7 +75,6 @@ export function VoiceAssistant({
       setTranscript(transcriptText)
       setConfidence(confidenceScore)
       
-      // If final result, send to AI
       if (event.results[current].isFinal) {
         console.log('📝 Final transcript:', transcriptText, 'Confidence:', confidenceScore)
         if (onTranscript && transcriptText.trim().length > 0) {
@@ -86,7 +82,6 @@ export function VoiceAssistant({
         }
         stopListening()
       } else {
-        // Reset timeout for interim results
         timeoutRef.current = setTimeout(() => {
           stopListening()
         }, 3000)
@@ -126,7 +121,6 @@ export function VoiceAssistant({
     recognitionRef.current = recognition
   }
   
-  // Start listening
   const startListening = async () => {
     if (!isSupported || !recognitionRef.current) {
       setError('Voice features not available')
@@ -134,7 +128,6 @@ export function VoiceAssistant({
     }
     
     try {
-      // Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true })
       
       setError(null)
@@ -145,7 +138,6 @@ export function VoiceAssistant({
     }
   }
   
-  // Stop listening
   const stopListening = () => {
     if (recognitionRef.current && isListening) {
       recognitionRef.current.stop()
@@ -153,7 +145,6 @@ export function VoiceAssistant({
     }
   }
   
-  // Speak agent response
   useEffect(() => {
     if (agentResponse && autoSpeak && isSupported && !isSpeaking) {
       speakResponse(agentResponse)
@@ -163,19 +154,16 @@ export function VoiceAssistant({
   const speakResponse = (text) => {
     if (!window.speechSynthesis) return
     
-    // Cancel any ongoing speech
     window.speechSynthesis.cancel()
     
     const utterance = new SpeechSynthesisUtterance(text)
     
-    // Set voice based on agent type
     const voices = window.speechSynthesis.getVoices()
     const agentVoice = selectAgentVoice(voices, agentType)
     if (agentVoice) {
       utterance.voice = agentVoice
     }
     
-    // Set voice parameters based on agent personality
     const voiceParams = getVoiceParameters(agentType)
     utterance.rate = voiceParams.rate
     utterance.pitch = voiceParams.pitch
@@ -199,7 +187,6 @@ export function VoiceAssistant({
     window.speechSynthesis.speak(utterance)
   }
   
-  // Select appropriate voice for agent
   const selectAgentVoice = (voices, agent) => {
     const agentVoicePreferences = {
       marcus: ['Google US English Male', 'Microsoft David', 'Alex'],
@@ -215,11 +202,9 @@ export function VoiceAssistant({
       if (voice) return voice
     }
     
-    // Fallback to first available voice
     return voices.find(v => v.lang.startsWith('en')) || voices[0]
   }
   
-  // Get voice parameters for agent personality
   const getVoiceParameters = (agent) => {
     const parameters = {
       marcus: { rate: 0.9, pitch: 1.0, volume: 1.0 },  // Analytical, measured
@@ -231,7 +216,6 @@ export function VoiceAssistant({
     return parameters[agent] || parameters.master_coach
   }
   
-  // Stop speaking
   const stopSpeaking = () => {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel()
@@ -239,7 +223,6 @@ export function VoiceAssistant({
     }
   }
   
-  // Toggle listening
   const toggleListening = () => {
     if (isListening) {
       stopListening()
@@ -248,7 +231,6 @@ export function VoiceAssistant({
     }
   }
   
-  // UI Component
   return (
     <div className="voice-assistant">
       <div className="flex items-center space-x-4">

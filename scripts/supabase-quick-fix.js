@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-// Quick fix using direct HTTP requests to Supabase REST API
 import 'dotenv/config';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -128,7 +127,6 @@ async function testRead() {
 async function main() {
   console.log('🚀 Starting quick database setup...\n');
 
-  // Test if we can read first (to see if table exists)
   const canRead = await testRead();
   
   if (!canRead) {

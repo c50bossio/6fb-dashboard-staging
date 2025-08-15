@@ -7,12 +7,10 @@ export default function TestVoicePage() {
   const [testResults, setTestResults] = useState([])
   const [isTestingBrowser, setIsTestingBrowser] = useState(false)
 
-  // Test browser compatibility
   const testBrowserSupport = () => {
     setIsTestingBrowser(true)
     const results = []
 
-    // Test Speech Recognition
     const hasSpeechRecognition = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
     results.push({
       feature: 'Speech Recognition',
@@ -20,7 +18,6 @@ export default function TestVoicePage() {
       status: hasSpeechRecognition ? '✅ Supported' : '❌ Not Supported'
     })
 
-    // Test Speech Synthesis
     const hasSpeechSynthesis = 'speechSynthesis' in window
     results.push({
       feature: 'Speech Synthesis',
@@ -28,7 +25,6 @@ export default function TestVoicePage() {
       status: hasSpeechSynthesis ? '✅ Supported' : '❌ Not Supported'
     })
 
-    // Test Microphone API
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(() => {
@@ -55,7 +51,6 @@ export default function TestVoicePage() {
       })
     }
 
-    // List available voices
     if (hasSpeechSynthesis) {
       const voices = speechSynthesis.getVoices()
       results.push({
@@ -69,7 +64,6 @@ export default function TestVoicePage() {
     setIsTestingBrowser(false)
   }
 
-  // Test voice commands
   const testCommands = [
     { command: "Hey Marcus, what's my revenue?", agent: 'Marcus', category: 'Financial' },
     { command: "Sophia, marketing ideas", agent: 'Sophia', category: 'Marketing' },

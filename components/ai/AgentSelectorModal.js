@@ -43,11 +43,9 @@ export default function AgentSelectorModal({
     try {
       setLoading(true)
       
-      // Get agent metrics from router
       const metrics = agentRouter.getAgentMetrics()
       const agentList = Array.from(agentRouter.agents.values())
       
-      // Combine agent data with metrics
       const enrichedAgents = agentList.map(agent => ({
         ...agent,
         metrics: metrics[agent.id] || {}

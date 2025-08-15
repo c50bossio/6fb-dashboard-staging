@@ -105,11 +105,9 @@ export async function GET(request) {
             );
         }
         
-        // Parse dates or use defaults
         const startDate = start_date ? new Date(start_date) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const endDate = end_date ? new Date(end_date) : new Date();
         
-        // Get all waitlist entries from database - NO MOCK DATA
         const { data: waitlistEntries, error: waitlistError } = await supabase
             .from('waitlist')
             .select(`
@@ -127,14 +125,12 @@ export async function GET(request) {
         
         const entries = waitlistEntries || [];
         
-        // Calculate waitlist statistics from real data
         const totalEntries = entries.length;
         const successfulMatches = entries.filter(e => e.status === 'matched' || e.status === 'booked').length;
         const expiredEntries = entries.filter(e => e.status === 'expired').length;
         const cancelledEntries = entries.filter(e => e.status === 'cancelled').length;
         const currentWaitlist = entries.filter(e => e.status === 'waiting').length;
         
-        // Calculate average wait time for matched customers
         const matchedEntries = entries.filter(e => e.matched_at);
         const waitTimes = matchedEntries.map(e => {
             const created = new Date(e.created_at);
@@ -145,7 +141,6 @@ export async function GET(request) {
             ? waitTimes.reduce((sum, time) => sum + time, 0) / waitTimes.length 
             : 0;
         
-        // Get revenue from waitlist bookings
         const { data: waitlistBookings } = await supabase
             .from('bookings')
             .select('total_amount')
@@ -158,7 +153,6 @@ export async function GET(request) {
         const revenueFromWaitlist = (waitlistBookings || [])
             .reduce((sum, b) => sum + (b.total_amount || 0), 0);
         
-        // Get cancellation statistics
         const { data: cancellations } = await supabase
             .from('cancellations')
             .select('refund_amount, cancellation_fee')
@@ -173,7 +167,6 @@ export async function GET(request) {
             ? (cancellations || []).reduce((sum, c) => sum + (c.cancellation_fee || 0), 0) / totalCancellations
             : 0;
         
-        // Calculate peak waitlist hours
         const hourCounts = {};
         entries.forEach(e => {
             const hour = new Date(e.created_at).getHours();
@@ -189,7 +182,6 @@ export async function GET(request) {
             .sort((a, b) => b.count - a.count)
             .slice(0, 4);
         
-        // Calculate peak waitlist days
         const dayCounts = {};
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         entries.forEach(e => {
@@ -207,7 +199,6 @@ export async function GET(request) {
             .sort((a, b) => b.count - a.count)
             .slice(0, 4);
         
-        // Calculate most requested services
         const serviceCounts = {};
         entries.forEach(e => {
             if (e.service_id) {
@@ -243,7 +234,6 @@ export async function GET(request) {
             .sort((a, b) => b.count - a.count)
             .slice(0, 3);
         
-        // Calculate weekly comparison
         const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
         
@@ -326,7 +316,6 @@ export async function GET(request) {
             data_available: totalEntries > 0
         };
         
-        // Generate recommendations based on real data
         if (totalEntries > 0) {
             if (peakDays.length > 0 && peakDays[0].percentage > 30) {
                 analytics.recommendations.push({

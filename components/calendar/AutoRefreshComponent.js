@@ -21,7 +21,6 @@ export default function AutoRefreshComponent({ onRefresh, intervalMs = 5000 }) {
       console.log('🔄 ENHANCED Auto-refresh: Starting check #' + (refreshCount + 1))
       
       try {
-        // Call the refresh function
         if (onRefresh) {
           await onRefresh()
           console.log('🔄 ENHANCED Auto-refresh: Completed successfully in', Date.now() - startTime, 'ms')

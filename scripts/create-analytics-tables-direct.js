@@ -31,7 +31,6 @@ async function checkAndCreateTables() {
   
   for (const tableName of tables) {
     try {
-      // Try to query the table with limit 0 to check if it exists
       const { error } = await supabase
         .from(tableName)
         .select('*')
@@ -67,7 +66,6 @@ async function checkAndCreateTables() {
     console.log('3. Copy the SQL from database/analytics-schema.sql')
     console.log('4. Run the SQL to create the missing tables')
     
-    // Generate SQL for only missing tables
     generateSQLForMissingTables(missingTables)
   } else {
     console.log('\n✨ All analytics tables exist! You can now run:')
@@ -244,7 +242,6 @@ CREATE TABLE IF NOT EXISTS realtime_metrics (
 );`
   }
   
-  // Print SQL for only missing tables
   missingTables.forEach(tableName => {
     if (tableDefs[tableName]) {
       console.log(tableDefs[tableName])

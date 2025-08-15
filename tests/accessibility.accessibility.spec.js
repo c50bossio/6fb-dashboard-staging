@@ -9,13 +9,10 @@ import AxeBuilder from '@axe-core/playwright'
 
 test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () => {
   test.beforeEach(async ({ page }) => {
-    // Configure axe for comprehensive testing
     await page.addInitScript(() => {
-      // Add axe configuration
       if (typeof window !== 'undefined') {
         window.axeConfig = {
           rules: {
-            // Enable all WCAG 2.2 AA rules
             'color-contrast': { enabled: true },
             'keyboard-navigation': { enabled: true },
             'focus-management': { enabled: true },
@@ -23,7 +20,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
             'semantic-markup': { enabled: true }
           },
           tags: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'],
-          // Test best practices as well
           includeTags: ['best-practice']
         }
       }
@@ -33,21 +29,17 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
   test('homepage meets WCAG 2.2 AA standards', async ({ page }) => {
     await page.goto('/')
     
-    // Run automated accessibility scan
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
       .analyze()
 
     expect(accessibilityScanResults.violations).toEqual([])
 
-    // Manual checks for common issues
     await test.step('Keyboard navigation', async () => {
-      // Test tab navigation
       await page.keyboard.press('Tab')
       const focusedElement = await page.locator(':focus').first()
       await expect(focusedElement).toBeVisible()
       
-      // Ensure focus indicators are visible
       const focusOutline = await focusedElement.evaluate(el => 
         window.getComputedStyle(el).outline
       )
@@ -55,14 +47,11 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     })
 
     await test.step('Semantic structure', async () => {
-      // Check for proper heading hierarchy
       const headings = await page.locator('h1, h2, h3, h4, h5, h6').all()
       expect(headings.length).toBeGreaterThan(0)
       
-      // Ensure main landmark exists
       await expect(page.locator('main')).toBeVisible()
       
-      // Check for skip links
       const skipLink = page.locator('a[href="#main-content"], a[href="#main"]').first()
       if (await skipLink.count() > 0) {
         await expect(skipLink).toHaveAttribute('href')
@@ -73,7 +62,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
   test('dashboard accessibility compliance', async ({ page }) => {
     await page.goto('/dashboard')
     
-    // Wait for dynamic content
     await page.waitForSelector('[data-testid="dashboard-content"]')
     
     const accessibilityScanResults = await new AxeBuilder({ page })
@@ -83,7 +71,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     expect(accessibilityScanResults.violations).toEqual([])
 
     await test.step('Navigation accessibility', async () => {
-      // Test main navigation
       const navItems = page.locator('[role="navigation"] a, nav a')
       const navCount = await navItems.count()
       
@@ -91,7 +78,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
         const navItem = navItems.nth(i)
         await expect(navItem).toHaveAttribute('href')
         
-        // Check for accessible names
         const accessibleName = await navItem.evaluate(el => 
           el.textContent || el.getAttribute('aria-label') || el.getAttribute('title')
         )
@@ -100,14 +86,12 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     })
 
     await test.step('Data visualization accessibility', async () => {
-      // Check charts and graphs have text alternatives
       const charts = page.locator('[data-testid*="chart"], .chart, [role="img"]')
       const chartCount = await charts.count()
       
       for (let i = 0; i < chartCount; i++) {
         const chart = charts.nth(i)
         
-        // Charts should have alt text or aria-label
         const hasAltText = await chart.evaluate(el => 
           el.getAttribute('alt') || 
           el.getAttribute('aria-label') || 
@@ -121,7 +105,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     })
 
     await test.step('Color contrast validation', async () => {
-      // Check specific high-contrast elements
       const criticalElements = [
         '[data-testid="primary-button"]',
         '[data-testid="nav-link"]',
@@ -136,8 +119,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
             const bgColor = style.backgroundColor
             const textColor = style.color
             
-            // This is a simplified check - in real implementation,
-            // you'd use a proper contrast ratio calculation
             return { bgColor, textColor }
           })
           
@@ -151,7 +132,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
   test('booking flow accessibility', async ({ page }) => {
     await page.goto('/booking')
     
-    // Test each step of the booking flow
     await test.step('Step 1: Service selection accessibility', async () => {
       await page.waitForSelector('[data-testid="service-grid"]')
       
@@ -161,16 +141,13 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
       
       expect(scanResults.violations).toEqual([])
 
-      // Test service selection with keyboard
       const firstService = page.locator('[data-testid^="service-"]').first()
       await firstService.focus()
       await expect(firstService).toBeFocused()
       
-      // Select with Enter key
       await page.keyboard.press('Enter')
       await expect(firstService).toHaveClass(/selected/)
       
-      // Test barber selection
       const firstBarber = page.locator('[data-testid^="barber-"]').first()
       await firstBarber.focus()
       await page.keyboard.press('Enter')
@@ -181,24 +158,19 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
       await page.click('[data-testid="next-button"]')
       await page.waitForSelector('[data-testid="date-picker"]')
       
-      // Check date picker accessibility
       const datePicker = page.locator('[data-testid="date-picker"]')
       await expect(datePicker).toHaveAttribute('role')
       
-      // Test keyboard navigation in date picker
       const firstDate = page.locator('[data-testid^="date-"]').first()
       await firstDate.focus()
       await expect(firstDate).toBeFocused()
       
-      // Navigate with arrow keys
       await page.keyboard.press('ArrowRight')
       const nextDate = page.locator(':focus')
       await expect(nextDate).toBeVisible()
       
-      // Select date with Enter
       await page.keyboard.press('Enter')
       
-      // Test time slot selection
       await page.waitForSelector('[data-testid="time-slots"]')
       const firstTimeSlot = page.locator('[data-testid^="time-slot-"]').first()
       await firstTimeSlot.focus()
@@ -209,7 +181,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
       await page.click('[data-testid="next-button"]')
       await page.waitForSelector('[data-testid="booking-summary"]')
       
-      // Test form labels and associations
       const formFields = [
         '[data-testid="client-name"]',
         '[data-testid="client-email"]',
@@ -219,7 +190,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
       for (const fieldSelector of formFields) {
         const field = page.locator(fieldSelector)
         if (await field.count() > 0) {
-          // Check for proper labeling
           const hasLabel = await field.evaluate(el => {
             const id = el.id
             const ariaLabel = el.getAttribute('aria-label')
@@ -233,16 +203,13 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
         }
       }
 
-      // Test form validation accessibility
       await page.fill('[data-testid="client-email"]', 'invalid-email')
       await page.blur('[data-testid="client-email"]')
       
-      // Check for accessible error messages
       const errorMessage = page.locator('[data-testid="email-error"], [role="alert"]')
       if (await errorMessage.count() > 0) {
         await expect(errorMessage).toBeVisible()
         
-        // Error should be associated with field
         const errorId = await errorMessage.getAttribute('id')
         if (errorId) {
           const field = page.locator('[data-testid="client-email"]')
@@ -264,16 +231,13 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     expect(scanResults.violations).toEqual([])
 
     await test.step('Agent selection accessibility', async () => {
-      // Test agent cards are keyboard accessible
       const firstAgent = page.locator('[data-testid^="agent-"]').first()
       await firstAgent.focus()
       await expect(firstAgent).toBeFocused()
       
-      // Select agent with keyboard
       await page.keyboard.press('Enter')
       await page.waitForSelector('[data-testid="chat-interface"]')
       
-      // Check chat interface accessibility
       const messageInput = page.locator('[data-testid="message-input"]')
       await expect(messageInput).toHaveAttribute('aria-label')
       
@@ -282,22 +246,17 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     })
 
     await test.step('Chat accessibility', async () => {
-      // Test chat message accessibility
       await page.fill('[data-testid="message-input"]', 'Test accessibility message')
       await page.click('[data-testid="send-button"]')
       
-      // Wait for response
       await page.waitForSelector('[data-testid="agent-response"]', { timeout: 10000 })
       
-      // Check message structure
       const userMessage = page.locator('[data-testid="user-message"]').first()
       const agentResponse = page.locator('[data-testid="agent-response"]').first()
       
-      // Messages should have appropriate roles or labels
       await expect(userMessage).toBeVisible()
       await expect(agentResponse).toBeVisible()
       
-      // Check for proper labeling of message authors
       const userMessageAuthor = await userMessage.evaluate(el => 
         el.getAttribute('aria-label') || 
         el.querySelector('[data-testid="message-author"]')?.textContent
@@ -309,24 +268,20 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
   test('modal and overlay accessibility', async ({ page }) => {
     await page.goto('/dashboard/integrations')
     
-    // Open an integration modal
     await page.click('[data-testid="integration-trafft"]')
     await page.waitForSelector('[data-testid="trafft-config-modal"]')
     
     await test.step('Modal accessibility standards', async () => {
       const modal = page.locator('[data-testid="trafft-config-modal"]')
       
-      // Modal should have proper role
       await expect(modal).toHaveAttribute('role', 'dialog')
       
-      // Modal should have accessible name
       const hasAccessibleName = await modal.evaluate(el => 
         el.getAttribute('aria-label') || 
         el.getAttribute('aria-labelledby')
       )
       expect(hasAccessibleName).toBeTruthy()
       
-      // Focus should be trapped in modal
       await page.keyboard.press('Tab')
       const focusedElement = page.locator(':focus')
       const isInModal = await focusedElement.evaluate((el, modalElement) => 
@@ -334,7 +289,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
       )
       expect(isInModal).toBe(true)
       
-      // Close button should be accessible
       const closeButton = page.locator('[data-testid="modal-close"], [aria-label*="close"], [title*="close"]')
       if (await closeButton.count() > 0) {
         await expect(closeButton.first()).toBeVisible()
@@ -342,11 +296,9 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     })
 
     await test.step('Modal keyboard navigation', async () => {
-      // Test Escape key closes modal
       await page.keyboard.press('Escape')
       await expect(page.locator('[data-testid="trafft-config-modal"]')).not.toBeVisible()
       
-      // Focus should return to trigger element
       const triggerButton = page.locator('[data-testid="integration-trafft"]')
       await expect(triggerButton).toBeFocused()
     })
@@ -364,7 +316,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
         await page.setViewportSize({ width: viewport.width, height: viewport.height })
         await page.goto('/dashboard')
         
-        // Touch targets should be at least 44x44px on mobile
         if (viewport.name === 'mobile') {
           const buttons = page.locator('button, a, [role="button"]')
           const buttonCount = await buttons.count()
@@ -381,7 +332,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
           }
         }
         
-        // Run accessibility scan for each viewport
         const scanResults = await new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa'])
           .analyze()
@@ -395,7 +345,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     await page.goto('/dashboard')
     
     await test.step('ARIA landmarks and structure', async () => {
-      // Check for proper landmark roles
       const landmarks = [
         { selector: 'main', role: 'main' },
         { selector: 'nav', role: 'navigation' },
@@ -413,7 +362,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     })
 
     await test.step('Heading structure', async () => {
-      // Check heading hierarchy
       const headings = await page.locator('h1, h2, h3, h4, h5, h6').all()
       const headingLevels = []
       
@@ -423,10 +371,8 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
         headingLevels.push(level)
       }
       
-      // Should start with h1
       expect(headingLevels[0]).toBe(1)
       
-      // No skipped levels (simplified check)
       for (let i = 1; i < headingLevels.length; i++) {
         const diff = headingLevels[i] - headingLevels[i - 1]
         expect(diff).toBeLessThanOrEqual(1)
@@ -434,15 +380,12 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     })
 
     await test.step('Live regions', async () => {
-      // Check for proper live regions for dynamic content
       await page.goto('/dashboard/agents')
       await page.click('[data-testid="agent-financial"]')
       
-      // Send a message to trigger dynamic updates
       await page.fill('[data-testid="message-input"]', 'Test message')
       await page.click('[data-testid="send-button"]')
       
-      // Check for live region announcements
       const liveRegions = page.locator('[aria-live], [role="status"], [role="alert"]')
       const liveRegionCount = await liveRegions.count()
       
@@ -457,7 +400,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
   test('form accessibility and validation', async ({ page }) => {
     await page.goto('/booking')
     
-    // Navigate to form step
     await page.click('[data-testid="service-haircut-classic"]')
     await page.click('[data-testid="barber-john-smith"]')
     await page.click('[data-testid="next-button"]')
@@ -480,18 +422,15 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
       for (const field of formFields) {
         const element = page.locator(field.selector)
         if (await element.count() > 0) {
-          // Check input type
           const inputType = await element.getAttribute('type')
           expect(inputType).toBe(field.type)
           
-          // Check for required attribute if applicable
           const isRequired = await element.getAttribute('required')
           if (isRequired !== null) {
             const ariaRequired = await element.getAttribute('aria-required')
             expect(ariaRequired).toBe('true')
           }
           
-          // Check autocomplete attributes
           const autocomplete = await element.getAttribute('autocomplete')
           expect(autocomplete).toBeTruthy()
         }
@@ -499,10 +438,8 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     })
 
     await test.step('Error message accessibility', async () => {
-      // Trigger validation errors
       await page.click('[data-testid="complete-booking-button"]')
       
-      // Check error messages are properly associated
       const errorMessages = page.locator('[role="alert"], [data-testid*="error"]')
       const errorCount = await errorMessages.count()
       
@@ -510,7 +447,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
         const error = errorMessages.nth(i)
         await expect(error).toBeVisible()
         
-        // Error should have proper role or aria-live
         const role = await error.getAttribute('role')
         const ariaLive = await error.getAttribute('aria-live')
         
@@ -520,7 +456,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
   })
 
   test('high contrast mode support', async ({ page }) => {
-    // Simulate high contrast mode
     await page.emulateMedia({ 
       colorScheme: 'dark',
       reducedMotion: 'reduce'
@@ -545,14 +480,12 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
     
     await page.goto('/dashboard')
     
-    // Run accessibility scan in high contrast mode
     const scanResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])
       .analyze()
     
     expect(scanResults.violations).toEqual([])
     
-    // Check that interactive elements are still visible
     const interactiveElements = page.locator('button, a, input, select, textarea')
     const elementCount = await interactiveElements.count()
     
@@ -565,19 +498,16 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
   })
 
   test('reduced motion accessibility', async ({ page }) => {
-    // Simulate reduced motion preference
     await page.emulateMedia({ reducedMotion: 'reduce' })
     
     await page.goto('/dashboard')
     
-    // Check that animations respect reduced motion
     const animatedElements = page.locator('[data-testid*="animated"], .animate-')
     const animatedCount = await animatedElements.count()
     
     for (let i = 0; i < animatedCount; i++) {
       const element = animatedElements.nth(i)
       
-      // Check CSS for animation properties
       const animations = await element.evaluate(el => {
         const style = window.getComputedStyle(el)
         return {
@@ -586,7 +516,6 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
         }
       })
       
-      // In reduced motion mode, animations should be minimal
       expect(animations.animationDuration === '0s' || 
              animations.animationDuration === 'none').toBe(true)
     }
@@ -619,11 +548,9 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
         incomplete: scanResults.incomplete.length
       })
       
-      // All pages should have zero violations
       expect(scanResults.violations).toEqual([])
     }
 
-    // Log audit summary
     console.log('WCAG 2.2 Audit Summary:')
     auditResults.forEach(result => {
       console.log(`${result.page}: ✓ ${result.passes} passes, ✗ ${result.violations} violations`)

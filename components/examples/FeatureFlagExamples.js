@@ -4,7 +4,6 @@ import FeatureFlag from '@/components/FeatureFlag'
 import { useFeatureFlag, useABTest } from '@/hooks/useFeatureFlag'
 import { FLAGS } from '@/lib/feature-flags'
 
-// Example 1: Dark Mode Toggle
 export function DarkModeExample() {
   const { isEnabled: isDarkMode } = useFeatureFlag(FLAGS.DARK_MODE)
 
@@ -16,7 +15,6 @@ export function DarkModeExample() {
   )
 }
 
-// Example 2: Payment Method Selection
 export function PaymentMethodsExample() {
   return (
     <div className="p-4 bg-white rounded-lg">
@@ -45,7 +43,6 @@ export function PaymentMethodsExample() {
   )
 }
 
-// Example 3: A/B Test for Button Styles
 export function ButtonABTestExample() {
   const variant = useABTest('button_style_test', ['control', 'variant_a', 'variant_b'])
 
@@ -66,7 +63,6 @@ export function ButtonABTestExample() {
   )
 }
 
-// Example 4: Progressive Feature Rollout
 export function BetaFeaturesExample() {
   const { isEnabled: hasBetaAccess } = useFeatureFlag(FLAGS.BETA_FEATURES)
 
@@ -109,7 +105,6 @@ export function BetaFeaturesExample() {
   )
 }
 
-// Example 5: Performance Optimizations
 export function PerformanceExample() {
   const { isEnabled: lazyLoading } = useFeatureFlag(FLAGS.LAZY_LOADING)
   const { isEnabled: imageOptimization } = useFeatureFlag(FLAGS.IMAGE_OPTIMIZATION)
@@ -132,7 +127,6 @@ export function PerformanceExample() {
   )
 }
 
-// Main component that shows all examples
 export default function FeatureFlagExamples() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

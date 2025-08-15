@@ -36,7 +36,6 @@ export default function IndividualBarberPage() {
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [selectedService, setSelectedService] = useState(null)
 
-  // Demo data - in production this would be fetched from API
   useEffect(() => {
     const loadBarberData = async () => {
       try {
@@ -58,12 +57,10 @@ export default function IndividualBarberPage() {
           title: 'Master Barber & Shop Owner',
           display_name: 'John Martinez',
           
-          // Hero Section
           hero_image_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&h=600&fit=crop',
           hero_title: 'Precision. Passion. Perfection.',
           hero_subtitle: 'Master barber with 12+ years of experience creating styles that define you',
           
-          // Professional Info
           bio: `Meet John Martinez, a master barber with over 12 years of experience in the industry. Starting his journey in downtown LA, John has developed a reputation for precision cuts and exceptional client service. His expertise spans from classic traditional cuts to the latest modern styles and trends.
 
 John believes that a great haircut is more than just a service – it's an experience that should leave you feeling confident and looking your absolute best. His attention to detail and commitment to excellence has earned him a loyal clientele and numerous industry recognitions.`,
@@ -73,7 +70,6 @@ John believes that a great haircut is more than just a service – it's an exper
           certifications: ['Master Barber License (CA)', 'Advanced Cutting Techniques', 'Straight Razor Certified'],
           languages_spoken: ['English', 'Spanish'],
           
-          // Awards and Recognition
           awards: [
             {
               title: 'LA\'s Best Barber',
@@ -92,7 +88,6 @@ John believes that a great haircut is more than just a service – it's an exper
             }
           ],
           
-          // Services specific to this barber
           services: [
             {
               id: 1,
@@ -136,7 +131,6 @@ John believes that a great haircut is more than just a service – it's an exper
             }
           ],
           
-          // Portfolio
           portfolio: [
             {
               url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600',
@@ -176,7 +170,6 @@ John believes that a great haircut is more than just a service – it's an exper
             }
           ],
           
-          // Client Reviews
           reviews: [
             {
               id: 1,
@@ -212,7 +205,6 @@ John believes that a great haircut is more than just a service – it's an exper
             }
           ],
           
-          // Stats
           stats: {
             rating: 4.9,
             total_reviews: 187,
@@ -220,19 +212,15 @@ John believes that a great haircut is more than just a service – it's an exper
             years_at_shop: 8
           },
           
-          // Availability (demo)
           next_available: 'Tomorrow at 2:30 PM',
           typical_wait: '1-2 weeks',
           
-          // Social
           instagram_handle: '@johnmartinezbarbero',
           personal_phone: null, // Not shown publicly
           
-          // Branding (inherits from shop but can have overrides if approved)
           custom_branding: false,
           approved_by_owner: true,
           
-          // Page settings
           show_portfolio: true,
           show_reviews: true,
           show_services: true,

@@ -40,7 +40,6 @@ export default function OptimizedAIChat({
   const streamControllerRef = useRef(null)
   const streamingClient = useMemo(() => getStreamingClient(), [])
 
-  // Initialize session
   useEffect(() => {
     const storedSessionId = localStorage.getItem('ai_chat_session')
     if (storedSessionId && persistConversation) {
@@ -55,7 +54,6 @@ export default function OptimizedAIChat({
     }
   }, [persistConversation])
 
-  // Auto-scroll to bottom
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
@@ -64,7 +62,6 @@ export default function OptimizedAIChat({
     scrollToBottom()
   }, [messages, streamingMessage, scrollToBottom])
 
-  // Load conversation history
   const loadConversationHistory = async (sessionId) => {
     try {
       const stored = localStorage.getItem(`ai_conversation_${sessionId}`)
@@ -77,7 +74,6 @@ export default function OptimizedAIChat({
     }
   }
 
-  // Save conversation
   const saveConversation = useCallback(() => {
     if (!persistConversation || !sessionId) return
     
@@ -92,12 +88,10 @@ export default function OptimizedAIChat({
     }
   }, [messages, sessionId, persistConversation])
 
-  // Save on message update
   useEffect(() => {
     saveConversation()
   }, [messages, saveConversation])
 
-  // Handle message submission
   const handleSubmit = async (e) => {
     e?.preventDefault()
     
@@ -119,7 +113,6 @@ export default function OptimizedAIChat({
     const aiMessageId = Date.now() + 1
     
     try {
-      // Start streaming
       streamControllerRef.current = await streamingClient.streamChat(
         userMessage.content,
         {
@@ -131,11 +124,9 @@ export default function OptimizedAIChat({
             previousMessages: messages.slice(-5) // Last 5 messages for context
           }
         },
-        // On chunk callback
         (chunk) => {
           setStreamingMessage(prev => prev + chunk)
         },
-        // On complete callback
         ({ response, fromCache, fromFallback, provider, suggestions }) => {
           const aiMessage = {
             id: aiMessageId,
@@ -153,10 +144,8 @@ export default function OptimizedAIChat({
           setStreamingMessage('')
           setIsStreaming(false)
           
-          // Callback
           onMessage?.(aiMessage)
           
-          // Track analytics
           trackUsage('message_sent', { 
             agent: selectedAgent, 
             fromCache, 
@@ -164,7 +153,6 @@ export default function OptimizedAIChat({
             provider 
           })
         },
-        // On error callback
         (error) => {
           console.error('Streaming error:', error)
           setError('Failed to get response. Please try again.')
@@ -181,12 +169,10 @@ export default function OptimizedAIChat({
     }
   }
 
-  // Stop streaming
   const stopStreaming = () => {
     if (streamControllerRef.current) {
       streamControllerRef.current.abort()
       
-      // Save partial message
       if (streamingMessage) {
         const aiMessage = {
           id: Date.now(),
@@ -203,7 +189,6 @@ export default function OptimizedAIChat({
     }
   }
 
-  // Track usage analytics
   const trackUsage = async (event, data) => {
     try {
       await fetch('/api/ai/analytics/usage', {
@@ -223,7 +208,6 @@ export default function OptimizedAIChat({
     }
   }
 
-  // Agent options
   const agents = [
     { id: 'auto', name: 'Auto Select', icon: SparklesIcon },
     { id: 'marcus', name: 'Marcus (Strategy)', icon: SparklesIcon },

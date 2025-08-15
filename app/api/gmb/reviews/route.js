@@ -28,7 +28,6 @@ export async function GET(request) {
       }, { status: 400 })
     }
 
-    // Build query with filters
     let query = supabase
       .from('gmb_reviews')
       .select(`
@@ -66,7 +65,6 @@ export async function GET(request) {
       .order('review_date', { ascending: false })
       .range(offset, offset + limit - 1)
 
-    // Apply filters
     if (barberId) {
       query = query.eq('gmb_review_attributions.barber_id', barberId)
     }
@@ -83,7 +81,6 @@ export async function GET(request) {
       throw error
     }
 
-    // Get total count for pagination
     let countQuery = supabase
       .from('gmb_reviews')
       .select('id', { count: 'exact', head: true })
@@ -132,7 +129,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Get review and account info
     const { data: reviewData, error: reviewError } = await supabase
       .from('gmb_reviews')
       .select(`
@@ -155,7 +151,6 @@ export async function POST(request) {
       }, { status: 404 })
     }
 
-    // Save response to database
     const { data: responseData, error: saveError } = await supabase
       .from('gmb_review_responses')
       .insert({
@@ -173,7 +168,6 @@ export async function POST(request) {
       throw saveError
     }
 
-    // If auto_publish is true, post to GMB immediately
     if (auto_publish) {
       try {
         const gmbResult = await postResponseToGMB(
@@ -183,7 +177,6 @@ export async function POST(request) {
           reviewData.gmb_accounts.access_token
         )
 
-        // Update response record with GMB result
         await supabase
           .from('gmb_review_responses')
           .update({
@@ -196,7 +189,6 @@ export async function POST(request) {
       } catch (publishError) {
         console.error('Failed to publish to GMB:', publishError)
         
-        // Update response record with error
         await supabase
           .from('gmb_review_responses')
           .update({

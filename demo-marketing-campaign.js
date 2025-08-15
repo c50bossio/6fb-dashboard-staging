@@ -11,13 +11,11 @@ const { createClient } = require('@supabase/supabase-js');
 const queueService = require('./services/queue-service.js');
 const sendGridService = require('./services/sendgrid-service-production.js');
 
-// Initialize Supabase
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Demo barbershop data
 const DEMO_BARBERSHOP = {
     id: 'demo-shop-001',
     name: 'Elite Cuts Barbershop',
@@ -29,7 +27,6 @@ const DEMO_BARBERSHOP = {
     account_type: 'shop'
 };
 
-// Demo campaign templates
 const CAMPAIGN_TEMPLATES = {
     welcome: {
         name: 'Welcome Series',
@@ -101,25 +98,20 @@ class MarketingCampaignDemo {
         console.log('==================================\n');
         
         try {
-            // Initialize services
             await this.initializeServices();
             
-            // Generate demo customers
             const customers = await this.generateDemoCustomers();
             
-            // Create and send campaigns
             await this.createWelcomeCampaign(customers.new);
             await this.createPromotionCampaign(customers.regular);
             await this.createReminderCampaign(customers.upcoming);
             await this.createFeedbackCampaign(customers.recent);
             
-            // Show results
             await this.displayResults();
             
         } catch (error) {
             console.error('❌ Demo failed:', error);
         } finally {
-            // Cleanup
             await this.cleanup();
         }
     }
@@ -127,11 +119,9 @@ class MarketingCampaignDemo {
     async initializeServices() {
         console.log('📋 Initializing services...');
         
-        // Initialize queue service
         await queueService.initialize();
         console.log('  ✅ Queue service initialized');
         
-        // Check SendGrid
         const health = await sendGridService.healthCheck();
         if (health.healthy) {
             console.log('  ✅ SendGrid service ready');
@@ -152,7 +142,6 @@ class MarketingCampaignDemo {
             recent: []    // Recent visitors for feedback
         };
         
-        // Generate new customers
         for (let i = 1; i <= 5; i++) {
             customers.new.push({
                 id: `new-customer-${i}`,
@@ -164,7 +153,6 @@ class MarketingCampaignDemo {
             });
         }
         
-        // Generate regular customers
         for (let i = 1; i <= 10; i++) {
             customers.regular.push({
                 id: `regular-customer-${i}`,
@@ -176,7 +164,6 @@ class MarketingCampaignDemo {
             });
         }
         
-        // Generate customers with upcoming appointments
         for (let i = 1; i <= 3; i++) {
             const appointmentDate = new Date();
             appointmentDate.setDate(appointmentDate.getDate() + i);
@@ -192,7 +179,6 @@ class MarketingCampaignDemo {
             });
         }
         
-        // Generate recent visitors
         for (let i = 1; i <= 7; i++) {
             customers.recent.push({
                 id: `recent-customer-${i}`,
@@ -222,7 +208,6 @@ class MarketingCampaignDemo {
         
         const template = CAMPAIGN_TEMPLATES.welcome;
         
-        // Create campaign in database
         const campaign = {
             ...template,
             id: `welcome-${Date.now()}`,
@@ -235,7 +220,6 @@ class MarketingCampaignDemo {
             created_at: new Date()
         };
         
-        // Store campaign
         const { data: savedCampaign, error } = await supabase
             .from('marketing_campaigns')
             .insert(campaign)
@@ -249,7 +233,6 @@ class MarketingCampaignDemo {
             this.stats.campaignsCreated++;
         }
         
-        // Queue campaign
         const jobs = await queueService.batchQueueRecipients(
             campaign.id,
             customers,
@@ -259,7 +242,6 @@ class MarketingCampaignDemo {
         console.log(`  ✅ Queued ${jobs.length} batches for ${customers.length} recipients`);
         this.stats.emailsQueued += customers.length;
         
-        // Calculate cost
         const cost = sendGridService.calculateCost(customers.length, DEMO_BARBERSHOP.owner_type);
         console.log(`  💰 Estimated cost: $${cost.totalCharge.toFixed(4)} (${cost.profitMargin}% profit)`);
         this.stats.estimatedCost += cost.totalCharge;
@@ -272,7 +254,6 @@ class MarketingCampaignDemo {
         
         const template = CAMPAIGN_TEMPLATES.promotion;
         
-        // Create campaign with personalization
         const campaign = {
             ...template,
             id: `promo-${Date.now()}`,
@@ -290,7 +271,6 @@ class MarketingCampaignDemo {
             }
         };
         
-        // Queue campaign
         const jobs = await queueService.batchQueueRecipients(
             campaign.id,
             customers,
@@ -301,7 +281,6 @@ class MarketingCampaignDemo {
         this.stats.emailsQueued += customers.length;
         this.stats.campaignsCreated++;
         
-        // Calculate cost
         const cost = sendGridService.calculateCost(customers.length, DEMO_BARBERSHOP.owner_type);
         console.log(`  💰 Estimated cost: $${cost.totalCharge.toFixed(4)}`);
         this.stats.estimatedCost += cost.totalCharge;
@@ -314,7 +293,6 @@ class MarketingCampaignDemo {
         
         const template = CAMPAIGN_TEMPLATES.reminder;
         
-        // Create SMS campaign
         const campaign = {
             ...template,
             id: `reminder-${Date.now()}`,
@@ -325,7 +303,6 @@ class MarketingCampaignDemo {
             recipients_count: customers.length
         };
         
-        // Queue SMS messages
         const jobs = await queueService.batchQueueRecipients(
             campaign.id,
             customers,
@@ -336,7 +313,6 @@ class MarketingCampaignDemo {
         this.stats.smsQueued += customers.length;
         this.stats.campaignsCreated++;
         
-        // Calculate SMS cost
         const baseSMSCost = 0.0075;
         const markupRate = DEMO_BARBERSHOP.owner_type === 'shop' ? 2.0 : 3.95;
         const totalSMSCost = customers.length * baseSMSCost * (1 + markupRate);
@@ -352,7 +328,6 @@ class MarketingCampaignDemo {
         
         const template = CAMPAIGN_TEMPLATES.feedback;
         
-        // Create feedback campaign
         const campaign = {
             ...template,
             id: `feedback-${Date.now()}`,
@@ -366,7 +341,6 @@ class MarketingCampaignDemo {
             }
         };
         
-        // Queue campaign
         const jobs = await queueService.batchQueueRecipients(
             campaign.id,
             customers,
@@ -377,7 +351,6 @@ class MarketingCampaignDemo {
         this.stats.emailsQueued += customers.length;
         this.stats.campaignsCreated++;
         
-        // Calculate cost
         const cost = sendGridService.calculateCost(customers.length, DEMO_BARBERSHOP.owner_type);
         console.log(`  💰 Estimated cost: $${cost.totalCharge.toFixed(4)}`);
         this.stats.estimatedCost += cost.totalCharge;
@@ -389,7 +362,6 @@ class MarketingCampaignDemo {
         console.log('📊 CAMPAIGN DEMO RESULTS');
         console.log('========================\n');
         
-        // Get queue status
         const queueStatus = await queueService.getAllQueuesStatus();
         
         console.log('📈 Campaign Statistics:');
@@ -420,7 +392,6 @@ class MarketingCampaignDemo {
         console.log('  • Feedback Campaign: Scheduled');
         console.log('');
         
-        // Calculate monthly projections
         const monthlyEmails = this.stats.emailsQueued * 30;
         const monthlySMS = this.stats.smsQueued * 30;
         const monthlyRevenue = this.stats.estimatedCost * 30;
@@ -432,7 +403,6 @@ class MarketingCampaignDemo {
         console.log(`  • Annual Revenue: $${(monthlyRevenue * 12).toFixed(2)}`);
         console.log('');
         
-        // Show scalability
         console.log('🚀 Scalability Metrics:');
         console.log('  • Current Capacity: 10,000 emails/minute');
         console.log('  • Queue Workers: 5 concurrent');
@@ -448,7 +418,6 @@ class MarketingCampaignDemo {
     async cleanup() {
         console.log('\n🧹 Cleaning up...');
         
-        // Clear test campaigns from database
         const { error } = await supabase
             .from('marketing_campaigns')
             .delete()
@@ -459,7 +428,6 @@ class MarketingCampaignDemo {
             console.log('  ✅ Test campaigns cleaned up');
         }
         
-        // Shutdown queue service
         await queueService.shutdown();
         console.log('  ✅ Queue service shutdown');
         
@@ -467,20 +435,17 @@ class MarketingCampaignDemo {
     }
 }
 
-// Run demo
 async function main() {
     const demo = new MarketingCampaignDemo();
     await demo.run();
 }
 
-// Handle graceful shutdown
 process.on('SIGINT', async () => {
     console.log('\n\n⚠️  Demo interrupted, cleaning up...');
     await queueService.shutdown();
     process.exit(0);
 });
 
-// Execute
 if (require.main === module) {
     main().catch(console.error);
 }

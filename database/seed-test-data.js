@@ -15,7 +15,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables
 dotenv.config({ path: join(__dirname, '..', '.env.local') })
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -113,7 +112,6 @@ async function seedDatabase() {
         const barberId = barberAuth?.user?.id || `barber-${barber.email}`
         barberIds.push(barberId)
         
-        // Add barber to staff
         await supabase
           .from('barbershop_staff')
           .upsert({
@@ -164,7 +162,6 @@ async function seedDatabase() {
     const statuses = ['completed', 'completed', 'completed', 'confirmed', 'cancelled']
     const appointments = []
     
-    // Create appointments for the past 30 days
     for (let daysAgo = 30; daysAgo >= 0; daysAgo--) {
       const appointmentDate = new Date()
       appointmentDate.setDate(appointmentDate.getDate() - daysAgo)
@@ -212,7 +209,6 @@ async function seedDatabase() {
     console.log('Creating transactions...')
     const transactions = []
     
-    // Create transactions for completed appointments
     const completedAppointments = appointments.filter(a => a.status === 'completed')
     for (const appointment of completedAppointments) {
       const serviceAmount = appointment.service_price
@@ -289,5 +285,4 @@ async function seedDatabase() {
   }
 }
 
-// Run the seed
 seedDatabase()

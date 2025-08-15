@@ -30,7 +30,6 @@ export default function SystemMonitoringDashboard() {
   const [alerts, setAlerts] = useState([])
   const [autoRefresh, setAutoRefresh] = useState(true)
 
-  // Fetch system health
   const fetchSystemHealth = useCallback(async () => {
     try {
       const response = await fetch('/api/health?detailed=true&connections=true')
@@ -42,7 +41,6 @@ export default function SystemMonitoringDashboard() {
         lastUpdated: new Date(),
       })
 
-      // Check for critical issues
       if (data.critical_issues?.length > 0) {
         setAlerts(prev => [
           ...prev.filter(alert => alert.type !== 'critical'),
@@ -67,11 +65,8 @@ export default function SystemMonitoringDashboard() {
     }
   }, [])
 
-  // Fetch performance metrics
   const fetchMetrics = useCallback(async () => {
     try {
-      // In a real implementation, this would fetch from your analytics API
-      // For now, we'll simulate the data
       const Metrics = {
         uptime: Math.floor(Math.random() * 99.9 + 99.1),
         responseTime: Math.floor(Math.random() * 200 + 100),
@@ -83,10 +78,8 @@ export default function SystemMonitoringDashboard() {
 
       setMetrics(mockMetrics)
 
-      // Track monitoring usage
       analytics.trackFeatureUsage('system_monitoring_viewed')
 
-      // Check for performance issues
       if (mockMetrics.responseTime > 1000) {
         setAlerts(prev => [
           ...prev.filter(alert => alert.type !== 'performance'),
@@ -106,7 +99,6 @@ export default function SystemMonitoringDashboard() {
     }
   }, [analytics])
 
-  // Auto-refresh data
   useEffect(() => {
     fetchSystemHealth()
     fetchMetrics()
@@ -121,13 +113,11 @@ export default function SystemMonitoringDashboard() {
     }
   }, [autoRefresh, fetchSystemHealth, fetchMetrics])
 
-  // Handle manual refresh
   const handleRefresh = () => {
     fetchSystemHealth()
     fetchMetrics()
   }
 
-  // Handle alert dismissal
   const dismissAlert = (alertId) => {
     setAlerts(prev => prev.filter(alert => alert.id !== alertId))
   }
@@ -266,7 +256,6 @@ export default function SystemMonitoringDashboard() {
   )
 }
 
-// Status Indicator Component
 function StatusIndicator({ status }) {
   const colors = {
     healthy: 'text-green-500',
@@ -295,7 +284,6 @@ function StatusIndicator({ status }) {
   )
 }
 
-// Metric Card Component
 function MetricCard({ title, value, status = 'healthy', icon }) {
   const statusColors = {
     healthy: 'text-green-600',
@@ -316,7 +304,6 @@ function MetricCard({ title, value, status = 'healthy', icon }) {
   )
 }
 
-// Service Card Component
 function ServiceCard({ name, service }) {
   const statusColors = {
     healthy: 'bg-moss-100 text-moss-900',
@@ -356,7 +343,6 @@ function ServiceCard({ name, service }) {
   )
 }
 
-// Resource Card Component
 function ResourceCard({ title, used, total, unit, threshold, value }) {
   if (value) {
     return (
@@ -391,7 +377,6 @@ function ResourceCard({ title, used, total, unit, threshold, value }) {
   )
 }
 
-// Alert Card Component
 function AlertCard({ alert, onDismiss }) {
   const alertColors = {
     critical: 'bg-red-50 border-red-200 text-red-800',
@@ -431,10 +416,7 @@ function AlertCard({ alert, onDismiss }) {
   )
 }
 
-// Performance Charts Component (simplified)
 function PerformanceCharts({ metrics }) {
-  // This would integrate with a charting library like Chart.js or Recharts
-  // For now, showing placeholder
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold mb-4">Performance Trends</h3>
@@ -446,7 +428,6 @@ function PerformanceCharts({ metrics }) {
   )
 }
 
-// Recent Activity Component
 function RecentActivity() {
   const [activities] = useState([
     { time: '2 mins ago', event: 'User signup', details: 'New user registered' },

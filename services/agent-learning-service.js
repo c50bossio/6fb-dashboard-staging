@@ -12,7 +12,6 @@ export class AgentLearningService {
     this.learningMetrics = this.initializeLearningMetrics()
     this.adaptationRules = this.defineAdaptationRules()
     
-    // Memory management settings
     this.MAX_SHORT_TERM_MEMORIES = 50
     this.MAX_LONG_TERM_MEMORIES = 100
     this.MAX_PATTERN_DATABASE_SIZE = 500
@@ -20,7 +19,6 @@ export class AgentLearningService {
     this.MEMORY_CLEANUP_INTERVAL = 30 * 60 * 1000 // 30 minutes
     this.MEMORY_RETENTION_DAYS = 30
     
-    // Start periodic cleanup
     this.startMemoryCleanup()
   }
 
@@ -57,7 +55,6 @@ export class AgentLearningService {
    */
   defineAdaptationRules() {
     return {
-      // Accuracy-based adaptations
       lowAccuracy: {
         threshold: 0.6,
         action: 'increase_analysis_depth',
@@ -69,7 +66,6 @@ export class AgentLearningService {
         description: 'Streamline responses when accuracy exceeds 90%'
       },
       
-      // Pattern-based adaptations
       recurringIssue: {
         threshold: 3, // Same issue 3+ times
         action: 'create_specialized_response',
@@ -81,7 +77,6 @@ export class AgentLearningService {
         description: 'Prioritize successful patterns in similar contexts'
       },
       
-      // Feedback-based adaptations
       negativeFeedback: {
         threshold: 2, // 2+ negative feedback on same approach
         action: 'adjust_approach',
@@ -109,7 +104,6 @@ export class AgentLearningService {
       timestamp = Date.now()
     } = interaction
 
-    // Get or create agent memory
     if (!this.memoryStore.has(agentId)) {
       this.memoryStore.set(agentId, {
         shortTerm: [],
@@ -122,7 +116,6 @@ export class AgentLearningService {
 
     const agentMemory = this.memoryStore.get(agentId)
 
-    // Store in short-term memory
     const memory = {
       id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       query,
@@ -138,23 +131,18 @@ export class AgentLearningService {
 
     agentMemory.shortTerm.push(memory)
 
-    // Enforce short-term memory limits
     if (agentMemory.shortTerm.length > this.MAX_SHORT_TERM_MEMORIES) {
       agentMemory.shortTerm = agentMemory.shortTerm.slice(-this.MAX_SHORT_TERM_MEMORIES)
     }
 
-    // Consolidate to long-term memory if significant
     if (this.isSignificantMemory(memory)) {
       await this.consolidateToLongTerm(agentId, memory)
     }
 
-    // Extract and store patterns
     await this.learnPatterns(agentId, memory)
 
-    // Update learning metrics
     this.updateMetrics(memory)
 
-    // Check for adaptation triggers
     await this.checkAdaptationTriggers(agentId)
 
     return {
@@ -171,7 +159,6 @@ export class AgentLearningService {
   extractPatterns(query, response) {
     const patterns = []
 
-    // Query patterns
     const queryPatterns = {
       intent: this.classifyIntent(query),
       complexity: this.assessComplexity(query),
@@ -185,7 +172,6 @@ export class AgentLearningService {
       data: queryPatterns
     })
 
-    // Response patterns
     if (response) {
       const responsePatterns = {
         structure: this.analyzeResponseStructure(response),
@@ -199,7 +185,6 @@ export class AgentLearningService {
       })
     }
 
-    // Correlation patterns
     patterns.push({
       type: 'correlation',
       data: {
@@ -223,17 +208,14 @@ export class AgentLearningService {
       action_items: []
     }
 
-    // Extract business metrics
     const metricPatterns = /\$?\d+%?|\d+\s*(customers?|bookings?|appointments?)/gi
     const metrics = query.match(metricPatterns) || []
     entities.business_metrics = metrics
 
-    // Extract time references
     const timePatterns = /today|yesterday|tomorrow|this\s+week|this\s+month|last\s+\w+/gi
     const times = query.match(timePatterns) || []
     entities.time_references = times
 
-    // Extract service mentions
     const servicePatterns = /haircut|shave|trim|styling|coloring/gi
     const services = query.match(servicePatterns) || []
     entities.service_mentions = services
@@ -268,16 +250,12 @@ export class AgentLearningService {
    * Determine if memory is significant enough for long-term storage
    */
   isSignificantMemory(memory) {
-    // High success or failure
     if (memory.success > 0.8 || memory.success < 0.3) return true
     
-    // Contains important patterns
     if (memory.patterns.some(p => p.type === 'breakthrough')) return true
     
-    // Has explicit feedback
     if (memory.feedback && memory.feedback.rating) return true
     
-    // Complex query with good outcome
     if (memory.patterns.some(p => p.data.complexity === 'high') && memory.success > 0.6) return true
     
     return false
@@ -289,7 +267,6 @@ export class AgentLearningService {
   async consolidateToLongTerm(agentId, memory) {
     const agentMemory = this.memoryStore.get(agentId)
     
-    // Create consolidated memory with enhanced context
     const consolidatedMemory = {
       ...memory,
       consolidatedAt: Date.now(),
@@ -300,15 +277,12 @@ export class AgentLearningService {
 
     agentMemory.longTerm.push(consolidatedMemory)
 
-    // Enforce long-term memory limits
     if (agentMemory.longTerm.length > this.MAX_LONG_TERM_MEMORIES) {
       agentMemory.longTerm = agentMemory.longTerm.slice(-this.MAX_LONG_TERM_MEMORIES)
     }
 
-    // Update semantic memory (knowledge graph)
     this.updateSemanticMemory(agentId, consolidatedMemory)
 
-    // Store as episodic memory if it's a complete interaction episode
     if (memory.outcome && memory.feedback) {
       agentMemory.episodicMemory.push({
         episode: consolidatedMemory,
@@ -316,7 +290,6 @@ export class AgentLearningService {
         outcome: memory.outcome
       })
       
-      // Enforce episodic memory limits
       if (agentMemory.episodicMemory.length > this.MAX_LONG_TERM_MEMORIES) {
         agentMemory.episodicMemory = agentMemory.episodicMemory.slice(-this.MAX_LONG_TERM_MEMORIES)
       }
@@ -332,7 +305,6 @@ export class AgentLearningService {
 
     const related = []
     
-    // Search long-term memory for similar patterns
     for (const ltMemory of agentMemory.longTerm) {
       const similarity = this.calculateMemorySimilarity(memory, ltMemory)
       if (similarity > 0.7) {
@@ -354,7 +326,6 @@ export class AgentLearningService {
     let similarity = 0
     let factors = 0
 
-    // Pattern similarity
     if (memory1.patterns && memory2.patterns) {
       const pattern1Types = memory1.patterns.map(p => p.type)
       const pattern2Types = memory2.patterns.map(p => p.type)
@@ -363,7 +334,6 @@ export class AgentLearningService {
       factors++
     }
 
-    // Entity similarity
     if (memory1.entities && memory2.entities) {
       const entities1 = Object.values(memory1.entities).flat()
       const entities2 = Object.values(memory2.entities).flat()
@@ -372,7 +342,6 @@ export class AgentLearningService {
       factors++
     }
 
-    // Success similarity
     if (memory1.success !== undefined && memory2.success !== undefined) {
       similarity += 1 - Math.abs(memory1.success - memory2.success)
       factors++
@@ -387,19 +356,16 @@ export class AgentLearningService {
   deriveInsights(memory) {
     const insights = []
 
-    // Success-based insights
     if (memory.success > 0.8) {
       insights.push(`Highly successful approach for ${memory.patterns[0]?.data.intent || 'query'}`)
     } else if (memory.success < 0.3) {
       insights.push(`Ineffective approach for ${memory.patterns[0]?.data.intent || 'query'} - needs adjustment`)
     }
 
-    // Pattern-based insights
     if (memory.patterns.some(p => p.data.complexity === 'high' && memory.success > 0.7)) {
       insights.push('Successfully handled complex query - approach can be reused')
     }
 
-    // Entity-based insights
     if (memory.entities?.business_metrics?.length > 3) {
       insights.push('Data-rich query - numerical analysis was important')
     }
@@ -434,7 +400,6 @@ export class AgentLearningService {
   updateSemanticMemory(agentId, memory) {
     const agentMemory = this.memoryStore.get(agentId)
     
-    // Extract concepts and relationships
     const concepts = this.extractConcepts(memory)
     
     for (const concept of concepts) {
@@ -452,7 +417,6 @@ export class AgentLearningService {
       conceptData.outcomes.push(memory.success)
       conceptData.contexts.push(memory.context)
       
-      // Add relationships
       for (const relatedConcept of concept.related) {
         if (!conceptData.relationships.has(relatedConcept)) {
           conceptData.relationships.set(relatedConcept, 0)
@@ -471,7 +435,6 @@ export class AgentLearningService {
   extractConcepts(memory) {
     const concepts = []
     
-    // Extract from patterns
     if (memory.patterns) {
       for (const pattern of memory.patterns) {
         if (pattern.data.intent) {
@@ -483,7 +446,6 @@ export class AgentLearningService {
       }
     }
     
-    // Extract from entities
     if (memory.entities) {
       if (memory.entities.service_mentions?.length > 0) {
         concepts.push({
@@ -521,18 +483,15 @@ export class AgentLearningService {
       patternData.lastSeen = Date.now()
       patternData.contexts.push(memory.context)
       
-      // Limit context storage per pattern
       if (patternData.contexts.length > 10) {
         patternData.contexts = patternData.contexts.slice(-10)
       }
       
-      // Mark as learned pattern if successful enough
       if (patternData.occurrences >= 3 && patternData.successRate > 0.7) {
         this.learningMetrics.patterns.identified++
       }
     }
     
-    // Enforce pattern database limits
     this.enforcePatternDatabaseLimits()
   }
 
@@ -540,7 +499,6 @@ export class AgentLearningService {
    * Update learning metrics
    */
   updateMetrics(memory) {
-    // Update accuracy metrics
     if (memory.outcome?.prediction) {
       this.learningMetrics.accuracy.predictions.total++
       if (memory.outcome.predictionCorrect) {
@@ -569,7 +527,6 @@ export class AgentLearningService {
   async checkAdaptationTriggers(agentId) {
     const adaptations = []
     
-    // Check accuracy-based triggers
     const predictionAccuracy = this.learningMetrics.accuracy.predictions.total > 0
       ? this.learningMetrics.accuracy.predictions.correct / this.learningMetrics.accuracy.predictions.total
       : 1
@@ -580,7 +537,6 @@ export class AgentLearningService {
       adaptations.push(await this.triggerAdaptation(agentId, 'highAccuracy'))
     }
     
-    // Check pattern-based triggers
     const recurringPatterns = Array.from(this.patternDatabase.values())
       .filter(p => p.occurrences >= this.adaptationRules.recurringIssue.threshold && p.successRate < 0.5)
     
@@ -623,12 +579,10 @@ export class AgentLearningService {
     const queryPatterns = this.extractPatterns(query, null)
     const queryEntities = this.extractEntities(query, context)
     
-    // Search through memories
     const relevantMemories = []
     const relevantPatterns = []
     const insights = []
     
-    // Search long-term memory
     for (const memory of agentMemory.longTerm) {
       const relevance = this.calculateRelevance(query, queryPatterns, queryEntities, memory)
       if (relevance > 0.5) {
@@ -640,7 +594,6 @@ export class AgentLearningService {
       }
     }
     
-    // Search pattern database
     for (const [key, patternData] of this.patternDatabase) {
       if (key.startsWith(agentId) && patternData.successRate > 0.7) {
         relevantPatterns.push({
@@ -651,7 +604,6 @@ export class AgentLearningService {
       }
     }
     
-    // Get insights from semantic memory
     for (const [concept, data] of agentMemory.semanticMemory) {
       if (query.toLowerCase().includes(concept.toLowerCase())) {
         const avgOutcome = data.outcomes.reduce((a, b) => a + b, 0) / data.outcomes.length
@@ -678,28 +630,24 @@ export class AgentLearningService {
     let relevance = 0
     let factors = 0
     
-    // Text similarity
     if (memory.query) {
       const similarity = this.calculateTextSimilarity(query, memory.query)
       relevance += similarity
       factors++
     }
     
-    // Pattern similarity
     if (memory.patterns && queryPatterns) {
       const patternSimilarity = this.comparePatterns(queryPatterns, memory.patterns)
       relevance += patternSimilarity
       factors++
     }
     
-    // Entity overlap
     if (memory.entities && queryEntities) {
       const entityOverlap = this.calculateEntityOverlap(queryEntities, memory.entities)
       relevance += entityOverlap
       factors++
     }
     
-    // Success weight (prefer successful memories)
     if (memory.success > 0.7) {
       relevance += 0.2
     }
@@ -913,6 +861,66 @@ export class AgentLearningService {
   }
 
   /**
+   * Start memory cleanup process
+   */
+  startMemoryCleanup() {
+    setInterval(() => {
+      this.performMemoryCleanup()
+    }, this.MEMORY_CLEANUP_INTERVAL)
+    
+    console.log('🧹 Memory cleanup process started')
+  }
+
+  /**
+   * Perform memory cleanup
+   */
+  performMemoryCleanup() {
+    const cutoffTime = Date.now() - (this.MEMORY_RETENTION_DAYS * 24 * 60 * 60 * 1000)
+    let totalCleaned = 0
+    
+    for (const [agentId, memory] of this.memoryStore) {
+      const originalShortTerm = memory.shortTerm.length
+      memory.shortTerm = memory.shortTerm.filter(m => m.timestamp > cutoffTime)
+      
+      const originalEpisodic = memory.episodicMemory.length
+      memory.episodicMemory = memory.episodicMemory.filter(m => m.episode.timestamp > cutoffTime)
+      
+      totalCleaned += (originalShortTerm - memory.shortTerm.length) + (originalEpisodic - memory.episodicMemory.length)
+    }
+    
+    const originalPatterns = this.patternDatabase.size
+    for (const [key, data] of this.patternDatabase) {
+      if (data.lastSeen && data.lastSeen < cutoffTime) {
+        this.patternDatabase.delete(key)
+      }
+    }
+    totalCleaned += originalPatterns - this.patternDatabase.size
+    
+    const originalFeedback = this.feedbackHistory.length
+    this.feedbackHistory = this.feedbackHistory.filter(f => f.timestamp > cutoffTime)
+    totalCleaned += originalFeedback - this.feedbackHistory.length
+    
+    if (totalCleaned > 0) {
+      console.log(`🧹 Memory cleanup completed: ${totalCleaned} entries removed`)
+    }
+  }
+
+  /**
+   * Enforce pattern database limits
+   */
+  enforcePatternDatabaseLimits() {
+    if (this.patternDatabase.size > this.MAX_PATTERN_DATABASE_SIZE) {
+      const sortedPatterns = Array.from(this.patternDatabase.entries())
+        .sort((a, b) => (a[1].lastSeen || 0) - (b[1].lastSeen || 0))
+      
+      const toRemove = this.patternDatabase.size - this.MAX_PATTERN_DATABASE_SIZE
+      for (let i = 0; i < toRemove; i++) {
+        this.patternDatabase.delete(sortedPatterns[i][0])
+      }
+    }
+  }
+
+  /**
    * Get learning report for an agent
    */
   getLearningReport(agentId) {
@@ -933,7 +941,6 @@ export class AgentLearningService {
       adaptations: []
     }
     
-    // Get top patterns
     const agentPatterns = Array.from(this.patternDatabase.entries())
       .filter(([key]) => key.startsWith(agentId))
       .map(([_, data]) => data)
@@ -942,7 +949,6 @@ export class AgentLearningService {
     
     report.topPatterns = agentPatterns
     
-    // Get top insights
     const insights = agentMemory.longTerm
       .flatMap(m => m.derivedInsights || [])
       .slice(0, 5)
@@ -953,6 +959,5 @@ export class AgentLearningService {
   }
 }
 
-// Export singleton instance
 export const agentLearning = new AgentLearningService()
 export default agentLearning

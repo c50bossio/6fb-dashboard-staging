@@ -17,7 +17,6 @@ export default function BarberProfilePage() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('basic')
   const [profile, setProfile] = useState({
-    // Basic Information
     custom_path: '',
     page_title: '',
     meta_description: '',
@@ -27,7 +26,6 @@ export default function BarberProfilePage() {
     certifications: [],
     languages_spoken: [],
     
-    // Visual Branding
     primary_color: '#000000',
     secondary_color: '#FFFFFF',
     accent_color: '#FFD700',
@@ -35,7 +33,6 @@ export default function BarberProfilePage() {
     background_image_url: '',
     logo_url: '',
     
-    // Contact & Social
     display_phone: '',
     display_email: '',
     instagram_handle: '',
@@ -43,7 +40,6 @@ export default function BarberProfilePage() {
     facebook_url: '',
     youtube_url: '',
     
-    // Business Settings
     accepts_walk_ins: false,
     booking_advance_days: 30,
     minimum_notice_hours: 24,
@@ -51,7 +47,6 @@ export default function BarberProfilePage() {
     deposit_required: false,
     deposit_amount: 0,
     
-    // Portfolio
     portfolio_images: [],
     before_after_images: [],
     featured_work: []

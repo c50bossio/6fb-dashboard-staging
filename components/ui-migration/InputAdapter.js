@@ -11,7 +11,6 @@ import { Textarea as ShadcnTextarea } from '@/components/ui/textarea'
 import { Select as ShadcnSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
-// Input wrapper that maintains compatibility
 export const Input = ({ className, ...props }) => {
   return (
     <ShadcnInput
@@ -21,7 +20,6 @@ export const Input = ({ className, ...props }) => {
   )
 }
 
-// Label wrapper
 export const Label = ({ className, ...props }) => {
   return (
     <ShadcnLabel
@@ -31,7 +29,6 @@ export const Label = ({ className, ...props }) => {
   )
 }
 
-// Textarea wrapper
 export const Textarea = ({ className, ...props }) => {
   return (
     <ShadcnTextarea
@@ -41,7 +38,6 @@ export const Textarea = ({ className, ...props }) => {
   )
 }
 
-// Select wrapper with custom API
 export const Select = ({
   value,
   onChange,
@@ -77,7 +73,6 @@ export const Select = ({
   )
 }
 
-// FormInput component that combines Label and Input
 export const FormInput = ({
   label,
   error,
@@ -106,7 +101,6 @@ export const FormInput = ({
   )
 }
 
-// FormTextarea component
 export const FormTextarea = ({
   label,
   error,
@@ -135,7 +129,6 @@ export const FormTextarea = ({
   )
 }
 
-// FormSelect component
 export const FormSelect = ({
   label,
   error,

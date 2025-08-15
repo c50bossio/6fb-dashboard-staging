@@ -10,7 +10,6 @@ import errorTracker from '../lib/error-tracker'
 
 export default function ClientWrapper({ children }) {
   useEffect(() => {
-    // Initialize error tracking
     errorTracker.init({
       userId: null, // Will be set when user authenticates
       metadata: {
@@ -20,7 +19,6 @@ export default function ClientWrapper({ children }) {
       }
     })
     
-    // Initialize Sentry if available
     if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       errorTracker.initSentry()
     }

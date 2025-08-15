@@ -8,7 +8,6 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Initialize Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
@@ -419,7 +418,6 @@ async function createBillingTables() {
   console.log('🏗️  Creating marketing billing tables in Supabase...')
 
   try {
-    // Execute the SQL to create tables
     const { data, error } = await supabase.rpc('exec_sql', {
       sql_query: createTableSQL
     })
@@ -427,7 +425,6 @@ async function createBillingTables() {
     if (error) {
       console.error('❌ Error creating tables:', error)
       
-      // Try alternative approach - split into individual statements
       console.log('🔄 Trying alternative approach...')
       
       const statements = createTableSQL.split(';').filter(stmt => stmt.trim())
@@ -447,7 +444,6 @@ async function createBillingTables() {
       console.log('✅ All billing tables created successfully')
     }
 
-    // Verify tables exist
     console.log('\n🔍 Verifying table creation...')
     
     const tables = [
@@ -484,5 +480,4 @@ async function createBillingTables() {
   }
 }
 
-// Run the setup
 createBillingTables().catch(console.error)
