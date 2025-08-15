@@ -21,6 +21,7 @@ npm run test:all                # Full test suite
 npm run cleanup-test-data       # Clean test data
 docker compose logs -f frontend # View logs
 curl http://localhost:9999/api/health # Health check
+./scripts/context-cleanup.sh    # Optimize context for longer conversations
 ```
 
 ## Key Files
