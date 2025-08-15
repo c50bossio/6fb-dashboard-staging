@@ -134,45 +134,74 @@ export default function WelcomePage() {
       return
     }
 
-    // Enhanced session recovery for OAuth flows
+    // Enhanced session recovery for OAuth flows - with patience for auth state propagation
     const isOAuthFlow = sessionRecovery.isOAuthRedirect()
     const maxWaitTime = isOAuthFlow ? 8000 : 3000 // Extended timeout for OAuth
     
     console.log(`🔄 Starting enhanced session detection (OAuth: ${isOAuthFlow}, timeout: ${maxWaitTime}ms)`)
 
+    // For OAuth flows, be more patient - wait for SupabaseAuthProvider to set user state
     if (isOAuthFlow && !user) {
-      console.log('🔍 OAuth flow detected, starting session polling...')
+      console.log('🔍 OAuth flow detected, waiting for auth state propagation...')
       
-      sessionRecovery.pollForSession({
-        maxAttempts: isOAuthFlow ? 6 : 3,
-        isOAuthFlow,
-        onProgress: (progress) => {
-          setRecoveryProgress(progress)
-          console.log('📊 Session recovery progress:', progress)
-        },
-        onError: (error) => {
-          console.warn('⚠️ Session recovery error:', error)
-        }
-      }).then((result) => {
-        if (result.success) {
-          console.log('✅ Session recovered successfully via polling')
-          // Force a re-render by updating the auth context
-          window.location.reload()
-        } else {
-          console.warn('❌ Session recovery failed, trying manual recovery...')
-          return sessionRecovery.recoverSession({ strategy: 'auto' })
-        }
-      }).then((recoveryResult) => {
-        if (recoveryResult && !recoveryResult.success) {
-          console.error('💥 All session recovery attempts failed')
-          setErrorType('session_recovery_failed')
-          setShowOAuthError(true)
-        }
-      }).catch((error) => {
-        console.error('💥 Session recovery error:', error)
-        setErrorType('session_recovery_error')
-        setShowOAuthError(true)
-      })
+      // Give SupabaseAuthProvider time to set user state before assuming session is missing
+      let authStateWaitAttempts = 0
+      const maxAuthStateWaits = 4 // Wait up to 6 seconds (4 * 1500ms)
+      
+      const waitForAuthState = () => {
+        setTimeout(() => {
+          authStateWaitAttempts++
+          console.log(`⏳ Waiting for auth state... attempt ${authStateWaitAttempts}/${maxAuthStateWaits}`)
+          
+          // Check if user state has been set by SupabaseAuthProvider
+          if (user) {
+            console.log('✅ Auth state set by SupabaseAuthProvider - no recovery needed')
+            return
+          }
+          
+          // If we've waited long enough, then try session recovery
+          if (authStateWaitAttempts >= maxAuthStateWaits) {
+            console.log('🔍 Auth state still not set after waiting, starting session polling...')
+            
+            sessionRecovery.pollForSession({
+              maxAttempts: 3, // Reduced attempts since we already waited
+              isOAuthFlow,
+              onProgress: (progress) => {
+                setRecoveryProgress(progress)
+                console.log('📊 Session recovery progress:', progress)
+              },
+              onError: (error) => {
+                console.warn('⚠️ Session recovery error:', error)
+              }
+            }).then((result) => {
+              if (result.success) {
+                console.log('✅ Session recovered successfully via polling')
+                // Force a re-render by updating the auth context
+                window.location.reload()
+              } else {
+                console.warn('❌ Session recovery failed, trying manual recovery...')
+                return sessionRecovery.recoverSession({ strategy: 'auto' })
+              }
+            }).then((recoveryResult) => {
+              if (recoveryResult && !recoveryResult.success) {
+                console.error('💥 All session recovery attempts failed')
+                setErrorType('session_recovery_failed')
+                setShowOAuthError(true)
+              }
+            }).catch((error) => {
+              console.error('💥 Session recovery error:', error)
+              setErrorType('session_recovery_error')
+              setShowOAuthError(true)
+            })
+          } else {
+            // Continue waiting
+            waitForAuthState()
+          }
+        }, 1500) // Wait 1.5 seconds between checks
+      }
+      
+      // Start waiting for auth state
+      waitForAuthState()
     }
     
     // Fallback timer with extended timeout

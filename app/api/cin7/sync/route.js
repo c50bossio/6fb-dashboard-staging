@@ -58,11 +58,34 @@ async function fetchCin7StockLevels(accountId, apiKey) {
 }
 
 function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
-  // Find stock information for this product
-  const stockInfo = stockLevels.find(stock => 
-    stock.ProductID === cin7Product.ID || 
-    stock.SKU === cin7Product.SKU
-  )
+  // Enhanced stock lookup with multiple matching strategies
+  let stockInfo = null;
+  
+  // Strategy 1: Direct ProductID match
+  stockInfo = stockLevels.find(stock => stock.ProductID === cin7Product.ID);
+  
+  // Strategy 2: SKU match (case insensitive)
+  if (!stockInfo && cin7Product.SKU) {
+    stockInfo = stockLevels.find(stock => 
+      stock.SKU && stock.SKU.toLowerCase() === cin7Product.SKU.toLowerCase()
+    );
+  }
+  
+  // Strategy 3: Partial name match as fallback
+  if (!stockInfo && cin7Product.Name) {
+    stockInfo = stockLevels.find(stock => 
+      stock.ProductName && 
+      stock.ProductName.toLowerCase().includes(cin7Product.Name.toLowerCase().substring(0, 20))
+    );
+  }
+  
+  // Debug logging
+  console.log(`📦 Mapping product: ${cin7Product.Name}`);
+  console.log(`   ProductID: ${cin7Product.ID}, SKU: ${cin7Product.SKU}`);
+  console.log(`   Stock found: ${!!stockInfo}`);
+  if (stockInfo) {
+    console.log(`   Available: ${stockInfo.Available}, OnHand: ${stockInfo.OnHand || stockInfo.QtyOnHand}`);
+  }
   
   // Map category to barbershop-friendly categories
   const mapCategoryForBarbershop = (cin7Category) => {
@@ -92,30 +115,32 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
     brand: cin7Product.Brand || '',
     sku: cin7Product.SKU || '',
     
-    // Pricing from product data with multiple fallbacks
+    // Pricing prioritizing verified CSV fields
     cost_price: parseFloat(
       cin7Product.CostPrice || 
-      cin7Product.DefaultCostPrice || 
       cin7Product.AverageCost ||
+      cin7Product.DefaultCostPrice || 
       cin7Product.LastPurchasePrice ||
+      (parseFloat(cin7Product.PriceTier1 || 0) * 0.6) || // Estimate 60% cost ratio
       0
     ),
     retail_price: parseFloat(
+      cin7Product.PriceTier1 ||      // Primary: PriceTier1 (219.99, 249.99, etc from CSV)
       cin7Product.SalePrice || 
       cin7Product.DefaultSellPrice || 
-      cin7Product.PriceTier1 ||
       cin7Product.ListPrice ||
       0
     ),
     
-    // Stock levels from separate stock data with multiple fallbacks
+    // Stock levels prioritizing CIN7's "Available" field (from CSV verification)
     current_stock: parseInt(
-      stockInfo?.Available || 
-      stockInfo?.QuantityAvailable || 
-      stockInfo?.QtyOnHand ||
-      stockInfo?.StockOnHand ||
-      cin7Product.QtyOnHand ||
-      0
+      stockInfo?.Available ||        // Primary: Available inventory (523, 647, etc from CSV)
+      stockInfo?.OnHand ||           // Secondary: OnHand inventory  
+      stockInfo?.QtyOnHand ||        // Tertiary: QtyOnHand
+      stockInfo?.QuantityAvailable || // Alternative naming
+      cin7Product.Available ||       // Direct product field
+      cin7Product.QtyOnHand ||       // Product level stock
+      0                              // Fallback only if no stock data found
     ),
     min_stock_level: parseInt(
       stockInfo?.MinimumBeforeReorder || 
@@ -150,7 +175,6 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
     cin7_product_id: cin7Product.ID,
     cin7_sku: cin7Product.SKU,
     cin7_barcode: cin7Product.Barcode || cin7Product.UPC || cin7Product.EAN || '',
-    cin7_last_sync: new Date().toISOString(),
     
     // Additional metadata
     created_at: cin7Product.CreatedDate || new Date().toISOString(),
@@ -236,13 +260,52 @@ export async function POST(request) {
     }
     
     try {
-      console.log(`Syncing from Cin7 account: ${credentials.account_name || 'Unknown'} (API ${credentials.api_version})`)
+      console.log(`🔄 Syncing from Cin7 account: ${credentials.account_name || 'Unknown'} (API ${credentials.api_version})`)
       
       // Fetch both products and stock levels from Cin7
       const [cin7Products, stockLevels] = await Promise.all([
         fetchCin7Products(accountId, apiKey),
         fetchCin7StockLevels(accountId, apiKey)
       ])
+      
+      console.log(`📊 API Response Summary:`)
+      console.log(`   Products fetched: ${cin7Products.length}`)
+      console.log(`   Stock items fetched: ${stockLevels.length}`)
+      
+      // Debug: Show first few products and their stock data
+      if (cin7Products.length > 0) {
+        console.log(`📦 Sample Product Data:`)
+        cin7Products.slice(0, 3).forEach((product, index) => {
+          const relatedStock = stockLevels.find(s => s.ProductID === product.ID || s.SKU === product.SKU)
+          console.log(`   ${index + 1}. ${product.Name}`)
+          console.log(`      Product ID: ${product.ID}, SKU: ${product.SKU}`)
+          console.log(`      Product PriceTier1: ${product.PriceTier1}`)
+          console.log(`      Related Stock Found: ${!!relatedStock}`)
+          if (relatedStock) {
+            console.log(`      🎯 Stock Available: ${relatedStock.Available} (PRIMARY)`)
+            console.log(`      📦 Stock OnHand: ${relatedStock.OnHand || relatedStock.QtyOnHand || 'N/A'}`)
+            console.log(`      📋 All Stock Fields:`, JSON.stringify({
+              Available: relatedStock.Available,
+              OnHand: relatedStock.OnHand,
+              QtyOnHand: relatedStock.QtyOnHand,
+              QuantityAvailable: relatedStock.QuantityAvailable
+            }, null, 2))
+          } else {
+            console.log(`      ⚠️ No stock record found for this product`)
+          }
+        })
+        
+        // Show stock field distribution
+        const stockFieldStats = {
+          Available: stockLevels.filter(s => s.Available !== undefined && s.Available !== null).length,
+          OnHand: stockLevels.filter(s => s.OnHand !== undefined && s.OnHand !== null).length,
+          QtyOnHand: stockLevels.filter(s => s.QtyOnHand !== undefined && s.QtyOnHand !== null).length
+        }
+        console.log(`📊 Stock Field Availability:`)
+        console.log(`   Available field: ${stockFieldStats.Available}/${stockLevels.length} items`)
+        console.log(`   OnHand field: ${stockFieldStats.OnHand}/${stockLevels.length} items`) 
+        console.log(`   QtyOnHand field: ${stockFieldStats.QtyOnHand}/${stockLevels.length} items`)
+      }
       
       if (cin7Products.length === 0) {
         // Update sync status
