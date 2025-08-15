@@ -292,6 +292,37 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         
         return False
     
+    def _should_skip_validation(self, path: str) -> bool:
+        """Check if validation should be skipped for this path"""
+        skip_paths = [
+            "/",
+            "/health",
+            "/docs",
+            "/openapi.json",
+            "/redoc",
+            "/favicon.ico",
+            "/static/",
+            "/metrics"
+        ]
+        
+        for skip_path in skip_paths:
+            if path.startswith(skip_path):
+                return True
+        
+        return False
+    
+    def _is_basic_request(self, request: Request) -> bool:
+        """Check if this is a basic request that needs minimal validation"""
+        basic_paths = [
+            "/",
+            "/health",
+            "/docs",
+            "/openapi.json",
+            "/redoc"
+        ]
+        
+        return any(request.url.path.startswith(path) for path in basic_paths)
+    
     def sanitize_string(self, text: str) -> str:
         """Sanitize string by escaping HTML and removing dangerous characters"""
         if not isinstance(text, str):
