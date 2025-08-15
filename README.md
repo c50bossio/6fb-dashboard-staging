@@ -12,14 +12,14 @@ Enterprise barbershop platform: Next.js 14 (port 9999) + FastAPI (port 8001) + S
 ## 🚀 Features
 
 ### 🆕 AI Enhancements (v2.0)
-Complete AI capabilities with voice interaction, proactive monitoring, multi-agent collaboration, learning system, and predictive analytics. See [AI_ENHANCEMENT_SUMMARY.md](./AI_ENHANCEMENT_SUMMARY.md) for technical details.
+Advanced AI system with voice assistant, proactive monitoring, and multi-agent collaboration. See [AI_ENHANCEMENT_SUMMARY.md](./AI_ENHANCEMENT_SUMMARY.md) for complete technical documentation.
 
 ### Core Functionality
-- **AI-Powered Chat**: Enhanced with RAG, memory, and multi-model support
-- **Smart Scheduling**: Advanced calendar with drag-and-drop, resources, and recurring events
+- **AI-Powered Chat**: Multi-model support with memory and learning
+- **Smart Scheduling**: Advanced calendar with drag-and-drop interface
 - **Payment Processing**: Complete Stripe integration with subscriptions
-- **Real-time Updates**: Live dashboards and chat with WebSocket connections
-- **Unified Notifications**: Multi-channel notifications (email, SMS, push, in-app)
+- **Real-time Updates**: Live dashboards with WebSocket connections
+- **Unified Notifications**: Multi-channel notifications (email, SMS, push)
 
 ### Enterprise Features
 - **Authentication**: Secure auth with Supabase (supports OAuth providers)
