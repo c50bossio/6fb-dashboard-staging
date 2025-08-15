@@ -37,7 +37,7 @@ import {
  * - Automatic webhook setup
  * - Sync history and monitoring
  */
-export default function Cin7IntegrationManager() {
+export default function Cin7IntegrationManager({ onConnectionChange, onClose }) {
   const [credentials, setCredentials] = useState({
     accountId: '',
     apiKey: '',
@@ -87,6 +87,11 @@ export default function Cin7IntegrationManager() {
           setSyncStatus(savedCreds.last_sync_status)
           setWebhookStatus(savedCreds.webhook_status)
         }
+      }
+      
+      // Notify parent component of connection status
+      if (onConnectionChange) {
+        onConnectionChange(status.connected)
       }
     } catch (error) {
       console.error('Failed to load credentials:', error)
@@ -200,6 +205,11 @@ export default function Cin7IntegrationManager() {
         text: 'CIN7 integration configured successfully! Real-time sync is now active.' 
       })
 
+      // Notify parent component
+      if (onConnectionChange) {
+        onConnectionChange(true)
+      }
+
       // Reload status
       await loadCredentialsAndStatus()
       
@@ -293,6 +303,11 @@ export default function Cin7IntegrationManager() {
         setSyncStatus(null)
         setWebhookStatus(null)
         setLastSync(null)
+        
+        // Notify parent component
+        if (onConnectionChange) {
+          onConnectionChange(false)
+        }
       } else {
         throw new Error('Failed to delete integration')
       }
@@ -422,6 +437,22 @@ export default function Cin7IntegrationManager() {
                     onClick={() => {
                       setEditMode(false)
                       loadCredentialsAndStatus()
+                      if (onClose) {
+                        onClose()
+                      }
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                {!isConnected && !editMode && (
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      if (onClose) {
+                        onClose()
+                      }
                     }}
                   >
                     Cancel
@@ -462,7 +493,7 @@ export default function Cin7IntegrationManager() {
                   </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-4 space-y-2">
                   <Button 
                     onClick={runManualSync}
                     disabled={isSyncing}
@@ -470,6 +501,16 @@ export default function Cin7IntegrationManager() {
                   >
                     {isSyncing ? 'Syncing...' : 'Run Manual Sync'}
                   </Button>
+                  {onClose && (
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      onClick={onClose}
+                      className="w-full"
+                    >
+                      Close
+                    </Button>
+                  )}
                 </div>
               </TabsContent>
 

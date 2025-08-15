@@ -641,7 +641,22 @@ export default function ProductInventory() {
                   </svg>
                 </button>
               </div>
-              <Cin7IntegrationManager />
+              <Cin7IntegrationManager 
+                onConnectionChange={(connected) => {
+                  setHasCredentials(connected)
+                  setCin7Connected(connected)
+                  if (connected) {
+                    setCin7Status('connected')
+                  }
+                }}
+                onClose={() => {
+                  setShowCin7Modal(false)
+                  setShowCredentialManager(false)
+                  setShowEditCredentials(false)
+                  loadProducts()
+                  checkCin7Connection()
+                }}
+              />
             </div>
           </div>
         </div>
