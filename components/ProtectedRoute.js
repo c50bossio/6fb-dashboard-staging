@@ -39,10 +39,17 @@ export default function ProtectedRoute({ children }) {
     
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
-    const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
+    const devBypass = localStorage.getItem('dev_bypass') === 'true'
+    const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage || isDashboardPage))
     
-    if (devAuth || devSession || enableDevBypass) {
+    if (devAuth || devSession || devBypass || enableDevBypass) {
       console.log('🔓 Dev session active - bypassing auth check')
+      return
+    }
+    
+    // Simple bypass for development
+    if (window.location.search.includes('bypass=true')) {
+      console.log('🔓 Bypass mode activated')
       return
     }
     

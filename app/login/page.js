@@ -27,6 +27,12 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user && !isLoading) {
+      router.push('/dashboard')
+    }
+  }, [user, router, isLoading])
 
   const handleChange = (e) => {
     setFormData({
@@ -50,6 +56,9 @@ export default function LoginPage() {
       })
       
       loginTracking.trackLoginSuccess('email', result?.user?.id)
+      
+      // Redirect to dashboard after successful login
+      router.push('/dashboard')
       
     } catch (err) {
       loginTracking.trackLoginFailure('email', err.message || 'Unknown error')

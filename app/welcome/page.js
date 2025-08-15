@@ -219,7 +219,8 @@ export default function WelcomePage() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include' // Include cookies for authentication
       })
       
       if (response.ok) {
@@ -263,6 +264,7 @@ export default function WelcomePage() {
             headers: {
               'Content-Type': 'application/json'
             },
+            credentials: 'include', // Include cookies for authentication
             body: JSON.stringify({
               step: stepName,
               stepData: data
@@ -308,6 +310,7 @@ export default function WelcomePage() {
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials: 'include', // Include cookies for authentication
         body: JSON.stringify({
           onboardingData
         })

@@ -1,13 +1,24 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
 
 export async function POST(request) {
   try {
+    // Debug: Check if cookies are being received
+    const cookieHeader = request.headers.get('cookie')
+    console.log('🍪 Cookies received:', cookieHeader ? 'Yes' : 'No')
+    
     const supabase = createClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    console.log('🔐 Auth check:', { 
+      hasUser: !!user, 
+      userId: user?.id,
+      authError: authError?.message 
+    })
+    
     if (authError || !user) {
+      console.error('❌ Auth failed:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
