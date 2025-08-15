@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import Cin7IntegrationManager from '@/components/cin7-integration-manager'
 
 export default function ProductInventory() {
   const [products, setProducts] = useState([])
@@ -618,35 +619,32 @@ export default function ProductInventory() {
         />
       )}
 
-      {/* Cin7 Connection Modal */}
-      {showCin7Modal && (
-        <Cin7ConnectionModal
-          onConnect={handleCin7Connect}
-          onClose={() => setShowCin7Modal(false)}
-        />
-      )}
-
-      {/* Credential Manager Modal */}
-      {showCredentialManager && (
-        <CredentialManagerModal
-          credentialInfo={credentialInfo}
-          onEdit={() => {
-            setShowCredentialManager(false)
-            setShowEditCredentials(true)
-          }}
-          onDelete={handleDeleteCredentials}
-          onClose={() => setShowCredentialManager(false)}
-        />
-      )}
-
-      {/* Edit Credentials Modal */}
-      {showEditCredentials && (
-        <Cin7ConnectionModal
-          onConnect={handleEditCredentials}
-          onClose={() => setShowEditCredentials(false)}
-          isEditing={true}
-          title="Update Cin7 Credentials"
-        />
+      {/* CIN7 Integration Manager - Replaces all CIN7 modals */}
+      {(showCin7Modal || showCredentialManager || showEditCredentials) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">CIN7 Integration</h2>
+                <button
+                  onClick={() => {
+                    setShowCin7Modal(false)
+                    setShowCredentialManager(false)
+                    setShowEditCredentials(false)
+                    loadProducts() // Refresh products after closing
+                    checkCin7Connection() // Refresh connection status
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <Cin7IntegrationManager />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

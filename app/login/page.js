@@ -77,13 +77,21 @@ export default function LoginPage() {
         throw new Error('Google sign-in not available. Please refresh the page.')
       }
       
-      console.log('🚀 Starting Google OAuth...')
-      const result = await signInWithGoogle() // No plan parameters for standard login
-      console.log('✅ OAuth initiated successfully')
+      console.log('🚀 Starting Google OAuth with client-side callback...')
+      
+      // Ensure we're using the client-side callback URL
+      const callbackUrl = `${window.location.origin}/auth/callback`
+      console.log('📍 OAuth callback URL:', callbackUrl)
+      
+      const result = await signInWithGoogle(callbackUrl)
+      console.log('✅ OAuth initiated successfully, redirecting to Google...')
       
       if (result) {
         loginTracking.trackOAuthAttempt('google')
       }
+      
+      // Note: The page will redirect to Google, then back to /auth/callback
+      // The loading state will persist until the redirect happens
       
       
     } catch (err) {
