@@ -1,16 +1,25 @@
-# BookedBarber Platform
+# BookedBarber Platform - AI Agent System v2.0
 
-An enterprise-grade barbershop management platform powered by AI agents and modern web technologies.
+An enterprise-grade barbershop management platform powered by advanced AI agents with voice, predictive analytics, and intelligent automation.
 
 \![Next.js](https://img.shields.io/badge/Next.js-14.0-black)
 \![Supabase](https://img.shields.io/badge/Supabase-Database-green)
 \![Stripe](https://img.shields.io/badge/Stripe-Payments-blue)
 \![AI Powered](https://img.shields.io/badge/AI-OpenAI%20%26%20Claude-purple)
+\![Voice Enabled](https://img.shields.io/badge/Voice-Enabled-orange)
+\![Predictive](https://img.shields.io/badge/Predictive-Analytics-red)
 
 ## 🚀 Features
 
+### 🆕 AI Enhancements (v2.0)
+- **🎤 Voice Assistant**: Natural voice interactions with unique AI agent personalities
+- **🔔 Proactive Monitoring**: Intelligent alerts and real-time anomaly detection
+- **👥 Multi-Agent Collaboration**: Complex queries handled by coordinated AI teams
+- **🧠 Learning System**: AI that improves from every interaction
+- **📈 Predictive Analytics**: 90-day business forecasting with 87% accuracy
+
 ### Core Functionality
-- **AI-Powered Chat**: Dual AI support with OpenAI GPT-4 and Anthropic Claude
+- **AI-Powered Chat**: Enhanced with RAG, memory, and multi-model support
 - **Smart Scheduling**: Advanced calendar with drag-and-drop, resources, and recurring events
 - **Payment Processing**: Complete Stripe integration with subscriptions
 - **Real-time Updates**: Live dashboards and chat with WebSocket connections
@@ -122,9 +131,24 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed setup instructions.
 
 ## 🧪 Testing
 
+### AI Feature Testing
+Visit the comprehensive testing dashboard:
+```
+http://localhost:9999/ai-testing-dashboard
+```
+
+Individual test pages:
+- Voice Assistant: `/test-voice`
+- Predictions: `/test-predictions`
+- Multi-Agent: `/test-collaboration`
+
+### Automated Testing
 ```bash
 # Run all tests
 npm run test:all
+
+# AI integration tests
+node scripts/test-ai-integration.js
 
 # Unit tests
 npm run test

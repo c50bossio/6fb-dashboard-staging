@@ -11,7 +11,8 @@ import {
   ArchiveBoxIcon,
   ExclamationTriangleIcon,
   ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon
+  ArrowTrendingDownIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
@@ -22,6 +23,14 @@ export default function ProductInventory() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
+  const [showCin7Modal, setShowCin7Modal] = useState(false)
+  const [cin7Connected, setCin7Connected] = useState(false)
+  const [cin7Status, setCin7Status] = useState(null)
+  const [hasCredentials, setHasCredentials] = useState(false)
+  const [isQuickSyncing, setIsQuickSyncing] = useState(false)
+  const [showCredentialManager, setShowCredentialManager] = useState(false)
+  const [credentialInfo, setCredentialInfo] = useState(null)
+  const [showEditCredentials, setShowEditCredentials] = useState(false)
   const [metrics, setMetrics] = useState({
     totalProducts: 0,
     totalValue: 0,
@@ -31,10 +40,46 @@ export default function ProductInventory() {
 
   useEffect(() => {
     loadProducts()
+    checkCin7Connection()
   }, [])
+
+  const checkCin7Connection = async () => {
+    try {
+      // Fetch detailed credential info first (more reliable)
+      const credResponse = await fetch('/api/cin7/credentials')
+      if (credResponse.ok) {
+        const credData = await credResponse.json()
+        const hasValidCredentials = credData.hasCredentials && credData.credentials
+        
+        setHasCredentials(hasValidCredentials)
+        setCin7Connected(hasValidCredentials)
+        setCredentialInfo(hasValidCredentials ? credData.credentials : null)
+        
+        if (hasValidCredentials) {
+          setCin7Status('connected')
+        } else {
+          setCin7Status(null)
+        }
+      } else {
+        // No credentials found
+        setHasCredentials(false)
+        setCin7Connected(false)
+        setCredentialInfo(null)
+        setCin7Status(null)
+      }
+    } catch (error) {
+      console.error('Error checking Cin7 connection:', error)
+      // On error, assume no credentials
+      setHasCredentials(false)
+      setCin7Connected(false)
+      setCredentialInfo(null)
+      setCin7Status(null)
+    }
+  }
 
   const loadProducts = async () => {
     try {
+      // Use the main products API
       const response = await fetch('/api/shop/products')
       if (response.ok) {
         const data = await response.json()
@@ -45,6 +90,20 @@ export default function ProductInventory() {
           lowStock: 0,
           outOfStock: 0
         })
+      } else {
+        console.error('Error loading products - using fallback')
+        // Fallback to test endpoint if main API fails
+        const fallbackResponse = await fetch('/api/test-products')
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json()
+          setProducts(fallbackData.products || [])
+          setMetrics(fallbackData.metrics || {
+            totalProducts: 0,
+            totalValue: 0,
+            lowStock: 0,
+            outOfStock: 0
+          })
+        }
       }
     } catch (error) {
       console.error('Error loading products:', error)
@@ -92,6 +151,166 @@ export default function ProductInventory() {
       }
     } catch (error) {
       console.error('Error deleting product:', error)
+    }
+  }
+
+  const handleCin7Connect = async (credentials) => {
+    try {
+      // Use the test-sync endpoint with secure credential handling
+      const response = await fetch('/api/cin7/test-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          apiKey: credentials.apiKey,
+          accountId: credentials.accountId 
+        })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setCin7Connected(true)
+        setCin7Status('synced')
+        setHasCredentials(true)
+        setShowCin7Modal(false)
+        
+        // Show detailed success message
+        const sampleProducts = data.sample?.map(p => `• ${p.name} - $${p.retail_price} (Stock: ${p.stock})`).join('\n') || ''
+        alert(`🎉 Success! Synchronized ${data.count} products from your Cin7 warehouse!\n\nCredentials saved for quick sync.\n\n${sampleProducts ? 'Sample products:\n' + sampleProducts : ''}`)
+        
+        loadProducts() // Reload to show synced products
+      } else {
+        const error = await response.json()
+        console.error('Sync error details:', error)
+        
+        // Show detailed error message
+        let errorMessage = `❌ Sync failed: ${error.message || error.error || 'Unknown error'}`
+        if (error.suggestions && error.suggestions.length > 0) {
+          errorMessage += '\n\nSuggestions:\n' + error.suggestions.map(s => `• ${s}`).join('\n')
+        }
+        alert(errorMessage)
+      }
+    } catch (error) {
+      console.error('Error syncing with Cin7:', error)
+      alert('❌ Sync failed. Please try again.')
+    }
+  }
+
+  const handleQuickSync = async () => {
+    try {
+      setIsQuickSyncing(true)
+      setCin7Status('syncing')
+      
+      const response = await fetch('/api/cin7/quick-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setCin7Status('synced')
+        
+        // Show quick sync success message
+        alert(`✅ Quick sync complete! Updated ${data.insertedCount} products from Cin7.`)
+        loadProducts() // Reload to show updated products
+      } else {
+        const error = await response.json()
+        if (error.needsSetup) {
+          // No credentials found, prompt for setup
+          setCin7Connected(false)
+          setHasCredentials(false)
+          setShowCin7Modal(true)
+          alert('❌ No saved credentials found. Please set up your Cin7 connection first.')
+        } else {
+          setCin7Status('error')
+          alert(`❌ Quick sync failed: ${error.message}`)
+        }
+      }
+    } catch (error) {
+      console.error('Error during quick sync:', error)
+      setCin7Status('error')
+      alert('❌ Quick sync failed. Please try again.')
+    } finally {
+      setIsQuickSyncing(false)
+    }
+  }
+
+  const handleDeleteCredentials = async () => {
+    const confirmed = confirm(
+      '⚠️ Delete Cin7 Credentials?\n\n' +
+      'This will permanently remove your saved Cin7 API credentials.\n' +
+      'You will need to enter them again to sync your inventory.\n\n' +
+      'Are you sure you want to continue?'
+    )
+    
+    if (!confirmed) return
+    
+    try {
+      const response = await fetch('/api/cin7/credentials', {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        // Update UI state
+        setHasCredentials(false)
+        setCin7Connected(false)
+        setCredentialInfo(null)
+        setCin7Status(null)
+        setShowCredentialManager(false)
+        
+        alert('✅ Cin7 credentials deleted successfully.\nYou can set up new credentials anytime.')
+      } else {
+        const error = await response.json()
+        alert(`❌ Failed to delete credentials: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('Error deleting credentials:', error)
+      alert('❌ Failed to delete credentials. Please try again.')
+    }
+  }
+
+  const handleEditCredentials = async (newCredentials) => {
+    try {
+      const response = await fetch('/api/cin7/credentials', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCredentials)
+      })
+      
+      if (response.ok) {
+        // Refresh credential info
+        await checkCin7Connection()
+        setShowEditCredentials(false)
+        setShowCredentialManager(false)
+        
+        alert('✅ Cin7 credentials updated successfully!')
+      } else {
+        const error = await response.json()
+        alert(`❌ Failed to update credentials: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('Error updating credentials:', error)
+      alert('❌ Failed to update credentials. Please try again.')
+    }
+  }
+
+  const handleCin7Sync = async () => {
+    try {
+      setCin7Status('syncing')
+      const response = await fetch('/api/cin7/sync', { method: 'POST' })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setCin7Status(`synced`)
+        alert(`✅ Synchronized ${data.count} products from Cin7!`)
+        loadProducts()
+      } else {
+        setCin7Status('error')
+        alert('❌ Sync failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error syncing with Cin7:', error)
+      setCin7Status('error')
+      alert('❌ Sync failed. Please try again.')
     }
   }
 
@@ -202,6 +421,35 @@ export default function ProductInventory() {
             ))}
           </select>
 
+          {/* Sync Cin7 Button */}
+          {hasCredentials ? (
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleQuickSync}
+                disabled={isQuickSyncing}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center"
+              >
+                <LinkIcon className="h-5 w-5 mr-2" />
+                {isQuickSyncing ? 'Syncing...' : 'Refresh Inventory'}
+              </button>
+              <button
+                onClick={() => setShowCredentialManager(true)}
+                className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:border-gray-400 flex items-center"
+                title="Manage Credentials"
+              >
+                <PencilIcon className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowCin7Modal(true)}
+              className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center"
+            >
+              <LinkIcon className="h-5 w-5 mr-2" />
+              Setup Cin7 Sync
+            </button>
+          )}
+
           {/* Add Product Button */}
           <button
             onClick={() => setShowAddModal(true)}
@@ -311,6 +559,35 @@ export default function ProductInventory() {
           <div className="text-center py-12">
             <ArchiveBoxIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
             <p className="text-gray-600">No products found</p>
+            
+            {/* Cin7 Integration */}
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              {!hasCredentials ? (
+                <button
+                  onClick={() => setShowCin7Modal(true)}
+                  className="text-xs text-gray-400 hover:text-gray-600 underline flex items-center justify-center mx-auto"
+                >
+                  <LinkIcon className="h-3 w-3 mr-1" />
+                  Advanced: Connect warehouse system
+                </button>
+              ) : (
+                <div className="flex items-center justify-center space-x-4 text-xs text-gray-400">
+                  <div className="flex items-center">
+                    <div className="h-2 w-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <span>Cin7 warehouse connected</span>
+                  </div>
+                  <span>•</span>
+                  <span>Last sync: {cin7Status === 'syncing' ? 'Syncing...' : 'Ready for refresh'}</span>
+                  <button
+                    onClick={handleQuickSync}
+                    disabled={isQuickSyncing}
+                    className="text-olive-600 hover:text-olive-700 underline"
+                  >
+                    {isQuickSyncing ? 'Syncing...' : 'Refresh now'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -324,6 +601,37 @@ export default function ProductInventory() {
             setShowAddModal(false)
             setEditingProduct(null)
           }}
+        />
+      )}
+
+      {/* Cin7 Connection Modal */}
+      {showCin7Modal && (
+        <Cin7ConnectionModal
+          onConnect={handleCin7Connect}
+          onClose={() => setShowCin7Modal(false)}
+        />
+      )}
+
+      {/* Credential Manager Modal */}
+      {showCredentialManager && (
+        <CredentialManagerModal
+          credentialInfo={credentialInfo}
+          onEdit={() => {
+            setShowCredentialManager(false)
+            setShowEditCredentials(true)
+          }}
+          onDelete={handleDeleteCredentials}
+          onClose={() => setShowCredentialManager(false)}
+        />
+      )}
+
+      {/* Edit Credentials Modal */}
+      {showEditCredentials && (
+        <Cin7ConnectionModal
+          onConnect={handleEditCredentials}
+          onClose={() => setShowEditCredentials(false)}
+          isEditing={true}
+          title="Update Cin7 Credentials"
         />
       )}
     </div>
@@ -523,6 +831,177 @@ function ProductModal({ product, onSave, onClose }) {
                 className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
               >
                 {product ? 'Update Product' : 'Add Product'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CredentialManagerModal({ credentialInfo, onEdit, onDelete, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl max-w-lg w-full">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg mr-3">
+                <LinkIcon className="h-6 w-6 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Manage Cin7 Credentials</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <span className="sr-only">Close</span>
+              ✕
+            </button>
+          </div>
+          
+          {credentialInfo ? (
+            <div className="space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
+                  <span className="font-medium text-green-900">Connected to Cin7</span>
+                </div>
+                
+                <div className="text-sm text-green-800 space-y-1">
+                  <div>Account: {credentialInfo.maskedAccountId || 'Hidden'}</div>
+                  <div>API Version: {credentialInfo.apiVersion || 'Auto-detected'}</div>
+                  <div>Last Tested: {credentialInfo.lastTested ? new Date(credentialInfo.lastTested).toLocaleDateString() : 'Unknown'}</div>
+                  <div>Last Synced: {credentialInfo.lastSynced ? new Date(credentialInfo.lastSynced).toLocaleDateString() : 'Never'}</div>
+                </div>
+              </div>
+              
+              <div className="flex justify-between space-x-3">
+                <button
+                  onClick={onEdit}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center"
+                >
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Update Credentials
+                </button>
+                <button
+                  onClick={onDelete}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center"
+                >
+                  <TrashIcon className="h-4 w-4 mr-2" />
+                  Delete
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <ExclamationTriangleIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-600">No credential information available</p>
+              <button
+                onClick={onClose}
+                className="mt-4 px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Cin7ConnectionModal({ onConnect, onClose, isEditing = false, title = "Sync Cin7 Warehouse Products" }) {
+  const [formData, setFormData] = useState({
+    apiKey: '',
+    accountId: ''
+  })
+  const [isConnecting, setIsConnecting] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setIsConnecting(true)
+    
+    try {
+      await onConnect(formData)
+    } finally {
+      setIsConnecting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl max-w-lg w-full">
+        <div className="p-6">
+          <div className="flex items-center mb-4">
+            <div className="p-2 bg-amber-100 rounded-lg mr-3">
+              <LinkIcon className="h-6 w-6 text-amber-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+          </div>
+          
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p className="text-yellow-800 text-sm">
+              ⚠️ You're currently viewing demo products. Let's sync your actual Cin7 warehouse inventory!
+            </p>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Cin7 Account ID
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.accountId}
+                onChange={(e) => setFormData({...formData, accountId: e.target.value})}
+                placeholder="Your Cin7 Account ID"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Cin7 API Application Key
+              </label>
+              <input
+                type="password"
+                required
+                value={formData.apiKey}
+                onChange={(e) => setFormData({...formData, apiKey: e.target.value})}
+                placeholder="Paste your API key here"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+              />
+            </div>
+            
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-blue-900 mb-2">ℹ️ Where to find these?</h4>
+              <ol className="text-sm text-blue-800 space-y-1 ml-4 list-decimal">
+                <li>Log into Cin7 at inventory.dearsystems.com</li>
+                <li>Go to Settings → Integrations & API</li>
+                <li>Copy your Account ID from the top of the page</li>
+                <li>Create or copy an API Application Key</li>
+                <li><strong>Note:</strong> System will auto-detect if you're using API v1 or v2</li>
+              </ol>
+            </div>
+            
+            <div className="flex justify-end space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isConnecting}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isConnecting}
+                className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50"
+              >
+                {isConnecting ? 'Connecting...' : 'Connect'}
               </button>
             </div>
           </form>

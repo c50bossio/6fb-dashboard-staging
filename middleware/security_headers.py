@@ -233,42 +233,46 @@ class SecurityHeadersMiddleware:
         
         return headers
     
-    async def __call__(self, request: Request, call_next):
-        """Process request and add security headers to response"""
+    async def __call__(self, scope, receive, send):
+        """Process request and add security headers to response using ASGI interface"""
+        
+        # Only handle HTTP requests
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        
+        from starlette.requests import Request
         
         try:
-            # Process the request
-            response = await call_next(request)
+            request = Request(scope, receive)
             
-            # Get security headers for this request
-            security_headers = self._get_security_headers(request)
+            # Create a custom send function to add headers
+            async def send_with_headers(message):
+                if message["type"] == "http.response.start":
+                    # Get security headers for this request
+                    security_headers = self._get_security_headers(request)
+                    
+                    # Add security headers to response
+                    for header_name, header_value in security_headers.items():
+                        message["headers"].append([
+                            header_name.encode(),
+                            header_value.encode()
+                        ])
+                    
+                    # Add custom security headers for API responses
+                    if self._is_api_request(request.url.path):
+                        message["headers"].append([b"X-API-Version", b"2.0.0"])
+                        message["headers"].append([b"X-Powered-By", b"6FB-AI-System"])
+                
+                await send(message)
             
-            # Add security headers to response
-            for header_name, header_value in security_headers.items():
-                response.headers[header_name] = header_value
-            
-            # Add security timing headers for monitoring
-            if hasattr(request.state, 'start_time'):
-                process_time = time.time() - request.state.start_time
-                response.headers['X-Process-Time'] = str(round(process_time, 4))
-            
-            # Add custom security headers for API responses
-            if self._is_api_request(request.url.path):
-                response.headers['X-API-Version'] = '2.0.0'
-                response.headers['X-Powered-By'] = '6FB-AI-System'
-            
-            return response
+            # Process the request through the application
+            await self.app(scope, receive, send_with_headers)
             
         except Exception as e:
             logger.error(f"Security headers middleware error: {e}")
             # Don't block requests if security headers fail
-            response = await call_next(request)
-            
-            # Add minimal security headers even on error
-            response.headers['X-Frame-Options'] = 'DENY'
-            response.headers['X-Content-Type-Options'] = 'nosniff'
-            
-            return response
+            await self.app(scope, receive, send)
 
 class SecurityReportingMiddleware:
     """
@@ -280,8 +284,17 @@ class SecurityReportingMiddleware:
         self.app = app
         self.report_endpoint = report_endpoint
     
-    async def __call__(self, request: Request, call_next):
-        """Handle security reports"""
+    async def __call__(self, scope, receive, send):
+        """Handle security reports with ASGI interface"""
+        from starlette.requests import Request
+        from starlette.responses import JSONResponse
+        
+        # Only handle HTTP requests
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        
+        request = Request(scope, receive)
         
         # Check if this is a security report
         if (request.url.path == self.report_endpoint and 
@@ -298,19 +311,24 @@ class SecurityReportingMiddleware:
                 elif 'nel' in report_data:
                     await self._handle_nel_report(report_data)
                 
-                return JSONResponse(
+                response = JSONResponse(
                     status_code=204,
                     content={"status": "report received"}
                 )
+                await response(scope, receive, send)
+                return
                 
             except Exception as e:
                 logger.error(f"Security report processing error: {e}")
-                return JSONResponse(
+                response = JSONResponse(
                     status_code=400,
                     content={"error": "Invalid report format"}
                 )
+                await response(scope, receive, send)
+                return
         
-        return await call_next(request)
+        # Continue to next middleware/app
+        await self.app(scope, receive, send)
     
     async def _handle_csp_report(self, csp_report: Dict):
         """Handle Content Security Policy violation reports"""

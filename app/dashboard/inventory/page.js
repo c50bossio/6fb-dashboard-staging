@@ -13,13 +13,15 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon,
   DocumentTextIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
+import Cin7ConnectionModal from '../../../components/cin7/Cin7ConnectionModal'
 
 // Product categories
 const PRODUCT_CATEGORIES = [
@@ -193,6 +195,67 @@ export default function InventoryPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showCin7Modal, setShowCin7Modal] = useState(false)
+  const [cin7Connected, setCin7Connected] = useState(false)
+  const [cin7Status, setCin7Status] = useState(null)
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  // Check Cin7 connection status on mount
+  useEffect(() => {
+    if (user) {
+      checkCin7Status()
+    }
+  }, [user])
+
+  const checkCin7Status = async () => {
+    try {
+      const token = await user?.access_token
+      if (!token) return
+
+      const response = await fetch('/api/cin7/sync', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      const data = await response.json()
+      if (data.connected) {
+        setCin7Connected(true)
+        setCin7Status(data)
+      }
+    } catch (error) {
+      console.error('Failed to check Cin7 status:', error)
+    }
+  }
+
+  const handleCin7Connect = (connectionData) => {
+    setCin7Connected(true)
+    setCin7Status(connectionData)
+    checkCin7Status() // Refresh status
+  }
+
+  const handleSync = async () => {
+    setIsSyncing(true)
+    try {
+      const token = await user?.access_token
+      const response = await fetch('/api/cin7/sync', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      const data = await response.json()
+      if (data.success) {
+        // Refresh inventory data
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Sync failed:', error)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   const filteredInventory = inventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -562,6 +625,44 @@ export default function InventoryPage() {
             </div>
           </div>
         </div>
+
+        {/* Cin7 Integration - Subtle footer */}
+        <div className="mt-8 border-t pt-8">
+          {!cin7Connected ? (
+            <div className="text-center">
+              <button
+                onClick={() => setShowCin7Modal(true)}
+                className="text-xs text-gray-400 hover:text-gray-600 underline"
+              >
+                Advanced: Connect warehouse system
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center space-x-4 text-xs text-gray-400">
+              <div className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span>Warehouse sync active</span>
+              </div>
+              {cin7Status?.lastSync && (
+                <span>• Last sync: {new Date(cin7Status.lastSync).toLocaleTimeString()}</span>
+              )}
+              <button
+                onClick={handleSync}
+                disabled={isSyncing}
+                className="text-amber-600 hover:text-amber-700 underline"
+              >
+                {isSyncing ? 'Syncing...' : 'Sync now'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Cin7 Connection Modal */}
+        <Cin7ConnectionModal
+          isOpen={showCin7Modal}
+          onClose={() => setShowCin7Modal(false)}
+          onConnect={handleCin7Connect}
+        />
       </div>
     </ProtectedRoute>
   )

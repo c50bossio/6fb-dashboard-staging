@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-
+import { agentLearning } from '../../../../services/agent-learning-service'
 import { createClient } from '@/lib/supabase/server'
 
 
@@ -29,6 +29,25 @@ export async function POST(request) {
       // Store conversation in Supabase
       await storeConversation(supabase, user.id, currentSession, message, response)
       
+      // Record interaction for learning
+      const agentType = response.agent_details?.agent || 'master_coach'
+      await agentLearning.recordInteraction({
+        agentId: agentType,
+        query: message,
+        context: businessContext,
+        response: response.response,
+        outcome: {
+          completed: true,
+          userSatisfied: response.confidence > 0.8,
+          goalAchieved: response.recommendations?.length > 0
+        },
+        feedback: null, // Will be populated when user provides feedback
+        timestamp: Date.now()
+      })
+      
+      // Recall relevant memories for enhanced context
+      const memories = await agentLearning.recall(agentType, message, businessContext)
+      
       return NextResponse.json({
         success: true,
         response: response.response,
@@ -39,6 +58,8 @@ export async function POST(request) {
         recommendations: response.recommendations,
         contextualInsights: response.contextualInsights,
         knowledgeEnhanced: response.knowledgeEnhanced,
+        relevantMemories: memories.memories?.length || 0,
+        learningPatterns: memories.patterns?.length || 0,
         timestamp: response.timestamp
       })
 

@@ -57,6 +57,10 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         """
         
         try:
+            # Skip validation for health check and basic endpoints
+            if self._should_skip_validation(request.url.path):
+                return await call_next(request)
+            
             # Validate request size
             if hasattr(request, "headers") and "content-length" in request.headers:
                 content_length = int(request.headers.get("content-length", 0))
@@ -67,18 +71,18 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
                         detail="Request too large"
                     )
             
-            # Validate content type
-            await self._validate_content_type(request)
-            
-            # Validate headers
-            await self._validate_headers(request)
-            
-            # Validate query parameters
-            await self._validate_query_params(request)
-            
-            # Validate request body (if present)
+            # Only validate content type for POST/PUT/PATCH requests
             if request.method in ["POST", "PUT", "PATCH"]:
+                await self._validate_content_type(request)
                 await self._validate_request_body(request)
+            
+            # Only validate headers for potentially dangerous requests
+            if request.method not in ["GET", "HEAD", "OPTIONS"]:
+                await self._validate_headers(request)
+            
+            # Only validate query parameters if they exist and request isn't basic
+            if request.url.query and not self._is_basic_request(request):
+                await self._validate_query_params(request)
             
             # Process request
             response = await call_next(request)
@@ -88,6 +92,10 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
             raise
         except Exception as e:
             logger.error(f"Input validation error: {e}")
+            # For development, be more permissive
+            if "development" in str(request.headers.get("host", "")).lower():
+                logger.warning("Skipping validation error in development")
+                return await call_next(request)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid request format"

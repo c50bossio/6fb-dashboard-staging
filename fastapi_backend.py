@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 FastAPI backend for 6FB AI Agent System with authentication and AI endpoints
+CRITICAL: Production-grade memory management to fix OAuth callback loops and system failures
 """
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
@@ -19,11 +20,31 @@ import sqlite3
 import uuid
 import bcrypt
 import jwt
+import gc
 from contextlib import contextmanager
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from services.notification_service import notification_service
 from services.notification_queue import notification_queue
+
+# 🧠 CRITICAL: Import memory manager to fix production authentication failures
+from services.memory_manager import (
+    memory_manager, 
+    get_memory_stats, 
+    memory_limited_oauth_operation,
+    register_oauth_session,
+    cleanup_oauth_session
+)
+
+# 🚨 CRITICAL: Import Sentry for production error monitoring
+from services.sentry_service import (
+    initialize_sentry,
+    capture_exception,
+    capture_message,
+    set_user,
+    add_breadcrumb,
+    sentry_service
+)
 
 # AI Model Configuration - Updated August 2025
 AI_MODELS = {
@@ -134,15 +155,93 @@ except ImportError:
 # Initialize FastAPI app
 app = FastAPI(
     title="6FB AI Agent System API",
-    description="AI-powered barbershop management system",
+    description="AI-powered barbershop management system with production-grade memory management and error monitoring",
     version="2.0.0"
 )
+
+# 🚨 Initialize Sentry error monitoring for production
+initialize_sentry(app)
+if sentry_service.initialized:
+    print("✅ Sentry error monitoring initialized")
+    # Add startup breadcrumb
+    add_breadcrumb("FastAPI application started", category="startup", level="info")
+    # Test Sentry in development
+    if os.getenv('NODE_ENV') == 'development' and os.getenv('SENTRY_TEST_ON_START'):
+        sentry_service.test_sentry()
+else:
+    print("⚠️ Sentry not configured - error monitoring disabled")
+
+# 🧠 CRITICAL: Memory management middleware to fix OAuth callback loops
+@app.middleware("http")
+async def memory_management_middleware(request, call_next):
+    """Production-grade memory management to prevent OAuth callback failures"""
+    # Check if this is an authentication-related request
+    is_auth_request = any(path in request.url.path for path in [
+        '/auth', '/oauth', '/login', '/signup', '/callback'
+    ])
+    
+    # OAuth callback performance tracking with Sentry
+    transaction = None
+    oauth_timer = None
+    if is_auth_request and ('/oauth' in request.url.path or '/callback' in request.url.path):
+        oauth_timer = time.time()
+        # Start Sentry transaction for OAuth flow
+        if sentry_service.initialized:
+            transaction = sentry_service.start_transaction(
+                name=f"oauth.{request.method.lower()}.{request.url.path}",
+                op="http.server"
+            )
+            if transaction:
+                transaction.set_tag("oauth.flow", "callback")
+                transaction.set_data("url", str(request.url))
+    
+    # Use memory-limited operation for auth requests
+    if is_auth_request:
+        with memory_limited_oauth_operation():
+            response = await call_next(request)
+            
+            # Force garbage collection after auth operations
+            if memory_manager.is_memory_pressure():
+                gc.collect()
+            
+            # Complete OAuth performance tracking
+            if oauth_timer:
+                oauth_duration = time.time() - oauth_timer
+                
+                # Complete Sentry transaction
+                if transaction:
+                    transaction.set_data("duration_ms", oauth_duration * 1000)
+                    transaction.set_tag("performance.slow", oauth_duration > 2.0)
+                    transaction.finish()
+                
+                if oauth_duration > 2.0:  # Alert if OAuth takes more than 2 seconds
+                    print(f"⚠️ Slow OAuth callback: {oauth_duration:.2f}s")
+                    # Report to Sentry
+                    if sentry_service.initialized:
+                        sentry_service.capture_message(
+                            f"Slow OAuth callback detected: {oauth_duration:.2f}s",
+                            level="warning",
+                            context={
+                                "duration_seconds": oauth_duration,
+                                "url": str(request.url),
+                                "memory_pressure": memory_manager.get_memory_pressure()
+                            }
+                        )
+            
+            return response
+    else:
+        # Regular request processing
+        response = await call_next(request)
+        return response
 
 # Metrics middleware to track all requests
 @app.middleware("http")
 async def track_metrics(request, call_next):
-    """Track HTTP metrics for Prometheus monitoring"""
+    """Track HTTP metrics for Prometheus monitoring with memory stats"""
     start_time = time.time()
+    
+    # Get memory stats before request
+    memory_stats = get_memory_stats()
     
     # Process request
     response = await call_next(request)
@@ -166,25 +265,27 @@ async def track_metrics(request, call_next):
         endpoint=endpoint
     ).observe(duration)
     
+    # Log memory pressure warnings for auth endpoints
+    if endpoint.startswith('/auth') or endpoint.startswith('/api/auth'):
+        if memory_stats.memory_pressure > 0.8:
+            print(f"⚠️ High memory pressure during auth request: {memory_stats.memory_pressure:.1%}")
+    
     return response
 
-# Security headers middleware (first layer)
-# TEMPORARILY DISABLED FOR TESTING - wrong middleware signature
-# app.add_middleware(
-#     SecurityHeadersMiddleware,
-#     environment=os.getenv('NODE_ENV', 'development')
-# )
+# 🛡️ SECURITY HEADERS MIDDLEWARE (PRODUCTION READY)
+app.add_middleware(
+    SecurityHeadersMiddleware,
+    environment=os.getenv('NODE_ENV', 'development')
+)
 
-# Security reporting middleware
-# TEMPORARILY DISABLED FOR TESTING - wrong middleware signature
-# app.add_middleware(SecurityReportingMiddleware)
+# 🛡️ SECURITY REPORTING MIDDLEWARE 
+app.add_middleware(SecurityReportingMiddleware)
 
-# Input validation middleware - protects against injection attacks
-# TEMPORARILY DISABLED FOR TESTING
-# app.add_middleware(
-#     InputValidationMiddleware,
-#     max_content_length=10 * 1024 * 1024  # 10MB limit
-# )
+# 🛡️ INPUT VALIDATION MIDDLEWARE - Protects against injection attacks
+app.add_middleware(
+    InputValidationMiddleware,
+    max_content_length=10 * 1024 * 1024  # 10MB limit
+)
 
 # Rate limiting middleware (before CORS) - now fixed with proper BaseHTTPMiddleware
 app.add_middleware(
@@ -201,6 +302,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 🧠 Include memory management endpoints
+from fastapi_memory_endpoints import memory_router
+app.include_router(memory_router)
 
 # Security configuration
 security = HTTPBearer()
@@ -256,11 +361,13 @@ else:
     db_pool = initialize_connection_pool(
         database_type="sqlite",
         database_path=db_config["path"],
-        min_connections=5,      # Pre-create 5 connections
-        max_connections=50,     # Scale up to 50 connections (4x improvement)
+        min_connections=3,      # Reduced from 5 to save memory
+        max_connections=20,     # Reduced from 50 to prevent memory pressure
         strategy=PoolStrategy.ADAPTIVE     # Use adaptive pooling for optimal performance
     )
-    print("✅ SQLite database connection pool initialized for development")
+    # 🧠 Register connection pool with memory manager
+    memory_manager.register_connection_pool(db_pool)
+    print("✅ SQLite database connection pool initialized with memory management")
 
 # Initialize Prometheus metrics
 http_requests_total = Counter(
@@ -599,14 +706,64 @@ async def root():
         }
     }
 
+# 🚨 Error reporting endpoint for frontend
+@app.post("/api/errors")
+async def report_error(request: Request):
+    """Endpoint for frontend error reporting with Sentry integration"""
+    try:
+        error_data = await request.json()
+        
+        # Track with Sentry
+        if sentry_service.initialized:
+            # Set user context if available
+            if 'userId' in error_data.get('context', {}):
+                sentry_service.set_user(
+                    user_id=error_data['context']['userId'],
+                    email=error_data['context'].get('email')
+                )
+            
+            # Add breadcrumb for context
+            sentry_service.add_breadcrumb(
+                message=f"Frontend error: {error_data.get('message', 'Unknown')}",
+                category="frontend",
+                level="error",
+                data=error_data.get('context', {})
+            )
+            
+            # Capture the error
+            error_msg = f"Frontend: {error_data.get('message', 'Unknown error')}"
+            if error_data.get('stack'):
+                error_msg += f"\n\nStack trace:\n{error_data['stack']}"
+            
+            event_id = sentry_service.capture_message(
+                error_msg,
+                level="error",
+                context=error_data.get('context', {})
+            )
+            
+            return {"success": True, "eventId": event_id}
+        
+        # Fallback logging if Sentry not available
+        print(f"Frontend error logged: {error_data}")
+        return {"success": True, "eventId": None}
+        
+    except Exception as e:
+        if sentry_service.initialized:
+            capture_exception(e)
+        print(f"Error reporting failed: {e}")
+        return {"success": False, "error": str(e)}
+
 @app.get("/health")
 async def health():
-    """Health check endpoint"""
+    """Health check endpoint with memory management diagnostics"""
     # Update database connection metrics
     stats = get_pool_stats()
     database_connections_active.set(stats.get('active_connections', 0))
     database_connections_idle.set(stats.get('idle_connections', 0))
     database_connections_max.set(stats.get('max_connections', 0))
+    
+    # 🧠 CRITICAL: Get memory statistics to diagnose OAuth callback issues
+    memory_stats = get_memory_stats()
     
     # PHASE 2: Add database/API proxy status
     database_status = "unknown"
@@ -615,12 +772,32 @@ async def health():
     elif db_config["type"] == "sqlite":
         database_status = "sqlite_local"
     
+    # Determine health status based on memory pressure
+    health_status = "healthy"
+    if memory_stats.memory_pressure > 0.95:
+        health_status = "critical"
+    elif memory_stats.memory_pressure > 0.85:
+        health_status = "degraded"
+    
     return {
-        "status": "healthy", 
+        "status": health_status, 
         "service": "6fb-ai-backend", 
         "version": "2.0.0",
         "database_type": database_status,
-        "phase_2_active": db_config["type"] == "api_proxy"
+        "phase_2_active": db_config["type"] == "api_proxy",
+        "memory": {
+            "total_gb": round(memory_stats.total_memory, 2),
+            "available_gb": round(memory_stats.available_memory, 2),
+            "used_gb": round(memory_stats.used_memory, 2),
+            "process_memory_mb": round(memory_stats.process_memory, 2),
+            "memory_pressure": round(memory_stats.memory_pressure, 3),
+            "memory_pressure_percent": f"{memory_stats.memory_pressure:.1%}",
+            "status": "critical" if memory_stats.memory_pressure > 0.95 else 
+                     "high" if memory_stats.memory_pressure > 0.85 else 
+                     "normal"
+        },
+        "oauth_sessions": len(memory_manager.oauth_sessions),
+        "monitoring_active": memory_manager.monitoring_active
     }
 
 @app.get("/phase2-test")

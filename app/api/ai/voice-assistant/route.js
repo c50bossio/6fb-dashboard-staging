@@ -1,28 +1,58 @@
 import { NextResponse } from 'next/server'
+import { detectAgentFromCommand, formatForSpeech, getVoiceProfile } from '../../../../lib/voice-personalities'
 export const runtime = 'edge'
 
 /**
  * Voice Assistant API Endpoint
  * Processes voice commands and provides voice-optimized responses
+ * Now with multi-agent personality support and voice synthesis profiles
  */
 
 export async function POST(request) {
   try {
-    const { command, original_command, session_id, barbershop_id, context } = await request.json()
+    const { 
+      command, 
+      original_command, 
+      session_id, 
+      barbershop_id, 
+      context,
+      transcript,
+      confidence 
+    } = await request.json()
 
-    if (!command?.trim()) {
+    const voiceCommand = command || transcript
+    if (!voiceCommand?.trim()) {
       return NextResponse.json({
         success: false,
         error: 'Voice command is required'
       }, { status: 400 })
     }
 
-    // Process the voice command
-    const result = await processVoiceCommand(command, original_command, session_id, barbershop_id)
+    // Detect which agent should respond based on the command
+    const detectedAgent = detectAgentFromCommand(voiceCommand)
+    
+    // Process the voice command with agent context
+    const result = await processVoiceCommand(
+      voiceCommand, 
+      original_command || voiceCommand, 
+      session_id, 
+      barbershop_id,
+      detectedAgent,
+      confidence || 0.9
+    )
+    
+    // Get voice profile for the detected agent
+    const voiceProfile = getVoiceProfile(detectedAgent)
     
     return NextResponse.json({
       success: true,
       ...result,
+      agent: {
+        type: detectedAgent,
+        name: voiceProfile.name,
+        personality: voiceProfile.personality
+      },
+      voice_settings: voiceProfile.parameters,
       processed_at: new Date().toISOString()
     })
   } catch (error) {
@@ -37,7 +67,7 @@ export async function POST(request) {
 /**
  * Process voice command and generate appropriate response
  */
-async function processVoiceCommand(command, originalCommand, sessionId, barbershopId) {
+async function processVoiceCommand(command, originalCommand, sessionId, barbershopId, agentType, confidence) {
   const commandLower = command.toLowerCase()
   
   // Classify the voice command
@@ -49,7 +79,9 @@ async function processVoiceCommand(command, originalCommand, sessionId, barbersh
     data: null,
     actions: [],
     suggestions: [],
-    command_type: classification.type
+    command_type: classification.type,
+    agent_type: agentType,
+    confidence: confidence
   }
 
   switch (classification.type) {
@@ -85,16 +117,30 @@ async function processVoiceCommand(command, originalCommand, sessionId, barbersh
       response = await handleGeneralCommand(command, sessionId, barbershopId)
   }
 
-  // Add voice synthesis information
+  // Format response for the specific agent's voice
+  const voiceProfile = getVoiceProfile(agentType)
+  const speechText = formatForSpeech(response.message, agentType)
+  
+  // Add voice synthesis information with agent personality
   response.voice_response = {
     speak: true,
-    text: generateVoiceFriendlyResponse(response.message, classification.type),
-    rate: 0.9,
-    pitch: 1
+    text: speechText,
+    rate: voiceProfile.parameters.rate,
+    pitch: voiceProfile.parameters.pitch,
+    volume: voiceProfile.parameters.volume,
+    preferredVoices: voiceProfile.voicePreferences
   }
 
   // Add contextual suggestions
   response.suggestions = generateVoiceSuggestions(classification.type)
+  
+  // Add agent context
+  response.agent_context = {
+    type: agentType,
+    name: voiceProfile.name,
+    personality: voiceProfile.personality,
+    confidence: confidence
+  }
 
   return response
 }

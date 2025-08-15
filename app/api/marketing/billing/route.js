@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// GET - Retrieve billing accounts and history using existing data
+// GET - Retrieve billing accounts and history using real database
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -33,74 +33,70 @@ export async function GET(request) {
       })
     }
 
-    // Get user profile to determine billing capabilities
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+    // Get real marketing accounts from database
+    const { data: accounts, error: accountsError } = await supabase
+      .from('marketing_accounts')
       .select('*')
-      .eq('id', userId)
-      .single()
+      .or(`owner_id.eq.${userId},owner_id.eq.demo-user-001`)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
 
-    if (profileError && profileError.code !== 'PGRST116') {
-      console.error('Error fetching user profile:', profileError)
+    if (accountsError) {
+      console.error('Error fetching marketing accounts:', accountsError)
+      return NextResponse.json({
+        success: true,
+        accounts: [],
+        billingHistory: [],
+        timestamp: new Date().toISOString()
+      })
     }
 
-    // Create billing account based on existing profile data
-    const accounts = []
-    
-    if (profile) {
-      // Calculate user's transaction metrics
-      const { data: userTransactions } = await supabase
-        .from('transactions')
-        .select('amount, created_at')
-        .order('created_at', { ascending: false })
-        .limit(50)
+    // If no accounts exist for this user, create a default one
+    if (!accounts || accounts.length === 0) {
+      // Get user profile for account creation
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
 
-      const totalSpent = userTransactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
-      const transactionCount = userTransactions?.length || 0
-      
-      // Create a billing account representation from profile data
-      accounts.push({
-        id: `billing-${profile.id}`,
-        owner_id: profile.id,
-        owner_type: profile.role?.toLowerCase() || 'shop',
-        account_name: `${profile.full_name || profile.email}'s Marketing Account`,
-        description: `Marketing billing for ${profile.shop_name || 'business'}`,
-        billing_email: profile.email,
-        monthly_spend_limit: 1000.00,
-        is_active: true,
-        is_verified: true,
-        total_campaigns_sent: Math.floor(transactionCount / 5) || 0,
-        total_emails_sent: transactionCount * 15 || 0,
-        total_spent: Math.min(totalSpent * 0.1, 500), // 10% of transactions as marketing spend
-        provider: 'sendgrid',
-        created_at: profile.created_at,
-        updated_at: profile.updated_at || new Date().toISOString()
-      })
-    } else {
-      // Create demo account if no profile found
-      accounts.push({
-        id: `billing-demo-${userId}`,
+      const newAccount = {
         owner_id: userId,
-        owner_type: 'shop',
-        account_name: 'Demo Marketing Account',
-        description: 'Demo marketing billing account',
-        billing_email: 'demo@example.com',
+        owner_type: profile?.role?.toLowerCase() || 'shop',
+        account_name: `${profile?.full_name || profile?.email || 'Your'} Marketing Account`,
+        description: `Marketing account for ${profile?.shop_name || 'your business'}`,
+        billing_email: profile?.email || 'demo@example.com',
+        sendgrid_from_email: profile?.email || 'noreply@bookedbarber.com',
+        sendgrid_from_name: profile?.shop_name || 'Your Business',
         monthly_spend_limit: 1000.00,
         is_active: true,
-        is_verified: true,
-        total_campaigns_sent: 5,
-        total_emails_sent: 250,
-        total_spent: 125.50,
-        provider: 'sendgrid',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
+        is_verified: false,
+        provider: 'sendgrid'
+      }
+
+      const { data: createdAccount, error: createError } = await supabase
+        .from('marketing_accounts')
+        .insert(newAccount)
+        .select()
+        .single()
+
+      if (!createError && createdAccount) {
+        accounts.push(createdAccount)
+      }
     }
+
+    // Get billing history from marketing_billing_records
+    const { data: billingHistory } = await supabase
+      .from('marketing_billing_records')
+      .select('*')
+      .in('account_id', accounts.map(a => a.id))
+      .order('created_at', { ascending: false })
+      .limit(20)
 
     return NextResponse.json({
       success: true,
-      accounts: accounts,
-      billingHistory: [],
+      accounts: accounts || [],
+      billingHistory: billingHistory || [],
       timestamp: new Date().toISOString()
     })
 

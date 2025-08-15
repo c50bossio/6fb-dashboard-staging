@@ -17,7 +17,7 @@ module.exports = {
       name: 'Development',
       url: 'http://localhost:9999',
       apiUrl: 'http://localhost:9999/api',
-      database: 'sqlite',
+      database: 'postgresql', // Changed to use Supabase consistently
       mockServices: true,
       monitoring: false,
       rateLimit: false

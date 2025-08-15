@@ -23,15 +23,18 @@ class RateLimitConfig:
     
     # Default rate limits (requests per time window)
     DEFAULT_LIMITS = {
-        # Authentication endpoints - stricter limits
+        # Authentication endpoints - stricter limits with OAuth protection
         '/api/v1/auth/login': {'requests': 5, 'window': 300, 'burst': 10},  # 5 req/5min, burst 10
         '/api/v1/auth/register': {'requests': 3, 'window': 300, 'burst': 5},  # 3 req/5min, burst 5
         '/api/v1/auth/reset-password': {'requests': 3, 'window': 3600, 'burst': 5},  # 3 req/hour
+        '/auth/callback': {'requests': 10, 'window': 60, 'burst': 5},  # OAuth callback protection
+        '/api/auth/callback': {'requests': 10, 'window': 60, 'burst': 5},  # OAuth API protection
         
-        # AI endpoints - moderate limits
+        # AI endpoints - moderate limits with cost control
         '/api/v1/ai/chat': {'requests': 100, 'window': 3600, 'burst': 20},  # 100 req/hour, burst 20
         '/api/v1/ai/enhanced-chat': {'requests': 50, 'window': 3600, 'burst': 10},  # 50 req/hour
         '/api/v1/agents/': {'requests': 200, 'window': 3600, 'burst': 30},  # 200 req/hour
+        '/api/ai/': {'requests': 150, 'window': 3600, 'burst': 25},  # Generic AI endpoints
         
         # Dashboard endpoints - generous limits
         '/api/v1/dashboard/': {'requests': 1000, 'window': 3600, 'burst': 50},  # 1000 req/hour
@@ -42,6 +45,13 @@ class RateLimitConfig:
         
         # Admin endpoints - very strict
         '/api/v1/admin/': {'requests': 100, 'window': 3600, 'burst': 10},  # 100 req/hour
+        
+        # Error reporting - allow reasonable error reporting
+        '/api/errors': {'requests': 100, 'window': 300, 'burst': 20},  # 100 errors/5min
+        
+        # Critical production endpoints
+        '/api/stripe/': {'requests': 50, 'window': 60, 'burst': 10},  # Payment processing
+        '/api/webhooks/': {'requests': 100, 'window': 60, 'burst': 20},  # Webhook reception
     }
     
     # User type multipliers
@@ -61,8 +71,9 @@ class RateLimitConfig:
 
 class SlidingWindowRateLimiter:
     """
-    Sliding window rate limiter with Redis backend support
+    Production-grade sliding window rate limiter with Redis backend support
     Falls back to in-memory storage if Redis is unavailable
+    Includes DDoS protection and automatic blocking for abusive clients
     """
     
     def __init__(self, redis_client=None):
@@ -71,6 +82,19 @@ class SlidingWindowRateLimiter:
         self.config = RateLimitConfig()
         self.cleanup_interval = 300  # Clean up every 5 minutes
         self.last_cleanup = time.time()
+        
+        # DDoS protection
+        self.blocked_ips = set()
+        self.violation_counts = defaultdict(int)
+        self.block_duration = 3600  # Block for 1 hour
+        self.max_violations = 10  # Block after 10 violations
+        
+        # Sentry integration for monitoring
+        try:
+            from services.sentry_service import sentry_service
+            self.sentry = sentry_service
+        except:
+            self.sentry = None
     
     def _get_client_key(self, request: Request, endpoint: str) -> Tuple[str, str]:
         """Generate unique client key for rate limiting"""
@@ -245,9 +269,18 @@ class SlidingWindowRateLimiter:
     
     async def check_rate_limit(self, request: Request, endpoint: str) -> Tuple[bool, Dict]:
         """
-        Check if request is within rate limits
+        Production-grade rate limit check with DDoS protection
         Returns (allowed, limit_info)
         """
+        
+        # Check if IP is blocked
+        client_ip = self._get_client_ip(request)
+        if client_ip in self.blocked_ips:
+            return False, {
+                'blocked': True,
+                'reason': 'IP blocked due to abuse',
+                'reset_time': time.time() + self.block_duration
+            }
         
         client_key, client_type = self._get_client_key(request, endpoint)
         limit_config = self._get_rate_limit(endpoint, client_type)
@@ -255,10 +288,45 @@ class SlidingWindowRateLimiter:
         # Log rate limit check for monitoring
         logger.debug(f"Rate limit check: {client_key} -> {endpoint} (type: {client_type})")
         
-        return await self._check_redis_limit(client_key, limit_config)
+        # Check rate limit
+        allowed, limit_info = await self._check_redis_limit(client_key, limit_config)
+        
+        # Track violations for DDoS protection
+        if not allowed:
+            self.violation_counts[client_ip] += 1
+            
+            # Auto-block after max violations
+            if self.violation_counts[client_ip] >= self.max_violations:
+                self.blocked_ips.add(client_ip)
+                logger.warning(f"🚫 Blocking IP {client_ip} due to {self.max_violations} rate limit violations")
+                
+                # Report to Sentry
+                if self.sentry and self.sentry.initialized:
+                    self.sentry.capture_message(
+                        f"IP blocked for rate limit abuse: {client_ip}",
+                        level="warning",
+                        context={
+                            'ip': client_ip,
+                            'violations': self.violation_counts[client_ip],
+                            'endpoint': endpoint
+                        }
+                    )
+                
+                # Schedule unblock
+                asyncio.create_task(self._schedule_unblock(client_ip))
+        
+        return allowed, limit_info
+    
+    async def _schedule_unblock(self, ip: str):
+        """Schedule IP unblock after block duration"""
+        await asyncio.sleep(self.block_duration)
+        if ip in self.blocked_ips:
+            self.blocked_ips.remove(ip)
+            self.violation_counts[ip] = 0
+            logger.info(f"🔓 Unblocked IP {ip} after {self.block_duration} seconds")
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """FastAPI middleware for rate limiting"""
+    """Production-grade FastAPI middleware for rate limiting with monitoring"""
     
     def __init__(self, app, redis_client=None, enabled: bool = True):
         super().__init__(app)
@@ -274,6 +342,18 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             '/_next/',  # Next.js static assets
             '/static/',  # Static assets
         }
+        
+        # Metrics for monitoring
+        self.request_counts = defaultdict(int)
+        self.blocked_requests = 0
+        self.total_requests = 0
+        
+        # Sentry integration
+        try:
+            from services.sentry_service import sentry_service
+            self.sentry = sentry_service
+        except:
+            self.sentry = None
     
     def _should_skip_rate_limiting(self, path: str) -> bool:
         """Check if path should skip rate limiting"""
@@ -293,6 +373,27 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             )
             
             if not allowed:
+                # Track metrics
+                self.blocked_requests += 1
+                self.request_counts['blocked'] += 1
+                
+                # Check if IP is blocked
+                if limit_info.get('blocked'):
+                    error_response = {
+                        'error': 'Access denied',
+                        'message': 'Your IP has been temporarily blocked due to excessive requests.',
+                        'code': 'IP_BLOCKED',
+                        'details': {
+                            'reason': limit_info.get('reason'),
+                            'retry_after': self.limiter.block_duration
+                        }
+                    }
+                    
+                    return JSONResponse(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        content=error_response
+                    )
+                
                 # Rate limit exceeded
                 retry_after = int(limit_info.get('reset_time', time.time()) - time.time())
                 
@@ -316,6 +417,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 }
                 
                 logger.warning(f"Rate limit exceeded for {request.url.path}: {limit_info}")
+                
+                # Report repeated violations to Sentry
+                client_ip = self.limiter._get_client_ip(request)
+                if self.sentry and self.limiter.violation_counts[client_ip] > 5:
+                    self.sentry.capture_message(
+                        f"Repeated rate limit violations from {client_ip}",
+                        level="warning",
+                        context={
+                            'ip': client_ip,
+                            'path': request.url.path,
+                            'violations': self.limiter.violation_counts[client_ip]
+                        }
+                    )
                 
                 return JSONResponse(
                     status_code=status.HTTP_429_TOO_MANY_REQUESTS,

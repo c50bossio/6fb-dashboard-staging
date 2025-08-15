@@ -17,7 +17,7 @@ export const useAuth = () => {
 function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
-  // Start with loading false for better UX on public pages
+  // Start with loading false - especially important for OAuth buttons on public pages
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
@@ -25,9 +25,46 @@ function SupabaseAuthProvider({ children }) {
   useEffect(() => {
     // Check initial session
     const checkUser = async () => {
-      // Only set loading true if we're on a protected page
-      const publicPaths = ['/login', '/register', '/forgot-password', '/', '/subscribe']
-      const isPublicPage = typeof window !== 'undefined' && publicPaths.includes(window.location.pathname)
+      const publicPaths = ['/login', '/register', '/forgot-password', '/subscribe', '/success', '/pricing', '/']
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+      
+      // Check if current path matches any public path
+      const isPublicPage = publicPaths.some(path => {
+        if (path === '/') {
+          return currentPath === '/'  // Only exact match for root
+        }
+        return currentPath === path || currentPath.startsWith(path + '/') || currentPath.startsWith(path + '?')
+      })
+      
+      // Consolidated development mode check
+      const isDevelopment = typeof window !== 'undefined' && (
+        window.location.hostname === 'localhost' || 
+        window.location.hostname === '127.0.0.1' ||
+        process.env.NODE_ENV === 'development'
+      )
+      
+      // SINGLE development mode bypass for campaigns page
+      if (isDevelopment && currentPath.includes('/dashboard/campaigns')) {
+        console.log('🚀 DEVELOPMENT MODE: Direct bypass for campaigns page')
+        const mockUser = {
+          id: 'demo-user-001',
+          email: 'demo@test.com',
+          user_metadata: { full_name: 'Demo User' }
+        }
+        const mockProfile = {
+          id: 'demo-user-001',
+          email: 'demo@test.com',
+          full_name: 'Demo User',
+          role: 'SHOP_OWNER'
+        }
+        setUser(mockUser)
+        setProfile(mockProfile)
+        setLoading(false)
+        console.log('✅ Mock user set immediately - no auth check needed')
+        return
+      }
+      
+      console.log('Auth check - Current path:', currentPath, 'Is public:', isPublicPage, 'Will set loading:', !isPublicPage)
       
       if (!isPublicPage) {
         setLoading(true)
@@ -67,6 +104,8 @@ function SupabaseAuthProvider({ children }) {
       } finally {
         // Always set loading to false after checking
         setLoading(false)
+        console.log('✅ Auth check complete - loading set to false')
+        console.log('   Final auth state: user:', user?.email || 'none', 'loading:', false)
       }
     }
     
@@ -99,7 +138,7 @@ function SupabaseAuthProvider({ children }) {
         setProfile(null)
         
         // Redirect to login if on protected page
-        const publicPaths = ['/login', '/register', '/forgot-password', '/', '/clear-all']
+        const publicPaths = ['/login', '/register', '/forgot-password', '/success', '/pricing', '/', '/clear-all']
         if (!publicPaths.includes(window.location.pathname)) {
           router.push('/login')
         }
@@ -139,33 +178,16 @@ function SupabaseAuthProvider({ children }) {
     return data
   }
 
-  const signInWithGoogle = async (planId = null, billingPeriod = null) => {
-    // If plan data is provided, use the new secure OAuth session method
-    if (planId && billingPeriod) {
-      console.log('🔒 Starting secure OAuth with plan data:', { planId, billingPeriod })
-      
-      try {
-        // Import the OAuth session utility dynamically to avoid SSR issues
-        const { initiateOAuthWithPlan } = await import('../lib/oauth-session')
-        console.log('📦 OAuth session module imported successfully')
-        
-        const { data, error } = await initiateOAuthWithPlan(planId, billingPeriod)
-        console.log('🚀 initiateOAuthWithPlan result:', { hasData: !!data, hasError: !!error })
-        
-        if (error) throw error
-        return data
-      } catch (err) {
-        console.error('❌ Error in signInWithGoogle with plan:', err)
-        throw err
-      }
-    }
+  const signInWithGoogle = async (customRedirectTo) => {
+    console.log('🔐 Starting Google OAuth')
     
-    // Fallback to standard OAuth for cases without plan data
-    console.log('🔓 Starting standard OAuth without plan data')
+    const redirectUrl = customRedirectTo || `${window.location.origin}/auth/callback`
+    console.log('🔄 OAuth redirect URL:', redirectUrl)
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
       }
     })
     

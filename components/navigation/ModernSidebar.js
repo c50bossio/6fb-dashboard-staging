@@ -67,16 +67,16 @@ export default function ModernSidebar() {
       {/* Desktop Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-40 ${sidebarWidth} bg-white border-r border-gray-200 transition-all duration-300 ease-in-out hidden lg:flex lg:flex-col`}>
         {/* Logo and Header */}
-        <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
+        <div className="flex items-center justify-between h-12 px-4 py-2 border-b border-gray-200">
           {!collapsed && (
             <Link href="/dashboard" className="flex items-center">
-              <Logo size="small" showText={false} />
+              <Logo size="xsmall" showText={false} />
             </Link>
           )}
           
           {collapsed && (
             <Link href="/dashboard" className="flex justify-center">
-              <Logo size="small" showText={false} />
+              <Logo size="xsmall" showText={false} />
             </Link>
           )}
 
@@ -247,9 +247,9 @@ export default function ModernSidebar() {
           <div className="fixed inset-y-0 left-0 flex w-full max-w-sm">
             <div className="flex flex-col w-full bg-white">
               {/* Mobile Header */}
-              <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
+              <div className="flex items-center justify-between h-12 px-4 py-2 border-b border-gray-200">
                 <Link href="/dashboard" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
-                  <Logo size="small" showText={false} />
+                  <Logo size="xsmall" showText={false} />
                 </Link>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

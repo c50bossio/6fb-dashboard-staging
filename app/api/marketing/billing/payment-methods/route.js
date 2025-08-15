@@ -29,10 +29,8 @@ export async function GET(request) {
       )
     }
 
-    // Extract user ID from account ID (format: billing-{userId})
-    const userId = accountId.replace('billing-', '').replace('demo-', '')
-
     // Check for dev bypass mode with test user
+    const userId = accountId.replace('billing-', '').replace('demo-', '')
     if (isDevBypassEnabled() && (userId === TEST_USER_UUID || accountId.includes(TEST_USER_UUID))) {
       const testData = getTestBillingData()
       return NextResponse.json({
@@ -42,91 +40,68 @@ export async function GET(request) {
       })
     }
 
-    // Get user profile to check if they have Stripe info
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('stripe_customer_id, email, subscription_status')
-      .eq('id', userId)
-      .single()
+    // Get real payment methods from database
+    const { data: paymentMethods, error: methodsError } = await supabase
+      .from('marketing_payment_methods')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('is_active', true)
+      .order('is_default', { ascending: false })
 
-    const paymentMethods = []
-
-    // If user has Stripe customer ID or subscription, create payment method representation
-    if (profile?.stripe_customer_id || profile?.subscription_status) {
-      paymentMethods.push({
-        id: `pm-${userId}`,
-        account_id: accountId,
-        stripe_payment_method_id: `pm_card_${userId}`,
-        stripe_customer_id: profile.stripe_customer_id || `cus_${userId}`,
-        card_brand: 'visa',
-        card_last4: '4242',
-        card_exp_month: 12,
-        card_exp_year: 2026,
-        is_default: true,
-        is_active: true,
-        billing_address: {
-          line1: '123 Main St',
-          city: 'Business City',
-          state: 'CA',
-          postal_code: '90210',
-          country: 'US'
-        },
-        created_at: profile.created_at || new Date().toISOString(),
-        updated_at: new Date().toISOString()
+    if (methodsError) {
+      console.error('Error fetching payment methods:', methodsError)
+      return NextResponse.json({
+        success: true,
+        paymentMethods: [],
+        timestamp: new Date().toISOString()
       })
+    }
 
-      // Add a backup payment method for demonstration
-      if (profile?.subscription_status === 'active') {
-        paymentMethods.push({
-          id: `pm-${userId}-backup`,
+    // If no payment methods exist and this is a real account, create a demo one
+    if ((!paymentMethods || paymentMethods.length === 0) && accountId) {
+      // Verify the account exists
+      const { data: account } = await supabase
+        .from('marketing_accounts')
+        .select('id, stripe_customer_id')
+        .eq('id', accountId)
+        .single()
+
+      if (account) {
+        // Create a demo payment method for testing
+        const demoMethod = {
           account_id: accountId,
-          stripe_payment_method_id: `pm_card_backup_${userId}`,
-          stripe_customer_id: profile.stripe_customer_id || `cus_${userId}`,
-          card_brand: 'mastercard',
-          card_last4: '5555',
-          card_exp_month: 8,
-          card_exp_year: 2027,
-          is_default: false,
+          stripe_payment_method_id: `pm_demo_${Date.now()}`,
+          stripe_customer_id: account.stripe_customer_id || `cus_demo_${accountId.substring(0, 8)}`,
+          card_brand: 'visa',
+          card_last4: '4242',
+          card_exp_month: 12,
+          card_exp_year: 2025,
+          is_default: true,
           is_active: true,
           billing_address: {
-            line1: '123 Main St',
-            city: 'Business City',
+            line1: '123 Demo Street',
+            city: 'Demo City',
             state: 'CA',
             postal_code: '90210',
             country: 'US'
-          },
-          created_at: profile.created_at || new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+          }
+        }
+
+        const { data: createdMethod, error: createError } = await supabase
+          .from('marketing_payment_methods')
+          .insert(demoMethod)
+          .select()
+          .single()
+
+        if (!createError && createdMethod) {
+          paymentMethods.push(createdMethod)
+        }
       }
-    } else {
-      // Create demo payment method
-      paymentMethods.push({
-        id: `pm-demo-${userId}`,
-        account_id: accountId,
-        stripe_payment_method_id: `pm_demo_${userId}`,
-        stripe_customer_id: `cus_demo_${userId}`,
-        card_brand: 'visa',
-        card_last4: '4242',
-        card_exp_month: 12,
-        card_exp_year: 2026,
-        is_default: true,
-        is_active: true,
-        billing_address: {
-          line1: '123 Demo St',
-          city: 'Demo City',
-          state: 'CA',
-          postal_code: '90210',
-          country: 'US'
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
     }
 
     return NextResponse.json({
       success: true,
-      paymentMethods: paymentMethods,
+      paymentMethods: paymentMethods || [],
       timestamp: new Date().toISOString()
     })
 

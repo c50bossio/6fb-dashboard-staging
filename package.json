@@ -67,6 +67,9 @@
     "backup:restore": "./scripts/restore-system.sh",
     "backup:list": "ls -lht /backup/*backup*.tar.gz 2>/dev/null || echo 'No backups found'",
     "seed-calendar": "node scripts/seed-calendar-data.js",
+    "claude:prep": "./claude-session-prep.sh",
+    "claude:clean": "git add . && git commit -m 'WIP: Claude session checkpoint'",
+    "claude:health": "node test-supabase-access.js && curl -s http://localhost:9999/api/health && curl -s http://localhost:8001/health",
     "cleanup-test-data": "node scripts/cleanup-test-data.js",
     "cleanup-test-data:dry": "node scripts/cleanup-test-data.js --dry-run",
     "migrate:recurring": "node scripts/run-recurring-migration.js",
@@ -79,6 +82,8 @@
   "dependencies": {
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
+    "@sentry/nextjs": "^10.5.0",
+    "@sentry/node": "^10.5.0",
     "@stripe/react-stripe-js": "^3.9.0",
     "@stripe/stripe-js": "^7.8.0",
     "@supabase/ssr": "^0.6.1",

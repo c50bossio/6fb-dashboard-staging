@@ -9,7 +9,8 @@ import {
   SparklesIcon,
   ArrowPathIcon,
   Squares2X2Icon,
-  PresentationChartLineIcon
+  PresentationChartLineIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { 
   ChartBarIcon as ChartBarSolid,
@@ -91,6 +92,7 @@ export default function UnifiedDashboard({ user }) {
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [cachedData, setCachedData] = useState(null)
   const [cacheTimestamp, setCacheTimestamp] = useState(null)
+  const [showOnboardingBanner, setShowOnboardingBanner] = useState(false)
 
   // Load dashboard data based on current mode - API CALLS ONLY
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
@@ -189,6 +191,15 @@ export default function UnifiedDashboard({ user }) {
     }
   }, [currentMode, user])
 
+  const handleDismissOnboardingBanner = () => {
+    localStorage.removeItem('show_onboarding_checklist')
+    setShowOnboardingBanner(false)
+  }
+
+  const handleResumeOnboarding = () => {
+    router.push('/welcome')
+  }
+
   // Handle URL parameter for mode with executive as default
   useEffect(() => {
     if (modeParam && Object.values(DASHBOARD_MODES).includes(modeParam)) {
@@ -207,6 +218,20 @@ export default function UnifiedDashboard({ user }) {
       }
     }
   }, [modeParam, router])
+
+  // Check for incomplete onboarding
+  useEffect(() => {
+    const checkOnboardingStatus = () => {
+      const showOnboardingChecklist = localStorage.getItem('show_onboarding_checklist')
+      setShowOnboardingBanner(showOnboardingChecklist === 'true')
+    }
+    
+    checkOnboardingStatus()
+    
+    // Listen for storage changes in case user completes onboarding in another tab
+    window.addEventListener('storage', checkOnboardingStatus)
+    return () => window.removeEventListener('storage', checkOnboardingStatus)
+  }, [])
 
   // Load data on mount and mode change
   useEffect(() => {
@@ -356,6 +381,45 @@ export default function UnifiedDashboard({ user }) {
         </div>
         
       </div>
+
+      {/* Onboarding Resume Banner */}
+      {showOnboardingBanner && (
+        <div className="bg-gradient-to-r from-olive-50 to-blue-50 border border-olive-200 rounded-xl p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-olive-100 rounded-full flex items-center justify-center">
+                  <CheckCircleIcon className="w-6 h-6 text-olive-600" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-900">
+                  Complete Your Account Setup
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Finish setting up your barbershop profile to unlock all features and start accepting bookings.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={handleResumeOnboarding}
+                className="bg-olive-600 hover:bg-olive-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Resume Setup
+              </button>
+              <button
+                onClick={handleDismissOnboardingBanner}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Executive Mode Content */}
       {currentMode === DASHBOARD_MODES.EXECUTIVE && (

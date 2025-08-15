@@ -1,4 +1,10 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Use service loader to get appropriate services (mock in dev, real in prod)
 let sendGridService, twilioSMSService, stripeService;
@@ -21,37 +27,43 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const shopId = searchParams.get('shop_id');
         const accountType = searchParams.get('account_type');
+        const userId = searchParams.get('user_id');
+        const limit = parseInt(searchParams.get('limit') || '50');
         
-        // Mock campaign data based on role
-        const campaigns = [
-            {
-                id: 'campaign-001',
-                name: 'Welcome Series',
-                type: 'email',
-                status: 'active',
-                subject: 'Welcome to Elite Cuts!',
-                message: 'Thank you for choosing us for your grooming needs.',
-                shop_id: shopId || 'shop-001',
-                created_at: '2024-01-15T10:00:00Z',
-                recipients_count: 125,
-                sent_count: 120,
-                open_rate: 0.68,
-                click_rate: 0.24
-            },
-            {
-                id: 'campaign-002',
-                name: 'Monthly Promotion',
-                type: 'sms',
-                status: 'scheduled',
-                subject: '25% Off This Week!',
-                message: 'Get 25% off all services this week. Book now!',
-                shop_id: shopId || 'shop-001',
-                created_at: '2024-01-20T14:30:00Z',
-                scheduled_for: '2024-01-25T09:00:00Z',
-                recipients_count: 87,
-                estimated_cost: '$43.50'
+        // Try to get campaigns from database first
+        let campaigns = [];
+        let error = null;
+        
+        try {
+            // Build query
+            let query = supabase
+                .from('marketing_campaigns')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(limit);
+            
+            // Filter by user/shop if provided
+            if (userId) {
+                query = query.or(`owner_id.eq.${userId},shop_id.eq.${shopId}`);
+            } else if (shopId) {
+                query = query.eq('shop_id', shopId);
             }
-        ];
+            
+            const { data, error: dbError } = await query;
+            
+            if (!dbError && data) {
+                campaigns = data;
+            } else {
+                error = dbError;
+            }
+        } catch (e) {
+            console.log('Database query failed, using empty array:', e.message);
+        }
+        
+        // If no campaigns in database, return empty array (no mock data)
+        if (campaigns.length === 0) {
+            campaigns = [];
+        }
 
         return NextResponse.json({
             success: true,

@@ -1,0 +1,49 @@
+# Claude Code Context Optimization
+# Files to ignore for context efficiency
+
+# Documentation artifacts that aren't needed for development
+*.md
+!README.md
+!CLAUDE.md
+!SETUP_GUIDE.md
+
+# Test and debug files
+*test*.js
+*debug*.js
+*-test.html
+*-debug.html
+test-*.png
+test-*.spec.js
+playwright-report/
+test-results/
+
+# Backup and cleanup files
+*.backup
+cleanup_artifacts/
+archive-*/
+
+# Temporary development files
+fix-*.js
+setup-*.js
+verify-*.js
+analyze-*.js
+migrate-*.js
+seed-*.js
+
+# SQL files (unless actively working on database)
+*.sql
+!database/schema.sql
+
+# Large config files when not needed
+docker-compose.yml.backup
+package.json.backup
+*.env.example
+
+# Deployment and infrastructure files (when not deploying)
+deploy/
+infrastructure/
+docs/deployment/
+coder-cloud-deploy/
+
+# Legacy and disabled services
+services-temporarily-disabled/

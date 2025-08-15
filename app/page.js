@@ -43,10 +43,10 @@ export default function HomePage() {
         {/* Header */}
         <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center">
+            <div className="flex items-center justify-between h-20">
+              <div className="flex items-center py-3">
                 <Link href="/" className="block">
-                  <LogoHeader size="small" />
+                  <LogoHeader size="medium" />
                 </Link>
               </div>
               
@@ -116,7 +116,7 @@ export default function HomePage() {
                       Sign In
                     </Link>
                     <Link
-                      href="/register"
+                      href="/subscribe"
                       className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
                     >
                       Sign Up
@@ -129,7 +129,7 @@ export default function HomePage() {
         </header>
 
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 text-white py-32 overflow-hidden">
+        <section className="relative bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 text-white pt-36 pb-32 overflow-hidden">
           <div className="absolute inset-0 bg-black opacity-10"></div>
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
@@ -156,7 +156,7 @@ export default function HomePage() {
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
                 <Link
-                  href="/register"
+                  href="/subscribe"
                   className="bg-white text-gray-900 px-8 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
                 >
                   <RocketLaunchIcon className="h-5 w-5 mr-2" />
@@ -230,10 +230,10 @@ export default function HomePage() {
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
               <Link
-                href="/register"
+                href="/subscribe"
                 className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
               >
-                Sign Up
+                Get Started Today
                 <ArrowRightIcon className="h-5 w-5 ml-2" />
               </Link>
               

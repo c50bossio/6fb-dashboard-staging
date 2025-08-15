@@ -6,7 +6,10 @@ import {
   PaperAirplaneIcon,
   ChatBubbleLeftRightIcon,
   ArrowsPointingOutIcon,
-  MicrophoneIcon
+  MicrophoneIcon,
+  HeartIcon,
+  FaceSmileIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from './SupabaseAuthProvider'
@@ -140,6 +143,12 @@ export default function FloatingAIChat() {
   }
   const [isVoiceListening, setIsVoiceListening] = useState(false)
   const recognitionRef = useRef(null)
+  
+  // Emotion Recognition State
+  const [emotionAnalysis, setEmotionAnalysis] = useState(null)
+  const [isAnalyzingEmotion, setIsAnalyzingEmotion] = useState(false)
+  const [userEmotionHistory, setUserEmotionHistory] = useState([])
+  const [currentMood, setCurrentMood] = useState('neutral')
 
   // Fetch comprehensive business context from enhanced APIs
   useEffect(() => {
@@ -416,25 +425,297 @@ export default function FloatingAIChat() {
     }
   }, [isDragging, dragOffset])
 
+  // Emotion Recognition Functions
+  const analyzeMessageEmotion = async (messageText) => {
+    if (!messageText.trim()) return null
+
+    setIsAnalyzingEmotion(true)
+    
+    try {
+      const response = await fetch('/api/ai/emotion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: messageText,
+          action: 'analyze',
+          userId: user?.id || 'demo_user',
+          context: {
+            sessionId: sessionId,
+            previousEmotion: currentMood,
+            businessContext: businessContext
+          },
+          businessContext: {
+            shopName: shopData?.shop_name,
+            isOwner: shopData?.user_role === 'owner',
+            isStaff: shopData?.user_role !== 'owner'
+          }
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        const analysis = data.analysis
+        setEmotionAnalysis(analysis)
+        setCurrentMood(analysis.emotion)
+        
+        // Add to emotion history
+        setUserEmotionHistory(prev => [...prev, {
+          emotion: analysis.emotion,
+          confidence: analysis.confidence,
+          timestamp: new Date(),
+          message: messageText.substring(0, 50)
+        }].slice(-10)) // Keep last 10 emotions
+        
+        console.log('🎭 Emotion detected:', {
+          emotion: analysis.emotion,
+          confidence: analysis.confidence,
+          empathetic_strategy: analysis.empathetic_response.strategy.approach
+        })
+        
+        return analysis
+      }
+    } catch (error) {
+      console.warn('Emotion analysis failed:', error)
+    } finally {
+      setIsAnalyzingEmotion(false)
+    }
+    
+    return null
+  }
+
+  const getEmotionIcon = (emotion) => {
+    const icons = {
+      happy: '😊',
+      satisfied: '😌',
+      excited: '🤩',
+      frustrated: '😤',
+      angry: '😠',
+      confused: '😕',
+      anxious: '😰',
+      neutral: '😐'
+    }
+    return icons[emotion] || '😐'
+  }
+
+  const getEmotionColor = (emotion) => {
+    const colors = {
+      happy: 'text-green-600',
+      satisfied: 'text-blue-600',
+      excited: 'text-orange-600',
+      frustrated: 'text-yellow-600',
+      angry: 'text-red-600',
+      confused: 'text-gray-600',
+      anxious: 'text-purple-600',
+      neutral: 'text-gray-400'
+    }
+    return colors[emotion] || 'text-gray-400'
+  }
+
+  // Automated Task Execution Integration
+  const processAutomatedTriggers = async (emotionAnalysis, messageText) => {
+    try {
+      console.log('🤖 Processing automated triggers for emotion:', emotionAnalysis.emotion)
+      
+      // Create trigger context
+      const triggerContext = {
+        message: messageText,
+        emotion: emotionAnalysis.emotion,
+        emotionConfidence: emotionAnalysis.confidence,
+        userId: user?.id,
+        timestamp: new Date().toISOString(),
+        // Add business event context if relevant
+        businessEvent: detectBusinessEvent(messageText, emotionAnalysis)
+      }
+
+      // Call automated task execution API
+      const response = await fetch('/api/ai/task-execution', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'process_triggers',
+          context: triggerContext,
+          userId: user?.id,
+          businessContext: businessContext
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        console.log(`✅ Automated triggers processed: ${result.result.triggers_processed} triggers`)
+        
+        // Show user notification if any actions were triggered
+        if (result.result.triggers_processed > 0) {
+          showAutomationNotification(result.result.triggers_processed, emotionAnalysis.emotion)
+        }
+      } else {
+        console.warn('⚠️ Automated trigger processing failed:', result.error)
+      }
+      
+    } catch (error) {
+      console.error('❌ Error processing automated triggers:', error)
+    }
+  }
+
+  // Detect business events from message content
+  const detectBusinessEvent = (messageText, emotionAnalysis) => {
+    const text = messageText.toLowerCase()
+    
+    // Appointment cancellation detection
+    if (text.includes('cancel') && (text.includes('appointment') || text.includes('booking'))) {
+      return {
+        type: 'appointment_cancellation',
+        data: {
+          message: messageText,
+          emotion: emotionAnalysis.emotion,
+          confidence: emotionAnalysis.confidence
+        }
+      }
+    }
+    
+    // Payment related issues
+    if ((text.includes('payment') || text.includes('pay') || text.includes('bill')) && 
+        (emotionAnalysis.emotion === 'frustrated' || emotionAnalysis.emotion === 'angry')) {
+      return {
+        type: 'payment_issue',
+        data: {
+          message: messageText,
+          emotion: emotionAnalysis.emotion,
+          confidence: emotionAnalysis.confidence
+        }
+      }
+    }
+    
+    // Service quality issues
+    if ((text.includes('service') || text.includes('quality') || text.includes('disappointed')) && 
+        (emotionAnalysis.emotion === 'angry' || emotionAnalysis.emotion === 'frustrated')) {
+      return {
+        type: 'service_complaint',
+        data: {
+          message: messageText,
+          emotion: emotionAnalysis.emotion,
+          confidence: emotionAnalysis.confidence
+        }
+      }
+    }
+    
+    // Positive feedback
+    if ((text.includes('love') || text.includes('amazing') || text.includes('excellent')) && 
+        (emotionAnalysis.emotion === 'happy' || emotionAnalysis.emotion === 'excited')) {
+      return {
+        type: 'positive_feedback',
+        data: {
+          message: messageText,
+          emotion: emotionAnalysis.emotion,
+          confidence: emotionAnalysis.confidence
+        }
+      }
+    }
+    
+    return null
+  }
+
+  // Show notification when automated actions are triggered
+  const showAutomationNotification = (triggerCount, emotion) => {
+    const notification = {
+      id: Date.now(),
+      type: 'automation',
+      content: `🤖 ${triggerCount} automated action${triggerCount > 1 ? 's' : ''} triggered based on your ${emotion} message`,
+      timestamp: new Date(),
+      icon: '⚡'
+    }
+    
+    // Add to messages as system notification
+    setMessages(prev => [...prev, notification])
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      setMessages(prev => prev.filter(msg => msg.id !== notification.id))
+    }, 5000)
+  }
+
+  const analyzeVoiceEmotion = async (transcript, speechEvent) => {
+    try {
+      // Basic voice emotion analysis using speech recognition confidence and transcript
+      const confidence = speechEvent.results?.[0]?.[0]?.confidence || 0.8
+      
+      // Simulate voice feature analysis (in real implementation, would analyze audio)
+      const voiceFeatures = {
+        confidence: confidence,
+        transcript: transcript,
+        // Placeholder for real voice analysis
+        pitch: 'normal',
+        tempo: 'normal', 
+        volume: 'normal'
+      }
+
+      const response = await fetch('/api/ai/emotion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'voice_emotion',
+          voiceData: voiceFeatures
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        return data.voice_emotion
+      }
+    } catch (error) {
+      console.warn('Voice emotion analysis failed:', error)
+    }
+    
+    return null
+  }
+
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading || !sessionId) return
 
-    const userMessage = {
-      id: Date.now(),
-      type: 'user',
-      content: message,
-      timestamp: new Date()
-    }
-
-    setMessages(prev => [...prev, userMessage])
     const currentMessage = message
     setMessage('')
     setIsLoading(true)
 
+    // Analyze emotion before sending
+    const emotionAnalysis = await analyzeMessageEmotion(currentMessage)
+
+    // Trigger automated actions based on emotion analysis
+    if (emotionAnalysis) {
+      await processAutomatedTriggers(emotionAnalysis, currentMessage)
+    }
+
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: currentMessage,
+      timestamp: new Date(),
+      emotion: emotionAnalysis ? {
+        type: emotionAnalysis.emotion,
+        confidence: emotionAnalysis.confidence,
+        icon: getEmotionIcon(emotionAnalysis.emotion)
+      } : null
+    }
+
+    setMessages(prev => [...prev, userMessage])
+
     try {
       const startTime = Date.now()
       
-      // Call the AI chat API with persistent session
+      // Enhanced context with emotion analysis
+      const enhancedBusinessContext = {
+        ...businessContext,
+        current_emotion: emotionAnalysis ? {
+          emotion: emotionAnalysis.emotion,
+          confidence: emotionAnalysis.confidence,
+          empathetic_strategy: emotionAnalysis.empathetic_response.strategy
+        } : null,
+        emotion_history: userEmotionHistory.slice(-3), // Last 3 emotions for context
+        mood_trend: currentMood
+      }
+      
+      // Call the AI chat API with emotion-enhanced context
       const response = await fetch('/api/ai/analytics-enhanced-chat', {
         method: 'POST',
         headers: {
@@ -443,12 +724,17 @@ export default function FloatingAIChat() {
         body: JSON.stringify({
           message: currentMessage,
           session_id: sessionId,
-          business_context: businessContext && contextLoaded ? {
-            // Enhanced comprehensive business context
-            shop: businessContext.shop,
-            analytics: businessContext.analytics,
-            predictions: businessContext.predictions,
-            alerts: businessContext.alerts,
+          business_context: enhancedBusinessContext && contextLoaded ? {
+            // Enhanced comprehensive business context with emotion
+            shop: enhancedBusinessContext.shop,
+            analytics: enhancedBusinessContext.analytics,
+            predictions: enhancedBusinessContext.predictions,
+            alerts: enhancedBusinessContext.alerts,
+            
+            // NEW: Emotion context for empathetic responses
+            current_emotion: enhancedBusinessContext.current_emotion,
+            emotion_history: enhancedBusinessContext.emotion_history,
+            mood_trend: enhancedBusinessContext.mood_trend,
             
             // Legacy compatibility for existing API
             shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
@@ -462,14 +748,16 @@ export default function FloatingAIChat() {
             total_revenue: realTimeMetrics?.total_revenue || 0,
             
             // Enhanced context indicators
-            context_version: '2.0',
+            context_version: '2.1', // Updated for emotion support
             context_loaded: contextLoaded,
-            last_updated: businessContext.last_updated,
+            emotion_enabled: true,
+            last_updated: businessContext?.last_updated,
             data_sources: {
-              analytics: !!businessContext.analytics,
-              predictions: !!businessContext.predictions,
-              alerts: !!businessContext.alerts,
-              real_time_metrics: !!realTimeMetrics
+              analytics: !!businessContext?.analytics,
+              predictions: !!businessContext?.predictions,
+              alerts: !!businessContext?.alerts,
+              real_time_metrics: !!realTimeMetrics,
+              emotion_analysis: !!emotionAnalysis
             }
           } : {
             // Fallback basic context
@@ -593,10 +881,17 @@ export default function FloatingAIChat() {
       setIsVoiceListening(true)
     }
     
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
       const transcript = event.results[0][0].transcript
       setMessage(transcript)
       setIsVoiceListening(false)
+      
+      // Analyze voice emotion (basic implementation)
+      // In a full implementation, this would analyze audio features
+      const voiceEmotionHint = await analyzeVoiceEmotion(transcript, event)
+      if (voiceEmotionHint) {
+        console.log('🎤 Voice emotion detected:', voiceEmotionHint)
+      }
     }
     
     recognition.onerror = (event) => {
@@ -696,6 +991,15 @@ export default function FloatingAIChat() {
                   Enhanced
                 </div>
               )}
+              {currentMood !== 'neutral' && (
+                <div 
+                  className="bg-purple-400 text-purple-900 text-xs px-2 py-0.5 rounded-full font-bold flex items-center space-x-1" 
+                  title={`Current mood: ${currentMood}`}
+                >
+                  <span>{getEmotionIcon(currentMood)}</span>
+                  <span className="capitalize">{currentMood}</span>
+                </div>
+              )}
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -719,7 +1023,25 @@ export default function FloatingAIChat() {
                       : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                   }`}
                 >
-                  {msg.content}
+                  <div className="flex items-start space-x-2">
+                    <div className="flex-1">
+                      {msg.content}
+                    </div>
+                    {/* Emotion Indicator for User Messages */}
+                    {msg.type === 'user' && msg.emotion && (
+                      <div className="flex-shrink-0">
+                        <div 
+                          className="flex items-center space-x-1 bg-white/20 rounded-full px-2 py-1"
+                          title={`Detected emotion: ${msg.emotion.type} (${Math.round(msg.emotion.confidence * 100)}% confidence)`}
+                        >
+                          <span className="text-xs">{msg.emotion.icon}</span>
+                          <span className={`text-xs ${getEmotionColor(msg.emotion.type)}`}>
+                            {msg.emotion.type}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Smart Actions */}
                   {msg.actions && msg.actions.length > 0 && (

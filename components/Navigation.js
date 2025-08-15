@@ -182,10 +182,10 @@ const marketingOperations = [
     description: 'Create and manage marketing campaigns'
   },
   { 
-    name: 'Billing Accounts', 
-    href: '/dashboard/campaigns/billing', 
-    icon: BanknotesIcon,
-    description: 'Manage marketing billing and payment accounts'
+    name: 'Billing', 
+    href: '/dashboard/billing', 
+    icon: CreditCardIcon,
+    description: 'Billing accounts, payment methods, and usage analytics'
   },
   { 
     name: 'Analytics', 
@@ -292,8 +292,8 @@ export default function Navigation() {
 
   // Mobile Header Component
   const MobileHeader = () => (
-    <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
-      <LogoHeader size="small" showText={false} />
+    <div className="lg:hidden bg-card border-b border-border px-4 py-0.5 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md h-12">
+      <LogoHeader size="xsmall" showText={false} />
       <button
         onClick={() => setIsMobileMenuOpen(true)}
         className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"

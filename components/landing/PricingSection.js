@@ -177,7 +177,7 @@ const PricingSection = () => {
 
                 {/* CTA Button */}
                 <Link
-                  href={plan.cta === 'Contact Sales' ? '/contact' : '/register'}
+                  href={plan.cta === 'Contact Sales' ? '/contact' : '/subscribe'}
                   className={`block w-full text-center py-3 px-6 rounded-lg font-semibold transition-all ${
                     plan.highlighted
                       ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white hover:shadow-lg'

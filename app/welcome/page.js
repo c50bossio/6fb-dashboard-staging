@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 import Link from 'next/link'
 import {
@@ -11,28 +11,49 @@ import {
   MapPinIcon,
   ArrowRightIcon,
   ClockIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 
 // Import new onboarding components
 import RoleSelector from '../../components/onboarding/RoleSelector'
+import GoalsSelector from '../../components/onboarding/GoalsSelector'
 import ProgressTracker from '../../components/onboarding/ProgressTracker'
 import ServiceSetup from '../../components/onboarding/ServiceSetup'
+import FinancialSetup from '../../components/onboarding/FinancialSetup'
 import LivePreview from '../../components/onboarding/LivePreview'
 import OnboardingChecklist from '../../components/onboarding/OnboardingChecklist'
 
 export default function WelcomePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, profile, updateProfile } = useAuth()
   const [currentStep, setCurrentStep] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [showChecklist, setShowChecklist] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [errorType, setErrorType] = useState(null)
+  const [showOAuthError, setShowOAuthError] = useState(false)
+  const [stripeSessionId, setStripeSessionId] = useState(null)
   
-  // Onboarding data state
+  // Onboarding data state - Pre-populate role based on subscription plan
+  const planFromUrl = searchParams.get('plan')
+  const getRoleFromPlan = (plan) => {
+    switch(plan) {
+      case 'barber':
+        return 'individual_barber'
+      case 'shop':
+        return 'shop_owner'
+      case 'enterprise':
+        return 'enterprise_owner'
+      default:
+        return null
+    }
+  }
+  
   const [onboardingData, setOnboardingData] = useState({
-    // Step 1: Role & Goals
-    role: null,
+    // Step 1: Role & Goals - Pre-select based on subscription
+    role: getRoleFromPlan(planFromUrl),
     goals: [],
     businessSize: '',
     
@@ -57,18 +78,36 @@ export default function WelcomePage() {
     completedSteps: []
   })
 
-  // Define onboarding steps based on role
+  // Define onboarding steps based on role and subscription
   const getSteps = () => {
-    const baseSteps = [
+    // Skip role selection if we have a pre-selected role from subscription
+    const hasPreselectedRole = getRoleFromPlan(planFromUrl) !== null
+    
+    const baseSteps = hasPreselectedRole ? [
+      { id: 'goals', label: 'Your Goals', sublabel: 'What matters most', timeEstimate: 1 },
+      { id: 'business', label: 'Business Info', sublabel: 'Basic details', timeEstimate: 2 },
+      { id: 'services', label: 'Services', sublabel: 'What you offer', timeEstimate: 3 },
+      { id: 'preview', label: 'Preview', sublabel: 'See your page', timeEstimate: 1 }
+    ] : [
       { id: 'role', label: 'Role & Goals', sublabel: 'Tell us about you', timeEstimate: 1 },
       { id: 'business', label: 'Business Info', sublabel: 'Basic details', timeEstimate: 2 },
       { id: 'services', label: 'Services', sublabel: 'What you offer', timeEstimate: 3 },
       { id: 'preview', label: 'Preview', sublabel: 'See your page', timeEstimate: 1 }
     ]
     
-    // Add extra steps for shop owners
-    if (onboardingData.role === 'shop_owner' || onboardingData.role === 'enterprise') {
-      baseSteps.splice(3, 0, {
+    // Add financial step for shop owners and enterprise owners
+    // Check both the current role and plan from URL to ensure financial step is included
+    const currentRole = onboardingData.role
+    const planRole = getRoleFromPlan(planFromUrl)
+    const needsFinancialStep = currentRole === 'shop_owner' || 
+                               currentRole === 'enterprise_owner' ||
+                               planRole === 'shop_owner' || 
+                               planRole === 'enterprise_owner' ||
+                               planFromUrl === 'shop' ||
+                               planFromUrl === 'enterprise'
+    
+    if (needsFinancialStep) {
+      baseSteps.splice(-1, 0, {
         id: 'financial',
         label: 'Financials',
         sublabel: 'Payment setup',
@@ -82,16 +121,52 @@ export default function WelcomePage() {
   const steps = getSteps()
 
   useEffect(() => {
+    // Check for OAuth error parameters and Stripe session
+    const error = searchParams.get('error')
+    const from = searchParams.get('from')
+    const stripeSession = searchParams.get('stripe_session')
+    const setup = searchParams.get('setup')
+    
+    console.log('👋 Welcome page loaded, error:', error, 'from:', from, 'stripe_session:', stripeSession)
+    
+    // Handle Stripe session recovery
+    if (stripeSession && setup === 'initial') {
+      console.log('💳 Stripe session detected, user paid but needs account setup')
+      setStripeSessionId(stripeSession)
+      // Allow user to continue with onboarding even without auth session
+      return
+    }
+    
+    if (error === 'session_timeout' && from === 'oauth_success') {
+      console.log('🚨 OAuth session timeout detected')
+      setErrorType(error)
+      setShowOAuthError(true)
+      return
+    }
+    
+    // Handle successful payment redirect without session
+    if (from === 'payment_success') {
+      console.log('✅ User completed payment, allowing onboarding')
+      // Continue with normal onboarding flow
+      return
+    }
+    
     // Don't redirect immediately - give auth time to load
     const timer = setTimeout(() => {
-      if (!user && !profile) {
+      // If coming from payment success, don't require auth
+      if ((from === 'payment_success' || stripeSession) && !user) {
+        console.log('💳 Payment successful but no auth - allowing onboarding anyway')
+        return
+      }
+      
+      if (!user && !profile && !showOAuthError && !stripeSession && from !== 'payment_success') {
         console.log('⚠️ No user found after waiting, redirecting to login')
         router.push('/login')
       }
     }, 2000) // Wait 2 seconds for auth to load
     
     return () => clearTimeout(timer)
-  }, [user, profile, router])
+  }, [user, profile, router, searchParams, showOAuthError])
 
   // Load saved progress from backend
   useEffect(() => {
@@ -261,6 +336,67 @@ export default function WelcomePage() {
 
   const businessSlug = generateSlug(onboardingData.businessName || 'your-business')
 
+  const handleRetryOAuth = () => {
+    console.log('🔄 Retrying OAuth flow...')
+    setShowOAuthError(false)
+    router.push('/pricing')
+  }
+
+  const handleManualLogin = () => {
+    console.log('🔐 Going to manual login...')
+    setShowOAuthError(false)
+    router.push('/login')
+  }
+
+  // Show OAuth error state
+  if (showOAuthError && errorType === 'session_timeout') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <ExclamationTriangleIcon className="h-16 w-16 text-yellow-500 mx-auto mb-6" />
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              OAuth Session Issue
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Your Google sign-in was successful, but we had trouble loading your session in the browser. 
+              This can happen due to browser security settings or network issues.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={handleRetryOAuth}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Try Google Sign-In Again
+              </button>
+              <button
+                onClick={handleManualLogin}
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors"
+              >
+                Use Email & Password Instead
+              </button>
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-500">
+                Need help? Contact support at{' '}
+                <a href="mailto:support@bookedbarber.com" className="text-blue-600 hover:text-blue-700">
+                  support@bookedbarber.com
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-olive-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -291,25 +427,53 @@ export default function WelcomePage() {
           {/* Left Column - Form Steps */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             {/* Back Button */}
-            {currentStep > 0 && (
-              <button
-                onClick={() => setCurrentStep(currentStep - 1)}
-                className="mb-4 flex items-center text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeftIcon className="w-4 h-4 mr-1" />
-                Back
-              </button>
-            )}
+            <div className="flex items-center justify-between mb-4">
+              {currentStep > 0 ? (
+                <button
+                  onClick={() => setCurrentStep(currentStep - 1)}
+                  className="flex items-center text-gray-600 hover:text-gray-900"
+                >
+                  <ArrowLeftIcon className="w-4 h-4 mr-1" />
+                  Back
+                </button>
+              ) : (
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="flex items-center text-gray-600 hover:text-gray-900"
+                >
+                  <ArrowLeftIcon className="w-4 h-4 mr-1" />
+                  Back to Dashboard
+                </button>
+              )}
+              
+              {/* Skip Setup button - available on all steps except the last */}
+              {currentStep < steps.length - 1 && (
+                <button
+                  onClick={handleSkipSetup}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                >
+                  Skip Setup for Now
+                </button>
+              )}
+            </div>
 
             {/* Step Content */}
-            {currentStep === 0 && (
+            {steps[currentStep]?.id === 'role' && (
               <RoleSelector
                 onComplete={(data) => handleStepComplete(data)}
                 initialData={onboardingData}
               />
             )}
 
-            {currentStep === 1 && (
+            {steps[currentStep]?.id === 'goals' && (
+              <GoalsSelector
+                onComplete={(data) => handleStepComplete(data)}
+                initialData={onboardingData}
+                subscriptionTier={planFromUrl || 'shop'}
+              />
+            )}
+
+            {steps[currentStep]?.id === 'business' && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">
                   Tell us about your business
@@ -470,7 +634,7 @@ export default function WelcomePage() {
               </div>
             )}
 
-            {currentStep === 2 && (
+            {steps[currentStep]?.id === 'services' && (
               <ServiceSetup
                 onComplete={(data) => handleStepComplete(data)}
                 initialData={onboardingData}
@@ -479,7 +643,15 @@ export default function WelcomePage() {
               />
             )}
 
-            {currentStep === steps.length - 1 && (
+            {steps[currentStep]?.id === 'financial' && (
+              <FinancialSetup
+                onComplete={(data) => handleStepComplete(data)}
+                initialData={onboardingData}
+                subscriptionTier={planFromUrl || 'shop'}
+              />
+            )}
+
+            {steps[currentStep]?.id === 'preview' && (
               <div className="space-y-6">
                 <div className="text-center py-8">
                   <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
