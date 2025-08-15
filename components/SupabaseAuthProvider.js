@@ -71,7 +71,7 @@ function SupabaseAuthProvider({ children }) {
       }
       
       try {
-        let authAttempts = isOAuthRedirect ? 3 : 1
+        const authAttempts = isOAuthRedirect ? 3 : 1
         let sessionData = null
         
         for (let attempt = 1; attempt <= authAttempts; attempt++) {
@@ -112,6 +112,16 @@ function SupabaseAuthProvider({ children }) {
           if (profileData) {
             setProfile(profileData)
             console.log('✅ OAuth session synchronized successfully - profile loaded')
+            
+            // Check if user needs to complete onboarding when accessing protected routes
+            const protectedPaths = ['/dashboard', '/(protected)']
+            const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+            const isProtectedRoute = protectedPaths.some(path => currentPath.startsWith(path))
+            
+            if (isProtectedRoute && profileData.onboarding_completed === false) {
+              console.log('🚨 User accessing protected route without completing onboarding, redirecting to welcome')
+              router.push('/welcome')
+            }
           }
         }
       } catch (error) {
@@ -143,7 +153,14 @@ function SupabaseAuthProvider({ children }) {
         }
         
         if (window.location.pathname === '/login') {
-          router.push('/dashboard')
+          // Check if user has completed onboarding
+          if (profileData && profileData.onboarding_completed === false) {
+            console.log('🚨 User has not completed onboarding, redirecting to welcome page')
+            router.push('/welcome')
+          } else {
+            console.log('✅ User onboarding complete, redirecting to dashboard')
+            router.push('/dashboard')
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)

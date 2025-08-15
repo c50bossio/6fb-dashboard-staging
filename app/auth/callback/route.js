@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url)
@@ -32,10 +32,10 @@ export async function GET(request) {
           refresh_token: data.session.refresh_token ? 'present' : 'missing'
         })
         
-        console.log('🔍 Checking for existing subscription...')
+        console.log('🔍 Checking user profile and subscription...')
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('id, email, role, subscription_status, stripe_customer_id, shop_name')
+          .select('id, email, role, subscription_status, stripe_customer_id, shop_name, onboarding_completed')
           .eq('email', data.session.user.email)
           .single()
         
@@ -44,15 +44,20 @@ export async function GET(request) {
             role: profile.role,
             status: profile.subscription_status,
             hasStripeId: !!profile.stripe_customer_id,
-            hasShopName: !!profile.shop_name
+            hasShopName: !!profile.shop_name,
+            onboardingCompleted: profile.onboarding_completed
           })
           
-          const welcomeUrl = new URL('/welcome', origin)
-          welcomeUrl.searchParams.set('from', 'oauth_success')
-          
-          console.log('🎉 Redirecting existing subscriber to welcome:', welcomeUrl.toString())
-          
-          return NextResponse.redirect(welcomeUrl.toString())
+          // Check if user has completed onboarding
+          if (profile.onboarding_completed === false) {
+            console.log('🚨 User has not completed onboarding, redirecting to welcome')
+            const welcomeUrl = new URL('/welcome', origin)
+            welcomeUrl.searchParams.set('from', 'oauth_success')
+            return NextResponse.redirect(welcomeUrl.toString())
+          } else {
+            console.log('✅ User onboarding complete, redirecting to dashboard')
+            return NextResponse.redirect(new URL('/dashboard', origin))
+          }
         }
         
         console.log('⚠️ No active subscription found - redirecting to payment')
