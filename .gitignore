@@ -98,3 +98,30 @@ jwt-secret.txt
 .master.key
 .secrets.encrypted
 .env.local.backup
+
+# Context cleanup archive
+.context-cleanup-archive/
+
+# Large context files
+*.sql.backup
+*.db.backup
+migrations-backup/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+docs/generated/
+api-docs/
+
+# Development artifacts
+package-lock.json.backup
+yarn.lock.backup
+composer.lock.backup
+.env.backup*
+
+# Database exports
+*.sql.export
+*.csv.export
+data-exports/
