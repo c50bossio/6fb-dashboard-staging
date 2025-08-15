@@ -2,10 +2,10 @@
 
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
-export default function SuccessPage() {
+function SuccessPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user } = useAuth()
@@ -194,5 +194,14 @@ export default function SuccessPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Wrap with Suspense for useSearchParams
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div>Loading...</div></div>}>
+      <SuccessPageContent />
+    </Suspense>
   )
 }

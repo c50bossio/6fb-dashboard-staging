@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 
 import FinancialSetup from '../../components/onboarding/FinancialSetup'
 import GoalsSelector from '../../components/onboarding/GoalsSelector'
@@ -24,7 +24,7 @@ import ServiceSetup from '../../components/onboarding/ServiceSetup'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 // Session recovery removed - trusting Supabase's built-in auth handling
 
-export default function WelcomePage() {
+function WelcomePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, profile, updateProfile, loading: authLoading } = useAuth()
@@ -813,5 +813,14 @@ export default function WelcomePage() {
         />
       )}
     </div>
+  )
+}
+
+// Wrap with Suspense for useSearchParams
+export default function WelcomePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-900 flex items-center justify-center"><div className="text-white">Loading...</div></div>}>
+      <WelcomePageContent />
+    </Suspense>
   )
 }

@@ -319,6 +319,7 @@ export function useRealtimeAppointments(barbershopId) {
           }
         }
         
+        console.log('🔍 APPOINTMENT UPDATE DETAILS:', {
           appointmentId: payload.new?.id,
           oldStatus: payload.old?.status,
           newStatus: payload.new?.status,
@@ -347,6 +348,7 @@ export function useRealtimeAppointments(barbershopId) {
             if (appointment.id === payload.new.id) {
               const isCancelled = payload.new.status === 'cancelled'
               
+              console.log('🔄 APPOINTMENT STATUS CHANGE:', {
                 id: payload.new.id,
                 oldTitle: appointment.title,
                 newStatus: payload.new.status,
@@ -370,6 +372,7 @@ export function useRealtimeAppointments(barbershopId) {
                 }
               }
               
+              console.log('✅ APPOINTMENT UPDATED IN CALENDAR:', {
                 id: updatedAppointment.id,
                 title: updatedAppointment.title,
                 backgroundColor: updatedAppointment.backgroundColor,

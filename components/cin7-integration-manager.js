@@ -576,7 +576,8 @@ export default function Cin7IntegrationManager({ onConnectionChange, onClose }) 
       </Card>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      {showDeleteDialog && (
+      <AlertDialog open={showDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete CIN7 Integration?</AlertDialogTitle>
@@ -593,6 +594,7 @@ export default function Cin7IntegrationManager({ onConnectionChange, onClose }) 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      )}
     </div>
   )
 }

@@ -836,9 +836,9 @@ async def health():
     """Health check endpoint with memory management diagnostics"""
     # Update database connection metrics
     stats = get_pool_stats()
-    database_connections_active.set(stats.get('active_connections', 0))
-    database_connections_idle.set(stats.get('idle_connections', 0))
-    database_connections_max.set(stats.get('max_connections', 0))
+    database_connections_active.set(getattr(stats, 'active_connections', 0))
+    database_connections_idle.set(getattr(stats, 'idle_connections', 0))
+    database_connections_max.set(getattr(stats, 'max_connections', 0))
     
     # 🧠 CRITICAL: Get memory statistics to diagnose OAuth callback issues
     memory_stats = get_memory_stats()
@@ -929,9 +929,9 @@ async def metrics():
     """Prometheus metrics endpoint"""
     # Update database connection metrics
     stats = get_pool_stats()
-    database_connections_active.set(stats.get('active_connections', 0))
-    database_connections_idle.set(stats.get('idle_connections', 0))
-    database_connections_max.set(stats.get('max_connections', 0))
+    database_connections_active.set(getattr(stats, 'active_connections', 0))
+    database_connections_idle.set(getattr(stats, 'idle_connections', 0))
+    database_connections_max.set(getattr(stats, 'max_connections', 0))
     
     # Generate Prometheus metrics
     metrics_data = generate_latest()
@@ -2277,8 +2277,13 @@ async def optimize_database_cache(request: dict = {}):
         
         # Get updated stats
         stats = get_pool_stats()
-        sqlite_stats = stats.get("pools", {}).get("sqlite", {})
-        pool_stats = sqlite_stats.get("pool_statistics", {})
+        # Convert dataclass to dict if needed
+        if hasattr(stats, '__dict__'):
+            stats_dict = vars(stats)
+        else:
+            stats_dict = stats
+        sqlite_stats = stats_dict.get("pools", {}).get("sqlite", {}) if isinstance(stats_dict, dict) else {}
+        pool_stats = sqlite_stats.get("pool_statistics", {}) if isinstance(sqlite_stats, dict) else {}
         
         return {
             "success": True,
@@ -3818,6 +3823,79 @@ if ADVANCED_RAG_AVAILABLE:
 if REALTIME_DATA_AVAILABLE:
     app.include_router(realtime_data_router)
     print("✅ Real-time Data System included at /realtime-data/*")
+
+# Import and include modular routers
+try:
+    from routers.inventory import router as inventory_router
+    app.include_router(inventory_router)
+    print("✅ Inventory Management System included at /api/v1/inventory/*")
+    INVENTORY_SYSTEM_AVAILABLE = True
+except ImportError as e:
+    INVENTORY_SYSTEM_AVAILABLE = False
+    print(f"⚠️ Inventory Management system not available: {e}")
+
+try:
+    from routers.ai import router as ai_router
+    app.include_router(ai_router)
+    print("✅ AI Router included at /api/v1/*")
+    AI_ROUTER_AVAILABLE = True
+except ImportError as e:
+    AI_ROUTER_AVAILABLE = False
+    print(f"⚠️ AI Router not available: {e}")
+
+try:
+    from routers.auth import router as auth_router
+    app.include_router(auth_router)
+    print("✅ Auth Router included at /api/v1/*")
+    AUTH_ROUTER_AVAILABLE = True
+except ImportError as e:
+    AUTH_ROUTER_AVAILABLE = False
+    print(f"⚠️ Auth Router not available: {e}")
+
+try:
+    from routers.dashboard import router as dashboard_router
+    app.include_router(dashboard_router)
+    print("✅ Dashboard Router included at /api/v1/*")
+    DASHBOARD_ROUTER_AVAILABLE = True
+except ImportError as e:
+    DASHBOARD_ROUTER_AVAILABLE = False
+    print(f"⚠️ Dashboard Router not available: {e}")
+
+try:
+    from routers.notifications import router as notifications_router
+    app.include_router(notifications_router)
+    print("✅ Notifications Router included at /api/v1/*")
+    NOTIFICATIONS_ROUTER_AVAILABLE = True
+except ImportError as e:
+    NOTIFICATIONS_ROUTER_AVAILABLE = False
+    print(f"⚠️ Notifications Router not available: {e}")
+
+try:
+    from routers.settings import router as settings_router
+    app.include_router(settings_router)
+    print("✅ Settings Router included at /api/v1/*")
+    SETTINGS_ROUTER_AVAILABLE = True
+except ImportError as e:
+    SETTINGS_ROUTER_AVAILABLE = False
+    print(f"⚠️ Settings Router not available: {e}")
+
+try:
+    from routers.analytics import router as analytics_router
+    app.include_router(analytics_router)
+    print("✅ Analytics Router included at /api/v1/analytics/*")
+    ANALYTICS_ROUTER_AVAILABLE = True
+except ImportError as e:
+    ANALYTICS_ROUTER_AVAILABLE = False
+    print(f"⚠️ Analytics Router not available: {e}")
+
+try:
+    from routers.appointments import router as appointments_router
+    app.include_router(appointments_router)
+    print("✅ Appointments Router included at /api/v1/appointments/*")
+    APPOINTMENTS_ROUTER_AVAILABLE = True
+except ImportError as e:
+    APPOINTMENTS_ROUTER_AVAILABLE = False
+    print(f"⚠️ Appointments Router not available: {e}")
 
 # Import and include Notion Integration router
 try:

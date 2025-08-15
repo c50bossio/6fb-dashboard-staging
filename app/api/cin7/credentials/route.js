@@ -79,6 +79,13 @@ export async function GET() {
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      // Development mode bypass - return sample response
+      if (process.env.NODE_ENV === 'development') {
+        return NextResponse.json({
+          hasCredentials: false,
+          message: 'No Cin7 credentials configured (dev mode)'
+        })
+      }
       return NextResponse.json(
         { error: 'User not authenticated' },
         { status: 401 }
