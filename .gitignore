@@ -125,3 +125,38 @@ composer.lock.backup
 *.sql.export
 *.csv.export
 data-exports/
+
+# Context Window Optimization (Added: $(date))
+package-lock.json
+*analysis*.json
+*report*.json  
+*test-results*.json
+performance-*.js
+mock-data-*.json
+services-temporarily-disabled/
+.context-cleanup-archive/
+*.backup.*
+*-backup.*
+*temp*.js
+debug-*.js
+test-*.js
+apply-*.js
+check-*.js
+setup-*.js
+create-*.js
+run-*.js
+
+# Large generated files
+*.sql.export
+*.csv.export
+data-exports/
+screenshots/
+performance-report.html
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+evaluations/__pycache__/
+services/__pycache__/
+
