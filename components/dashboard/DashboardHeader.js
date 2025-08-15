@@ -1,188 +1,257 @@
 'use client'
 
 import { 
-  ArrowPathIcon, 
-  BellIcon, 
+  BellIcon,
   Cog6ToothIcon,
-  ChartBarIcon,
-  SparklesIcon,
-  ClockIcon,
-  BuildingStorefrontIcon
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
+  UserIcon,
+  MoonIcon,
+  SunIcon
 } from '@heroicons/react/24/outline'
-import React from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useAuth } from '../SupabaseAuthProvider'
 
-import { useTenant } from '@/contexts/TenantContext'
-import Button from '../Button'
-import { Badge } from '../ui'
+export default function DashboardHeader() {
+  const { user, profile, signOut } = useAuth()
+  const router = useRouter()
+  const [timeOfDay, setTimeOfDay] = useState('')
+  const [currentTime, setCurrentTime] = useState('')
+  const [activeDropdown, setActiveDropdown] = useState(null)
+  const [darkMode, setDarkMode] = useState(false)
+  
+  const notificationsRef = useRef(null)
+  const profileRef = useRef(null)
 
-
-const DashboardHeader = React.memo(function DashboardHeader({ 
-  user, 
-  profile, 
-  onRefresh, 
-  systemHealth,
-  dashboardStats 
-}) {
-  const { tenant, tenantName, businessName, subscriptionTier } = useTenant()
-  const getCurrentTimeGreeting = () => {
+  useEffect(() => {
     const hour = new Date().getHours()
+    if (hour < 12) setTimeOfDay('morning')
+    else if (hour < 17) setTimeOfDay('afternoon')
+    else setTimeOfDay('evening')
+
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }))
+    }
     
-    if (hour < 12) return 'Good morning'
-    if (hour < 17) return 'Good afternoon'
-    return 'Good evening'
+    updateTime()
+    const interval = setInterval(updateTime, 60000)
+    
+    const savedDarkMode = localStorage.getItem('darkMode')
+    if (savedDarkMode !== null) {
+      setDarkMode(savedDarkMode === 'true')
+    }
+    
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        activeDropdown &&
+        !notificationsRef.current?.contains(event.target) &&
+        !profileRef.current?.contains(event.target)
+      ) {
+        setActiveDropdown(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [activeDropdown])
+
+  const getUserName = () => {
+    return profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   }
 
-  const getLastLoginTime = () => {
-    if (profile?.last_login_at) {
-      const lastLogin = new Date(profile.last_login_at)
-      return lastLogin.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
-      })
+  const getUserRole = () => {
+    const roleMap = {
+      'CLIENT': 'Client',
+      'BARBER': 'Barber',
+      'SHOP_OWNER': 'Shop Owner',
+      'ENTERPRISE_OWNER': 'Enterprise Owner',
+      'SUPER_ADMIN': 'Administrator'
     }
-    return 'First login'
+    
+    const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
+    return roleMap[userRole] || 'User'
+  }
+
+  const toggleDropdown = (dropdown) => {
+    setActiveDropdown(activeDropdown === dropdown ? null : dropdown)
+  }
+
+  const notifications = [
+    { id: 1, message: 'New booking from John Doe', time: '5 min ago', read: false },
+    { id: 2, message: 'Payment received: $45.00', time: '1 hour ago', read: false },
+    { id: 3, message: 'Schedule updated for tomorrow', time: '2 hours ago', read: true },
+  ]
+
+  const handleSignOut = async () => {
+    setActiveDropdown(null)
+    
+    const result = await signOut()
+    
+    if (result && result.success) {
+      console.log('✅ Sign out successful')
+    } else {
+      console.log('⚠️ Sign out may have issues, but auth provider will handle cleanup')
+    }
+  }
+
+  const handleDarkModeToggle = () => {
+    const newDarkMode = !darkMode
+    setDarkMode(newDarkMode)
+    
+    localStorage.setItem('darkMode', newDarkMode.toString())
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-600 via-gold-600 to-olive-700 text-white relative overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 bg-black/10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0)`,
-          backgroundSize: '20px 20px'
-        }}></div>
-      </div>
-      
-      <div className="relative px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        {/* Main header content */}
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-4 lg:space-y-0">
-          <div className="flex-1 min-w-0">
-            {/* Greeting and user info */}
-            <div className="mb-4">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 leading-tight text-white drop-shadow-sm">
-                {getCurrentTimeGreeting()}, {profile?.full_name || user?.user_metadata?.full_name || 'User'}! 👋
+    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+      <div className="px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Left side - Greeting */}
+          <div className="flex-shrink-0">
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">
+                Good {timeOfDay}, {getUserName()}!
               </h1>
-              <div className="flex items-center text-olive-100 text-base sm:text-lg leading-relaxed">
-                <BuildingStorefrontIcon className="h-5 w-5 mr-2 flex-shrink-0" />
-                <span>{businessName || tenantName || 'Your AI-powered barbershop is running smoothly'}</span>
-              </div>
-            </div>
-
-            {/* User context and badges - Enhanced styling */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4">
-              <div className="bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
-                <span className="text-sm font-semibold text-white">
-                  {profile?.role?.replace('_', ' ').toUpperCase() || 'SHOP OWNER'}
-                </span>
-              </div>
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-1.5 rounded-full shadow-lg">
-                <span className="text-xs font-bold text-white tracking-wide">
-                  {subscriptionTier?.toUpperCase() || 'PROFESSIONAL'}
-                </span>
-              </div>
-              
-              {tenant && (
-                <div className="bg-olive-500/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-olive-300/30">
-                  <span className="text-xs font-semibold text-olive-100">
-                    ID: {tenant.id.split('_').pop()}
-                  </span>
-                </div>
-              )}
-              
-              <div className="hidden sm:flex items-center bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-white/90 text-sm">
-                <ClockIcon className="h-4 w-4 mr-2" />
-                Last login: {getLastLoginTime()}
-              </div>
-            </div>
-
-            {/* Quick stats preview - Mobile optimized */}
-            <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-6">
-              <div className="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-sm px-2 sm:px-3 py-2 sm:py-2 rounded-lg text-center sm:text-left">
-                <div className="bg-gold-500 p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3">
-                  <SparklesIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm sm:text-lg font-bold text-white">{dashboardStats?.activeAgents || 0}</div>
-                  <div className="text-xs text-olive-200 hidden sm:block">AI agents active</div>
-                  <div className="text-xs text-olive-200 sm:hidden">agents</div>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-sm px-2 sm:px-3 py-2 sm:py-2 rounded-lg text-center sm:text-left">
-                <div className="bg-olive-500 p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3">
-                  <ChartBarIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-sm sm:text-lg font-bold text-white">{dashboardStats?.totalConversations || 0}</div>
-                  <div className="text-xs text-olive-200 hidden sm:block">conversations today</div>
-                  <div className="text-xs text-olive-200 sm:hidden">today</div>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center bg-white/10 backdrop-blur-sm px-2 sm:px-3 py-2 sm:py-2 rounded-lg text-center sm:text-left">
-                <div className={`p-1.5 rounded-lg mb-1 sm:mb-0 sm:mr-3 relative ${
-                  systemHealth?.status === 'healthy' ? 'bg-green-500' :
-                  systemHealth?.status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'
-                }`}>
-                  <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-pulse ${
-                    systemHealth?.status === 'healthy' ? 'bg-green-400' :
-                    systemHealth?.status === 'degraded' ? 'bg-yellow-400' : 'bg-red-400'
-                  }`}></div>
-                </div>
-                <div className="min-w-0">
-                  <div className={`text-sm sm:text-lg font-bold ${
-                    systemHealth?.status === 'healthy' ? 'text-green-200' :
-                    systemHealth?.status === 'degraded' ? 'text-yellow-200' : 'text-red-200'
-                  }`}>System</div>
-                  <div className={`text-xs ${
-                    systemHealth?.status === 'healthy' ? 'text-green-300' :
-                    systemHealth?.status === 'degraded' ? 'text-yellow-300' : 'text-red-300'
-                  }`}>
-                    {systemHealth?.status || 'healthy'}
-                  </div>
-                </div>
-              </div>
+              <p className="text-xs text-gray-500">
+                {getUserRole()} • {new Date().toLocaleDateString('en-US', { 
+                  weekday: 'short', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })} • {currentTime}
+              </p>
             </div>
           </div>
 
-          {/* Action buttons - Mobile optimized */}
-          <div className="flex items-center justify-between lg:justify-end space-x-2 sm:space-x-3">
-            {/* Mobile: Show last login info */}
-            <div className="sm:hidden flex items-center text-olive-200 text-xs">
-              <ClockIcon className="h-3 w-3 mr-1" />
-              <span className="truncate">{getLastLoginTime()}</span>
+          {/* Right side - Actions */}
+          <div className="flex items-center space-x-4">
+            {/* Notifications Dropdown */}
+            <div className="relative" ref={notificationsRef}>
+              <button 
+                onClick={() => toggleDropdown('notifications')}
+                className="relative p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <BellIcon className="h-6 w-6" />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" />
+                )}
+              </button>
+              
+              {activeDropdown === 'notifications' && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="p-4 border-b border-gray-200">
+                    <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map(notif => (
+                        <div key={notif.id} className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notif.read ? 'bg-olive-50' : ''}`}>
+                          <p className="text-sm text-gray-900">{notif.message}</p>
+                          <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-sm text-gray-500">
+                        No new notifications
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 border-t border-gray-200">
+                    <button className="text-sm text-olive-600 hover:text-olive-700 font-medium w-full text-center">
+                      View all notifications
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            
-            <div className="flex items-center space-x-2 sm:space-x-3">
+
+            {/* User Profile Dropdown */}
+            <div className="relative" ref={profileRef}>
               <button 
-                className="p-2.5 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50"
-                aria-label="View notifications"
+                onClick={() => toggleDropdown('profile')}
+                className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <BellIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                  {user?.user_metadata?.avatar_url ? (
+                    <img 
+                      src={user.user_metadata.avatar_url} 
+                      alt={getUserName()}
+                      className="h-8 w-8 rounded-full"
+                    />
+                  ) : (
+                    <UserCircleIcon className="h-5 w-5 text-white" />
+                  )}
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-sm font-medium text-gray-700">{getUserName()}</p>
+                  <p className="text-xs text-gray-500">{getUserRole()}</p>
+                </div>
               </button>
-              <button 
-                className="p-2.5 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 rounded-xl transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50"
-                aria-label="Open settings"
-              >
-                <Cog6ToothIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-              <button
-                onClick={onRefresh}
-                className="flex items-center bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 hover:border-white/50 rounded-xl px-3 py-2 text-xs sm:text-sm font-medium transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50 shadow-lg"
-                aria-label="Refresh dashboard data"
-              >
-                <ArrowPathIcon className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Refresh</span>
-              </button>
+              
+              {activeDropdown === 'profile' && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <p className="text-sm font-medium text-gray-900">{getUserName()}</p>
+                    <p className="text-xs text-gray-500">{user?.email || 'dev@localhost.com'}</p>
+                  </div>
+                  <div className="py-2">
+                    <Link 
+                      href="/profile"
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      onClick={() => setActiveDropdown(null)}
+                    >
+                      <UserIcon className="h-4 w-4 mr-2" />
+                      View Profile
+                    </Link>
+                    <button 
+                      onClick={handleDarkModeToggle}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
+                    >
+                      <span className="flex items-center">
+                        {darkMode ? <MoonIcon className="h-4 w-4 mr-2" /> : <SunIcon className="h-4 w-4 mr-2" />}
+                        Dark Mode
+                      </span>
+                      <span className="text-xs text-gray-500">{darkMode ? 'On' : 'Off'}</span>
+                    </button>
+                  </div>
+                  <div className="border-t border-gray-200 py-2">
+                    <Link 
+                      href="/dashboard/settings"
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      onClick={() => setActiveDropdown(null)}
+                    >
+                      <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                      Settings
+                    </Link>
+                  </div>
+                  <div className="border-t border-gray-200">
+                    <button 
+                      onClick={handleSignOut}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                    >
+                      <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Bottom gradient fade */}
-      <div className="h-2 sm:h-4 bg-gradient-to-b from-gold-600/20 to-transparent"></div>
-    </div>
+    </header>
   )
-})
-
-export default DashboardHeader
+}

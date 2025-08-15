@@ -1,6 +1,6 @@
 'use client'
 
-import DashboardHeader from '../../components/DashboardHeader'
+import DashboardHeader from '../../components/dashboard/DashboardHeader'
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
@@ -17,9 +17,7 @@ function ProtectedLayoutContent({ children }) {
       
       {/* Main Content - Adjust margin based on sidebar collapse state */}
       <main className={`${isCollapsed ? 'lg:ml-16' : 'lg:ml-80'} transition-all duration-300 ease-in-out`}>
-        {/* Dashboard Header with ViewSwitcher */}
         <DashboardHeader />
-        
         <div className="py-6 px-4 sm:px-6 lg:px-8">
           {children}
         </div>
