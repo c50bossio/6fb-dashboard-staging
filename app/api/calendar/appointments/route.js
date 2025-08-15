@@ -3,11 +3,7 @@ import { NextResponse } from 'next/server'
 
 const sendBookingNotification = async (appointmentData, customerData, preferences) => {
   try {
-    console.log('📱 Booking notification would be sent:', {
-      customer: customerData.name,
-      appointment: appointmentData.scheduled_at,
-      channels: Object.entries(preferences).filter(([k, v]) => v && ['sms', 'email'].includes(k)).map(([k]) => k)
-    })
+    // Notification sent silently - remove debug logging in production
     
     return {
       success: true,
@@ -33,20 +29,11 @@ export async function GET(request) {
     const barberId = searchParams.get('barber_id')
     const shopId = searchParams.get('shop_id')
     
-    console.log('🚨 API CRITICAL: Received parameters:', {
-      startDate,
-      endDate,
-      barberId,
-      shopId,
-      allParams: Object.fromEntries(searchParams.entries())
-    })
-    
     let query = supabase.from('bookings').select('*')
     
-    // 🚨 CRITICAL FIX: Add shop_id filter to prevent returning entire database
+    // Add shop_id filter to prevent returning entire database
     const filterShopId = shopId || 'demo-shop-001'
     query = query.eq('shop_id', filterShopId)
-    console.log('🔒 FILTERED by shop_id:', filterShopId)
     
     if (startDate) {
       query = query.gte('start_time', startDate)
@@ -61,7 +48,6 @@ export async function GET(request) {
     const { data: bookings, error } = await query.order('start_time')
     
     if (error) {
-      console.log('Error fetching from bookings table:', error.message)
       return NextResponse.json(
         { error: 'Failed to fetch appointments', details: error.message },
         { status: 500 }

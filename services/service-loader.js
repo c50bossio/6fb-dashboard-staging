@@ -29,23 +29,40 @@ if (useMockServices) {
   }
   
   try {
-    const realSendGrid = require('./sendgrid-service')
-    const realTwilio = require('./twilio-service')
-    const realStripe = require('./stripe-service')
+    // Use production services - they export singleton instances
+    sendGridService = require('./sendgrid-service-production')
     
-    sendGridService = realSendGrid.sendGridService
-    twilioSMSService = realTwilio.twilioSMSService
-    stripeService = realStripe.stripeService
+    // Check for Twilio and Stripe production services
+    try {
+      twilioSMSService = require('./twilio-service').twilioSMSService
+    } catch (e) {
+      twilioSMSService = require('./mock-twilio-service').twilioSMSService
+    }
+    
+    try {
+      stripeService = require('./stripe-service').stripeService
+    } catch (e) {
+      stripeService = require('./mock-stripe-service').stripeService
+    }
+    
+    console.log('✅ Loaded production SendGrid service successfully')
   } catch (error) {
-    console.warn('⚠️ Real services not found, falling back to mock services', error.message)
+    console.warn('⚠️ Error loading production services:', error.message)
     
-    const mockSendGrid = require('./mock-sendgrid-service')
-    const mockTwilio = require('./mock-twilio-service')
-    const mockStripe = require('./mock-stripe-service')
-    
-    sendGridService = mockSendGrid.sendGridService
-    twilioSMSService = mockTwilio.twilioSMSService
-    stripeService = mockStripe.stripeService
+    // Only fall back to mock in development
+    if (isDevelopment) {
+      const mockSendGrid = require('./mock-sendgrid-service')
+      const mockTwilio = require('./mock-twilio-service')
+      const mockStripe = require('./mock-stripe-service')
+      
+      sendGridService = mockSendGrid.sendGridService
+      twilioSMSService = mockTwilio.twilioSMSService
+      stripeService = mockStripe.stripeService
+      
+      console.log('📦 Using mock services as fallback')
+    } else {
+      throw new Error('Production services not available')
+    }
   }
 }
 

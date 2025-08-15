@@ -59,9 +59,54 @@ export default function AppointmentsPage() {
     setModalOpen(true)
   }
 
-  const handleSaveAppointment = (appointmentData, existingId) => {
-    console.log('Saving appointment:', appointmentData, existingId)
-    setModalOpen(false)
+  const handleSaveAppointment = async (appointmentData, existingId) => {
+    try {
+      setLoading(true)
+      
+      // Map the appointment data to match the API schema
+      const apiData = {
+        barbershop_id: profile?.barbershop_id || 'demo-shop-001', // Get from user profile
+        barber_id: appointmentData.barberId,
+        service_id: appointmentData.serviceId,
+        scheduled_at: new Date(appointmentData.start).toISOString(),
+        duration_minutes: appointmentData.duration,
+        service_price: appointmentData.price,
+        client_name: appointmentData.customerName,
+        client_phone: appointmentData.customerPhone,
+        client_email: appointmentData.customerEmail,
+        client_notes: appointmentData.notes
+      }
+      
+      const url = existingId 
+        ? `/api/appointments/${existingId}` 
+        : '/api/appointments'
+      
+      const method = existingId ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(apiData)
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save appointment')
+      }
+      
+      // Refresh the calendar to show the new appointment
+      window.location.reload() // Simple refresh for now
+      
+      setModalOpen(false)
+    } catch (error) {
+      console.error('Error saving appointment:', error)
+      alert(`Failed to save appointment: ${error.message}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const viewOptions = [
