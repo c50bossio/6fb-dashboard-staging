@@ -27,6 +27,7 @@ function SupabaseAuthProvider({ children }) {
     const checkUser = async () => {
       const publicPaths = ['/login', '/register', '/forgot-password', '/subscribe', '/success', '/pricing', '/']
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
+      const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams()
       
       // Check if current path matches any public path
       const isPublicPage = publicPaths.some(path => {
@@ -64,38 +65,65 @@ function SupabaseAuthProvider({ children }) {
         return
       }
       
-      console.log('Auth check - Current path:', currentPath, 'Is public:', isPublicPage, 'Will set loading:', !isPublicPage)
+      // OAuth session synchronization fix - detect OAuth redirects and be more patient
+      const isOAuthRedirect = urlParams.get('from') === 'oauth_success' || 
+                             currentPath === '/welcome' ||
+                             currentPath.includes('auth/callback')
+      
+      console.log('Auth check - Current path:', currentPath, 'Is public:', isPublicPage, 'OAuth redirect:', isOAuthRedirect, 'Will set loading:', !isPublicPage)
       
       if (!isPublicPage) {
         setLoading(true)
       }
       
       try {
-        // Use getUser for secure authentication check
-        const { data: { user }, error } = await supabase.auth.getUser()
+        // For OAuth redirects, add retry logic to handle session sync delay
+        let authAttempts = isOAuthRedirect ? 3 : 1
+        let sessionData = null
         
-        if (error) {
-          console.error('Auth check error:', error)
-          setUser(null)
-          setProfile(null)
-        } else if (user) {
-          console.log('User authenticated:', user.email)
-          setUser(user)
+        for (let attempt = 1; attempt <= authAttempts; attempt++) {
+          console.log(`Auth attempt ${attempt}/${authAttempts}${isOAuthRedirect ? ' (OAuth redirect detected)' : ''}`)
+          
+          // Use getUser for secure authentication check
+          const { data: { user }, error } = await supabase.auth.getUser()
+          
+          if (error) {
+            console.error(`Auth check error (attempt ${attempt}):`, error)
+            if (attempt === authAttempts) {
+              setUser(null)
+              setProfile(null)
+            }
+          } else if (user) {
+            console.log('User authenticated:', user.email)
+            sessionData = { user }
+            break
+          } else {
+            console.log(`No authenticated user (attempt ${attempt})`)
+            if (isOAuthRedirect && attempt < authAttempts) {
+              // Wait 1 second before retry for OAuth redirects
+              await new Promise(resolve => setTimeout(resolve, 1000))
+            } else if (attempt === authAttempts) {
+              setUser(null)
+              setProfile(null)
+            }
+          }
+        }
+        
+        // Process successful authentication
+        if (sessionData?.user) {
+          setUser(sessionData.user)
           
           // Fetch profile
           const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', user.id)
+            .eq('id', sessionData.user.id)
             .single()
           
           if (profileData) {
             setProfile(profileData)
+            console.log('✅ OAuth session synchronized successfully - profile loaded')
           }
-        } else {
-          console.log('No authenticated user')
-          setUser(null)
-          setProfile(null)
         }
       } catch (error) {
         console.error('Error checking auth:', error)
@@ -105,7 +133,6 @@ function SupabaseAuthProvider({ children }) {
         // Always set loading to false after checking
         setLoading(false)
         console.log('✅ Auth check complete - loading set to false')
-        console.log('   Final auth state: user:', user?.email || 'none', 'loading:', false)
       }
     }
     

@@ -7,8 +7,8 @@ import {
   FaceSmileIcon,
   ExclamationTriangleIcon,
   ClockIcon,
-  TrendingUpIcon,
-  TrendingDownIcon 
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon 
 } from '@heroicons/react/24/outline'
 
 export default function SentimentDashboard({ userId = 'demo_user' }) {
@@ -68,8 +68,8 @@ export default function SentimentDashboard({ userId = 'demo_user' }) {
   }
 
   const getTrendIcon = (trend) => {
-    return trend === 'improving' ? TrendingUpIcon : 
-           trend === 'declining' ? TrendingDownIcon : 
+    return trend === 'improving' ? ArrowTrendingUpIcon : 
+           trend === 'declining' ? ArrowTrendingDownIcon : 
            ChartBarIcon
   }
 

@@ -1,6 +1,6 @@
 # BookedBarber Platform - AI Agent System v2.0
 
-An enterprise-grade barbershop management platform powered by advanced AI agents with voice, predictive analytics, and intelligent automation.
+Enterprise barbershop platform: Next.js 14 (port 9999) + FastAPI (port 8001) + Supabase PostgreSQL.
 
 \![Next.js](https://img.shields.io/badge/Next.js-14.0-black)
 \![Supabase](https://img.shields.io/badge/Supabase-Database-green)
@@ -12,11 +12,7 @@ An enterprise-grade barbershop management platform powered by advanced AI agents
 ## 🚀 Features
 
 ### 🆕 AI Enhancements (v2.0)
-- **🎤 Voice Assistant**: Natural voice interactions with unique AI agent personalities
-- **🔔 Proactive Monitoring**: Intelligent alerts and real-time anomaly detection
-- **👥 Multi-Agent Collaboration**: Complex queries handled by coordinated AI teams
-- **🧠 Learning System**: AI that improves from every interaction
-- **📈 Predictive Analytics**: 90-day business forecasting with 87% accuracy
+Complete AI capabilities with voice interaction, proactive monitoring, multi-agent collaboration, learning system, and predictive analytics. See [AI_ENHANCEMENT_SUMMARY.md](./AI_ENHANCEMENT_SUMMARY.md) for technical details.
 
 ### Core Functionality
 - **AI-Powered Chat**: Enhanced with RAG, memory, and multi-model support
@@ -99,7 +95,29 @@ An enterprise-grade barbershop management platform powered by advanced AI agents
 
 ## 📝 Environment Setup
 
-See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed setup instructions.
+### Required API Keys
+
+Add your API keys to `.env.local`:
+
+```bash
+# Database (Required)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# AI (Required)
+OPENAI_API_KEY=your_openai_key
+
+# Payments (Required for production)
+STRIPE_SECRET_KEY=your_stripe_secret
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_public
+
+# Optional but recommended
+NEXT_PUBLIC_PUSHER_KEY=your_pusher_key
+PUSHER_APP_ID=your_pusher_app_id
+PUSHER_SECRET=your_pusher_secret
+PUSHER_CLUSTER=us2
+```
 
 ### Quick Links to Get API Keys:
 - [Supabase](https://supabase.com) - Database & Auth
@@ -110,6 +128,26 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed setup instructions.
 - [Novu](https://web.novu.co) - Notifications
 - [Pusher](https://dashboard.pusher.com) - Real-time
 - [PostHog](https://app.posthog.com) - Analytics
+
+### Database Setup
+
+The system needs these Supabase tables:
+- `profiles` - User accounts
+- `barbershops` - Shop information  
+- `barbershop_staff` - Staff relationships
+- `customers` - Customer data
+- `services` - Service offerings
+- `appointments` - Booking data
+- `transactions` - Payment records
+
+**Auto-Setup:**
+```bash
+# Test database connection
+node test-supabase-access.js
+
+# Create missing tables (if needed)
+npm run db:setup
+```
 
 ## 🏗️ Project Structure
 
@@ -132,15 +170,7 @@ See [SETUP_GUIDE.md](./SETUP_GUIDE.md) for detailed setup instructions.
 ## 🧪 Testing
 
 ### AI Feature Testing
-Visit the comprehensive testing dashboard:
-```
-http://localhost:9999/ai-testing-dashboard
-```
-
-Individual test pages:
-- Voice Assistant: `/test-voice`
-- Predictions: `/test-predictions`
-- Multi-Agent: `/test-collaboration`
+Comprehensive testing dashboard: `http://localhost:9999/ai-testing-dashboard`
 
 ### Automated Testing
 ```bash
@@ -165,12 +195,18 @@ npm run test:coverage
 ### Vercel (Recommended)
 ```bash
 npm i -g vercel
-vercel
+vercel --prod
 ```
 
-### Docker
+### Docker Production
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Railway
+```bash
+railway login
+railway up
 ```
 
 See [PRODUCTION_CHECKLIST.md](./PRODUCTION_CHECKLIST.md) for deployment best practices.
@@ -178,9 +214,55 @@ See [PRODUCTION_CHECKLIST.md](./PRODUCTION_CHECKLIST.md) for deployment best pra
 ## 📊 Monitoring
 
 - **Errors**: Check Sentry dashboard
-- **Analytics**: View PostHog dashboard
+- **Analytics**: View PostHog dashboard  
 - **Health**: GET `/api/health`
+- **AI Performance**: GET `/api/ai/metrics`
 - **Logs**: Check Vercel/Docker logs
+
+### Key Metrics to Track
+Response times, error rates, user engagement, and revenue metrics.
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Port conflicts:**
+```bash
+# Kill processes on ports
+sudo lsof -ti:9999 | xargs kill -9
+sudo lsof -ti:8001 | xargs kill -9
+```
+
+**Docker issues:**
+```bash
+docker compose down
+docker compose up --build
+```
+
+**Frontend build errors:**
+```bash
+rm -rf .next/ node_modules/
+npm install
+npm run dev
+```
+
+**Database connection issues:**
+```bash
+node test-supabase-access.js
+```
+
+### Debug Commands
+```bash
+# View logs
+docker compose logs -f frontend
+docker compose logs -f backend
+
+# Restart specific service
+docker compose restart frontend
+
+# Check system status
+npm run health
+```
 
 ## 🔐 Security
 
@@ -189,6 +271,14 @@ See [PRODUCTION_CHECKLIST.md](./PRODUCTION_CHECKLIST.md) for deployment best pra
 - Input validation and sanitization
 - Secure session management
 - Regular dependency updates
+
+### Security Checklist
+- [ ] Environment variables set correctly
+- [ ] Supabase RLS policies enabled
+- [ ] API rate limiting configured
+- [ ] HTTPS enabled in production
+- [ ] Error tracking setup (Sentry)
+- [ ] Backup strategy implemented
 
 ## 🤝 Contributing
 
@@ -211,4 +301,3 @@ This project is proprietary software. All rights reserved.
 ---
 
 Built with ❤️ by the 6FB team
-EOF < /dev/null## Production Deployment Active - Wed Aug 13 18:26:05 EDT 2025

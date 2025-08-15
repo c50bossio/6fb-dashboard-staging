@@ -112,7 +112,7 @@ const Logo = ({
           priority={priority}
           className="object-contain"
           onError={() => setImageError(true)}
-          onLoadingComplete={() => setImageError(false)}
+          onLoad={() => setImageError(false)}
           placeholder="empty" // Prevent blur placeholder
         />
         

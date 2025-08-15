@@ -51,24 +51,6 @@ Start here for immediate development:
 
 ## Quick Reference
 
-### Development Rules (CLAUDE.md:12-31)
-1. **NO MOCK DATA EVER** - Always use real Supabase database
-2. **FULL-STACK ONLY** - Complete features with database, API, UI, and error handling
-3. **TEST EVERYTHING** - Run `node test-supabase-access.js` before starting
-
-### Key Features Overview (README.md:12-27)
-- 🎤 Voice Assistant with AI personalities
-- 🔔 Proactive Monitoring with real-time alerts
-- 👥 Multi-Agent AI Collaboration
-- 🧠 Learning System with memory
-- 📈 Predictive Analytics (87% accuracy)
-
-### Technical Stack (CLAUDE.md:6-10)
-- Frontend: Next.js 14 (port 9999)
-- Backend: FastAPI Python (port 8001)  
-- Database: Supabase PostgreSQL
-- Deployment: Docker + Vercel
-
 ### Essential Commands
 ```bash
 # Start development
