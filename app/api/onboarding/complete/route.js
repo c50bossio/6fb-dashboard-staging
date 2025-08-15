@@ -178,8 +178,10 @@ export async function POST(request) {
 function mapRole(role) {
   const roleMap = {
     'individual': 'BARBER',
-    'shop_owner': 'SHOP_OWNER',
-    'enterprise': 'ENTERPRISE_OWNER'
+    'individual_barber': 'BARBER',
+    'shop_owner': 'SHOP_OWNER', 
+    'enterprise': 'ENTERPRISE_OWNER',
+    'enterprise_owner': 'ENTERPRISE_OWNER'
   }
   return roleMap[role] || 'user'
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server-client'
+import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
 export async function POST(request) {

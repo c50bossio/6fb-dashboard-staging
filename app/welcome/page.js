@@ -22,13 +22,12 @@ import ProgressTracker from '../../components/onboarding/ProgressTracker'
 import RoleSelector from '../../components/onboarding/RoleSelector'
 import ServiceSetup from '../../components/onboarding/ServiceSetup'
 import { useAuth } from '../../components/SupabaseAuthProvider'
-import SessionRecovery from '../../lib/auth/session-recovery'
-import { createClient } from '../../lib/supabase/browser-client'
+// Session recovery removed - trusting Supabase's built-in auth handling
 
 export default function WelcomePage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, profile, updateProfile } = useAuth()
+  const { user, profile, updateProfile, loading: authLoading } = useAuth()
   const [currentStep, setCurrentStep] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [showChecklist, setShowChecklist] = useState(false)
@@ -36,8 +35,7 @@ export default function WelcomePage() {
   const [errorType, setErrorType] = useState(null)
   const [showOAuthError, setShowOAuthError] = useState(false)
   const [stripeSessionId, setStripeSessionId] = useState(null)
-  const [sessionRecovery, setSessionRecovery] = useState(null)
-  const [recoveryProgress, setRecoveryProgress] = useState(null)
+  const [authCheckComplete, setAuthCheckComplete] = useState(false)
   
   const planFromUrl = searchParams.get('plan')
   const getRoleFromPlan = (plan) => {
@@ -52,9 +50,30 @@ export default function WelcomePage() {
         return null
     }
   }
+
+  // Auto-detect plan from user profile when URL parameter is missing
+  const detectPlanFromProfile = (profile) => {
+    if (!profile) return null
+    
+    // Check if profile has subscription/plan information
+    if (profile.subscription_tier) {
+      return profile.subscription_tier
+    }
+    
+    // Check for role-based indicators in profile
+    if (profile.role === 'individual_barber') return 'barber'
+    if (profile.role === 'shop_owner') return 'shop'  
+    if (profile.role === 'enterprise_owner') return 'enterprise'
+    
+    // Default fallback for existing users without explicit plan
+    return 'shop'
+  }
+
+  // Use URL plan or auto-detect from profile
+  const detectedPlan = planFromUrl || detectPlanFromProfile(profile)
   
   const [onboardingData, setOnboardingData] = useState({
-    role: getRoleFromPlan(planFromUrl),
+    role: getRoleFromPlan(planFromUrl), // Only use URL plan on initial load
     goals: [],
     businessSize: '',
     
@@ -75,8 +94,21 @@ export default function WelcomePage() {
     completedSteps: []
   })
 
+  // Update role when profile loads and plan is detected
+  useEffect(() => {
+    const newDetectedPlan = planFromUrl || detectPlanFromProfile(profile)
+    const newRole = getRoleFromPlan(newDetectedPlan)
+    
+    if (newRole && newRole !== onboardingData.role) {
+      setOnboardingData(prev => ({
+        ...prev,
+        role: newRole
+      }))
+    }
+  }, [profile, planFromUrl, onboardingData.role])
+
   const getSteps = () => {
-    const hasPreselectedRole = getRoleFromPlan(planFromUrl) !== null
+    const hasPreselectedRole = getRoleFromPlan(detectedPlan) !== null
     
     const baseSteps = hasPreselectedRole ? [
       { id: 'goals', label: 'Your Goals', sublabel: 'What matters most', timeEstimate: 1 },
@@ -99,22 +131,22 @@ export default function WelcomePage() {
 
   const steps = getSteps()
 
-  // Initialize session recovery system
-  useEffect(() => {
-    const supabase = createClient()
-    const recovery = new SessionRecovery(supabase)
-    setSessionRecovery(recovery)
-  }, [])
+  // Session recovery initialization removed - using Supabase's built-in auth
 
   useEffect(() => {
-    if (!sessionRecovery) return
-
     const error = searchParams.get('error')
     const from = searchParams.get('from')
     const stripeSession = searchParams.get('stripe_session')
     const setup = searchParams.get('setup')
     
-    console.log('👋 Welcome page loaded with enhanced recovery, error:', error, 'from:', from, 'stripe_session:', stripeSession)
+    console.log('👋 Welcome page loaded', {
+      error,
+      from,
+      stripeSession,
+      hasUser: !!user,
+      hasProfile: !!profile,
+      authLoading
+    })
     
     if (stripeSession && setup === 'initial') {
       console.log('💳 Stripe session detected, user paid but needs account setup')
@@ -134,114 +166,52 @@ export default function WelcomePage() {
       return
     }
 
-    // Enhanced session recovery for OAuth flows - with patience for auth state propagation
-    const isOAuthFlow = sessionRecovery.isOAuthRedirect()
-    const maxWaitTime = isOAuthFlow ? 12000 : 3000 // Extended timeout for OAuth
+    // Check if we came from an OAuth callback (look for referrer)
+    const isFromOAuth = document.referrer && document.referrer.includes('/auth/callback')
     
-    console.log(`🔄 Starting enhanced session detection (OAuth: ${isOAuthFlow}, timeout: ${maxWaitTime}ms)`)
-
-    // For OAuth flows, be more patient - wait for SupabaseAuthProvider to set user state
-    if (isOAuthFlow && !user) {
-      console.log('🔍 OAuth flow detected, waiting for auth state propagation...')
+    // Wait for auth to fully load before making redirect decisions
+    if (!authLoading && !authCheckComplete) {
+      setAuthCheckComplete(true)
       
-      // First, immediately try session recovery to speed up the process
-      console.log('⚡ Starting immediate session recovery attempt...')
-      sessionRecovery.pollForSession({
-        maxAttempts: 5, // More attempts for better chance
-        isOAuthFlow: true,
-        onProgress: (progress) => {
-          setRecoveryProgress(progress)
-          console.log('📊 Session recovery progress:', progress)
-        },
-        onError: (error) => {
-          console.warn('⚠️ Session recovery error:', error)
-        }
-      }).then((result) => {
-        if (result.success) {
-          console.log('✅ Session recovered successfully via immediate polling')
-          // Trigger auth state change to update context
-          window.location.reload()
-          return
-        } else {
-          console.warn('❌ Immediate session recovery failed, starting fallback flow...')
-          
-          // Fallback: Give SupabaseAuthProvider time to set user state
-          let authStateWaitAttempts = 0
-          const maxAuthStateWaits = 3 // Reduced since we already tried polling
-          
-          const waitForAuthState = () => {
-            setTimeout(() => {
-              authStateWaitAttempts++
-              console.log(`⏳ Fallback auth state wait... attempt ${authStateWaitAttempts}/${maxAuthStateWaits}`)
-              
-              // Check if user state has been set by SupabaseAuthProvider
-              if (user) {
-                console.log('✅ Auth state set by SupabaseAuthProvider - recovery complete')
-                setRecoveryProgress(null) // Clear recovery UI
-                return
-              }
-              
-              // If we've waited long enough, try advanced recovery strategies
-              if (authStateWaitAttempts >= maxAuthStateWaits) {
-                console.log('🔧 Starting advanced session recovery strategies...')
-                
-                sessionRecovery.recoverSession({ strategy: 'auto', forceRefresh: true })
-                  .then((recoveryResult) => {
-                    if (recoveryResult.success) {
-                      console.log('✅ Advanced session recovery successful')
-                      window.location.reload()
-                    } else {
-                      console.error('💥 All session recovery attempts failed')
-                      setRecoveryProgress(null)
-                      setErrorType('session_recovery_failed')
-                      setShowOAuthError(true)
-                    }
-                  })
-                  .catch((error) => {
-                    console.error('💥 Session recovery error:', error)
-                    setRecoveryProgress(null)
-                    setErrorType('session_recovery_error')
-                    setShowOAuthError(true)
-                  })
-              } else {
-                // Continue waiting
-                waitForAuthState()
-              }
-            }, 2000) // Longer waits in fallback mode
+      // Only redirect to login if we're SURE there's no user
+      if (!user && !showOAuthError && !stripeSession && from !== 'payment_success') {
+        console.log('⏱️ Auth check complete, no user found')
+        
+        // If coming from OAuth, give more time for session to propagate
+        const waitTime = isFromOAuth ? 3000 : 1000
+        console.log(`⏳ Waiting ${waitTime}ms before redirect decision (OAuth: ${isFromOAuth})`)
+        
+        const timer = setTimeout(() => {
+          // Final check before redirect
+          if (!user && window.location.pathname === '/welcome') {
+            console.log('🔀 No user after grace period, redirecting to login')
+            router.push('/login')
           }
-          
-          // Start fallback waiting
-          waitForAuthState()
-        }
-      }).catch((error) => {
-        console.error('💥 Initial session recovery error:', error)
-        setRecoveryProgress(null)
-        setErrorType('session_recovery_error')
-        setShowOAuthError(true)
-      })
+        }, waitTime)
+        
+        return () => clearTimeout(timer)
+      } else if (user) {
+        console.log('✅ User authenticated, staying on welcome page')
+      }
     }
-    
-    // Fallback timer with extended timeout
-    const timer = setTimeout(() => {
-      if ((from === 'payment_success' || stripeSession) && !user) {
-        console.log('💳 Payment successful but no auth - allowing onboarding anyway')
-        return
-      }
-      
-      if (!user && !profile && !showOAuthError && !stripeSession && from !== 'payment_success') {
-        console.log(`⚠️ No user found after waiting ${maxWaitTime}ms, redirecting to login`)
-        router.push('/login')
-      }
-    }, maxWaitTime)
-    
-    return () => clearTimeout(timer)
-  }, [user, profile, router, searchParams, showOAuthError, sessionRecovery])
+  }, [user, profile, router, searchParams, showOAuthError, authLoading, authCheckComplete])
 
   useEffect(() => {
     if (user?.id) {
-      loadSavedProgress()
+      // Small delay to ensure auth headers are available for API calls
+      const timer = setTimeout(() => {
+        loadSavedProgress()
+      }, 500)
+      
+      return () => clearTimeout(timer)
     }
-  }, [user])
+    
+    // If user has completed onboarding, redirect to dashboard
+    if (profile && profile.onboarding_completed === true) {
+      console.log('✅ User already completed onboarding, redirecting to dashboard')
+      router.push('/dashboard')
+    }
+  }, [user, profile, router])
 
   const loadSavedProgress = async () => {
     try {
@@ -269,10 +239,14 @@ export default function WelcomePage() {
         }
       }
     } catch (error) {
-      console.error('Error loading saved progress:', error)
+      // Silently fall back to localStorage - this is expected on first load after OAuth
       const savedData = localStorage.getItem(`onboarding_${user.id}`)
       if (savedData) {
         setOnboardingData(JSON.parse(savedData))
+      }
+      // Only log non-401 errors
+      if (!error.message?.includes('401')) {
+        console.error('Error loading saved progress:', error)
       }
     }
   }
@@ -400,43 +374,6 @@ export default function WelcomePage() {
     router.push('/login')
   }
 
-  // Show session recovery progress
-  if (recoveryProgress && !user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="animate-spin h-16 w-16 mx-auto mb-6">
-              <svg className="h-16 w-16 text-blue-500" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Completing Sign-In...
-            </h1>
-            <p className="text-gray-600 mb-4">
-              We're synchronizing your Google account session.
-            </p>
-            <div className="bg-blue-50 rounded-lg p-4 mb-4">
-              <p className="text-blue-800 text-sm">
-                Attempt {recoveryProgress.attempt} of {recoveryProgress.maxAttempts}
-              </p>
-              <div className="w-full bg-blue-200 rounded-full h-2 mt-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${(recoveryProgress.attempt / recoveryProgress.maxAttempts) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500">
-              This usually takes just a few seconds...
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   if (showOAuthError) {
     const getErrorContent = () => {
@@ -513,6 +450,22 @@ export default function WelcomePage() {
     )
   }
 
+  // Show loading state while auth is being checked (but only initially)
+  if (authLoading && !authCheckComplete) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-olive-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-4 border-olive-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    )
+  }
+  
+  // If we're waiting for auth but have checked already, show the welcome content
+  // This prevents blank screen while waiting for session propagation
+  const isWaitingForAuth = !user && authCheckComplete && !showOAuthError
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-olive-50 to-white py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -585,7 +538,7 @@ export default function WelcomePage() {
               <GoalsSelector
                 onComplete={(data) => handleStepComplete(data)}
                 initialData={onboardingData}
-                subscriptionTier={planFromUrl || 'shop'}
+                subscriptionTier={detectedPlan || 'shop'}
               />
             )}
 

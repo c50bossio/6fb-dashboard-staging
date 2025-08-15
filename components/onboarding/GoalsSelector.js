@@ -16,28 +16,34 @@ import { useState } from 'react'
 const goalsByTier = {
   barber: [
     {
-      id: 'bookings',
-      title: 'Get More Bookings',
-      description: 'Increase online appointments and reduce no-shows',
+      id: 'buy_time_back',
+      title: 'Buy My Time Back',
+      description: 'Work fewer hours while maintaining or increasing income',
+      icon: ClockIcon
+    },
+    {
+      id: 'increase_rates',
+      title: 'Increase My Rates',
+      description: 'Justify higher prices through professional booking experience',
+      icon: CurrencyDollarIcon
+    },
+    {
+      id: 'reduce_no_shows',
+      title: 'Reduce No-Shows',
+      description: 'Eliminate wasted time slots with automated reminders and deposits',
       icon: CalendarDaysIcon
     },
     {
-      id: 'presence',
-      title: 'Build Online Presence',
-      description: 'Create a professional web presence and grow clientele',
-      icon: GlobeAltIcon
-    },
-    {
-      id: 'automate',
-      title: 'Automate Reminders',
-      description: 'Save time with automated appointment reminders',
+      id: 'premium_brand',
+      title: 'Build Premium Brand',
+      description: 'Stand out with a professional online presence that commands higher rates',
       icon: SparklesIcon
     },
     {
-      id: 'schedule',
-      title: 'Manage Schedule',
-      description: 'Better time management and availability control',
-      icon: ClockIcon
+      id: 'automate_communication',
+      title: 'Automate Client Communication',
+      description: 'Save hours weekly with automated booking, reminders, and follow-ups',
+      icon: GlobeAltIcon
     }
   ],
   shop: [

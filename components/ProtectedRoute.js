@@ -14,6 +14,13 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     setIsClient(true)
     
+    console.log('🛡️ ProtectedRoute check:', {
+      hasUser: !!user,
+      userEmail: user?.email,
+      loading,
+      pathname: window.location.pathname
+    })
+    
     const isDevelopment = process.env.NODE_ENV === 'development'
     const isCalendarPage = window.location.pathname.includes('/calendar')
     const isAnalyticsPage = window.location.pathname.includes('/analytics')
@@ -25,13 +32,14 @@ export default function ProtectedRoute({ children }) {
     const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
     if (forceSignOut) {
       sessionStorage.removeItem('force_sign_out')
+      console.log('🚪 Force sign out detected')
       router.push('/login')
       return
     }
     
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
-    const enableDevBypass = isBarberPage || isSeoPage || isDashboardPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
+    const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
     
     if (devAuth || devSession || enableDevBypass) {
       console.log('🔓 Dev session active - bypassing auth check')
@@ -39,7 +47,10 @@ export default function ProtectedRoute({ children }) {
     }
     
     if (!loading && !user) {
+      console.log('❌ No user found, redirecting to login')
       router.push('/login')
+    } else if (user) {
+      console.log('✅ User authenticated:', user.email)
     }
   }, [loading, user, router])
 
@@ -77,7 +88,7 @@ export default function ProtectedRoute({ children }) {
   const devAuth = document.cookie.includes('dev_auth=true')
   const devSession = localStorage.getItem('dev_session')
   
-  const enableDevBypass = isBarberPage || isSeoPage || isDashboardPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
+  const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
   
   if (devAuth || devSession || enableDevBypass) {
     console.log('🔓 DEV MODE: Bypassing protected route for calendar/analytics testing')

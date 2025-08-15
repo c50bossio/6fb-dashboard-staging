@@ -1,63 +1,83 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/browser-client'
 
 export default function AuthCallback() {
-  const router = useRouter()
+  console.log('🎯 AuthCallback component mounted')
   
   useEffect(() => {
-    const handleCallback = async () => {
-      const supabase = createClient()
-      
-      // Get the auth code from URL
-      const urlParams = new URLSearchParams(window.location.search)
-      const code = urlParams.get('code')
-      
-      if (!code) {
-        console.error('No auth code in URL')
-        router.push('/login')
-        return
-      }
-      
+    console.log('🚀 AuthCallback useEffect running')
+    
+    // Check if user needs onboarding before redirecting
+    const checkUserOnboarding = async () => {
       try {
-        // Exchange the code for a session - client-side has access to PKCE cookies
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        console.log('🔍 Current URL:', window.location.href)
+        console.log('🔍 URL Hash:', window.location.hash)
+        console.log('🔍 URL Search:', window.location.search)
+        
+        // Supabase can put auth info in either hash or query params
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        const queryParams = new URLSearchParams(window.location.search)
+        
+        const accessToken = hashParams.get('access_token') || queryParams.get('access_token')
+        const error = queryParams.get('error') || hashParams.get('error')
+        const errorDescription = queryParams.get('error_description') || hashParams.get('error_description')
         
         if (error) {
-          console.error('OAuth exchange error:', error)
-          router.push('/login?error=oauth_failed')
+          console.error('❌ OAuth error:', error, errorDescription)
+          // Redirect to login with error message
+          window.location.href = `/login?error=${encodeURIComponent(errorDescription || error)}`
           return
         }
         
-        // Get user to check onboarding status
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('onboarding_completed')
-            .eq('email', user.email)
-            .single()
+        if (accessToken) {
+          console.log('🔑 Found access token, auth successful!')
           
-          // Redirect based on onboarding status
-          if (profile?.onboarding_completed) {
-            router.push('/dashboard')
-          } else {
-            router.push('/welcome')
-          }
+          // Always go to welcome first - it will redirect if needed
+          console.log('📍 Redirecting to welcome page...')
+          window.location.href = '/welcome'
         } else {
-          router.push('/login')
+          // Check if we have a code that needs to be exchanged
+          const code = queryParams.get('code')
+          if (code) {
+            console.log('🔄 Found auth code, waiting for Supabase to exchange it...')
+            // Give Supabase more time to process the code
+            setTimeout(() => {
+              // After waiting, redirect to welcome
+              console.log('📍 Redirecting to welcome after code exchange...')
+              window.location.href = '/welcome'
+            }, 1000)
+          } else {
+            console.log('⚠️ No access token or code found')
+            console.log('Debug info:', {
+              hash: window.location.hash,
+              search: window.location.search,
+              hashParams: Object.fromEntries(hashParams),
+              queryParams: Object.fromEntries(queryParams)
+            })
+            // Still redirect to welcome - let it handle auth check
+            window.location.href = '/welcome'
+          }
         }
-      } catch (err) {
-        console.error('Callback error:', err)
-        router.push('/login?error=callback_failed')
+      } catch (error) {
+        console.error('❌ Error in auth callback:', error)
+        window.location.href = '/welcome'
       }
     }
     
-    handleCallback()
-  }, [router])
+    // Give Supabase time to properly establish the session
+    const timer = setTimeout(() => {
+      console.log('⏰ Timer fired, checking where to redirect...')
+      checkUserOnboarding()
+    }, 1500) // Increased from 100ms to 1.5s for proper session establishment
+    
+    return () => {
+      console.log('🧹 Cleaning up timer')
+      clearTimeout(timer)
+    }
+  }, [])
+  
+  console.log('🎨 Rendering AuthCallback UI')
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">

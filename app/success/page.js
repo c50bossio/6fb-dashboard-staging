@@ -47,7 +47,7 @@ export default function SuccessPage() {
       setLoading(false)
       
       setTimeout(() => {
-        router.push('/welcome?from=payment_success')
+        router.push('/welcome?from=payment_success&plan=shop')
       }, 2000)
     }
     
@@ -80,7 +80,7 @@ export default function SuccessPage() {
         
         setTimeout(() => {
           console.log('🔄 Redirecting to welcome page for account setup...')
-          router.push('/welcome')
+          router.push(`/welcome?plan=${plan}&billing=${billing}`)
         }, 2000)
         
       } else {
