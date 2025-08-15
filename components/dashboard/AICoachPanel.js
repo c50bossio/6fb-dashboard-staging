@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   SparklesIcon,
   CurrencyDollarIcon,
@@ -15,6 +14,7 @@ import {
   CheckCircleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function AICoachPanel({ data }) {
   const [selectedCoach, setSelectedCoach] = useState(null)

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
@@ -173,7 +173,7 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    let cin7Products = data?.ProductList || data?.Products || []
+    const cin7Products = data?.ProductList || data?.Products || []
     
     console.log(`Found ${cin7Products.length} products in Cin7 API ${versionResult.version}`)
     

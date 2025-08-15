@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { CheckCircleIcon, ClipboardDocumentIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function DomainSetupWizard({ domain, onComplete }) {
   const [currentStep, setCurrentStep] = useState(1)

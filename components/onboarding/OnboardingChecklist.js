@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   CheckCircleIcon,
   XMarkIcon,
@@ -10,6 +9,7 @@ import {
   TrophyIcon
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
+import { useState, useEffect } from 'react'
 
 const checklistItems = [
   {

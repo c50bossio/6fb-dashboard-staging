@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   UserIcon,
   BellIcon,
@@ -17,9 +16,10 @@ import {
   CheckIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 import ProtectedRoute from '../../../components/ProtectedRoute'
-import { Card } from '../../../components/ui'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
+import { Card } from '../../../components/ui'
 
 function SettingsSection({ title, description, icon: Icon, children }) {
   return (

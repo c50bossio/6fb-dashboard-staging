@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   CurrencyDollarIcon,
   UserGroupIcon,
@@ -14,6 +13,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function FinancialArrangements() {
   const [arrangements, setArrangements] = useState([])

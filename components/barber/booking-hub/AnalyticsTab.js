@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon,
   ArrowTrendingUpIcon,
@@ -14,6 +13,7 @@ import {
   CodeBracketIcon,
   GlobeAltIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function AnalyticsTab() {
   const [analyticsData, setAnalyticsData] = useState(null)

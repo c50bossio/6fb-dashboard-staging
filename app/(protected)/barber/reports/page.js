@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon,
   CurrencyDollarIcon,
@@ -12,8 +11,7 @@ import {
   ScissorsIcon,
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
 import {
   BarChart,
   Bar,
@@ -29,6 +27,8 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberReports() {
   const { user, profile } = useAuth()

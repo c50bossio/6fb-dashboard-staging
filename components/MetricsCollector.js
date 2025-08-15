@@ -7,8 +7,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { metricsTracker } from '@/lib/metrics-tracker'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { metricsTracker } from '@/lib/metrics-tracker'
 
 export function MetricsCollector({ 
   children, 

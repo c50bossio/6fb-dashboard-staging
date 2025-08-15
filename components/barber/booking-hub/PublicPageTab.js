@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import QRCode from 'qrcode'
 import { 
   GlobeAltIcon, 
   ShareIcon,
@@ -18,6 +15,9 @@ import {
   StarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
+import Image from 'next/image'
+import QRCode from 'qrcode'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../SupabaseAuthProvider'
 
 export default function PublicPageTab() {

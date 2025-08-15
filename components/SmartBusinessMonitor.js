@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   BellIcon, 
   ExclamationTriangleIcon,
@@ -11,6 +10,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
   const [businessHealth, setBusinessHealth] = useState(null)

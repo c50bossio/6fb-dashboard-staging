@@ -39,7 +39,7 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    let response = {
+    const response = {
       success: true,
       barbershopId,
       timeframe,

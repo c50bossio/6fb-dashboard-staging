@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   PlusIcon,
   EyeIcon,
@@ -17,10 +16,11 @@ import {
   ArrowTopRightOnSquareIcon,
   CodeBracketIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../SupabaseAuthProvider'
 import CreateBookingLinkModal from '../CreateBookingLinkModal'
-import QRCodeModal from '../QRCodeModal'
 import EmbedCodeModal from '../EmbedCodeModal'
+import QRCodeModal from '../QRCodeModal'
 
 export default function MarketingLinksTab() {
   const { user } = useAuth()

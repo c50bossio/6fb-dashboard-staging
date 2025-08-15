@@ -17,8 +17,8 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
+import ProtectedRoute from '../../../components/ProtectedRoute'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 const Staff = [

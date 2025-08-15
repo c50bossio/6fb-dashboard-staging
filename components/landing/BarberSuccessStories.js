@@ -1,5 +1,7 @@
 'use client'
 
+import { ChatBubbleBottomCenterTextIcon as QuoteIcon } from '@heroicons/react/24/outline'
+import { CheckBadgeIcon } from '@heroicons/react/24/outline'
 import { 
   StarIcon,
   ArrowTrendingUpIcon,
@@ -7,8 +9,6 @@ import {
   UserGroupIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/solid'
-import { ChatBubbleBottomCenterTextIcon as QuoteIcon } from '@heroicons/react/24/outline'
-import { CheckBadgeIcon } from '@heroicons/react/24/outline'
 
 export default function BarberSuccessStories() {
   const stories = [

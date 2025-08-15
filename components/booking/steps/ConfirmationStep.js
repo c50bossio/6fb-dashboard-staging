@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { CheckCircleIcon, CalendarIcon, ClockIcon, MapPinIcon, UserIcon, CreditCardIcon, DocumentDuplicateIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 
 export default function ConfirmationStep({ bookingData, shopSettings, onComplete, onBack, isLoading }) {
   const [agreedToTerms, setAgreedToTerms] = useState(false)

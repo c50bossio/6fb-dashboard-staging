@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   LinkIcon,
   QrCodeIcon,
@@ -9,12 +8,13 @@ import {
   ChartBarIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
-import PublicPageTab from '../../../../components/barber/booking-hub/PublicPageTab'
-import MarketingLinksTab from '../../../../components/barber/booking-hub/MarketingLinksTab'
-import QRCodesTab from '../../../../components/barber/booking-hub/QRCodesTab'
-import EmbedWidgetsTab from '../../../../components/barber/booking-hub/EmbedWidgetsTab'
 import AnalyticsTab from '../../../../components/barber/booking-hub/AnalyticsTab'
+import EmbedWidgetsTab from '../../../../components/barber/booking-hub/EmbedWidgetsTab'
+import MarketingLinksTab from '../../../../components/barber/booking-hub/MarketingLinksTab'
+import PublicPageTab from '../../../../components/barber/booking-hub/PublicPageTab'
+import QRCodesTab from '../../../../components/barber/booking-hub/QRCodesTab'
 
 export default function BookingHub() {
   const [activeTab, setActiveTab] = useState('public-page')

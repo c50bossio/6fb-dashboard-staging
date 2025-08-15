@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   ClockIcon,
   UserGroupIcon,
@@ -12,6 +11,7 @@ import {
   ArrowRightIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
   const [capacityData, setCapacityData] = useState(null)

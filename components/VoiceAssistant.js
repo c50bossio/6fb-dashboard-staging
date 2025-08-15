@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import {
   MicrophoneIcon,
   SpeakerWaveIcon,
@@ -12,6 +11,7 @@ import {
 import {
   MicrophoneIcon as MicrophoneSolid
 } from '@heroicons/react/24/solid'
+import { useState, useEffect, useRef } from 'react'
 
 export default function VoiceAssistant({ barbershop_id = 'demo' }) {
   const [isListening, setIsListening] = useState(false)

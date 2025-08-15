@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   CalculatorIcon,
   CheckIcon,
@@ -8,6 +7,7 @@ import {
   ArrowRightIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function PricingCalculator() {
   const [monthlyBookings, setMonthlyBookings] = useState(200)

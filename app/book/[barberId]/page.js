@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect, useMemo, Suspense } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
-import Head from 'next/head'
 import { 
   CalendarIcon,
   ClockIcon,
@@ -18,6 +15,9 @@ import {
   TagIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import Head from 'next/head'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { generatePageTitle, generateMetaDescription } from '../../../lib/seo-utils'
 
 function BookingPageContent() {

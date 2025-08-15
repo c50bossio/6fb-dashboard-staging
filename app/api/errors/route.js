@@ -3,8 +3,8 @@
  * Handles frontend error reporting and forwards to Sentry
  */
 
-import { NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
+import { NextResponse } from 'next/server'
 
 export async function POST(request) {
   try {

@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import {
   BuildingOffice2Icon,
   MapPinIcon,
@@ -18,6 +16,8 @@ import {
   UsersIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function EnterpriseWebsiteManagement() {
   const { user } = useAuth()

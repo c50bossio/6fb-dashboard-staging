@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import {
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
@@ -10,7 +8,9 @@ import {
   ShareIcon,
   ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 import QRCode from 'qrcode'
+import { useState, useEffect } from 'react'
 
 export default function LivePreview({ 
   businessData = {}, 

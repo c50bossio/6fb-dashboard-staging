@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import QRCode from 'qrcode'
-
 import { 
   GlobeAltIcon, 
   ShareIcon,
@@ -18,6 +15,9 @@ import {
   StarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
+import QRCode from 'qrcode'
+import { useState, useEffect } from 'react'
+
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
 

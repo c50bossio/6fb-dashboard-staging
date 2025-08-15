@@ -13,10 +13,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '../ui/Card';
+import { Alert } from '../ui/Alert';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { Alert } from '../ui/Alert';
+import { Card } from '../ui/Card';
 
 const EmailCampaignDashboard = ({ userId }) => {
     const [campaigns, setCampaigns] = useState([]);

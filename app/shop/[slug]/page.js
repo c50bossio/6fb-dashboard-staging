@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
 import {
   StarIcon,
   MapPinIcon,
@@ -20,6 +18,8 @@ import {
 import {
   StarIcon as StarIconSolid
 } from '@heroicons/react/24/solid'
+import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function PublicBarbershopPage() {
   const params = useParams()

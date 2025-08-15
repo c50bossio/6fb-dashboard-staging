@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 const EnhancedProfessionalCalendar = dynamic(

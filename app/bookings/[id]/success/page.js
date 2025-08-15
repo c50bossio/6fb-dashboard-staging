@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
 import { CheckCircleIcon, CalendarIcon, MapPinIcon, ClockIcon, PhoneIcon, EnvelopeIcon, HomeIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
 import confetti from 'canvas-confetti'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function BookingSuccessPage() {
   const params = useParams()

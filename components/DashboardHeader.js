@@ -1,7 +1,5 @@
 'use client'
 
-import { useAuth } from './SupabaseAuthProvider'
-import ViewSwitcher from './ViewSwitcher'
 import { 
   BellIcon,
   Cog6ToothIcon,
@@ -15,8 +13,10 @@ import {
   BellSlashIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useAuth } from './SupabaseAuthProvider'
+import ViewSwitcher from './ViewSwitcher'
 
 export default function DashboardHeader() {
   const { user, profile, signOut } = useAuth()

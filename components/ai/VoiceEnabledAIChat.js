@@ -11,9 +11,9 @@ import {
   SpeakerXMarkIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useRef } from 'react'
-import ModelSelector from './ModelSelector'
-import VoiceAssistant from '../voice/VoiceAssistant'
 import { detectAgentFromCommand, formatForSpeech } from '../../lib/voice-personalities'
+import VoiceAssistant from '../voice/VoiceAssistant'
+import ModelSelector from './ModelSelector'
 
 export default function VoiceEnabledAIChat() {
   const [message, setMessage] = useState('')

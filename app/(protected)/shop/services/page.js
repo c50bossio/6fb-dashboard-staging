@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
 import { 
   ScissorsIcon,
   CurrencyDollarIcon,
@@ -22,6 +19,9 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
 
 export default function ShopServicesAndPricing() {
   const { user, profile } = useAuth()

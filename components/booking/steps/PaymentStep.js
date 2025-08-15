@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { CreditCardIcon, CurrencyDollarIcon, ShieldCheckIcon, LockClosedIcon, BanknotesIcon } from '@heroicons/react/24/outline'
-import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { loadStripe } from '@stripe/stripe-js'
+import { useState, useEffect } from 'react'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder')
 
@@ -145,7 +145,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
     setError(null)
     
     try {
-      let paymentData = {
+      const paymentData = {
         paymentMethod,
         customerInfo,
         amountPaid: paymentAmount,

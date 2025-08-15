@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   ScissorsIcon,
   SparklesIcon,
@@ -10,6 +9,7 @@ import {
   TrashIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 const serviceTemplates = {
   barbershop: [

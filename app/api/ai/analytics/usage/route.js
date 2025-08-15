@@ -6,7 +6,7 @@ export const runtime = 'edge'
  * Tracks AI conversations, response quality, and user satisfaction
  */
 
-let usageMetrics = {
+const usageMetrics = {
   totalConversations: 0,
   conversationsByAgent: {},
   messagesByHour: {},

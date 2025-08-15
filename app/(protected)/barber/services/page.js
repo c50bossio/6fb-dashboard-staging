@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { 
   ScissorsIcon,
   ShieldCheckIcon,
   InformationCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import ServiceManager from '@/components/services/ServiceManager'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 import { getBarberPermissions, getPermissionLevel } from '@/lib/permissions'
 
 export default function BarberServices() {

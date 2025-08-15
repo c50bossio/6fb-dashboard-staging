@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import { Cin7Client } from '../../../../lib/cin7-client.js'
 
 const supabase = createClient(
@@ -39,7 +39,7 @@ const SYNC_STATES = {
 export async function POST(request) {
   const startTime = Date.now()
   let syncOperation = null
-  let rollbackData = []
+  const rollbackData = []
 
   try {
     const body = await request.json().catch(() => ({}))

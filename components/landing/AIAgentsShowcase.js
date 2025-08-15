@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   ChatBubbleBottomCenterTextIcon,
   CurrencyDollarIcon,
@@ -11,6 +10,7 @@ import {
   CheckCircleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function AIAgentsShowcase() {
   const [activeAgent, setActiveAgent] = useState(0)

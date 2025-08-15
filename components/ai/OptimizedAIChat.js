@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { 
   PaperAirplaneIcon, 
   StopIcon,
@@ -8,8 +7,9 @@ import {
   ArrowPathIcon,
   Cog6ToothIcon 
 } from '@heroicons/react/24/outline'
-import { getStreamingClient } from '@/lib/ai-streaming-client'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { getStreamingClient } from '@/lib/ai-streaming-client'
 import CacheStatsModal from './CacheStatsModal'
 
 /**

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { agentLearning } from '../../../../services/agent-learning-service'
 import { createClient } from '@/lib/supabase/server'
+import { agentLearning } from '../../../../services/agent-learning-service'
 
 
 export async function POST(request) {

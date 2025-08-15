@@ -1,9 +1,5 @@
 'use client'
 
-import ProtectedRoute from '../../../../components/ProtectedRoute'
-import GlobalNavigation from '../../../../components/GlobalNavigation'
-import CapacityPlanningPanel from '../../../../components/dashboard/CapacityPlanningPanel'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import {
   WrenchScrewdriverIcon,
   ChartBarIcon,
@@ -12,6 +8,10 @@ import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import CapacityPlanningPanel from '../../../../components/dashboard/CapacityPlanningPanel'
+import GlobalNavigation from '../../../../components/GlobalNavigation'
+import ProtectedRoute from '../../../../components/ProtectedRoute'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function CapacityPlanningPage() {
   const { user, profile } = useAuth()

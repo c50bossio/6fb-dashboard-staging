@@ -15,7 +15,7 @@ async function getMetrics(request) {
     const supabase = createClient()
     
     const now = new Date()
-    let startDate = new Date()
+    const startDate = new Date()
     
     switch (period) {
       case '7d':
@@ -52,12 +52,12 @@ async function getMetrics(request) {
     let totalMRR = 0
     let totalARR = 0
     let activeSubscriptions = 0
-    let tierBreakdown = {
+    const tierBreakdown = {
       barber: { count: 0, mrr: 0 },
       shop: { count: 0, mrr: 0 },
       enterprise: { count: 0, mrr: 0 }
     }
-    let statusBreakdown = {
+    const statusBreakdown = {
       active: 0,
       trialing: 0,
       past_due: 0,
@@ -89,7 +89,7 @@ async function getMetrics(request) {
 
     let newSubscriptions = 0
     let canceledSubscriptions = 0
-    let dailyGrowth = {}
+    const dailyGrowth = {}
 
     subscriptionHistory?.forEach(record => {
       const date = record.created_at.split('T')[0]

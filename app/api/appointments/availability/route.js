@@ -1,6 +1,6 @@
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 

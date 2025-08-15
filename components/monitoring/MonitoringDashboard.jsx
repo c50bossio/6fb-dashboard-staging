@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon, 
   ExclamationTriangleIcon,
@@ -11,7 +10,6 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
-import { Line, Bar, Doughnut } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,6 +23,8 @@ import {
   Legend,
   Filler
 } from 'chart.js'
+import { useState, useEffect } from 'react'
+import { Line, Bar, Doughnut } from 'react-chartjs-2'
 
 // Register ChartJS components
 ChartJS.register(

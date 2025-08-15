@@ -1,8 +1,8 @@
 'use client'
 
+import interactionPlugin from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
 import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
 import { useRef, useCallback, useEffect } from 'react'
 
 export default function FinalProfessionalCalendar({

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   UserGroupIcon, 
   LightBulbIcon,
@@ -9,6 +8,7 @@ import {
   ClockIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function TestCollaborationPage() {
   const [query, setQuery] = useState('')

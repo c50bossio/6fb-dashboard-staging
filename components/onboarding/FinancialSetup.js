@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   CreditCardIcon, 
   BanknotesIcon,
@@ -9,6 +8,7 @@ import {
   UsersIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function FinancialSetup({ onComplete, initialData = {}, subscriptionTier = 'shop' }) {
   const [currentSection, setCurrentSection] = useState('payment')

@@ -23,7 +23,7 @@ export async function GET(request) {
     
     const currentTime = Date.now()
     let activeOAuthSessions = 0
-    let expiredSessions = []
+    const expiredSessions = []
     
     for (const [sessionId, sessionData] of oauthSessions.entries()) {
       if (currentTime - sessionData.createdAt > OAUTH_SESSION_TTL) {

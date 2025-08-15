@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { 
   ChartBarIcon,
   CurrencyDollarIcon,
@@ -18,7 +16,9 @@ import {
   FunnelIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function ShopAnalytics() {
   const { user, profile } = useAuth()

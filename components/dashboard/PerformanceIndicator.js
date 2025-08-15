@@ -5,7 +5,6 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
   BoltIcon,
   ClockIcon,
@@ -14,6 +13,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
+import { useState, useEffect } from 'react';
 
 export default function PerformanceIndicator({ className = '' }) {
   const [performanceData, setPerformanceData] = useState(null);

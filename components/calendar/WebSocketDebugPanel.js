@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { useState, useEffect } from 'react'
 
 export default function WebSocketDebugPanel() {
   const [status, setStatus] = useState('initializing')

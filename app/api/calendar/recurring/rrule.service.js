@@ -1,6 +1,6 @@
 
-const { RRule, RRuleSet, rrulestr } = require('rrule');
 const { DateTime } = require('luxon');
+const { RRule, RRuleSet, rrulestr } = require('rrule');
 
 /**
  * Service for handling RRule generation, parsing, and expansion
@@ -159,7 +159,7 @@ class RRuleService {
       byMonthDay
     } = pattern;
 
-    let parts = [`FREQ=${frequency.toUpperCase()}`];
+    const parts = [`FREQ=${frequency.toUpperCase()}`];
     
     if (interval > 1) {
       parts.push(`INTERVAL=${interval}`);

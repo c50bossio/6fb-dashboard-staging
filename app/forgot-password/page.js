@@ -7,8 +7,8 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState } from 'react'
-import Logo from '../../components/ui/Logo'
 import { useAuth } from '../../components/SupabaseAuthProvider'
+import Logo from '../../components/ui/Logo'
 
 
 export default function ForgotPasswordPage() {

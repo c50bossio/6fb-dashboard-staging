@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import Image from 'next/image'
 import { 
   XMarkIcon,
   ArrowDownTrayIcon,
@@ -12,6 +10,8 @@ import {
   AdjustmentsHorizontalIcon,
   PhotoIcon
 } from '@heroicons/react/24/outline'
+import Image from 'next/image'
+import { useState, useEffect, useRef } from 'react'
 
 export default function QRCodeModal({ isOpen, onClose, bookingLink }) {
   const [qrDataUrl, setQrDataUrl] = useState('')

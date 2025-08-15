@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
 import { 
   CalendarDaysIcon,
   ClockIcon,
@@ -10,6 +8,8 @@ import {
   PhoneIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 export default function AvailabilityPage() {
   const [loading, setLoading] = useState(true)

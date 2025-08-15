@@ -4,9 +4,9 @@ import { streamText } from 'ai'
 import { NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
 
+import { AIBusinessContextService } from '@/lib/ai-business-context'
 import { anthropic as anthropicClient, DEFAULT_CLAUDE_MODEL } from '@/lib/anthropic'
 import { getGeminiModel, convertToGeminiFormat } from '@/lib/gemini'
-import { AIBusinessContextService } from '@/lib/ai-business-context'
 
 const openaiClient = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
@@ -31,7 +31,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Messages are required' }, { status: 400 })
     }
 
-    let enhancedMessages = [...messages]
+    const enhancedMessages = [...messages]
     if (includeBusinessContext) {
       try {
         const businessPrompt = await aiBusinessContext.getAISystemPrompt(barbershopId)

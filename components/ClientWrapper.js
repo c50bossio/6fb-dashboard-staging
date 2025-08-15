@@ -1,12 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
+import errorTracker from '../lib/error-tracker'
 import { AppErrorBoundary } from './error-boundary'
+import ServiceWorkerProvider from './ServiceWorkerProvider'
 import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
-import ServiceWorkerProvider from './ServiceWorkerProvider'
-import errorTracker from '../lib/error-tracker'
 
 export default function ClientWrapper({ children }) {
   useEffect(() => {

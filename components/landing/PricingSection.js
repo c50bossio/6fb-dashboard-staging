@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import Link from 'next/link'
+import { useState } from 'react'
 
 const PricingSection = () => {
   const [billingPeriod, setBillingPeriod] = useState('monthly')

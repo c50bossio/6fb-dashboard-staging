@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   CurrencyDollarIcon,
   UserGroupIcon,
@@ -12,6 +11,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function UnifiedExecutiveSummary({ data }) {
   const [currentTime, setCurrentTime] = useState(new Date())

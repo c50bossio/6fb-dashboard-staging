@@ -82,7 +82,7 @@ export async function GET(request) {
     }
 
     let overallStatus = 'healthy';
-    let statusReason = [];
+    const statusReason = [];
     
     if (pythonBackendStatus === 'unavailable') {
       overallStatus = 'degraded';

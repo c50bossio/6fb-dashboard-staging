@@ -1,9 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
 import { 
   CalendarDaysIcon,
   ClockIcon,
@@ -17,6 +13,10 @@ import {
   ChatBubbleLeftIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function BarberLandingPage() {
   const params = useParams()

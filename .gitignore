@@ -126,20 +126,39 @@ composer.lock.backup
 *.csv.export
 data-exports/
 
-# Context Window Optimization (Added: $(date))
-package-lock.json
-*analysis*.json
-*report*.json  
+# Context Window Optimization - Massive File Prevention
+# Coverage and reports (massive context consumers)
+coverage/
+eslint-report.json
+*.coverage.json
+coverage-final.json
+
+# Test reports and artifacts  
 *test-results*.json
+*-report.json
+*-results.json
+*analysis*.json
+playwright-report/
+test-results/
+performance-report.html
+performance-report.json
+
+# Generated artifacts outside proper directories
+test_*.js
+debug_*.js
+*_test_*.json
+*.backup-*
+*analysis*.json
+*report*.json
 performance-*.js
 mock-data-*.json
-services-temporarily-disabled/
+
+# Cleanup and temporary files
 .context-cleanup-archive/
+scripts/debug/
 *.backup.*
 *-backup.*
 *temp*.js
-debug-*.js
-test-*.js
 apply-*.js
 check-*.js
 setup-*.js

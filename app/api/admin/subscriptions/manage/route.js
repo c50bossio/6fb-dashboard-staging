@@ -40,7 +40,7 @@ async function handleManageSubscription(request) {
     }
 
     let result = {}
-    let auditDetails = { reason, originalData: user }
+    const auditDetails = { reason, originalData: user }
 
     switch (action) {
       case 'cancel_subscription':

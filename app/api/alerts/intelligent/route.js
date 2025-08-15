@@ -3,8 +3,8 @@
  * Generates smart business alerts based on real data patterns and configurable thresholds
  */
 
-import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
 import { cacheQuery } from '../../../../lib/analytics-cache.js';
 export const runtime = 'edge'
 

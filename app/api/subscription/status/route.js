@@ -219,7 +219,7 @@ export async function POST(request) {
       )
     }
     
-    let updateData = {}
+    const updateData = {}
     let overageAmount = 0
     
     switch (type) {

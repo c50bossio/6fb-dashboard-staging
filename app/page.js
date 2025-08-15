@@ -1,9 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { 
   RocketLaunchIcon,
   ArrowRightIcon,
@@ -13,14 +9,18 @@ import {
   ChartBarIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
-import Logo, { LogoHeader } from '../components/ui/Logo'
-import BrandOwnershipSection from '../components/landing/BrandOwnershipSection'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import AIAgentsShowcase from '../components/landing/AIAgentsShowcase'
 import AnalyticsPreview from '../components/landing/AnalyticsPreview'
 import BarberSuccessStories from '../components/landing/BarberSuccessStories'
+import BrandOwnershipSection from '../components/landing/BrandOwnershipSection'
+import FeaturesSection from '../components/landing/FeaturesSection'
 import PricingCalculator from '../components/landing/PricingCalculator'
 import PricingSection from '../components/landing/PricingSection'
-import FeaturesSection from '../components/landing/FeaturesSection'
+import Logo, { LogoHeader } from '../components/ui/Logo'
 
 export default function HomePage() {
   const router = useRouter()

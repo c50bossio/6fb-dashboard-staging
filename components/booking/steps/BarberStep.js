@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { StarIcon, ClockIcon, ScissorsIcon, CalendarIcon } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import { useState, useEffect } from 'react'
 
 export default function BarberStep({ bookingData, onNext, onBack }) {
   const [barbers, setBarbers] = useState([])

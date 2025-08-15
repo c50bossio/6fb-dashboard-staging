@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   ScissorsIcon,
   CurrencyDollarIcon,
@@ -23,8 +22,9 @@ import {
   ShieldCheckIcon,
   LockClosedIcon
 } from '@heroicons/react/24/outline'
-import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
 import { hasPermission, validateServicePricing, validateServiceDuration, getPermissionLevel } from '@/lib/permissions'
+import { createClient } from '@/lib/supabase/client'
 
 export default function ServiceManager({ 
   userRole, 

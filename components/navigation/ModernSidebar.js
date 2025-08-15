@@ -12,9 +12,9 @@ import {
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useAuth } from '../SupabaseAuthProvider'
 import Logo from '../ui/Logo'
 
-import { useAuth } from '../SupabaseAuthProvider'
 
 
 import { BARBERSHOP_NAVIGATION, getActiveNavItem } from './BarbershopNavigationConfig'

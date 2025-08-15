@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
 import { 
   CalendarIcon,
   ClockIcon,
@@ -14,6 +12,8 @@ import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import { createClient } from '@supabase/supabase-js'
+import { useParams, useSearchParams } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',

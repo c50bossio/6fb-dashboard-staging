@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function MFASetup({ onComplete, onCancel }) {
   const [step, setStep] = useState(1) // 1: setup, 2: verify, 3: backup codes

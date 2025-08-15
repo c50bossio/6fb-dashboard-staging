@@ -884,7 +884,7 @@ export default function AppointmentBookingModal({
     
     const startDate = new Date(formData.scheduled_at)
     let freq = 'WEEKLY'
-    let interval = formData.recurrence_interval
+    const interval = formData.recurrence_interval
     
     switch (formData.recurrence_pattern) {
       case 'daily':

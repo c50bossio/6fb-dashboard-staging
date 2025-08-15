@@ -209,7 +209,7 @@ function calculateOccurrences(rruleString, startDate) {
     
     const occurrences = []
     const start = new Date(startDate)
-    let current = new Date(start)
+    const current = new Date(start)
     
     for (let i = 0; i < count && occurrences.length < 52; i++) { // Safety limit of 52
       if (i > 0) {

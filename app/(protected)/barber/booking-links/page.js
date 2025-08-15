@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   LinkIcon, 
   QrCodeIcon, 
@@ -20,10 +19,11 @@ import {
   ArrowTopRightOnSquareIcon,
   CodeBracketIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { useState, useEffect } from 'react'
 import CreateBookingLinkModal from '../../../../components/barber/CreateBookingLinkModal'
-import QRCodeModal from '../../../../components/barber/QRCodeModal'
 import EmbedCodeModal from '../../../../components/barber/EmbedCodeModal'
+import QRCodeModal from '../../../../components/barber/QRCodeModal'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BookingLinksPage() {
   const { user, profile } = useAuth()

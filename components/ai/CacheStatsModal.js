@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   XMarkIcon, 
   TrashIcon, 
@@ -9,6 +8,7 @@ import {
   ClockIcon,
   DatabaseIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { getCacheManager } from '@/lib/ai-cache-manager'
 import { getStreamingClient } from '@/lib/ai-streaming-client'
 

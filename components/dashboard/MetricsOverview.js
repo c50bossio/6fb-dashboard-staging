@@ -15,11 +15,11 @@ import {
 } from '@heroicons/react/24/outline'
 import React from 'react'
 
+import { useTenant } from '@/contexts/TenantContext'
+import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
 import LoadingSpinner from '../LoadingSpinner'
 import { StatCard, Card, Badge, Alert, StatusBadge } from '../ui'
 
-import { useTenant } from '@/contexts/TenantContext'
-import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
 
 const SafeArrowTrendingUpIcon = ArrowTrendingUpIcon || (() => <span>↗</span>)
 

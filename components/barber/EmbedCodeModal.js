@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   XMarkIcon,
   CodeBracketIcon,
@@ -13,6 +12,7 @@ import {
   PaintBrushIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
   const [activeTab, setActiveTab] = useState('iframe')

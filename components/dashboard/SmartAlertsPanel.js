@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   BellIcon,
   ExclamationTriangleIcon,
@@ -12,6 +11,7 @@ import {
   ChevronRightIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
   const [alerts, setAlerts] = useState([])

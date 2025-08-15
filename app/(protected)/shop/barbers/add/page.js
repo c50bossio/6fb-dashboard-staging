@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { 
   UserPlusIcon,
   EnvelopeIcon,
@@ -14,6 +10,10 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
 
 export default function AddBarber() {
   const { user } = useAuth()

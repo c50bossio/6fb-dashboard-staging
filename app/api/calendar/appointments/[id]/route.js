@@ -83,7 +83,7 @@ export async function PATCH(request, { params }) {
     const { id } = params
     const body = await request.json()
     
-    let updateData = {}
+    const updateData = {}
     
     if (body.scheduled_at && body.duration_minutes) {
       const startTime = new Date(body.scheduled_at)

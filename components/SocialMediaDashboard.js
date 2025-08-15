@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   ShareIcon,
   HeartIcon,
@@ -16,6 +15,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function SocialMediaDashboard({ barbershop_id = 'demo', compact = false }) {
   const [dashboard, setDashboard] = useState(null)

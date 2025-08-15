@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { config, getServiceStatus } from '@/services/production-config';
+import { NextResponse } from 'next/server';
 import { errorMonitor, performanceMonitor } from '@/services/error-monitoring';
+import { config, getServiceStatus } from '@/services/production-config';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

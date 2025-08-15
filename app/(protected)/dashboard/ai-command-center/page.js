@@ -23,11 +23,11 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
+import ModelSelector from '../../../../components/chat/ModelSelector'
+import ExecutableActionButton from '../../../../components/ExecutableActionButton'
 import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { Card } from '../../../../components/ui'
-import ExecutableActionButton from '../../../../components/ExecutableActionButton'
-import ModelSelector from '../../../../components/chat/ModelSelector'
 
 const AGENT_ICONS = {
   'financial_coach': BanknotesIcon,

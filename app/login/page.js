@@ -10,8 +10,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
-import { useAuth } from '../../components/SupabaseAuthProvider'
 import ConversionTracker, { useLoginTracking } from '@/components/analytics/ConversionTracker'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 import Logo from '../../components/ui/Logo'
 
 

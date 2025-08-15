@@ -34,8 +34,8 @@ import {
 } from 'recharts'
 
 import ProtectedRoute from '../../../../components/ProtectedRoute'
-import { Card } from '../../../../components/ui'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { Card } from '../../../../components/ui'
 
 function AnalyticsBreadcrumb({ level, levelData, onNavigate }) {
   const levels = [

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   CodeBracketIcon,
   PlusIcon,
@@ -11,6 +10,7 @@ import {
   CursorArrowRaysIcon,
   LinkIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function EmbedWidgetsTab() {
   const [embedWidgets, setEmbedWidgets] = useState([])

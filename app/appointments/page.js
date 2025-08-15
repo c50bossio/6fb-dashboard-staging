@@ -14,10 +14,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback } from 'react'
 
-import EnhancedProfessionalCalendar from '../../components/calendar/EnhancedProfessionalCalendar'
 import AppointmentModal from '../../components/calendar/AppointmentModal'
-import ProtectedRoute from '../../components/ProtectedRoute'
+import EnhancedProfessionalCalendar from '../../components/calendar/EnhancedProfessionalCalendar'
 import GlobalNavigation from '../../components/GlobalNavigation'
+import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
 export default function AppointmentsPage() {

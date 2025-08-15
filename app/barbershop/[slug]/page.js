@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
 import {
   StarIcon,
   PhoneIcon,
@@ -10,6 +8,8 @@ import {
   ClockIcon,
   CalendarIcon
 } from '@heroicons/react/24/solid'
+import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function BarbershopPublicPage() {
   const params = useParams()

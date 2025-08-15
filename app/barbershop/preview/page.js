@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   StarIcon,
   PhoneIcon,
@@ -9,6 +8,7 @@ import {
   ClockIcon,
   CalendarIcon
 } from '@heroicons/react/24/solid'
+import { useState, useEffect } from 'react'
 
 export default function BarbershopPreviewPage() {
   const [settings, setSettings] = useState(null)

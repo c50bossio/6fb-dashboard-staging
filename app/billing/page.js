@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { 
   CreditCardIcon, 
   CheckCircleIcon,
@@ -17,6 +15,8 @@ import {
   ArrowDownIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function BillingPage() {

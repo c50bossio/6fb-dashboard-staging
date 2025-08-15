@@ -303,7 +303,7 @@ async function checkTriggerConditions(barbershop_id, parameters) {
   const businessData = await getCurrentBusinessData(barbershop_id)
   
   let conditionsMet = false
-  let evaluation = {
+  const evaluation = {
     trigger_type,
     conditions_checked: [],
     overall_result: false,

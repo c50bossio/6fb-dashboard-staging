@@ -13,10 +13,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
-import LoadingSpinner from '../LoadingSpinner'
 
 import { useTenant } from '@/contexts/TenantContext'
 import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
+import LoadingSpinner from '../LoadingSpinner'
 
 export default function TenantAnalyticsDashboard() {
   const { tenant, tenantName, businessName, subscriptionTier } = useTenant()

@@ -1,9 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useAuth } from '../../components/SupabaseAuthProvider'
-import Link from 'next/link'
 import {
   CheckCircleIcon,
   BuildingOfficeIcon,
@@ -14,14 +10,18 @@ import {
   ArrowLeftIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
-import RoleSelector from '../../components/onboarding/RoleSelector'
-import GoalsSelector from '../../components/onboarding/GoalsSelector'
-import ProgressTracker from '../../components/onboarding/ProgressTracker'
-import ServiceSetup from '../../components/onboarding/ServiceSetup'
 import FinancialSetup from '../../components/onboarding/FinancialSetup'
+import GoalsSelector from '../../components/onboarding/GoalsSelector'
 import LivePreview from '../../components/onboarding/LivePreview'
 import OnboardingChecklist from '../../components/onboarding/OnboardingChecklist'
+import ProgressTracker from '../../components/onboarding/ProgressTracker'
+import RoleSelector from '../../components/onboarding/RoleSelector'
+import ServiceSetup from '../../components/onboarding/ServiceSetup'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 
 export default function WelcomePage() {
   const router = useRouter()

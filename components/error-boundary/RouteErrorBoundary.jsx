@@ -3,12 +3,12 @@
  * Handles navigation errors, 404s, and route loading failures
  */
 
-import React from 'react'
-import { useRouter } from 'next/router'
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Home, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 class RouteErrorBoundary extends React.Component {
   constructor(props) {

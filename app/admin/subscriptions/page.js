@@ -1,16 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
 import { useRouter } from 'next/navigation'
-import LoadingSpinner from '../../../components/LoadingSpinner'
-import { useAdminAuth } from '../../../hooks/useAdminAuth'
-
-import RevenueMetrics from '../../../components/admin/RevenueMetrics'
-import SubscriptionTable from '../../../components/admin/SubscriptionTable'
+import { useState, useEffect } from 'react'
+import AdminHeader from '../../../components/admin/AdminHeader'
 import GrowthChart from '../../../components/admin/GrowthChart'
 import PaymentIssues from '../../../components/admin/PaymentIssues'
-import AdminHeader from '../../../components/admin/AdminHeader'
+import RevenueMetrics from '../../../components/admin/RevenueMetrics'
+import SubscriptionTable from '../../../components/admin/SubscriptionTable'
+import LoadingSpinner from '../../../components/LoadingSpinner'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
+import { useAdminAuth } from '../../../hooks/useAdminAuth'
+
 
 export default function AdminSubscriptionsPage() {
   const { user, loading: authLoading } = useAuth()

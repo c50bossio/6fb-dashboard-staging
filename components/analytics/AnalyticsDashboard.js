@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 
+import { useFeatureFlag } from '@/hooks/useFeatureFlags'
 import { useAnalytics } from '../providers/PostHogProvider'
 
-import { useFeatureFlag } from '@/hooks/useFeatureFlags'
 
 /**
  * Analytics Dashboard Component

@@ -20,11 +20,11 @@ import {
   WifiIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
-import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
+import ProtectedRoute from '../../../components/ProtectedRoute'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 const QUICK_ACTIONS = [

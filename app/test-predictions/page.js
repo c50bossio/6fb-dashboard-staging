@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   ChartBarIcon,
   CalendarIcon,
@@ -11,6 +10,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function TestPredictionsPage() {
   const [timeframe, setTimeframe] = useState(30)

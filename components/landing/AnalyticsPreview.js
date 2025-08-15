@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   ChartBarIcon,
   ArrowTrendingUpIcon,
@@ -10,6 +9,7 @@ import {
   ClockIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function AnalyticsPreview() {
   const [activeTab, setActiveTab] = useState('revenue')

@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
 import { 
   CalendarIcon,
   ClockIcon,
@@ -18,6 +16,8 @@ import {
   CheckCircleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function BookingDetailPage() {
   const params = useParams()

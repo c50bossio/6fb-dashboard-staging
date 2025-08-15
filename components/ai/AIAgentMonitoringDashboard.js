@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   ChartBarIcon,
   CpuChipIcon,
@@ -15,8 +14,9 @@ import {
   ChatBubbleLeftRightIcon,
   FireIcon
 } from '@heroicons/react/24/outline'
-import { getWebSocketManager } from '@/lib/ai-websocket-manager'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { getStreamingClient } from '@/lib/ai-streaming-client'
+import { getWebSocketManager } from '@/lib/ai-websocket-manager'
 
 /**
  * AI Agent Status Monitoring Dashboard

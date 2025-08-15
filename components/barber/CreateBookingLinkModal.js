@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   XMarkIcon,
   PlusIcon,
@@ -12,6 +11,7 @@ import {
   LinkIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barberId }) {
   const [formData, setFormData] = useState({

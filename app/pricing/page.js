@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 const PLANS = [
   {

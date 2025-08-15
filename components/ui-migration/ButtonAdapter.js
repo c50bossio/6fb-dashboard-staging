@@ -5,8 +5,8 @@
  * Maps existing Button API to shadcn/ui button component
  */
 
-import { Button as ShadcnButton } from '@/components/ui/button'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { Button as ShadcnButton } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 const variantMap = {

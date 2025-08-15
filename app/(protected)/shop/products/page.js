@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   PlusIcon,
   MagnifyingGlassIcon,
@@ -15,6 +14,7 @@ import {
   LinkIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 export default function ProductInventory() {
   const [products, setProducts] = useState([])

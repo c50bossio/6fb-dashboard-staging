@@ -1,15 +1,15 @@
 'use client'
 
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import listPlugin from '@fullcalendar/list'
 import FullCalendar from '@fullcalendar/react'
 import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import listPlugin from '@fullcalendar/list'
-import interactionPlugin from '@fullcalendar/interaction'
 import rrulePlugin from '@fullcalendar/rrule'
-import { RRule } from 'rrule'
+import timeGridPlugin from '@fullcalendar/timegrid'
 import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
+import { RRule } from 'rrule'
 
 export default function EnhancedProfessionalCalendar({
   resources: externalResources,

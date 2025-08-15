@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   CogIcon,
   PlayIcon,
@@ -14,6 +13,7 @@ import {
   ChartBarIcon,
   LightBulbIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', compact = false }) {
   const [dashboard, setDashboard] = useState(null)

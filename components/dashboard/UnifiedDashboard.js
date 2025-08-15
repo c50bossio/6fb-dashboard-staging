@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
 import { 
   ChartBarIcon,
   CpuChipIcon,
@@ -19,14 +17,16 @@ import {
   SparklesIcon as SparklesSolid,
   PresentationChartLineIcon as PresentationChartSolid
 } from '@heroicons/react/24/solid'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
 
+import ActionCenter from './ActionCenter'
 import AICoachPanel from './AICoachPanel'
 import AnalyticsPanel from './AnalyticsPanel'
-import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
-import ActionCenter from './ActionCenter'
-import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
-import SmartAlertsPanel from './SmartAlertsPanel'
 import ExecutiveLoadingState from './ExecutiveLoadingState'
+import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
+import SmartAlertsPanel from './SmartAlertsPanel'
+import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 
 
 const DASHBOARD_MODES = {

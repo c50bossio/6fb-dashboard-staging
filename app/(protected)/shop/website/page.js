@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import {
   PaintBrushIcon,
   PhotoIcon,
@@ -21,6 +19,8 @@ import {
   ChatBubbleBottomCenterTextIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function ShopWebsiteCustomization() {
   const { user } = useAuth()

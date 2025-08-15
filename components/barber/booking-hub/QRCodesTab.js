@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   QrCodeIcon,
   PlusIcon,
@@ -10,6 +9,7 @@ import {
   TrashIcon,
   PencilIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function QRCodesTab() {
   const [qrCodes, setQrCodes] = useState([])

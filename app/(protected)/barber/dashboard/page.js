@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   CalendarIcon, 
   UserGroupIcon, 
@@ -12,8 +11,9 @@ import {
   BellIcon,
   ScissorsIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberDashboard() {
   const { user, profile } = useAuth()

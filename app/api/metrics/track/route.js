@@ -73,7 +73,7 @@ export async function POST(request) {
       }
     }
 
-    let posthogResult = null
+    const posthogResult = null
     if (consent.analytics && false) { // posthog temporarily disabled
       try {
         // })

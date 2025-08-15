@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
 import { 
   UserGroupIcon,
   ShieldCheckIcon,
@@ -18,12 +15,15 @@ import {
   CurrencyDollarIcon,
   ScissorsIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 import { 
   getPermissionTemplates, 
   applyPermissionTemplate, 
   canManagePermissions,
   getPermissionLevel 
 } from '@/lib/permissions'
+import { createClient } from '@/lib/supabase/client'
 
 export default function StaffPermissions() {
   const { user } = useAuth()

@@ -12,8 +12,8 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useRef, useEffect } from 'react'
-import { useAuth } from './SupabaseAuthProvider'
 import { createClient } from '../lib/supabase/client'
+import { useAuth } from './SupabaseAuthProvider'
 
 export default function FloatingAIChat() {
   const { user } = useAuth()

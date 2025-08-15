@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   CheckCircleIcon,
   XCircleIcon,
@@ -19,6 +18,7 @@ import {
   FaceSmileIcon,
   BoltIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function AITestingDashboard() {
   const [testResults, setTestResults] = useState({})

@@ -1,16 +1,16 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-import LocationStep from './steps/LocationStep'
 import BarberStep from './steps/BarberStep'
+import ConfirmationStep from './steps/ConfirmationStep'
+import LocationStep from './steps/LocationStep'
+import PaymentStep from './steps/PaymentStep'
 import ServiceStep from './steps/ServiceStep'
 import TimeStep from './steps/TimeStep'
-import PaymentStep from './steps/PaymentStep'
-import ConfirmationStep from './steps/ConfirmationStep'
 
 export default function BookingWizard({ 
   initialLocation = null,

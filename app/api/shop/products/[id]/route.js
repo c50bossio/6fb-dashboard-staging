@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
 export async function PUT(request, { params }) {

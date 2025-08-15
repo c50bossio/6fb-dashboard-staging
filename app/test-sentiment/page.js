@@ -1,7 +1,5 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import SentimentDashboard from '../../components/SentimentDashboard'
 import { 
   HeartIcon, 
   ChatBubbleLeftRightIcon,
@@ -9,6 +7,8 @@ import {
   ChartBarIcon,
   FaceSmileIcon
 } from '@heroicons/react/24/outline'
+import React, { useState, useEffect } from 'react'
+import SentimentDashboard from '../../components/SentimentDashboard'
 
 export default function TestSentimentPage() {
   const [testMessage, setTestMessage] = useState('')

@@ -72,7 +72,7 @@ export async function GET(request) {
     const customerIds = [...new Set(bookings.map(b => b.customer_id).filter(Boolean))]
     const barberIds = [...new Set(bookings.map(b => b.barber_id).filter(Boolean))]
     
-    let servicesMap = {}
+    const servicesMap = {}
     if (serviceIds.length > 0) {
       const { data: services } = await supabase
         .from('services')
@@ -86,7 +86,7 @@ export async function GET(request) {
       }
     }
     
-    let customersMap = {}
+    const customersMap = {}
     if (customerIds.length > 0) {
       const { data: customers } = await supabase
         .from('customers')
@@ -100,7 +100,7 @@ export async function GET(request) {
       }
     }
     
-    let barbersMap = {}
+    const barbersMap = {}
     if (barberIds.length > 0) {
       const { data: barbers } = await supabase
         .from('barbers')

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   UserIcon,
   PencilIcon,
@@ -16,8 +15,9 @@ import {
   PhoneIcon,
   EnvelopeIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 export default function ProfilePage() {
   const { user, profile, updateProfile } = useAuth()

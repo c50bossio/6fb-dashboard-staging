@@ -1,6 +1,6 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 
 export const runtime = 'edge'
 
@@ -107,7 +107,7 @@ export async function GET(request) {
       }, { status: 500 })
     }
     
-    let timeSeriesData = []
+    const timeSeriesData = []
     
     if (period === 'day') {
       for (let hour = 0; hour < 24; hour++) {

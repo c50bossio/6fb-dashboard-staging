@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { 
   UserGroupIcon,
   CurrencyDollarIcon,
@@ -17,6 +15,8 @@ import {
   CreditCardIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function ShopDashboard() {
   const { user, profile } = useAuth()

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   ChartBarIcon,
   ArrowTrendingUpIcon,
@@ -14,6 +13,7 @@ import {
   EyeIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', compact = false }) {
   const [predictions, setPredictions] = useState(null)

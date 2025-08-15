@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { 
   HomeIcon, 
   CalendarIcon, 
@@ -12,6 +9,9 @@ import {
   Bars3Icon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { useTouchGestures } from '@/hooks/useTouchGestures'
 import { cn } from '@/lib/utils'
 

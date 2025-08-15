@@ -1,8 +1,8 @@
 'use client'
 
-import { Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, LinkIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { Fragment, useState } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
 
 export default function Cin7ConnectionModal({ isOpen, onClose, onConnect }) {

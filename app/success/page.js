@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { CheckCircleIcon } from '@heroicons/react/24/solid'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function SuccessPage() {
   const router = useRouter()

@@ -24,8 +24,8 @@ import {
 import { useState, useEffect, useCallback } from 'react'
 
 import ProtectedRoute from '../../../../components/ProtectedRoute'
-import { Card } from '../../../../components/ui'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { Card } from '../../../../components/ui'
 
 function AchievementBadge({ achievement, earned = false, size = 'medium' }) {
   const sizeClasses = {

@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon,
   CpuChipIcon,
   EyeIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import AIAgentMonitoringDashboard from '@/components/ai/AIAgentMonitoringDashboard'
 import SystemHealthMonitor from '@/components/ai/SystemHealthMonitor'
 import ProtectedRoute from '@/components/ProtectedRoute'

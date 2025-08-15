@@ -252,7 +252,7 @@ function analyzeConversationContext(message, conversationContext) {
   if (isFollowUp && conversationContext?.messages?.length > 0) {
     const recentMessages = conversationContext.messages.slice(-3);
     
-    for (let msg of recentMessages.reverse()) {
+    for (const msg of recentMessages.reverse()) {
       if (msg.messageType && msg.messageType !== 'general') {
         referencedTopic = msg.messageType;
         actualType = msg.messageType;

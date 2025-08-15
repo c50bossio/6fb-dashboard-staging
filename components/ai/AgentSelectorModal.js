@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   XMarkIcon,
   SparklesIcon,
@@ -11,6 +10,7 @@ import {
   ExclamationCircleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { getAgentRouter } from '@/lib/ai-agent-router'
 
 /**

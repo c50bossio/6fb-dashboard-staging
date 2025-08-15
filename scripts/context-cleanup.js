@@ -270,6 +270,77 @@ class ContextCleaner {
     this.log(`Removed ${removed} build directories`, 'success');
   }
 
+  detectMassiveFiles() {
+    this.log('🔍 Detecting massive files (>1MB) consuming context...');
+    
+    const massiveFileThreshold = 1024 * 1024; // 1MB
+    const excludeDirs = ['node_modules', '.git', '.next', 'dist'];
+    const massiveFiles = [];
+    
+    const scanDirectory = (dir) => {
+      try {
+        const items = fs.readdirSync(dir);
+        for (const item of items) {
+          const fullPath = path.join(dir, item);
+          const stat = fs.statSync(fullPath);
+          
+          if (stat.isDirectory() && !excludeDirs.includes(item)) {
+            scanDirectory(fullPath);
+          } else if (stat.isFile() && stat.size > massiveFileThreshold) {
+            massiveFiles.push({
+              path: fullPath,
+              size: stat.size,
+              sizeMB: (stat.size / 1024 / 1024).toFixed(2)
+            });
+          }
+        }
+      } catch (err) {
+        // Ignore permission errors
+      }
+    };
+
+    scanDirectory('.');
+    
+    if (massiveFiles.length > 0) {
+      this.log(`Found ${massiveFiles.length} massive files consuming context:`, 'warn');
+      massiveFiles.forEach(file => {
+        this.log(`  📁 ${file.path} (${file.sizeMB} MB)`, 'warn');
+      });
+      
+      // Remove the massive files
+      let removed = 0;
+      for (const file of massiveFiles) {
+        if (this.shouldRemoveMassiveFile(file.path)) {
+          if (!this.dryRun) {
+            fs.unlinkSync(file.path);
+          }
+          this.stats.filesRemoved++;
+          this.stats.sizeReduced += file.size;
+          removed++;
+          this.log(`Removed massive file: ${file.path} (${file.sizeMB} MB)`);
+        }
+      }
+      
+      this.log(`Removed ${removed} massive files`, 'success');
+    } else {
+      this.log('No massive files detected', 'success');
+    }
+  }
+
+  shouldRemoveMassiveFile(filePath) {
+    const massiveFilePatterns = [
+      /coverage.*\.json$/,
+      /eslint-report\.json$/,
+      /.*-report\.json$/,
+      /.*-results\.json$/,
+      /.*analysis.*\.json$/,
+      /performance-report\.html$/,
+      /.*\.coverage\.json$/
+    ];
+    
+    return massiveFilePatterns.some(pattern => pattern.test(filePath));
+  }
+
   getDirSize(dirPath) {
     let totalSize = 0;
     try {
@@ -394,6 +465,7 @@ irrelevant files that consume context window space.
         this.createBackup();
       }
       
+      this.detectMassiveFiles();
       this.removeLogFiles();
       this.removeTestDebugFiles();
       this.removeBackupFiles();

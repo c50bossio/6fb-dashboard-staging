@@ -1,6 +1,6 @@
 import rrulePlugin from '@fullcalendar/rrule';
-const TimezoneService = require('../../services/timezone.service');
 const RRuleService = require('../../services/rrule.service');
+const TimezoneService = require('../../services/timezone.service');
 
 /**
  * FullCalendar configuration for proper recurring event handling

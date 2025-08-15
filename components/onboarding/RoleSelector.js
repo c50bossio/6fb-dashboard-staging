@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   UserIcon,
   BuildingOfficeIcon,
@@ -13,6 +12,7 @@ import {
   SparklesIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 const roles = [
   {

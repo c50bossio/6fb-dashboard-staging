@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { 
   ChevronDownIcon,
@@ -9,6 +8,7 @@ import {
   ArrowPathIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, Fragment } from 'react'
 import { useAuth } from './SupabaseAuthProvider'
 
 export default function ViewSwitcher() {

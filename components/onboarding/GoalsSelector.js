@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   CalendarDaysIcon,
   UsersIcon,
@@ -12,6 +11,7 @@ import {
   UserGroupIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 const goalsByTier = {
   barber: [

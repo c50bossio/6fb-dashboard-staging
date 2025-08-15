@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import dynamic from 'next/dynamic'
 import { 
   CalendarIcon, 
   PlusCircleIcon,
@@ -15,12 +13,14 @@ import {
   FunnelIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import dynamic from 'next/dynamic'
 import QRCode from 'qrcode'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { getCalendarConfig } from '../../../../components/calendar/CalendarConfig'
+import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 import { useToast } from '../../../../components/ToastContainer'
 import { useCalendarEvents } from '../../../../hooks/useCalendarEvents'
-import { getCalendarConfig } from '../../../../components/calendar/CalendarConfig'
 const TimezoneService = require('../../../../services/timezone.service')
-import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'),

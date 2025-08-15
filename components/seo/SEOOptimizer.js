@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function SEOOptimizer() {
   const pathname = usePathname()

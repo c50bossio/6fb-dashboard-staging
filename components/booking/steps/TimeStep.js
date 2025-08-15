@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { CalendarIcon, ClockIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) {
   const [selectedDate, setSelectedDate] = useState(null)
@@ -60,7 +60,7 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
       const now = new Date()
       const isToday = date.toDateString() === now.toDateString()
       
-      let currentSlot = new Date(startTime)
+      const currentSlot = new Date(startTime)
       
       while (currentSlot < endTime) {
         const slotEnd = new Date(currentSlot)

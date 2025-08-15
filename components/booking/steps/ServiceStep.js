@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { ClockIcon, CurrencyDollarIcon, SparklesIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function ServiceStep({ bookingData, onNext, onBack }) {
   const [services, setServices] = useState([])

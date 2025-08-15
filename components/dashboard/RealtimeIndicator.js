@@ -5,7 +5,6 @@
 
 'use client';
 
-import { useRealtimeDashboard } from '../../hooks/useRealtimeDashboard';
 import {
   WifiIcon,
   ExclamationTriangleIcon,
@@ -13,6 +12,7 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { useRealtimeDashboard } from '../../hooks/useRealtimeDashboard';
 
 export default function RealtimeIndicator({ barbershopId, className = '' }) {
   const { connected, lastUpdate, error, data, reconnect, connectionInfo } = useRealtimeDashboard(barbershopId, true);

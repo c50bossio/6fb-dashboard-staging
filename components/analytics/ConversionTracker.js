@@ -6,11 +6,11 @@
 
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { metricsTracker } from '@/lib/metrics-tracker'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import posthog from 'posthog-js'
+import { useEffect, useRef, useCallback } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { metricsTracker } from '@/lib/metrics-tracker'
 
 export function ConversionTracker({ 
   children,

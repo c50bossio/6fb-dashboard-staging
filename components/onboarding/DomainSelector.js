@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { CheckCircleIcon, GlobeAltIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function DomainSelector({ onDomainSelect, businessName }) {
   const [domainOption, setDomainOption] = useState('free') // free, buy, existing

@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
 import UnifiedDashboard from '../../../components/dashboard/UnifiedDashboard'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 export default function BarbershopDashboard() {
   console.log('🏪 BarbershopDashboard component loading...')
