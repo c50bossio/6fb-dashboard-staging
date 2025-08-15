@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSimpleClient } from '@/lib/supabase/server-client'
 
 /**
  * Clean OAuth callback handler for Google authentication
@@ -32,26 +33,62 @@ export async function GET(request) {
   }
 
   try {
-    const supabase = createClient()
-    
-    // Enhanced PKCE debugging - inspect all available cookies
+    // Enhanced PKCE debugging - inspect all available cookies FIRST
     console.log('🔄 Exchanging OAuth code for session...')
-    console.log('🔍 PKCE Debug - Available cookies:')
+    console.log('🔍 PKCE Debug - Checking all cookies:')
     
     const cookieStore = cookies()
     const allCookies = cookieStore.getAll()
     
-    // Log all cookies for debugging
+    console.log(`📊 Total cookies found: ${allCookies.length}`)
+    
+    // Log ALL cookies to see what's available
     allCookies.forEach(cookie => {
-      if (cookie.name.includes('pkce') || cookie.name.includes('code') || cookie.name.includes('verifier') || cookie.name.includes('supabase')) {
-        console.log(`  🍪 ${cookie.name}: ${cookie.value ? `${cookie.value.substring(0, 20)}...` : 'empty'}`)
-      }
+      console.log(`  🍪 ${cookie.name}: ${cookie.value ? `${cookie.value.substring(0, 30)}...` : 'empty'}`)
     })
     
-    console.log(`📊 Total cookies found: ${allCookies.length}`)
-    console.log(`🔐 PKCE-related cookies: ${allCookies.filter(c => c.name.includes('pkce') || c.name.includes('code') || c.name.includes('verifier')).length}`)
+    // Check for PKCE cookies specifically
+    const pkceCookies = allCookies.filter(c => 
+      c.name.includes('pkce') || 
+      c.name.includes('code-verifier') || 
+      c.name.includes('verifier') ||
+      c.name.includes('supabase.auth')
+    )
     
-    const { data: authData, error: authError } = await supabase.auth.exchangeCodeForSession(code)
+    console.log(`🔐 PKCE-related cookies found: ${pkceCookies.length}`)
+    pkceCookies.forEach(cookie => {
+      console.log(`  🔑 PKCE Cookie: ${cookie.name}`)
+    })
+    
+    // If no PKCE cookies found, this is the problem
+    if (pkceCookies.length === 0) {
+      console.log('⚠️ WARNING: No PKCE cookies found! This will cause authentication to fail.')
+      console.log('🔍 Attempting authentication anyway...')
+    }
+    
+    // Try with both client implementations to handle PKCE properly
+    let supabase = createClient()
+    
+    let authData, authError
+    
+    // First attempt with enhanced client
+    console.log('🔐 Attempting code exchange with enhanced client...')
+    const result1 = await supabase.auth.exchangeCodeForSession(code)
+    authData = result1.data
+    authError = result1.error
+    
+    if (authError) {
+      console.log('❌ First attempt failed:', authError.message)
+    }
+    
+    // If PKCE fails, try with simple client as fallback
+    if (authError && (authError.message?.includes('code verifier') || authError.message?.includes('PKCE'))) {
+      console.log('🔧 First attempt failed with PKCE issue, trying simple client...')
+      supabase = createSimpleClient()
+      const result2 = await supabase.auth.exchangeCodeForSession(code)
+      authData = result2.data
+      authError = result2.error
+    }
     
     // Handle authentication failures
     if (authError) {
@@ -178,15 +215,25 @@ async function handleAuthententicatedUser(supabase, user, origin) {
  * Route existing user based on their subscription and onboarding status
  */
 function routeExistingUser(profile, origin) {
-  // Active subscription - route based on onboarding status
+  // Check onboarding status first - this is critical for the user experience
+  if (!profile.onboarding_completed) {
+    console.log('⚠️ User needs to complete onboarding → Welcome page')
+    console.log('   Profile:', profile.email)
+    console.log('   Subscription Status:', profile.subscription_status)
+    console.log('   Onboarding Completed:', profile.onboarding_completed)
+    
+    // Force redirect to welcome page for onboarding
+    const welcomeUrl = new URL('/welcome', origin)
+    welcomeUrl.searchParams.set('from', 'oauth_success')
+    welcomeUrl.searchParams.set('email', profile.email)
+    welcomeUrl.searchParams.set('needs_onboarding', 'true')
+    return NextResponse.redirect(welcomeUrl.toString())
+  }
+  
+  // Active subscription with completed onboarding
   if (profile.subscription_status === 'active') {
-    if (profile.onboarding_completed) {
-      console.log('✅ Active subscriber with completed onboarding → Dashboard')
-      return NextResponse.redirect(new URL('/dashboard', origin))
-    } else {
-      console.log('⚠️ Active subscriber needs onboarding → Welcome page')
-      return NextResponse.redirect(new URL('/welcome?from=oauth_success', origin))
-    }
+    console.log('✅ Active subscriber with completed onboarding → Dashboard')
+    return NextResponse.redirect(new URL('/dashboard', origin))
   }
 
   // User has Stripe customer ID but inactive subscription

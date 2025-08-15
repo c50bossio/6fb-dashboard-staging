@@ -90,7 +90,10 @@ function SupabaseAuthProvider({ children }) {
           const { data: { user }, error } = await supabase.auth.getUser()
           
           if (error) {
-            console.error(`Auth check error (attempt ${attempt}):`, error)
+            // Only log actual errors, not missing sessions on public pages
+            if (error.message !== 'Auth session missing!' || !isPublicPage) {
+              console.error(`Auth check error (attempt ${attempt}):`, error)
+            }
             
             // Try session recovery on auth errors for OAuth flows
             if (isOAuthRedirect && sessionRecovery && attempt < authAttempts) {

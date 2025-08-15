@@ -1,6 +1,6 @@
 
-export { default as Button, ButtonGroup, CTAButton } from '../Button'
-export { default as FormInput, FormSelect } from '../FormInput'
+export { default as Button, ButtonGroup, CTAButton } from './Button'
+export { default as FormInput, FormSelect } from './FormInput'
 
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card'
 export { Badge } from './badge'
