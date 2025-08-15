@@ -92,6 +92,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
+    "@radix-ui/react-label": "^2.1.7",
     "@sentry/nextjs": "^10.5.0",
     "@sentry/node": "^10.5.0",
     "@stripe/react-stripe-js": "^3.9.0",
