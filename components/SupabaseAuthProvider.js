@@ -92,8 +92,8 @@ function SupabaseAuthProvider({ children }) {
             const isProtectedRoute = protectedPaths.some(path => currentPath.startsWith(path))
             
             if (isProtectedRoute && profileData.onboarding_completed === false) {
-              console.log('🚀 User needs onboarding, dashboard will handle it')
-              // No redirect - dashboard will show onboarding
+              console.log('🚀 Redirecting to /welcome because onboarding not complete')
+              router.push('/welcome')
             }
           } else {
             console.log('⚠️ No profile found for user in checkUser')
@@ -181,9 +181,10 @@ function SupabaseAuthProvider({ children }) {
         } : { hasProfile: false })
         
         if (window.location.pathname === '/login') {
-          // Go directly to dashboard - it will handle onboarding if needed
-          console.log('📝 Redirecting to /dashboard from login')
-          router.push('/dashboard')
+          // ALWAYS go to welcome first for simplicity
+          // The welcome page will redirect to dashboard if onboarding is complete
+          console.log('📝 Redirecting to /welcome from login')
+          router.push('/welcome')
         } else {
           console.log('🚫 Not on login page, no redirect from auth state change')
         }
