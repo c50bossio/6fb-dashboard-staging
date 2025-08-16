@@ -34,8 +34,8 @@ export default function AuthCallback() {
           console.log('🔑 Found access token, auth successful!')
           
           // Always go to welcome first - it will redirect if needed
-          console.log('📍 Redirecting to welcome page...')
-          window.location.href = '/welcome'
+          console.log('📍 Redirecting to dashboard page...')
+          window.location.href = '/dashboard'
         } else {
           // Check if we have a code that needs to be exchanged
           const code = queryParams.get('code')
@@ -44,8 +44,8 @@ export default function AuthCallback() {
             // Give Supabase more time to process the code
             setTimeout(() => {
               // After waiting, redirect to welcome
-              console.log('📍 Redirecting to welcome after code exchange...')
-              window.location.href = '/welcome'
+              console.log('📍 Redirecting to dashboard after code exchange...')
+              window.location.href = '/dashboard'
             }, 1000)
           } else {
             console.log('⚠️ No access token or code found')
@@ -56,7 +56,7 @@ export default function AuthCallback() {
               queryParams: Object.fromEntries(queryParams)
             })
             // Still redirect to welcome - let it handle auth check
-            window.location.href = '/welcome'
+            window.location.href = '/dashboard'
           }
         }
       } catch (error) {

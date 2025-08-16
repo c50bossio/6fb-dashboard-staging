@@ -31,7 +31,7 @@ function SuccessPageContent() {
         
         setTimeout(() => {
           console.log('🔄 Redirecting to welcome page for onboarding...')
-          router.push(`/welcome?stripe_session=${sessionId}&setup=initial&plan=${plan}&billing=${billing}`)
+          router.push(`/dashboard?stripe_session=${sessionId}&setup=initial&plan=${plan}&billing=${billing}`)
         }, 2000)
         
         return
@@ -47,7 +47,7 @@ function SuccessPageContent() {
       setLoading(false)
       
       setTimeout(() => {
-        router.push('/welcome?from=payment_success&plan=shop')
+        router.push('/dashboard?from=payment_success&plan=shop')
       }, 2000)
     }
     
@@ -80,7 +80,7 @@ function SuccessPageContent() {
         
         setTimeout(() => {
           console.log('🔄 Redirecting to welcome page for account setup...')
-          router.push(`/welcome?plan=${plan}&billing=${billing}`)
+          router.push(`/dashboard?plan=${plan}&billing=${billing}`)
         }, 2000)
         
       } else {

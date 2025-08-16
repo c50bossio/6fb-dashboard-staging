@@ -180,7 +180,8 @@ export default function UnifiedDashboard({ user }) {
   }
 
   const handleResumeOnboarding = () => {
-    router.push('/welcome')
+    // Will be handled by DashboardOnboarding component
+    console.log('Resume onboarding triggered')
   }
 
   useEffect(() => {
