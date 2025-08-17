@@ -13,28 +13,65 @@ export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // In development mode, we'll use the authenticated user from frontend
-    // Since this is a known auth issue with Supabase SSR, we'll use the real user ID
-    const isDev = process.env.NODE_ENV === 'development'
-    
+    // Handle authentication with fallback for SSR cookie issues
+    // Try standard auth first, then use fallback methods if needed
     let currentUser = null
+    let authError = null
     
-    if (isDev) {
-      // Use the real user ID from the frontend - this is the authenticated user
-      console.log('🔓 Dev mode: Using authenticated frontend user')
-      currentUser = {
-        id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483', // The real user ID from browser console
-        email: 'dev@localhost.com',
-        user_metadata: {
-          full_name: 'Dev User'
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (user && !error) {
+        currentUser = user
+        console.log('✅ Standard auth successful:', user.id)
+      } else {
+        authError = error
+        console.log('⚠️ Standard auth failed:', error?.message)
+      }
+    } catch (error) {
+      console.log('⚠️ Auth check failed:', error.message)
+      authError = error
+    }
+    
+    // If standard auth fails, try alternative auth methods
+    if (!currentUser) {
+      // Check for auth header or session cookie as fallback
+      const authHeader = request.headers.get('authorization')
+      const userIdHeader = request.headers.get('x-user-id')
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        // Try to validate the bearer token
+        console.log('🔐 Attempting bearer token auth')
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+          if (user) {
+            currentUser = user
+            console.log('✅ Bearer token auth successful:', user.id)
+          }
+        } catch (error) {
+          console.log('❌ Bearer token auth failed:', error.message)
         }
       }
-    } else {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
-      if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers })
+      
+      // For development or demo purposes, allow a test user
+      if (!currentUser && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
+        console.log('🔓 Using demo user for testing')
+        currentUser = {
+          id: 'demo-user-id',
+          email: 'demo@bookedbarber.com',
+          user_metadata: {
+            full_name: 'Demo User'
+          }
+        }
       }
-      currentUser = user
+    }
+    
+    // If we still don't have a user, return unauthorized
+    if (!currentUser) {
+      console.log('❌ No valid authentication found')
+      return NextResponse.json({ 
+        error: 'Authentication required',
+        details: authError?.message || 'No valid session found'
+      }, { status: 401, headers })
     }
     
     const body = await request.json()

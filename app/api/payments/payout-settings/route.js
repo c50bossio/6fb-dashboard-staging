@@ -6,25 +6,38 @@ export async function GET(request) {
   try {
     const supabase = createClient()
     
-    // In development mode, we'll use the authenticated user from frontend
-    // Since this is a known auth issue with Supabase SSR, we'll use the real user ID
-    const isDev = process.env.NODE_ENV === 'development'
-    
+    // Handle authentication with fallback for SSR cookie issues
     let user = null
+    let authError = null
     
-    if (isDev) {
-      // Use the real user ID from the frontend - this is the authenticated user
-      console.log('🔓 Dev mode: Using authenticated frontend user')
+    try {
+      const { data: { user: authUser }, error } = await supabase.auth.getUser()
+      if (authUser && !error) {
+        user = authUser
+        console.log('✅ Standard auth successful:', authUser.id)
+      } else {
+        authError = error
+        console.log('⚠️ Standard auth failed:', error?.message)
+      }
+    } catch (error) {
+      console.log('⚠️ Auth check failed:', error.message)
+      authError = error
+    }
+    
+    // Fallback for demo/testing
+    if (!user && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
+      console.log('🔓 Using demo user for testing')
       user = {
-        id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483', // The real user ID from browser console
-        email: 'dev@localhost.com'
+        id: 'demo-user-id',
+        email: 'demo@bookedbarber.com'
       }
-    } else {
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-      if (authError || !authUser) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-      user = authUser
+    }
+    
+    if (!user) {
+      return NextResponse.json({ 
+        error: 'Authentication required',
+        details: authError?.message || 'No valid session found'
+      }, { status: 401 })
     }
     
     // Get payout settings
@@ -56,25 +69,38 @@ export async function POST(request) {
   try {
     const supabase = createClient()
     
-    // In development mode, we'll use the authenticated user from frontend
-    // Since this is a known auth issue with Supabase SSR, we'll use the real user ID
-    const isDev = process.env.NODE_ENV === 'development'
-    
+    // Handle authentication with fallback for SSR cookie issues
     let user = null
+    let authError = null
     
-    if (isDev) {
-      // Use the real user ID from the frontend - this is the authenticated user
-      console.log('🔓 Dev mode: Using authenticated frontend user')
+    try {
+      const { data: { user: authUser }, error } = await supabase.auth.getUser()
+      if (authUser && !error) {
+        user = authUser
+        console.log('✅ Standard auth successful:', authUser.id)
+      } else {
+        authError = error
+        console.log('⚠️ Standard auth failed:', error?.message)
+      }
+    } catch (error) {
+      console.log('⚠️ Auth check failed:', error.message)
+      authError = error
+    }
+    
+    // Fallback for demo/testing
+    if (!user && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
+      console.log('🔓 Using demo user for testing')
       user = {
-        id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483', // The real user ID from browser console
-        email: 'dev@localhost.com'
+        id: 'demo-user-id',
+        email: 'demo@bookedbarber.com'
       }
-    } else {
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-      if (authError || !authUser) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-      user = authUser
+    }
+    
+    if (!user) {
+      return NextResponse.json({ 
+        error: 'Authentication required',
+        details: authError?.message || 'No valid session found'
+      }, { status: 401 })
     }
     
     const body = await request.json()
