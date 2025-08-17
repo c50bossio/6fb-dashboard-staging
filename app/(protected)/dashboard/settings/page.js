@@ -27,6 +27,7 @@ const ChartBarIcon = dynamic(() => import('@heroicons/react/24/outline').then(mo
 const ArrowDownTrayIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowDownTrayIcon })))
 const ArrowTrendingUpIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingUpIcon })))
 const ArrowTrendingDownIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingDownIcon })))
+const BanknotesIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.BanknotesIcon })))
 import MFASetup from '../../../../components/auth/MFASetup'
 import SubscriptionDashboard from '../../../../components/billing/SubscriptionDashboard'
 import InternationalPhoneInput from '../../../../components/InternationalPhoneInput'
