@@ -96,11 +96,20 @@ export async function POST(request) {
       return url
     }
     
+    // For production, use the actual domain; for dev with live keys, use special redirect
+    const baseReturnUrl = isLiveMode 
+      ? (return_url || 'https://bookedbarber.com/dashboard/settings?section=payments&success=true')
+      : (return_url || `${appUrl}/dashboard/settings?section=payments&success=true`)
+    
+    const baseRefreshUrl = isLiveMode
+      ? (refresh_url || 'https://bookedbarber.com/dashboard/settings#payments')
+      : (refresh_url || `${appUrl}/dashboard/settings#payments`)
+    
     // Create account link
     const accountLink = await stripe.accountLinks.create({
       account: account_id,
-      refresh_url: formatUrl(refresh_url) || `${appUrl}/dashboard/settings#payments`,
-      return_url: formatUrl(return_url) || `${appUrl}/dashboard/settings?section=payments&success=true`,
+      refresh_url: formatUrl(baseRefreshUrl),
+      return_url: formatUrl(baseReturnUrl),
       type: 'account_onboarding',
     })
     
