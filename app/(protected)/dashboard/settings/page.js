@@ -31,6 +31,7 @@ import MFASetup from '../../../../components/auth/MFASetup'
 import SubscriptionDashboard from '../../../../components/billing/SubscriptionDashboard'
 import InternationalPhoneInput from '../../../../components/InternationalPhoneInput'
 import NuclearInput from '../../../../components/NuclearInput'
+import PaymentProcessingSettings from '../../../../components/settings/PaymentProcessingSettings'
 import TimeRangePicker from '../../../../components/TimeRangePicker'
 
 const ChartLoadingSpinner = () => (
@@ -157,7 +158,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const hash = window.location.hash.replace('#', '')
-    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
+    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'payments', 'system']
     
     if (hash === 'api') {
       setActiveSection('general')
@@ -181,7 +182,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '')
-      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
+      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'payments', 'system']
       
       if (hash === 'api') {
         setActiveSection('general')
@@ -486,6 +487,7 @@ export default function SettingsPage() {
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'security', name: 'Security & MFA', icon: KeyIcon },
     { id: 'billing', name: 'Billing & Usage', icon: CreditCardIcon },
+    { id: 'payments', name: 'Accept Payments', icon: BanknotesIcon },
     { id: 'system', name: 'System Status', icon: CogIcon }
   ]
 
@@ -1788,6 +1790,20 @@ export default function SettingsPage() {
               </div>
             )}
 
+
+            {/* Payment Processing Settings */}
+            {activeSection === 'payments' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Accept Customer Payments</h2>
+                    <p className="text-gray-600 mt-1">Set up Stripe to accept credit cards and digital payments from customers</p>
+                  </div>
+                </div>
+                
+                <PaymentProcessingSettings />
+              </div>
+            )}
 
             {/* System Status */}
             {activeSection === 'system' && (
