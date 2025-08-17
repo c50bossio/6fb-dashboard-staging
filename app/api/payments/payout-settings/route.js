@@ -28,7 +28,7 @@ export async function GET(request) {
     if (!user && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
       console.log('🔓 Using demo user for testing')
       user = {
-        id: 'demo-user-id',
+        id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
         email: 'demo@bookedbarber.com'
       }
     }
@@ -91,7 +91,7 @@ export async function POST(request) {
     if (!user && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
       console.log('🔓 Using demo user for testing')
       user = {
-        id: 'demo-user-id',
+        id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
         email: 'demo@bookedbarber.com'
       }
     }

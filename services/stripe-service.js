@@ -187,6 +187,226 @@ class StripeService {
       };
     }
   }
+
+  // ==========================================
+  // Stripe Connect Methods
+  // ==========================================
+
+  async createConnectedAccount(options = {}) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    const {
+      email,
+      country = 'US',
+      type = 'express',
+      businessType = 'individual',
+      businessName,
+      metadata = {}
+    } = options;
+
+    try {
+      const accountParams = {
+        type,
+        country,
+        email,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true }
+        },
+        business_type: businessType,
+        metadata
+      };
+
+      if (businessName) {
+        accountParams.company = { name: businessName };
+      }
+
+      const account = await this.stripe.accounts.create(accountParams);
+
+      return {
+        success: true,
+        accountId: account.id,
+        detailsSubmitted: account.details_submitted,
+        chargesEnabled: account.charges_enabled,
+        payoutsEnabled: account.payouts_enabled
+      };
+    } catch (error) {
+      console.error('Stripe Connect account creation error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async createAccountLink(accountId, refreshUrl, returnUrl) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const accountLink = await this.stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: refreshUrl,
+        return_url: returnUrl,
+        type: 'account_onboarding'
+      });
+
+      return {
+        success: true,
+        url: accountLink.url,
+        expiresAt: accountLink.expires_at
+      };
+    } catch (error) {
+      console.error('Stripe account link creation error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async retrieveAccount(accountId) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const account = await this.stripe.accounts.retrieve(accountId);
+
+      return {
+        success: true,
+        account: {
+          id: account.id,
+          email: account.email,
+          detailsSubmitted: account.details_submitted,
+          chargesEnabled: account.charges_enabled,
+          payoutsEnabled: account.payouts_enabled,
+          requirements: account.requirements,
+          capabilities: account.capabilities,
+          payoutSchedule: account.settings?.payouts?.schedule
+        }
+      };
+    } catch (error) {
+      console.error('Stripe account retrieval error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async createBankAccount(accountId, bankAccountToken) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const bankAccount = await this.stripe.accounts.createExternalAccount(accountId, {
+        external_account: bankAccountToken,
+        default_for_currency: true
+      });
+
+      return {
+        success: true,
+        bankAccountId: bankAccount.id,
+        last4: bankAccount.last4,
+        bankName: bankAccount.bank_name
+      };
+    } catch (error) {
+      console.error('Stripe bank account creation error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async updatePayoutSchedule(accountId, schedule = 'daily', delayDays = 2) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const scheduleParams = {
+        interval: schedule,
+        ...(schedule === 'daily' && { delay_days: delayDays })
+      };
+
+      const account = await this.stripe.accounts.update(accountId, {
+        settings: {
+          payouts: {
+            schedule: scheduleParams
+          }
+        }
+      });
+
+      return {
+        success: true,
+        payoutSchedule: account.settings?.payouts?.schedule
+      };
+    } catch (error) {
+      console.error('Stripe payout schedule update error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async createPayout(accountId, amount, currency = 'usd', description = null) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const payout = await this.stripe.payouts.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency,
+        description,
+        method: 'standard'
+      }, {
+        stripeAccount: accountId
+      });
+
+      return {
+        success: true,
+        payoutId: payout.id,
+        amount: payout.amount / 100,
+        arrivalDate: new Date(payout.arrival_date * 1000),
+        status: payout.status
+      };
+    } catch (error) {
+      console.error('Stripe payout creation error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async createLoginLink(accountId) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const loginLink = await this.stripe.accounts.createLoginLink(accountId);
+
+      return {
+        success: true,
+        url: loginLink.url
+      };
+    } catch (error) {
+      console.error('Stripe login link creation error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 const stripeService = new StripeService();

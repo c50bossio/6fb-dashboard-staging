@@ -3901,6 +3901,16 @@ except ImportError as e:
 try:
     from services.notion_endpoint import router as notion_router
     app.include_router(notion_router)
+    
+    # Payment Processing Router
+    try:
+        from routers.payments import router as payments_router
+        app.include_router(payments_router)
+        print("✅ Payment router loaded successfully")
+    except ImportError as e:
+        print(f"⚠️ Payment router not available: {e}")
+    except Exception as e:
+        print(f"❌ Error loading payment router: {e}")
     print("✅ Notion Integration System included at /notion/*")
     NOTION_INTEGRATION_AVAILABLE = True
 except ImportError as e:

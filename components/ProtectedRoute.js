@@ -28,6 +28,7 @@ export default function ProtectedRoute({ children }) {
     const isBarberPage = window.location.pathname.includes('/barber')
     const isSeoPage = window.location.pathname.includes('/seo')
     const isDashboardPage = window.location.pathname.includes('/dashboard')
+    const isInventoryPage = window.location.pathname.includes('/inventory')
     
     const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
     if (forceSignOut) {
@@ -40,7 +41,7 @@ export default function ProtectedRoute({ children }) {
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
     const devBypass = localStorage.getItem('dev_bypass') === 'true'
-    const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage || isDashboardPage))
+    const enableDevBypass = isBarberPage || isSeoPage || isInventoryPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage || isDashboardPage))
     
     if (devAuth || devSession || devBypass || enableDevBypass) {
       console.log('🔓 Dev session active - bypassing auth check')

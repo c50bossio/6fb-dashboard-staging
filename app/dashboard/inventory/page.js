@@ -18,7 +18,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-import Cin7ConnectionModal from '../../../components/cin7/Cin7ConnectionModal'
+import SimplifiedCin7Setup from '../../../components/cin7/SimplifiedSetup'
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
@@ -193,7 +193,7 @@ export default function InventoryPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
-  const [showCin7Modal, setShowCin7Modal] = useState(false)
+  const [showCin7Setup, setShowCin7Setup] = useState(false)
   const [cin7Connected, setCin7Connected] = useState(false)
   const [cin7Status, setCin7Status] = useState(null)
   const [isSyncing, setIsSyncing] = useState(false)
@@ -225,10 +225,12 @@ export default function InventoryPage() {
     }
   }
 
-  const handleCin7Connect = (connectionData) => {
+  const handleCin7Complete = (syncResult) => {
     setCin7Connected(true)
-    setCin7Status(connectionData)
-    checkCin7Status() // Refresh status
+    setCin7Status(syncResult)
+    setShowCin7Setup(false)
+    // Reload to show synced products
+    setTimeout(() => window.location.reload(), 1000)
   }
 
   const handleSync = async () => {
@@ -621,22 +623,48 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        {/* Cin7 Integration - Subtle footer */}
+        {/* CIN7 Setup */}
+        {showCin7Setup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center">
+                <h3 className="text-lg font-semibold">CIN7 Warehouse Integration</h3>
+                <button
+                  onClick={() => setShowCin7Setup(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-4">
+                <SimplifiedCin7Setup onComplete={handleCin7Complete} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cin7 Integration Footer */}
         <div className="mt-8 border-t pt-8">
           {!cin7Connected ? (
-            <div className="text-center">
+            <div className="text-center space-y-2">
+              <p className="text-sm text-gray-500">
+                Connect your CIN7 warehouse system to sync real inventory
+              </p>
               <button
-                onClick={() => setShowCin7Modal(true)}
-                className="text-xs text-gray-400 hover:text-gray-600 underline"
+                onClick={() => setShowCin7Setup(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Advanced: Connect warehouse system
+                <LinkIcon className="-ml-1 mr-2 h-4 w-4" />
+                Connect CIN7 Warehouse
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-center space-x-4 text-xs text-gray-400">
+            <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
               <div className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span>Warehouse sync active</span>
+                <span>CIN7 sync active</span>
               </div>
               {cin7Status?.lastSync && (
                 <span>• Last sync: {new Date(cin7Status.lastSync).toLocaleTimeString()}</span>
@@ -644,20 +672,13 @@ export default function InventoryPage() {
               <button
                 onClick={handleSync}
                 disabled={isSyncing}
-                className="text-amber-600 hover:text-amber-700 underline"
+                className="text-blue-600 hover:text-blue-700 underline"
               >
                 {isSyncing ? 'Syncing...' : 'Sync now'}
               </button>
             </div>
           )}
         </div>
-
-        {/* Cin7 Connection Modal */}
-        <Cin7ConnectionModal
-          isOpen={showCin7Modal}
-          onClose={() => setShowCin7Modal(false)}
-          onConnect={handleCin7Connect}
-        />
       </div>
     </ProtectedRoute>
   )

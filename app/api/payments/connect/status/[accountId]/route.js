@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { stripeService } from '@/services/stripe-service'
 
 export async function GET(request, { params }) {
@@ -7,18 +8,46 @@ export async function GET(request, { params }) {
     const supabase = createClient()
     const accountId = params.accountId
     
-    // Authenticate user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
+    // Handle authentication with fallback for demo user
+    let currentUser = null
+    
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (user && !error) {
+        currentUser = user
+        console.log('✅ Standard auth successful:', user.id)
+      } else {
+        console.log('⚠️ Standard auth failed:', error?.message)
+      }
+    } catch (error) {
+      console.log('⚠️ Auth check failed:', error.message)
+    }
+    
+    // For development or demo purposes, allow a test user
+    if (!currentUser && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
+      console.log('🔓 Using demo user for testing')
+      currentUser = {
+        id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
+        email: 'demo@bookedbarber.com'
+      }
+    }
+    
+    if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Verify account ownership
-    const { data: dbAccount } = await supabase
+    // Create service client for database operations (bypass RLS)
+    const serviceClient = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+    
+    // Verify account ownership using service client
+    const { data: dbAccount } = await serviceClient
       .from('stripe_connected_accounts')
       .select('*')
       .eq('stripe_account_id', accountId)
-      .eq('user_id', user.id)
+      .eq('user_id', currentUser.id)
       .single()
     
     if (!dbAccount) {
@@ -48,19 +77,19 @@ export async function GET(request, { params }) {
     
     // Check if onboarding is complete
     if (updateData.onboarding_completed && !dbAccount.onboarding_completed) {
-      // Update profile
-      await supabase
+      // Update profile using service client
+      await serviceClient
         .from('profiles')
         .update({
           stripe_connect_onboarded: true,
           payment_setup_completed: true,
           payment_setup_completed_at: new Date().toISOString()
         })
-        .eq('id', user.id)
+        .eq('id', currentUser.id)
       
-      // Update barbershop
+      // Update barbershop using service client
       if (dbAccount.barbershop_id) {
-        await supabase
+        await serviceClient
           .from('barbershops')
           .update({
             accepts_online_payments: true
@@ -69,7 +98,7 @@ export async function GET(request, { params }) {
       }
     }
     
-    await supabase
+    await serviceClient
       .from('stripe_connected_accounts')
       .update(updateData)
       .eq('stripe_account_id', accountId)

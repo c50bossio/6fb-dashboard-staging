@@ -20,11 +20,12 @@ async function fetchCin7Products(accountId, apiKey) {
         await new Promise(resolve => setTimeout(resolve, 350)) // ~3 calls per second
       }
       
-      const response = await fetch(`https://inventory.dearsystems.com/ExternalAPI/v2/products?page=${page}&limit=${pageSize}`, {
+      const response = await fetch(`https://inventory.dearsystems.com/externalapi/products?limit=${pageSize}`, {
         method: 'GET',
         headers: {
           'api-auth-accountid': accountId,
           'api-auth-applicationkey': apiKey,
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       })
@@ -40,7 +41,8 @@ async function fetchCin7Products(accountId, apiKey) {
       }
 
       const data = await response.json()
-      const products = data?.ProductList || []
+      // v1 API returns Products array directly, not ProductList
+      const products = data?.Products || data?.ProductList || []
       
       if (products.length === 0) {
         hasMorePages = false
@@ -82,11 +84,12 @@ async function fetchCin7StockLevels(accountId, apiKey) {
         await new Promise(resolve => setTimeout(resolve, 350))
       }
       
-      const response = await fetch(`https://inventory.dearsystems.com/ExternalAPI/v2/stocklevels?page=${page}&limit=${pageSize}`, {
+      const response = await fetch(`https://inventory.dearsystems.com/externalapi/stock?limit=${pageSize}`, {
         method: 'GET',
         headers: {
           'api-auth-accountid': accountId,
           'api-auth-applicationkey': apiKey,
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       })
@@ -324,35 +327,67 @@ export async function POST(request) {
     }
     
     // Get Cin7 credentials
-    const { data: credentials, error: credError } = await supabase
-      .from('cin7_credentials')
-      .select('encrypted_api_key, encrypted_account_id, account_name, api_version')
-      .eq('barbershop_id', barbershop.id)
-      .eq('is_active', true)
-      .single()
+    let accountId, apiKey, accountName = 'Unknown'
     
-    if (credError || !credentials) {
-      return NextResponse.json(
-        { error: 'No Cin7 credentials found. Please set up your Cin7 connection first.' },
-        { status: 404 }
-      )
+    // First check if we're in dev bypass mode with credentials from request
+    if (devBypass) {
+      // Try to get credentials from request body first (for testing)
+      const body = await request.json().catch(() => ({}))
+      if (body.accountId && body.apiKey) {
+        accountId = body.accountId
+        apiKey = body.apiKey
+        accountName = body.accountName || 'Test Account'
+        console.log('🔧 Using credentials from request body for dev bypass')
+      }
+      // Then check environment variables
+      else if (process.env.CIN7_ACCOUNT_ID && process.env.CIN7_API_KEY) {
+        accountId = process.env.CIN7_ACCOUNT_ID
+        apiKey = process.env.CIN7_API_KEY
+        accountName = process.env.CIN7_ACCOUNT_NAME || 'Env Account'
+        console.log('🔧 Using CIN7 credentials from environment variables')
+      }
     }
     
-    // Decrypt credentials
-    let accountId, apiKey
-    try {
-      accountId = decrypt(JSON.parse(credentials.encrypted_account_id))
-      apiKey = decrypt(JSON.parse(credentials.encrypted_api_key))
-    } catch (decryptError) {
-      console.error('Failed to decrypt Cin7 credentials:', decryptError)
-      return NextResponse.json(
-        { error: 'Invalid credentials. Please update your Cin7 connection.' },
-        { status: 400 }
-      )
+    // If not found yet, try database
+    if (!accountId || !apiKey) {
+      const { data: credentials, error: credError } = await supabase
+        .from('cin7_credentials')
+        .select('encrypted_api_key, encrypted_account_id, account_name, api_version')
+        .eq('barbershop_id', barbershop.id)
+        .eq('is_active', true)
+        .single()
+      
+      if (credError || !credentials) {
+        // Final fallback: check environment variables even in production
+        if (process.env.CIN7_ACCOUNT_ID && process.env.CIN7_API_KEY) {
+          accountId = process.env.CIN7_ACCOUNT_ID
+          apiKey = process.env.CIN7_API_KEY
+          accountName = process.env.CIN7_ACCOUNT_NAME || 'Env Account'
+          console.log('⚠️ Using CIN7 credentials from environment variables (no DB credentials found)')
+        } else {
+          return NextResponse.json(
+            { error: 'No Cin7 credentials found. Please set up your Cin7 connection first.' },
+            { status: 404 }
+          )
+        }
+      } else {
+        // Decrypt credentials from database
+        try {
+          accountId = decrypt(JSON.parse(credentials.encrypted_account_id))
+          apiKey = decrypt(JSON.parse(credentials.encrypted_api_key))
+          accountName = credentials.account_name || 'Unknown'
+        } catch (decryptError) {
+          console.error('Failed to decrypt Cin7 credentials:', decryptError)
+          return NextResponse.json(
+            { error: 'Invalid credentials. Please update your Cin7 connection.' },
+            { status: 400 }
+          )
+        }
+      }
     }
     
     try {
-      console.log(`🔄 Syncing from Cin7 account: ${credentials.account_name || 'Unknown'} (API ${credentials.api_version})`)
+      console.log(`🔄 Syncing from Cin7 account: ${accountName}`)
       
       // Fetch both products and stock levels from Cin7
       const [cin7Products, stockLevels] = await Promise.all([

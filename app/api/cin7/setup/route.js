@@ -194,11 +194,12 @@ export async function POST(request) {
         const syncResult = await cin7.syncInventory()
         
         if (syncResult.success) {
-          // Save products to database
-          for (const product of syncResult.inventory) {
-            await supabase
-              .from('products')
-              .upsert({
+          // Save products to database (skip for dev bypass)
+          if (!devBypass) {
+            for (const product of syncResult.inventory) {
+              await supabase
+                .from('products')
+                .upsert({
                 barbershop_id: barbershop.id,
                 cin7_product_id: product.cin7_id,
                 sku: product.sku,
@@ -217,6 +218,7 @@ export async function POST(request) {
               }, {
                 onConflict: 'sku,barbershop_id'
               })
+            }
           }
           
           initialSyncData = {
@@ -233,14 +235,16 @@ export async function POST(request) {
       }
     }
 
-    // Step 5: Update connection status
-    await supabase
-      .from('cin7_credentials')
-      .update({
-        last_sync: new Date().toISOString(),
-        last_sync_status: 'success'
-      })
-      .eq('barbershop_id', barbershop.id)
+    // Step 5: Update connection status (skip for dev bypass)
+    if (!devBypass) {
+      await supabase
+        .from('cin7_credentials')
+        .update({
+          last_sync: new Date().toISOString(),
+          last_sync_status: 'success'
+        })
+        .eq('barbershop_id', barbershop.id)
+    }
 
     // Return success response
     return NextResponse.json({

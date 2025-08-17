@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
 
 export async function POST(request) {
@@ -56,7 +57,7 @@ export async function POST(request) {
       if (!currentUser && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
         console.log('🔓 Using demo user for testing')
         currentUser = {
-          id: 'demo-user-id',
+          id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
           email: 'demo@bookedbarber.com',
           user_metadata: {
             full_name: 'Demo User'
@@ -95,6 +96,15 @@ export async function POST(request) {
       }, { headers })
     }
     
+    // Check if Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.warn('⚠️ STRIPE_SECRET_KEY not configured')
+      return NextResponse.json({ 
+        error: 'Payment system not configured',
+        details: 'Stripe API keys are missing from environment configuration'
+      }, { status: 503, headers })
+    }
+    
     // Initialize Stripe
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2023-10-16'
@@ -114,21 +124,30 @@ export async function POST(request) {
       
       // Add business profile based on type
       if (business_type === 'company') {
+        accountParams.business_type = 'company'
         accountParams.company = {
           name: business_name
         }
+      } else if (business_type === 'individual') {
+        accountParams.business_type = 'individual'
       }
       
       const account = await stripe.accounts.create(accountParams)
       
+      // Create service client for database operations (bypass RLS)
+      const serviceClient = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      )
+      
       // Get user's barbershop
-      const { data: barbershop } = await supabase
+      const { data: barbershop } = await serviceClient
         .from('barbershops')
         .select('id')
         .eq('owner_id', currentUser.id)
         .single()
       
-      // Save to database
+      // Save to database using service client
       const accountData = {
         user_id: currentUser.id,
         barbershop_id: barbershop?.id || null,
@@ -143,7 +162,7 @@ export async function POST(request) {
         verification_status: 'pending'
       }
       
-      const { error: insertError } = await supabase
+      const { error: insertError } = await serviceClient
         .from('stripe_connected_accounts')
         .insert(accountData)
       

@@ -160,28 +160,36 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
     try {
       const { data: { user } } = await supabase.auth.getUser()
       
+      // Use fallback email if user is not authenticated
+      const email = user?.email || 'demo@bookedbarber.com'
+      
       const response = await fetch('/api/payments/connect/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           business_type: formData.businessType,
           business_name: formData.businessName,
-          email: user.email,
+          email: email,
           country: 'US',
           account_type: 'express'
         })
       })
       
-      if (!response.ok) throw new Error('Failed to create account')
-      
       const data = await response.json()
-      setStripeAccountId(data.account_id)
       
-      // Start onboarding flow
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create payment account')
+      }
+      
+      setStripeAccountId(data.account_id)
+      setSuccess('Payment account created! Redirecting to Stripe...')
+      
+      // Start onboarding flow for real Stripe accounts
       await startStripeOnboarding(data.account_id)
       
     } catch (err) {
-      setError(err.message)
+      console.error('Stripe Connect creation error:', err)
+      setError(err.message || 'Failed to create payment account. Please try again.')
     } finally {
       setLoading(false)
     }

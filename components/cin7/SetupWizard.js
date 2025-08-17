@@ -117,7 +117,8 @@ export default function SetupWizard({ onComplete, onClose }) {
       const headers = { 'Content-Type': 'application/json' }
       
       // Add dev bypass header if in development mode
-      if (typeof window !== 'undefined' && localStorage.getItem('dev_bypass') === 'true') {
+      const isDevMode = typeof window !== 'undefined' && localStorage.getItem('dev_bypass') === 'true'
+      if (isDevMode) {
         headers['x-dev-bypass'] = 'true'
       }
       
@@ -147,16 +148,35 @@ export default function SetupWizard({ onComplete, onClose }) {
         })
       }, 500)
 
-      // Start sync
+      // Start sync - always pass credentials since setup doesn't guarantee they're in DB yet
+      const syncBody = {
+        accountId: formData.accountId,
+        apiKey: formData.apiKey,
+        accountName: formData.accountName
+      }
+      
+      console.log('🔄 Starting sync with credentials:', { accountId: formData.accountId, accountName: formData.accountName })
+      
       const syncResponse = await fetch('/api/cin7/sync', {
         method: 'POST',
-        headers
+        headers,
+        body: JSON.stringify(syncBody)
       })
+
+      console.log('📡 Sync response status:', syncResponse.status)
+      console.log('📡 Sync response ok:', syncResponse.ok)
 
       clearInterval(progressInterval)
       setSyncProgress(100)
 
+      if (!syncResponse.ok) {
+        const errorText = await syncResponse.text()
+        console.error('❌ Sync failed with status:', syncResponse.status, 'Response:', errorText)
+        throw new Error(`Sync request failed: ${syncResponse.status} ${syncResponse.statusText}`)
+      }
+
       const syncData = await syncResponse.json()
+      console.log('📊 Sync data received:', syncData)
       
       // Store sync data for the completion screen
       const syncResult = {

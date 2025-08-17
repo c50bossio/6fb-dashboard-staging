@@ -76,6 +76,44 @@ export async function POST(request) {
         await handleInvoiceCreated(event.data.object)
         break
 
+      // Stripe Connect Events
+      case 'account.updated':
+        await handleAccountUpdated(event.data.object)
+        break
+
+      case 'account.application.deauthorized':
+        await handleAccountDeauthorized(event.data.object)
+        break
+
+      case 'capability.updated':
+        await handleCapabilityUpdated(event.data.object)
+        break
+
+      case 'payout.created':
+        await handlePayoutCreated(event.data.object)
+        break
+
+      case 'payout.paid':
+        await handlePayoutPaid(event.data.object)
+        break
+
+      case 'payout.failed':
+        await handlePayoutFailed(event.data.object)
+        break
+
+      case 'person.created':
+      case 'person.updated':
+        await handlePersonUpdated(event.data.object)
+        break
+
+      case 'external_account.created':
+        await handleExternalAccountCreated(event.data.object)
+        break
+
+      case 'external_account.updated':
+        await handleExternalAccountUpdated(event.data.object)
+        break
+
       default:
         console.log(`Unhandled event type: ${event.type}`)
     }
@@ -379,6 +417,330 @@ async function handleInvoiceCreated(invoice) {
     console.error('Error handling invoice created:', error)
   }
 }
+
+// ==========================================
+// Stripe Connect Event Handlers
+// ==========================================
+
+async function handleAccountUpdated(account) {
+  console.log('Connect account updated:', account.id)
+  
+  try {
+    // Import Supabase client
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Update account status in database
+    const { error } = await supabase
+      .from('stripe_connected_accounts')
+      .update({
+        details_submitted: account.details_submitted,
+        charges_enabled: account.charges_enabled,
+        payouts_enabled: account.payouts_enabled,
+        onboarding_completed: account.details_submitted && account.charges_enabled && account.payouts_enabled,
+        verification_status: account.charges_enabled && account.payouts_enabled ? 'verified' : 'pending',
+        capabilities: account.capabilities,
+        requirements: account.requirements,
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_account_id', account.id)
+    
+    if (error) {
+      console.error('Error updating account status:', error)
+      return
+    }
+    
+    // If onboarding is complete, update related records
+    if (account.details_submitted && account.charges_enabled && account.payouts_enabled) {
+      // Get the account record to find user_id
+      const { data: accountData } = await supabase
+        .from('stripe_connected_accounts')
+        .select('user_id, barbershop_id')
+        .eq('stripe_account_id', account.id)
+        .single()
+      
+      if (accountData) {
+        // Update profile
+        await supabase
+          .from('profiles')
+          .update({
+            stripe_connect_onboarded: true,
+            payment_setup_completed: true,
+            payment_setup_completed_at: new Date().toISOString()
+          })
+          .eq('id', accountData.user_id)
+        
+        // Update barbershop
+        if (accountData.barbershop_id) {
+          await supabase
+            .from('barbershops')
+            .update({
+              accepts_online_payments: true
+            })
+            .eq('id', accountData.barbershop_id)
+        }
+        
+        console.log(`Account ${account.id} onboarding completed`)
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error handling account updated:', error)
+  }
+}
+
+async function handleAccountDeauthorized(account) {
+  console.log('Connect account deauthorized:', account.id)
+  
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Mark account as deauthorized
+    await supabase
+      .from('stripe_connected_accounts')
+      .update({
+        onboarding_completed: false,
+        charges_enabled: false,
+        payouts_enabled: false,
+        verification_status: 'deauthorized',
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_account_id', account.id)
+    
+    console.log(`Account ${account.id} deauthorized`)
+    
+  } catch (error) {
+    console.error('Error handling account deauthorized:', error)
+  }
+}
+
+async function handleCapabilityUpdated(capability) {
+  console.log('Capability updated:', capability.id, capability.status)
+  
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Update capability status
+    const { data: account } = await supabase
+      .from('stripe_connected_accounts')
+      .select('capabilities')
+      .eq('stripe_account_id', capability.account)
+      .single()
+    
+    if (account) {
+      const capabilities = account.capabilities || {}
+      capabilities[capability.id] = capability.status
+      
+      await supabase
+        .from('stripe_connected_accounts')
+        .update({
+          capabilities,
+          updated_at: new Date().toISOString()
+        })
+        .eq('stripe_account_id', capability.account)
+      
+      console.log(`Capability ${capability.id} updated to ${capability.status}`)
+    }
+    
+  } catch (error) {
+    console.error('Error handling capability updated:', error)
+  }
+}
+
+async function handlePayoutCreated(payout) {
+  console.log('Payout created:', payout.id)
+  
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Get connected account
+    const { data: account } = await supabase
+      .from('stripe_connected_accounts')
+      .select('id, user_id')
+      .eq('stripe_account_id', payout.account)
+      .single()
+    
+    if (!account) {
+      console.error('No connected account found for payout')
+      return
+    }
+    
+    // Record payout transaction
+    await supabase
+      .from('payout_transactions')
+      .insert({
+        stripe_connected_account_id: account.id,
+        stripe_payout_id: payout.id,
+        amount: payout.amount / 100,
+        currency: payout.currency,
+        type: payout.method === 'instant' ? 'instant' : 'standard',
+        status: payout.status,
+        description: payout.description,
+        expected_arrival_date: new Date(payout.arrival_date * 1000).toISOString(),
+        initiated_at: new Date(payout.created * 1000).toISOString()
+      })
+    
+    console.log(`Payout ${payout.id} recorded: $${payout.amount / 100}`)
+    
+  } catch (error) {
+    console.error('Error handling payout created:', error)
+  }
+}
+
+async function handlePayoutPaid(payout) {
+  console.log('Payout paid:', payout.id)
+  
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Update payout status
+    await supabase
+      .from('payout_transactions')
+      .update({
+        status: 'paid',
+        arrived_at: new Date().toISOString()
+      })
+      .eq('stripe_payout_id', payout.id)
+    
+    // Update payout statistics
+    const { data: account } = await supabase
+      .from('stripe_connected_accounts')
+      .select('id')
+      .eq('stripe_account_id', payout.account)
+      .single()
+    
+    if (account) {
+      const { data: settings } = await supabase
+        .from('payout_settings')
+        .select('total_payouts_count, total_payouts_amount')
+        .eq('stripe_connected_account_id', account.id)
+        .single()
+      
+      if (settings) {
+        await supabase
+          .from('payout_settings')
+          .update({
+            total_payouts_count: (settings.total_payouts_count || 0) + 1,
+            total_payouts_amount: (settings.total_payouts_amount || 0) + (payout.amount / 100),
+            last_payout_date: new Date().toISOString(),
+            last_payout_amount: payout.amount / 100,
+            updated_at: new Date().toISOString()
+          })
+          .eq('stripe_connected_account_id', account.id)
+      }
+    }
+    
+    console.log(`Payout ${payout.id} completed: $${payout.amount / 100}`)
+    
+  } catch (error) {
+    console.error('Error handling payout paid:', error)
+  }
+}
+
+async function handlePayoutFailed(payout) {
+  console.log('Payout failed:', payout.id)
+  
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Update payout status
+    await supabase
+      .from('payout_transactions')
+      .update({
+        status: 'failed',
+        failure_code: payout.failure_code,
+        failure_message: payout.failure_message
+      })
+      .eq('stripe_payout_id', payout.id)
+    
+    console.log(`Payout ${payout.id} failed: ${payout.failure_message}`)
+    
+    // TODO: Send notification to user about failed payout
+    
+  } catch (error) {
+    console.error('Error handling payout failed:', error)
+  }
+}
+
+async function handlePersonUpdated(person) {
+  console.log('Person updated:', person.id)
+  
+  // Person updates are for identity verification
+  // Log for audit purposes
+  console.log(`Person ${person.id} verification status: ${person.verification?.status}`)
+}
+
+async function handleExternalAccountCreated(externalAccount) {
+  console.log('External account created:', externalAccount.id)
+  
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Get connected account
+    const { data: account } = await supabase
+      .from('stripe_connected_accounts')
+      .select('id, user_id')
+      .eq('stripe_account_id', externalAccount.account)
+      .single()
+    
+    if (account) {
+      // Record bank account
+      await supabase
+        .from('bank_accounts')
+        .insert({
+          user_id: account.user_id,
+          stripe_connected_account_id: account.id,
+          stripe_bank_account_id: externalAccount.id,
+          bank_name: externalAccount.bank_name,
+          last4: externalAccount.last4,
+          currency: externalAccount.currency,
+          country: externalAccount.country,
+          status: externalAccount.status || 'new',
+          is_default: externalAccount.default_for_currency || false,
+          created_at: new Date().toISOString()
+        })
+      
+      console.log(`Bank account ${externalAccount.id} added`)
+    }
+    
+  } catch (error) {
+    console.error('Error handling external account created:', error)
+  }
+}
+
+async function handleExternalAccountUpdated(externalAccount) {
+  console.log('External account updated:', externalAccount.id)
+  
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Update bank account status
+    await supabase
+      .from('bank_accounts')
+      .update({
+        status: externalAccount.status,
+        is_default: externalAccount.default_for_currency || false,
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_bank_account_id', externalAccount.id)
+    
+    console.log(`Bank account ${externalAccount.id} updated`)
+    
+  } catch (error) {
+    console.error('Error handling external account updated:', error)
+  }
+}
+
+// ==========================================
+// Original Email Function
+// ==========================================
 
 async function sendSubscriptionEmail(tenantId, emailType, data) {
   console.log(`Sending ${emailType} email to tenant ${tenantId}:`, data)

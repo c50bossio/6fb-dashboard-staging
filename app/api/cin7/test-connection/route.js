@@ -1,124 +1,121 @@
-/**
- * CIN7 Test Connection API
- * Tests credentials without saving them
- */
-
 import { NextResponse } from 'next/server'
-import { Cin7Client } from '@/lib/cin7-client'
 
 export async function POST(request) {
   try {
     const { accountId, apiKey } = await request.json()
-
-    // Validate inputs
+    
     if (!accountId || !apiKey) {
-      return NextResponse.json({ 
-        success: false,
-        message: 'Please provide both Account ID and API Key',
-        error: 'Missing credentials'
-      }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Account ID and API Key are required' },
+        { status: 400 }
+      )
     }
-
+    
     console.log('🔍 Testing CIN7 connection...')
-
-    // Create CIN7 client
-    const cin7 = new Cin7Client(accountId, apiKey)
+    console.log('Account ID:', accountId)
+    console.log('API Key (first 8 chars):', apiKey.substring(0, 8) + '...')
     
-    // Test the connection
-    const testResult = await cin7.testConnection()
-    
-    if (!testResult.success) {
-      console.log('❌ Connection failed:', testResult.error)
-      
-      // Provide user-friendly error messages
-      let userMessage = 'Unable to connect to CIN7'
-      
-      if (testResult.error?.includes('401') || testResult.error?.includes('Unauthorized')) {
-        userMessage = 'Invalid credentials. Please check your Account ID and API Key.'
-      } else if (testResult.error?.includes('404')) {
-        userMessage = 'Account not found. Please verify your Account ID.'
-      } else if (testResult.error?.includes('timeout')) {
-        userMessage = 'Connection timed out. Please try again.'
-      } else if (testResult.error?.includes('network')) {
-        userMessage = 'Network error. Please check your internet connection.'
-      }
-      
-      return NextResponse.json({ 
-        success: false,
-        message: userMessage,
-        error: testResult.error,
-        details: null
-      }, { status: 400 })
-    }
-
-    console.log('✅ Connection successful!')
-
-    // Get additional account information
-    let productCount = 0
-    let lastActivity = null
-    
-    try {
-      // Try to get product count - fetch a small batch to get total
-      console.log('Fetching products to get count...')
-      const products = await cin7.getProducts(1, 10) // Get up to 10 products
-      
-      // Try different ways to get the count
-      productCount = products.total || products.products?.length || 0
-      
-      console.log('Product fetch result:', {
-        total: products.total,
-        productsLength: products.products?.length,
-        firstProduct: products.products?.[0]?.Name || 'No products'
-      })
-      
-      // Get last activity (could be from sync logs or product updates)
-      lastActivity = productCount > 0 ? 'Active' : 'No products yet'
-    } catch (error) {
-      console.warn('Could not fetch product details:', error.message)
-      // Try a simpler endpoint to at least verify connection
-      try {
-        // Some CIN7 accounts might not have products yet
-        lastActivity = 'Connected (No products to sync)'
-        productCount = 0
-      } catch (fallbackError) {
-        console.warn('Fallback check failed:', fallbackError)
-      }
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Connection successful!',
-      accountName: testResult.accountName || 'Connected',
-      productCount,
-      lastActivity,
-      details: {
-        accountName: testResult.accountName,
-        productCount,
-        lastActivity,
-        apiVersion: 'v2',
-        features: ['inventory', 'products', 'sales', 'webhooks']
+    // Use the exact working URL format from API logs: lowercase /externalapi/
+    // Your logs show successful calls to /externalapi/products
+    const response = await fetch('https://inventory.dearsystems.com/externalapi/me', {
+      method: 'GET',
+      headers: {
+        'api-auth-accountid': accountId,
+        'api-auth-applicationkey': apiKey,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       }
     })
-
-  } catch (error) {
-    console.error('❌ Test connection error:', error)
     
-    // Handle different types of errors
-    let userMessage = 'Connection test failed'
+    const responseText = await response.text()
+    console.log('Response status:', response.status)
+    console.log('Response text:', responseText)
     
-    if (error.message?.includes('ENOTFOUND')) {
-      userMessage = 'Cannot reach CIN7 servers. Please check your internet connection.'
-    } else if (error.message?.includes('ETIMEDOUT')) {
-      userMessage = 'Connection timed out. CIN7 servers might be slow or unreachable.'
-    } else if (error.message?.includes('Invalid')) {
-      userMessage = 'Invalid credentials format. Please check your input.'
+    if (response.status === 403 && responseText.includes('Incorrect credentials')) {
+      console.log('❌ CIN7 Core API rejected the credentials')
+      return NextResponse.json(
+        { 
+          error: 'Authentication failed',
+          message: 'CIN7 Core API rejected the credentials. Please verify:\n\n1. ✓ API Key is copied correctly (no extra spaces)\n2. ✓ Account ID matches your CIN7 Core account\n3. ✓ You are logged into CIN7 Core (not Omni)\n4. ✓ API access is enabled in Settings → Integrations & API\n\nYou may need to regenerate the API key in CIN7 Core.',
+          details: responseText
+        },
+        { status: 403 }
+      )
+    }
+    
+    if (response.status === 403) {
+      console.log('❌ Access denied')
+      return NextResponse.json(
+        { error: 'Access denied. API access may not be enabled for your account.' },
+        { status: 403 }
+      )
+    }
+    
+    if (!response.ok) {
+      console.log(`❌ CIN7 API error: ${response.status} - ${responseText}`)
+      return NextResponse.json(
+        { error: `CIN7 API error: ${response.status}` },
+        { status: response.status }
+      )
+    }
+    
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type')
+    if (!contentType || !contentType.includes('application/json')) {
+      console.log('❌ Non-JSON response from API')
+      console.log('Response preview:', responseText.substring(0, 200))
+      return NextResponse.json(
+        { error: 'Invalid API response format. Please check your credentials.' },
+        { status: 500 }
+      )
+    }
+    
+    let userData
+    try {
+      userData = JSON.parse(responseText)
+    } catch (e) {
+      console.log('❌ Failed to parse JSON response')
+      return NextResponse.json(
+        { error: 'Invalid JSON response from CIN7 API' },
+        { status: 500 }
+      )
+    }
+    console.log('✅ CIN7 connection successful')
+    console.log(`   Company: ${userData.Company || userData.name || 'Unknown'}`)
+    console.log(`   User: ${userData.UserName || userData.email || 'Unknown'}`)
+    
+    // Test products endpoint using the exact working URL from logs
+    // Your logs show successful calls to /externalapi/products?limit=1
+    const productsResponse = await fetch('https://inventory.dearsystems.com/externalapi/products?limit=1', {
+      method: 'GET',
+      headers: {
+        'api-auth-accountid': accountId,
+        'api-auth-applicationkey': apiKey,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    let hasProducts = false
+    if (productsResponse.ok) {
+      const productsData = await productsResponse.json()
+      hasProducts = (productsData.ProductList || productsData.Products || []).length > 0
+      console.log(`📦 Products accessible: ${hasProducts ? 'Yes' : 'No products found'}`)
     }
     
     return NextResponse.json({
-      success: false,
-      message: userMessage,
-      error: error.message,
-      details: null
-    }, { status: 500 })
+      success: true,
+      company: userData.Company || 'Unknown',
+      userName: userData.UserName || 'Unknown',
+      hasProducts,
+      message: 'Connection successful'
+    })
+    
+  } catch (error) {
+    console.error('Connection test error:', error)
+    return NextResponse.json(
+      { error: 'Failed to test connection: ' + error.message },
+      { status: 500 }
+    )
   }
 }
