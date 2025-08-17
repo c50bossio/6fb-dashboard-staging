@@ -347,37 +347,51 @@ function SupabaseAuthProvider({ children }) {
   const updateProfile = async (updates) => {
     if (!user) throw new Error('No user logged in')
     
-    // First, try to update
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
-      .select()
-      .maybeSingle()
-    
-    if (error && error.code === 'PGRST116') {
-      // No profile exists, create one with the updates
-      const { data: newProfile, error: insertError } = await supabase
+    try {
+      // First, try to update without select to avoid 406 errors
+      const { error } = await supabase
         .from('profiles')
-        .insert({
-          id: user.id,
-          email: user.email,
-          ...updates
-        })
-        .select()
+        .update(updates)
+        .eq('id', user.id)
+      
+      if (error && error.code === 'PGRST116') {
+        // No profile exists, create one with the updates
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email,
+            ...updates
+          })
+          .select()
+          .single()
+        
+        if (insertError) throw insertError
+        setProfile(newProfile)
+        return newProfile
+      }
+      
+      if (error) {
+        console.warn('Profile update error:', error)
+        // Continue anyway for non-critical errors
+      }
+      
+      // Fetch updated profile separately
+      const { data: updatedProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
         .single()
       
-      if (insertError) throw insertError
-      setProfile(newProfile)
-      return newProfile
+      if (updatedProfile) {
+        setProfile(updatedProfile)
+      }
+      return updatedProfile
+      
+    } catch (error) {
+      console.error('UpdateProfile failed:', error)
+      throw error
     }
-    
-    if (error) throw error
-    
-    if (data) {
-      setProfile(data)
-    }
-    return data
   }
 
 

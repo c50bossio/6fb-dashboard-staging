@@ -76,11 +76,15 @@ export async function POST(request) {
     const isLiveMode = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('sk_live')
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || (isLiveMode ? 'https://bookedbarber.com' : 'http://localhost:9999')
     
-    // Force HTTPS for live mode URLs
+    // Force production URLs for live mode
     const formatUrl = (url) => {
       if (!url) return null
-      if (isLiveMode && url.startsWith('http://')) {
-        return url.replace('http://', 'https://')
+      if (isLiveMode) {
+        // Replace localhost with production domain for live Stripe
+        if (url.includes('localhost') || url.startsWith('http://')) {
+          return url.replace(/http:\/\/localhost:?\d*/, 'https://bookedbarber.com')
+                   .replace('http://', 'https://')
+        }
       }
       return url
     }
