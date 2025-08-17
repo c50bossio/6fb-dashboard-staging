@@ -207,8 +207,8 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           account_id: accountId,
-          refresh_url: `${window.location.origin}/dashboard/onboarding?refresh=true`,
-          return_url: `${window.location.origin}/dashboard/onboarding?step=banking&success=true`
+          refresh_url: `${window.location.origin}/stripe-redirect?refresh=true`,
+          return_url: `${window.location.origin}/stripe-redirect?step=banking&success=true`
         })
       })
       
@@ -219,7 +219,12 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       // Open Stripe onboarding in new tab
       window.open(data.url, '_blank')
       
-      setSuccess('Complete the setup in the new tab. This page will update automatically.')
+      // Note about redirect for development with live keys
+      const redirectNote = window.location.hostname === 'localhost' 
+        ? ' Note: After completing Stripe setup, you\'ll be redirected to bookedbarber.com. Please return here manually to continue.'
+        : ''
+      
+      setSuccess(`Complete the setup in the new tab. This page will update automatically.${redirectNote}`)
       
     } catch (err) {
       setError(err.message)

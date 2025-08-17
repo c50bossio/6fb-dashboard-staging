@@ -72,19 +72,26 @@ export async function POST(request) {
       apiVersion: '2023-10-16'
     })
     
-    // Ensure HTTPS for live mode
+    // Check if we're using live or test Stripe keys
     const isLiveMode = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('sk_live')
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (isLiveMode ? 'https://bookedbarber.com' : 'http://localhost:9999')
     
-    // Force production URLs for live mode
+    // For test mode, use localhost. For live mode, use production domain
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                   (isLiveMode ? 'https://bookedbarber.com' : 'http://localhost:9999')
+    
+    // Format URLs based on Stripe mode
     const formatUrl = (url) => {
       if (!url) return null
+      
       if (isLiveMode) {
-        // Replace localhost with production domain for live Stripe
+        // In live mode, replace localhost with production domain
         if (url.includes('localhost') || url.startsWith('http://')) {
           return url.replace(/http:\/\/localhost:?\d*/, 'https://bookedbarber.com')
                    .replace('http://', 'https://')
         }
+      } else {
+        // In test mode, keep localhost URLs as-is for local development
+        return url
       }
       return url
     }
