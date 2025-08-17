@@ -1,11 +1,11 @@
 
-export { default as Button, ButtonGroup, CTAButton } from './Button'
-export { default as FormInput, FormSelect } from './FormInput'
+export { Button, ActionButton, SecondaryButton, IconButton } from './Button'
+export { FormInput, FormSelect, FormTextarea, FormCheckbox } from './FormInput'
 
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './card'
 export { Badge } from './badge'
 export { Alert, AlertDescription, AlertTitle } from './alert'
-export { default as Input } from './Input'
+export { Input } from './Input'
 export { default as Textarea } from './Textarea'
 export { default as Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select'
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
