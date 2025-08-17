@@ -211,7 +211,7 @@ export default function BarbershopDashboard() {
       )}
       
       {/* Unified Dashboard Component - Pass effective user (mock, real, or fallback) */}
-      <UnifiedDashboard user={effectiveUser || fallbackUser || mockUser} />
+      <UnifiedDashboard user={effectiveUser || fallbackUser || mockUser} profile={profile} />
       
       {/* Floating Resume Button - Shows when onboarding was skipped */}
       <OnboardingResumeButton 

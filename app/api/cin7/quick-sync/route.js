@@ -1,22 +1,46 @@
-import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+/**
+ * CIN7 Quick Sync API
+ * Performs a fast sync of inventory data
+ */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
-)
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { Cin7Client, decrypt } from '@/lib/cin7-client'
 
 export async function POST(request) {
+  const startTime = Date.now()
+  
   try {
-    console.log('🔄 Quick sync using saved credentials')
+    const supabase = createClient()
     
-    const barbershopId = '550e8400-e29b-41d4-a716-446655440000' // Hardcoded for demo
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ 
+        success: false,
+        error: 'Not authenticated' 
+      }, { status: 401 })
+    }
+
+    // Get barbershop
+    const { data: barbershop } = await supabase
+      .from('barbershops')
+      .select('id')
+      .eq('owner_id', user.id)
+      .single()
+
+    if (!barbershop) {
+      return NextResponse.json({ 
+        success: false,
+        error: 'No barbershop found' 
+      }, { status: 404 })
+    }
     
     console.log('🔍 Checking for saved credentials...')
     const { data: credentials, error: credError } = await supabase
       .from('cin7_credentials')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barbershop_id', barbershop.id)
       .eq('is_active', true)
       .single()
     
@@ -58,7 +82,7 @@ export async function POST(request) {
     
     let syncResult
     try {
-      syncResult = await performCin7Sync(apiKey, accountId, barbershopId)
+      syncResult = await performCin7Sync(apiKey, accountId, barbershop.id, supabase)
     } catch (syncError) {
       console.error('❌ Sync operation failed:', syncError)
       return NextResponse.json({
@@ -74,7 +98,7 @@ export async function POST(request) {
       .update({ 
         updated_at: new Date().toISOString()
       })
-      .eq('barbershop_id', barbershopId)
+      .eq('barbershop_id', barbershop.id)
     
     return NextResponse.json({
       success: true,
@@ -94,7 +118,7 @@ export async function POST(request) {
   }
 }
 
-async function performCin7Sync(apiKey, accountId, barbershopId) {
+async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
   console.log('🔍 Starting Cin7 sync with saved credentials...')
   
   const apiEndpoints = [

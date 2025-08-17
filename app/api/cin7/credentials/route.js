@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { encrypt, decrypt } from '@/lib/cin7-client'
@@ -73,8 +72,7 @@ async function registerCin7Webhooks(accountId, apiKey, webhookUrl) {
 
 export async function GET() {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -160,8 +158,7 @@ export async function GET() {
 
 export async function DELETE() {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -233,8 +230,7 @@ export async function DELETE() {
 
 export async function PUT(request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

@@ -61,7 +61,7 @@ export default function AuthCallback() {
         }
       } catch (error) {
         console.error('❌ Error in auth callback:', error)
-        window.location.href = '/welcome'
+        window.location.href = '/dashboard'
       }
     }
     

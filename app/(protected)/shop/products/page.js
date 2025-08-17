@@ -11,11 +11,15 @@ import {
   ExclamationTriangleIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
-  LinkIcon
+  LinkIcon,
+  Cog6ToothIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import Cin7IntegrationManager from '@/components/cin7-integration-manager'
+import SetupWizard from '@/components/cin7/SetupWizard'
+import StatusWidget from '@/components/cin7/StatusWidget'
+import StockBadge, { StockIndicator } from '@/components/cin7/StockBadge'
 
 export default function ProductInventory() {
   const [products, setProducts] = useState([])
@@ -32,6 +36,8 @@ export default function ProductInventory() {
   const [showCredentialManager, setShowCredentialManager] = useState(false)
   const [credentialInfo, setCredentialInfo] = useState(null)
   const [showEditCredentials, setShowEditCredentials] = useState(false)
+  const [showSetupWizard, setShowSetupWizard] = useState(false)
+  const [isFirstTime, setIsFirstTime] = useState(false)
   const [metrics, setMetrics] = useState({
     totalProducts: 0,
     totalValue: 0,
@@ -148,6 +154,20 @@ export default function ProductInventory() {
     } catch (error) {
       console.error('Error deleting product:', error)
     }
+  }
+
+  const handleSetupComplete = async (result) => {
+    setShowSetupWizard(false)
+    setCin7Connected(true)
+    setHasCredentials(true)
+    setCin7Status('connected')
+    
+    // Show success message
+    alert(`🎉 Setup Complete!\n\n✅ Connected to ${result.accountName}\n✅ Synced ${result.syncedProducts || 0} products\n\n${result.lowStock ? `⚠️ ${result.lowStock} items are low on stock` : ''}\n${result.outOfStock ? `🔴 ${result.outOfStock} items are out of stock` : ''}`)
+    
+    // Reload products
+    await loadProducts()
+    await checkCin7Connection()
   }
 
   const handleCin7Connect = async (credentials) => {
@@ -357,10 +377,30 @@ export default function ProductInventory() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
+      {/* Setup Wizard Modal */}
+      {showSetupWizard && (
+        <SetupWizard
+          onComplete={handleSetupComplete}
+          onClose={() => setShowSetupWizard(false)}
+        />
+      )}
+
+      {/* Header with Status Widget */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Product Inventory</h1>
-        <p className="text-gray-600 mt-2">Manage your shop's retail products and track inventory</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Product Inventory</h1>
+            <p className="text-gray-600 mt-2">Manage your shop's retail products and track inventory</p>
+          </div>
+          {/* Status Widget - shows connection status */}
+          <div className="mt-2">
+            <StatusWidget
+              compact={false}
+              onSync={() => loadProducts()}
+              onSettings={() => setShowCredentialManager(true)}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Metrics */}
@@ -436,8 +476,16 @@ export default function ProductInventory() {
             ))}
           </select>
 
-          {/* Sync Cin7 Button */}
-          {hasCredentials ? (
+          {/* CIN7 Action Buttons */}
+          {!hasCredentials ? (
+            <button
+              onClick={() => setShowSetupWizard(true)}
+              className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:from-amber-600 hover:to-amber-700 shadow-md hover:shadow-lg transition-all flex items-center font-medium"
+            >
+              <LinkIcon className="h-5 w-5 mr-2" />
+              Setup Inventory Sync
+            </button>
+          ) : (
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleQuickSync}
@@ -455,14 +503,6 @@ export default function ProductInventory() {
                 <PencilIcon className="h-4 w-4" />
               </button>
             </div>
-          ) : (
-            <button
-              onClick={() => setShowCin7Modal(true)}
-              className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center"
-            >
-              <LinkIcon className="h-5 w-5 mr-2" />
-              Setup Cin7 Sync
-            </button>
           )}
 
           {/* Add Product Button */}
@@ -536,17 +576,13 @@ export default function ProductInventory() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    product.current_stock === 0 
-                      ? 'bg-softred-100 text-softred-900'
-                      : product.current_stock <= product.min_stock_level
-                      ? 'bg-amber-100 text-amber-900'
-                      : 'bg-moss-100 text-moss-900'
-                  }`}>
-                    {product.current_stock === 0 ? 'Out of Stock' :
-                     product.current_stock <= product.min_stock_level ? 'Low Stock' :
-                     'In Stock'}
-                  </span>
+                  <StockBadge
+                    stock={product.current_stock}
+                    minStock={product.min_stock_level || 10}
+                    maxStock={product.max_stock_level || 100}
+                    size="small"
+                    showTrend={false}
+                  />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button

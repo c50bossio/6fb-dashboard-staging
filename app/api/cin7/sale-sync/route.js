@@ -9,7 +9,6 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import { decrypt } from '@/lib/cin7-client'
 
 // CIN7 API endpoints (from documentation)
@@ -127,8 +126,7 @@ async function recordSaleInCin7(saleData, credentials) {
  */
 export async function POST(request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createClient()
     
     // Get request data
     const { action, ...data } = await request.json()

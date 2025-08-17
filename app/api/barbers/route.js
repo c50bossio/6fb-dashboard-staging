@@ -15,9 +15,73 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url)
     const barbershop_id = searchParams.get('barbershop_id')
+    const location_id = searchParams.get('location_id')
     const active_only = searchParams.get('active_only') !== 'false'
 
-    let query = supabase
+    // First, try to get the barbershop_id from user's profile if not provided
+    let targetBarbershopId = barbershop_id
+    
+    if (!targetBarbershopId) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('barbershop_id')
+        .eq('id', user.id)
+        .single()
+      
+      targetBarbershopId = profile?.barbershop_id
+    }
+    
+    // If location_id is provided and it's not 'default', use it as barbershop_id
+    if (location_id && location_id !== 'default') {
+      targetBarbershopId = location_id
+    }
+
+    // First try to get barbers from the barbers table (created during onboarding)
+    let barbersQuery = supabase
+      .from('barbers')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (targetBarbershopId) {
+      barbersQuery = barbersQuery.eq('shop_id', targetBarbershopId)
+    }
+
+    if (active_only) {
+      barbersQuery = barbersQuery.eq('is_active', true)
+    }
+
+    const { data: barbers, error: barbersError } = await barbersQuery
+
+    // If we found barbers in the barbers table, format and return them
+    if (barbers && barbers.length > 0) {
+      const formattedBarbers = barbers.map(barber => ({
+        id: barber.id,
+        name: barber.name || 'Unnamed Barber',
+        email: barber.email,
+        phone: barber.phone,
+        avatar_url: barber.avatar_url,
+        title: barber.specialties?.[0] || 'Barber',
+        experience: `${barber.experience_years || 0} years`,
+        rating: barber.rating || 4.5,
+        bio: barber.bio || 'Professional barber',
+        specialties: barber.specialties || [],
+        availability: barber.availability || 'full_time',
+        chair_number: barber.chair_number,
+        instagram_handle: barber.instagram_handle,
+        languages: barber.languages || ['English'],
+        is_active: barber.is_active,
+        barbershop_id: barber.shop_id
+      }))
+
+      return NextResponse.json({
+        barbers: formattedBarbers,
+        total: formattedBarbers.length,
+        source: 'barbers_table'
+      })
+    }
+
+    // Fallback to barbershop_staff table if no barbers found in barbers table
+    let staffQuery = supabase
       .from('barbershop_staff')
       .select(`
         *,
@@ -27,42 +91,43 @@ export async function GET(request) {
       .in('role', ['BARBER', 'SHOP_OWNER'])
       .order('started_at', { ascending: true })
 
-    if (barbershop_id) {
-      query = query.eq('barbershop_id', barbershop_id)
+    if (targetBarbershopId) {
+      staffQuery = staffQuery.eq('barbershop_id', targetBarbershopId)
     }
 
     if (active_only) {
-      query = query.eq('is_active', true)
+      staffQuery = staffQuery.eq('is_active', true)
     }
 
-    const { data: staff, error } = await query
+    const { data: staff, error: staffError } = await staffQuery
 
-    if (error) {
-      console.error('Database query failed:', error.message)
+    if (staffError) {
+      console.error('Database query failed:', staffError.message)
       return NextResponse.json({ 
         error: 'Failed to fetch barbers',
-        details: error.message 
+        details: staffError.message 
       }, { status: 500 })
     }
 
-    const formattedBarbers = staff.map(staffMember => ({
-      id: staffMember.user.id,
-      name: staffMember.user.name,
-      email: staffMember.user.email,
-      phone: staffMember.user.phone,
-      avatar_url: staffMember.user.avatar_url,
+    const formattedBarbers = (staff || []).map(staffMember => ({
+      id: staffMember.user?.id || staffMember.id,
+      name: staffMember.user?.name || 'Unnamed Staff',
+      email: staffMember.user?.email,
+      phone: staffMember.user?.phone,
+      avatar_url: staffMember.user?.avatar_url,
       role: staffMember.role,
       commission_rate: staffMember.commission_rate,
       is_active: staffMember.is_active,
       started_at: staffMember.started_at,
       barbershop_id: staffMember.barbershop_id,
-      barbershop_name: staffMember.barbershop.name,
-      business_hours: staffMember.barbershop.business_hours
+      barbershop_name: staffMember.barbershop?.name,
+      business_hours: staffMember.barbershop?.business_hours
     }))
 
     return NextResponse.json({
       barbers: formattedBarbers,
-      total: formattedBarbers.length
+      total: formattedBarbers.length,
+      source: 'barbershop_staff_table'
     })
 
   } catch (error) {

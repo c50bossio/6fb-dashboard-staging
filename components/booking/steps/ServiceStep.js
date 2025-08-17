@@ -16,6 +16,35 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
   
   const loadServices = async () => {
     try {
+      // First try to load real services from database
+      const barbershopId = bookingData.location?.id || bookingData.barbershop_id
+      const response = await fetch(`/api/services?barbershop_id=${barbershopId || 'default'}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.services && data.services.length > 0) {
+          // Transform services to match expected format
+          const transformedServices = data.services.map(service => ({
+            id: service.id,
+            name: service.name,
+            description: service.description || '',
+            category: service.category || 'General',
+            basePrice: service.price,
+            baseDuration: service.duration_minutes || service.duration || 30,
+            price: service.price,
+            duration: service.duration_minutes || service.duration || 30,
+            popular: service.popular || false,
+            image: service.image_url || '/images/service-default.jpg'
+          }))
+          
+          setServices(transformedServices)
+          setLoading(false)
+          return
+        }
+      }
+      
+      // Fallback to mock data if no real services found
+      console.log('No services found in database, using mock data')
       const barberServices = bookingData.barberDetails?.services || []
       
       const standardServices = [

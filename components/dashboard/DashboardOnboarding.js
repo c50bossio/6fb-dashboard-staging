@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   XMarkIcon,
   CheckCircleIcon,
@@ -13,7 +13,9 @@ import {
   ClockIcon,
   PaintBrushIcon,
   UserGroupIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  CalendarDaysIcon,
+  DocumentCheckIcon
 } from '@heroicons/react/24/outline'
 
 // Import existing onboarding components
@@ -24,10 +26,28 @@ import GoalsSelector from '../onboarding/GoalsSelector'
 import LivePreview from '../onboarding/LivePreview'
 import DomainSelector from '../onboarding/DomainSelector'
 
-export default function DashboardOnboarding({ user, profile, onComplete, updateProfile }) {
+// Import new onboarding components
+import BusinessInfoSetup from '../onboarding/BusinessInfoSetup'
+import StaffSetup from '../onboarding/StaffSetup'
+import ScheduleSetup from '../onboarding/ScheduleSetup'
+import BookingRulesSetup from '../onboarding/BookingRulesSetup'
+
+// Import professional illustrations
+import { WelcomeIllustration, ProgressRing } from '../onboarding/OnboardingIllustrations'
+
+// Import analytics
+import internalAnalytics from '@/lib/internal-analytics'
+
+export default function DashboardOnboarding({ user, profile, onComplete, updateProfile, forceShow = false }) {
   const [currentStep, setCurrentStep] = useState(0)
   const [isMinimized, setIsMinimized] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState(null)
+  const autoSaveInterval = useRef(null)
+  const completedSteps = useRef(new Set())
+  const skippedSteps = useRef(new Set())
+  
   const [onboardingData, setOnboardingData] = useState({
     role: profile?.role || 'SHOP_OWNER',
     businessName: profile?.shop_name || '',
@@ -48,33 +68,73 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     completedSteps: []
   })
 
+  // Initialize analytics on mount and check if user previously skipped
+  useEffect(() => {
+    // Check if user previously skipped onboarding
+    const wasSkipped = localStorage.getItem('onboarding_skipped') === 'true'
+    const isIncomplete = profile && !profile?.onboarding_completed
+    
+    // Show onboarding if forced or if incomplete and not previously skipped
+    if (forceShow) {
+      setShowOnboarding(true)
+      localStorage.removeItem('onboarding_skipped')
+    } else if (wasSkipped && isIncomplete) {
+      setShowOnboarding(false)
+    }
+    
+    if (showOnboarding && !profile?.onboarding_completed && !wasSkipped) {
+      internalAnalytics.onboarding.started(
+        profile?.role || 'SHOP_OWNER',
+        onboardingData.businessType || 'barbershop'
+      )
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (autoSaveInterval.current) {
+        clearInterval(autoSaveInterval.current)
+      }
+      // Track abandonment if not completed
+      if (showOnboarding && !profile?.onboarding_completed) {
+        const currentStepData = steps[currentStep]
+        internalAnalytics.onboarding.abandoned(
+          currentStepData?.id,
+          currentStep,
+          steps.length,
+          'component_unmounted'
+        )
+      }
+    }
+  }, [])
+
   // Define steps based on user role
   const getStepsForRole = (role) => {
     const baseSteps = {
       BARBER: [
         { id: 'profile', title: 'Personal Profile', icon: UserIcon, description: 'Set up your professional profile' },
         { id: 'services', title: 'Services & Pricing', icon: CurrencyDollarIcon, description: 'Define your services and rates' },
-        { id: 'schedule', title: 'Availability', icon: ClockIcon, description: 'Set your working hours' },
-        { id: 'payment', title: 'Payment Methods', icon: CurrencyDollarIcon, description: 'Configure payment options' },
+        { id: 'schedule', title: 'Availability', icon: CalendarDaysIcon, description: 'Set your working hours' },
+        { id: 'financial', title: 'Payment Setup', icon: CurrencyDollarIcon, description: 'Configure payment options' },
+        { id: 'booking', title: 'Booking Rules', icon: DocumentCheckIcon, description: 'Set booking policies' },
         { id: 'branding', title: 'Booking Page', icon: PaintBrushIcon, description: 'Customize your booking page' }
       ],
       SHOP_OWNER: [
         { id: 'business', title: 'Business Info', icon: BuildingOfficeIcon, description: 'Basic business details' },
-        { id: 'hours', title: 'Business Hours', icon: ClockIcon, description: 'Set operating hours' },
+        { id: 'schedule', title: 'Business Hours', icon: CalendarDaysIcon, description: 'Set operating hours' },
         { id: 'services', title: 'Services Catalog', icon: CurrencyDollarIcon, description: 'Define services and pricing' },
         { id: 'staff', title: 'Staff Setup', icon: UserGroupIcon, description: 'Add your barbers' },
-        { id: 'payment', title: 'Payment Processing', icon: CurrencyDollarIcon, description: 'Configure payments' },
-        { id: 'booking', title: 'Booking Rules', icon: CheckCircleIcon, description: 'Set booking policies' },
+        { id: 'financial', title: 'Payment Processing', icon: CurrencyDollarIcon, description: 'Configure payments' },
+        { id: 'booking', title: 'Booking Rules', icon: DocumentCheckIcon, description: 'Set booking policies' },
         { id: 'branding', title: 'Branding', icon: PaintBrushIcon, description: 'Customize appearance' }
       ],
       ENTERPRISE_OWNER: [
-        { id: 'organization', title: 'Organization Setup', icon: BuildingOfficeIcon, description: 'Configure your enterprise' },
-        { id: 'locations', title: 'Multiple Locations', icon: BuildingOfficeIcon, description: 'Add business locations' },
+        { id: 'business', title: 'Organization Setup', icon: BuildingOfficeIcon, description: 'Configure your enterprise' },
+        { id: 'schedule', title: 'Operating Hours', icon: CalendarDaysIcon, description: 'Set default hours for locations' },
         { id: 'services', title: 'Master Services', icon: CurrencyDollarIcon, description: 'Define service catalog' },
-        { id: 'hierarchy', title: 'Staff Hierarchy', icon: UserGroupIcon, description: 'Set up management structure' },
+        { id: 'staff', title: 'Staff Hierarchy', icon: UserGroupIcon, description: 'Set up management structure' },
         { id: 'financial', title: 'Financial Config', icon: CurrencyDollarIcon, description: 'Payment & commission settings' },
-        { id: 'branding', title: 'Brand Guidelines', icon: PaintBrushIcon, description: 'Set brand standards' },
-        { id: 'analytics', title: 'Analytics Setup', icon: ChartBarIcon, description: 'Configure reporting' }
+        { id: 'booking', title: 'Booking Policies', icon: DocumentCheckIcon, description: 'Set enterprise policies' },
+        { id: 'branding', title: 'Brand Guidelines', icon: PaintBrushIcon, description: 'Set brand standards' }
       ]
     }
 
@@ -86,18 +146,66 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1)
+      // Track step completion
+      const currentStepData = steps[currentStep]
+      completedSteps.current.add(currentStepData.id)
+      
+      internalAnalytics.onboarding.stepCompleted(
+        currentStepData.id,
+        onboardingData,
+        currentStep,
+        steps.length
+      )
+      
+      // Move to next step
+      const nextStep = currentStep + 1
+      setCurrentStep(nextStep)
+      
+      // Track next step view
+      const nextStepData = steps[nextStep]
+      internalAnalytics.onboarding.stepViewed(
+        nextStepData.id,
+        nextStep,
+        steps.length
+      )
+      
       saveProgress()
     }
   }
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
+      const prevStep = currentStep - 1
+      setCurrentStep(prevStep)
+      
+      // Track navigation back
+      const prevStepData = steps[prevStep]
+      internalAnalytics.onboarding.stepViewed(
+        prevStepData.id,
+        prevStep,
+        steps.length
+      )
     }
   }
 
   const handleSkip = () => {
+    const currentStepData = steps[currentStep]
+    
+    // Track skip
+    internalAnalytics.onboarding.stepSkipped(
+      currentStepData.id,
+      currentStep,
+      'user_closed_modal'
+    )
+    
+    // Track abandonment
+    internalAnalytics.onboarding.abandoned(
+      currentStepData.id,
+      currentStep,
+      steps.length,
+      'user_skipped'
+    )
+    
     setShowOnboarding(false)
     // Save that user skipped onboarding
     localStorage.setItem('onboarding_skipped', 'true')
@@ -105,10 +213,36 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
 
   const handleComplete = async () => {
     try {
+      setIsSaving(true)
+      
+      // Mark last step as completed
+      const lastStepData = steps[steps.length - 1]
+      completedSteps.current.add(lastStepData.id)
+      
+      // Track completion
+      internalAnalytics.onboarding.completed(
+        steps.length,
+        completedSteps.current.size,
+        skippedSteps.current.size
+      )
+      
       // Update profile to mark onboarding as complete
       await updateProfile({
         onboarding_completed: true,
-        onboarding_data: JSON.stringify(onboardingData)
+        onboarding_completed_at: new Date().toISOString(),
+        onboarding_data: JSON.stringify(onboardingData),
+        onboarding_progress_percentage: 100
+      })
+      
+      // Save to API
+      await fetch('/api/onboarding/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          completedSteps: Array.from(completedSteps.current),
+          skippedSteps: Array.from(skippedSteps.current),
+          data: onboardingData
+        })
       })
       
       setShowOnboarding(false)
@@ -117,44 +251,145 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
       }
     } catch (error) {
       console.error('Error completing onboarding:', error)
+      internalAnalytics.feature.error('onboarding_complete', error)
+    } finally {
+      setIsSaving(false)
     }
   }
 
-  const saveProgress = async () => {
+  const saveProgress = async (isAutoSave = false) => {
     try {
-      // Save progress to database
+      setIsSaving(true)
+      
+      const currentStepData = steps[currentStep]
+      const progressPercentage = Math.round(((currentStep + 1) / steps.length) * 100)
+      
+      // Save to profile
       await updateProfile({
         onboarding_step: currentStep,
-        onboarding_data: JSON.stringify(onboardingData)
+        onboarding_last_step: currentStepData?.id,
+        onboarding_data: JSON.stringify(onboardingData),
+        onboarding_progress_percentage: progressPercentage
       })
+      
+      // Save to API
+      const response = await fetch('/api/onboarding/save-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          step: currentStepData?.id,
+          stepData: onboardingData
+        })
+      })
+      
+      if (response.ok) {
+        setLastSaved(new Date())
+        internalAnalytics.onboarding.dataSaved(currentStepData?.id, true, null)
+      } else {
+        throw new Error('Failed to save progress')
+      }
     } catch (error) {
       console.error('Error saving progress:', error)
+      internalAnalytics.onboarding.dataSaved(
+        steps[currentStep]?.id,
+        false,
+        error.message
+      )
+    } finally {
+      setIsSaving(false)
     }
   }
 
-  const updateOnboardingData = (field, value) => {
+  const updateOnboardingData = (newData) => {
     setOnboardingData(prev => ({
       ...prev,
-      [field]: value
+      ...newData
     }))
   }
 
-  // Load saved progress
+  // Auto-save every 30 seconds
   useEffect(() => {
-    if (profile?.onboarding_step) {
-      setCurrentStep(profile.onboarding_step)
+    if (showOnboarding && !profile?.onboarding_completed) {
+      autoSaveInterval.current = setInterval(() => {
+        saveProgress(true)
+      }, 30000) // 30 seconds
     }
-    if (profile?.onboarding_data) {
-      try {
-        const savedData = JSON.parse(profile.onboarding_data)
-        setOnboardingData(prev => ({ ...prev, ...savedData }))
-      } catch (error) {
-        console.error('Error loading saved onboarding data:', error)
+
+    return () => {
+      if (autoSaveInterval.current) {
+        clearInterval(autoSaveInterval.current)
       }
     }
+  }, [showOnboarding, profile?.onboarding_completed])
+
+  // Load saved progress
+  useEffect(() => {
+    const loadSavedProgress = async () => {
+      if (profile?.onboarding_step !== undefined) {
+        setCurrentStep(profile.onboarding_step)
+      }
+      if (profile?.onboarding_data) {
+        try {
+          const savedData = JSON.parse(profile.onboarding_data)
+          setOnboardingData(prev => ({ ...prev, ...savedData }))
+        } catch (error) {
+          console.error('Error loading saved onboarding data:', error)
+        }
+      }
+      
+      // Load progress from API
+      try {
+        const response = await fetch('/api/onboarding/save-progress')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.currentStep !== undefined) {
+            setCurrentStep(data.currentStep)
+          }
+          if (data.steps) {
+            data.steps.forEach(step => {
+              if (step.step_name) {
+                completedSteps.current.add(step.step_name)
+              }
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error loading progress from API:', error)
+      }
+    }
+    
+    loadSavedProgress()
   }, [profile])
 
-  if (!showOnboarding || profile?.onboarding_completed) {
+  // Show a resume button if onboarding was skipped but not completed
+  if (!showOnboarding && !profile?.onboarding_completed && !forceShow) {
+    const wasSkipped = localStorage.getItem('onboarding_skipped') === 'true'
+    if (wasSkipped) {
+      return (
+        <div className="fixed bottom-4 right-4 z-40">
+          <button
+            onClick={() => {
+              setShowOnboarding(true)
+              localStorage.removeItem('onboarding_skipped')
+              // Track resumption
+              internalAnalytics.onboarding.restored(
+                steps[currentStep]?.id,
+                currentStep
+              )
+            }}
+            className="bg-brand-600 text-white px-4 py-3 rounded-lg shadow-lg hover:bg-brand-700 transition-all flex items-center gap-2 group"
+          >
+            <SparklesIcon className="h-5 w-5 group-hover:animate-pulse" />
+            <span>Resume Setup ({progress}% complete)</span>
+          </button>
+        </div>
+      )
+    }
+    return null
+  }
+  
+  // Don't show if onboarding is already completed
+  if (profile?.onboarding_completed) {
     return null
   }
 
@@ -162,7 +397,15 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     return (
       <div className="fixed bottom-4 right-4 z-50">
         <button
-          onClick={() => setIsMinimized(false)}
+          onClick={() => {
+            setIsMinimized(false)
+            // Track restoration
+            const currentStepData = steps[currentStep]
+            internalAnalytics.onboarding.restored(
+              currentStepData?.id,
+              currentStep
+            )
+          }}
           className="bg-brand-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-brand-700 transition-colors flex items-center gap-2"
         >
           <SparklesIcon className="h-5 w-5" />
@@ -186,12 +429,25 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
           <div className="bg-gradient-to-r from-brand-600 to-brand-700 text-white p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-2xl font-bold">Welcome to Your Dashboard!</h2>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                    <div className="w-4 h-4 bg-white rounded-sm"></div>
+                  </div>
+                  <h2 className="text-2xl font-bold">Welcome to Your Dashboard</h2>
+                </div>
                 <p className="text-brand-100 mt-1">Let's set up your {profile?.role?.toLowerCase().replace('_', ' ')} account</p>
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setIsMinimized(true)}
+                  onClick={() => {
+                    setIsMinimized(true)
+                    // Track minimize
+                    const currentStepData = steps[currentStep]
+                    internalAnalytics.onboarding.minimized(
+                      currentStepData?.id,
+                      currentStep
+                    )
+                  }}
                   className="text-white/80 hover:text-white transition-colors"
                   title="Minimize"
                 >
@@ -258,11 +514,18 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
 
           {/* Content */}
           <div className="p-6 max-h-[50vh] overflow-y-auto">
-            <div className="mb-4">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                {currentStepData.title}
-              </h3>
-              <p className="text-gray-600">{currentStepData.description}</p>
+            <div className="mb-6 flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-to-br from-brand-100 to-brand-200 rounded-xl flex items-center justify-center">
+                  {currentStepData.icon && <currentStepData.icon className="h-6 w-6 text-brand-600" />}
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                  {currentStepData.title}
+                </h3>
+                <p className="text-gray-600">{currentStepData.description}</p>
+              </div>
             </div>
 
             {/* Render appropriate component based on step */}
@@ -322,29 +585,124 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
 
 // Helper function to render content based on step
 function renderStepContent(stepId, data, updateData) {
-  // This is a placeholder - in practice, you'd render the appropriate
-  // component from the existing onboarding components
+  // Handle step completion callbacks
+  const handleStepComplete = (stepData) => {
+    updateData(stepData)
+  }
+
   switch (stepId) {
+    case 'business':
+    case 'organization':
+      return (
+        <BusinessInfoSetup 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+        />
+      )
+    
     case 'services':
-      return <ServiceSetup data={data} updateData={updateData} />
+      return (
+        <ServiceSetup 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+          businessType={data.businessType || 'barbershop'}
+        />
+      )
+    
+    case 'staff':
+    case 'hierarchy':
+      return (
+        <StaffSetup 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+        />
+      )
+    
+    case 'schedule':
+    case 'hours':
+      return (
+        <ScheduleSetup 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+        />
+      )
     
     case 'financial':
     case 'payment':
-      return <FinancialSetup data={data} updateData={updateData} />
+      return (
+        <FinancialSetup 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+          subscriptionTier={data.role === 'ENTERPRISE_OWNER' ? 'enterprise' : 'shop'}
+        />
+      )
+    
+    case 'booking':
+      return (
+        <BookingRulesSetup 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+        />
+      )
     
     case 'branding':
-      return <LivePreview data={data} updateData={updateData} />
+      return (
+        <LivePreview 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+        />
+      )
+    
+    case 'profile':
+      return (
+        <RoleSelector 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+        />
+      )
+    
+    case 'goals':
+      return (
+        <GoalsSelector 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+        />
+      )
+    
+    case 'domain':
+      return (
+        <DomainSelector 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+        />
+      )
     
     default:
-      // For steps without specific components yet, show a placeholder
+      // Fallback for any steps not yet implemented
       return (
-        <div className="bg-gray-50 rounded-lg p-8 text-center">
-          <p className="text-gray-600">
-            Component for "{stepId}" step will be configured here.
+        <div className="bg-yellow-50 rounded-lg p-8 text-center">
+          <p className="text-yellow-800 font-medium">
+            Step "{stepId}" is coming soon!
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            This will use the existing onboarding components.
+          <p className="text-sm text-yellow-600 mt-2">
+            This feature is under development.
           </p>
+          <button
+            onClick={() => handleStepComplete({})}
+            className="mt-4 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
+          >
+            Skip for now
+          </button>
         </div>
       )
   }

@@ -17,7 +17,7 @@ import Logo from '../../components/ui/Logo'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { user, signIn, signInWithGoogle } = useAuth()
+  const { user, signIn, signInWithGoogle, loading: authLoading } = useAuth()
   const loginTracking = useLoginTracking()
   const [formData, setFormData] = useState({
     email: '',
@@ -29,10 +29,25 @@ export default function LoginPage() {
   
   // Redirect if user is already logged in
   useEffect(() => {
-    if (user && !isLoading) {
+    if (user) {
       router.push('/dashboard')
     }
-  }, [user, router, isLoading])
+  }, [user, router])
+  
+  // Don't show loading if we're on the login page and there's no user
+  // Only show loading if we have a user and are about to redirect
+  if (authLoading && user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const handleChange = (e) => {
     setFormData({
@@ -57,8 +72,8 @@ export default function LoginPage() {
       
       loginTracking.trackLoginSuccess('email', result?.user?.id)
       
-      // Redirect to dashboard after successful login
-      router.push('/dashboard')
+      // Don't reset loading state - let the auth state change handler redirect
+      // The SupabaseAuthProvider will handle the redirect to dashboard
       
     } catch (err) {
       loginTracking.trackLoginFailure('email', err.message || 'Unknown error')

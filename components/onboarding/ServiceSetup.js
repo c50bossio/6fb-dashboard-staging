@@ -328,22 +328,11 @@ export default function ServiceSetup({ onComplete, initialData = {}, businessTyp
         )}
       </div>
 
-      {/* Continue Button */}
-      <div className="flex justify-between items-center pt-4">
+      {/* Status Display */}
+      <div className="flex justify-center items-center pt-4">
         <div className="text-sm text-gray-500">
           {services.length} service{services.length !== 1 ? 's' : ''} configured
         </div>
-        <button
-          onClick={handleContinue}
-          disabled={services.length === 0}
-          className={`px-6 py-3 rounded-lg font-medium transition-all ${
-            services.length > 0
-              ? 'bg-olive-600 text-white hover:bg-olive-700'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          Continue →
-        </button>
       </div>
     </div>
   )

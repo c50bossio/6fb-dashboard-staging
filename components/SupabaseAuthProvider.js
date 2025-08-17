@@ -17,7 +17,7 @@ export const useAuth = () => {
 function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false) // Start with false to not block login page
   const router = useRouter()
   const supabase = createClient()
 
@@ -35,37 +35,15 @@ function SupabaseAuthProvider({ children }) {
         return currentPath === path || currentPath.startsWith(path + '/') || currentPath.startsWith(path + '?')
       })
       
-      const isDevelopment = typeof window !== 'undefined' && (
-        window.location.hostname === 'localhost' || 
-        window.location.hostname === '127.0.0.1' ||
-        process.env.NODE_ENV === 'development'
-      )
+      // Remove the problematic dev bypass that interferes with real auth
       
-      if (isDevelopment && currentPath.includes('/dashboard/campaigns')) {
-        console.log('🚀 DEVELOPMENT MODE: Direct bypass for campaigns page')
-        const mockUser = {
-          id: 'demo-user-001',
-          email: 'demo@test.com',
-          user_metadata: { full_name: 'Demo User' }
-        }
-        const mockProfile = {
-          id: 'demo-user-001',
-          email: 'demo@test.com',
-          full_name: 'Demo User',
-          role: 'SHOP_OWNER'
-        }
-        setUser(mockUser)
-        setProfile(mockProfile)
-        setLoading(false)
-        console.log('✅ Mock user set immediately - no auth check needed')
-        return
-      }
-      
+      // Only set loading true if we're on a protected page
       if (!isPublicPage) {
         setLoading(true)
       }
       
       try {
+        console.log('CheckUser: Starting auth check...')
         // Simple auth check - trust Supabase
         const { data: { user }, error } = await supabase.auth.getUser()
         
@@ -77,27 +55,29 @@ function SupabaseAuthProvider({ children }) {
           
           // Get user profile - handle errors gracefully
           try {
+            console.log('Fetching profile for user in checkUser:', user.id)
             const { data: profileData, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', user.id)
               .maybeSingle()
             
+            console.log('Profile query result:', { 
+              hasData: !!profileData, 
+              hasError: !!profileError,
+              error: profileError
+            })
+            
             if (!profileError && profileData) {
-              console.log('🔄 Profile loaded in checkUser:', profileData.email, 'onboarding:', profileData.onboarding_completed)
+              console.log('Profile loaded in checkUser:', profileData.email, 'onboarding:', profileData.onboarding_completed)
               setProfile(profileData)
-            
-            // Redirect to welcome if accessing protected routes without onboarding
-            const protectedPaths = ['/dashboard', '/(protected)']
-            const isProtectedRoute = protectedPaths.some(path => currentPath.startsWith(path))
-            
-            if (isProtectedRoute && profileData.onboarding_completed === false) {
-              console.log('🚀 Redirecting to /welcome because onboarding not complete')
-              router.push('/welcome')
+              
+              // No redirect needed - dashboard will handle onboarding overlay
+            } else if (profileError) {
+              console.error('Profile error in checkUser:', profileError)
+            } else {
+              console.log('No profile found for user in checkUser')
             }
-          } else {
-            console.log('⚠️ No profile found for user in checkUser')
-          }
           } catch (error) {
             console.error('Error loading profile in checkUser:', error)
           }
@@ -117,80 +97,95 @@ function SupabaseAuthProvider({ children }) {
     checkUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔐 Auth state change event:', event, {
+      console.log('Auth state change event:', event, {
         hasSession: !!session,
         userId: session?.user?.id,
       })
       
       if (event === 'SIGNED_IN' && session) {
-        console.log('✅ User signed in successfully')
+        console.log('User signed in successfully')
         setUser(session.user)
         
-        // Fetch or create profile
-        console.log('🔍 Fetching profile for user:', session.user.id)
-        let userProfile = null
-        
-        // Simple profile fetch
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle()
-        
-        if (error && error.code === 'PGRST116') {
-          // No profile exists, create one
-          console.log('🆕 Creating profile for new user...')
-          const newProfileData = {
-            id: session.user.id,
-            email: session.user.email,
-            full_name: session.user.user_metadata?.full_name || 
-                     session.user.user_metadata?.name || 
-                     session.user.email.split('@')[0],
-            role: 'SHOP_OWNER',
-            subscription_status: 'active',
-            onboarding_completed: false,
-            onboarding_step: 0
-          }
+        try {
+          // Fetch or create profile
+          console.log('Fetching profile for user:', session.user.id)
+          let userProfile = null
           
-          const { data: newProfile, error: createError } = await supabase
+          // Simple profile fetch
+          const { data: profileData, error } = await supabase
             .from('profiles')
-            .insert(newProfileData)
-            .select()
-            .single()
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle()
+        
+          console.log('Auth state profile result:', { 
+            hasData: !!profileData, 
+            hasError: !!error,
+            error: error
+          })
           
-          if (createError) {
-            console.error('❌ Profile creation error:', createError)
-          } else if (newProfile) {
-            console.log('✅ Profile created:', newProfile.email)
-            setProfile(newProfile)
-            userProfile = newProfile
+          if (error && error.code === 'PGRST116') {
+            // No profile exists, create one
+            console.log('🆕 Creating profile for new user...')
+            const newProfileData = {
+              id: session.user.id,
+              email: session.user.email,
+              full_name: session.user.user_metadata?.full_name || 
+                       session.user.user_metadata?.name || 
+                       session.user.email.split('@')[0],
+              role: 'SHOP_OWNER',
+              subscription_status: 'active',
+              onboarding_completed: false,
+              onboarding_step: 0
+            }
+            
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert(newProfileData)
+              .select()
+              .single()
+            
+            if (createError) {
+              console.error('❌ Profile creation error:', createError)
+            } else if (newProfile) {
+              console.log('✅ Profile created:', newProfile.email)
+              setProfile(newProfile)
+              userProfile = newProfile
+            }
+          } else if (profileData) {
+            console.log('✅ Profile found:', profileData.email)
+            setProfile(profileData)
+            userProfile = profileData
+          } else if (error) {
+            console.error('❌ Profile error:', error)
           }
-        } else if (profileData) {
-          console.log('✅ Profile found:', profileData.email)
-          setProfile(profileData)
-          userProfile = profileData
-        } else if (error) {
-          console.error('❌ Profile error:', error)
-        }
-        
-        // Simple navigation logic - redirect on sign-in from login page
-        console.log('🔀 Current pathname:', window.location.pathname)
-        console.log('📋 User profile status:', userProfile ? {
-          hasProfile: true,
-          onboarding_completed: userProfile.onboarding_completed
-        } : { hasProfile: false })
-        
-        if (window.location.pathname === '/login') {
-          // ALWAYS go to welcome first for simplicity
-          // The welcome page will redirect to dashboard if onboarding is complete
-          console.log('📝 Redirecting to /welcome from login')
-          router.push('/welcome')
-        } else {
-          console.log('🚫 Not on login page, no redirect from auth state change')
+          
+          // Simple navigation logic - redirect on sign-in from login page
+          console.log('🔀 Current pathname:', window.location.pathname)
+          console.log('📋 User profile status:', userProfile ? {
+            hasProfile: true,
+            onboarding_completed: userProfile.onboarding_completed
+          } : { hasProfile: false })
+          
+          if (window.location.pathname === '/login') {
+            // Redirect directly to dashboard - dashboard will handle onboarding overlay
+            console.log('📝 Redirecting to /dashboard from login')
+            router.push('/dashboard')
+          } else {
+            console.log('🚫 Not on login page, no redirect from auth state change')
+          }
+        } catch (error) {
+          console.error('❌ Error in auth state change handler:', error)
+          // Still set the user even if profile fetch fails
+          setUser(session.user)
+        } finally {
+          // Always set loading to false after SIGNED_IN event
+          setLoading(false)
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
         setProfile(null)
+        setLoading(false)
         
         const publicPaths = ['/login', '/register', '/forgot-password', '/success', '/pricing', '/', '/clear-all']
         if (!publicPaths.includes(window.location.pathname)) {
@@ -198,11 +193,11 @@ function SupabaseAuthProvider({ children }) {
         }
       } else if (event === 'USER_UPDATED' && session) {
         setUser(session.user)
+        setLoading(false)
       } else if (event === 'TOKEN_REFRESHED' && session) {
         setUser(session.user)
+        setLoading(false)
       }
-      
-      setLoading(false)
     })
 
     return () => {

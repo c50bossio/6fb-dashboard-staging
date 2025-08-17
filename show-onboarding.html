@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Onboarding Helper</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px;
+        }
+        button:hover {
+            background: #2563EB;
+        }
+        .status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+        .success { background: #D1FAE5; color: #065F46; }
+        .info { background: #DBEAFE; color: #1E40AF; }
+        code {
+            background: #F3F4F6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔄 Resume Onboarding Helper</h1>
+        <p>Use these methods to show the onboarding modal again:</p>
+    </div>
+
+    <div class="card">
+        <h2>Method 1: Clear Skip Status</h2>
+        <p>If you clicked "Skip for now", clear that status:</p>
+        <button onclick="clearSkipStatus()">Clear Skip Status</button>
+        <div id="skip-status"></div>
+    </div>
+
+    <div class="card">
+        <h2>Method 2: Force Show Onboarding</h2>
+        <p>Set the flag to force onboarding to appear:</p>
+        <button onclick="forceShowOnboarding()">Force Show Onboarding</button>
+        <div id="force-status"></div>
+    </div>
+
+    <div class="card">
+        <h2>Method 3: Reset Profile Completion</h2>
+        <p>Simulate incomplete profile (for testing only):</p>
+        <button onclick="resetProfile()">Reset Profile Status</button>
+        <div id="profile-status"></div>
+    </div>
+
+    <div class="card">
+        <h2>Current Status</h2>
+        <button onclick="checkStatus()">Check Current Status</button>
+        <div id="current-status"></div>
+    </div>
+
+    <script>
+        function clearSkipStatus() {
+            localStorage.removeItem('onboarding_skipped');
+            document.getElementById('skip-status').innerHTML = 
+                '<div class="status success">✓ Skip status cleared. Refresh the dashboard to see changes.</div>';
+        }
+
+        function forceShowOnboarding() {
+            // This would need to be done in the React component
+            localStorage.setItem('force_show_onboarding', 'true');
+            localStorage.removeItem('onboarding_skipped');
+            document.getElementById('force-status').innerHTML = 
+                '<div class="status success">✓ Force show flag set. Navigate to dashboard to see onboarding.</div>';
+        }
+
+        function resetProfile() {
+            // This simulates an incomplete profile
+            localStorage.setItem('onboarding_incomplete', 'true');
+            localStorage.removeItem('onboarding_skipped');
+            document.getElementById('profile-status').innerHTML = 
+                '<div class="status success">✓ Profile marked as incomplete. Refresh dashboard.</div>';
+        }
+
+        function checkStatus() {
+            const skipped = localStorage.getItem('onboarding_skipped');
+            const forceShow = localStorage.getItem('force_show_onboarding');
+            const incomplete = localStorage.getItem('onboarding_incomplete');
+            
+            let statusHTML = '<div class="status info">';
+            statusHTML += '<strong>Current State:</strong><br>';
+            statusHTML += `• Onboarding Skipped: <code>${skipped || 'false'}</code><br>`;
+            statusHTML += `• Force Show: <code>${forceShow || 'false'}</code><br>`;
+            statusHTML += `• Marked Incomplete: <code>${incomplete || 'false'}</code><br>`;
+            statusHTML += '</div>';
+            
+            document.getElementById('current-status').innerHTML = statusHTML;
+        }
+
+        // Check status on load
+        window.onload = checkStatus;
+    </script>
+</body>
+</html>

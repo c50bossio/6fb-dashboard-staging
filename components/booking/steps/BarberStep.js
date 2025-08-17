@@ -16,6 +16,20 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
   
   const loadBarbers = async () => {
     try {
+      // First try to load real barbers from database
+      const response = await fetch(`/api/barbers?location_id=${bookingData.location?.id || 'default'}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.barbers && data.barbers.length > 0) {
+          setBarbers(data.barbers)
+          setLoading(false)
+          return
+        }
+      }
+      
+      // Fallback to mock data if no real barbers found
+      console.log('No barbers found in database, using mock data')
       const Barbers = [
         {
           id: 'barber_1',

@@ -7,13 +7,11 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import { Cin7Client, decrypt } from '@/lib/cin7-client'
 
 export async function POST(request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
