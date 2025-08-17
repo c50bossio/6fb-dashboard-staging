@@ -292,6 +292,7 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
       }
       
       // Save to API
+      console.log(`💾 Saving progress - Step: ${currentStepData?.id} (index: ${currentStep})`)
       const response = await fetch('/api/onboarding/save-progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -363,12 +364,13 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
         }
       }
       
-      // Load progress from API
+      // Load progress from API (only on initial load, not during navigation)
       try {
         const response = await fetch('/api/onboarding/save-progress')
         if (response.ok) {
           const data = await response.json()
-          if (data.currentStep !== undefined) {
+          // Only set currentStep from API if we haven't already set it from profile
+          if (data.currentStep !== undefined && profile?.onboarding_step === undefined) {
             setCurrentStep(data.currentStep)
           }
           if (data.steps) {

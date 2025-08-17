@@ -275,9 +275,27 @@ export async function GET(request) {
       .eq('id', user.id)
       .single()
     
+    // Calculate the next step based on completed steps
+    const completedStepNames = new Set((progress || []).map(p => p.step_name))
+    const stepOrder = ['business', 'schedule', 'services', 'staff', 'financial', 'booking', 'branding']
+    
+    let calculatedCurrentStep = 0
+    for (let i = 0; i < stepOrder.length; i++) {
+      if (!completedStepNames.has(stepOrder[i])) {
+        calculatedCurrentStep = i
+        break
+      }
+      calculatedCurrentStep = i + 1
+    }
+    
+    // Use calculated step if it's more advanced than stored step, otherwise use stored step
+    const currentStep = Math.max(profile?.onboarding_step || 0, calculatedCurrentStep)
+    
     const combinedData = {
       completed: profile?.onboarding_completed || false,
-      currentStep: profile?.onboarding_step || 0,
+      currentStep: currentStep,
+      calculatedStep: calculatedCurrentStep,
+      storedStep: profile?.onboarding_step || 0,
       userGoals: profile?.user_goals || [],
       businessSize: profile?.business_size || '',
       steps: progress || []
@@ -295,20 +313,29 @@ export async function GET(request) {
 }
 
 function getStepNumber(stepName) {
-  const steps = {
-    'role': 0,
-    'business': 1,
-    'schedule': 2,
-    'services': 3,
-    'staff': 4,
-    'financial': 5,
-    'booking': 6,
-    'branding': 7,
-    'profile': 0,
-    'goals': 1,
-    'domain': 8
+  // SHOP_OWNER/ENTERPRISE_OWNER steps
+  const shopOwnerSteps = {
+    'business': 0,
+    'schedule': 1,
+    'services': 2,
+    'staff': 3,
+    'financial': 4,
+    'booking': 5,
+    'branding': 6
   }
-  return steps[stepName] || 0
+  
+  // BARBER steps
+  const barberSteps = {
+    'profile': 0,
+    'services': 1,
+    'schedule': 2,
+    'financial': 3,
+    'booking': 4,
+    'branding': 5
+  }
+  
+  // Default to shop owner mapping, could be enhanced to check user role
+  return shopOwnerSteps[stepName] ?? barberSteps[stepName] ?? 0
 }
 
 function calculateProgressPercentage(stepName) {
