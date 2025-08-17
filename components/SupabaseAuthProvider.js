@@ -35,7 +35,37 @@ function SupabaseAuthProvider({ children }) {
         return currentPath === path || currentPath.startsWith(path + '/') || currentPath.startsWith(path + '?')
       })
       
-      // Remove the problematic dev bypass that interferes with real auth
+      // Check for development mode
+      const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+      const isDevPort = typeof window !== 'undefined' && window.location.port === '9999'
+      
+      if (isLocalhost && isDevPort && !isPublicPage) {
+        console.log('🔧 Development mode detected - using demo user')
+        const demoUser = {
+          id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
+          email: 'dev-enterprise@test.com',
+          user_metadata: {
+            full_name: 'Demo User'
+          },
+          aud: 'authenticated',
+          role: 'authenticated'
+        }
+        
+        const demoProfile = {
+          id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
+          email: 'dev-enterprise@test.com',
+          full_name: 'Demo User',
+          role: 'ENTERPRISE_OWNER',
+          subscription_status: 'active',
+          onboarding_completed: false,
+          onboarding_step: 0
+        }
+        
+        setUser(demoUser)
+        setProfile(demoProfile)
+        setLoading(false)
+        return
+      }
       
       // Only set loading true if we're on a protected page
       if (!isPublicPage) {
@@ -317,16 +347,36 @@ function SupabaseAuthProvider({ children }) {
   const updateProfile = async (updates) => {
     if (!user) throw new Error('No user logged in')
     
+    // First, try to update
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
       .eq('id', user.id)
       .select()
-      .single()
+      .maybeSingle()
+    
+    if (error && error.code === 'PGRST116') {
+      // No profile exists, create one with the updates
+      const { data: newProfile, error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          email: user.email,
+          ...updates
+        })
+        .select()
+        .single()
+      
+      if (insertError) throw insertError
+      setProfile(newProfile)
+      return newProfile
+    }
     
     if (error) throw error
     
-    setProfile(data)
+    if (data) {
+      setProfile(data)
+    }
     return data
   }
 

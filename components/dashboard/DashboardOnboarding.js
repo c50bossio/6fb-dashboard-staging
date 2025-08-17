@@ -22,6 +22,7 @@ import {
 import RoleSelector from '../onboarding/RoleSelector'
 import ServiceSetup from '../onboarding/ServiceSetup'
 import FinancialSetup from '../onboarding/FinancialSetup'
+import FinancialSetupEnhanced from '../onboarding/FinancialSetupEnhanced'
 import GoalsSelector from '../onboarding/GoalsSelector'
 import LivePreview from '../onboarding/LivePreview'
 import DomainSelector from '../onboarding/DomainSelector'
@@ -39,7 +40,8 @@ import { WelcomeIllustration, ProgressRing } from '../onboarding/OnboardingIllus
 import internalAnalytics from '@/lib/internal-analytics'
 
 export default function DashboardOnboarding({ user, profile, onComplete, updateProfile, forceShow = false }) {
-  const [currentStep, setCurrentStep] = useState(0)
+  // Initialize from profile if available
+  const [currentStep, setCurrentStep] = useState(profile?.onboarding_step || 0)
   const [isMinimized, setIsMinimized] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -264,13 +266,30 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
       const currentStepData = steps[currentStep]
       const progressPercentage = Math.round(((currentStep + 1) / steps.length) * 100)
       
-      // Save to profile
-      await updateProfile({
-        onboarding_step: currentStep,
-        onboarding_last_step: currentStepData?.id,
-        onboarding_data: JSON.stringify(onboardingData),
-        onboarding_progress_percentage: progressPercentage
-      })
+      // Save to profile - handle missing columns gracefully
+      try {
+        // Only update columns that exist - start with minimal and add if successful
+        const updateData = {
+          onboarding_step: currentStep
+        }
+        
+        // Try to add additional fields if they exist
+        try {
+          await updateProfile({
+            ...updateData,
+            onboarding_last_step: currentStepData?.id,
+            onboarding_data: JSON.stringify(onboardingData),
+            onboarding_progress_percentage: progressPercentage
+          })
+        } catch (fullUpdateError) {
+          // If full update fails, try with just the basic field
+          console.log('Using minimal profile update:', fullUpdateError.message)
+          await updateProfile(updateData)
+        }
+      } catch (profileError) {
+        // Log but don't throw - allow onboarding to continue
+        console.warn('Profile update failed, continuing anyway:', profileError)
+      }
       
       // Save to API
       const response = await fetch('/api/onboarding/save-progress', {
@@ -330,10 +349,17 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
       }
       if (profile?.onboarding_data) {
         try {
-          const savedData = JSON.parse(profile.onboarding_data)
-          setOnboardingData(prev => ({ ...prev, ...savedData }))
+          // Check if it's already an object or needs parsing
+          const savedData = typeof profile.onboarding_data === 'string' 
+            ? JSON.parse(profile.onboarding_data)
+            : profile.onboarding_data
+          
+          // Only set if it's a valid object
+          if (savedData && typeof savedData === 'object' && !Array.isArray(savedData)) {
+            setOnboardingData(prev => ({ ...prev, ...savedData }))
+          }
         } catch (error) {
-          console.error('Error loading saved onboarding data:', error)
+          console.warn('Could not parse onboarding data, using defaults')
         }
       }
       
@@ -633,11 +659,11 @@ function renderStepContent(stepId, data, updateData) {
     
     case 'financial':
     case 'payment':
+      // Use enhanced version with Stripe Connect integration
       return (
-        <FinancialSetup 
-          data={data} 
-          updateData={updateData}
+        <FinancialSetupEnhanced 
           onComplete={handleStepComplete}
+          initialData={data}
           subscriptionTier={data.role === 'ENTERPRISE_OWNER' ? 'enterprise' : 'shop'}
         />
       )

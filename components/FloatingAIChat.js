@@ -148,11 +148,15 @@ export default function FloatingAIChat() {
       const supabase = createClient()
       
       try {
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('shop_id, role, barbershop_name')
+          .select('id, role, shop_name, email')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
+        
+        if (profileError) {
+          console.warn('Profile query warning:', profileError.message)
+        }
         
         if (profileData?.shop_id) {
           console.log('🔄 Loading comprehensive business context...')
@@ -190,7 +194,7 @@ export default function FloatingAIChat() {
           
           setShopData({
             ...shopData,
-            shop_name: shopData?.name || profileData.barbershop_name,
+            shop_name: shopData?.name || profileData.shop_name,
             shop_id: profileData.shop_id,
             user_role: profileData.role,
             location: shopData?.location || shopData?.address || 'Main Location',
@@ -210,7 +214,7 @@ export default function FloatingAIChat() {
 
           setBusinessContext({
             shop: {
-              name: shopData?.name || profileData.barbershop_name,
+              name: shopData?.name || profileData.shop_name,
               id: profileData.shop_id,
               location: shopData?.location || 'Main Location',
               staff_count: shopData?.staff_count || 1,
@@ -253,7 +257,7 @@ export default function FloatingAIChat() {
           
           setContextLoaded(true)
           console.log('✅ Comprehensive business context loaded:', {
-            shopName: shopData?.name || profileData.barbershop_name,
+            shopName: shopData?.name || profileData.shop_name,
             metricsLoaded: !!analyticsData,
             predictionsLoaded: !!predictionsData,
             alertsLoaded: !!alertsData,
