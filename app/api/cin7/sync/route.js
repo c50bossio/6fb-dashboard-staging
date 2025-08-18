@@ -19,7 +19,7 @@ async function fetchCin7Products(accountId, apiKey) {
         await new Promise(resolve => setTimeout(resolve, 350)) // ~3 calls per second
       }
       
-      const response = await fetch(`https://inventory.dearsystems.com/externalapi/products?limit=${pageSize}`, {
+      const response = await fetch(`https://inventory.dearsystems.com/ExternalApi/v2/product/list?limit=${pageSize}&page=${page}`, {
         method: 'GET',
         headers: {
           'api-auth-accountid': accountId,
@@ -40,8 +40,8 @@ async function fetchCin7Products(accountId, apiKey) {
       }
 
       const data = await response.json()
-      // v1 API returns Products array directly, not ProductList
-      const products = data?.Products || data?.ProductList || []
+      // v2 API returns data in a different structure
+      const products = data?.Products || data?.items || []
       
       if (products.length === 0) {
         hasMorePages = false
@@ -49,7 +49,7 @@ async function fetchCin7Products(accountId, apiKey) {
         allProducts = allProducts.concat(products)
         
         // Check if we've hit the last page
-        if (products.length < pageSize) {
+        if (products.length < pageSize || !data.hasMore) {
           hasMorePages = false
         } else {
           page++
@@ -80,7 +80,7 @@ async function fetchCin7StockLevels(accountId, apiKey) {
         await new Promise(resolve => setTimeout(resolve, 350))
       }
       
-      const response = await fetch(`https://inventory.dearsystems.com/externalapi/stock?limit=${pageSize}`, {
+      const response = await fetch(`https://inventory.dearsystems.com/ExternalApi/v2/product/stock?limit=${pageSize}&page=${page}`, {
         method: 'GET',
         headers: {
           'api-auth-accountid': accountId,
