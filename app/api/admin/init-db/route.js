@@ -26,7 +26,6 @@ export async function POST(request) {
       'ALTER TABLE barbershops ADD COLUMN IF NOT EXISTS custom_fonts JSONB DEFAULT \'{"heading": "Inter", "body": "Inter"}\'',
     ]
 
-    console.log('Applying customization schema to barbershops table...')
     
     for (const query of alterTableQueries) {
       const { error } = await supabase.rpc('exec_sql', { sql: query })
@@ -84,7 +83,6 @@ export async function POST(request) {
       }
     }
 
-    console.log('Database initialization completed!')
 
     return NextResponse.json({
       success: true,

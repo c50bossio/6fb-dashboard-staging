@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import { 
   XMarkIcon,
   CheckCircleIcon,
@@ -17,27 +16,28 @@ import {
   CalendarDaysIcon,
   DocumentCheckIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useRef } from 'react'
 
 // Import existing onboarding components
-import RoleSelector from '../onboarding/RoleSelector'
-import ServiceSetup from '../onboarding/ServiceSetup'
+import internalAnalytics from '@/lib/internal-analytics'
+import BookingRulesSetup from '../onboarding/BookingRulesSetup'
+import BusinessInfoSetup from '../onboarding/BusinessInfoSetup'
+import DomainSelector from '../onboarding/DomainSelector'
 import FinancialSetup from '../onboarding/FinancialSetup'
 import FinancialSetupEnhanced from '../onboarding/FinancialSetupEnhanced'
 import GoalsSelector from '../onboarding/GoalsSelector'
 import LivePreview from '../onboarding/LivePreview'
-import DomainSelector from '../onboarding/DomainSelector'
 
 // Import new onboarding components
-import BusinessInfoSetup from '../onboarding/BusinessInfoSetup'
-import StaffSetup from '../onboarding/StaffSetup'
-import ScheduleSetup from '../onboarding/ScheduleSetup'
-import BookingRulesSetup from '../onboarding/BookingRulesSetup'
 
 // Import professional illustrations
 import { WelcomeIllustration, ProgressRing } from '../onboarding/OnboardingIllustrations'
+import RoleSelector from '../onboarding/RoleSelector'
+import ScheduleSetup from '../onboarding/ScheduleSetup'
+import ServiceSetup from '../onboarding/ServiceSetup'
+import StaffSetup from '../onboarding/StaffSetup'
 
 // Import analytics
-import internalAnalytics from '@/lib/internal-analytics'
 
 export default function DashboardOnboarding({ user, profile, onComplete, updateProfile, forceShow = false }) {
   // Initialize from profile if available
@@ -283,7 +283,6 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
           })
         } catch (fullUpdateError) {
           // If full update fails, try with just the basic field
-          console.log('Using minimal profile update:', fullUpdateError.message)
           await updateProfile(updateData)
         }
       } catch (profileError) {
@@ -292,7 +291,6 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
       }
       
       // Save to API
-      console.log(`💾 Saving progress - Step: ${currentStepData?.id} (index: ${currentStep})`)
       const response = await fetch('/api/onboarding/save-progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

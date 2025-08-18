@@ -72,15 +72,12 @@ class ProductionLogger {
     const timestamp = logEntry.timestamp.split('T')[1].split('.')[0];
     
     if (config.environment.isDevelopment) {
-      console.log(`${timestamp} ${prefix} [${this.name}] ${logEntry.message}`);
       if (Object.keys(logEntry).length > 4) {
         const { timestamp, level, logger, message, ...rest } = logEntry;
         if (Object.keys(rest).length > 0) {
-          console.log('  ', JSON.stringify(rest, null, 2));
         }
       }
     } else {
-      console.log(JSON.stringify(logEntry));
     }
   }
 

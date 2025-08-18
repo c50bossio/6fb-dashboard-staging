@@ -4,8 +4,8 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { Cin7Client, decrypt } from '@/lib/cin7-client.js'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request) {
   try {
@@ -84,7 +84,7 @@ export async function GET(request) {
 
     // Determine health status
     let health = 'healthy'
-    let issues = []
+    const issues = []
 
     if (isOverdue) {
       health = 'degraded'

@@ -41,7 +41,6 @@ export default function NovuNotificationCenter() {
         }
         break
       case 'secondary':
-        console.log('Secondary action clicked:', templateIdentifier)
         break
     }
   }

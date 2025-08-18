@@ -30,7 +30,6 @@ export async function POST(request) {
       shop_id = 'shop_001'
     } = body;
 
-    console.log('Creating recurring appointment with pattern:', recurrence_pattern);
 
     if (!barber_id || !start_time || !recurrence_pattern) {
       return NextResponse.json(

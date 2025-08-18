@@ -126,7 +126,6 @@ async function executeActionViaPython(actionType, parameters) {
 }
 
 async function executeActionFallback(actionType, parameters) {
-  console.log('🔄 Executing action via JavaScript fallback:', actionType)
   
   try {
     const result = await routeAndExecuteFallback(actionType, parameters)

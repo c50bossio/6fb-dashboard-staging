@@ -59,7 +59,6 @@ export async function POST(request) {
       )
     }
 
-    console.log('✅ Appointment uncancelled:', appointmentId)
 
     return NextResponse.json({
       success: true,

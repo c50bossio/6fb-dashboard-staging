@@ -36,7 +36,6 @@ export async function POST(request) {
       }, { status: 404 })
     }
     
-    console.log('🔍 Checking for saved credentials...')
     const { data: credentials, error: credError } = await supabase
       .from('cin7_credentials')
       .select('*')
@@ -54,7 +53,6 @@ export async function POST(request) {
     }
     
     if (!credentials) {
-      console.log('❌ No credentials found')
       return NextResponse.json({
         error: 'No saved credentials',
         message: 'Please configure your Cin7 credentials first',
@@ -62,13 +60,11 @@ export async function POST(request) {
       }, { status: 404 })
     }
     
-    console.log('✅ Found credentials, decrypting...')
     
     let apiKey, accountId
     try {
       apiKey = Buffer.from(credentials.encrypted_api_key, 'base64').toString('utf-8')
       accountId = Buffer.from(credentials.encrypted_account_id, 'base64').toString('utf-8')
-      console.log('🔐 Credentials decrypted successfully')
     } catch (decryptError) {
       console.error('❌ Decryption error:', decryptError)
       return NextResponse.json({
@@ -78,7 +74,6 @@ export async function POST(request) {
       }, { status: 500 })
     }
     
-    console.log('🚀 Starting sync with saved credentials...')
     
     let syncResult
     try {
@@ -119,7 +114,6 @@ export async function POST(request) {
 }
 
 async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
-  console.log('🔍 Starting Cin7 sync with saved credentials...')
   
   const apiEndpoints = [
     'https://inventory.dearsystems.com/externalapi/products?limit=50',
@@ -131,7 +125,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
   
   for (const endpoint of apiEndpoints) {
     try {
-      console.log(`🔍 Testing endpoint: ${endpoint}`)
       const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
@@ -145,13 +138,11 @@ async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
         const data = await response.json()
         cin7Products = data?.ProductList || data?.Products || []
         workingEndpoint = endpoint
-        console.log(`✅ Found working endpoint with ${cin7Products.length} products`)
         break
       } else if (response.status === 401 || response.status === 403) {
         throw new Error(`Authentication failed: ${response.status}`)
       }
     } catch (error) {
-      console.log(`❌ Endpoint failed: ${endpoint} - ${error.message}`)
     }
   }
   
@@ -162,10 +153,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
   let debugInfo = { fieldAnalysis: null, sampleProduct: null }
   if (cin7Products.length > 0) {
     const firstProduct = cin7Products[0]
-    console.log('🔍 COMPLETE Cin7 API RESPONSE ANALYSIS')
-    console.log('=' .repeat(50))
-    console.log('📊 Full first product JSON:', JSON.stringify(firstProduct, null, 2))
-    console.log('🏷️  All field names:', Object.keys(firstProduct))
     
     const allFields = Object.keys(firstProduct)
     const priceFields = allFields.filter(f => f.toLowerCase().includes('price') || f.toLowerCase().includes('cost') || f.toLowerCase().includes('sell') || f.toLowerCase().includes('tier'))
@@ -202,12 +189,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
       }
     }
     
-    console.log('💰 PRICE FIELDS FOUND:', priceFields)
-    console.log('📦 INVENTORY FIELDS FOUND:', stockFields)
-    console.log('🏷️  CATEGORY FIELDS:', categoryFields)
-    console.log('🏭 SUPPLIER FIELDS:', supplierFields)
-    console.log('⚡ STATUS FIELDS:', statusFields)
-    console.log('=' .repeat(50))
   }
   
   const { error: deleteError } = await supabase
@@ -253,7 +234,6 @@ async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
     const stock = getStock()
     
     if (costPrice === 0 && retailPrice === 0) {
-      console.log(`⚠️ No price data found for ${product.Name}:`, {
         CostPrice: product.CostPrice,
         SalePrice: product.SalePrice, 
         DefaultSellPrice: product.DefaultSellPrice,

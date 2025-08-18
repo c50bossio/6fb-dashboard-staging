@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   CreditCardIcon, 
   SparklesIcon,
   CheckCircleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function BillingSetupModal({ isOpen, onClose, feature, estimatedCost, onSetupComplete }) {
   const [step, setStep] = useState('overview')

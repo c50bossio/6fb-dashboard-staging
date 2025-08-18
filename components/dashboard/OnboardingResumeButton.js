@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { SparklesIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function OnboardingResumeButton({ profile, onClick }) {
   const [isVisible, setIsVisible] = useState(false)

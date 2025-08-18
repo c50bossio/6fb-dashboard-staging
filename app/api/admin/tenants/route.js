@@ -571,10 +571,5 @@ function getPlanFeatures(planTier) {
 }
 
 async function logAdminAction(adminUserId, action, details) {
-  console.log('Admin Action:', {
-    admin_user_id: adminUserId,
-    action: action,
-    details: details,
-    timestamp: new Date().toISOString()
-  })
+  // Log admin action
 }

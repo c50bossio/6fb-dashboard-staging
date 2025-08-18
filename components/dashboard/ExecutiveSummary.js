@@ -16,43 +16,71 @@ import {
 export default function ExecutiveSummary({ data }) {
   const metrics = data?.metrics || {}
   const insights = data?.insights || []
+  const businessInsights = data?.business_insights || {}
+  const systemHealth = data?.system_health || {}
+  const todayMetrics = data?.todayMetrics || {}
+  
+  // Calculate dynamic values based on real data
+  const revenueGrowth = businessInsights.revenue_growth || 0
+  const hasRealData = systemHealth.data_source !== 'error'
+  
+  // Format values safely
+  const formatValue = (value, defaultValue = 0) => {
+    return typeof value === 'number' ? value : defaultValue
+  }
 
   return (
     <div className="space-y-6">
+      {/* Data Source Indicator */}
+      {systemHealth.data_source && (
+        <div className="text-xs text-gray-500 flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${hasRealData ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <span>
+            Data Source: {systemHealth.data_source === 'supabase_enhanced' ? 'Live Database' : 
+                        systemHealth.data_source === 'error' ? 'Connection Error' : 
+                        systemHealth.data_source}
+          </span>
+          {systemHealth.last_updated && (
+            <span>• Updated: {new Date(systemHealth.last_updated).toLocaleTimeString()}</span>
+          )}
+        </div>
+      )}
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           icon={CurrencyDollarIcon}
-          title="Monthly Revenue"
-          value={`$${(metrics.revenue || 145000).toLocaleString()}`}
-          change="+12.5%"
-          trend="up"
-          subtitle="vs last month"
+          title="Total Revenue"
+          value={`$${formatValue(metrics.revenue).toLocaleString()}`}
+          change={revenueGrowth > 0 ? `+${revenueGrowth.toFixed(1)}%` : `${revenueGrowth.toFixed(1)}%`}
+          trend={revenueGrowth >= 0 ? "up" : "down"}
+          subtitle="All time"
         />
         <MetricCard
           icon={UserGroupIcon}
           title="Total Customers"
-          value={(metrics.customers || 1210).toLocaleString()}
-          change="+8.3%"
+          value={formatValue(metrics.customers).toLocaleString()}
+          change={`+${businessInsights.total_ai_recommendations || 0}`}
           trend="up"
-          subtitle="Active this month"
+          subtitle="Active customers"
         />
         <MetricCard
           icon={ChartBarIcon}
           title="Appointments"
-          value={(metrics.appointments || 324).toLocaleString()}
-          change="+15%"
+          value={formatValue(metrics.appointments).toLocaleString()}
+          change={`${formatValue(todayMetrics.bookings)} today`}
           trend="up"
-          subtitle="This month"
+          subtitle="Total bookings"
         />
         <MetricCard
           icon={StarIcon}
           title="Satisfaction"
-          value={(metrics.satisfaction || 4.65).toFixed(2)}
-          change="+0.2"
+          value={formatValue(metrics.satisfaction, 4.5).toFixed(1)}
+          change={businessInsights.appointment_completion_rate ? 
+            `${Math.round(businessInsights.appointment_completion_rate)}% completion` : 
+            "N/A"}
           trend="up"
-          subtitle="Average rating"
+          subtitle="Customer rating"
         />
       </div>
 

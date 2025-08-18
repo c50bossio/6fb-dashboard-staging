@@ -118,7 +118,6 @@ async function startRealtimeStreaming(userId, sessionId) {
     status: 'connected'
   }
   
-  console.log(`🔌 Started real-time streaming for user ${userId}:`, {
     sessionId,
     services: connectionInfo.services,
     timestamp: new Date().toISOString()
@@ -128,7 +127,6 @@ async function startRealtimeStreaming(userId, sessionId) {
 }
 
 async function stopRealtimeStreaming(sessionId) {
-  console.log(`⏹️ Stopped real-time streaming for session ${sessionId}`)
   
   return {
     sessionId,

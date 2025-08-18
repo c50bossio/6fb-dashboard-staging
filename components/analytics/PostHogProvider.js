@@ -20,7 +20,6 @@ export default function PostHogProvider({ children }) {
   useEffect(() => {
     if (tenant && !isAuthPage) {
       tenantAnalytics.setTenant(tenant)
-      console.log('🏢 Tenant analytics context set:', tenant.name)
     }
   }, [tenant, isAuthPage])
   

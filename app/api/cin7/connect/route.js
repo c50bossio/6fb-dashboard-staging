@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 
 async function testCin7Connection(accountId, apiKey) {
   try {
-    console.log('Testing Cin7 connection with account:', accountId)
     
     const endpointVariations = [
       'https://inventory.dearsystems.com/ExternalAPI/v2/me',
@@ -12,7 +11,6 @@ async function testCin7Connection(accountId, apiKey) {
     ]
     
     for (const endpoint of endpointVariations) {
-      console.log(`Trying endpoint: ${endpoint}`)
       
       const response = await fetch(endpoint, {
         method: 'GET',
@@ -23,18 +21,13 @@ async function testCin7Connection(accountId, apiKey) {
         }
       })
 
-      console.log(`Response status for ${endpoint}:`, response.status)
 
       if (response.ok) {
         const data = await response.json()
-        console.log('Cin7 connection successful with endpoint:', endpoint)
-        console.log('Response data:', data?.Name || 'Connected')
         return { success: true, data, endpoint }
       } else if (response.status === 401) {
-        console.log(`401 Unauthorized for ${endpoint} - likely invalid credentials`)
         continue // Try next endpoint in case URL is wrong
       } else if (response.status === 404) {
-        console.log(`404 Not Found for ${endpoint} - trying next endpoint`)
         continue // Try next endpoint
       } else {
         const errorText = await response.text()
@@ -61,7 +54,6 @@ export async function POST(request) {
       )
     }
 
-    console.log('Testing Cin7 connection...')
     const connectionTest = await testCin7Connection(accountId, apiKey)
     
     if (!connectionTest.success) {

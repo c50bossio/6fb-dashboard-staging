@@ -34,7 +34,6 @@ export function PerformanceProvider({ children }) {
 
       optimizeThirdPartyScripts()
 
-      console.log('🚀 Performance optimization suite initialized')
 
       const reportInterval = setInterval(() => {
         reportRef.current = getPerformanceReport()

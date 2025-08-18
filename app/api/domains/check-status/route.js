@@ -199,5 +199,4 @@ async function sendDomainActiveEmail(userId, domain) {
 }
 
 async function sendEmail({ to, subject, html }) {
-  console.log('Sending email to:', to, 'Subject:', subject)
 }

@@ -59,7 +59,76 @@ export default function BookingWizard({
     if (!bookingData.location) return
     
     try {
-      const Settings = {
+      // Load real shop settings from Supabase
+      const { data: shopData, error: shopError } = await supabase
+        .from('barbershops')
+        .select(`
+          *,
+          business_settings (
+            accept_online_payment,
+            accept_in_person_payment,
+            require_online_payment,
+            deposit_required,
+            deposit_amount,
+            deposit_percentage,
+            cancellation_window,
+            business_hours
+          )
+        `)
+        .eq('id', bookingData.location)
+        .single()
+
+      if (shopError) {
+        throw shopError
+      }
+
+      if (shopData?.business_settings) {
+        const realSettings = {
+          acceptOnlinePayment: shopData.business_settings.accept_online_payment ?? true,
+          acceptInPersonPayment: shopData.business_settings.accept_in_person_payment ?? true,
+          requireOnlinePayment: shopData.business_settings.require_online_payment ?? false,
+          depositRequired: shopData.business_settings.deposit_required ?? false,
+          depositAmount: shopData.business_settings.deposit_amount ?? 0,
+          depositPercentage: shopData.business_settings.deposit_percentage ?? 20,
+          cancellationWindow: shopData.business_settings.cancellation_window ?? 24,
+          businessHours: shopData.business_settings.business_hours ?? {
+            monday: { open: '09:00', close: '18:00' },
+            tuesday: { open: '09:00', close: '18:00' },
+            wednesday: { open: '09:00', close: '18:00' },
+            thursday: { open: '09:00', close: '18:00' },
+            friday: { open: '09:00', close: '18:00' },
+            saturday: { open: '09:00', close: '16:00' },
+            sunday: null // Closed
+          }
+        }
+        
+        setShopSettings(prev => ({ ...prev, ...realSettings }))
+      } else {
+        // Fallback to default settings if no business_settings found
+        const defaultSettings = {
+          acceptOnlinePayment: true,
+          acceptInPersonPayment: true,
+          requireOnlinePayment: false,
+          depositRequired: false,
+          depositAmount: 0,
+          depositPercentage: 20,
+          cancellationWindow: 24,
+          businessHours: {
+            monday: { open: '09:00', close: '18:00' },
+            tuesday: { open: '09:00', close: '18:00' },
+            wednesday: { open: '09:00', close: '18:00' },
+            thursday: { open: '09:00', close: '18:00' },
+            friday: { open: '09:00', close: '18:00' },
+            saturday: { open: '09:00', close: '16:00' },
+            sunday: null // Closed
+          }
+        }
+        
+        setShopSettings(prev => ({ ...prev, ...defaultSettings }))
+      }
+    } catch (err) {
+      // Use default settings as fallback on error
+      const fallbackSettings = {
         acceptOnlinePayment: true,
         acceptInPersonPayment: true,
         requireOnlinePayment: false,
@@ -78,9 +147,7 @@ export default function BookingWizard({
         }
       }
       
-      setShopSettings(prev => ({ ...prev, ...mockSettings }))
-    } catch (err) {
-      console.error('Error loading shop settings:', err)
+      setShopSettings(prev => ({ ...prev, ...fallbackSettings }))
     }
   }
   
@@ -93,16 +160,93 @@ export default function BookingWizard({
     { number: 6, title: 'Confirmation', component: ConfirmationStep }
   ]
   
-  const handleNext = useCallback((stepData) => {
+  const handleNext = useCallback(async (stepData) => {
     setBookingData(prev => ({ ...prev, ...stepData }))
     
+    // Handle payment step completion
+    if (currentStep === 5) {
+      setIsLoading(true)
+      setError(null)
+      
+      try {
+        // Create booking first
+        const bookingToCreate = {
+          ...bookingData,
+          ...stepData,
+          id: `booking_${Date.now()}_${Math.random().toString(36).substring(2)}`
+        }
+        
+        // If payment was successful, booking is already confirmed via webhook
+        // If in-person payment, create booking and move to confirmation
+        if (stepData.paymentMethod === 'in-person' || stepData.paymentStatus === 'succeeded') {
+          const response = await fetch('/api/bookings/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingData: bookingToCreate,
+              paymentData: stepData
+            })
+          })
+          
+          const result = await response.json()
+          
+          if (!response.ok) {
+            throw new Error(result.error || 'Failed to create booking')
+          }
+          
+          // Send notification webhook to trigger booking confirmation
+          try {
+            await fetch('/api/v1/booking-notifications/webhooks/booking-wizard', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                event_type: 'booking_completed',
+                booking_data: {
+                  bookingId: result.booking.id,
+                  customerInfo: bookingToCreate.customerInfo,
+                  locationDetails: bookingToCreate.locationDetails,
+                  barberDetails: bookingToCreate.barberDetails,
+                  serviceDetails: bookingToCreate.serviceDetails,
+                  dateTime: bookingToCreate.dateTime,
+                  duration: bookingToCreate.duration,
+                  price: bookingToCreate.price,
+                  paymentMethod: stepData.paymentMethod,
+                  paymentStatus: stepData.paymentStatus
+                },
+                timestamp: new Date().toISOString(),
+                source: 'booking_wizard'
+              })
+            })
+          } catch (notificationError) {
+            // Log error but don't fail the booking
+            console.error('Failed to send booking notification:', notificationError)
+          }
+          
+          setBookingData(prev => ({ ...prev, ...result.booking, bookingId: result.booking.id }))
+          setCurrentStep(6) // Move to confirmation
+        } else {
+          // Payment failed or was cancelled
+          setError('Payment was not completed. Please try again.')
+        }
+        
+      } catch (err) {
+        setError(err.message)
+        console.error('Booking creation error:', err)
+      } finally {
+        setIsLoading(false)
+      }
+      
+      return // Don't proceed to normal step increment
+    }
+    
+    // Handle other step transitions
     if (currentStep === 4 && !shopSettings.acceptOnlinePayment && shopSettings.acceptInPersonPayment) {
       setBookingData(prev => ({ ...prev, paymentMethod: 'in-person' }))
       setCurrentStep(6)
     } else {
       setCurrentStep(prev => prev + 1)
     }
-  }, [currentStep, shopSettings])
+  }, [currentStep, shopSettings, bookingData])
   
   const handleBack = useCallback(() => {
     if (currentStep === 6 && !shopSettings.acceptOnlinePayment) {

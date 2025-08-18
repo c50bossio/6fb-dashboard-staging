@@ -84,7 +84,6 @@ export async function POST(request) {
 
 async function generateEnhancedAIResponse(message, sessionId, businessContext) {
   try {
-    console.log('🤖 Using specialized AI agents for enhanced response...')
     
     const { execSync } = require('child_process')
     const path = require('path')
@@ -136,7 +135,6 @@ asyncio.run(get_agent_response())
         const agentResponse = JSON.parse(responseJson)
         
         if (agentResponse && agentResponse.response) {
-          console.log('✅ Specialized agent response received')
           return {
             response: agentResponse.response,
             provider: agentResponse.provider || 'specialized_agent',
@@ -155,7 +153,6 @@ asyncio.run(get_agent_response())
       try { fs.unlinkSync(tempFile) } catch {}
     }
     
-    console.log('🔄 Falling back to enhanced mock response...')
     return await generateIntelligentResponse(message, sessionId, businessContext)
     
   } catch (error) {

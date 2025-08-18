@@ -56,7 +56,6 @@ export class ProactiveMonitoringService {
    * Start proactive monitoring
    */
   async startMonitoring(userId, barbershopId) {
-    console.log('🤖 Starting Proactive AI Monitoring...')
     
     await this.checkMetrics(userId, barbershopId)
     
@@ -351,7 +350,6 @@ export class ProactiveMonitoringService {
           })
         })
         
-        console.log(`📢 Alert sent: ${alert.title}`)
       } catch (error) {
         console.error('Failed to send alert:', error)
       }
@@ -383,7 +381,6 @@ export class ProactiveMonitoringService {
    */
   setupRealtimeMonitoring(userId, barbershopId) {
     
-    console.log('🔴 Real-time monitoring activated for critical events')
     
     setInterval(async () => {
       const metrics = await this.fetchBusinessMetrics(barbershopId)

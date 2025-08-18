@@ -128,16 +128,13 @@ export async function GET(request) {
 }
 
 async function getAgentResponse(options) {
-  console.log('🤖 Using analytics-enhanced AI agents')
   
   try {
     const { agentMemory } = await import('@/lib/agentMemory')
     await agentMemory.initialize()
     
-    console.log('🧠 Loading conversation context and learning profile...')
     const conversationContext = await agentMemory.getConversationContext(options.userId, options.sessionId)
     
-    console.log('📊 Fetching analytics data for enhanced context...')
     const analyticsData = await fetchAnalyticsContext(options.userId, options.businessContext)
     
     const OpenAI = require('openai')
@@ -148,7 +145,6 @@ async function getAgentResponse(options) {
     const collaborationNeeded = shouldUseMultiAgentApproach(options.message)
     
     if (collaborationNeeded) {
-      console.log('🤝 Using Multi-Agent Collaboration System')
       const response = await getMultiAgentResponse(options, analyticsData, openai, conversationContext)
       
       await agentMemory.storeConversation(options.userId, options.sessionId, {
@@ -168,7 +164,6 @@ async function getAgentResponse(options) {
     const agentType = classifyMessageForAgent(options.message)
     const agent = getAgentPersonality(agentType)
     
-    console.log(`🎯 Using ${agent.name} (${agentType}) with analytics-enhanced context`)
     
     const personalizedContext = agentMemory.generatePersonalizedContext(options.userId, conversationContext)
     
@@ -215,7 +210,6 @@ Respond as ${agent.name} with data-driven insights that reference the actual ana
     const actionItems = extractActionItems(aiResponse)
     const followUpQuestions = extractFollowUpQuestions(aiResponse)
     
-    console.log('✅ Memory-enhanced AI agent response generated successfully')
     
     await agentMemory.storeConversation(options.userId, options.sessionId, {
       message: options.message,
@@ -263,7 +257,6 @@ Respond as ${agent.name} with data-driven insights that reference the actual ana
       const agentType = classifyMessageForAgent(options.message)
       const agent = getAgentPersonality(agentType)
       
-      console.log(`🔄 Fallback: Using ${agent.name} via Anthropic`)
       
       const systemPrompt = `You are ${agent.name}, ${agent.description}. ${agent.expertise}
       
@@ -330,14 +323,12 @@ function shouldUseMultiAgentApproach(message) {
 }
 
 async function getMultiAgentResponse(options, analyticsData, openai, conversationContext) {
-  console.log('🤝 Initiating multi-agent collaboration...')
   
   try {
     const agents = ['financial', 'marketing', 'operations']
     const agentResponses = []
     
     for (const agentType of agents) {
-      console.log(`💬 Getting ${agentType} agent perspective...`)
       const agent = getAgentPersonality(agentType)
       
       const agentPrompt = `You are ${agent.name}, ${agent.description}.
@@ -375,7 +366,6 @@ Include 1-2 specific recommendations with estimated impact.`
       })
     }
     
-    console.log('🧠 Synthesizing collaborative response with memory context...')
     
     const { agentMemory } = await import('@/lib/agentMemory')
     const personalizedContext = agentMemory.generatePersonalizedContext(options.userId, conversationContext)
@@ -421,7 +411,6 @@ Respond as the Master Coach coordinating this expert team consultation with full
     const actionItems = extractActionItems(collaborativeResponse)
     const followUpQuestions = extractFollowUpQuestions(collaborativeResponse)
     
-    console.log('✅ Multi-agent collaboration completed successfully')
     
     return {
       success: true,
@@ -456,7 +445,6 @@ Respond as the Master Coach coordinating this expert team consultation with full
     const agentType = classifyMessageForAgent(options.message)
     const agent = getAgentPersonality(agentType)
     
-    console.log(`🔄 Falling back to ${agent.name} (single agent)`)
     return await getSingleAgentResponse(options, analyticsData, openai, agentType, agent)
   }
 }
@@ -667,7 +655,6 @@ function extractFollowUpQuestions(response) {
 
 async function fetchAnalyticsContext(userId, businessContext) {
   try {
-    console.log('📊 Fetching comprehensive analytics data...')
     
     const analyticsUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/analytics/predictive?advanced=true`
     
@@ -685,7 +672,6 @@ async function fetchAnalyticsContext(userId, businessContext) {
       if (analyticsResponse.ok) {
         const data = await analyticsResponse.json()
         analyticsData = data.data || {}
-        console.log('✅ Analytics data fetched successfully')
       } else {
         console.warn('⚠️ Analytics API returned non-OK status, using fallback data')
       }
@@ -730,7 +716,6 @@ async function fetchAnalyticsContext(userId, businessContext) {
       customerValueOptimization: calculateCustomerValueOptimization(analyticsData)
     }
     
-    console.log('📈 Analytics context prepared with', Object.keys(context).length, 'data points')
     return context
     
   } catch (error) {

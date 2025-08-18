@@ -202,7 +202,6 @@ export async function GET() {
             }
         }
         
-        console.log('Login page loaded successfully');
     </script>
 </body>
 </html>

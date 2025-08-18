@@ -2,10 +2,6 @@ import { NextResponse } from 'next/server';
 
 const testSendGridService = {
     sendWhiteLabelCampaign: async (campaign, shop, recipients) => {
-        console.log('📧 TEST MODE: SendGrid Campaign Simulation');
-        console.log(`   Campaign: ${campaign.name}`);
-        console.log(`   Shop: ${shop.name}`);
-        console.log(`   Recipients: ${recipients.length}`);
         
         return {
             success: true,
@@ -36,10 +32,6 @@ const testSendGridService = {
 
 const testTwilioService = {
     sendWhiteLabelSMSCampaign: async (campaign, shop, recipients) => {
-        console.log('📱 TEST MODE: SMS Campaign Simulation');
-        console.log(`   Campaign: ${campaign.name}`);
-        console.log(`   Shop: ${shop.name}`);
-        console.log(`   Recipients: ${recipients.length}`);
         
         return {
             success: true,
@@ -76,7 +68,6 @@ export async function POST(request) {
         const data = await request.json();
         const { type, campaign, shop, recipients } = data;
 
-        console.log(`📧 Marketing campaign send request: ${type} campaign for ${shop?.name}`);
 
         if (!type || !campaign || !shop || !recipients) {
             return NextResponse.json(

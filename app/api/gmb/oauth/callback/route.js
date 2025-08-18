@@ -58,7 +58,6 @@ export async function GET(request) {
     let stateData
     try {
       stateData = verifyState(state)
-      console.log('State verified successfully:', stateData)
     } catch (error) {
       console.error('State verification failed:', error)
       stateData = {
@@ -77,10 +76,8 @@ export async function GET(request) {
         .single()
       
       if (stateError) {
-        console.log('OAuth states table check failed (table may not exist):', stateError.message)
       }
     } catch (error) {
-      console.log('Skipping oauth_states verification:', error.message)
     }
     
     const tokenData = await exchangeCodeForTokens(code)
@@ -134,7 +131,6 @@ export async function GET(request) {
 async function exchangeCodeForTokens(code) {
   const tokenUrl = 'https://oauth2.googleapis.com/token'
   
-  console.log('OAuth debug:', {
     has_client_id: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
     has_client_secret: !!process.env.GOOGLE_CLIENT_SECRET,
     client_id_value: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.substring(0, 20) + '...',
@@ -268,7 +264,6 @@ async function saveGMBAccount(barbershopId, userId, gmbAccount, tokenData) {
  * Schedule initial sync of reviews and responses
  */
 async function scheduleInitialSync(gmbAccountId) {
-  console.log(`Scheduling initial sync for GMB account ${gmbAccountId}`)
   
   // 1. Adding to a queue (Redis/PostgreSQL)
   // 2. Calling a separate sync service

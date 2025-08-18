@@ -1,9 +1,9 @@
-import NuclearInput from './NuclearInput'
+import { NuclearInput } from './ui/UnifiedInput'
 
 /**
  * FORMATTED INPUT COMPONENTS
  * 
- * Pre-configured NuclearInput components for common use cases
+ * Pre-configured UnifiedInput components for common use cases
  * Provides consistent formatting across the entire application
  */
 

@@ -34,17 +34,11 @@ export default function SimpleFullCalendar({ events: externalEvents }) {
   const events = externalEvents || testEvents
 
   useEffect(() => {
-    console.log('=== SimpleFullCalendar Debug ===')
-    console.log('RRule imported:', typeof RRule)
-    console.log('rrulePlugin:', typeof rrulePlugin)
-    console.log('Events to use:', events.length)
-    console.log('External events provided:', !!externalEvents)
     
     setTimeout(() => {
       if (calendarRef.current) {
         const calendarApi = calendarRef.current.getApi()
         const events = calendarApi.getEvents()
-        console.log('Events loaded in simple calendar:', events.length)
         
         setDebugInfo(`RRule: ${typeof RRule}, Events: ${events.length}`)
         
@@ -52,7 +46,6 @@ export default function SimpleFullCalendar({ events: externalEvents }) {
           (e._def && e._def.recurringDef) ||
           (e.extendedProps && e.extendedProps.rrule)
         )
-        console.log('Recurring events found:', recurringEvents.length)
         
         calendarApi.gotoDate('2025-08-11')
       }
@@ -105,7 +98,6 @@ Original RRule: ${event.extendedProps?.rrule || 'None'}`)
           slotMaxTime="20:00:00"
           
           eventDidMount={(info) => {
-            console.log('Event mounted:', {
               id: info.event.id,
               title: info.event.title,
               start: info.event.start.toISOString(),

@@ -14,18 +14,11 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     setIsClient(true)
     
-    console.log('🛡️ ProtectedRoute check:', {
-      hasUser: !!user,
-      userEmail: user?.email,
-      loading,
-      pathname: window.location.pathname
-    })
     
     // Check force sign out FIRST before any other checks
     const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
     if (forceSignOut) {
       sessionStorage.removeItem('force_sign_out')
-      console.log('🚪 Force sign out detected, redirecting immediately')
       router.push('/login')
       return
     }
@@ -45,13 +38,11 @@ export default function ProtectedRoute({ children }) {
     const enableDevBypass = isBarberPage || isSeoPage || isInventoryPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage || isDashboardPage))
     
     if (devAuth || devSession || devBypass || enableDevBypass) {
-      console.log('🔓 Dev session active - bypassing auth check')
       return
     }
     
     // Simple bypass for development
     if (window.location.search.includes('bypass=true')) {
-      console.log('🔓 Bypass mode activated')
       return
     }
     
@@ -59,10 +50,8 @@ export default function ProtectedRoute({ children }) {
     // This prevents the immediate bypass issue
     const checkAuth = setTimeout(() => {
       if (!loading && !user) {
-        console.log('❌ No user found after timeout, redirecting to login')
         router.push('/login')
       } else if (user) {
-        console.log('✅ User authenticated:', user.email)
       }
     }, 100) // Small delay to let auth state settle
     
@@ -86,7 +75,6 @@ export default function ProtectedRoute({ children }) {
   const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
   if (forceSignOut) {
     sessionStorage.removeItem('force_sign_out')
-    console.log('🚪 Force sign out detected in render, redirecting...')
     if (typeof window !== 'undefined') {
       router.push('/login')
     }
@@ -107,7 +95,6 @@ export default function ProtectedRoute({ children }) {
   const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
   
   if (devAuth || devSession || enableDevBypass) {
-    console.log('🔓 DEV MODE: Bypassing protected route for calendar/analytics testing')
     return <>{children}</>
   }
 

@@ -147,12 +147,12 @@ export async function DELETE(request, { params }) {
     const deleteAll = searchParams.get('deleteAll') === 'true' // For recurring appointments
     const cancelDate = searchParams.get('cancelDate') // For cancelling single occurrence
     
-    console.log('🔴 DELETE API - Request received:', { 
+    console.log('Delete appointment request:', {
       id, 
       deleteAll, 
       cancelDate,
       url: request.url 
-    })
+    });
     
     const { data: appointment, error: fetchError } = await supabase
       .from('bookings')
@@ -168,7 +168,6 @@ export async function DELETE(request, { params }) {
       )
     }
     
-    console.log('🔴 DELETE API - Found appointment:', {
       id: appointment.id,
       status: appointment.status,
       is_recurring: appointment.is_recurring,
@@ -179,8 +178,6 @@ export async function DELETE(request, { params }) {
     // ===================================================
     
     if (appointment.status === 'cancelled') {
-      console.log('🔴 DELETE API - RULE 1: CANCELLED APPOINTMENT')
-      console.log('🔴 DELETE API - Action: DELETE DIRECTLY (ignore all parameters)')
       
       const { error: deleteError } = await supabase
         .from('bookings')
@@ -195,7 +192,6 @@ export async function DELETE(request, { params }) {
         )
       }
       
-      console.log('✅ DELETE API - Successfully deleted cancelled appointment ID:', id)
       
       return NextResponse.json({ 
         success: true,
@@ -207,8 +203,6 @@ export async function DELETE(request, { params }) {
     }
     
     if (!appointment.is_recurring || !appointment.recurring_pattern) {
-      console.log('🔴 DELETE API - RULE 2: NON-RECURRING APPOINTMENT')
-      console.log('🔴 DELETE API - Action: DELETE DIRECTLY')
       
       const { error: deleteError } = await supabase
         .from('bookings')
@@ -223,7 +217,6 @@ export async function DELETE(request, { params }) {
         )
       }
       
-      console.log('✅ DELETE API - Successfully deleted non-recurring appointment ID:', id)
       
       return NextResponse.json({ 
         success: true,
@@ -235,8 +228,6 @@ export async function DELETE(request, { params }) {
     }
     
     if (appointment.is_recurring && deleteAll === true) {
-      console.log('🔴 DELETE API - RULE 3: RECURRING SERIES DELETE')
-      console.log('🔴 DELETE API - Action: DELETE ENTIRE RECURRING SERIES')
       
       const { error: deleteError } = await supabase
         .from('bookings')
@@ -251,7 +242,6 @@ export async function DELETE(request, { params }) {
         )
       }
       
-      console.log('✅ DELETE API - Successfully deleted recurring series ID:', id)
       
       return NextResponse.json({ 
         success: true,
@@ -264,8 +254,6 @@ export async function DELETE(request, { params }) {
     }
     
     if (appointment.is_recurring && cancelDate) {
-      console.log('🔴 DELETE API - RULE 4: RECURRING SINGLE OCCURRENCE')
-      console.log('🔴 DELETE API - Action: ADD DATE TO CANCELLED_DATES')
       
       const currentPattern = appointment.recurring_pattern || {}
       const cancelledDates = currentPattern.cancelled_dates || []
@@ -295,7 +283,6 @@ export async function DELETE(request, { params }) {
         )
       }
       
-      console.log('✅ DELETE API - Successfully cancelled single occurrence for date:', cancelDate)
       
       return NextResponse.json({
         success: true,
@@ -308,9 +295,6 @@ export async function DELETE(request, { params }) {
       })
     }
     
-    console.log('🔴 DELETE API - RULE 5: DEFAULT FALLBACK')
-    console.log('🔴 DELETE API - Action: DELETE DIRECTLY')
-    console.log('🔴 DELETE API - Decision Logic:', {
       is_recurring: appointment.is_recurring,
       has_pattern: !!appointment.recurring_pattern,
       deleteAll: deleteAll,
@@ -331,7 +315,6 @@ export async function DELETE(request, { params }) {
       )
     }
     
-    console.log('✅ DELETE API - Successfully deleted appointment ID (fallback):', id)
     
     return NextResponse.json({ 
       success: true,

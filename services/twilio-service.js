@@ -74,7 +74,6 @@ class TwilioSMSService {
 
             this.isInitialized = true;
             if (process.env.NODE_ENV === 'development') {
-                console.log('Twilio SMS service initialized successfully');
             }
             return true;
         } catch (error) {
@@ -92,7 +91,6 @@ class TwilioSMSService {
      */
     async sendWhiteLabelSMSCampaign(campaign, barbershop, recipients) {
         if (!this.accountSid || !this.authToken) {
-            console.log('🧪 TEST MODE: SMS campaign simulation (no Twilio credentials)');
             return this.simulateSMSCampaign(campaign, recipients);
         }
 
@@ -242,10 +240,6 @@ Reply STOP to opt out`;
      * Simulate SMS campaign for testing
      */
     simulateSMSCampaign(campaign, recipients) {
-        console.log(`📱 Simulating SMS campaign: ${campaign.name}`);
-        console.log(`   Recipients: ${recipients.length}`);
-        console.log(`   Message: ${campaign.message.substring(0, 50)}...`);
-        console.log(`   Type: White-label platform send`);
         
         const sent = Math.floor(recipients.length * 0.99); // 99% delivery rate
         const failed = recipients.length - sent;
@@ -496,7 +490,6 @@ Reply STOP to opt out`;
 
         } catch (error) {
             if (retryCount < this.maxRetries) {
-                console.log(`Retrying SMS send (attempt ${retryCount + 1})`);
                 await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
                 return this.sendSMS({
                     to,
@@ -850,7 +843,6 @@ Reply STOP to opt out`;
      */
     async storeSMSCampaignAnalytics(analytics) {
         try {
-            console.log('📊 SMS Campaign Analytics:', analytics);
         } catch (error) {
             console.error('Failed to store SMS analytics:', error);
         }
@@ -861,7 +853,6 @@ Reply STOP to opt out`;
      */
     async storeSMSDeliveryTracking(trackingData) {
         try {
-            console.log('📱 SMS Delivery:', trackingData);
         } catch (error) {
             console.error('Failed to store SMS delivery tracking:', error);
         }

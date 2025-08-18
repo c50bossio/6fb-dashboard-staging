@@ -9,9 +9,6 @@ export async function GET(request) {
     const next = requestUrl.searchParams.get('next') || '/dashboard'
     const redirectTo = `${requestUrl.origin}/api/auth/callback`
     
-    console.log('🔐 Google OAuth initiation requested')
-    console.log('   Redirect URL:', redirectTo)
-    console.log('   Next URL:', next)
     
     const supabase = createClient()
     
@@ -34,8 +31,6 @@ export async function GET(request) {
     }
     
     if (data?.url) {
-      console.log('✅ Google OAuth URL generated successfully')
-      console.log('   OAuth URL:', data.url.substring(0, 100) + '...')
       
       return NextResponse.redirect(data.url)
     }

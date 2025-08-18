@@ -433,7 +433,6 @@ class MarketingBillingService {
           break
         
         default:
-          console.log(`Unhandled webhook event type: ${event.type}`)
       }
     } catch (error) {
       console.error('Error handling Stripe webhook:', error)
@@ -463,7 +462,6 @@ class MarketingBillingService {
       })
       .eq('id', campaign_id)
 
-    console.log(`Payment succeeded for campaign ${campaign_id}`)
   }
 
   /**
@@ -488,21 +486,18 @@ class MarketingBillingService {
       })
       .eq('id', campaign_id)
 
-    console.log(`Payment failed for campaign ${campaign_id}`)
   }
 
   /**
    * Handle subscription changes
    */
   async handleSubscriptionChange(subscription) {
-    console.log('Subscription event:', subscription.id)
   }
 
   /**
    * Handle payment method attached
    */
   async handlePaymentMethodAttached(paymentMethod) {
-    console.log('Payment method attached:', paymentMethod.id)
   }
 }
 

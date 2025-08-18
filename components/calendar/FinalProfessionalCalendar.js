@@ -158,7 +158,6 @@ export default function FinalProfessionalCalendar({
   }, [onEventDrop])
   
   useEffect(() => {
-    console.log('📅 Final Calendar loaded with', events.length, 'events')
   }, [])
   
   return (

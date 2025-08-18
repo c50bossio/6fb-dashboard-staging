@@ -48,13 +48,6 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
       const capacityRecommendations = generateCapacityRecommendations(capacityAnalysis, optimizationFocus)
       setRecommendations(capacityRecommendations)
 
-      console.log('📊 Capacity planning data loaded:', {
-        predictions: !!predictions,
-        alerts: alerts?.alerts?.length || 0,
-        analytics: !!analytics,
-        recommendations: capacityRecommendations.length
-      })
-
     } catch (error) {
       console.error('Failed to load capacity data:', error)
       

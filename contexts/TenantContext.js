@@ -46,7 +46,6 @@ const TenantProvider = ({ children }) => {
           const parsedTenant = JSON.parse(storedTenant)
           setTenant(parsedTenant)
         } else {
-          console.log('🆕 New user detected, creating tenant...')
         }
 
         if (!storedTenant) {
@@ -83,7 +82,6 @@ const TenantProvider = ({ children }) => {
           }
 
           setTenant(Tenant)
-          console.log('🏢 Tenant loaded:', Tenant.name, `(${Tenant.id})`)
         }
 
       } catch (err) {
@@ -113,7 +111,6 @@ const TenantProvider = ({ children }) => {
       
       localStorage.setItem(`tenant_${user.id}`, JSON.stringify(updatedTenant))
       
-      console.log('✅ Tenant updated:', updatedTenant.name)
       
       return updatedTenant
     } catch (err) {
@@ -147,7 +144,6 @@ const TenantProvider = ({ children }) => {
       }
 
       await updateTenant({ integrations: updatedIntegrations })
-      console.log(`🔗 ${provider} integration updated`)
       
     } catch (err) {
       console.error(`❌ Error updating ${provider} integration:`, err)

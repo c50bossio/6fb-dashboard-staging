@@ -140,7 +140,6 @@ function hashString(str) {
 }
 
 async function storeSampleBusinessData(businessData, dataType, userId) {
-  console.log(`📊 Stored ${dataType} business data for user ${userId}:`, {
     dataType,
     itemCount: Array.isArray(businessData) ? businessData.length : Object.keys(businessData).length,
     timestamp: new Date().toISOString()

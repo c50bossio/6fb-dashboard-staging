@@ -8,8 +8,8 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { decrypt } from '@/lib/cin7-client.js'
+import { createClient } from '@/lib/supabase/server'
 
 // CIN7 API endpoints (from documentation)
 const CIN7_BASE_URL = 'https://inventory.dearsystems.com/ExternalAPI/v2'

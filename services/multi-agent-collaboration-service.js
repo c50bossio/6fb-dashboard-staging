@@ -183,7 +183,6 @@ export class MultiAgentCollaborationService {
    */
   async orchestrateCollaboration(query, context, businessData) {
     const collaborationId = `collab_${Date.now()}`
-    console.log(`🤝 Starting multi-agent collaboration: ${collaborationId}`)
 
     const complexity = this.analyzeQueryComplexity(query)
     

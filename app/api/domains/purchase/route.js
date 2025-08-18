@@ -213,17 +213,13 @@ export async function handleDomainPurchaseSuccess(sessionId) {
 }
 
 async function registerDomain(domain, years) {
-  console.log(`Registering domain ${domain} for ${years} years`)
 }
 
 async function configureDNS(domain) {
-  console.log(`Configuring DNS for ${domain}`)
 }
 
 async function provisionSSL(domain) {
-  console.log(`Provisioning SSL for ${domain}`)
 }
 
 async function sendDomainActivationEmail(userId, domain) {
-  console.log(`Sending activation email for ${domain}`)
 }

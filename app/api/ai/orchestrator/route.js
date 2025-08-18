@@ -165,7 +165,6 @@ function detectExecutableActions(message) {
 }
 
 async function generateFallbackResponse(message, sessionId, businessContext) {
-  console.log('🔄 Generating enhanced fallback response for:', message)
   
   try {
     const agentResponse = routeAndGenerateFallback(message, businessContext)

@@ -22,7 +22,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Email required' }, { status: 400 })
     }
     
-    console.log('🔧 Manual login attempt for:', email)
     
     // For development, we'll create a manual redirect to welcome or dashboard
     // based on the user's actual status
@@ -39,7 +38,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
     
-    console.log('👤 Profile found for manual login:', {
       email: profile.email,
       subscription_status: profile.subscription_status,
       onboarding_completed: profile.onboarding_completed

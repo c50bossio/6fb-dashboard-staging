@@ -201,7 +201,6 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
           alert(`✅ Task created: ${action.title}`)
           break
         default:
-          console.log('Unknown action:', action)
       }
     })
   }

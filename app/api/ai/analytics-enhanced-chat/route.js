@@ -113,7 +113,6 @@ export async function POST(request) {
     }
 
     if (responseData.analytics_enhanced) {
-      console.log('✅ AI response enhanced with real analytics data');
     }
 
     return NextResponse.json(responseData);

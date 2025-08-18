@@ -77,7 +77,6 @@ export async function POST(request) {
           ...sessionData
         })
         
-        console.log(`🔐 OAuth session registered: ${sessionId}`)
         
         return NextResponse.json({
           success: true,
@@ -89,7 +88,6 @@ export async function POST(request) {
       case 'cleanup':
         if (sessionId) {
           const deleted = oauthSessions.delete(sessionId)
-          console.log(`🧹 OAuth session cleanup: ${sessionId} - ${deleted ? 'found and removed' : 'not found'}`)
           
           return NextResponse.json({
             success: true,
@@ -113,7 +111,6 @@ export async function POST(request) {
           
           if (memoryPressure > 0.8 && global.gc) {
             global.gc()
-            console.log('🗑️ Forced garbage collection due to memory pressure')
           }
           
           return NextResponse.json({
@@ -132,10 +129,8 @@ export async function POST(request) {
         
         if (global.gc) {
           global.gc()
-          console.log('🚨 Emergency cleanup: forced garbage collection')
         }
         
-        console.log(`🚨 Emergency cleanup: cleared ${clearedCount} OAuth sessions`)
         
         return NextResponse.json({
           success: true,

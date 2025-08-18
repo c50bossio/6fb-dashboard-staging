@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -9,6 +8,7 @@ import {
   ArrowTrendingUpIcon,
   CubeIcon
 } from '@heroicons/react/24/outline'
+import { motion } from 'framer-motion'
 
 /**
  * StockBadge Component

@@ -55,13 +55,11 @@ export default function NovuNotificationCenter() {
         position: 'bottom-end',
       }}
       onNotificationClick={(notification) => {
-        console.log('Notification clicked:', notification)
         if (notification.cta?.data?.url) {
           window.location.href = notification.cta.data.url
         }
       }}
       onActionClick={(actionId, notification) => {
-        console.log('Action clicked:', actionId, notification)
       }}
     />
   )

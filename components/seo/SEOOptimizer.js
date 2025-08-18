@@ -14,10 +14,8 @@ export default function SEOOptimizer() {
         const perfObserver = new PerformanceObserver((list) => {
           list.getEntries().forEach((entry) => {
             if (entry.entryType === 'largest-contentful-paint') {
-              console.log('LCP:', entry.startTime)
             }
             if (entry.entryType === 'first-input') {
-              console.log('FID:', entry.processingStart - entry.startTime)
             }
           })
         })
@@ -25,7 +23,6 @@ export default function SEOOptimizer() {
         try {
           perfObserver.observe({ entryTypes: ['largest-contentful-paint', 'first-input'] })
         } catch (error) {
-          console.log('Performance observer not supported')
         }
 
         let cls = 0
@@ -35,7 +32,6 @@ export default function SEOOptimizer() {
               cls += entry.value
             }
           })
-          console.log('CLS:', cls)
         }).observe({ entryTypes: ['layout-shift'] })
 
         const seoChecks = {

@@ -37,7 +37,6 @@ export async function POST(request) {
       )
     }
 
-    console.log('Stripe webhook received:', event.type)
 
     switch (event.type) {
       case 'customer.subscription.created':
@@ -114,8 +113,16 @@ export async function POST(request) {
         await handleExternalAccountUpdated(event.data.object)
         break
 
+      // Booking Payment Events
+      case 'payment_intent.succeeded':
+        await handlePaymentIntentSucceeded(event.data.object)
+        break
+
+      case 'payment_intent.payment_failed':
+        await handlePaymentIntentFailed(event.data.object)
+        break
+
       default:
-        console.log(`Unhandled event type: ${event.type}`)
     }
 
     return NextResponse.json({ received: true })
@@ -130,7 +137,6 @@ export async function POST(request) {
 }
 
 async function handleSubscriptionCreated(subscription) {
-  console.log('Subscription created:', subscription.id)
   
   const tenantId = subscription.metadata?.tenant_id
   const planName = subscription.metadata?.plan_name
@@ -155,7 +161,6 @@ async function handleSubscriptionCreated(subscription) {
       updated_at: new Date()
     }
 
-    console.log('Subscription data to save:', subscriptionData)
     
 
     await sendSubscriptionEmail(tenantId, 'welcome', {
@@ -169,7 +174,6 @@ async function handleSubscriptionCreated(subscription) {
 }
 
 async function handleSubscriptionUpdated(subscription) {
-  console.log('Subscription updated:', subscription.id)
   
   const tenantId = subscription.metadata?.tenant_id
   
@@ -189,17 +193,14 @@ async function handleSubscriptionUpdated(subscription) {
     }
 
     if (subscription.status === 'active') {
-      console.log(`Subscription ${subscription.id} is now active`)
       await sendSubscriptionEmail(tenantId, 'activated', {
         subscription_id: subscription.id
       })
     } else if (subscription.status === 'canceled') {
-      console.log(`Subscription ${subscription.id} was canceled`)
       await sendSubscriptionEmail(tenantId, 'canceled', {
         canceled_at: new Date()
       })
     } else if (subscription.status === 'past_due') {
-      console.log(`Subscription ${subscription.id} is past due`)
       await sendSubscriptionEmail(tenantId, 'payment_failed', {
         retry_date: new Date(subscription.current_period_end * 1000)
       })
@@ -212,7 +213,6 @@ async function handleSubscriptionUpdated(subscription) {
 }
 
 async function handleSubscriptionDeleted(subscription) {
-  console.log('Subscription deleted:', subscription.id)
   
   const tenantId = subscription.metadata?.tenant_id
   
@@ -234,7 +234,6 @@ async function handleSubscriptionDeleted(subscription) {
       canceled_at: new Date()
     })
 
-    console.log(`Subscription canceled for tenant ${tenantId}`)
 
   } catch (error) {
     console.error('Error handling subscription deleted:', error)
@@ -242,7 +241,6 @@ async function handleSubscriptionDeleted(subscription) {
 }
 
 async function handlePaymentSucceeded(invoice) {
-  console.log('Payment succeeded:', invoice.id)
   
   const subscriptionId = invoice.subscription
   const tenantId = invoice.subscription_details?.metadata?.tenant_id
@@ -271,7 +269,6 @@ async function handlePaymentSucceeded(invoice) {
       invoice_url: invoice.hosted_invoice_url
     })
 
-    console.log(`Payment recorded for tenant ${tenantId}: $${paymentData.amount_paid}`)
 
   } catch (error) {
     console.error('Error handling payment succeeded:', error)
@@ -279,7 +276,6 @@ async function handlePaymentSucceeded(invoice) {
 }
 
 async function handlePaymentFailed(invoice) {
-  console.log('Payment failed:', invoice.id)
   
   const tenantId = invoice.subscription_details?.metadata?.tenant_id
   
@@ -308,7 +304,6 @@ async function handlePaymentFailed(invoice) {
       update_payment_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`
     })
 
-    console.log(`Payment failed for tenant ${tenantId}: $${paymentData.amount_due}`)
 
   } catch (error) {
     console.error('Error handling payment failed:', error)
@@ -316,7 +311,6 @@ async function handlePaymentFailed(invoice) {
 }
 
 async function handleTrialWillEnd(subscription) {
-  console.log('Trial will end:', subscription.id)
   
   const tenantId = subscription.metadata?.tenant_id
   const trialEnd = new Date(subscription.trial_end * 1000)
@@ -333,7 +327,6 @@ async function handleTrialWillEnd(subscription) {
       upgrade_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`
     })
 
-    console.log(`Trial ending reminder sent to tenant ${tenantId}`)
 
   } catch (error) {
     console.error('Error handling trial will end:', error)
@@ -341,7 +334,6 @@ async function handleTrialWillEnd(subscription) {
 }
 
 async function handleCheckoutCompleted(session) {
-  console.log('Checkout completed:', session.id)
   
   const tenantId = session.metadata?.tenant_id
   const planName = session.metadata?.plan
@@ -371,7 +363,6 @@ async function handleCheckoutCompleted(session) {
       customer_portal_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`
     })
 
-    console.log(`Checkout completed for tenant ${tenantId}: ${planName} plan`)
 
   } catch (error) {
     console.error('Error handling checkout completed:', error)
@@ -379,10 +370,8 @@ async function handleCheckoutCompleted(session) {
 }
 
 async function handleCustomerCreated(customer) {
-  console.log('Customer created:', customer.id)
   
   try {
-    console.log(`New Stripe customer created: ${customer.id} (${customer.email})`)
 
   } catch (error) {
     console.error('Error handling customer created:', error)
@@ -390,7 +379,6 @@ async function handleCustomerCreated(customer) {
 }
 
 async function handleInvoiceCreated(invoice) {
-  console.log('Invoice created:', invoice.id)
   
   const tenantId = invoice.subscription_details?.metadata?.tenant_id
   
@@ -404,7 +392,6 @@ async function handleInvoiceCreated(invoice) {
     )
 
     if (hasUsageCharges) {
-      console.log(`Usage-based invoice created for tenant ${tenantId}`)
       
       await sendSubscriptionEmail(tenantId, 'usage_invoice', {
         invoice_amount: invoice.amount_due / 100,
@@ -423,7 +410,6 @@ async function handleInvoiceCreated(invoice) {
 // ==========================================
 
 async function handleAccountUpdated(account) {
-  console.log('Connect account updated:', account.id)
   
   try {
     // Import Supabase client
@@ -480,7 +466,6 @@ async function handleAccountUpdated(account) {
             .eq('id', accountData.barbershop_id)
         }
         
-        console.log(`Account ${account.id} onboarding completed`)
       }
     }
     
@@ -490,7 +475,6 @@ async function handleAccountUpdated(account) {
 }
 
 async function handleAccountDeauthorized(account) {
-  console.log('Connect account deauthorized:', account.id)
   
   try {
     const { createClient } = await import('@/lib/supabase/server')
@@ -508,7 +492,6 @@ async function handleAccountDeauthorized(account) {
       })
       .eq('stripe_account_id', account.id)
     
-    console.log(`Account ${account.id} deauthorized`)
     
   } catch (error) {
     console.error('Error handling account deauthorized:', error)
@@ -516,7 +499,6 @@ async function handleAccountDeauthorized(account) {
 }
 
 async function handleCapabilityUpdated(capability) {
-  console.log('Capability updated:', capability.id, capability.status)
   
   try {
     const { createClient } = await import('@/lib/supabase/server')
@@ -541,7 +523,6 @@ async function handleCapabilityUpdated(capability) {
         })
         .eq('stripe_account_id', capability.account)
       
-      console.log(`Capability ${capability.id} updated to ${capability.status}`)
     }
     
   } catch (error) {
@@ -550,7 +531,6 @@ async function handleCapabilityUpdated(capability) {
 }
 
 async function handlePayoutCreated(payout) {
-  console.log('Payout created:', payout.id)
   
   try {
     const { createClient } = await import('@/lib/supabase/server')
@@ -583,7 +563,6 @@ async function handlePayoutCreated(payout) {
         initiated_at: new Date(payout.created * 1000).toISOString()
       })
     
-    console.log(`Payout ${payout.id} recorded: $${payout.amount / 100}`)
     
   } catch (error) {
     console.error('Error handling payout created:', error)
@@ -591,7 +570,6 @@ async function handlePayoutCreated(payout) {
 }
 
 async function handlePayoutPaid(payout) {
-  console.log('Payout paid:', payout.id)
   
   try {
     const { createClient } = await import('@/lib/supabase/server')
@@ -634,7 +612,6 @@ async function handlePayoutPaid(payout) {
       }
     }
     
-    console.log(`Payout ${payout.id} completed: $${payout.amount / 100}`)
     
   } catch (error) {
     console.error('Error handling payout paid:', error)
@@ -642,7 +619,6 @@ async function handlePayoutPaid(payout) {
 }
 
 async function handlePayoutFailed(payout) {
-  console.log('Payout failed:', payout.id)
   
   try {
     const { createClient } = await import('@/lib/supabase/server')
@@ -658,7 +634,6 @@ async function handlePayoutFailed(payout) {
       })
       .eq('stripe_payout_id', payout.id)
     
-    console.log(`Payout ${payout.id} failed: ${payout.failure_message}`)
     
     // TODO: Send notification to user about failed payout
     
@@ -668,15 +643,12 @@ async function handlePayoutFailed(payout) {
 }
 
 async function handlePersonUpdated(person) {
-  console.log('Person updated:', person.id)
   
   // Person updates are for identity verification
   // Log for audit purposes
-  console.log(`Person ${person.id} verification status: ${person.verification?.status}`)
 }
 
 async function handleExternalAccountCreated(externalAccount) {
-  console.log('External account created:', externalAccount.id)
   
   try {
     const { createClient } = await import('@/lib/supabase/server')
@@ -706,7 +678,6 @@ async function handleExternalAccountCreated(externalAccount) {
           created_at: new Date().toISOString()
         })
       
-      console.log(`Bank account ${externalAccount.id} added`)
     }
     
   } catch (error) {
@@ -715,7 +686,6 @@ async function handleExternalAccountCreated(externalAccount) {
 }
 
 async function handleExternalAccountUpdated(externalAccount) {
-  console.log('External account updated:', externalAccount.id)
   
   try {
     const { createClient } = await import('@/lib/supabase/server')
@@ -731,7 +701,6 @@ async function handleExternalAccountUpdated(externalAccount) {
       })
       .eq('stripe_bank_account_id', externalAccount.id)
     
-    console.log(`Bank account ${externalAccount.id} updated`)
     
   } catch (error) {
     console.error('Error handling external account updated:', error)
@@ -739,11 +708,252 @@ async function handleExternalAccountUpdated(externalAccount) {
 }
 
 // ==========================================
+// Booking Payment Event Handlers
+// ==========================================
+
+async function handlePaymentIntentSucceeded(paymentIntent) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Check if this is a booking payment
+    const bookingId = paymentIntent.metadata?.booking_id
+    if (!bookingId || bookingId === 'pending') {
+      console.log('Payment intent not associated with a booking:', paymentIntent.id)
+      return
+    }
+
+    // Get booking details
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('id', bookingId)
+      .single()
+
+    if (bookingError || !booking) {
+      console.error('Booking not found for payment intent:', paymentIntent.id, bookingError)
+      return
+    }
+
+    // Extract payment metadata
+    const metadata = paymentIntent.metadata
+    const paymentAmount = paymentIntent.amount / 100 // Convert from cents
+    const isDeposit = metadata.is_deposit === 'true'
+    const remainingAmount = parseFloat(metadata.remaining_amount || '0')
+
+    // Create payment metadata
+    const paymentMetadata = {
+      payment_status: 'completed',
+      stripe_payment_intent_id: paymentIntent.id,
+      amount_paid: paymentAmount,
+      currency: paymentIntent.currency,
+      payment_method: 'card',
+      is_deposit: isDeposit,
+      remaining_amount: remainingAmount,
+      paid_at: new Date().toISOString(),
+      webhook_processed_at: new Date().toISOString(),
+      customer_info: {
+        name: metadata.customer_name,
+        email: metadata.customer_email,
+        phone: metadata.customer_phone
+      }
+    }
+
+    // Update booking with payment information
+    let updatedNotes = booking.notes || ''
+    if (updatedNotes.trim()) {
+      updatedNotes += '\n\n'
+    }
+    updatedNotes += `PAYMENT_METADATA: ${JSON.stringify(paymentMetadata)}`
+
+    const { error: updateError } = await supabase
+      .from('bookings')
+      .update({
+        status: 'confirmed',
+        notes: updatedNotes,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', bookingId)
+
+    if (updateError) {
+      console.error('Error updating booking after payment:', updateError)
+      return
+    }
+
+    // Send confirmation email
+    await sendBookingConfirmationEmail({
+      booking: { ...booking, status: 'confirmed' },
+      customerEmail: metadata.customer_email,
+      customerName: metadata.customer_name,
+      amountPaid: paymentAmount,
+      remainingAmount: remainingAmount,
+      isDeposit: isDeposit,
+      paymentMethod: 'card'
+    })
+
+    // Send notification via booking notification service
+    await sendBookingNotification({
+      event_type: 'payment_intent.succeeded',
+      booking_id: bookingId,
+      data: {
+        payment_intent: paymentIntent,
+        metadata: paymentIntent.metadata,
+        amount_paid: paymentAmount,
+        is_deposit: isDeposit,
+        remaining_amount: remainingAmount
+      },
+      timestamp: new Date().toISOString(),
+      source: 'stripe'
+    })
+
+    console.log('Successfully processed payment for booking:', bookingId)
+
+  } catch (error) {
+    console.error('Error handling payment intent succeeded:', error)
+  }
+}
+
+async function handlePaymentIntentFailed(paymentIntent) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = createClient()
+    
+    // Check if this is a booking payment
+    const bookingId = paymentIntent.metadata?.booking_id
+    if (!bookingId || bookingId === 'pending') {
+      return
+    }
+
+    // Get booking details
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('id', bookingId)
+      .single()
+
+    if (bookingError || !booking) {
+      console.error('Booking not found for failed payment:', paymentIntent.id)
+      return
+    }
+
+    // Create failure metadata
+    const failureMetadata = {
+      payment_status: 'failed',
+      stripe_payment_intent_id: paymentIntent.id,
+      failure_reason: paymentIntent.last_payment_error?.message || 'Payment failed',
+      failure_code: paymentIntent.last_payment_error?.code || 'unknown',
+      failed_at: new Date().toISOString(),
+      customer_info: {
+        name: paymentIntent.metadata.customer_name,
+        email: paymentIntent.metadata.customer_email,
+        phone: paymentIntent.metadata.customer_phone
+      }
+    }
+
+    // Update booking with failure information
+    let updatedNotes = booking.notes || ''
+    if (updatedNotes.trim()) {
+      updatedNotes += '\n\n'
+    }
+    updatedNotes += `PAYMENT_FAILURE: ${JSON.stringify(failureMetadata)}`
+
+    const { error: updateError } = await supabase
+      .from('bookings')
+      .update({
+        status: 'payment_failed',
+        notes: updatedNotes,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', bookingId)
+
+    if (updateError) {
+      console.error('Error updating booking after payment failure:', updateError)
+    }
+
+    // Send notification via booking notification service
+    await sendBookingNotification({
+      event_type: 'payment_intent.payment_failed',
+      booking_id: bookingId,
+      data: {
+        payment_intent: paymentIntent,
+        metadata: paymentIntent.metadata,
+        failure_reason: failureMetadata.failure_reason,
+        failure_code: failureMetadata.failure_code
+      },
+      timestamp: new Date().toISOString(),
+      source: 'stripe'
+    })
+
+    console.log('Payment failed for booking:', bookingId, 'Reason:', failureMetadata.failure_reason)
+
+  } catch (error) {
+    console.error('Error handling payment intent failed:', error)
+  }
+}
+
+async function sendBookingConfirmationEmail({ booking, customerEmail, customerName, amountPaid, remainingAmount, isDeposit, paymentMethod }) {
+  // Log email details for debugging
+  console.log('Sending booking confirmation email:', {
+    to: customerEmail,
+    subject: `Booking Confirmation - ${booking.service_name}`,
+    customerName,
+    bookingDetails: {
+      id: booking.id,
+      service: booking.service_name,
+      barber: booking.barber_name,
+      date: new Date(booking.start_time).toLocaleDateString(),
+      time: new Date(booking.start_time).toLocaleTimeString(),
+      duration: `${booking.duration_minutes} minutes`,
+      price: `$${booking.price}`
+    },
+    paymentDetails: {
+      method: paymentMethod,
+      amountPaid: amountPaid || 0,
+      remainingAmount: remainingAmount || 0,
+      isDeposit: isDeposit || false
+    }
+  })
+  
+  // TODO: Integrate with actual email service
+  // For now, this is just logging the email details
+  return true
+}
+
+// ==========================================
 // Original Email Function
 // ==========================================
 
+async function sendBookingNotification(webhookData) {
+  try {
+    const backendUrl = process.env.FASTAPI_BACKEND_URL || 'http://localhost:8001'
+    
+    const response = await fetch(`${backendUrl}/api/v1/booking-notifications/webhooks/stripe`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.FASTAPI_API_KEY || 'development-key'}`
+      },
+      body: JSON.stringify(webhookData)
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error(`Failed to send booking notification: ${response.status} ${error}`)
+      return false
+    }
+
+    const result = await response.json()
+    console.log('Booking notification sent successfully:', result)
+    
+    return true
+  } catch (error) {
+    console.error('Error sending booking notification:', error)
+    // Don't throw - webhook should still succeed even if notification fails
+    return false
+  }
+}
+
 async function sendSubscriptionEmail(tenantId, emailType, data) {
-  console.log(`Sending ${emailType} email to tenant ${tenantId}:`, data)
   
   const emailTemplates = {
     welcome: `Welcome to 6FB AI! Your ${data.plan_name} plan is active. Trial ends: ${data.trial_end}`,
@@ -759,7 +969,6 @@ async function sendSubscriptionEmail(tenantId, emailType, data) {
 
   const message = emailTemplates[emailType] || `Unknown email type: ${emailType}`
   
-  console.log(`EMAIL [${emailType}]: ${message}`)
   
   return true
 }

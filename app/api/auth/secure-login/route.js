@@ -166,7 +166,6 @@ export async function POST(request) {
       path: '/'
     })
     
-    console.log(`[SECURITY] Successful login for ${email} from ${clientIP}`)
     
     const duration = Date.now() - startTime
     if (duration > 1000) {

@@ -29,7 +29,6 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
       }
       
       // Fallback to mock data if no real barbers found
-      console.log('No barbers found in database, using mock data')
       const Barbers = [
         {
           id: 'barber_1',

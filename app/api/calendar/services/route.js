@@ -16,7 +16,6 @@ export async function GET(request) {
       .order('name')
     
     if (error) {
-      console.log('Services table not found, using default services...')
       
       return NextResponse.json({
         services: [

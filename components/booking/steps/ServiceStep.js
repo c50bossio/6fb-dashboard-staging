@@ -44,7 +44,6 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
       }
       
       // Fallback to mock data if no real services found
-      console.log('No services found in database, using mock data')
       const barberServices = bookingData.barberDetails?.services || []
       
       const standardServices = [

@@ -213,7 +213,6 @@ export async function POST(request) {
     }
 
     const bookingData = await request.json()
-    console.log('📊 Syncing booking data:', bookingData)
     
     const { data, error } = await supabase
       .from('bookings')

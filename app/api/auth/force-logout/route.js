@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
 export async function POST() {
-  console.log('🔥 FORCE LOGOUT: Starting complete session termination')
   
   try {
     const cookieStore = cookies()
@@ -31,11 +30,9 @@ export async function POST() {
     if (error) {
       console.error('❌ Supabase signOut error:', error)
     } else {
-      console.log('✅ Supabase session terminated')
     }
     
     const allCookies = cookieStore.getAll()
-    console.log('🍪 Found cookies:', allCookies.map(c => c.name))
     
     const authCookies = allCookies.filter(cookie => 
       cookie.name.includes('sb-') || 
@@ -43,7 +40,6 @@ export async function POST() {
       cookie.name.includes('auth')
     )
     
-    console.log('🔥 Clearing auth cookies:', authCookies.map(c => c.name))
     
     const response = NextResponse.json({ 
       success: true, 
@@ -69,7 +65,6 @@ export async function POST() {
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
     
-    console.log('🔥 FORCE LOGOUT: Complete session termination finished')
     return response
     
   } catch (error) {

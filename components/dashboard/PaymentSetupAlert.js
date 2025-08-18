@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
 
 export default function PaymentSetupAlert() {
   const [showAlert, setShowAlert] = useState(false)

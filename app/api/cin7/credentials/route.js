@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { encrypt, decrypt } from '@/lib/cin7-client.js'
+import { createClient } from '@/lib/supabase/server'
 
 async function registerCin7Webhooks(accountId, apiKey, webhookUrl) {
   try {
-    console.log('🔗 Registering Cin7 webhooks for real-time updates...')
     
     // Define webhook events we want to subscribe to
     const webhookEvents = [
@@ -46,7 +45,6 @@ async function registerCin7Webhooks(accountId, apiKey, webhookUrl) {
             url: webhook.URL,
             id: result.ID
           })
-          console.log(`✅ Registered webhook: ${webhook.Type}`)
         } else {
           console.warn(`⚠️ Failed to register ${webhook.Type}: ${response.status}`)
         }
@@ -183,7 +181,6 @@ export async function DELETE() {
       }, { status: 404 })
     }
     
-    console.log('🗑️ Deleting Cin7 credentials for barbershop:', barbershop.id)
     
     const { data: existingCreds, error: checkError } = await supabase
       .from('cin7_credentials')
@@ -211,7 +208,6 @@ export async function DELETE() {
       }, { status: 500 })
     }
     
-    console.log('✅ Cin7 credentials deleted successfully')
     
     return NextResponse.json({
       success: true,
@@ -265,7 +261,6 @@ export async function PUT(request) {
       }, { status: 400 })
     }
     
-    console.log('🔄 Updating Cin7 credentials for barbershop:', barbershop.id)
     
     // Test credentials with Cin7 API v2
     const testResponse = await fetch('https://inventory.dearsystems.com/ExternalAPI/v2/me', {
@@ -298,7 +293,6 @@ export async function PUT(request) {
       const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/cin7/webhook`
       const webhookResult = await registerCin7Webhooks(accountId, apiKey, webhookUrl)
       webhookRegistered = webhookResult.success
-      console.log('Webhook registration result:', webhookResult)
     } catch (webhookError) {
       console.warn('Failed to register webhooks (non-critical):', webhookError.message)
     }
@@ -325,7 +319,6 @@ export async function PUT(request) {
       }, { status: 500 })
     }
     
-    console.log('✅ Cin7 credentials updated successfully')
     
     return NextResponse.json({
       success: true,

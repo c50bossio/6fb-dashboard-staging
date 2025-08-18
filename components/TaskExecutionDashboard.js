@@ -95,7 +95,6 @@ export default function TaskExecutionDashboard({ userId }) {
 
       const result = await response.json()
       if (result.success) {
-        console.log('✅ Task approved:', taskId)
         await fetchTaskData() // Refresh data
       }
     } catch (error) {
@@ -117,7 +116,6 @@ export default function TaskExecutionDashboard({ userId }) {
 
       const result = await response.json()
       if (result.success) {
-        console.log('❌ Task rejected:', taskId)
         await fetchTaskData() // Refresh data
       }
     } catch (error) {

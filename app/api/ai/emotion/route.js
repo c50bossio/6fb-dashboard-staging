@@ -17,7 +17,6 @@ export async function POST(request) {
       businessContext = {}
     } = body
 
-    console.log('🎭 Emotion API request:', { action, hasText: !!text, userId })
 
     switch (action) {
       case 'analyze':

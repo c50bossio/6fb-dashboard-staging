@@ -13,9 +13,9 @@ import {
   ShieldCheckIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 
 export default function FinancialSetupEnhanced({ onComplete, initialData = {}, subscriptionTier = 'shop' }) {
   const [currentSection, setCurrentSection] = useState('payment')

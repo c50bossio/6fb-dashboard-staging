@@ -45,7 +45,6 @@ export async function POST(request) {
       )
     }
 
-    console.log('✅ Appointment cancelled (soft delete):', appointmentId)
 
     return NextResponse.json({
       success: true,

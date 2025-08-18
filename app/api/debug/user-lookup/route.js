@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -15,7 +15,6 @@ export async function GET(request) {
   }
   
   try {
-    console.log('🔍 Looking up user profile for:', email)
     
     // Query profiles table with service role key (bypasses RLS)
     const { data: profile, error: profileError } = await supabase
@@ -36,7 +35,6 @@ export async function GET(request) {
       .single()
     
     if (profileError) {
-      console.log('❌ Profile query error:', profileError)
       return NextResponse.json({
         found: false,
         error: profileError.message,
@@ -52,7 +50,6 @@ export async function GET(request) {
       })
     }
     
-    console.log('✅ Profile found:', profile.email)
     
     // Also check auth.users table
     const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(profile.id)

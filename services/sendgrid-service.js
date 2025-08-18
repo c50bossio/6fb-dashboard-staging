@@ -37,7 +37,6 @@ class EnhancedSendGridService {
      */
     async initializeService() {
         if (process.env.NODE_ENV === 'development') {
-            console.log('🔧 Initializing Enhanced SendGrid Service...');
         }
         
         if (!this.apiKey || this.apiKey.includes('placeholder')) {
@@ -54,7 +53,6 @@ class EnhancedSendGridService {
             this.testMode = false;
             this.validationStatus = 'VALIDATED';
             if (process.env.NODE_ENV === 'development') {
-                console.log('✅ SendGrid service initialized successfully');
             }
         } catch (error) {
             console.warn('⚠️  SendGrid API key validation failed:', error.message);
@@ -83,11 +81,9 @@ class EnhancedSendGridService {
                     website: response.data.website
                 };
                 
-                console.log(`✅ API Key validated - Account: ${response.data.type}`);
                 return true;
                 
             } catch (error) {
-                console.log(`❌ API Key validation attempt ${attempt}/${this.retryAttempts} failed`);
                 
                 if (attempt === this.retryAttempts) {
                     if (error.response?.status === 401) {
@@ -109,7 +105,6 @@ class EnhancedSendGridService {
      */
     async checkDomainVerification() {
         if (this.testMode) {
-            console.log('🧪 TEST MODE: Skipping domain verification check');
             return { verified: false, testMode: true };
         }
 
@@ -155,7 +150,6 @@ class EnhancedSendGridService {
      * Send enhanced test email with comprehensive error handling
      */
     async sendTestEmail(testRecipient = 'test@6fbmentorship.com') {
-        console.log('📧 Sending enhanced test email...');
 
         if (this.testMode) {
             return this.simulateEmailSend(testRecipient);
@@ -186,13 +180,9 @@ class EnhancedSendGridService {
     async sendEmailWithRetry(msg) {
         for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
             try {
-                console.log(`📤 Email send attempt ${attempt}/${this.retryAttempts}`);
                 
                 const response = await sgMail.send(msg);
                 
-                console.log('✅ Email sent successfully');
-                console.log(`   Message ID: ${response[0].headers['x-message-id']}`);
-                console.log(`   Status Code: ${response[0].statusCode}`);
                 
                 return {
                     success: true,
@@ -202,7 +192,6 @@ class EnhancedSendGridService {
                 };
                 
             } catch (error) {
-                console.log(`❌ Email send attempt ${attempt} failed: ${error.message}`);
                 
                 const errorDetails = this.parseEmailError(error);
                 
@@ -299,9 +288,6 @@ class EnhancedSendGridService {
      * Send white-label campaign with enhanced error handling
      */
     async sendWhiteLabelCampaign(campaign, barbershop, recipients) {
-        console.log('🏷️  Sending white-label campaign...');
-        console.log(`   Shop: ${barbershop.name}`);
-        console.log(`   Recipients: ${recipients.length}`);
 
         if (this.testMode) {
             return this.simulateWhiteLabelCampaign(campaign, barbershop, recipients);
@@ -444,10 +430,6 @@ class EnhancedSendGridService {
      * Simulate email send for test mode
      */
     simulateEmailSend(recipient) {
-        console.log('🧪 TEST MODE: Simulating email send');
-        console.log(`   To: ${recipient}`);
-        console.log(`   From: ${this.fromName} <${this.fromEmail}>`);
-        console.log(`   Status: ${this.validationStatus}`);
         
         return {
             success: true,
@@ -463,10 +445,6 @@ class EnhancedSendGridService {
      * Simulate white-label campaign for test mode
      */
     simulateWhiteLabelCampaign(campaign, barbershop, recipients) {
-        console.log('🧪 TEST MODE: Simulating white-label campaign');
-        console.log(`   Campaign: ${campaign.name}`);
-        console.log(`   Shop: ${barbershop.name}`);
-        console.log(`   Recipients: ${recipients.length}`);
         
         return {
             success: true,
@@ -521,25 +499,17 @@ module.exports.enhancedSendGridService = enhancedSendGridService;
 module.exports.sendGridEmailService = enhancedSendGridService;
 
 if (require.main === module) {
-    console.log('🚀 Running Enhanced SendGrid Service Tests...\n');
     
     const runTests = async () => {
         const service = new EnhancedSendGridService();
         
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        console.log('📊 Service Status:');
-        console.log(JSON.stringify(service.getServiceStatus(), null, 2));
         
-        console.log('\n📋 Testing Domain Verification...');
         const domainStatus = await service.checkDomainVerification();
-        console.log('Domain Status:', domainStatus);
         
-        console.log('\n📧 Testing Email Send...');
         const emailResult = await service.sendTestEmail();
-        console.log('Email Result:', emailResult);
         
-        console.log('\n🏷️  Testing White-label Campaign...');
         const campaign = {
             id: 'test-campaign-001',
             name: 'Welcome Campaign',
@@ -560,9 +530,7 @@ if (require.main === module) {
         ];
         
         const campaignResult = await service.sendWhiteLabelCampaign(campaign, barbershop, recipients);
-        console.log('Campaign Result:', campaignResult);
         
-        console.log('\n✅ All tests completed!');
     };
     
     runTests().catch(console.error);

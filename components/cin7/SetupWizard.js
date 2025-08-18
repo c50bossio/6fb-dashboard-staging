@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { 
   CheckCircleIcon, 
   ArrowRightIcon,
@@ -14,6 +12,8 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
 
 export default function SetupWizard({ onComplete, onClose }) {
   const [currentStep, setCurrentStep] = useState(0)
@@ -155,7 +155,6 @@ export default function SetupWizard({ onComplete, onClose }) {
         accountName: formData.accountName
       }
       
-      console.log('🔄 Starting sync with credentials:', { accountId: formData.accountId, accountName: formData.accountName })
       
       const syncResponse = await fetch('/api/cin7/sync', {
         method: 'POST',
@@ -163,8 +162,6 @@ export default function SetupWizard({ onComplete, onClose }) {
         body: JSON.stringify(syncBody)
       })
 
-      console.log('📡 Sync response status:', syncResponse.status)
-      console.log('📡 Sync response ok:', syncResponse.ok)
 
       clearInterval(progressInterval)
       setSyncProgress(100)
@@ -176,7 +173,6 @@ export default function SetupWizard({ onComplete, onClose }) {
       }
 
       const syncData = await syncResponse.json()
-      console.log('📊 Sync data received:', syncData)
       
       // Store sync data for the completion screen
       const syncResult = {

@@ -188,28 +188,14 @@ class PlatformFeeCalculator {
 function demonstrateRevenueModel() {
   const calculator = new PlatformFeeCalculator();
   
-  console.log('💰 BookedBarber Revenue Model Examples\n');
-  console.log('=' .repeat(50));
   
   // Example 1: Single $100 card transaction
-  console.log('\n📊 Example 1: $100 Card Payment (Barber Tier)');
   const cardExample = calculator.calculateRevenue(100, 'card', 'barber');
-  console.log(`Transaction Amount: $${cardExample.transactionAmount}`);
-  console.log(`Stripe Charges You: $${cardExample.stripeCost.total.toFixed(2)}`);
-  console.log(`Merchant Pays: $${cardExample.merchantFee.total.toFixed(2)}`);
-  console.log(`YOUR REVENUE: $${cardExample.platformRevenue.amount.toFixed(2)}`);
   
   // Example 2: $1000 ACH payment (much better margins!)
-  console.log('\n📊 Example 2: $1,000 ACH Payment (Shop Owner Tier)');
   const achExample = calculator.calculateRevenue(1000, 'ach', 'shop_owner');
-  console.log(`Transaction Amount: $${achExample.transactionAmount}`);
-  console.log(`Stripe Charges You: $${achExample.stripeCost.total.toFixed(2)}`);
-  console.log(`Merchant Pays: $${achExample.merchantFee.total.toFixed(2)}`);
-  console.log(`YOUR REVENUE: $${achExample.platformRevenue.amount.toFixed(2)}`);
   
   // Example 3: Monthly projections
-  console.log('\n📊 Example 3: Monthly Revenue Projections');
-  console.log('Assuming moderate volume across tiers:');
   
   const monthlyVolumes = {
     barber: {
@@ -227,15 +213,9 @@ function demonstrateRevenueModel() {
   };
   
   const projections = calculator.projectMonthlyRevenue(monthlyVolumes);
-  console.log(`\nTotal Monthly Platform Revenue: $${projections.totalMonthlyRevenue.toFixed(2)}`);
-  console.log(`Projected Annual Revenue: $${projections.annualizedRevenue.toFixed(2)}`);
   
   // Instant payout revenue (additional stream)
-  console.log('\n📊 Example 4: Instant Payout Fees');
   const instantPayout = calculator.calculateInstantPayoutFee(500, 'barber');
-  console.log(`Payout Amount: $500`);
-  console.log(`Merchant Pays for Instant: $${instantPayout.merchantPays.toFixed(2)}`);
-  console.log(`YOUR INSTANT PAYOUT REVENUE: $${instantPayout.platformRevenue.toFixed(2)}`);
 }
 
 module.exports = {

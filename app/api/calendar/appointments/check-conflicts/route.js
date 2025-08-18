@@ -19,12 +19,12 @@ export async function POST(request) {
       check_count = 12 // Check first 12 occurrences by default
     } = body
     
-    console.log('Checking conflicts for recurring appointment:', {
+    console.log('Conflict check request:', {
       appointment_id,
       barber_id,
       rrule: rruleString,
       check_count
-    })
+    });
     
     if (!barber_id || !start_time || !rruleString) {
       return NextResponse.json(
@@ -53,7 +53,6 @@ export async function POST(request) {
         end: new Date(date.getTime() + duration).toISOString()
       }))
       
-      console.log(`Generated ${occurrences.length} occurrences to check`)
       
     } catch (error) {
       console.error('Error parsing RRule:', error)
@@ -127,7 +126,6 @@ export async function POST(request) {
       ] : []
     }
     
-    console.log(`Conflict check complete: ${conflicts.length} conflicts found out of ${occurrences.length} occurrences`)
     
     return NextResponse.json(response)
     

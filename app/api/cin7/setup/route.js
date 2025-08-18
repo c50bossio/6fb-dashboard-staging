@@ -3,10 +3,10 @@
  * Single endpoint to handle complete setup flow
  */
 
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 import { Cin7Client, encrypt } from '@/lib/cin7-client.js'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
@@ -24,7 +24,6 @@ export async function POST(request) {
         id: 'dev-user-id',
         email: 'dev-enterprise@test.com'
       }
-      console.log('🔧 Using dev bypass for CIN7 setup')
     } else {
       // Get authenticated user
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
@@ -57,7 +56,6 @@ export async function POST(request) {
       ...options
     }
 
-    console.log('🚀 Starting CIN7 setup for user:', user.id)
 
     // Get or create barbershop
     let barbershop = null
@@ -65,7 +63,6 @@ export async function POST(request) {
     if (devBypass) {
       // Use mock barbershop for development
       barbershop = { id: 'barbershop_demo_001' }
-      console.log('🔧 Using demo barbershop for dev bypass')
     } else {
       const { data: userBarbershop } = await supabase
         .from('barbershops')
@@ -83,7 +80,6 @@ export async function POST(request) {
     }
 
     // Step 1: Test connection first
-    console.log('📡 Testing CIN7 connection...')
     const cin7 = new Cin7Client(accountId, apiKey)
     const testResult = await cin7.testConnection()
     
@@ -95,13 +91,11 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    console.log('✅ Connection successful:', testResult.accountName)
 
     // Step 2: Encrypt and save credentials (skip for dev bypass)
     let credentialsSaved = false
     
     if (devBypass) {
-      console.log('🔧 Skipping credential storage for dev bypass')
       credentialsSaved = true
     } else {
       const encryptedAccountId = encrypt(accountId)
@@ -133,7 +127,6 @@ export async function POST(request) {
         throw updateError
       }
       credentialsSaved = true
-      console.log('✅ Credentials updated successfully')
     } else {
       // Insert new credentials
       const { error: insertError } = await supabase
@@ -153,21 +146,18 @@ export async function POST(request) {
         throw insertError
       }
       credentialsSaved = true
-      console.log('✅ Credentials saved successfully')
     }
     }
 
     // Step 3: Register webhooks if enabled
     let webhooksRegistered = false
     if (syncOptions.enableWebhooks) {
-      console.log('🔔 Registering webhooks...')
       
       const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/cin7/webhook`
       const webhookResult = await cin7.subscribeToWebhooks(webhookUrl)
       
       if (webhookResult.success) {
         webhooksRegistered = true
-        console.log('✅ Webhooks registered successfully')
         
         // Save webhook status (skip for dev bypass)
         if (!devBypass) {
@@ -188,7 +178,6 @@ export async function POST(request) {
     // Step 4: Initial sync (optional - can be done separately)
     let initialSyncData = null
     if (options.performInitialSync !== false) {
-      console.log('🔄 Starting initial sync...')
       
       try {
         const syncResult = await cin7.syncInventory()
@@ -227,7 +216,6 @@ export async function POST(request) {
             outOfStockCount: syncResult.inventory.filter(p => p.current_stock === 0).length
           }
           
-          console.log(`✅ Synced ${syncResult.itemsSynced} products`)
         }
       } catch (syncError) {
         console.error('⚠️ Initial sync failed:', syncError)

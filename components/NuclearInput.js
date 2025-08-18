@@ -23,7 +23,6 @@ const NuclearInput = memo(forwardRef(({
   useEffect(() => {
     if (actualRef.current) {
       if (!isInitialized.current || (defaultValue && defaultValue !== initialValue.current)) {
-        console.log('NUCLEAR: Setting value to', defaultValue, 'for input type', type)
         actualRef.current.value = defaultValue || ''
         initialValue.current = defaultValue || ''
         isInitialized.current = true
@@ -45,7 +44,6 @@ const NuclearInput = memo(forwardRef(({
         const newCursorPosition = Math.max(0, cursorPosition + lengthDiff)
         e.target.setSelectionRange(newCursorPosition, newCursorPosition)
         
-        console.log('NUCLEAR: Auto-formatted', type, 'from', currentValue, 'to', formattedValue)
       }
     }
   }
@@ -88,7 +86,6 @@ const NuclearInput = memo(forwardRef(({
       },
       set(newValue) {
         originalValueSetter.call(input, newValue)
-        console.log('NUCLEAR: Set value to:', newValue)
       }
     })
     

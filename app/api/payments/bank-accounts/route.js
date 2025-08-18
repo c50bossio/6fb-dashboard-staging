@@ -13,19 +13,15 @@ export async function GET(request) {
       const { data: { user: authUser }, error } = await supabase.auth.getUser()
       if (authUser && !error) {
         user = authUser
-        console.log('✅ Standard auth successful:', authUser.id)
       } else {
         authError = error
-        console.log('⚠️ Standard auth failed:', error?.message)
       }
     } catch (error) {
-      console.log('⚠️ Auth check failed:', error.message)
       authError = error
     }
     
     // Fallback for demo/testing
     if (!user && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
-      console.log('🔓 Using demo user for testing')
       user = {
         id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
         email: 'demo@bookedbarber.com'

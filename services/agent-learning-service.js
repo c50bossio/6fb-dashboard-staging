@@ -564,7 +564,6 @@ export class AgentLearningService {
     
     this.learningMetrics.adaptations.total++
     
-    console.log(`🔄 Adaptation triggered for ${agentId}: ${rule.description}`)
     
     return adaptation
   }
@@ -868,7 +867,6 @@ export class AgentLearningService {
       this.performMemoryCleanup()
     }, this.MEMORY_CLEANUP_INTERVAL)
     
-    console.log('🧹 Memory cleanup process started')
   }
 
   /**
@@ -901,7 +899,6 @@ export class AgentLearningService {
     totalCleaned += originalFeedback - this.feedbackHistory.length
     
     if (totalCleaned > 0) {
-      console.log(`🧹 Memory cleanup completed: ${totalCleaned} entries removed`)
     }
   }
 

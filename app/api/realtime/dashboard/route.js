@@ -19,7 +19,6 @@ export async function GET(request) {
 
   const stream = new ReadableStream({
     start(controller) {
-      console.log('🔄 Starting real-time dashboard stream for:', barbershopId);
       
       const initEvent = `data: ${JSON.stringify({
         type: 'connected',
@@ -81,7 +80,6 @@ export async function GET(request) {
       }, 30000); // Heartbeat every 30 seconds
 
       request.signal?.addEventListener('abort', () => {
-        console.log('🔌 Real-time dashboard client disconnected');
         clearInterval(interval);
         clearInterval(heartbeat);
         controller.close();

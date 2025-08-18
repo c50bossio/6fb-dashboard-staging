@@ -22,11 +22,11 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    console.log('🤝 Multi-agent collaboration request:', {
+    console.log('AI Collaboration Debug:', {
       query: query.substring(0, 100),
       userId,
       forceCollaboration
-    })
+    });
 
     const businessData = await fetchBusinessData(barbershopId)
 

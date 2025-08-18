@@ -54,7 +54,6 @@ export async function POST(request) {
     if (error) {
       console.error('Error saving feedback:', error)
       
-      console.log('Feedback received:', {
         type,
         rating,
         message,
@@ -170,7 +169,6 @@ async function notifyAdmin(feedback) {
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@6fbagent.com'
     
-    console.log('Admin notification:', {
       to: adminEmail,
       subject: `Urgent Feedback: ${feedback.type}`,
       body: `

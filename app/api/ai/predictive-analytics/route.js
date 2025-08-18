@@ -621,7 +621,6 @@ async function getHistoricalRevenue(barbershop_id) {
     )
     
     if (historicalData.length > 0) {
-      console.log('✅ Using real historical data for predictions:', historicalData.length, 'days')
       return historicalData
     }
     

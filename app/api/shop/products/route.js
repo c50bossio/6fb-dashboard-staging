@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 
 export async function GET(request) {
   try {
@@ -8,10 +8,8 @@ export async function GET(request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     )
     
-    console.log('🔍 Products API Debug (Service Role):')
     
     const userId = '64f11f63-fba4-40de-8280-867e036a6797'
-    console.log('🔧 Testing with user ID:', userId)
     
     const isDevelopment = true // Force development mode for testing
     
@@ -32,17 +30,14 @@ export async function GET(request) {
       )
     }
     
-    console.log('🏪 Looking for barbershop with owner_id:', userId)
     const { data: shop, error: shopError } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', userId)
       .single()
     
-    console.log('🏪 Shop query result:', shop?.id || 'none', shopError?.message || 'no error')
     
     if (!shop) {
-      console.log('❌ No shop found for user:', userId)
       return NextResponse.json({
         products: [],
         metrics: {
@@ -54,14 +49,12 @@ export async function GET(request) {
       })
     }
     
-    console.log('📦 Looking for products with barbershop_id:', shop.id)
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select('*')
       .eq('barbershop_id', shop.id)
       .order('name', { ascending: true })
     
-    console.log('📦 Products query result:', products?.length || 0, 'products found', productsError?.message || 'no error')
     
     if (productsError) {
       console.error('Error fetching products:', productsError)
@@ -121,7 +114,6 @@ export async function POST(request) {
     let userId = user?.id
     if (isDevelopment && !userId) {
       userId = '64f11f63-fba4-40de-8280-867e036a6797' // Elite Cuts owner with products
-      console.log('🔧 Development mode: Using Elite Cuts owner ID:', userId)
     }
     
     let profile = null

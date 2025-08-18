@@ -98,7 +98,6 @@ export default function ViewSwitcher() {
       
       if (response.ok) {
         const result = await response.json()
-        console.log('Context switch result:', result)
         
         if (context === 'primary') {
           setActiveContext(null)
@@ -108,7 +107,6 @@ export default function ViewSwitcher() {
           localStorage.setItem('activeContext', JSON.stringify(context))
         }
         
-        console.log('Switched context to:', context === 'primary' ? 'Primary View' : context.name)
         
       } else {
         console.error('Failed to switch context:', response.status)

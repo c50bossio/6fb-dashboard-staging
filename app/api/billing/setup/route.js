@@ -12,7 +12,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    console.log('🔧 Setting up billing for user:', user.email, 'feature:', feature)
 
     // Create or update billing preferences
     const billingConfig = {
@@ -63,7 +62,6 @@ export async function POST(request) {
       console.warn('⚠️ Failed to update profile billing status:', profileError.message)
     }
 
-    console.log('✅ Billing setup complete for:', feature)
 
     return NextResponse.json({ 
       success: true,

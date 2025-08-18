@@ -28,13 +28,11 @@ export async function GET(request) {
           console.warn('Invalid auth token provided:', error?.message)
         } else {
           authenticatedUser = user
-          console.log('✅ Authenticated request from user:', user.email)
         }
       } catch (authError) {
         console.warn('Auth validation error:', authError.message)
       }
     } else {
-      console.log('📊 Analytics API: No auth header, proceeding with development mode')
     }
     
     const { searchParams } = new URL(request.url);
@@ -66,7 +64,6 @@ export async function GET(request) {
         });
       } else {
         invalidateCache(cacheType);
-        console.log('🔄 Force refresh requested - cache invalidated');
         analyticsData = await getSupabaseAnalyticsData(barbershopId, format, metric);
       }
       
@@ -142,262 +139,170 @@ export async function GET(request) {
 }
 
 /**
- * PHASE 1 FIX: Supabase analytics data using same approach as Dashboard Metrics API
+ * ENHANCED: Comprehensive Supabase analytics data with proper aggregations
  */
 async function getSupabaseAnalyticsData(barbershopId, format, metric) {
   try {
-    console.log('🔄 Using Supabase approach for analytics data consistency');
-    
     const { createClient } = await import('../../../../lib/supabase/server');
     const supabase = createClient();
     
     const shopId = barbershopId || 'demo-shop-001';
     
-    const { data: customers, error: customersError } = await supabase
-      .from('customers')
-      .select('total_spent, total_visits, created_at, last_visit_at, shop_id')
-      .eq('shop_id', shopId);
-    
-    const { data: services, error: servicesError } = await supabase
-      .from('services')
-      .select('price')
-      .eq('shop_id', shopId);
+    // Query all relevant tables for comprehensive analytics
+    const [
+      customersResult,
+      appointmentsResult,
+      transactionsResult,
+      servicesResult
+    ] = await Promise.all([
+      supabase.from('customers').select('*').eq('shop_id', shopId),
+      supabase.from('appointments').select('*').eq('barbershop_id', shopId),
+      supabase.from('transactions').select('*').eq('barbershop_id', shopId),
+      supabase.from('services').select('*').eq('shop_id', shopId)
+    ]);
 
-    if (customersError) {
-      console.error('Customers query error:', customersError);
-    }
-    if (servicesError) {
-      console.error('Services query error:', servicesError);
-    }
+    const customers = customersResult.data || [];
+    const appointments = appointmentsResult.data || [];
+    const transactions = transactionsResult.data || [];
+    const services = servicesResult.data || [];
 
-    const totalCustomers = customers?.length || 0;
-    const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0;
-    const totalAppointments = customers?.reduce((sum, c) => sum + (c.total_visits || 0), 0) || 0;
-    const avgServicePrice = services?.reduce((sum, s) => sum + (s.price || 0), 0) / Math.max(1, services?.length || 1) || 0;
+    // Calculate comprehensive metrics
+    const totalCustomers = customers.length;
+    const totalAppointments = appointments.length;
+    const totalRevenue = transactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0);
     
-    console.log('📊 Supabase analytics data:', {
-      customers: totalCustomers,
-      revenue: totalRevenue,
-      appointments: totalAppointments
+    // Calculate time-based metrics
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const todayAppointments = appointments.filter(a => 
+      new Date(a.start_time) >= todayStart
+    );
+    const todayTransactions = transactions.filter(t => 
+      new Date(t.created_at) >= todayStart
+    );
+    const thisMonthTransactions = transactions.filter(t => 
+      new Date(t.created_at) >= thisMonth
+    );
+    
+    // Status breakdown
+    const appointmentsByStatus = {};
+    appointments.forEach(apt => {
+      const status = apt.status || 'unknown';
+      appointmentsByStatus[status] = (appointmentsByStatus[status] || 0) + 1;
     });
     
+    // Service popularity
+    const servicePopularity = {};
+    appointments.forEach(apt => {
+      const service = apt.service_name || 'Unknown';
+      servicePopularity[service] = (servicePopularity[service] || 0) + 1;
+    });
+    
+    const mostPopularServices = Object.entries(servicePopularity)
+      .map(([name, count]) => ({ name, count, percentage: (count / Math.max(totalAppointments, 1)) * 100 }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    
+    // Customer metrics
+    const returningCustomers = customers.filter(c => (c.total_visits || 0) > 1).length;
+    const newCustomersThisMonth = customers.filter(c => 
+      new Date(c.created_at) >= thisMonth
+    ).length;
+    
+    // Calculate peak hours
+    const hourlyBookings = {};
+    appointments.forEach(apt => {
+      const hour = new Date(apt.start_time).getHours();
+      hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
+    });
+    
+    const peakHours = Object.entries(hourlyBookings)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([hour]) => parseInt(hour));
+    
     const analyticsMetrics = {
+      // Revenue metrics
       total_revenue: totalRevenue,
-      monthly_revenue: totalRevenue, // Using total as monthly for now
-      daily_revenue: Math.round(totalRevenue / 30),
-      weekly_revenue: Math.round(totalRevenue / 4),
-      service_revenue: totalRevenue,
-      tip_revenue: 0,
-      revenue_growth: 0,
+      monthly_revenue: thisMonthTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0),
+      daily_revenue: todayTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0),
+      weekly_revenue: Math.round(totalRevenue / 4), // Approximate
+      average_service_price: services.length > 0 ? services.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0) / services.length : 0,
       
+      // Appointment metrics
       total_appointments: totalAppointments,
-      completed_appointments: totalAppointments,
-      cancelled_appointments: 0,
-      no_show_appointments: 0,
-      pending_appointments: 0,
-      confirmed_appointments: totalAppointments,
-      appointment_completion_rate: totalAppointments > 0 ? 100 : 0,
+      appointments_today: todayAppointments.length,
+      completed_appointments: appointmentsByStatus.completed || 0,
+      cancelled_appointments: appointmentsByStatus.cancelled || 0,
+      no_show_appointments: appointmentsByStatus.no_show || 0,
+      pending_appointments: appointmentsByStatus.pending || 0,
+      confirmed_appointments: appointmentsByStatus.confirmed || 0,
+      appointment_completion_rate: totalAppointments > 0 ? ((appointmentsByStatus.completed || 0) / totalAppointments) * 100 : 0,
       average_appointments_per_day: Math.round(totalAppointments / 30),
       
+      // Customer metrics
       total_customers: totalCustomers,
-      new_customers_this_month: totalCustomers,
-      returning_customers: 0,
-      customer_retention_rate: 0,
+      new_customers_this_month: newCustomersThisMonth,
+      returning_customers: returningCustomers,
+      customer_retention_rate: totalCustomers > 0 ? (returningCustomers / totalCustomers) * 100 : 0,
       average_customer_lifetime_value: totalCustomers > 0 ? Math.round(totalRevenue / totalCustomers) : 0,
       
-      total_barbers: 6, // From our known data
-      active_barbers: 6,
-      top_performing_barber: null,
-      average_service_duration: 45,
+      // Business insights
+      peak_booking_hours: peakHours,
+      most_popular_services: mostPopularServices,
+      busiest_days: ['Friday', 'Saturday'], // Would need more complex analysis
+      occupancy_rate: Math.min(100, (totalAppointments / Math.max(1, 30 * 8)) * 100), // Assuming 8 hour days
       
-      peak_booking_hours: [],
-      most_popular_services: [],
-      busiest_days: [],
-      occupancy_rate: 0,
-      
-      average_service_price: Math.round(avgServicePrice),
-      payment_success_rate: 0,
-      outstanding_payments: 0,
+      // System metrics
+      total_barbers: services.length > 0 ? Math.ceil(services.length / 3) : 1, // Estimate from services
+      active_barbers: services.length > 0 ? Math.ceil(services.length / 3) : 1,
+      payment_success_rate: transactions.length > 0 ? 
+        (transactions.filter(t => t.payment_status === 'completed').length / transactions.length) * 100 : 0,
       
       last_updated: new Date().toISOString(),
-      data_freshness: "supabase_real"
+      data_freshness: "supabase_comprehensive"
     };
+    
+    console.log(`📊 Analytics: ${totalRevenue.toFixed(2)} revenue, ${totalAppointments} appointments, ${totalCustomers} customers`);
     
     return {
       success: true,
       data: analyticsMetrics,
-      data_source: 'supabase',
-      cache_status: { database_type: 'postgresql' }
+      data_source: 'supabase_enhanced',
+      cache_status: { 
+        database_type: 'postgresql',
+        tables_queried: ['customers', 'appointments', 'transactions', 'services'],
+        records_processed: customers.length + appointments.length + transactions.length + services.length
+      }
     };
     
   } catch (error) {
     console.error('Supabase analytics data error:', error);
+    // Return minimal error state without mock data
     return {
-      success: true,
+      success: false,
       data: {
         total_revenue: 0,
         total_customers: 0,
         total_appointments: 0,
-        data_freshness: "supabase_error"
-      },
-      data_source: 'supabase_fallback'
-    };
-  }
-}
-
-/**
- * Real database fallback that fetches from Supabase
- * NO MOCK DATA - uses actual database operations
- */
-async function getConsistentFallbackData(barbershopId, format, metric) {
-  return await getRealDatabaseAnalytics(barbershopId, format, metric);
-}
-
-/**
- * Real database analytics - NO MOCK DATA
- * Fetches actual metrics from Supabase database
- */
-async function getRealDatabaseAnalytics(barbershopId, format, metric) {
-  try {
-    const { getBusinessMetrics, getDashboardModeData } = await import('../../../../lib/dashboard-data');
-    
-    const shopId = barbershopId || 'demo-shop-001';
-    
-    const [businessMetrics, dashboardData] = await Promise.all([
-      getBusinessMetrics(shopId),
-      getDashboardModeData('analytics', shopId)
-    ]);
-    
-    const realMetrics = {
-      total_revenue: businessMetrics.revenue || 0,
-      monthly_revenue: businessMetrics.revenue || 0,  // Same as total for now
-      daily_revenue: businessMetrics.dailyRevenue || businessMetrics.revenue / 30 || 0,
-      weekly_revenue: businessMetrics.revenue / 4 || 0,  // Approximate weekly
-      service_revenue: businessMetrics.revenue || 0,  // All revenue for now
-      tip_revenue: 0,  // Not tracked separately yet
-      revenue_growth: 12.5,  // Default growth rate
-      
-      total_appointments: businessMetrics.appointments || 0,
-      completed_appointments: businessMetrics.appointments || 0,  // Assume all completed for now
-      cancelled_appointments: 0,  // Not tracked separately yet
-      no_show_appointments: 0,  // Not tracked separately yet
-      pending_appointments: 0,  // Not tracked separately yet
-      confirmed_appointments: businessMetrics.appointments || 0,
-      appointment_completion_rate: businessMetrics.appointments > 0 ? 100 : 0,
-      average_appointments_per_day: businessMetrics.appointments / 30 || 0,
-      
-      total_customers: businessMetrics.customers || 0,
-      new_customers_this_month: Math.round((businessMetrics.customers || 0) * 0.15),  // Estimate 15% new
-      returning_customers: Math.round((businessMetrics.customers || 0) * 0.85),  // Estimate 85% returning
-      customer_retention_rate: 85,  // Default retention rate
-      average_customer_lifetime_value: businessMetrics.revenue && businessMetrics.customers ? 
-        Math.round(businessMetrics.revenue / businessMetrics.customers) : 0,
-      
-      total_barbers: 5,  // Default value
-      active_barbers: 3,  // Default value
-      top_performing_barber: "No data",
-      average_service_duration: 45,  // Default 45 minutes
-      
-      peak_booking_hours: [10, 14, 18],  // Default peak hours
-      most_popular_services: [],  // Will be populated from dashboard data if available
-      busiest_days: ['Friday', 'Saturday'],  // Default busy days
-      occupancy_rate: businessMetrics.capacityUtilization || 75,
-      
-      average_service_price: businessMetrics.revenue && businessMetrics.appointments ? 
-        Math.round(businessMetrics.revenue / businessMetrics.appointments) : 30,
-      payment_success_rate: 98,  // Default success rate
-      outstanding_payments: 0,  // Not tracked yet
-      
-      last_updated: new Date().toISOString(),
-      data_freshness: "database_real"
-    };
-    
-    console.log('📊 Real analytics data fetched:', {
-      revenue: realMetrics.total_revenue,
-      customers: realMetrics.total_customers,
-      appointments: realMetrics.total_appointments
-    });
-    
-    if (format === 'formatted') {
-      const formattedMetrics = `
-CURRENT BUSINESS METRICS (Live Database Data)
-
-💰 REVENUE PERFORMANCE
-• Total Revenue: $${realMetrics.total_revenue.toLocaleString()}
-• Monthly Revenue: $${realMetrics.monthly_revenue.toLocaleString()}
-• Daily Revenue: $${realMetrics.daily_revenue.toLocaleString()}
-• Revenue Growth: ${realMetrics.revenue_growth > 0 ? '+' : ''}${realMetrics.revenue_growth}%
-• Average Service Price: $${realMetrics.average_service_price}
-
-📅 BOOKING ANALYTICS
-• Total Appointments: ${realMetrics.total_appointments}
-• Completed: ${realMetrics.completed_appointments} (${realMetrics.appointment_completion_rate}% completion rate)
-• Cancelled: ${realMetrics.cancelled_appointments}
-• No-Shows: ${realMetrics.no_show_appointments}
-• Average Appointments/Day: ${realMetrics.average_appointments_per_day}
-
-👥 CUSTOMER INSIGHTS
-• Total Customers: ${realMetrics.total_customers}
-• New This Month: ${realMetrics.new_customers_this_month}
-• Retention Rate: ${realMetrics.customer_retention_rate}%
-• Average Customer Lifetime Value: $${realMetrics.average_customer_lifetime_value}
-
-👨‍💼 STAFF PERFORMANCE
-• Total Barbers: ${realMetrics.total_barbers}
-• Active Barbers: ${realMetrics.active_barbers}
-• Top Performer: ${realMetrics.top_performing_barber}
-• Occupancy Rate: ${realMetrics.occupancy_rate}%
-
-🔥 BUSINESS INSIGHTS
-• Peak Hours: ${realMetrics.peak_booking_hours.slice(0, 3).map(h => `${h}:00`).join(', ')}
-• Busiest Days: ${realMetrics.busiest_days.slice(0, 3).join(', ')}
-• Top Services: ${realMetrics.most_popular_services.slice(0, 3).map(s => s.name).join(', ')}
-• Payment Success Rate: ${realMetrics.payment_success_rate}%
-
-Data Quality: REAL DATABASE
-`;
-      
-      return {
-        formatted_metrics: formattedMetrics.trim(),
-        data_source: 'database',
-        raw_data: realMetrics
-      };
-    }
-    
-    if (format === 'specific' && metric) {
-      return {
-        [metric]: realMetrics[metric],
-        data_source: 'database'
-      };
-    }
-    
-    return {
-      data: realMetrics,
-      data_source: 'database',
-      cache_status: {
-        cache_entries: 1,
-        database_type: 'supabase_real'
-      }
-    };
-    
-  } catch (error) {
-    console.error('Database analytics error:', error);
-    
-    return {
-      data: {
-        total_revenue: 0,
-        total_customers: 0,
-        total_appointments: 0,
-        error: 'Database unavailable',
+        error: 'Database connection failed',
         data_freshness: "error_state"
       },
       data_source: 'error',
-      cache_status: {
-        cache_entries: 0,
-        database_type: 'unavailable'
-      }
+      error: error.message
     };
   }
+}
+
+/**
+ * Simplified fallback - always use the main Supabase function
+ * NO MOCK DATA - real database only
+ */
+async function getConsistentFallbackData(barbershopId, format, metric) {
+  console.log('🔄 Using fallback: calling main Supabase analytics function');
+  return await getSupabaseAnalyticsData(barbershopId, format, metric);
 }
 
 /**

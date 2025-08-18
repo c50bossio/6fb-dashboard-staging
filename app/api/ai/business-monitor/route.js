@@ -537,7 +537,6 @@ async function getSmartRecommendations(barbershop_id) {
 async function dismissAlert(request) {
   const { alert_id, barbershop_id } = await request.json()
   
-  console.log(`Alert ${alert_id} dismissed for ${barbershop_id}`)
   
   return NextResponse.json({
     success: true,

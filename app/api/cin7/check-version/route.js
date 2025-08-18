@@ -11,9 +11,7 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    console.log('🔍 Testing Cin7 API version compatibility...')
     
-    console.log('Testing API v2...')
     try {
       const v2Response = await fetch('https://inventory.dearsystems.com/ExternalAPI/v2/products?limit=1', {
         method: 'GET',
@@ -38,12 +36,9 @@ export async function POST(request) {
         })
       }
       
-      console.log('V2 failed with status:', v2Response.status)
     } catch (v2Error) {
-      console.log('V2 error:', v2Error.message)
     }
     
-    console.log('Testing API v1...')
     try {
       const credentials = Buffer.from(`${accountId}:${apiKey}`).toString('base64')
       
@@ -68,9 +63,7 @@ export async function POST(request) {
         })
       }
       
-      console.log('V1 failed with status:', v1Response.status)
     } catch (v1Error) {
-      console.log('V1 error:', v1Error.message)
     }
     
     return NextResponse.json({

@@ -1,12 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { 
   Package, 
   AlertCircle, 
@@ -17,6 +10,13 @@ import {
   ExternalLink,
   AlertTriangle
 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/UnifiedInput'
 
 export default function SimplifiedCin7Setup({ onComplete }) {
   const [credentials, setCredentials] = useState({
@@ -150,7 +150,6 @@ export default function SimplifiedCin7Setup({ onComplete }) {
       localStorage.setItem('cin7_api_key', credentials.apiKey)
       
       // First, save credentials to database via setup endpoint
-      console.log('💾 Saving credentials via setup endpoint...')
       const setupResponse = await fetch('/api/cin7/setup', {
         method: 'POST',
         headers: {
@@ -167,8 +166,6 @@ export default function SimplifiedCin7Setup({ onComplete }) {
         })
       })
       
-      console.log('💾 Setup response status:', setupResponse.status)
-      console.log('💾 Setup response ok:', setupResponse.ok)
       
       if (!setupResponse.ok) {
         const setupData = await setupResponse.json()
@@ -178,7 +175,6 @@ export default function SimplifiedCin7Setup({ onComplete }) {
       }
       
       // Now perform the sync
-      console.log('🔄 Starting sync after credentials saved...')
       const syncResponse = await fetch('/api/cin7/sync', {
         method: 'POST',
         headers: {
@@ -192,8 +188,6 @@ export default function SimplifiedCin7Setup({ onComplete }) {
         })
       })
       
-      console.log('📡 Sync response status:', syncResponse.status)
-      console.log('📡 Sync response ok:', syncResponse.ok)
       
       const syncData = await syncResponse.json()
       

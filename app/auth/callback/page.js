@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { createClient } from '@/lib/supabase/browser-client'
 
 export default function AuthCallback() {
@@ -38,43 +38,81 @@ export default function AuthCallback() {
         if (code) {
           console.log('🔄 Processing OAuth callback...')
           
-          const result = await handleOAuthCallback(supabase, code)
+          // Add timeout to prevent hanging
+          const callbackTimeout = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Callback timeout after 10 seconds')), 10000)
+          )
           
-          if (!result.success) {
-            console.error('❌ Callback processing failed:', result.error)
-            router.push(`/login?error=${encodeURIComponent(result.error.message)}`)
-            return
-          }
-          
-          if (result.existingSession || result.recovered) {
-            console.log('✅ Session found or recovered, redirecting to dashboard')
-            router.push('/dashboard')
-            return
-          }
-          
-          console.log('✅ New session established successfully')
-          
-          // Check if user needs onboarding
-          const { user } = result.session
-          if (user) {
-            console.log('👤 User authenticated:', user.email)
+          try {
+            const result = await Promise.race([
+              handleOAuthCallback(supabase, code),
+              callbackTimeout
+            ])
             
-            // Check profile
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single()
+            console.log('📊 Callback result:', result)
             
-            if (!profile || !profile.shop_name) {
-              console.log('🎯 User needs onboarding')
-              router.push('/welcome')
+            if (!result.success) {
+              console.error('❌ Callback processing failed:', result.error)
+              router.push(`/login?error=${encodeURIComponent(result.error.message)}`)
+              return
+            }
+            
+            if (result.existingSession || result.recovered) {
+              console.log('✅ Session found or recovered, redirecting to dashboard')
+              router.push('/dashboard')
+              return
+            }
+            
+            console.log('✅ New session established successfully')
+            
+            // Check if user needs onboarding
+            const { user } = result.session
+            if (user) {
+              console.log('👤 User authenticated:', user.email)
+              
+              // Check profile with timeout
+              const profileTimeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Profile timeout')), 5000)
+              )
+              
+              try {
+                const { data: profile } = await Promise.race([
+                  supabase.from('profiles').select('*').eq('id', user.id).single(),
+                  profileTimeout
+                ])
+                
+                if (!profile || !profile.shop_name) {
+                  console.log('🎯 User needs onboarding')
+                  router.push('/welcome')
+                } else {
+                  console.log('📊 Redirecting to dashboard')
+                  router.push('/dashboard')
+                }
+              } catch (profileError) {
+                console.warn('⚠️ Profile check failed, redirecting to dashboard anyway:', profileError)
+                router.push('/dashboard')
+              }
             } else {
-              console.log('📊 Redirecting to dashboard')
               router.push('/dashboard')
             }
-          } else {
-            router.push('/dashboard')
+          } catch (timeoutError) {
+            console.error('❌ Callback timeout or error:', timeoutError)
+            // Fallback: try direct session check
+            console.log('🔄 Attempting fallback session check...')
+            
+            try {
+              const { data: { session: fallbackSession } } = await supabase.auth.getSession()
+              if (fallbackSession && fallbackSession.user) {
+                console.log('✅ Fallback session found, redirecting to dashboard')
+                router.push('/dashboard')
+                return
+              }
+            } catch (fallbackError) {
+              console.error('❌ Fallback session check failed:', fallbackError)
+            }
+            
+            // Ultimate fallback: redirect to login with error
+            router.push(`/login?error=callback_timeout`)
           }
         } else {
           console.log('⚠️ No code in callback, checking for existing session')

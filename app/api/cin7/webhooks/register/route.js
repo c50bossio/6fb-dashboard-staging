@@ -6,8 +6,8 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { Cin7Client, decrypt } from '@/lib/cin7-client'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
@@ -57,7 +57,6 @@ export async function POST(request) {
       `https://${request.headers.get('host')}`
     const webhookUrl = `${webhookBaseUrl}/api/cin7/webhook`
     
-    console.log(`📡 Registering webhooks at: ${webhookUrl}`)
     
     // Register webhooks with CIN7
     const result = await cin7.subscribeToWebhooks(webhookUrl)
@@ -74,7 +73,6 @@ export async function POST(request) {
         })
         .eq('id', credentials.id)
       
-      console.log(`✅ Webhooks registered successfully`)
       
       return NextResponse.json({
         success: true,

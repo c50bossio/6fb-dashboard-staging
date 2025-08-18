@@ -452,7 +452,6 @@ async function getTrendingServices(supabase, startDate, endDate) {
       })
     }
     
-    console.log('Trending services table not available or empty')
     return NextResponse.json({
       success: true,
       services: [],

@@ -58,7 +58,6 @@ export default function LivePreview({
           url: bookingUrl
         })
       } catch (err) {
-        console.log('Error sharing:', err)
       }
     } else {
       handleCopyLink()

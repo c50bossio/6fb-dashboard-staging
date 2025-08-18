@@ -93,7 +93,6 @@ export async function GET(request) {
           expires_at: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
         })
     } catch (error) {
-      console.log('Could not store OAuth state (table may not exist):', error.message)
     }
     
     if (!GOOGLE_OAUTH_CONFIG.client_id || GOOGLE_OAUTH_CONFIG.client_id === 'your-google-client-id') {
@@ -105,7 +104,6 @@ export async function GET(request) {
       }, { status: 500 })
     }
     
-    console.log('Google OAuth Config:', {
       client_id: GOOGLE_OAUTH_CONFIG.client_id?.substring(0, 20) + '...',
       has_secret: !!GOOGLE_OAUTH_CONFIG.client_secret,
       redirect_uri: GOOGLE_OAUTH_CONFIG.redirect_uri,

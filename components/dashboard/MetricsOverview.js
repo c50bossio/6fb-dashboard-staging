@@ -9,6 +9,8 @@ import {
   ArrowTrendingDownIcon,
   MinusIcon,
   CalendarDaysIcon,
+  CalendarIcon,
+  CheckCircleIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
   EyeIcon
@@ -34,6 +36,10 @@ const MetricsOverview = React.memo(function MetricsOverview({
   const { data: analytics, loading: analyticsLoading } = useTenantAnalytics('7d', {
     metric_focus: 'overview'
   })
+  
+  // Use real dashboard data when available
+  const realData = dashboardStats?.analytics_data
+  const hasRealData = realData && dashboardStats?.system_health?.data_source === 'supabase_enhanced'
   if (loading || analyticsLoading) {
     return (
       <div className="space-y-6">
@@ -68,46 +74,63 @@ const MetricsOverview = React.memo(function MetricsOverview({
 
   const metrics = [
     {
-      title: "Today's Conversations",
-      value: analytics?.ai_usage?.ai_conversations || dashboardStats?.totalConversations || 847,
-      change: "+12%",
+      title: hasRealData ? "Total Appointments" : "Today's Conversations",
+      value: hasRealData ? 
+        (realData.total_appointments || 0) : 
+        (analytics?.ai_usage?.ai_conversations || dashboardStats?.totalConversations || 847),
+      change: hasRealData ? 
+        `${realData.appointments_today || 0} today` : 
+        "+12%",
       changeType: "positive",
-      icon: ChatBubbleLeftRightIcon,
+      icon: hasRealData ? CalendarIcon : ChatBubbleLeftRightIcon,
       color: "blue",
-      description: "from yesterday",
+      description: hasRealData ? "all time" : "from yesterday",
       gradient: "from-olive-500 to-cyan-500"
     },
     {
-      title: "Active AI Agents",
-      value: dashboardStats?.activeAgents || 6,
-      change: "All systems",
-      changeType: "neutral",
-      icon: SparklesIcon,
+      title: hasRealData ? "Total Revenue" : "Active AI Agents",
+      value: hasRealData ? 
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })
+          .format(realData.total_revenue || 0) :
+        (dashboardStats?.activeAgents || 6),
+      change: hasRealData ? 
+        `$${realData.daily_revenue || 0} today` : 
+        "All systems",
+      changeType: hasRealData ? "positive" : "neutral",
+      icon: hasRealData ? CurrencyDollarIcon : SparklesIcon,
       color: "purple",
-      description: "operational",
+      description: hasRealData ? "all time" : "operational",
       gradient: "from-gold-500 to-pink-500"
     },
     {
-      title: "Active Users",
-      value: analytics?.summary?.total_users || dashboardStats?.activeUsers || 12,
-      change: analytics?.growth_trends?.user_growth || "+8%",
+      title: hasRealData ? "Total Customers" : "Active Users",
+      value: hasRealData ? 
+        (realData.total_customers || 0) : 
+        (analytics?.summary?.total_users || dashboardStats?.activeUsers || 12),
+      change: hasRealData ? 
+        `${realData.new_customers_this_month || 0} new` : 
+        (analytics?.growth_trends?.user_growth || "+8%"),
       changeType: "positive",
       icon: UserGroupIcon,
       color: "green",
-      description: "last 7 days",
+      description: hasRealData ? "all time" : "last 7 days",
       gradient: "from-green-500 to-emerald-500"
     },
     {
-      title: "Revenue Tracked",
-      value: analytics?.business_metrics?.revenue_tracked ? 
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })
-          .format(analytics.business_metrics.revenue_tracked) : 
-        '$0',
-      change: analytics?.growth_trends?.revenue_growth || "+15%",
+      title: hasRealData ? "Completion Rate" : "Revenue Tracked",
+      value: hasRealData ? 
+        `${Math.round(realData.appointment_completion_rate || 0)}%` :
+        (analytics?.business_metrics?.revenue_tracked ? 
+          new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })
+            .format(analytics.business_metrics.revenue_tracked) : 
+          '$0'),
+      change: hasRealData ? 
+        `${realData.completed_appointments || 0} done` : 
+        (analytics?.growth_trends?.revenue_growth || "+15%"),
       changeType: "positive",
-      icon: CurrencyDollarIcon,
+      icon: hasRealData ? CheckCircleIcon : CurrencyDollarIcon,
       color: "orange",
-      description: "this period",
+      description: hasRealData ? "appointment success" : "this period",
       gradient: "from-orange-500 to-red-500"
     }
   ]
@@ -138,21 +161,31 @@ const MetricsOverview = React.memo(function MetricsOverview({
     if (onMetricClick) {
       onMetricClick(metric);
     } else {
-      console.log(`📊 Metric clicked: ${metric.title}`, metric);
     }
   }
 
   return (
     <div className="space-y-6">
+      {/* Data Source Indicator */}
+      {hasRealData && (
+        <div className="text-xs text-gray-500 flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+          <span>Data Source: Live Database</span>
+          {realData.last_updated && (
+            <span>• Updated: {new Date(realData.last_updated).toLocaleTimeString()}</span>
+          )}
+        </div>
+      )}
+
       {/* Tenant Analytics Header */}
       {tenant && (
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
-              Business Analytics
+              {hasRealData ? "Barbershop Analytics" : "Business Analytics"}
             </h3>
             <p className="text-sm text-gray-600">
-              Last 7 days • {businessName || tenantName}
+              {hasRealData ? "Real-time business metrics" : "Last 7 days"} • {businessName || tenantName}
             </p>
           </div>
           

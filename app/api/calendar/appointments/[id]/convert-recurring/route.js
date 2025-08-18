@@ -11,8 +11,6 @@ export async function POST(request, { params }) {
     const { id } = params
     const body = await request.json()
     
-    console.log('Convert recurring request for ID:', id)
-    console.log('Request body:', body)
     
     const { data: existingAppointment, error: fetchError } = await supabase
       .from('bookings')
@@ -36,24 +34,15 @@ export async function POST(request, { params }) {
       )
     }
     
-    console.log('Found existing appointment:', existingAppointment)
     
     // 🔍 DEBUG: Log the time values we're working with
-    console.log('  - existingAppointment.start_time (raw):', existingAppointment.start_time)
-    console.log('  - existingAppointment.end_time (raw):', existingAppointment.end_time)
     
     if (existingAppointment.start_time) {
       const startDate = new Date(existingAppointment.start_time)
-      console.log('  - start_time as Date object:', startDate)
-      console.log('  - start_time local time:', startDate.toLocaleString())
-      console.log('  - start_time UTC:', startDate.toUTCString())
-      console.log('  - start_time ISO:', startDate.toISOString())
     }
     
     if (existingAppointment.end_time) {
       const endDate = new Date(existingAppointment.end_time)
-      console.log('  - end_time as Date object:', endDate)
-      console.log('  - end_time local time:', endDate.toLocaleString())
     }
     
     if (existingAppointment.is_recurring) {
@@ -86,11 +75,6 @@ export async function POST(request, { params }) {
       enhancedRRule = `DTSTART:${dtstart}\n${rrule}`
     }
     
-    console.log('🔍 STORING ENHANCED RRULE:')
-    console.log('  - Original RRule:', rrule)
-    console.log('  - Enhanced RRule:', enhancedRRule)
-    console.log('  - Start time (dtstart):', existingAppointment.start_time)
-    console.log('  - End time (dtend):', existingAppointment.end_time)
     
     const recurringPattern = {
       rrule: enhancedRRule,  // Store the enhanced RRule with DTSTART
@@ -106,24 +90,15 @@ export async function POST(request, { params }) {
       skip_dates: body.skip_dates || []
     }
     
-    console.log('Generated recurring pattern:', recurringPattern)
     
     // 🔍 DEBUG: Log what we're storing in the recurring pattern
-    console.log('🔍 RECURRING PATTERN TIME VALUES:')
-    console.log('  - dtstart (raw):', recurringPattern.dtstart)
-    console.log('  - dtend (raw):', recurringPattern.dtend)
     
     if (recurringPattern.dtstart) {
       const dtstart = new Date(recurringPattern.dtstart)
-      console.log('  - dtstart as Date:', dtstart)
-      console.log('  - dtstart local time:', dtstart.toLocaleString())
-      console.log('  - dtstart UTC:', dtstart.toUTCString())
     }
     
     if (recurringPattern.dtend) {
       const dtend = new Date(recurringPattern.dtend)  
-      console.log('  - dtend as Date:', dtend)
-      console.log('  - dtend local time:', dtend.toLocaleString())
     }
     
     const updateData = {
@@ -148,7 +123,6 @@ export async function POST(request, { params }) {
       )
     }
     
-    console.log('Updated appointment with recurring pattern:', updatedAppointment)
     
     const expectedOccurrences = calculateOccurrences(rrule, existingAppointment.start_time)
     
@@ -162,7 +136,6 @@ export async function POST(request, { params }) {
       next_occurrences: expectedOccurrences.slice(0, 5) // Show first 5 upcoming dates
     }
     
-    console.log('Returning response:', responseData)
     return NextResponse.json(responseData)
     
   } catch (error) {

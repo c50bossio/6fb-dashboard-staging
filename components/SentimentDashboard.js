@@ -30,7 +30,6 @@ export default function SentimentDashboard({ userId = 'demo_user' }) {
       if (data.success) {
         setSentimentData(data.sentiment_history)
         setAnalytics(data.analytics)
-        console.log('📊 Sentiment data loaded:', data.analytics)
       }
     } catch (error) {
       console.error('Failed to load sentiment data:', error)

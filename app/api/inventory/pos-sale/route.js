@@ -10,7 +10,6 @@ export async function POST(request) {
   try {
     const { items, appointment_id, payment_total, payment_method } = await request.json()
     
-    console.log('🛍️ Processing POS sale:', { items: items.length, appointment_id, payment_total })
     
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -94,7 +93,6 @@ export async function POST(request) {
     }
     
     // Log inventory transactions (table-less approach for now)
-    console.log('📊 Inventory transactions (logged):', {
       transactionCount: inventoryTransactions.length,
       transactions: inventoryTransactions.map(t => ({
         product_id: t.product_id,
@@ -157,7 +155,6 @@ export async function POST(request) {
       p.current_stock === 0
     ) || []
     
-    console.log('✅ POS sale processed successfully')
     
     return NextResponse.json({
       success: true,

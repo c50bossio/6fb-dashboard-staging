@@ -6,11 +6,9 @@ export async function POST(request) {
     const { sessionId } = await request.json()
     const supabase = createClient()
     
-    console.log('🚀 User initialization started, session ID:', sessionId)
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      console.log('❌ Auth error:', authError?.message || 'No user found')
       return NextResponse.json({ 
         error: 'Not authenticated', 
         details: 'User session not found. Please try signing in again.',
@@ -18,9 +16,6 @@ export async function POST(request) {
       }, { status: 401 })
     }
     
-    console.log('👤 Initializing user profile:', user.email)
-    console.log('🆔 User ID:', user.id)
-    console.log('📦 User metadata:', user.user_metadata)
     
     const profileData = {
       id: user.id,
@@ -32,7 +27,6 @@ export async function POST(request) {
       onboarding_step: 0
     }
     
-    console.log('📝 Upserting profile with data:', profileData)
     
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -53,7 +47,6 @@ export async function POST(request) {
       let errorCode = 'PROFILE_ERROR'
       
       if (profileError.code === '23505') {
-        console.log('🔄 Duplicate detected, attempting profile update...')
         
         const { data: updatedProfile, error: updateError } = await supabase
           .from('profiles')
@@ -71,7 +64,6 @@ export async function POST(request) {
           errorMessage = 'Failed to create or update profile'
           errorCode = 'PROFILE_UPDATE_FAILED'
         } else {
-          console.log('✅ Profile updated successfully:', updatedProfile.email)
           return NextResponse.json({ 
             success: true, 
             message: 'User profile updated successfully',
@@ -90,12 +82,9 @@ export async function POST(request) {
       }, { status: 500 })
     }
     
-    console.log('✅ User profile upserted successfully:', profile.email)
     
     if (sessionId && sessionId.startsWith('cs_')) {
-      console.log('💳 Attempting to link Stripe session data...')
       try {
-        console.log('ℹ️ Stripe session linking not implemented yet, skipping')
       } catch (stripeError) {
         console.warn('⚠️ Stripe session linking failed, continuing anyway:', stripeError.message)
       }

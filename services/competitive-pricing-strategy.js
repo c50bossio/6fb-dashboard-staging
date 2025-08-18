@@ -255,44 +255,25 @@ class CompetitivePricingStrategy {
 // Calculate and display competitive strategy
 const strategy = new CompetitivePricingStrategy();
 
-console.log('💰 BookedBarber Competitive Pricing Strategy\n');
-console.log('='.repeat(50));
 
 // Show pass-through pricing at different volumes
-console.log('\n📊 Volume-Based Pricing Strategy:');
 const volumes = [50000, 100000, 300000, 1500000];
 volumes.forEach(volume => {
   const pricing = strategy.getPassThroughPricing(volume);
-  console.log(`\nAt $${volume.toLocaleString()}/month volume:`);
-  console.log(`  Stripe charges you: ${pricing.stripeRates.card.percentage}% + $${pricing.stripeRates.card.fixed}`);
-  console.log(`  You charge (Growth tier): ${pricing.merchantPricing.growth.effectiveRate}`);
-  console.log(`  Your margin: ${(pricing.merchantPricing.growth.card.percentage - pricing.stripeRates.card.percentage).toFixed(2)}%`);
 });
 
 // Show Interchange++ opportunity
-console.log('\n💎 Interchange++ Opportunity:');
 const interchangePlus = strategy.getInterchangePlusPricing();
-console.log(`  Your cost: ${interchangePlus.yourCost}`);
-console.log(`  Merchant rate: ${interchangePlus.merchantRate}`);
-console.log(`  ${interchangePlus.savings}`);
 
 // Show alternative payments
-console.log('\n🎯 Alternative Payment Methods:');
 const alternatives = strategy.getAlternativePaymentStrategy();
-console.log(`  ACH: ${alternatives.ach.merchantRate} - ${alternatives.ach.benefit}`);
-console.log(`  Bank Transfer: ${alternatives.bankTransfers.merchantRate} - ${alternatives.bankTransfers.benefit}`);
 
 // Show cost reduction techniques
-console.log('\n⚡ Quick Wins for Lower Costs:');
 const techniques = strategy.getCostReductionTechniques();
 Object.values(techniques).slice(0, 3).forEach(t => {
-  console.log(`  • ${t.technique}: Save ${t.savings}`);
 });
 
 // Implementation roadmap
-console.log('\n🗓️ Implementation Roadmap:');
 const roadmap = strategy.getImplementationRoadmap();
-console.log('Immediate Actions:');
-roadmap.immediate.forEach(action => console.log(`  ${action}`));
 
 module.exports = { CompetitivePricingStrategy };

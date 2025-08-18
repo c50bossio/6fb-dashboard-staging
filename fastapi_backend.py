@@ -162,10 +162,10 @@ from services.database_connection_pool import (
 try:
     from services.supabase_api_proxy import supabase_proxy, get_supabase_analytics, get_supabase_customers
     SUPABASE_PROXY_AVAILABLE = True
-    print("✅ PHASE 3: Supabase API proxy loaded")
+# Removed: print("✅ PHASE 3: Supabase API proxy loaded")
 except ImportError as e:
     SUPABASE_PROXY_AVAILABLE = False
-    print(f"⚠️ PHASE 3: Supabase API proxy not available: {e}")
+# Removed: print(f"⚠️ PHASE 3: Supabase API proxy not available: {e}")
 
 # Import Prometheus metrics
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
@@ -178,7 +178,7 @@ try:
     ALERT_SERVICE_AVAILABLE = True
 except ImportError:
     ALERT_SERVICE_AVAILABLE = False
-    print("⚠️ Alert service not available")
+# Removed: print("⚠️ Alert service not available")
 
 # Import business recommendations engine
 try:
@@ -186,7 +186,7 @@ try:
     RECOMMENDATIONS_ENGINE_AVAILABLE = True
 except ImportError:
     RECOMMENDATIONS_ENGINE_AVAILABLE = False
-    print("⚠️ Business recommendations engine not available")
+# Removed: print("⚠️ Business recommendations engine not available")
 
 # Import enhanced business recommendations service
 try:
@@ -194,25 +194,25 @@ try:
     ENHANCED_RECOMMENDATIONS_AVAILABLE = True
 except ImportError:
     ENHANCED_RECOMMENDATIONS_AVAILABLE = False
-    print("⚠️ Enhanced business recommendations service not available")
+# Removed: print("⚠️ Enhanced business recommendations service not available")
 
 # Import Advanced RAG system
 try:
     from services.advanced_rag_endpoint import router as advanced_rag_router
     ADVANCED_RAG_AVAILABLE = True
-    print("✅ Advanced RAG system loaded")
+# Removed: print("✅ Advanced RAG system loaded")
 except ImportError as e:
     ADVANCED_RAG_AVAILABLE = False
-    print(f"⚠️ Advanced RAG system not available: {e}")
+# Removed: print(f"⚠️ Advanced RAG system not available: {e}")
 
 # Import Real-time Data system
 try:
     from services.realtime_data_endpoint import router as realtime_data_router
     REALTIME_DATA_AVAILABLE = True
-    print("✅ Real-time Data system loaded")
+# Removed: print("✅ Real-time Data system loaded")
 except ImportError as e:
     REALTIME_DATA_AVAILABLE = False
-    print(f"⚠️ Real-time Data system not available: {e}")
+# Removed: print(f"⚠️ Real-time Data system not available: {e}")
 
 # Import AI performance monitoring
 try:
@@ -220,7 +220,7 @@ try:
     PERFORMANCE_MONITORING_AVAILABLE = True
 except ImportError:
     PERFORMANCE_MONITORING_AVAILABLE = False
-    print("⚠️ AI performance monitoring not available")
+# Removed: print("⚠️ AI performance monitoring not available")
 
 # Import enhanced business knowledge service
 try:
@@ -228,7 +228,7 @@ try:
     ENHANCED_KNOWLEDGE_AVAILABLE = True
 except ImportError:
     ENHANCED_KNOWLEDGE_AVAILABLE = False
-    print("⚠️ Enhanced business knowledge service not available")
+# Removed: print("⚠️ Enhanced business knowledge service not available")
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -240,14 +240,14 @@ app = FastAPI(
 # 🚨 Initialize Sentry error monitoring for production
 initialize_sentry(app)
 if sentry_service.initialized:
-    print("✅ Sentry error monitoring initialized")
+# Removed: print("✅ Sentry error monitoring initialized")
     # Add startup breadcrumb
     add_breadcrumb("FastAPI application started", category="startup", level="info")
     # Test Sentry in development
     if os.getenv('NODE_ENV') == 'development' and os.getenv('SENTRY_TEST_ON_START'):
         sentry_service.test_sentry()
 else:
-    print("⚠️ Sentry not configured - error monitoring disabled")
+# Removed: print("⚠️ Sentry not configured - error monitoring disabled")
 
 # 🧠 CRITICAL: Memory management middleware to fix OAuth callback loops
 @app.middleware("http")
@@ -293,7 +293,7 @@ async def memory_management_middleware(request, call_next):
                     transaction.finish()
                 
                 if oauth_duration > 2.0:  # Alert if OAuth takes more than 2 seconds
-                    print(f"⚠️ Slow OAuth callback: {oauth_duration:.2f}s")
+# Removed: print(f"⚠️ Slow OAuth callback: {oauth_duration:.2f}s")
                     # Report to Sentry
                     if sentry_service.initialized:
                         sentry_service.capture_message(
@@ -346,7 +346,7 @@ async def track_metrics(request, call_next):
     # Log memory pressure warnings for auth endpoints
     if endpoint.startswith('/auth') or endpoint.startswith('/api/auth'):
         if memory_stats.memory_pressure > 0.8:
-            print(f"⚠️ High memory pressure during auth request: {memory_stats.memory_pressure:.1%}")
+# Removed: print(f"⚠️ High memory pressure during auth request: {memory_stats.memory_pressure:.1%}")
     
     return response
 
@@ -405,9 +405,9 @@ def get_database_config():
     supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
     
     if supabase_url and supabase_key:
-        print(f"🔄 PHASE 2: Configuring FastAPI to use Supabase data via API proxy")
-        print(f"🔗 Supabase URL: {supabase_url}")
-        print(f"📡 Strategy: FastAPI → Next.js API → Supabase (proven working path)")
+# Removed: print(f"🔄 PHASE 2: Configuring FastAPI to use Supabase data via API proxy")
+# Removed: print(f"🔗 Supabase URL: {supabase_url}")
+# Removed: print(f"📡 Strategy: FastAPI → Next.js API → Supabase (proven working path)")
         
         return {
             "type": "api_proxy",
@@ -417,7 +417,7 @@ def get_database_config():
         }
     else:
         # Fallback to SQLite for development
-        print("⚠️ Supabase credentials not found, using SQLite fallback")
+# Removed: print("⚠️ Supabase credentials not found, using SQLite fallback")
         return {
             "type": "sqlite", 
             "path": DATABASE_PATH
@@ -432,8 +432,8 @@ os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)  # Ensure directory e
 if db_config["type"] == "api_proxy":
     # Use API proxy pattern: FastAPI calls Next.js APIs that connect to Supabase
     db_pool = None  # Use HTTP client for API calls instead of database pool
-    print("✅ API proxy configuration loaded - will use Next.js → Supabase path")
-    print("📡 FastAPI will call Next.js APIs for consistent data access")
+# Removed: print("✅ API proxy configuration loaded - will use Next.js → Supabase path")
+# Removed: print("📡 FastAPI will call Next.js APIs for consistent data access")
 else:
     # Use SQLite for development fallback
     db_pool = initialize_connection_pool(
@@ -445,7 +445,7 @@ else:
     )
     # 🧠 Register connection pool with memory manager
     memory_manager.register_connection_pool(db_pool)
-    print("✅ SQLite database connection pool initialized with memory management")
+# Removed: print("✅ SQLite database connection pool initialized with memory management")
 
 # Initialize Prometheus metrics
 http_requests_total = Counter(
@@ -721,7 +721,7 @@ async def startup_event():
     # PHASE 2: Configure API proxy or database connection
     if db_config["type"] == "api_proxy":
         try:
-            print("🔄 PHASE 2: Testing Next.js API connectivity for Supabase proxy...")
+# Removed: print("🔄 PHASE 2: Testing Next.js API connectivity for Supabase proxy...")
             
             # Test connection to Next.js APIs that connect to Supabase
             import httpx
@@ -735,15 +735,15 @@ async def startup_event():
                     customers = data.get('data', {}).get('total_customers', 0)
                     revenue = data.get('data', {}).get('total_revenue', 0)
                     
-                    print(f"✅ PHASE 2: Next.js → Supabase connection verified!")
-                    print(f"📊 Test query: {customers} customers, ${revenue} revenue")
-                    print(f"🔗 FastAPI will proxy through: {frontend_url}/api/*")
+# Removed: print(f"✅ PHASE 2: Next.js → Supabase connection verified!")
+# Removed: print(f"📊 Test query: {customers} customers, ${revenue} revenue")
+# Removed: print(f"🔗 FastAPI will proxy through: {frontend_url}/api/*")
                 else:
                     raise Exception(f"API test failed with status {response.status_code}")
             
         except Exception as e:
-            print(f"❌ PHASE 2: API proxy test failed: {e}")
-            print("🔄 Falling back to SQLite for this session...")
+# Removed: print(f"❌ PHASE 2: API proxy test failed: {e}")
+# Removed: print("🔄 Falling back to SQLite for this session...")
             
             # Fallback to SQLite if API proxy fails
             db_pool = initialize_connection_pool(
@@ -753,7 +753,7 @@ async def startup_event():
                 max_connections=50,
                 strategy=PoolStrategy.ADAPTIVE
             )
-            print("✅ SQLite fallback connection pool initialized")
+# Removed: print("✅ SQLite fallback connection pool initialized")
             
             # Update config to reflect fallback
             db_config["type"] = "sqlite"
@@ -761,13 +761,13 @@ async def startup_event():
     # Initialize database schema (only for SQLite)
     if db_config["type"] == "sqlite":
         init_db()  # Only for SQLite - Supabase handles schema via migrations
-        print("✅ SQLite database schema initialized")
+# Removed: print("✅ SQLite database schema initialized")
     else:
-        print("✅ Using existing Supabase data via Next.js API proxy")
+# Removed: print("✅ Using existing Supabase data via Next.js API proxy")
     
     # Start notification queue processing
     asyncio.create_task(notification_queue.start_worker())
-    print("✅ Notification queue processor started")
+# Removed: print("✅ Notification queue processor started")
 
 @app.get("/")
 async def root():
@@ -822,13 +822,13 @@ async def report_error(request: Request):
             return {"success": True, "eventId": event_id}
         
         # Fallback logging if Sentry not available
-        print(f"Frontend error logged: {error_data}")
+# Removed: print(f"Frontend error logged: {error_data}")
         return {"success": True, "eventId": None}
         
     except Exception as e:
         if sentry_service.initialized:
             capture_exception(e)
-        print(f"Error reporting failed: {e}")
+# Removed: print(f"Error reporting failed: {e}")
         return {"success": False, "error": str(e)}
 
 @app.get("/health")
@@ -977,7 +977,7 @@ async def register(user: UserRegister):
 @app.post("/api/v1/auth/login", response_model=TokenResponse)
 async def login(user: UserLogin):
     """Login user"""
-    print(f"LOGIN ATTEMPT: email={user.email}")
+# Removed: print(f"LOGIN ATTEMPT: email={user.email}")
     
     with get_db() as conn:
         cursor = conn.execute(
@@ -986,14 +986,14 @@ async def login(user: UserLogin):
         )
         db_user = cursor.fetchone()
     
-    print(f"DB USER FOUND: {db_user is not None}")
+# Removed: print(f"DB USER FOUND: {db_user is not None}")
     if db_user:
-        print(f"DB USER: id={db_user['id']}, email={db_user['email']}")
+# Removed: print(f"DB USER: id={db_user['id']}, email={db_user['email']}")
         password_verified = verify_password(user.password, db_user["password_hash"])
-        print(f"Authentication result: {'SUCCESS' if password_verified else 'FAILED'}")
+# Removed: print(f"Authentication result: {'SUCCESS' if password_verified else 'FAILED'}")
     
     if not db_user or not verify_password(user.password, db_user["password_hash"]):
-        print("LOGIN FAILED: Invalid credentials")
+# Removed: print("LOGIN FAILED: Invalid credentials")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
@@ -1172,10 +1172,10 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
                     }
                 }
             else:
-                print(f"⚠️ PHASE 3: Analytics API failed, using fallback: {analytics_result.get('error')}")
+# Removed: print(f"⚠️ PHASE 3: Analytics API failed, using fallback: {analytics_result.get('error')}")
                 
         except Exception as e:
-            print(f"❌ PHASE 3: Dashboard stats conversion failed: {e}")
+# Removed: print(f"❌ PHASE 3: Dashboard stats conversion failed: {e}")
     
     # Fallback to original mock data for backward compatibility
     return {
@@ -1247,10 +1247,10 @@ async def get_recent_bookings(current_user: dict = Depends(get_current_user)):
                 return recent_bookings
                 
             else:
-                print(f"⚠️ PHASE 3: Appointments API failed, using fallback: {appointments_result.get('error')}")
+# Removed: print(f"⚠️ PHASE 3: Appointments API failed, using fallback: {appointments_result.get('error')}")
                 
         except Exception as e:
-            print(f"❌ PHASE 3: Recent bookings conversion failed: {e}")
+# Removed: print(f"❌ PHASE 3: Recent bookings conversion failed: {e}")
     
     # Fallback to original mock data for backward compatibility
     return [
@@ -1930,7 +1930,7 @@ async def enhanced_ai_chat(request: dict):
         }
         
     except Exception as e:
-        print(f"❌ AI Orchestrator error: {e}")
+# Removed: print(f"❌ AI Orchestrator error: {e}")
         # Return fallback response
         return {
             "success": False,
@@ -1989,7 +1989,7 @@ async def get_agent_system_status():
         }
         
     except Exception as e:
-        print(f"❌ Agent system status error: {e}")
+# Removed: print(f"❌ Agent system status error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2060,7 +2060,7 @@ async def batch_process_messages(request: dict):
         }
         
     except Exception as e:
-        print(f"❌ Batch processing error: {e}")
+# Removed: print(f"❌ Batch processing error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -2105,7 +2105,7 @@ async def get_parallel_processing_metrics():
         }
         
     except Exception as e:
-        print(f"❌ Parallel metrics error: {e}")
+# Removed: print(f"❌ Parallel metrics error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -2125,7 +2125,7 @@ async def get_ai_cache_performance():
         }
         
     except Exception as e:
-        print(f"❌ AI cache performance error: {e}")
+# Removed: print(f"❌ AI cache performance error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2155,7 +2155,7 @@ async def clear_ai_cache(request: dict = {}):
         }
         
     except Exception as e:
-        print(f"❌ AI cache clear error: {e}")
+# Removed: print(f"❌ AI cache clear error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2176,7 +2176,7 @@ async def warm_ai_cache():
         }
         
     except Exception as e:
-        print(f"❌ AI cache warming error: {e}")
+# Removed: print(f"❌ AI cache warming error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2197,7 +2197,7 @@ async def get_ai_cache_health():
         }
         
     except Exception as e:
-        print(f"❌ AI cache health check error: {e}")
+# Removed: print(f"❌ AI cache health check error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2245,7 +2245,7 @@ async def get_database_pool_statistics():
         }
         
     except Exception as e:
-        print(f"❌ Database pool stats error: {e}")
+# Removed: print(f"❌ Database pool stats error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2298,7 +2298,7 @@ async def optimize_database_cache(request: dict = {}):
         }
         
     except Exception as e:
-        print(f"❌ Database cache optimization error: {e}")
+# Removed: print(f"❌ Database cache optimization error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -2324,7 +2324,7 @@ async def get_ai_insights(limit: int = 10, type: str = None):
         }
         
     except Exception as e:
-        print(f"❌ AI Insights error: {e}")
+# Removed: print(f"❌ AI Insights error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2372,7 +2372,7 @@ async def generate_ai_insights(request: dict):
         }
         
     except Exception as e:
-        print(f"❌ AI Insights generation error: {e}")
+# Removed: print(f"❌ AI Insights generation error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2395,7 +2395,7 @@ async def dismiss_ai_insight(insight_id: str):
         }
         
     except Exception as e:
-        print(f"❌ AI Insight dismissal error: {e}")
+# Removed: print(f"❌ AI Insight dismissal error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2434,7 +2434,7 @@ async def get_predictive_analytics(
         }
         
     except Exception as e:
-        print(f"❌ Predictive Analytics error: {e}")
+# Removed: print(f"❌ Predictive Analytics error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2524,7 +2524,7 @@ async def generate_predictive_forecast(request: dict):
         }
         
     except Exception as e:
-        print(f"❌ Predictive Forecast generation error: {e}")
+# Removed: print(f"❌ Predictive Forecast generation error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2548,7 +2548,7 @@ async def get_predictive_dashboard(barbershop_id: str):
         }
         
     except Exception as e:
-        print(f"❌ Predictive Dashboard error: {e}")
+# Removed: print(f"❌ Predictive Dashboard error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2624,7 +2624,7 @@ async def generate_business_recommendations(request: BusinessRecommendationsRequ
         }
         
     except Exception as e:
-        print(f"❌ Business recommendations error: {e}")
+# Removed: print(f"❌ Business recommendations error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2665,7 +2665,7 @@ async def get_recommendations_engine_status():
         }
         
     except Exception as e:
-        print(f"❌ Engine status error: {e}")
+# Removed: print(f"❌ Engine status error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2695,7 +2695,7 @@ async def track_recommendation_implementation(
         }
         
     except Exception as e:
-        print(f"❌ Track recommendation error: {e}")
+# Removed: print(f"❌ Track recommendation error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2732,7 +2732,7 @@ async def get_realtime_performance_metrics():
         }
         
     except Exception as e:
-        print(f"❌ Real-time metrics error: {e}")
+# Removed: print(f"❌ Real-time metrics error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2785,7 +2785,7 @@ async def get_system_performance_report():
         }
         
     except Exception as e:
-        print(f"❌ Performance report error: {e}")
+# Removed: print(f"❌ Performance report error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2819,7 +2819,7 @@ async def get_monitoring_system_status():
         }
         
     except Exception as e:
-        print(f"❌ Monitoring status error: {e}")
+# Removed: print(f"❌ Monitoring status error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2871,7 +2871,7 @@ async def record_performance_metric(request: PerformanceMetricRequest):
         }
         
     except Exception as e:
-        print(f"❌ Record metric error: {e}")
+# Removed: print(f"❌ Record metric error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2913,7 +2913,7 @@ async def get_component_health(component_name: str):
         }
         
     except Exception as e:
-        print(f"❌ Component health error: {e}")
+# Removed: print(f"❌ Component health error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2972,7 +2972,7 @@ async def get_enhanced_knowledge_status():
         }
         
     except Exception as e:
-        print(f"❌ Enhanced knowledge status error: {e}")
+# Removed: print(f"❌ Enhanced knowledge status error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3050,7 +3050,7 @@ async def search_enhanced_knowledge(request: KnowledgeSearchRequest):
         }
         
     except Exception as e:
-        print(f"❌ Enhanced knowledge search error: {e}")
+# Removed: print(f"❌ Enhanced knowledge search error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3086,7 +3086,7 @@ async def get_enhanced_contextual_insights(request: KnowledgeInsightsRequest):
         }
         
     except Exception as e:
-        print(f"❌ Enhanced contextual insights error: {e}")
+# Removed: print(f"❌ Enhanced contextual insights error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3144,7 +3144,7 @@ async def store_enhanced_knowledge(request: StoreKnowledgeRequest):
         }
         
     except Exception as e:
-        print(f"❌ Store enhanced knowledge error: {e}")
+# Removed: print(f"❌ Store enhanced knowledge error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3240,7 +3240,7 @@ async def perform_enhanced_contextual_search(request: Dict[str, Any]):
         }
         
     except Exception as e:
-        print(f"❌ Enhanced contextual search error: {e}")
+# Removed: print(f"❌ Enhanced contextual search error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3289,7 +3289,7 @@ async def generate_enhanced_business_recommendations(request: EnhancedRecommenda
         }
         
     except Exception as e:
-        print(f"❌ Enhanced recommendations error: {e}")
+# Removed: print(f"❌ Enhanced recommendations error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3315,7 +3315,7 @@ async def get_recommendations_status(barbershop_id: str):
         }
         
     except Exception as e:
-        print(f"❌ Recommendations status error: {e}")
+# Removed: print(f"❌ Recommendations status error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3328,7 +3328,7 @@ try:
     ANALYTICS_SERVICE_AVAILABLE = True
 except ImportError:
     ANALYTICS_SERVICE_AVAILABLE = False
-    print("⚠️ Real-time analytics service not available")
+# Removed: print("⚠️ Real-time analytics service not available")
 
 @app.get("/analytics/live-metrics")
 async def get_live_metrics(
@@ -3374,9 +3374,9 @@ async def get_live_metrics(
                         "timestamp": datetime.now().isoformat()
                     }
                 else:
-                    print(f"⚠️ PHASE 3: Supabase analytics proxy failed: {result.get('error')}")
+# Removed: print(f"⚠️ PHASE 3: Supabase analytics proxy failed: {result.get('error')}")
             except Exception as proxy_error:
-                print(f"❌ PHASE 3: Analytics conversion failed: {proxy_error}")
+# Removed: print(f"❌ PHASE 3: Analytics conversion failed: {proxy_error}")
         
         # Fallback to original error for unavailable service
         if not ANALYTICS_SERVICE_AVAILABLE:
@@ -3508,7 +3508,7 @@ YEAR-TO-DATE ANALYTICS COMPARISON
             }
     
     except Exception as e:
-        print(f"❌ Analytics metrics error: {e}")
+# Removed: print(f"❌ Analytics metrics error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3550,7 +3550,7 @@ async def refresh_analytics(request: dict):
             }
     
     except Exception as e:
-        print(f"❌ Analytics refresh error: {e}")
+# Removed: print(f"❌ Analytics refresh error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3574,7 +3574,7 @@ async def get_analytics_cache_status():
         }
     
     except Exception as e:
-        print(f"❌ Analytics cache status error: {e}")
+# Removed: print(f"❌ Analytics cache status error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3587,7 +3587,7 @@ try:
     BUSINESS_DATA_SERVICE_AVAILABLE = True
 except ImportError:
     BUSINESS_DATA_SERVICE_AVAILABLE = False
-    print("⚠️ Unified business data service not available")
+# Removed: print("⚠️ Unified business data service not available")
 
 @app.get("/business-data/metrics")
 async def get_unified_business_metrics(
@@ -3638,7 +3638,7 @@ async def get_unified_business_metrics(
             }
     
     except Exception as e:
-        print(f"❌ Unified business data error: {e}")
+# Removed: print(f"❌ Unified business data error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3693,7 +3693,7 @@ async def get_unified_business_metrics_post(request: dict):
             }
     
     except Exception as e:
-        print(f"❌ Unified business data POST error: {e}")
+# Removed: print(f"❌ Unified business data POST error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3736,7 +3736,7 @@ async def refresh_unified_business_data(request: dict):
             }
     
     except Exception as e:
-        print(f"❌ Unified business data refresh error: {e}")
+# Removed: print(f"❌ Unified business data refresh error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3760,7 +3760,7 @@ async def get_unified_business_data_cache_status():
         }
     
     except Exception as e:
-        print(f"❌ Unified business data cache status error: {e}")
+# Removed: print(f"❌ Unified business data cache status error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3807,7 +3807,7 @@ async def enhanced_ai_chat(request: dict):
         return response
     
     except Exception as e:
-        print(f"❌ Enhanced AI chat error: {e}")
+# Removed: print(f"❌ Enhanced AI chat error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3817,85 +3817,94 @@ async def enhanced_ai_chat(request: dict):
 # Include Advanced RAG router if available
 if ADVANCED_RAG_AVAILABLE:
     app.include_router(advanced_rag_router)
-    print("✅ Advanced RAG System included at /enhanced-knowledge/*")
+# Removed: print("✅ Advanced RAG System included at /enhanced-knowledge/*")
 
 # Include Real-time Data router if available
 if REALTIME_DATA_AVAILABLE:
     app.include_router(realtime_data_router)
-    print("✅ Real-time Data System included at /realtime-data/*")
+# Removed: print("✅ Real-time Data System included at /realtime-data/*")
 
 # Import and include modular routers
 try:
     from routers.inventory import router as inventory_router
     app.include_router(inventory_router)
-    print("✅ Inventory Management System included at /api/v1/inventory/*")
+# Removed: print("✅ Inventory Management System included at /api/v1/inventory/*")
     INVENTORY_SYSTEM_AVAILABLE = True
 except ImportError as e:
     INVENTORY_SYSTEM_AVAILABLE = False
-    print(f"⚠️ Inventory Management system not available: {e}")
+# Removed: print(f"⚠️ Inventory Management system not available: {e}")
 
 try:
     from routers.ai import router as ai_router
     app.include_router(ai_router)
-    print("✅ AI Router included at /api/v1/*")
+# Removed: print("✅ AI Router included at /api/v1/*")
     AI_ROUTER_AVAILABLE = True
 except ImportError as e:
     AI_ROUTER_AVAILABLE = False
-    print(f"⚠️ AI Router not available: {e}")
+# Removed: print(f"⚠️ AI Router not available: {e}")
 
 try:
     from routers.auth import router as auth_router
     app.include_router(auth_router)
-    print("✅ Auth Router included at /api/v1/*")
+# Removed: print("✅ Auth Router included at /api/v1/*")
     AUTH_ROUTER_AVAILABLE = True
 except ImportError as e:
     AUTH_ROUTER_AVAILABLE = False
-    print(f"⚠️ Auth Router not available: {e}")
+# Removed: print(f"⚠️ Auth Router not available: {e}")
 
 try:
     from routers.dashboard import router as dashboard_router
     app.include_router(dashboard_router)
-    print("✅ Dashboard Router included at /api/v1/*")
+# Removed: print("✅ Dashboard Router included at /api/v1/*")
     DASHBOARD_ROUTER_AVAILABLE = True
 except ImportError as e:
     DASHBOARD_ROUTER_AVAILABLE = False
-    print(f"⚠️ Dashboard Router not available: {e}")
+# Removed: print(f"⚠️ Dashboard Router not available: {e}")
 
 try:
     from routers.notifications import router as notifications_router
     app.include_router(notifications_router)
-    print("✅ Notifications Router included at /api/v1/*")
+# Removed: print("✅ Notifications Router included at /api/v1/*")
     NOTIFICATIONS_ROUTER_AVAILABLE = True
 except ImportError as e:
     NOTIFICATIONS_ROUTER_AVAILABLE = False
-    print(f"⚠️ Notifications Router not available: {e}")
+# Removed: print(f"⚠️ Notifications Router not available: {e}")
+
+try:
+    from routers.booking_notifications import router as booking_notifications_router
+    app.include_router(booking_notifications_router)
+# Removed: print("✅ Booking Notifications Router included at /api/v1/*")
+    BOOKING_NOTIFICATIONS_ROUTER_AVAILABLE = True
+except ImportError as e:
+    BOOKING_NOTIFICATIONS_ROUTER_AVAILABLE = False
+# Removed: print(f"⚠️ Booking Notifications Router not available: {e}")
 
 try:
     from routers.settings import router as settings_router
     app.include_router(settings_router)
-    print("✅ Settings Router included at /api/v1/*")
+# Removed: print("✅ Settings Router included at /api/v1/*")
     SETTINGS_ROUTER_AVAILABLE = True
 except ImportError as e:
     SETTINGS_ROUTER_AVAILABLE = False
-    print(f"⚠️ Settings Router not available: {e}")
+# Removed: print(f"⚠️ Settings Router not available: {e}")
 
 try:
     from routers.analytics import router as analytics_router
     app.include_router(analytics_router)
-    print("✅ Analytics Router included at /api/v1/analytics/*")
+# Removed: print("✅ Analytics Router included at /api/v1/analytics/*")
     ANALYTICS_ROUTER_AVAILABLE = True
 except ImportError as e:
     ANALYTICS_ROUTER_AVAILABLE = False
-    print(f"⚠️ Analytics Router not available: {e}")
+# Removed: print(f"⚠️ Analytics Router not available: {e}")
 
 try:
     from routers.appointments import router as appointments_router
     app.include_router(appointments_router)
-    print("✅ Appointments Router included at /api/v1/appointments/*")
+# Removed: print("✅ Appointments Router included at /api/v1/appointments/*")
     APPOINTMENTS_ROUTER_AVAILABLE = True
 except ImportError as e:
     APPOINTMENTS_ROUTER_AVAILABLE = False
-    print(f"⚠️ Appointments Router not available: {e}")
+# Removed: print(f"⚠️ Appointments Router not available: {e}")
 
 # Import and include Notion Integration router
 try:
@@ -3906,32 +3915,32 @@ try:
     try:
         from routers.payments import router as payments_router
         app.include_router(payments_router)
-        print("✅ Payment router loaded successfully")
+# Removed: print("✅ Payment router loaded successfully")
     except ImportError as e:
-        print(f"⚠️ Payment router not available: {e}")
+# Removed: print(f"⚠️ Payment router not available: {e}")
     except Exception as e:
-        print(f"❌ Error loading payment router: {e}")
-    print("✅ Notion Integration System included at /notion/*")
+# Removed: print(f"❌ Error loading payment router: {e}")
+# Removed: print("✅ Notion Integration System included at /notion/*")
     NOTION_INTEGRATION_AVAILABLE = True
 except ImportError as e:
     NOTION_INTEGRATION_AVAILABLE = False
-    print(f"⚠️ Notion Integration system not available: {e}")
+# Removed: print(f"⚠️ Notion Integration system not available: {e}")
 
 
 # Mount alert service if available
 if ALERT_SERVICE_AVAILABLE:
     app.mount("/", alert_app)
-    print("✅ Intelligent Alert System mounted at /intelligent-alerts/*")
+# Removed: print("✅ Intelligent Alert System mounted at /intelligent-alerts/*")
 
 # Import and setup AI Performance Monitoring System
 try:
     from services.ai_performance_endpoints import setup_performance_routes
     app = setup_performance_routes(app)
-    print("✅ AI Performance Monitoring System integrated at /ai/performance/*")
+# Removed: print("✅ AI Performance Monitoring System integrated at /ai/performance/*")
     AI_PERFORMANCE_MONITORING_AVAILABLE = True
 except ImportError as e:
     AI_PERFORMANCE_MONITORING_AVAILABLE = False
-    print(f"⚠️ AI Performance Monitoring system not available: {e}")
+# Removed: print(f"⚠️ AI Performance Monitoring system not available: {e}")
 
 if __name__ == "__main__":
     import uvicorn

@@ -226,7 +226,6 @@ class StripeConnectFees {
    */
   async recordPlatformRevenue(data) {
     // This would save to your database for revenue tracking
-    console.log('💰 Platform Revenue Recorded:', {
       type: data.type,
       amount: data.amount,
       timestamp: new Date().toISOString()
@@ -284,26 +283,7 @@ module.exports = { StripeConnectFees };
 
 // Example implementation
 if (require.main === module) {
-  console.log('\n🚀 Stripe Connect Fee Implementation');
-  console.log('=====================================\n');
   
-  console.log('✅ Revenue Streams Enabled:');
-  console.log('1. Card Processing Markup (0.3-0.6% + $0.05)');
-  console.log('2. ACH Processing Markup (0.7-1.2% - much higher margin!)');
-  console.log('3. Instant Payout Fees ($0.25-0.50 + 0.25-0.5%)');
-  console.log('4. Subscription Revenue Share (10% of recurring payments)');
-  console.log('5. Volume-Based Tiered Pricing');
   
-  console.log('\n💡 Implementation Steps:');
-  console.log('1. Use createPaymentWithPlatformFee() for all card payments');
-  console.log('2. Promote ACH payments for higher margins');
-  console.log('3. Offer instant payouts as premium feature');
-  console.log('4. Set application_fee_amount on all transactions');
-  console.log('5. Track revenue with getRevenueReport()');
   
-  console.log('\n📈 Revenue Optimization Tips:');
-  console.log('• Encourage ACH for large transactions (7x better margins)');
-  console.log('• Bundle instant payouts with higher tiers');
-  console.log('• Implement volume discounts to increase GMV');
-  console.log('• Add premium features that justify higher fees');
 }

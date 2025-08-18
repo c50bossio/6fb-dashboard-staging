@@ -22,7 +22,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    console.log('🔍 Starting Dynamic Field Discovery for Cin7 API...')
     
     const apiEndpoints = [
       'https://inventory.dearsystems.com/externalapi/products?limit=5',
@@ -36,7 +35,6 @@ export async function POST(request) {
     
     for (const endpoint of apiEndpoints) {
       try {
-        console.log(`🔍 Testing endpoint: ${endpoint}`)
         const response = await fetch(endpoint, {
           method: 'GET',
           headers: {
@@ -52,14 +50,11 @@ export async function POST(request) {
             const data = await response.json()
             workingEndpoint = endpoint
             discoveryResult = data
-            console.log(`✅ Found working endpoint: ${endpoint}`)
             break
           }
         } else if (response.status === 401 || response.status === 403) {
-          console.log(`🔐 Endpoint exists but needs valid credentials: ${endpoint}`)
         }
       } catch (error) {
-        console.log(`❌ Endpoint failed: ${endpoint} - ${error.message}`)
       }
     }
     
@@ -86,7 +81,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
     
-    console.log(`📊 Analyzing ${products.length} products for field discovery...`)
     
     const fieldAnalysis = analyzeProductFields(products)
     
@@ -413,7 +407,6 @@ async function storeFieldMappingConfig(barbershopId, config) {
         updated_at: new Date().toISOString()
       }, { onConflict: 'barbershop_id' })
     
-    console.log('✅ Field mapping configuration stored successfully')
   } catch (error) {
     console.warn('⚠️ Could not store field mapping config:', error.message)
   }

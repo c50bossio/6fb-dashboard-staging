@@ -7,7 +7,6 @@ class MockStripeService {
   }
 
   async createPaymentIntent(amount, currency = 'usd', metadata = {}) {
-    console.log('💳 [MOCK] Stripe: Creating payment intent', {
       amount,
       currency,
       metadata
@@ -28,7 +27,6 @@ class MockStripeService {
   }
 
   async chargeCampaign(accountId, amount, description) {
-    console.log('💳 [MOCK] Stripe: Charging for campaign', {
       accountId,
       amount,
       description
@@ -55,7 +53,6 @@ class MockStripeService {
   }
 
   async createCustomer(email, name, metadata = {}) {
-    console.log('💳 [MOCK] Stripe: Creating customer', {
       email,
       name
     })
@@ -71,7 +68,6 @@ class MockStripeService {
   }
 
   async attachPaymentMethod(customerId, paymentMethodId) {
-    console.log('💳 [MOCK] Stripe: Attaching payment method', {
       customerId,
       paymentMethodId
     })
@@ -92,7 +88,6 @@ class MockStripeService {
   }
 
   async createSubscription(customerId, priceId, metadata = {}) {
-    console.log('💳 [MOCK] Stripe: Creating subscription', {
       customerId,
       priceId,
       metadata
@@ -118,7 +113,6 @@ class MockStripeService {
   }
 
   async createInvoice(customerId, items, metadata = {}) {
-    console.log('💳 [MOCK] Stripe: Creating invoice', {
       customerId,
       items: items.length,
       metadata
@@ -153,7 +147,6 @@ class MockStripeService {
   }
 
   async createRefund(chargeId, amount, reason = 'requested_by_customer') {
-    console.log('💳 [MOCK] Stripe: Creating refund', {
       chargeId,
       amount,
       reason
@@ -172,7 +165,6 @@ class MockStripeService {
   }
 
   async getBalanceTransaction(transactionId) {
-    console.log('💳 [MOCK] Stripe: Getting balance transaction', {
       transactionId
     })
 
@@ -190,7 +182,6 @@ class MockStripeService {
   }
 
   async createCheckoutSession(customerId, mode = 'setup', successUrl, cancelUrl) {
-    console.log('💳 [MOCK] Stripe: Creating checkout session', {
       customerId,
       mode
     })
@@ -209,13 +200,11 @@ class MockStripeService {
   }
 
   verifyWebhookSignature(payload, signature) {
-    console.log('💳 [MOCK] Stripe: Verifying webhook signature')
     
     return true
   }
 
   async getBillingHistory(customerId, limit = 10) {
-    console.log('💳 [MOCK] Stripe: Getting billing history', {
       customerId,
       limit
     })

@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckCircleIcon,
   ArrowPathIcon,
@@ -13,6 +11,8 @@ import {
   SignalSlashIcon
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
 
 export default function StatusWidget({ onSync, onSettings, compact = false }) {
   const [status, setStatus] = useState('checking') // checking, connected, syncing, error, disconnected

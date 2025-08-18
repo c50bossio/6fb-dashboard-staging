@@ -8,7 +8,6 @@ class MockTwilioService {
   }
 
   async sendSMS(to, message, options = {}) {
-    console.log('📱 [MOCK] Twilio: Simulating SMS send', {
       to: Array.isArray(to) ? `${to.length} recipients` : to,
       messageLength: message.length,
       segments: Math.ceil(message.length / 160)
@@ -30,7 +29,6 @@ class MockTwilioService {
   }
 
   async sendSMSCampaign(campaign, recipients) {
-    console.log('📱 [MOCK] Twilio: Sending SMS campaign', {
       campaign: campaign.name,
       recipients: recipients.length,
       message: campaign.message.substring(0, 50) + '...'
@@ -63,7 +61,6 @@ class MockTwilioService {
   }
 
   async sendWhiteLabelSMSCampaign(campaign, barbershop, recipients) {
-    console.log('📱 [MOCK] Twilio: White-label SMS campaign', {
       shop: barbershop.name,
       campaign: campaign.name,
       recipients: recipients.length
@@ -81,7 +78,6 @@ class MockTwilioService {
   }
 
   async validatePhoneNumber(phoneNumber) {
-    console.log('📱 [MOCK] Twilio: Validating phone number', { phoneNumber })
 
     const cleaned = phoneNumber.replace(/\D/g, '')
     const isValid = cleaned.length === 10 || cleaned.length === 11
@@ -96,7 +92,6 @@ class MockTwilioService {
   }
 
   async addOptOut(phoneNumber) {
-    console.log('📱 [MOCK] Twilio: Adding opt-out', { phoneNumber })
     
     return {
       success: true,
@@ -106,7 +101,6 @@ class MockTwilioService {
   }
 
   async removeOptOut(phoneNumber) {
-    console.log('📱 [MOCK] Twilio: Removing opt-out', { phoneNumber })
     
     return {
       success: true,
@@ -116,7 +110,6 @@ class MockTwilioService {
   }
 
   async checkOptOut(phoneNumber) {
-    console.log('📱 [MOCK] Twilio: Checking opt-out status', { phoneNumber })
     
     const isOptedOut = Math.random() < 0.05 // 5% opted out
 
@@ -128,7 +121,6 @@ class MockTwilioService {
   }
 
   async getSMSAnalytics(campaignId) {
-    console.log('📱 [MOCK] Twilio: Getting SMS analytics', { campaignId })
 
     return {
       campaignId,
@@ -179,7 +171,6 @@ class MockTwilioService {
   }
 
   async scheduleSMS(to, message, sendAt) {
-    console.log('📱 [MOCK] Twilio: Scheduling SMS', {
       to: Array.isArray(to) ? `${to.length} recipients` : to,
       sendAt
     })

@@ -95,7 +95,6 @@ export default function AICoachPanel({ data }) {
       
       if (response.ok) {
         const data = await response.json()
-        console.log('AI Coach response:', data)
       }
     } catch (error) {
       console.error('Failed to get AI insight:', error)

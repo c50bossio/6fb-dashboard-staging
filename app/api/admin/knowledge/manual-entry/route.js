@@ -29,12 +29,12 @@ export async function POST(request) {
     // 2. Generate embeddings for the content
     // 3. Add to knowledge base for AI retrieval
     
-    console.log('📝 New knowledge entry added:', {
+    const response = {
       id: knowledgeEntry.id,
       title: knowledgeEntry.title,
       domain: knowledgeEntry.domain,
       confidence: knowledgeEntry.confidence
-    })
+    }
 
     try {
       const response = await fetch('http://localhost:8001/api/v1/knowledge/add-entry', {
@@ -56,10 +56,8 @@ export async function POST(request) {
           timestamp: new Date().toISOString()
         })
       } else {
-        console.log('⚠️ Backend not available, storing entry locally')
       }
     } catch (backendError) {
-      console.log('⚠️ Backend connection failed, storing locally:', backendError.message)
     }
 
     return NextResponse.json({

@@ -117,7 +117,6 @@ export async function DELETE(request) {
       const fs = require('fs').promises
       await fs.unlink(filePath)
     } catch (error) {
-      console.log('File already deleted or does not exist:', filePath)
     }
 
     return NextResponse.json({

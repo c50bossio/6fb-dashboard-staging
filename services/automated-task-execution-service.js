@@ -149,7 +149,6 @@ class AutomatedTaskExecutionService {
    */
   async processAutomatedTriggers(context) {
     try {
-      console.log('🤖 Processing automated triggers:', context)
 
       const triggers = await this.identifyTriggers(context)
       
@@ -290,7 +289,6 @@ class AutomatedTaskExecutionService {
     try {
       const safetyCheck = await this.performSafetyCheck(task)
       if (!safetyCheck.passed) {
-        console.log('⚠️ Task failed safety check:', safetyCheck.reasons)
         task.status = 'blocked'
         task.blockReason = safetyCheck.reasons.join(', ')
         return false
@@ -299,7 +297,6 @@ class AutomatedTaskExecutionService {
       if (task.requiresApproval) {
         task.status = 'pending_approval'
         this.approvalQueue.push(task)
-        console.log('📋 Task queued for approval:', task.id)
         return false
       }
 
@@ -351,7 +348,6 @@ class AutomatedTaskExecutionService {
    */
   async executeTask(task) {
     try {
-      console.log(`🚀 Executing task ${task.id}:`, task.actions)
       
       task.status = 'executing'
       task.startedAt = new Date().toISOString()
@@ -376,7 +372,6 @@ class AutomatedTaskExecutionService {
       this.executionHistory.push(task)
       this.activeExecutions.delete(task.id)
 
-      console.log(`✅ Task ${task.id} completed:`, task.status)
       return true
 
     } catch (error) {
@@ -511,7 +506,6 @@ class AutomatedTaskExecutionService {
     // - Send notification to manager
     // - Update customer record
     
-    console.log('📞 Escalated to manager:', escalation)
     return escalation
   }
 
@@ -523,7 +517,6 @@ class AutomatedTaskExecutionService {
       triggeredBy: task.trigger.emotion
     }
     
-    console.log('🤝 Offering help:', helpOffer)
     return helpOffer
   }
 
@@ -539,7 +532,6 @@ class AutomatedTaskExecutionService {
       validUntil: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
     }
     
-    console.log('💰 Upsell opportunity created:', upsell)
     return upsell
   }
 
@@ -552,7 +544,6 @@ class AutomatedTaskExecutionService {
       sentAt: new Date().toISOString()
     }
     
-    console.log('📚 Tutorial sent:', tutorial)
     return tutorial
   }
 
@@ -565,7 +556,6 @@ class AutomatedTaskExecutionService {
       requestedAt: new Date().toISOString()
     }
     
-    console.log('⭐ Review requested:', reviewRequest)
     return reviewRequest
   }
 
@@ -578,7 +568,6 @@ class AutomatedTaskExecutionService {
       tone: 'friendly_reminder'
     }
     
-    console.log('💳 Payment reminder sent:', reminder)
     return reminder
   }
 
@@ -592,7 +581,6 @@ class AutomatedTaskExecutionService {
       orderedAt: new Date().toISOString()
     }
     
-    console.log('📦 Stock reordered:', reorder)
     return reorder
   }
 
@@ -605,7 +593,6 @@ class AutomatedTaskExecutionService {
       confidence: task.trigger.confidence
     }
     
-    console.log('🤗 Reassurance provided:', reassurance)
     return reassurance
   }
 
@@ -621,7 +608,6 @@ class AutomatedTaskExecutionService {
       anxiety_level: task.trigger.confidence
     }
     
-    console.log('💡 Uncertainty reduced:', clarification)
     return clarification
   }
 
@@ -638,7 +624,6 @@ class AutomatedTaskExecutionService {
       contactMethod: 'phone, chat, or email'
     }
     
-    console.log('📋 Next steps clarified:', nextSteps)
     return nextSteps
   }
 
@@ -655,7 +640,6 @@ class AutomatedTaskExecutionService {
       contactInfo: 'billing@barbershop.com'
     }
     
-    console.log('💳 Payment assistance offered:', assistance)
     return assistance
   }
 
@@ -673,7 +657,6 @@ class AutomatedTaskExecutionService {
       estimatedTime: '3 minutes'
     }
     
-    console.log('📚 Booking tutorial sent:', tutorial)
     return tutorial
   }
 
@@ -686,7 +669,6 @@ class AutomatedTaskExecutionService {
       estimatedWaitTime: '< 2 minutes'
     }
     
-    console.log('👨‍💼 Live assistance offered:', liveHelp)
     return liveHelp
   }
 
@@ -703,7 +685,6 @@ class AutomatedTaskExecutionService {
       compensation: 'service_credit_50_percent'
     }
     
-    console.log('🔧 Service recovery initiated:', recovery)
     return recovery
   }
 
@@ -716,7 +697,6 @@ class AutomatedTaskExecutionService {
       additionalInfo: 'what_to_expect_guide'
     }
     
-    console.log('👋 Welcome message sent:', welcome)
     return welcome
   }
 
@@ -733,7 +713,6 @@ class AutomatedTaskExecutionService {
       satisfactionCommitment: 'guarantee_policy'
     }
     
-    console.log('📝 Expectations set:', expectations)
     return expectations
   }
 
@@ -746,12 +725,10 @@ class AutomatedTaskExecutionService {
       contactMethod: 'immediate_manager_access'
     }
     
-    console.log('✅ Satisfaction guarantee explained:', guarantee)
     return guarantee
   }
 
   async executeCustomAction(actionType, task) {
-    console.log(`🔧 Custom action executed: ${actionType}`)
     return { actionType, executed: true, timestamp: new Date().toISOString() }
   }
 

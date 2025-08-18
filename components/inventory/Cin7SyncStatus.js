@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   ArrowPathIcon, 
   CheckCircleIcon, 
@@ -9,6 +8,7 @@ import {
   ClockIcon,
   LinkIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function Cin7SyncStatus({ onSyncComplete }) {
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, success, error

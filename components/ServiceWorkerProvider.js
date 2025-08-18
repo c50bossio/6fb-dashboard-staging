@@ -49,7 +49,6 @@ export default function ServiceWorkerProvider({ children }) {
       })
 
       setSwRegistration(registration)
-      console.log('Service Worker registered:', registration)
 
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing
@@ -119,7 +118,6 @@ export default function ServiceWorkerProvider({ children }) {
             prompt.prompt()
             const { outcome } = await prompt.userChoice
             if (outcome === 'accepted') {
-              console.log('User accepted the install prompt')
             }
           }}
           className="text-sm font-medium underline"

@@ -11,8 +11,8 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import BillingSetupModal from '@/components/billing/BillingSetupModal'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function CampaignsPage() {
   const { user, profile, loading: authLoading } = useAuth()

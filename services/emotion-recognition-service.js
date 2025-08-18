@@ -262,7 +262,6 @@ class EmotionRecognitionService {
       metadata: emotionResult.metadata || {}
     };
 
-    console.log('📊 Sentiment tracked:', sentimentRecord);
     
     try {
       const existingData = localStorage.getItem('sentiment_tracking') || '[]';

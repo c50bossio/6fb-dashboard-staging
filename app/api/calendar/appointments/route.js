@@ -161,14 +161,14 @@ export async function GET(request) {
           event.rrule = booking.recurring_pattern.rrule
         }
         
-        console.log('🔧 Recurring event configured:', {
+        console.log('Event debug:', {
           title: event.title,
           start: event.start,
           end: event.end,
           rrule: event.rrule,
           startTime: new Date(event.start).toLocaleTimeString(),
           endTime: new Date(event.end).toLocaleTimeString()
-        })
+        });
       }
       
       return event
@@ -193,7 +193,6 @@ export async function POST(request) {
   try {
     const body = await request.json()
     
-    console.log('Creating new appointment:', body)
     
     const isBlockedTime = body.status === 'blocked' || body.is_blocked_time || body.customer_id === 'BLOCKED'
     
@@ -339,13 +338,11 @@ export async function POST(request) {
         )
 
         if (notificationPreferences.reminders) {
-          console.log('⏰ Reminder scheduling requested for:', {
             customer: customerDataForNotification.name,
             appointmentTime: appointmentDataForNotification.scheduled_at
           })
         }
 
-        console.log('📱 Notifications sent:', notificationResults)
       } catch (notificationError) {
         console.error('Notification failed:', notificationError)
       }
@@ -374,7 +371,6 @@ export async function POST(request) {
       }
     }
     
-    console.log('Successfully created appointment:', response)
     
     return NextResponse.json(response, { status: 201 })
     

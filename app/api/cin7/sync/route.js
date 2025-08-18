@@ -5,7 +5,6 @@ import { decrypt } from '@/lib/cin7-client.js'
 
 async function fetchCin7Products(accountId, apiKey) {
   try {
-    console.log('Fetching products from Cin7 API v2...')
     
     let allProducts = []
     let page = 1
@@ -48,7 +47,6 @@ async function fetchCin7Products(accountId, apiKey) {
         hasMorePages = false
       } else {
         allProducts = allProducts.concat(products)
-        console.log(`📦 Fetched page ${page} with ${products.length} products (total: ${allProducts.length})`)
         
         // Check if we've hit the last page
         if (products.length < pageSize) {
@@ -59,7 +57,6 @@ async function fetchCin7Products(accountId, apiKey) {
       }
     }
     
-    console.log(`✅ Retrieved total of ${allProducts.length} products from Cin7`)
     return allProducts
   } catch (error) {
     console.error('Error fetching products from Cin7:', error)
@@ -69,7 +66,6 @@ async function fetchCin7Products(accountId, apiKey) {
 
 async function fetchCin7StockLevels(accountId, apiKey) {
   try {
-    console.log('Fetching stock levels from Cin7 API v2...')
     
     let allStockLevels = []
     let page = 1
@@ -110,7 +106,6 @@ async function fetchCin7StockLevels(accountId, apiKey) {
         hasMorePages = false
       } else {
         allStockLevels = allStockLevels.concat(stockItems)
-        console.log(`📊 Fetched stock page ${page} with ${stockItems.length} items (total: ${allStockLevels.length})`)
         
         if (stockItems.length < pageSize) {
           hasMorePages = false
@@ -120,7 +115,6 @@ async function fetchCin7StockLevels(accountId, apiKey) {
       }
     }
     
-    console.log(`✅ Retrieved total of ${allStockLevels.length} stock items from Cin7`)
     return allStockLevels
   } catch (error) {
     console.error('Error fetching stock levels from Cin7:', error)
@@ -151,11 +145,7 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
   }
   
   // Debug logging
-  console.log(`📦 Mapping product: ${cin7Product.Name}`);
-  console.log(`   ProductID: ${cin7Product.ID}, SKU: ${cin7Product.SKU}`);
-  console.log(`   Stock found: ${!!stockInfo}`);
   if (stockInfo) {
-    console.log(`   Available: ${stockInfo.Available}, OnHand: ${stockInfo.OnHand || stockInfo.QtyOnHand}`);
   }
   
   // Map category to barbershop-friendly categories
@@ -276,7 +266,6 @@ export async function POST(request) {
   try {
     const supabase = createClient()
     
-    console.log('Starting Cin7 product synchronization...')
     
     // Check for dev bypass
     const devBypass = request.headers.get('x-dev-bypass') === 'true' || 
@@ -290,7 +279,6 @@ export async function POST(request) {
         id: 'dev-user-id',
         email: 'dev-enterprise@test.com'
       }
-      console.log('🔧 Using dev bypass for CIN7 sync')
     } else {
       // Get authenticated user
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
@@ -309,7 +297,6 @@ export async function POST(request) {
     if (devBypass) {
       // Use mock barbershop for development
       barbershop = { id: 'barbershop_demo_001', name: 'Demo Barbershop' }
-      console.log('🔧 Using demo barbershop for dev bypass sync')
     } else {
       const { data: userBarbershop, error: shopError } = await supabase
         .from('barbershops')
@@ -337,14 +324,12 @@ export async function POST(request) {
         accountId = body.accountId
         apiKey = body.apiKey
         accountName = body.accountName || 'Test Account'
-        console.log('🔧 Using credentials from request body for dev bypass')
       }
       // Then check environment variables
       else if (process.env.CIN7_ACCOUNT_ID && process.env.CIN7_API_KEY) {
         accountId = process.env.CIN7_ACCOUNT_ID
         apiKey = process.env.CIN7_API_KEY
         accountName = process.env.CIN7_ACCOUNT_NAME || 'Env Account'
-        console.log('🔧 Using CIN7 credentials from environment variables')
       }
     }
     
@@ -363,7 +348,6 @@ export async function POST(request) {
           accountId = process.env.CIN7_ACCOUNT_ID
           apiKey = process.env.CIN7_API_KEY
           accountName = process.env.CIN7_ACCOUNT_NAME || 'Env Account'
-          console.log('⚠️ Using CIN7 credentials from environment variables (no DB credentials found)')
         } else {
           return NextResponse.json(
             { error: 'No Cin7 credentials found. Please set up your Cin7 connection first.' },
@@ -387,7 +371,6 @@ export async function POST(request) {
     }
     
     try {
-      console.log(`🔄 Syncing from Cin7 account: ${accountName}`)
       
       // Fetch both products and stock levels from Cin7
       const [cin7Products, stockLevels] = await Promise.all([
@@ -395,30 +378,18 @@ export async function POST(request) {
         fetchCin7StockLevels(accountId, apiKey)
       ])
       
-      console.log(`📊 API Response Summary:`)
-      console.log(`   Products fetched: ${cin7Products.length}`)
-      console.log(`   Stock items fetched: ${stockLevels.length}`)
       
       // Debug: Show first few products and their stock data
       if (cin7Products.length > 0) {
-        console.log(`📦 Sample Product Data:`)
         cin7Products.slice(0, 3).forEach((product, index) => {
           const relatedStock = stockLevels.find(s => s.ProductID === product.ID || s.SKU === product.SKU)
-          console.log(`   ${index + 1}. ${product.Name}`)
-          console.log(`      Product ID: ${product.ID}, SKU: ${product.SKU}`)
-          console.log(`      Product PriceTier1: ${product.PriceTier1}`)
-          console.log(`      Related Stock Found: ${!!relatedStock}`)
           if (relatedStock) {
-            console.log(`      🎯 Stock Available: ${relatedStock.Available} (PRIMARY)`)
-            console.log(`      📦 Stock OnHand: ${relatedStock.OnHand || relatedStock.QtyOnHand || 'N/A'}`)
-            console.log(`      📋 All Stock Fields:`, JSON.stringify({
               Available: relatedStock.Available,
               OnHand: relatedStock.OnHand,
               QtyOnHand: relatedStock.QtyOnHand,
               QuantityAvailable: relatedStock.QuantityAvailable
             }, null, 2))
           } else {
-            console.log(`      ⚠️ No stock record found for this product`)
           }
         })
         
@@ -428,10 +399,6 @@ export async function POST(request) {
           OnHand: stockLevels.filter(s => s.OnHand !== undefined && s.OnHand !== null).length,
           QtyOnHand: stockLevels.filter(s => s.QtyOnHand !== undefined && s.QtyOnHand !== null).length
         }
-        console.log(`📊 Stock Field Availability:`)
-        console.log(`   Available field: ${stockFieldStats.Available}/${stockLevels.length} items`)
-        console.log(`   OnHand field: ${stockFieldStats.OnHand}/${stockLevels.length} items`) 
-        console.log(`   QtyOnHand field: ${stockFieldStats.QtyOnHand}/${stockLevels.length} items`)
       }
       
       if (cin7Products.length === 0) {
@@ -492,7 +459,6 @@ export async function POST(request) {
         })
         .eq('barbershop_id', barbershop.id)
       
-      console.log(`✅ Successfully synced ${syncedProducts.length} products from Cin7`)
       
       // Count products with stock issues for alert
       const lowStockCount = syncedProducts.filter(p => p.current_stock <= p.min_stock_level).length

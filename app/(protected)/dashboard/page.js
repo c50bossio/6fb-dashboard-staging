@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { SparklesIcon } from '@heroicons/react/24/outline'
-import UnifiedDashboard from '../../../components/dashboard/UnifiedDashboard'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import DashboardOnboarding from '../../../components/dashboard/DashboardOnboarding'
 import OnboardingResumeButton from '../../../components/dashboard/OnboardingResumeButton'
+import UnifiedDashboard from '../../../components/dashboard/UnifiedDashboard'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 export default function BarbershopDashboard() {

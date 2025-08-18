@@ -16,7 +16,6 @@ export async function GET(request) {
       .order('name')
     
     if (error) {
-      console.log('Barbers table not found, trying profiles with barber role...')
       
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')

@@ -17,11 +17,11 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback } from 'react'
 
+import BillingSetupModal from '../../../../components/billing/BillingSetupModal'
 import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { Card } from '../../../../components/ui'
 import { useTenant } from '../../../../contexts/TenantContext'
-import BillingSetupModal from '../../../../components/billing/BillingSetupModal'
 
 function StrategicPricingWidget({ onRefresh, loading }) {
   const [pricingInsights, setPricingInsights] = useState(null)

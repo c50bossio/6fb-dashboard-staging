@@ -35,7 +35,6 @@ export async function POST(request) {
     }
 
     try {
-      console.log('Payment confirmed:', {
         payment_intent_id,
         status: paymentIntent.status,
         amount: paymentIntent.amount,

@@ -49,7 +49,6 @@ export const getCalendarConfig = (timezone = 'America/New_York') => {
           
           delete eventData.end;
           
-          console.log('Transformed recurring event:', {
             id: eventData.id,
             title: eventData.title,
             rrule: eventData.rrule,
@@ -109,7 +108,6 @@ export const getCalendarConfig = (timezone = 'America/New_York') => {
     aspectRatio: 1.8,
     
     loading: (isLoading) => {
-      console.log('Calendar loading:', isLoading);
     },
     
     eventDidMount: (info) => {

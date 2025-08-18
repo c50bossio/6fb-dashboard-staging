@@ -58,7 +58,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    console.log(`🔄 Starting Production Sync for barbershop: ${barbershopId}`)
 
     syncOperation = await initializeSyncOperation(barbershopId, userId, syncMode, options)
     
@@ -122,7 +121,6 @@ export async function POST(request) {
 
     if (syncResult.successRate < SYNC_CONSTANTS.PARTIAL_FAILURE_THRESHOLD) {
       if (SYNC_CONSTANTS.ROLLBACK_ENABLED && options.allowRollback !== false) {
-        console.log('⚠️ Success rate below threshold, initiating rollback')
         await updateSyncOperation(syncOperation.id, SYNC_STATES.ROLLING_BACK)
         await executeRollback(syncOperation.id, rollbackData, barbershopId)
       }
@@ -392,7 +390,6 @@ async function getOrDiscoverFieldMapping(barbershopId, accountId, apiKey, forceD
         .single()
 
       if (data?.mapping_config) {
-        console.log('✅ Using existing field mapping configuration')
         return {
           success: true,
           mappingStrategy: data.mapping_config.mappingStrategy,
@@ -401,7 +398,6 @@ async function getOrDiscoverFieldMapping(barbershopId, accountId, apiKey, forceD
       }
     }
 
-    console.log('🔍 Performing field discovery...')
     const discoveryResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/cin7/field-discovery`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -481,11 +477,9 @@ async function executeProductionSync(operationId, cin7Client, mappingStrategy, b
   }
 
   try {
-    console.log('📊 Fetching product count from Cin7...')
     const initialData = await retryWithBackoff(() => cin7Client.getProducts(1, 1))
     const totalItems = initialData.total
     
-    console.log(`📦 Processing ${totalItems} products in batches of ${SYNC_CONSTANTS.BATCH_SIZE}`)
     
     const totalPages = Math.ceil(totalItems / SYNC_CONSTANTS.BATCH_SIZE)
     
@@ -551,7 +545,6 @@ async function processBatch(cin7Client, page, batchSize, mappingStrategy, barber
   }
 
   try {
-    console.log(`🔄 Processing batch ${page}...`)
     
     const batchData = await retryWithBackoff(() => 
       cin7Client.getProducts(page, batchSize)
@@ -722,7 +715,6 @@ async function retryWithBackoff(operation, maxAttempts = SYNC_CONSTANTS.MAX_RETR
       }
       
       const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000) // Max 10 seconds
-      console.log(`Retry attempt ${attempt}/${maxAttempts} in ${delay}ms...`)
       await sleep(delay)
     }
   }
@@ -772,7 +764,6 @@ async function generateLowStockAlerts(barbershopId) {
       .eq('barbershop_id', barbershopId)
 
     if (lowStockProducts && lowStockProducts.length > 0) {
-      console.log(`📢 Generated ${lowStockProducts.length} low stock alerts`)
     }
   } catch (error) {
     console.warn('Failed to generate low stock alerts:', error)
@@ -813,7 +804,6 @@ async function updateConnectionSyncStatus(connectionId, status, itemsSynced) {
  */
 async function executeRollback(operationId, rollbackData, barbershopId) {
   try {
-    console.log('🔄 Executing sync rollback...')
     
     await supabase
       .from('products')
@@ -824,7 +814,6 @@ async function executeRollback(operationId, rollbackData, barbershopId) {
       .eq('barbershop_id', barbershopId)
       .gte('last_cin7_sync', new Date(Date.now() - 3600000).toISOString()) // Last hour
 
-    console.log('✅ Rollback completed')
   } catch (error) {
     console.error('Rollback failed:', error)
   }

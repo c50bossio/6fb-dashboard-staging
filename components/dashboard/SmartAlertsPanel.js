@@ -33,11 +33,6 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
       if (data.success) {
         setAlerts(data.alerts || [])
         setPriorityActions(data.priorityActions || [])
-        console.log('📊 Intelligent alerts loaded:', {
-          alertsCount: data.alerts?.length || 0,
-          actionsCount: data.priorityActions?.length || 0,
-          insights: data.insights?.length || 0
-        })
       } else {
         console.warn('Intelligent alerts API failed:', data.error)
         const fallbackResponse = await fetch(`/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
@@ -73,7 +68,6 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
       })
       
       setAlerts(prev => prev.filter(alert => alert.id !== alertId))
-      console.log('✅ Alert dismissed:', alertId)
     } catch (error) {
       console.error('Failed to dismiss alert:', error)
     }
@@ -92,7 +86,6 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
       })
       
       setAlerts(prev => prev.filter(alert => alert.id !== alertId))
-      console.log('⏰ Alert snoozed:', alertId)
     } catch (error) {
       console.error('Failed to snooze alert:', error)
     }

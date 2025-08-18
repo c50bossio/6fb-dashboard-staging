@@ -16,23 +16,18 @@ export async function GET(request) {
       cookies: {
         get(name) {
           const cookie = cookieStore.get(name)
-          console.log(`🍪 Session API: Getting cookie ${name}:`, cookie?.value ? 'found' : 'not found')
           return cookie?.value
         },
         set(name, value, options) {
           try {
             cookieStore.set({ name, value, ...options })
-            console.log(`🍪 Session API: Set cookie ${name}`)
           } catch (error) {
-            console.log(`⚠️ Session API: Cookie set error: ${name}`)
           }
         },
         remove(name, options) {
           try {
             cookieStore.set({ name, value: '', ...options })
-            console.log(`🍪 Session API: Removed cookie ${name}`)
           } catch (error) {
-            console.log(`⚠️ Session API: Cookie remove error: ${name}`)
           }
         },
       },
@@ -40,7 +35,6 @@ export async function GET(request) {
   )
   
   try {
-    console.log('🔍 Session API: Starting session validation...')
     
     // Enhanced session retrieval with multiple checks
     const { data: { session }, error } = await supabase.auth.getSession()
@@ -57,7 +51,6 @@ export async function GET(request) {
     }
     
     if (session?.user) {
-      console.log('✅ Session API: Valid session found for user:', session.user.email)
       
       const responseData = {
         authenticated: true,
@@ -82,7 +75,6 @@ export async function GET(request) {
       // Include profile data if requested
       if (includeProfile) {
         try {
-          console.log('👤 Session API: Fetching user profile...')
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
@@ -93,7 +85,6 @@ export async function GET(request) {
             console.warn('⚠️ Session API: Profile fetch error:', profileError.message)
             responseData.profile_error = profileError.message
           } else if (profile) {
-            console.log('✅ Session API: Profile fetched successfully')
             responseData.profile = profile
           }
         } catch (profileErr) {
@@ -105,7 +96,6 @@ export async function GET(request) {
       // Perform consistency validation if requested
       if (validateConsistency) {
         try {
-          console.log('🔍 Session API: Performing consistency check...')
           
           // Check if user exists in auth.users
           const { data: authUser, error: authError } = await supabase.auth.getUser()
@@ -132,7 +122,6 @@ export async function GET(request) {
       return NextResponse.json(responseData)
     }
     
-    console.log('📭 Session API: No active session found')
     return NextResponse.json({ 
       authenticated: false,
       message: 'No active session',
@@ -159,7 +148,6 @@ export async function POST(request) {
     const body = await request.json()
     const { action } = body
     
-    console.log('🔧 Session API: POST request for action:', action)
     
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -173,14 +161,12 @@ export async function POST(request) {
             try {
               cookieStore.set({ name, value, ...options })
             } catch (error) {
-              console.log(`⚠️ Session API POST: Cookie set error: ${name}`)
             }
           },
           remove(name, options) {
             try {
               cookieStore.set({ name, value: '', ...options })
             } catch (error) {
-              console.log(`⚠️ Session API POST: Cookie remove error: ${name}`)
             }
           },
         },
@@ -189,7 +175,6 @@ export async function POST(request) {
     
     switch (action) {
       case 'refresh':
-        console.log('🔄 Session API: Attempting session refresh...')
         const { data, error } = await supabase.auth.refreshSession()
         
         if (error) {
@@ -210,7 +195,6 @@ export async function POST(request) {
         })
       
       case 'validate':
-        console.log('🔍 Session API: Server-side session validation...')
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
         return NextResponse.json({

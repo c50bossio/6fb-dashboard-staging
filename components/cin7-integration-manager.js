@@ -1,21 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/browser-client'
 import { useRouter } from 'next/navigation'
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Label } from '@/components/ui/label'
+import { useState, useEffect } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +13,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/UnifiedInput'
+import { createClient } from '@/lib/supabase/browser-client'
 
 /**
  * CIN7 Integration Manager Component
@@ -235,7 +235,6 @@ export default function Cin7IntegrationManager({ onConnectionChange, onClose }) 
       
       if (result.success) {
         setWebhookStatus('active')
-        console.log('Webhooks registered successfully')
       } else {
         console.error('Webhook registration failed:', result.error)
         setWebhookStatus('error')

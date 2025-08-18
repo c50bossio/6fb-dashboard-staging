@@ -13,7 +13,6 @@ export async function POST(request) {
     
     const userId = body.userId || 'anonymous-' + Date.now()
     
-    console.log('Onboarding completed:', {
       userId,
       data: body,
       timestamp: new Date().toISOString()

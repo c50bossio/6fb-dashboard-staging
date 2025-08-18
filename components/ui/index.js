@@ -6,6 +6,14 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export { Badge } from './badge'
 export { Alert, AlertDescription, AlertTitle } from './alert'
 export { Input } from './Input'
+export { 
+  default as UnifiedInput,
+  NuclearInput,
+  BulletproofInput,
+  StableInput,
+  UncontrolledInput,
+  FormInput as UnifiedFormInput
+} from './UnifiedInput'
 export { default as Textarea } from './Textarea'
 export { default as Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select'
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'

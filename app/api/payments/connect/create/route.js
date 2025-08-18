@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   // Add CORS headers
@@ -23,13 +23,10 @@ export async function POST(request) {
       const { data: { user }, error } = await supabase.auth.getUser()
       if (user && !error) {
         currentUser = user
-        console.log('✅ Standard auth successful:', user.id)
       } else {
         authError = error
-        console.log('⚠️ Standard auth failed:', error?.message)
       }
     } catch (error) {
-      console.log('⚠️ Auth check failed:', error.message)
       authError = error
     }
     
@@ -41,21 +38,17 @@ export async function POST(request) {
       
       if (authHeader && authHeader.startsWith('Bearer ')) {
         // Try to validate the bearer token
-        console.log('🔐 Attempting bearer token auth')
         try {
           const { data: { user }, error } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
           if (user) {
             currentUser = user
-            console.log('✅ Bearer token auth successful:', user.id)
           }
         } catch (error) {
-          console.log('❌ Bearer token auth failed:', error.message)
         }
       }
       
       // For development or demo purposes, allow a test user
       if (!currentUser && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
-        console.log('🔓 Using demo user for testing')
         currentUser = {
           id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
           email: 'demo@bookedbarber.com',
@@ -68,7 +61,6 @@ export async function POST(request) {
     
     // If we still don't have a user, return unauthorized
     if (!currentUser) {
-      console.log('❌ No valid authentication found')
       return NextResponse.json({ 
         error: 'Authentication required',
         details: authError?.message || 'No valid session found'

@@ -31,9 +31,9 @@ const BanknotesIcon = dynamic(() => import('@heroicons/react/24/outline').then(m
 import MFASetup from '../../../../components/auth/MFASetup'
 import SubscriptionDashboard from '../../../../components/billing/SubscriptionDashboard'
 import InternationalPhoneInput from '../../../../components/InternationalPhoneInput'
-import NuclearInput from '../../../../components/NuclearInput'
 import PaymentProcessingSettings from '../../../../components/settings/PaymentProcessingSettings'
 import TimeRangePicker from '../../../../components/TimeRangePicker'
+import { NuclearInput } from '../../../../components/ui/UnifiedInput'
 
 const ChartLoadingSpinner = () => (
   <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">

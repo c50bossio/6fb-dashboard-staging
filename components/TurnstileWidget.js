@@ -31,7 +31,6 @@ export default function TurnstileWidget({
           theme,
           size,
           callback: (token) => {
-            console.log('Turnstile verification successful')
             setError(null)
             if (onVerify) {
               onVerify(token)
@@ -45,14 +44,12 @@ export default function TurnstileWidget({
             }
           },
           'expired-callback': () => {
-            console.log('Turnstile token expired')
             setError('Verification expired. Please verify again.')
             if (onExpire) {
               onExpire()
             }
           },
           'timeout-callback': () => {
-            console.log('Turnstile timeout')
             setError('Verification timed out. Please try again.')
             if (onTimeout) {
               onTimeout()

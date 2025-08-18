@@ -70,7 +70,6 @@ export default function ActionCenter({ data }) {
 
   const handleTaskAction = (task, action) => {
     setActiveTask(task)
-    console.log(`Executing ${action} for task:`, task.title)
     
     setTimeout(() => {
       setCompletedTasks([...completedTasks, task.id])

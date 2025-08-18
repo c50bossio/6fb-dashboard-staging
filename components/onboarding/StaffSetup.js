@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   UserPlusIcon,
   UserIcon,
@@ -17,6 +16,7 @@ import {
   PhotoIcon,
   CloudArrowUpIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function StaffSetup({ data = {}, updateData, onComplete }) {
   const [staff, setStaff] = useState(data.staff || [])

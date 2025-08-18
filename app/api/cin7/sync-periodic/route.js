@@ -8,7 +8,6 @@ const supabase = createClient(
 
 export async function POST(request) {
   try {
-    console.log('⏰ Starting periodic Cin7 sync')
     
     const { data: credentials, error: credError } = await supabase
       .from('cin7_credentials')
@@ -16,7 +15,6 @@ export async function POST(request) {
       .eq('is_active', true)
     
     if (credError || !credentials || credentials.length === 0) {
-      console.log('ℹ️ No active Cin7 credentials found')
       return NextResponse.json({ 
         status: 'skipped', 
         message: 'No active Cin7 integrations to sync' 
@@ -46,7 +44,6 @@ export async function POST(request) {
     const successful = syncResults.filter(r => r.status === 'success').length
     const failed = syncResults.filter(r => r.status === 'error').length
     
-    console.log(`✅ Periodic sync complete: ${successful} successful, ${failed} failed`)
     
     return NextResponse.json({
       status: 'completed',
@@ -69,7 +66,6 @@ export async function POST(request) {
 }
 
 async function syncSingleBarbershop(credentials) {
-  console.log(`🔄 Syncing products for barbershop ${credentials.barbershop_id}`)
   
   const apiKey = Buffer.from(credentials.encrypted_api_key, 'base64').toString('utf-8')
   const accountId = Buffer.from(credentials.encrypted_account_id, 'base64').toString('utf-8')
@@ -100,7 +96,6 @@ async function syncSingleBarbershop(credentials) {
         break
       }
     } catch (error) {
-      console.log(`⚠️ Endpoint ${endpoint} failed:`, error.message)
     }
   }
   
@@ -108,7 +103,6 @@ async function syncSingleBarbershop(credentials) {
     throw new Error('No working Cin7 endpoint found or invalid credentials')
   }
   
-  console.log(`📦 Found ${productsData.length} products from Cin7`)
   
   const { data: existingProducts } = await supabase
     .from('products')
@@ -144,10 +138,8 @@ async function syncSingleBarbershop(credentials) {
         updatedCount++
         
         if (existing.retail_price !== mappedProduct.retail_price) {
-          console.log(`💰 Price change for ${mappedProduct.name}: $${existing.retail_price} → $${mappedProduct.retail_price}`)
         }
         if (existing.current_stock !== mappedProduct.current_stock) {
-          console.log(`📦 Stock change for ${mappedProduct.name}: ${existing.current_stock} → ${mappedProduct.current_stock}`)
         }
       } else {
         unchangedCount++
@@ -158,7 +150,6 @@ async function syncSingleBarbershop(credentials) {
         .insert(mappedProduct)
       
       newCount++
-      console.log(`🆕 New product added: ${mappedProduct.name}`)
     }
   }
   

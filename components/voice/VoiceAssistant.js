@@ -54,7 +54,6 @@ export function VoiceAssistant({
     recognition.lang = 'en-US'
     
     recognition.onstart = () => {
-      console.log('🎤 Voice recognition started')
       setIsListening(true)
       setError(null)
       setTranscript('')
@@ -76,7 +75,6 @@ export function VoiceAssistant({
       setConfidence(confidenceScore)
       
       if (event.results[current].isFinal) {
-        console.log('📝 Final transcript:', transcriptText, 'Confidence:', confidenceScore)
         if (onTranscript && transcriptText.trim().length > 0) {
           onTranscript(transcriptText, confidenceScore)
         }
@@ -112,7 +110,6 @@ export function VoiceAssistant({
     }
     
     recognition.onend = () => {
-      console.log('🎤 Voice recognition ended')
       setIsListening(false)
       if (onListeningChange) onListeningChange(false)
       clearTimeout(timeoutRef.current)
@@ -171,12 +168,10 @@ export function VoiceAssistant({
     
     utterance.onstart = () => {
       setIsSpeaking(true)
-      console.log('🔊 Speaking:', agentType)
     }
     
     utterance.onend = () => {
       setIsSpeaking(false)
-      console.log('🔇 Speech ended')
     }
     
     utterance.onerror = (event) => {

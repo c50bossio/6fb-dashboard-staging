@@ -4,6 +4,7 @@ import { CreditCardIcon, CurrencyDollarIcon, ShieldCheckIcon, LockClosedIcon, Ba
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { useState, useEffect } from 'react'
+import { getPaymentErrorMessage, logPaymentError, retryPaymentWithBackoff, shouldSuggestAlternativePayment } from '@/lib/payment-errors'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder')
 
@@ -60,6 +61,8 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   const [cardComplete, setCardComplete] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState(null)
+  const [showAlternativePayment, setShowAlternativePayment] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -154,12 +157,89 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       
       if (paymentMethod === 'online') {
         if (useNewCard) {
+          // Use retry logic for payment processing
+          await retryPaymentWithBackoff(async () => {
+            // Create payment intent
+            const paymentIntentResponse = await fetch('/api/stripe/payment-intent', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                bookingData,
+                shopSettings,
+                customerInfo
+              })
+            })
+            
+            if (!paymentIntentResponse.ok) {
+              const errorData = await paymentIntentResponse.json()
+              throw new Error(errorData.error || 'Failed to create payment intent')
+            }
+            
+            const { clientSecret, paymentIntentId } = await paymentIntentResponse.json()
+            
+            // Confirm payment with Stripe
+            if (!stripe || !elements) {
+              throw new Error('Stripe not loaded properly')
+            }
+            
+            const cardElement = elements.getElement(CardElement)
+            if (!cardElement) {
+              throw new Error('Card element not found')
+            }
+            
+            const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+              payment_method: {
+                card: cardElement,
+                billing_details: {
+                  name: customerInfo.name,
+                  email: customerInfo.email,
+                  phone: customerInfo.phone
+                }
+              }
+            })
+            
+            if (stripeError) {
+              throw stripeError
+            }
+            
+            if (paymentIntent.status !== 'succeeded') {
+              throw new Error('Payment was not completed successfully')
+            }
+            
+            // Confirm payment on backend
+            const confirmResponse = await fetch('/api/stripe/confirm-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                paymentIntentId: paymentIntent.id,
+                bookingId: bookingData.id || 'pending'
+              })
+            })
+            
+            if (!confirmResponse.ok) {
+              const errorData = await confirmResponse.json()
+              throw new Error(errorData.error || 'Failed to confirm payment')
+            }
+            
+            const confirmData = await confirmResponse.json()
+            
+            return {
+              paymentIntentId: paymentIntent.id,
+              paymentStatus: 'succeeded',
+              paymentMethod: 'card',
+              confirmationData: confirmData
+            }
+          })
+          .then(result => {
+            Object.assign(paymentData, result)
+          })
           
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          
-          paymentData.paymentIntentId = 'pi_mock_' + Date.now()
-          paymentData.paymentStatus = 'succeeded'
         } else {
+          // Using saved card (implement when saved cards are added)
           paymentData.cardId = selectedCard
           paymentData.paymentStatus = 'succeeded'
         }
@@ -171,7 +251,26 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       onNext(paymentData)
       
     } catch (err) {
-      setError(err.message || 'Payment processing failed')
+      console.error('Payment processing error:', err)
+      
+      // Log error for analytics
+      logPaymentError(err, {
+        bookingId: bookingData.id,
+        shopId: bookingData.shopId,
+        amount: paymentAmount,
+        retryCount
+      })
+      
+      // Get user-friendly error message
+      const errorMessage = getPaymentErrorMessage(err)
+      setError(errorMessage)
+      
+      // Show alternative payment options if applicable
+      if (shouldSuggestAlternativePayment(err)) {
+        setShowAlternativePayment(true)
+      }
+      
+      setRetryCount(prev => prev + 1)
       setProcessing(false)
     }
   }
@@ -441,8 +540,43 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <p className="text-red-800 text-sm">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800 text-sm font-medium">{error}</p>
+          
+          {showAlternativePayment && (
+            <div className="mt-3 pt-3 border-t border-red-200">
+              <p className="text-red-700 text-sm mb-2">Try these alternatives:</p>
+              <div className="space-y-2 text-sm">
+                <label className="flex items-center text-red-700">
+                  <input
+                    type="radio"
+                    name="alt-payment"
+                    onClick={() => handlePaymentMethodChange('in-person')}
+                    className="h-3 w-3 text-red-600"
+                  />
+                  <span className="ml-2">Pay at the shop instead</span>
+                </label>
+                <div className="text-red-600 text-xs">
+                  • Check your card details are correct<br/>
+                  • Try a different card<br/>
+                  • Contact your bank if the problem persists
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {retryCount > 0 && retryCount < 3 && (
+            <button
+              onClick={() => {
+                setError(null)
+                setShowAlternativePayment(false)
+                handleContinue()
+              }}
+              className="mt-3 text-sm text-red-700 hover:text-red-800 underline"
+            >
+              Try again ({3 - retryCount} attempts remaining)
+            </button>
+          )}
         </div>
       )}
       

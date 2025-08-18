@@ -3,7 +3,6 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 const useMockServices = isDevelopment && process.env.USE_MOCK_SERVICES !== 'false'
 
 if (process.env.NODE_ENV === 'development') {
-  console.log('🔧 Service Loader:', {
     environment: process.env.NODE_ENV,
     useMockServices
   })
@@ -13,7 +12,6 @@ let sendGridService, twilioSMSService, stripeService
 
 if (useMockServices) {
   if (process.env.NODE_ENV === 'development') {
-    console.log('📦 Loading MOCK services for development')
   }
   
   const mockSendGrid = require('./mock-sendgrid-service')
@@ -25,7 +23,6 @@ if (useMockServices) {
   stripeService = mockStripe.stripeService
 } else {
   if (process.env.NODE_ENV === 'development') {
-    console.log('📦 Loading REAL services for production')
   }
   
   try {
@@ -45,7 +42,6 @@ if (useMockServices) {
       stripeService = require('./mock-stripe-service').stripeService
     }
     
-    console.log('✅ Loaded production SendGrid service successfully')
   } catch (error) {
     console.warn('⚠️ Error loading production services:', error.message)
     
@@ -59,7 +55,6 @@ if (useMockServices) {
       twilioSMSService = mockTwilio.twilioSMSService
       stripeService = mockStripe.stripeService
       
-      console.log('📦 Using mock services as fallback')
     } else {
       throw new Error('Production services not available')
     }

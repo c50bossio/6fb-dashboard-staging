@@ -30,7 +30,6 @@ export async function GET(request) {
             barbershopId 
           });
         } catch (aiError) {
-          console.log('Python service unavailable, using Supabase fallback');
           return await fetchRealPredictionsFromSupabase(supabase, 'demo-user', forecastType, timeHorizon);
         }
       });
@@ -82,7 +81,6 @@ export async function POST(request) {
     const { forecastType, businessContext, timeHorizon, options, analysis_type, current_pricing, barbershop_id } = await request.json()
 
     if (analysis_type === 'strategic_pricing') {
-      console.log('🎯 Strategic Pricing Request:', { barbershop_id, current_pricing })
       
       try {
         const strategicPricing = await generateStrategicPricingRecommendations(barbershop_id || 'demo-barbershop', current_pricing || {})
@@ -673,7 +671,6 @@ async function generateStrategicPricingRecommendations(barbershopId, currentPric
   // - beard_trim: Only 52 days of data (need 60+), booking rate 79% (need 85%+)
   // - wash: Low revenue service, insufficient volume
   
-  console.log(`🎯 Generated ${recommendations.length} strategic pricing recommendations for ${barbershopId}`)
   
   return recommendations
 }

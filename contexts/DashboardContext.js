@@ -73,7 +73,6 @@ export function DashboardProvider({ children }) {
     try {
       setError(null);
       
-      console.log('💬 Sending message to enhanced AI chat:', message);
       
       const response = await fetch('/api/ai/enhanced-chat', {
         method: 'POST',
@@ -101,7 +100,6 @@ export function DashboardProvider({ children }) {
         throw new Error(result.error || 'Chat request failed');
       }
 
-      console.log('✅ Enhanced AI response received:', result);
       
       setCurrentSession(result.sessionId);
       
@@ -140,7 +138,6 @@ export function DashboardProvider({ children }) {
     } catch (err) {
       console.error('Enhanced chat error:', err);
       
-      console.log('🔄 Using fallback response...');
       
       const fallbackResponse = {
         session_id: currentSession || `session_${Date.now()}`,
@@ -188,7 +185,6 @@ export function DashboardProvider({ children }) {
   };
 
   const updateShopContext = async (contextData) => {
-    console.log('Shop context updated:', contextData);
   };
 
   const loadDashboardData = async () => {
@@ -196,7 +192,6 @@ export function DashboardProvider({ children }) {
       setLoading(true);
       setError(null);
       
-      console.log('📊 Loading real dashboard data from backend...');
       
       const response = await fetch('/api/dashboard/metrics?detailed=true', {
         method: 'GET',
@@ -211,7 +206,6 @@ export function DashboardProvider({ children }) {
 
       const metricsData = await response.json();
       
-      console.log('✅ Real dashboard data loaded:', metricsData);
       
       const actualStatus = metricsData.system_health?.status || 'healthy';
       setSystemHealth({
@@ -268,20 +262,17 @@ export function DashboardProvider({ children }) {
         efficiency: `+${metricsData.business_insights?.efficiency_improvement_percent || 34}%`
       });
       
-      console.log('📈 Dashboard state updated with real metrics');
       
     } catch (err) {
       console.error('❌ Error loading dashboard data:', err);
       setError(err.message);
       
-      console.log('❌ Dashboard data unavailable - showing error state');
     } finally {
       setLoading(false);
     }
   };
 
   const refreshDashboard = () => {
-    console.log('Dashboard refreshed');
     loadDashboardData();
   };
 

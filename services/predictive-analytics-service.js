@@ -77,7 +77,6 @@ export class PredictiveAnalyticsService {
    * Generate comprehensive predictive analytics
    */
   async generatePredictions(barbershopId, timeframe = 30) {
-    console.log(`📊 Generating predictions for next ${timeframe} days`)
 
     const historicalData = await this.fetchHistoricalData(barbershopId)
     
@@ -767,7 +766,6 @@ export class PredictiveAnalyticsService {
       this.accuracy.accuracy_scores[prediction.model].push(accuracy)
     }
     
-    console.log(`📊 Prediction accuracy: ${(accuracy * 100).toFixed(1)}%`)
     
     return accuracy
   }

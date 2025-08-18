@@ -46,9 +46,7 @@ export default function EnhancedProfessionalCalendar({
   
   useEffect(() => {
     if (events.length > 0) {
-      console.log('📅 Calendar events loaded:', events.length, 'for view:', currentView)
     } else {
-      console.log('📅 Calendar initialized with no events (waiting for real data)')
     }
   }, [events.length, currentView])
   
@@ -102,18 +100,17 @@ export default function EnhancedProfessionalCalendar({
       ? `${durationHours}h` 
       : `${slotData.duration}min`
     
-    console.log('📅 Slot selected:', {
+    const enhancedSlotData = {
       ...slotData,
       durationDisplay,
       isLongSelection: slotData.duration >= 120  // 2+ hours
-    })
+    }
     
     if (slotData.duration >= 240) {  // 4+ hours
-      console.log('⏰ Long time selection detected:', durationDisplay)
     }
     
     if (onSlotClick) {
-      onSlotClick(slotData)
+      onSlotClick(enhancedSlotData)
     }
     
     selectInfo.view.calendar.unselect()
@@ -219,7 +216,6 @@ export default function EnhancedProfessionalCalendar({
   const handleViewChange = useCallback((arg) => {
     const newView = arg.view.type
     setCurrentView(newView)
-    console.log('📅 View changed to:', newView)
     if (onViewChange) {
       onViewChange(newView)
     }
@@ -227,11 +223,7 @@ export default function EnhancedProfessionalCalendar({
   
   useEffect(() => {
     if (events.length > 0) {
-      console.log('📅 Enhanced Calendar loaded with', events.length, 'real events')
-      console.log('📅 Sample event:', events[0])
-      console.log('📅 Event start type:', typeof events[0].start)
     } else {
-      console.log('📅 Enhanced Calendar loaded with no events - waiting for real data from parent')
     }
     
     if (calendarRef.current) {
@@ -240,7 +232,6 @@ export default function EnhancedProfessionalCalendar({
         const calendarEl = document.querySelector('.fc')
         if (calendarEl) {
           calendarEl._fcApi = calendarApi
-          console.log('📅 FullCalendar API initialized and attached to DOM')
         }
       }
     }
@@ -357,7 +348,6 @@ export default function EnhancedProfessionalCalendar({
         resourcesInitiallyExpanded={true}
         refetchResourcesOnNavigate={false}  // Prevent unnecessary resource refetching
         resourceLabelDidMount={(info) => {
-          console.log('Resource mounted:', info.resource.title)
         }}
         
         timeZone="local"  // Use local timezone to prevent date/time issues
@@ -404,7 +394,6 @@ export default function EnhancedProfessionalCalendar({
         unselectCancel=".fc-event,.modal"  // Don't unselect when clicking events or modals
         select={handleDateSelect}
         dateClick={(info) => {
-          console.log('📅 Single click on date/time:', info)
           
           if (info.view.type.includes('timeGrid') || info.view.type.includes('resource')) {
             const provisionalEnd = new Date(info.date)
@@ -428,7 +417,6 @@ export default function EnhancedProfessionalCalendar({
               barberName: info.resource?.title || null
             }
             
-            console.log('📅 Opening modal from single click with data:', slotData)
             
             if (onSlotClick) {
               onSlotClick(slotData)
@@ -448,7 +436,6 @@ export default function EnhancedProfessionalCalendar({
               duration: 60
             }
             
-            console.log('📅 Month view click - needs time selection:', slotData)
             
             if (onSlotClick) {
               onSlotClick(slotData)
@@ -479,16 +466,12 @@ export default function EnhancedProfessionalCalendar({
         viewDidMount={handleViewChange}
         datesSet={handleViewChange}  // Also handle when navigating dates
         loading={(isLoading) => {
-          console.log('Calendar loading:', isLoading)
         }}
         eventAdd={(info) => {
-          console.log('Event added:', info.event.id)
         }}
         eventChange={(info) => {
-          console.log('Event changed:', info.event.id)
         }}
         eventRemove={(info) => {
-          console.log('Event removed:', info.event.id)
         }}
         
         eventTimeFormat={{  // Better time formatting

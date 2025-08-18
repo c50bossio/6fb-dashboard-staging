@@ -118,7 +118,6 @@ export async function POST(request) {
       paymentIntentParams.transfer_data = {
         destination: stripeConnectAccountId
       }
-      console.log(`Routing payment to barbershop Connect account: ${stripeConnectAccountId}`)
     } else {
       // No Connect account - payment goes to platform (for now)
       console.warn('No Connect account found - payment will go to platform account')
@@ -127,7 +126,6 @@ export async function POST(request) {
     const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams)
 
     try {
-      console.log('Payment intent created:', {
         id: paymentIntent.id,
         booking_id,
         customer_id,

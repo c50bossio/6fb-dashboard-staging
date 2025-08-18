@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, forwardRef, memo } from 'react'
 
-import NuclearInput from './NuclearInput'
+import { NuclearInput } from './ui/UnifiedInput'
 
 /**
  * INTERNATIONAL PHONE INPUT WITH COUNTRY CODE SUPPORT

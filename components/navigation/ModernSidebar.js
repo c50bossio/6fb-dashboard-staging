@@ -50,9 +50,7 @@ export default function ModernSidebar() {
   }
 
   const handleSignOut = async () => {
-    console.log('🚪 Sidebar: Starting sign out...')
     const result = await signOut()
-    console.log('📤 Sidebar sign out result:', result)
   }
 
   const sidebarWidth = collapsed ? 'w-16' : 'w-72'

@@ -21,7 +21,6 @@ const bookingSchema = z.object({
 
 async function sendNotifications(booking) {
   try {
-    console.log('📧 Sending booking confirmation notifications for:', booking.id)
     
     const emailNotification = {
       to: booking.client_email,
@@ -95,7 +94,6 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    console.log('📝 Creating booking with data:', body)
     
     const validationResult = bookingSchema.safeParse(body)
     if (!validationResult.success) {
@@ -191,12 +189,10 @@ export async function POST(request) {
     }
 
     sendNotifications(booking).then(notificationResult => {
-      console.log('📧 Notification result:', notificationResult)
     }).catch(notificationError => {
       console.error('Notification error (non-blocking):', notificationError)
     })
 
-    console.log('✅ Booking created successfully:', booking.id)
 
     return NextResponse.json({
       success: true,

@@ -159,7 +159,6 @@ export default function FloatingAIChat() {
         }
         
         if (profileData?.shop_id) {
-          console.log('🔄 Loading comprehensive business context...')
           
           const [shopInfo, analytics, predictions, alerts] = await Promise.allSettled([
             supabase.from('barbershops').select('*').eq('id', profileData.shop_id).single(),
@@ -256,15 +255,6 @@ export default function FloatingAIChat() {
           })
           
           setContextLoaded(true)
-          console.log('✅ Comprehensive business context loaded:', {
-            shopName: shopData?.name || profileData.shop_name,
-            metricsLoaded: !!analyticsData,
-            predictionsLoaded: !!predictionsData,
-            alertsLoaded: !!alertsData,
-            totalCustomers,
-            todayAppointments,
-            totalRevenue: formatCurrency(totalRevenue)
-          })
         }
       } catch (error) {
         console.error('Error fetching shop data:', error)
@@ -443,12 +433,6 @@ export default function FloatingAIChat() {
           message: messageText.substring(0, 50)
         }].slice(-10)) // Keep last 10 emotions
         
-        console.log('🎭 Emotion detected:', {
-          emotion: analysis.emotion,
-          confidence: analysis.confidence,
-          empathetic_strategy: analysis.empathetic_response.strategy.approach
-        })
-        
         return analysis
       }
     } catch (error) {
@@ -490,7 +474,6 @@ export default function FloatingAIChat() {
 
   const processAutomatedTriggers = async (emotionAnalysis, messageText) => {
     try {
-      console.log('🤖 Processing automated triggers for emotion:', emotionAnalysis.emotion)
       
       const triggerContext = {
         message: messageText,
@@ -515,7 +498,6 @@ export default function FloatingAIChat() {
       const result = await response.json()
       
       if (result.success) {
-        console.log(`✅ Automated triggers processed: ${result.result.triggers_processed} triggers`)
         
         if (result.result.triggers_processed > 0) {
           showAutomationNotification(result.result.triggers_processed, emotionAnalysis.emotion)
@@ -836,7 +818,6 @@ export default function FloatingAIChat() {
       
       const voiceEmotionHint = await analyzeVoiceEmotion(transcript, event)
       if (voiceEmotionHint) {
-        console.log('🎤 Voice emotion detected:', voiceEmotionHint)
       }
     }
     

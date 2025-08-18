@@ -98,9 +98,7 @@ export default function DashboardHeader() {
     const result = await signOut()
     
     if (result && result.success) {
-      console.log('✅ Sign out successful')
     } else {
-      console.log('⚠️ Sign out may have issues, but auth provider will handle cleanup')
     }
   }
 

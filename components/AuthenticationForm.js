@@ -40,7 +40,6 @@ export default function AuthenticationForm({ mode = 'login' }) {
   }
 
   const handleTurnstileVerify = (token) => {
-    console.log('Turnstile verified:', token)
     setTurnstileToken(token)
     setError('')
   }

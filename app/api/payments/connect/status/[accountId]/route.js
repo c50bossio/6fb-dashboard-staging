@@ -1,6 +1,6 @@
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { stripeService } from '@/services/stripe-service'
 
 export async function GET(request, { params }) {
@@ -15,17 +15,13 @@ export async function GET(request, { params }) {
       const { data: { user }, error } = await supabase.auth.getUser()
       if (user && !error) {
         currentUser = user
-        console.log('✅ Standard auth successful:', user.id)
       } else {
-        console.log('⚠️ Standard auth failed:', error?.message)
       }
     } catch (error) {
-      console.log('⚠️ Auth check failed:', error.message)
     }
     
     // For development or demo purposes, allow a test user
     if (!currentUser && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
-      console.log('🔓 Using demo user for testing')
       currentUser = {
         id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
         email: 'demo@bookedbarber.com'

@@ -1,6 +1,6 @@
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
 
 export async function POST(request) {
   try {
@@ -26,19 +26,15 @@ export async function POST(request) {
       const { data: { user: authUser }, error } = await supabase.auth.getUser()
       if (authUser && !error) {
         user = authUser
-        console.log('✅ Standard auth successful:', authUser.id)
       } else {
         authError = error
-        console.log('⚠️ Standard auth failed:', error?.message)
       }
     } catch (error) {
-      console.log('⚠️ Auth check failed:', error.message)
       authError = error
     }
     
     // Fallback for demo/testing
     if (!user && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
-      console.log('🔓 Using demo user for testing')
       user = {
         id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
         email: 'demo@bookedbarber.com'
@@ -156,10 +152,8 @@ export async function POST(request) {
       
       if (!fullUpdateError) {
         profileUpdateSuccess = true
-        console.log(`✅ Profile updated - Step: ${step} (${getStepNumber(step)})`)
       } else if (fullUpdateError.code === 'PGRST204') {
         // Column doesn't exist, try minimal update
-        console.log('Some columns missing, trying minimal update')
         const { error: minimalError } = await serviceClient
           .from('profiles')
           .update({
@@ -171,7 +165,6 @@ export async function POST(request) {
         
         if (!minimalError) {
           profileUpdateSuccess = true
-          console.log(`✅ Profile updated (minimal) - Step: ${step} (${getStepNumber(step)})`)
         } else {
           // Try even more minimal
           const { error: basicError } = await serviceClient
@@ -232,19 +225,15 @@ export async function GET(request) {
       const { data: { user: authUser }, error } = await supabase.auth.getUser()
       if (authUser && !error) {
         user = authUser
-        console.log('✅ Standard auth successful:', authUser.id)
       } else {
         authError = error
-        console.log('⚠️ Standard auth failed:', error?.message)
       }
     } catch (error) {
-      console.log('⚠️ Auth check failed:', error.message)
       authError = error
     }
     
     // Fallback for demo/testing
     if (!user && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
-      console.log('🔓 Using demo user for testing')
       user = {
         id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
         email: 'demo@bookedbarber.com'

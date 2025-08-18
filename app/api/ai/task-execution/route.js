@@ -23,7 +23,6 @@ export async function POST(request) {
       approvedBy = null 
     } = await request.json()
 
-    console.log(`🤖 Task execution API called with action: ${action}`)
 
     let result
 
@@ -153,7 +152,6 @@ export async function GET(request) {
  * Process emotional and business triggers
  */
 async function processTriggers(context, userId, businessContext) {
-  console.log('🎭 Processing triggers for context:', context)
 
   const triggerContext = {
     userId: userId,
@@ -179,7 +177,6 @@ async function processTriggers(context, userId, businessContext) {
  * Execute a manually requested task
  */
 async function executeManualTask(context, userId, overrideSafety, approvedBy) {
-  console.log('🔧 Executing manual task:', context)
 
   const manualTrigger = {
     type: 'manual',

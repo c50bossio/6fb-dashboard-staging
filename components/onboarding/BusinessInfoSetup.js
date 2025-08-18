@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   BuildingOfficeIcon,
   MapPinIcon,
@@ -12,6 +11,7 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function BusinessInfoSetup({ data = {}, updateData, onComplete }) {
   const [formData, setFormData] = useState({

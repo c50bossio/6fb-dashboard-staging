@@ -39,7 +39,6 @@ class ErrorMonitor {
 
     if (config.monitoring.sentry.enabled && config.monitoring.sentry.dsn) {
       try {
-        console.log('🔍 Sentry monitoring initialized');
       } catch (error) {
         console.error('Failed to initialize Sentry:', error);
       }
@@ -47,14 +46,12 @@ class ErrorMonitor {
 
     if (config.monitoring.posthog.enabled && config.monitoring.posthog.apiKey) {
       try {
-        console.log('📊 PostHog analytics initialized');
       } catch (error) {
         console.error('Failed to initialize PostHog:', error);
       }
     }
 
     this.initialized = true;
-    console.log('✅ Error monitoring service initialized');
   }
 
   categorizeError(error) {
@@ -150,7 +147,6 @@ class ErrorMonitor {
     this.metrics.bySeverity[severity] = (this.metrics.bySeverity[severity] || 0) + 1;
 
     if (this.initialized && config.monitoring.sentry.enabled) {
-      console.log(`🚨 [${severity.toUpperCase()}] ${category}: ${error.message}`);
     }
 
     if (severity === ErrorSeverity.CRITICAL) {
@@ -181,7 +177,6 @@ class ErrorMonitor {
       console.error('🚨 CRITICAL ALERT:', alert.message);
       alert.sent = true;
     } else {
-      console.log('🔔 [DEV] Alert triggered:', alert.message);
     }
 
     return alert;

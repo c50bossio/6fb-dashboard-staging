@@ -14,7 +14,6 @@ export async function GET() {
     const vectorHealth = await checkVectorDatabaseHealth()
     
     if (!vectorHealth.initialized) {
-      console.log('🔄 Initializing vector database...')
       try {
         await initializeVectorDatabase()
         const updatedHealth = await checkVectorDatabaseHealth()
@@ -89,7 +88,6 @@ export async function POST() {
   try {
     const { initializeVectorDatabase } = await import('@/lib/vector-knowledge')
     
-    console.log('🔄 Manual vector database initialization requested...')
     const startTime = Date.now()
     
     const result = await initializeVectorDatabase()

@@ -415,11 +415,11 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      console.log('Admin acknowledged alert:', {
+      const alertData = {
         admin_user_id: authCheck.user.id,
         alert_id: alert_id,
         timestamp: new Date().toISOString()
-      })
+      }
 
       return NextResponse.json({
         success: true,
@@ -444,12 +444,12 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      console.log('Admin resolved alert:', {
+      const resolutionData = {
         admin_user_id: authCheck.user.id,
         alert_id: alert_id,
         resolution_notes: resolution_notes,
         timestamp: new Date().toISOString()
-      })
+      }
 
       return NextResponse.json({
         success: true,
@@ -468,11 +468,6 @@ export async function POST(request) {
     if (action === 'trigger_health_check') {
       const { component } = data
 
-      console.log('Admin triggered health check:', {
-        admin_user_id: authCheck.user.id,
-        component: component || 'all',
-        timestamp: new Date().toISOString()
-      })
 
       return NextResponse.json({
         success: true,

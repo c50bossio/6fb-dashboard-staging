@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   ClockIcon,
   CalendarDaysIcon,
@@ -14,6 +13,7 @@ import {
   SunIcon,
   MoonIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function ScheduleSetup({ data = {}, updateData, onComplete }) {
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']

@@ -23,7 +23,6 @@ export default function ClientWrapper({ children }) {
       errorTracker.initSentry()
     }
     
-    console.log('🚨 Error tracking initialized')
   }, [])
   
   return (

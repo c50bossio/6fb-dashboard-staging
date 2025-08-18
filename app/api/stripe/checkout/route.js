@@ -30,7 +30,6 @@ async function getOrCreateTestPrice(plan, billing, amount, stripe) {
     const planName = plan.charAt(0).toUpperCase() + plan.slice(1)
     const billingLabel = billing === 'monthly' ? 'Monthly' : 'Yearly'
     
-    console.log('🔧 Creating test mode product and price for:', planName, billingLabel)
     
     const product = await stripe.products.create({
       name: `${planName} Plan - ${billingLabel} (Test)`,
@@ -46,7 +45,6 @@ async function getOrCreateTestPrice(plan, billing, amount, stripe) {
       product: product.id
     })
     
-    console.log('✅ Created test price:', price.id)
     return price.id
     
   } catch (error) {
@@ -61,8 +59,6 @@ export async function GET(request) {
     const plan = searchParams.get('plan') || 'shop'
     const billing = searchParams.get('billing') || 'monthly'
     
-    console.log('💳 Creating Stripe checkout:', { plan, billing })
-    console.log('🌐 Request origin:', origin)
     
     const supabase = createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -71,10 +67,8 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/pricing?error=auth_required', request.url))
     }
     
-    console.log('✅ User authenticated for checkout:', user.email)
     
     if (process.env.DEVELOPMENT_MODE === 'true') {
-      console.log('🧪 DEVELOPMENT MODE: Simulating successful checkout')
       
       const mockSessionId = 'cs_dev_' + Math.random().toString(36).substring(2, 15)
       
@@ -83,7 +77,6 @@ export async function GET(request) {
       successUrl.searchParams.set('plan', plan)
       successUrl.searchParams.set('billing', billing)
       
-      console.log('✅ Development mode: Redirecting to success page')
       return NextResponse.redirect(successUrl.toString())
     }
     
@@ -92,10 +85,8 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/pricing?error=invalid_plan', request.url))
     }
     
-    console.log('📦 Plan config:', planConfig)
     
     const priceId = await getOrCreateTestPrice(plan, billing, planConfig.amount, stripe)
-    console.log('💰 Using price ID:', priceId)
     
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -122,7 +113,6 @@ export async function GET(request) {
       }
     })
     
-    console.log('✅ Stripe session created:', session.id)
     
     return NextResponse.redirect(session.url)
     

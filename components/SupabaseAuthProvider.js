@@ -40,7 +40,6 @@ function SupabaseAuthProvider({ children }) {
       const isDevPort = typeof window !== 'undefined' && window.location.port === '9999'
       
       if (isLocalhost && isDevPort && !isPublicPage) {
-        console.log('🔧 Development mode detected - using demo user')
         const demoUser = {
           id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
           email: 'dev-enterprise@test.com',
@@ -73,7 +72,6 @@ function SupabaseAuthProvider({ children }) {
       }
       
       try {
-        console.log('CheckUser: Starting auth check...')
         // Simple auth check - trust Supabase
         const { data: { user }, error } = await supabase.auth.getUser()
         
@@ -85,28 +83,20 @@ function SupabaseAuthProvider({ children }) {
           
           // Get user profile - handle errors gracefully
           try {
-            console.log('Fetching profile for user in checkUser:', user.id)
             const { data: profileData, error: profileError } = await supabase
               .from('profiles')
               .select('*')
               .eq('id', user.id)
               .maybeSingle()
             
-            console.log('Profile query result:', { 
-              hasData: !!profileData, 
-              hasError: !!profileError,
-              error: profileError
-            })
             
             if (!profileError && profileData) {
-              console.log('Profile loaded in checkUser:', profileData.email, 'onboarding:', profileData.onboarding_completed)
               setProfile(profileData)
               
               // No redirect needed - dashboard will handle onboarding overlay
             } else if (profileError) {
               console.error('Profile error in checkUser:', profileError)
             } else {
-              console.log('No profile found for user in checkUser')
             }
           } catch (error) {
             console.error('Error loading profile in checkUser:', error)
@@ -127,18 +117,12 @@ function SupabaseAuthProvider({ children }) {
     checkUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change event:', event, {
-        hasSession: !!session,
-        userId: session?.user?.id,
-      })
       
       if (event === 'SIGNED_IN' && session) {
-        console.log('User signed in successfully')
         setUser(session.user)
         
         try {
           // Fetch or create profile
-          console.log('Fetching profile for user:', session.user.id)
           let userProfile = null
           
           // Simple profile fetch
@@ -148,15 +132,9 @@ function SupabaseAuthProvider({ children }) {
             .eq('id', session.user.id)
             .maybeSingle()
         
-          console.log('Auth state profile result:', { 
-            hasData: !!profileData, 
-            hasError: !!error,
-            error: error
-          })
           
           if (error && error.code === 'PGRST116') {
             // No profile exists, create one
-            console.log('🆕 Creating profile for new user...')
             const newProfileData = {
               id: session.user.id,
               email: session.user.email,
@@ -178,12 +156,10 @@ function SupabaseAuthProvider({ children }) {
             if (createError) {
               console.error('❌ Profile creation error:', createError)
             } else if (newProfile) {
-              console.log('✅ Profile created:', newProfile.email)
               setProfile(newProfile)
               userProfile = newProfile
             }
           } else if (profileData) {
-            console.log('✅ Profile found:', profileData.email)
             setProfile(profileData)
             userProfile = profileData
           } else if (error) {
@@ -191,18 +167,11 @@ function SupabaseAuthProvider({ children }) {
           }
           
           // Simple navigation logic - redirect on sign-in from login page
-          console.log('🔀 Current pathname:', window.location.pathname)
-          console.log('📋 User profile status:', userProfile ? {
-            hasProfile: true,
-            onboarding_completed: userProfile.onboarding_completed
-          } : { hasProfile: false })
           
           if (window.location.pathname === '/login') {
             // Redirect directly to dashboard - dashboard will handle onboarding overlay
-            console.log('📝 Redirecting to /dashboard from login')
             router.push('/dashboard')
           } else {
-            console.log('🚫 Not on login page, no redirect from auth state change')
           }
         } catch (error) {
           console.error('❌ Error in auth state change handler:', error)
@@ -264,11 +233,6 @@ function SupabaseAuthProvider({ children }) {
     // Supabase will handle the OAuth flow and redirect back to our app
     const redirectUrl = customRedirectTo || `${window.location.origin}/auth/callback`
     
-    console.log('🔗 OAuth configuration:', {
-      hostname: window.location.hostname,
-      origin: window.location.origin,
-      redirectUrl
-    })
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -284,13 +248,11 @@ function SupabaseAuthProvider({ children }) {
       throw error
     }
     
-    console.log('✅ Google OAuth initiated successfully')
     return data
   }
 
   const signOut = async () => {
     try {
-      console.log('🔐 Starting sign out process...')
       
       // Import auth helpers dynamically to avoid circular deps
       const { performSignOut } = await import('../lib/supabase/auth-helpers')
@@ -303,7 +265,6 @@ function SupabaseAuthProvider({ children }) {
       const result = await performSignOut(supabase)
       
       if (result.success) {
-        console.log('✅ Sign out completed successfully')
         
         // Set flag for ProtectedRoute to detect
         if (typeof window !== 'undefined') {

@@ -266,7 +266,6 @@ export async function PATCH(request) {
         .insert([analyticsData])
 
       if (analyticsError) {
-        console.log('Embed analytics table not found, updating booking_links')
         
         const { error: updateError } = await supabase
           .from('booking_links')

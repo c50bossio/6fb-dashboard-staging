@@ -13,7 +13,6 @@ try {
     twilioSMSService = services.twilioSMSService;
     stripeService = services.stripeService;
     if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Marketing services loaded successfully');
     }
 } catch (error) {
     console.error('Failed to import marketing services:', error.message);
@@ -51,7 +50,6 @@ export async function GET(request) {
                 error = dbError;
             }
         } catch (e) {
-            console.log('Database query failed, using empty array:', e.message);
         }
         
         if (campaigns.length === 0) {
@@ -78,7 +76,6 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const data = await request.json();
-        console.log('📮 Campaign creation request:', data);
         
         const { 
             type, 

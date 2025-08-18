@@ -108,7 +108,6 @@ export default function AnalyticsPanel({ data }) {
       try {
         setLoading(true)
         setDataSource('loading')
-        console.log(`🔄 Fetching analytics for ${timeRange}...`)
         
         let apiUrl = `/api/analytics/live-data?format=json&force_refresh=true&period_type=${timeRange}`
         
@@ -124,19 +123,16 @@ export default function AnalyticsPanel({ data }) {
           'Content-Type': 'application/json',
         }
         
-        console.log('📡 Making API request to:', apiUrl)
 
         const response = await fetch(apiUrl, {
           method: 'GET',
           headers,
         })
         
-        console.log('📡 API Response status:', response.status)
         
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
-            console.log('✅ Real analytics data fetched:', result.data)
             setDataSource(result.data_source || 'api')
             
             let dashboardData = {}
@@ -187,7 +183,6 @@ export default function AnalyticsPanel({ data }) {
             }
             
             setAnalyticsData(dashboardData)
-            console.log(`✅ Analytics panel now using REAL ${timeRange} data!`, dashboardData)
           } else {
             console.warn('⚠️ API returned no data, using fallback')
             throw new Error('No data in API response')
@@ -200,7 +195,6 @@ export default function AnalyticsPanel({ data }) {
       } catch (error) {
         console.error('❌ Error fetching real analytics:', error)
         
-        console.log('🔄 Using fallback analytics data')
         setDataSource('fallback')
         
         setAnalyticsData({

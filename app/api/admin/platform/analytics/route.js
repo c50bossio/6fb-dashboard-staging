@@ -489,13 +489,13 @@ export async function POST(request) {
 
       const reportId = generateUUID()
       
-      console.log('Admin generated report:', {
+      const reportData = {
         admin_user_id: authCheck.user.id,
         report_id: reportId,
         report_type: report_type,
         timeframe: timeframe,
         timestamp: new Date().toISOString()
-      })
+      }
 
       return NextResponse.json({
         success: true,
@@ -525,13 +525,13 @@ export async function POST(request) {
 
       const exportId = generateUUID()
       
-      console.log('Admin exported data:', {
+      const exportData = {
         admin_user_id: authCheck.user.id,
         export_id: exportId,
         data_type: data_type,
         format: format,
         timestamp: new Date().toISOString()
-      })
+      }
 
       return NextResponse.json({
         success: true,

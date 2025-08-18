@@ -106,12 +106,6 @@ export default function AppointmentBookingModal({
         scheduledAt = `${year}-${month}-${day}T${hours}:${minutes}`
       }
       
-      console.log('🔍 Modal - Setting form data for editing:', {
-        barber_id: editingAppointment.barber_id,
-        service_id: editingAppointment.service_id,
-        editingAppointment: editingAppointment
-      })
-      
       setFormData({
         barber_id: editingAppointment.barber_id || '',
         service_id: editingAppointment.service_id || '',
@@ -429,12 +423,6 @@ export default function AppointmentBookingModal({
       const appointmentDate = new Date(formData.scheduled_at)
       const dayOfWeek = appointmentDate.getDay()
       
-      console.log('Converting to recurring - preserving time:', {
-        originalTime: formData.scheduled_at,
-        dayOfWeek: dayOfWeek,
-        appointmentDate: appointmentDate.toString()
-      })
-      
       setFormData(prev => ({
         ...prev,
         is_recurring: true,
@@ -539,7 +527,6 @@ export default function AppointmentBookingModal({
           }
           
           const data = await response.json()
-          console.log('Convert recurring response:', data)
           if (data && data.appointment) {
             onBookingComplete(data.appointment)
           } else {
@@ -578,7 +565,6 @@ export default function AppointmentBookingModal({
         }
         
         const data = await response.json()
-        console.log('New appointment created:', data)
         onBookingComplete(data.appointment || data)
       }
       
@@ -597,7 +583,6 @@ export default function AppointmentBookingModal({
       return
     }
     
-    console.log('Attempting to uncancel appointment:', editingAppointment.id)
     
     setDeletingAppointment(true)
     setError('')
@@ -619,7 +604,6 @@ export default function AppointmentBookingModal({
         throw new Error(data.error || 'Failed to uncancel appointment')
       }
       
-      console.log('Uncancel successful:', data)
       
       setShowDeleteConfirmation(false)
       onClose()
@@ -643,7 +627,6 @@ export default function AppointmentBookingModal({
       return
     }
     
-    console.log('Attempting to cancel appointment:', editingAppointment.id)
     
     setDeletingAppointment(true)
     setError('')
@@ -665,7 +648,6 @@ export default function AppointmentBookingModal({
         throw new Error(data.error || 'Failed to cancel appointment')
       }
       
-      console.log('Cancel successful:', data)
       
       setShowDeleteConfirmation(false)
       onClose()
@@ -709,7 +691,6 @@ export default function AppointmentBookingModal({
         is_blocked_time: true // Special flag for UI handling
       }
       
-      console.log('Creating blocked time slot:', blockData)
       
       const response = await fetch('/api/calendar/appointments', {
         method: 'POST',
@@ -725,7 +706,6 @@ export default function AppointmentBookingModal({
         throw new Error(data.error || 'Failed to block time slot')
       }
       
-      console.log('Time blocked successfully:', data)
       
       setIsBlockMode(false)
       setBlockReason('')
@@ -750,14 +730,6 @@ export default function AppointmentBookingModal({
       return
     }
     
-    console.log('🔴 DELETE ATTEMPT - Appointment Details:', {
-      id: editingAppointment.id,
-      status: editingAppointment.extendedProps?.status,
-      isRecurring: editingAppointment.isRecurring,
-      extendedProps: editingAppointment.extendedProps,
-      fullAppointment: editingAppointment
-    })
-    
     setDeletingAppointment(true)
     setError('')
     
@@ -768,18 +740,17 @@ export default function AppointmentBookingModal({
       const isCancelled = editingAppointment.extendedProps?.status === 'cancelled'
       
       if (isCancelled) {
-        console.log('🔴 DELETE - CANCELLED APPOINTMENT - NO PARAMETERS WILL BE SENT')
-        console.log('🔴 DELETE - Status:', editingAppointment.extendedProps?.status)
+        // Handle cancelled appointment
       } else {
         const isActuallyRecurring = editingAppointment.isRecurring || editingAppointment.extendedProps?.isRecurring
         
-        console.log('🔴 DELETE - Non-Cancelled Appointment Check:', {
+        const debugInfo = {
           isRecurring: editingAppointment.isRecurring,
           extendedPropsRecurring: editingAppointment.extendedProps?.isRecurring,
           status: editingAppointment.extendedProps?.status,
           isActuallyRecurring,
           deleteOption
-        })
+        };
         
         if (isActuallyRecurring) {
           if (deleteOption === 'all') {
@@ -795,8 +766,6 @@ export default function AppointmentBookingModal({
         deleteUrl += `?${params.toString()}`
       }
       
-      console.log('🔴 DELETE URL:', deleteUrl)
-      console.log('🔴 URL PARAMS:', params.toString() || 'NONE')
       
       const response = await fetch(deleteUrl, {
         method: 'DELETE',
@@ -811,7 +780,6 @@ export default function AppointmentBookingModal({
         throw new Error(data.error || 'Failed to delete appointment')
       }
       
-      console.log('Delete successful:', data)
       
       setShowDeleteConfirmation(false)
       onClose()

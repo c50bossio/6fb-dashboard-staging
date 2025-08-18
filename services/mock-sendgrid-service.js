@@ -7,7 +7,6 @@ class MockSendGridService {
   }
 
   async sendEmail(to, subject, content, options = {}) {
-    console.log('📧 [MOCK] SendGrid: Simulating email send', {
       to: Array.isArray(to) ? `${to.length} recipients` : to,
       subject,
       preview: content.substring(0, 100) + '...'
@@ -31,7 +30,6 @@ class MockSendGridService {
   }
 
   async sendCampaign(campaign, recipients) {
-    console.log('📧 [MOCK] SendGrid: Sending campaign', {
       campaign: campaign.name,
       recipients: recipients.length,
       type: campaign.type
@@ -66,7 +64,6 @@ class MockSendGridService {
   }
 
   async sendWhiteLabelCampaign(campaign, barbershop, recipients) {
-    console.log('📧 [MOCK] SendGrid: White-label campaign', {
       shop: barbershop.name,
       campaign: campaign.name,
       recipients: recipients.length
@@ -83,7 +80,6 @@ class MockSendGridService {
   }
 
   async createTemplate(name, subject, htmlContent, textContent) {
-    console.log('📧 [MOCK] SendGrid: Creating template', { name })
     
     return {
       success: true,
@@ -100,7 +96,6 @@ class MockSendGridService {
   }
 
   async createContactList(name, contacts) {
-    console.log('📧 [MOCK] SendGrid: Creating contact list', {
       name,
       contacts: contacts.length
     })
@@ -118,7 +113,6 @@ class MockSendGridService {
   }
 
   async getCampaignAnalytics(campaignId) {
-    console.log('📧 [MOCK] SendGrid: Getting campaign analytics', { campaignId })
 
     return {
       campaignId,

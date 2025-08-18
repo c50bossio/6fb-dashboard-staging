@@ -32,7 +32,6 @@ export function EdgeConfigProvider({ children }) {
         setIsMaintenanceMode(maintenance.enabled)
         setError(null)
         
-        console.log('Edge Config loaded:', { flags, ai, limits, maintenance })
       } catch (err) {
         console.error('Edge Config loading error:', err)
         setError(err.message)
