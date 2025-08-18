@@ -275,11 +275,7 @@ function SupabaseAuthProvider({ children }) {
       options: {
         redirectTo: redirectUrl,
         // Skip any extra query params that might interfere
-        skipBrowserRedirect: false,
-        queryParams: {
-          // Force Google to show account chooser even if logged in
-          prompt: 'select_account'
-        }
+        skipBrowserRedirect: false
       }
     })
     
@@ -320,10 +316,17 @@ function SupabaseAuthProvider({ children }) {
         console.error('⚠️ Supabase signOut error (non-blocking):', error)
       })
       
-      console.log('✅ Local session cleared, redirecting immediately...')
+      console.log('✅ Local session cleared, now logging out of Google...')
       
       if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+        // Always redirect to Google logout to ensure complete sign out
+        // This logs the user out of Google and then redirects back to our login page
+        // This provides a consistent logout experience regardless of auth method
+        const googleLogoutUrl = 'https://accounts.google.com/Logout?continue=' + 
+                               encodeURIComponent(window.location.origin + '/login')
+        
+        console.log('🔗 Redirecting to Google logout:', googleLogoutUrl)
+        window.location.href = googleLogoutUrl
       }
       
       return { success: true }
@@ -331,7 +334,10 @@ function SupabaseAuthProvider({ children }) {
       console.error('❌ Sign out error:', error)
       
       if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+        // Even on error, try to log out of Google and redirect to login
+        const googleLogoutUrl = 'https://accounts.google.com/Logout?continue=' + 
+                               encodeURIComponent(window.location.origin + '/login')
+        window.location.href = googleLogoutUrl
       }
       
       return { success: false, error }
