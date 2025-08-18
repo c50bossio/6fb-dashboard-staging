@@ -11,9 +11,15 @@ export default function CleanLogin() {
   const router = useRouter()
   
   useEffect(() => {
-    // Initialize Supabase client
+    // Initialize Supabase client - Try both keys
     const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUyMTI1MzIsImV4cCI6MjA1MDc4ODUzMn0.qOJBWy5BEu6LYo0n2CYjgvYOJHPYC7K5KnL7y2O6Uws'
+    // Try the newer key from .env.local first
+    let supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
+    
+    // Fallback to production key if needed
+    if (!supabaseAnonKey) {
+      supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUyMTI1MzIsImV4cCI6MjA1MDc4ODUzMn0.qOJBWy5BEu6LYo0n2CYjgvYOJHPYC7K5KnL7y2O6Uws'
+    }
     
     const client = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
