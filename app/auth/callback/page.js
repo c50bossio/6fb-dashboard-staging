@@ -14,14 +14,8 @@ export default function AuthCallback() {
         
         const supabase = createClient()
         
-        // First check if we already have a session
-        const { data: { session: existingSession } } = await supabase.auth.getSession()
-        
-        if (existingSession) {
-          console.log('✅ Existing session found, redirecting to dashboard')
-          router.push('/dashboard')
-          return
-        }
+        // Import auth helpers
+        const { handleOAuthCallback, checkSession } = await import('@/lib/supabase/auth-helpers')
         
         // Get the code from URL
         const searchParams = new URLSearchParams(window.location.search)
@@ -42,28 +36,26 @@ export default function AuthCallback() {
         }
         
         if (code) {
-          console.log('🔄 Exchanging code for session...')
+          console.log('🔄 Processing OAuth callback...')
           
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          const result = await handleOAuthCallback(supabase, code)
           
-          if (exchangeError) {
-            console.error('❌ Exchange error:', exchangeError)
-            // If exchange fails, it might be because the code was already used
-            // Check if we have a session anyway
-            const { data: { session } } = await supabase.auth.getSession()
-            if (session) {
-              console.log('✅ Session exists despite exchange error, redirecting')
-              router.push('/dashboard')
-              return
-            }
-            router.push(`/login?error=${encodeURIComponent(exchangeError.message)}`)
+          if (!result.success) {
+            console.error('❌ Callback processing failed:', result.error)
+            router.push(`/login?error=${encodeURIComponent(result.error.message)}`)
             return
           }
           
-          console.log('✅ Session established successfully')
+          if (result.existingSession || result.recovered) {
+            console.log('✅ Session found or recovered, redirecting to dashboard')
+            router.push('/dashboard')
+            return
+          }
+          
+          console.log('✅ New session established successfully')
           
           // Check if user needs onboarding
-          const { data: { user } } = await supabase.auth.getUser()
+          const { user } = result.session
           if (user) {
             console.log('👤 User authenticated:', user.email)
             
@@ -86,13 +78,13 @@ export default function AuthCallback() {
           }
         } else {
           console.log('⚠️ No code in callback, checking for existing session')
-          // No code, check if we have a session (user might already be logged in)
-          const { data: { session } } = await supabase.auth.getSession()
-          if (session) {
-            console.log('✅ Session found, redirecting to dashboard')
+          
+          const { hasSession } = await checkSession(supabase)
+          if (hasSession) {
+            console.log('✅ Valid session found, redirecting to dashboard')
             router.push('/dashboard')
           } else {
-            console.log('❌ No session or code, redirecting to login')
+            console.log('❌ No valid session, redirecting to login')
             router.push('/login')
           }
         }

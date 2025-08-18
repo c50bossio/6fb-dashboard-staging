@@ -292,89 +292,59 @@ function SupabaseAuthProvider({ children }) {
     try {
       console.log('🔐 Starting sign out process...')
       
-      // CRITICAL: Sign out from Supabase FIRST and WAIT for it
-      console.log('🔄 Signing out from Supabase...')
-      const { error: signOutError } = await supabase.auth.signOut()
+      // Import auth helpers dynamically to avoid circular deps
+      const { performSignOut } = await import('../lib/supabase/auth-helpers')
       
-      if (signOutError) {
-        console.error('⚠️ Supabase signOut error:', signOutError)
-        // Continue with logout even if there's an error
-      } else {
-        console.log('✅ Supabase signout complete')
-      }
-      
-      if (typeof window !== 'undefined') {
-        console.log('🧹 Clearing all session data...')
-        
-        // Set force sign out flag
-        sessionStorage.setItem('force_sign_out', 'true')
-        
-        // Clear all auth-related storage
-        localStorage.removeItem('dev_session')
-        localStorage.removeItem('dev_bypass')
-        
-        // Clear ALL cookies related to auth
-        document.cookie.split(";").forEach(function(c) { 
-          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/")
-        })
-        
-        // Clear ALL Supabase tokens comprehensively
-        const keysToRemove = []
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i)
-          // Remove any Supabase-related keys
-          if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
-            keysToRemove.push(key)
-          }
-        }
-        
-        keysToRemove.forEach(key => {
-          localStorage.removeItem(key)
-          console.log(`🗑️ Removed: ${key}`)
-        })
-        
-        // Also clear sessionStorage
-        for (let i = sessionStorage.length - 1; i >= 0; i--) {
-          const key = sessionStorage.key(i)
-          if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
-            sessionStorage.removeItem(key)
-            console.log(`🗑️ Removed from session: ${key}`)
-          }
-        }
-        
-        console.log(`✅ Cleared ${keysToRemove.length} auth-related items`)
-      }
-      
-      // Clear React state
+      // Immediately clear React state
       setUser(null)
       setProfile(null)
       
-      // Use router for navigation
-      if (typeof window !== 'undefined') {
-        console.log('🔗 Redirecting to login page...')
-        router.push('/login')
-      }
+      // Use the robust sign out helper
+      const result = await performSignOut(supabase)
       
-      return { success: true }
+      if (result.success) {
+        console.log('✅ Sign out completed successfully')
+        
+        // Set flag for ProtectedRoute to detect
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('force_sign_out', 'true')
+        }
+        
+        // Use router for navigation to maintain SPA behavior
+        router.push('/login')
+        
+        return { success: true }
+      } else {
+        console.warn('⚠️ Sign out completed with warnings:', result.error)
+        
+        // Still redirect even if there were issues
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('force_sign_out', 'true')
+          router.push('/login')
+        }
+        
+        return { success: true, warnings: result.error }
+      }
     } catch (error) {
       console.error('❌ Sign out error:', error)
       
-      // On error, still try to clear everything and redirect
+      // Fallback: clear state and redirect
       setUser(null)
       setProfile(null)
       
-      // Try to clear storage even on error
       if (typeof window !== 'undefined') {
-        sessionStorage.setItem('force_sign_out', 'true')
-        
-        // Clear all localStorage auth items
-        for (let i = localStorage.length - 1; i >= 0; i--) {
-          const key = localStorage.key(i)
-          if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
-            localStorage.removeItem(key)
-          }
+        // Import and use auth helpers for cleanup
+        try {
+          const { clearAuthStorage } = await import('../lib/supabase/auth-helpers')
+          clearAuthStorage()
+        } catch (helperError) {
+          console.error('Failed to load auth helpers:', helperError)
+          // Fallback to simple clear
+          localStorage.clear()
+          sessionStorage.clear()
         }
         
+        sessionStorage.setItem('force_sign_out', 'true')
         router.push('/login')
       }
       
