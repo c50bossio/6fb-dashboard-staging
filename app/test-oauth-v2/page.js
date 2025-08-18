@@ -154,13 +154,35 @@ export default function TestOAuthV2() {
           </div>
           
           <div className="p-4 bg-gray-800 rounded">
-            <h3 className="font-semibold mb-2">Option 7: Direct OAuth</h3>
+            <h3 className="font-semibold mb-2">Option 7: Manual Exchange</h3>
+            <p className="text-sm text-gray-400 mb-3">Manually exchanges OAuth code without SDK</p>
+            <button
+              onClick={() => signInWithGoogle('/auth/callback-manual')}
+              className="w-full px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-500"
+            >
+              Sign in with Google (Manual)
+            </button>
+          </div>
+          
+          <div className="p-4 bg-gray-800 rounded">
+            <h3 className="font-semibold mb-2">Option 8: Standalone</h3>
+            <p className="text-sm text-gray-400 mb-3">Completely standalone - no Supabase client at all</p>
+            <button
+              onClick={() => signInWithGoogle('/auth/callback-standalone')}
+              className="w-full px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-500"
+            >
+              Sign in with Google (Standalone)
+            </button>
+          </div>
+          
+          <div className="p-4 bg-gray-800 rounded">
+            <h3 className="font-semibold mb-2">Option 9: Direct OAuth URL</h3>
             <p className="text-sm text-gray-400 mb-3">Bypass SDK and use direct OAuth URL</p>
             <button
-              onClick={() => window.location.href = '/api/auth/direct-google?redirect=/auth/debug-callback'}
+              onClick={() => window.location.href = '/api/auth/direct-google?redirect=/auth/callback-manual'}
               className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500"
             >
-              Sign in with Google (Direct)
+              Sign in with Google (Direct URL)
             </button>
           </div>
         </div>
