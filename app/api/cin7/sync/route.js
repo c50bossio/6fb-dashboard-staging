@@ -319,7 +319,17 @@ export async function POST(request) {
     // First check if we're in dev bypass mode with credentials from request
     if (devBypass) {
       // Try to get credentials from request body first (for testing)
-      const body = await request.json().catch(() => ({}))
+      let body = {}
+      try {
+        const requestText = await request.clone().text()
+        if (requestText.trim()) {
+          body = JSON.parse(requestText)
+        }
+      } catch (e) {
+        // Request has no body or invalid JSON - use empty object
+        body = {}
+      }
+      
       if (body.accountId && body.apiKey) {
         accountId = body.accountId
         apiKey = body.apiKey
