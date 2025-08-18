@@ -275,7 +275,11 @@ function SupabaseAuthProvider({ children }) {
       options: {
         redirectTo: redirectUrl,
         // Skip any extra query params that might interfere
-        skipBrowserRedirect: false
+        skipBrowserRedirect: false,
+        queryParams: {
+          // Force Google to show account chooser even if logged in
+          prompt: 'select_account'
+        }
       }
     })
     
