@@ -107,17 +107,34 @@ export default function BarbershopDashboard() {
     (window.location.search.includes('bypass=true') || 
      localStorage.getItem('dev_bypass') === 'true')
   
-  // Create mock user and profile for bypass mode
+  // Try to get actual user data from session storage
+  let sessionUser = null
+  if (typeof window !== 'undefined') {
+    const sessionData = localStorage.getItem('user_session')
+    if (sessionData) {
+      try {
+        const session = JSON.parse(sessionData)
+        sessionUser = session.user
+      } catch (err) {
+        console.log('Could not parse user session')
+      }
+    }
+  }
+  
+  // Create mock user and profile for bypass mode, using real data if available
   const mockUser = isBypass ? {
-    id: 'bbb243c4-cc7d-4458-af03-3bfff742aee5',
-    email: 'dev@bookedbarber.com',
-    user_metadata: { full_name: 'Dev User' }
+    id: sessionUser?.id || 'bbb243c4-cc7d-4458-af03-3bfff742aee5',
+    email: sessionUser?.email || 'dev@bookedbarber.com',
+    user_metadata: { 
+      full_name: sessionUser?.name || 'Dev User',
+      avatar_url: sessionUser?.avatar
+    }
   } : null
   
   const mockProfile = isBypass ? {
-    id: 'bbb243c4-cc7d-4458-af03-3bfff742aee5',
-    email: 'dev@bookedbarber.com',
-    full_name: 'Dev User',
+    id: sessionUser?.id || 'bbb243c4-cc7d-4458-af03-3bfff742aee5',
+    email: sessionUser?.email || 'dev@bookedbarber.com',
+    full_name: sessionUser?.name || 'Dev User',
     shop_name: 'Tomb45 Barbershop',
     role: 'SHOP_OWNER',
     onboarding_completed: false  // Changed to false to show onboarding

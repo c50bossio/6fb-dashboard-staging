@@ -26,8 +26,8 @@ export default function FinalLogin() {
     setStatus('processing')
     setMessage('Redirecting to Google...')
     
-    // Direct redirect to Supabase OAuth
-    const redirectTo = `${window.location.origin}/login-final`
+    // Direct redirect to Supabase OAuth with proper callback
+    const redirectTo = `${window.location.origin}/auth/callback-process`
     const oauthUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`
     
     window.location.href = oauthUrl
