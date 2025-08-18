@@ -4,7 +4,7 @@ import { SparklesIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import DashboardOnboarding from '../../../components/dashboard/DashboardOnboarding'
-import OnboardingResumeButton from '../../../components/dashboard/OnboardingResumeButton'
+// import OnboardingResumeButton from '../../../components/dashboard/OnboardingResumeButton' // Removed to avoid duplicate UI
 import UnifiedDashboard from '../../../components/dashboard/UnifiedDashboard'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
@@ -230,11 +230,7 @@ export default function BarbershopDashboard() {
       {/* Unified Dashboard Component - Pass effective user (mock, real, or fallback) */}
       <UnifiedDashboard user={effectiveUser || fallbackUser || mockUser} profile={profile} />
       
-      {/* Floating Resume Button - Shows when onboarding was skipped */}
-      <OnboardingResumeButton 
-        profile={effectiveProfile}
-        onClick={() => setForceShowOnboarding(true)}
-      />
+      {/* Floating button removed - using top banner instead for cleaner UI */}
       
       {/* Show onboarding overlay if profile exists and onboarding is not complete */}
       {/* Also show if we're using fallback data and onboarding isn't complete */}

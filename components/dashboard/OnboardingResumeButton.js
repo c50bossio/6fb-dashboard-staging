@@ -1,9 +1,14 @@
+// COMPONENT DISABLED: Using top banner instead of floating button for cleaner UI
+// This component is preserved for potential future use
+
 'use client'
 
 import { SparklesIcon } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function OnboardingResumeButton({ profile, onClick }) {
+// Commenting out the component to prevent it from being used
+// Remove the comments to re-enable if needed later
+function OnboardingResumeButton_DISABLED({ profile, onClick }) {
   const [isVisible, setIsVisible] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   
@@ -70,4 +75,9 @@ export default function OnboardingResumeButton({ profile, onClick }) {
       )}
     </>
   )
+}
+
+// Export a dummy component that returns null to prevent import errors
+export default function OnboardingResumeButton() {
+  return null
 }
