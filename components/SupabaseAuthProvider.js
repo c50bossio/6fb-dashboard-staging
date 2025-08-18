@@ -293,13 +293,14 @@ function SupabaseAuthProvider({ children }) {
       console.log('🔐 Starting sign out process...')
       
       if (typeof window !== 'undefined') {
-        console.log('🧹 Clearing dev session...')
+        console.log('🧹 Clearing session data...')
+        
+        // Clear all auth-related storage
         localStorage.removeItem('dev_session')
-        
         sessionStorage.setItem('force_sign_out', 'true')
-        
         document.cookie = 'dev_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
         
+        // Clear Supabase tokens
         const criticalKeys = ['sb-access-token', 'sb-refresh-token', 'supabase.auth.token', 'auth-token']
         let clearedCount = 0
         criticalKeys.forEach(key => {
@@ -311,33 +312,30 @@ function SupabaseAuthProvider({ children }) {
         console.log('✅ Cleared critical auth items:', clearedCount)
       }
       
-      console.log('🔄 Starting Supabase signOut in background...')
-      supabase.auth.signOut().catch(error => {
-        console.error('⚠️ Supabase signOut error (non-blocking):', error)
-      })
+      // Sign out from Supabase
+      console.log('🔄 Signing out from Supabase...')
+      const { error } = await supabase.auth.signOut()
       
-      console.log('✅ Local session cleared, now logging out of Google...')
+      if (error) {
+        console.error('⚠️ Supabase signOut error:', error)
+      } else {
+        console.log('✅ Successfully signed out from Supabase')
+      }
       
+      // Simply redirect to login page - no need to log out of Google
+      // Users can choose to sign in with a different Google account if they want
       if (typeof window !== 'undefined') {
-        // Always redirect to Google logout to ensure complete sign out
-        // This logs the user out of Google and then redirects back to our login page
-        // This provides a consistent logout experience regardless of auth method
-        const googleLogoutUrl = 'https://accounts.google.com/Logout?continue=' + 
-                               encodeURIComponent(window.location.origin + '/login')
-        
-        console.log('🔗 Redirecting to Google logout:', googleLogoutUrl)
-        window.location.href = googleLogoutUrl
+        console.log('🔗 Redirecting to login page...')
+        window.location.href = '/login'
       }
       
       return { success: true }
     } catch (error) {
       console.error('❌ Sign out error:', error)
       
+      // On error, still try to redirect to login
       if (typeof window !== 'undefined') {
-        // Even on error, try to log out of Google and redirect to login
-        const googleLogoutUrl = 'https://accounts.google.com/Logout?continue=' + 
-                               encodeURIComponent(window.location.origin + '/login')
-        window.location.href = googleLogoutUrl
+        window.location.href = '/login'
       }
       
       return { success: false, error }
