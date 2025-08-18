@@ -38,9 +38,21 @@ export default function AuthCallback() {
         if (code) {
           console.log('🔄 Processing OAuth callback...')
           
-          // Add timeout to prevent hanging
+          // First, try a quick session check (sometimes session is already there)
+          try {
+            const { data: { session: existingSession } } = await supabase.auth.getSession()
+            if (existingSession?.user) {
+              console.log('✅ Session already exists, redirecting immediately')
+              router.push('/dashboard')
+              return
+            }
+          } catch (quickCheckError) {
+            console.log('⚠️ Quick session check failed, proceeding with code exchange')
+          }
+          
+          // Add timeout to prevent hanging (reduced to 8 seconds total)
           const callbackTimeout = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Callback timeout after 10 seconds')), 10000)
+            setTimeout(() => reject(new Error('Callback timeout after 8 seconds')), 8000)
           )
           
           try {
@@ -53,6 +65,13 @@ export default function AuthCallback() {
             
             if (!result.success) {
               console.error('❌ Callback processing failed:', result.error)
+              // Try one more direct session check before giving up
+              const { data: { session: lastChance } } = await supabase.auth.getSession()
+              if (lastChance?.user) {
+                console.log('✅ Found session on retry, redirecting')
+                router.push('/dashboard')
+                return
+              }
               router.push(`/login?error=${encodeURIComponent(result.error.message)}`)
               return
             }
@@ -70,45 +89,32 @@ export default function AuthCallback() {
             if (user) {
               console.log('👤 User authenticated:', user.email)
               
-              // Check profile with timeout
-              const profileTimeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Profile timeout')), 5000)
-              )
-              
-              try {
-                const { data: profile } = await Promise.race([
-                  supabase.from('profiles').select('*').eq('id', user.id).single(),
-                  profileTimeout
-                ])
-                
-                if (!profile || !profile.shop_name) {
-                  console.log('🎯 User needs onboarding')
-                  router.push('/welcome')
-                } else {
-                  console.log('📊 Redirecting to dashboard')
-                  router.push('/dashboard')
-                }
-              } catch (profileError) {
-                console.warn('⚠️ Profile check failed, redirecting to dashboard anyway:', profileError)
-                router.push('/dashboard')
-              }
+              // Skip profile check for now - just go to dashboard
+              console.log('📊 Redirecting to dashboard')
+              router.push('/dashboard')
             } else {
               router.push('/dashboard')
             }
           } catch (timeoutError) {
             console.error('❌ Callback timeout or error:', timeoutError)
-            // Fallback: try direct session check
-            console.log('🔄 Attempting fallback session check...')
+            // Fallback: try direct session check multiple times
+            console.log('🔄 Attempting fallback session checks...')
             
-            try {
-              const { data: { session: fallbackSession } } = await supabase.auth.getSession()
-              if (fallbackSession && fallbackSession.user) {
-                console.log('✅ Fallback session found, redirecting to dashboard')
-                router.push('/dashboard')
-                return
+            for (let i = 0; i < 3; i++) {
+              try {
+                const { data: { session: fallbackSession } } = await supabase.auth.getSession()
+                if (fallbackSession?.user) {
+                  console.log(`✅ Fallback session found on attempt ${i + 1}, redirecting to dashboard`)
+                  router.push('/dashboard')
+                  return
+                }
+                // Wait before next attempt
+                if (i < 2) {
+                  await new Promise(resolve => setTimeout(resolve, 500))
+                }
+              } catch (fallbackError) {
+                console.error(`❌ Fallback attempt ${i + 1} failed:`, fallbackError)
               }
-            } catch (fallbackError) {
-              console.error('❌ Fallback session check failed:', fallbackError)
             }
             
             // Ultimate fallback: redirect to login with error
