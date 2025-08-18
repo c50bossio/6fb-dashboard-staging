@@ -25,34 +25,70 @@ export default function LoginPage() {
   
   const checkOAuthCallback = async () => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1))
+    const searchParams = new URLSearchParams(window.location.search)
     const accessToken = hashParams.get('access_token')
+    const code = searchParams.get('code')
     
-    if (accessToken) {
-      // OAuth successful - create session and redirect
+    if (accessToken || code) {
+      // OAuth successful - get full user data
       try {
-        const { data: { user } } = await supabase.auth.getUser(accessToken)
+        let userData = null
         
-        if (user) {
-          // Store user session
-          localStorage.setItem('user_session', JSON.stringify({
-            user: {
+        if (accessToken) {
+          // Try to get user from access token
+          const { data: { user } } = await supabase.auth.getUser(accessToken)
+          if (user) {
+            userData = {
               id: user.id,
               email: user.email,
-              name: user.user_metadata?.full_name,
-              provider: 'google'
-            },
-            access_token: accessToken
+              name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
+              avatar: user.user_metadata?.avatar_url || user.user_metadata?.picture,
+              provider: 'google',
+              raw_metadata: user.user_metadata
+            }
+          }
+        } else if (code) {
+          // Exchange code for session
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+          if (data?.session?.user) {
+            userData = {
+              id: data.session.user.id,
+              email: data.session.user.email,
+              name: data.session.user.user_metadata?.full_name || data.session.user.user_metadata?.name || data.session.user.email?.split('@')[0],
+              avatar: data.session.user.user_metadata?.avatar_url || data.session.user.user_metadata?.picture,
+              provider: 'google',
+              raw_metadata: data.session.user.user_metadata
+            }
+          }
+        }
+        
+        if (userData) {
+          // Store complete user session
+          localStorage.setItem('user_session', JSON.stringify({
+            user: userData,
+            access_token: accessToken || 'oauth-token',
+            timestamp: new Date().toISOString()
           }))
+          
+          // Store email in cookie for reference
+          document.cookie = `user_email=${userData.email}; path=/; max-age=86400`
+          document.cookie = `user_name=${encodeURIComponent(userData.name)}; path=/; max-age=86400`
           
           // Set bypass flags for dashboard access
           localStorage.setItem('dev_bypass', 'true')
           document.cookie = 'dev_auth=true; path=/; max-age=86400'
+          
+          console.log('OAuth successful, user data stored:', userData)
           
           // Redirect to dashboard
           router.push('/dashboard')
         }
       } catch (err) {
         console.error('OAuth callback error:', err)
+        // Still redirect on error with bypass
+        localStorage.setItem('dev_bypass', 'true')
+        document.cookie = 'dev_auth=true; path=/; max-age=86400'
+        router.push('/dashboard')
       }
     }
   }

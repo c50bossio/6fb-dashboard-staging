@@ -22,6 +22,7 @@ export default function DashboardHeader() {
   const [currentTime, setCurrentTime] = useState('')
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
+  const [sessionUser, setSessionUser] = useState(null)
   
   const notificationsRef = useRef(null)
   const profileRef = useRef(null)
@@ -47,6 +48,17 @@ export default function DashboardHeader() {
       setDarkMode(savedDarkMode === 'true')
     }
     
+    // Check for stored user session (from Google OAuth)
+    const sessionData = localStorage.getItem('user_session')
+    if (sessionData) {
+      try {
+        const session = JSON.parse(sessionData)
+        setSessionUser(session.user)
+      } catch (err) {
+        console.log('Could not parse user session')
+      }
+    }
+    
     return () => clearInterval(interval)
   }, [])
 
@@ -66,6 +78,11 @@ export default function DashboardHeader() {
   }, [activeDropdown])
 
   const getUserName = () => {
+    // Check session user first (from Google OAuth)
+    if (sessionUser?.name) return sessionUser.name
+    if (sessionUser?.email) return sessionUser.email.split('@')[0]
+    
+    // Fallback to auth provider data
     return profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'
   }
 
@@ -184,9 +201,9 @@ export default function DashboardHeader() {
                 className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center overflow-hidden">
-                  {(profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture) ? (
+                  {(sessionUser?.avatar || profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture) ? (
                     <img 
-                      src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} 
+                      src={sessionUser?.avatar || profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} 
                       alt={getUserName()}
                       className="h-8 w-8 rounded-full object-cover"
                     />
@@ -204,7 +221,7 @@ export default function DashboardHeader() {
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="px-4 py-3 border-b border-gray-200">
                     <p className="text-sm font-medium text-gray-900">{getUserName()}</p>
-                    <p className="text-xs text-gray-500">{profile?.email || user?.email || 'dev@localhost.com'}</p>
+                    <p className="text-xs text-gray-500">{sessionUser?.email || profile?.email || user?.email || 'dev@localhost.com'}</p>
                   </div>
                   <div className="py-2">
                     <Link 
