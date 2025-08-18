@@ -21,6 +21,15 @@ export default function ProtectedRoute({ children }) {
       pathname: window.location.pathname
     })
     
+    // Check force sign out FIRST before any other checks
+    const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
+    if (forceSignOut) {
+      sessionStorage.removeItem('force_sign_out')
+      console.log('🚪 Force sign out detected, redirecting immediately')
+      router.push('/login')
+      return
+    }
+    
     const isDevelopment = process.env.NODE_ENV === 'development'
     const isCalendarPage = window.location.pathname.includes('/calendar')
     const isAnalyticsPage = window.location.pathname.includes('/analytics')
@@ -29,14 +38,6 @@ export default function ProtectedRoute({ children }) {
     const isSeoPage = window.location.pathname.includes('/seo')
     const isDashboardPage = window.location.pathname.includes('/dashboard')
     const isInventoryPage = window.location.pathname.includes('/inventory')
-    
-    const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
-    if (forceSignOut) {
-      sessionStorage.removeItem('force_sign_out')
-      console.log('🚪 Force sign out detected')
-      router.push('/login')
-      return
-    }
     
     const devAuth = document.cookie.includes('dev_auth=true')
     const devSession = localStorage.getItem('dev_session')
@@ -54,12 +55,18 @@ export default function ProtectedRoute({ children }) {
       return
     }
     
-    if (!loading && !user) {
-      console.log('❌ No user found, redirecting to login')
-      router.push('/login')
-    } else if (user) {
-      console.log('✅ User authenticated:', user.email)
-    }
+    // Add a small delay to ensure auth state is properly initialized
+    // This prevents the immediate bypass issue
+    const checkAuth = setTimeout(() => {
+      if (!loading && !user) {
+        console.log('❌ No user found after timeout, redirecting to login')
+        router.push('/login')
+      } else if (user) {
+        console.log('✅ User authenticated:', user.email)
+      }
+    }, 100) // Small delay to let auth state settle
+    
+    return () => clearTimeout(checkAuth)
   }, [loading, user, router])
 
   if (!isClient) {
@@ -75,6 +82,17 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
+  // Check force sign out in render too for immediate redirect
+  const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
+  if (forceSignOut) {
+    sessionStorage.removeItem('force_sign_out')
+    console.log('🚪 Force sign out detected in render, redirecting...')
+    if (typeof window !== 'undefined') {
+      router.push('/login')
+    }
+    return null
+  }
+  
   const isDevelopment = process.env.NODE_ENV === 'development'
   const isCalendarPage = window.location.pathname.includes('/calendar')
   const isAnalyticsPage = window.location.pathname.includes('/analytics')
@@ -82,16 +100,6 @@ export default function ProtectedRoute({ children }) {
   const isBarberPage = window.location.pathname.includes('/barber')
   const isSeoPage = window.location.pathname.includes('/seo')
   const isDashboardPage = window.location.pathname.includes('/dashboard')
-  
-  const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
-  if (forceSignOut) {
-    sessionStorage.removeItem('force_sign_out')
-    console.log('🚪 Force sign out detected, redirecting to login...')
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login'
-    }
-    return null
-  }
   
   const devAuth = document.cookie.includes('dev_auth=true')
   const devSession = localStorage.getItem('dev_session')

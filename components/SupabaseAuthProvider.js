@@ -293,49 +293,63 @@ function SupabaseAuthProvider({ children }) {
       console.log('🔐 Starting sign out process...')
       
       if (typeof window !== 'undefined') {
-        console.log('🧹 Clearing session data...')
+        console.log('🧹 Clearing all session data...')
+        
+        // Set force sign out flag FIRST
+        sessionStorage.setItem('force_sign_out', 'true')
         
         // Clear all auth-related storage
         localStorage.removeItem('dev_session')
-        sessionStorage.setItem('force_sign_out', 'true')
+        localStorage.removeItem('dev_bypass')
         document.cookie = 'dev_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
         
-        // Clear Supabase tokens
-        const criticalKeys = ['sb-access-token', 'sb-refresh-token', 'supabase.auth.token', 'auth-token']
-        let clearedCount = 0
-        criticalKeys.forEach(key => {
-          if (localStorage.getItem(key)) {
-            localStorage.removeItem(key)
-            clearedCount++
+        // Clear ALL Supabase tokens comprehensively
+        const keysToRemove = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          // Remove any Supabase-related keys
+          if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
+            keysToRemove.push(key)
           }
+        }
+        
+        keysToRemove.forEach(key => {
+          localStorage.removeItem(key)
+          console.log(`🗑️ Removed: ${key}`)
         })
-        console.log('✅ Cleared critical auth items:', clearedCount)
+        
+        console.log(`✅ Cleared ${keysToRemove.length} auth-related items`)
       }
       
-      // Sign out from Supabase
+      // Clear React state immediately
+      setUser(null)
+      setProfile(null)
+      
+      // Sign out from Supabase (but don't wait for it)
       console.log('🔄 Signing out from Supabase...')
-      const { error } = await supabase.auth.signOut()
-      
-      if (error) {
+      supabase.auth.signOut().then(() => {
+        console.log('✅ Supabase signout complete')
+      }).catch(error => {
         console.error('⚠️ Supabase signOut error:', error)
-      } else {
-        console.log('✅ Successfully signed out from Supabase')
-      }
+      })
       
-      // Simply redirect to login page - no need to log out of Google
-      // Users can choose to sign in with a different Google account if they want
+      // Use router for navigation to maintain React state
       if (typeof window !== 'undefined') {
         console.log('🔗 Redirecting to login page...')
-        window.location.href = '/login'
+        // Use router.push for client-side navigation
+        router.push('/login')
       }
       
       return { success: true }
     } catch (error) {
       console.error('❌ Sign out error:', error)
       
-      // On error, still try to redirect to login
+      // On error, still clear state and redirect
+      setUser(null)
+      setProfile(null)
+      
       if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+        router.push('/login')
       }
       
       return { success: false, error }
