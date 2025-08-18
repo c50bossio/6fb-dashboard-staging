@@ -52,16 +52,34 @@ export default function DebugAuthCallback() {
         const supabase = createClient()
         addLog('Supabase client created')
         
-        // Check current session BEFORE exchange
+        // Check current session BEFORE exchange with timeout
         addLog('Checking existing session...')
-        const { data: { session: beforeSession }, error: beforeError } = await supabase.auth.getSession()
-        addLog('Session before exchange', {
-          hasSession: !!beforeSession,
-          hasUser: !!beforeSession?.user,
-          userId: beforeSession?.user?.id,
-          email: beforeSession?.user?.email,
-          error: beforeError?.message
-        })
+        try {
+          const sessionPromise = supabase.auth.getSession()
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('getSession timeout after 3 seconds')), 3000)
+          )
+          
+          const { data: { session: beforeSession }, error: beforeError } = await Promise.race([
+            sessionPromise,
+            timeoutPromise.then(() => ({ data: { session: null }, error: { message: 'Timeout - Supabase not responding' } }))
+          ])
+          
+          addLog('Session before exchange', {
+            hasSession: !!beforeSession,
+            hasUser: !!beforeSession?.user,
+            userId: beforeSession?.user?.id,
+            email: beforeSession?.user?.email,
+            error: beforeError?.message
+          })
+        } catch (sessionError) {
+          addLog('❌ Session check timed out', {
+            error: sessionError.message,
+            note: 'Supabase client may be misconfigured or network issue'
+          })
+          var beforeSession = null
+          var beforeError = { message: 'Session check timed out' }
+        }
         
         if (beforeSession?.user) {
           addLog('✅ Already have session, redirecting...')
