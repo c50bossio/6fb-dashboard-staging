@@ -53,7 +53,9 @@ routers
 services/memory_manager.py
 
 # Test/debug scripts
-cin7-*.js
+# Note: Don't exclude cin7-* from lib/components as they're needed
+/cin7-*.js
+/test-cin7-*.js
 fix-*.js
 fix-*.sql
 validate-*.js

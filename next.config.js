@@ -47,6 +47,8 @@ const nextConfig = {
       ...config.resolve.alias,
       '@': __dirname,
     }
+    // Ensure .js extensions are resolved
+    config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
     return config
   },
   
