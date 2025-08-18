@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { Cin7Client, decrypt } from '@/lib/cin7-client'
+import { Cin7Client, decrypt } from '@/lib/cin7-client.js'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
