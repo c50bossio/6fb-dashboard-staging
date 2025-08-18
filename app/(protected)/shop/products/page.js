@@ -66,6 +66,13 @@ export default function ProductInventory() {
         } else {
           setCin7Status(null)
         }
+      } else if (credResponse.status === 401) {
+        // Don't retry on authentication failures to prevent infinite loops
+        console.log('Authentication required for Cin7 credentials')
+        setHasCredentials(false)
+        setCin7Connected(false)
+        setCredentialInfo(null)
+        setCin7Status('auth_required')
       } else {
         setHasCredentials(false)
         setCin7Connected(false)
