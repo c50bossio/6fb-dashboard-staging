@@ -32,7 +32,7 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error('Intelligent alerts error:', error);
+    // Error handling - return appropriate response
     return NextResponse.json({
       success: false,
       error: 'Failed to generate intelligent alerts',
@@ -75,7 +75,7 @@ export async function POST(request) {
     }
 
   } catch (error) {
-    console.error('Alert management error:', error);
+    // Error handling - return appropriate response
     return NextResponse.json({
       success: false,
       error: 'Failed to manage alert'
@@ -230,7 +230,7 @@ async function generateIntelligentAlerts(barbershopId) {
     };
 
   } catch (error) {
-    console.error('Error generating intelligent alerts:', error);
+    // Error generating alerts - return default values
     return {
       alerts: [],
       priorityActions: [],

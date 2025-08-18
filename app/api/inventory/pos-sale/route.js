@@ -93,16 +93,7 @@ export async function POST(request) {
     }
     
     // Log inventory transactions (table-less approach for now)
-      transactionCount: inventoryTransactions.length,
-      transactions: inventoryTransactions.map(t => ({
-        product_id: t.product_id,
-        type: t.transaction_type,
-        quantity: t.quantity,
-        previous_stock: t.previous_stock,
-        new_stock: t.new_stock,
-        value: t.total_value
-      }))
-    })
+    // Inventory transaction logging would be implemented here
     
     // Update product stock levels
     for (const update of productUpdates) {

@@ -54,14 +54,6 @@ export async function POST(request) {
     if (error) {
       console.error('Error saving feedback:', error)
       
-        type,
-        rating,
-        message,
-        email,
-        timestamp,
-        url
-      })
-      
       return NextResponse.json({
         success: true,
         message: 'Feedback received'
@@ -169,16 +161,9 @@ async function notifyAdmin(feedback) {
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@6fbagent.com'
     
-      to: adminEmail,
-      subject: `Urgent Feedback: ${feedback.type}`,
-      body: `
-        Type: ${feedback.type}
-        Rating: ${feedback.rating}/5
-        Message: ${feedback.message}
-        From: ${feedback.email || 'Anonymous'}
-        Page: ${feedback.url}
-      `
-    })
+    // Email notification would be sent here
+    // subject: `Urgent Feedback: ${feedback.type}`,
+    // body: feedback content
     
     await supabase
       .from('notifications')

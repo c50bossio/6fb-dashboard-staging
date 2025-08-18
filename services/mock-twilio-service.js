@@ -8,11 +8,7 @@ class MockTwilioService {
   }
 
   async sendSMS(to, message, options = {}) {
-      to: Array.isArray(to) ? `${to.length} recipients` : to,
-      messageLength: message.length,
-      segments: Math.ceil(message.length / 160)
-    })
-
+    // Simulate SMS sending delay
     await new Promise(resolve => setTimeout(resolve, 300))
 
     return {
@@ -29,11 +25,7 @@ class MockTwilioService {
   }
 
   async sendSMSCampaign(campaign, recipients) {
-      campaign: campaign.name,
-      recipients: recipients.length,
-      message: campaign.message.substring(0, 50) + '...'
-    })
-
+    // Simulate SMS campaign processing time
     const processingTime = Math.min(recipients.length * 20, 3000)
     await new Promise(resolve => setTimeout(resolve, processingTime))
 
@@ -61,11 +53,7 @@ class MockTwilioService {
   }
 
   async sendWhiteLabelSMSCampaign(campaign, barbershop, recipients) {
-      shop: barbershop.name,
-      campaign: campaign.name,
-      recipients: recipients.length
-    })
-
+    // White-label SMS campaign with barbershop branding
     const brandedMessage = `${barbershop.name}: ${campaign.message}`
 
     return {
@@ -171,10 +159,8 @@ class MockTwilioService {
   }
 
   async scheduleSMS(to, message, sendAt) {
-      to: Array.isArray(to) ? `${to.length} recipients` : to,
-      sendAt
-    })
-
+    // Mock SMS scheduling - simulating Twilio API response
+    
     return {
       success: true,
       scheduleId: `mock-schedule-${Date.now()}`,

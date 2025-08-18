@@ -1,6 +1,8 @@
 import { createClient } from '../../../../../lib/supabase'
 import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
 export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 /**
  * GET /api/admin/subscriptions/support

@@ -7,11 +7,7 @@ class MockSendGridService {
   }
 
   async sendEmail(to, subject, content, options = {}) {
-      to: Array.isArray(to) ? `${to.length} recipients` : to,
-      subject,
-      preview: content.substring(0, 100) + '...'
-    })
-
+    // Simulate email sending delay
     await new Promise(resolve => setTimeout(resolve, 500))
 
     return {
@@ -30,11 +26,7 @@ class MockSendGridService {
   }
 
   async sendCampaign(campaign, recipients) {
-      campaign: campaign.name,
-      recipients: recipients.length,
-      type: campaign.type
-    })
-
+    // Simulate campaign processing time
     const processingTime = Math.min(recipients.length * 10, 2000)
     await new Promise(resolve => setTimeout(resolve, processingTime))
 
@@ -64,11 +56,7 @@ class MockSendGridService {
   }
 
   async sendWhiteLabelCampaign(campaign, barbershop, recipients) {
-      shop: barbershop.name,
-      campaign: campaign.name,
-      recipients: recipients.length
-    })
-
+    // White-label campaign simulation
     return {
       ...await this.sendCampaign(campaign, recipients),
       whiteLabel: {
@@ -96,10 +84,8 @@ class MockSendGridService {
   }
 
   async createContactList(name, contacts) {
-      name,
-      contacts: contacts.length
-    })
-
+    // Mock contact list creation - simulating SendGrid API response
+    
     return {
       success: true,
       listId: `mock-list-${Date.now()}`,

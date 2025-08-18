@@ -32,7 +32,6 @@ export async function GET(request) {
       } catch (authError) {
         console.warn('Auth validation error:', authError.message)
       }
-    } else {
     }
     
     const { searchParams } = new URL(request.url);
@@ -265,7 +264,6 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       data_freshness: "supabase_comprehensive"
     };
     
-    console.log(`📊 Analytics: ${totalRevenue.toFixed(2)} revenue, ${totalAppointments} appointments, ${totalCustomers} customers`);
     
     return {
       success: true,
@@ -301,7 +299,6 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
  * NO MOCK DATA - real database only
  */
 async function getConsistentFallbackData(barbershopId, format, metric) {
-  console.log('🔄 Using fallback: calling main Supabase analytics function');
   return await getSupabaseAnalyticsData(barbershopId, format, metric);
 }
 

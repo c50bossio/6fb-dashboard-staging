@@ -7,11 +7,7 @@ class MockStripeService {
   }
 
   async createPaymentIntent(amount, currency = 'usd', metadata = {}) {
-      amount,
-      currency,
-      metadata
-    })
-
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 200))
 
     return {
@@ -27,11 +23,7 @@ class MockStripeService {
   }
 
   async chargeCampaign(accountId, amount, description) {
-      accountId,
-      amount,
-      description
-    })
-
+    // Simulate payment processing delay
     await new Promise(resolve => setTimeout(resolve, 300))
 
     return {
@@ -53,10 +45,7 @@ class MockStripeService {
   }
 
   async createCustomer(email, name, metadata = {}) {
-      email,
-      name
-    })
-
+    // Create mock customer
     return {
       id: `cus_mock_${Date.now()}`,
       object: 'customer',
@@ -68,10 +57,8 @@ class MockStripeService {
   }
 
   async attachPaymentMethod(customerId, paymentMethodId) {
-      customerId,
-      paymentMethodId
-    })
-
+    // Mock payment method attachment - simulating Stripe API response
+    
     return {
       id: paymentMethodId || `pm_mock_${Date.now()}`,
       object: 'payment_method',
@@ -88,11 +75,8 @@ class MockStripeService {
   }
 
   async createSubscription(customerId, priceId, metadata = {}) {
-      customerId,
-      priceId,
-      metadata
-    })
-
+    // Mock subscription creation - simulating Stripe API response
+    
     return {
       id: `sub_mock_${Date.now()}`,
       object: 'subscription',
@@ -113,11 +97,8 @@ class MockStripeService {
   }
 
   async createInvoice(customerId, items, metadata = {}) {
-      customerId,
-      items: items.length,
-      metadata
-    })
-
+    // Mock invoice creation - simulating Stripe API response
+    
     const subtotal = items.reduce((sum, item) => sum + item.amount, 0)
     const tax = Math.round(subtotal * 0.08) // 8% tax
     const total = subtotal + tax
@@ -147,11 +128,8 @@ class MockStripeService {
   }
 
   async createRefund(chargeId, amount, reason = 'requested_by_customer') {
-      chargeId,
-      amount,
-      reason
-    })
-
+    // Mock refund creation - simulating Stripe API response
+    
     return {
       id: `re_mock_${Date.now()}`,
       object: 'refund',
@@ -165,9 +143,8 @@ class MockStripeService {
   }
 
   async getBalanceTransaction(transactionId) {
-      transactionId
-    })
-
+    // Mock balance transaction retrieval - simulating Stripe API response
+    
     return {
       id: transactionId || `txn_mock_${Date.now()}`,
       object: 'balance_transaction',
@@ -182,10 +159,8 @@ class MockStripeService {
   }
 
   async createCheckoutSession(customerId, mode = 'setup', successUrl, cancelUrl) {
-      customerId,
-      mode
-    })
-
+    // Mock checkout session creation - simulating Stripe API response
+    
     return {
       id: `cs_mock_${Date.now()}`,
       object: 'checkout.session',
@@ -205,10 +180,8 @@ class MockStripeService {
   }
 
   async getBillingHistory(customerId, limit = 10) {
-      customerId,
-      limit
-    })
-
+    // Mock billing history retrieval - simulating Stripe API response
+    
     const history = []
     const now = Date.now()
 

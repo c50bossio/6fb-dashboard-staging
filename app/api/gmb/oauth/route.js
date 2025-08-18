@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -104,14 +107,7 @@ export async function GET(request) {
       }, { status: 500 })
     }
     
-      client_id: GOOGLE_OAUTH_CONFIG.client_id?.substring(0, 20) + '...',
-      has_secret: !!GOOGLE_OAUTH_CONFIG.client_secret,
-      redirect_uri: GOOGLE_OAUTH_CONFIG.redirect_uri,
-      env_check: {
-        NEXT_PUBLIC_GOOGLE_CLIENT_ID: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET
-      }
-    })
+    // OAuth configuration would be checked here
     
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
     authUrl.searchParams.append('client_id', GOOGLE_OAUTH_CONFIG.client_id)

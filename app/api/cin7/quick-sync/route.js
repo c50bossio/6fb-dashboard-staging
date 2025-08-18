@@ -234,12 +234,7 @@ async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
     const stock = getStock()
     
     if (costPrice === 0 && retailPrice === 0) {
-        CostPrice: product.CostPrice,
-        SalePrice: product.SalePrice, 
-        DefaultSellPrice: product.DefaultSellPrice,
-        Price: product.Price,
-        SellingPrice: product.SellingPrice
-      })
+      // Price information is not available in expected format
     }
     
     return {

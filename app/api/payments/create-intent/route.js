@@ -126,12 +126,16 @@ export async function POST(request) {
     const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams)
 
     try {
-        id: paymentIntent.id,
-        booking_id,
-        customer_id,
-        amount,
-        status: 'pending'
-      })
+      // Store payment intent in database
+      await supabase
+        .from('payment_intents')
+        .insert({
+          id: paymentIntent.id,
+          booking_id,
+          customer_id,
+          amount,
+          status: 'pending'
+        })
     } catch (dbError) {
       console.warn('Database operation failed:', dbError.message)
     }

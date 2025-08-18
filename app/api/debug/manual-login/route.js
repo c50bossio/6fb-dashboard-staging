@@ -38,11 +38,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
     
-      email: profile.email,
-      subscription_status: profile.subscription_status,
-      onboarding_completed: profile.onboarding_completed
-    })
-    
     // Determine where user should go based on their status
     let redirectUrl = '/dashboard' // default
     

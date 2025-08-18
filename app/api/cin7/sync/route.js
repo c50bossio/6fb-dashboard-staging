@@ -384,12 +384,9 @@ export async function POST(request) {
         cin7Products.slice(0, 3).forEach((product, index) => {
           const relatedStock = stockLevels.find(s => s.ProductID === product.ID || s.SKU === product.SKU)
           if (relatedStock) {
-              Available: relatedStock.Available,
-              OnHand: relatedStock.OnHand,
-              QtyOnHand: relatedStock.QtyOnHand,
-              QuantityAvailable: relatedStock.QuantityAvailable
-            }, null, 2))
+            // Stock data is available for this product
           } else {
+            // No stock data found for this product
           }
         })
         

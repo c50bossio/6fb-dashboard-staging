@@ -161,14 +161,6 @@ export async function GET(request) {
           event.rrule = booking.recurring_pattern.rrule
         }
         
-        console.log('Event debug:', {
-          title: event.title,
-          start: event.start,
-          end: event.end,
-          rrule: event.rrule,
-          startTime: new Date(event.start).toLocaleTimeString(),
-          endTime: new Date(event.end).toLocaleTimeString()
-        });
       }
       
       return event
@@ -192,7 +184,6 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json()
-    
     
     const isBlockedTime = body.status === 'blocked' || body.is_blocked_time || body.customer_id === 'BLOCKED'
     
@@ -338,9 +329,7 @@ export async function POST(request) {
         )
 
         if (notificationPreferences.reminders) {
-            customer: customerDataForNotification.name,
-            appointmentTime: appointmentDataForNotification.scheduled_at
-          })
+          // Schedule reminder logic would go here
         }
 
       } catch (notificationError) {
@@ -370,7 +359,6 @@ export async function POST(request) {
         channels_attempted: notificationResults.notifications?.map(n => n.channel) || []
       }
     }
-    
     
     return NextResponse.json(response, { status: 201 })
     

@@ -1,5 +1,7 @@
 import { createClient } from '../../../../../lib/supabase-server'
 import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 /**
  * POST /api/admin/subscriptions/manage

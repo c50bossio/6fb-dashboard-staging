@@ -28,7 +28,6 @@ export async function POST(request) {
     const result = await cin7.testConnection()
     
     if (result.success) {
-      console.log(`✅ CIN7 connection test successful for: ${result.accountName}`)
       
       return NextResponse.json({
         success: true,
@@ -36,7 +35,6 @@ export async function POST(request) {
         message: result.message
       })
     } else {
-      console.error(`❌ CIN7 connection test failed: ${result.error}`)
       
       return NextResponse.json({
         success: false,

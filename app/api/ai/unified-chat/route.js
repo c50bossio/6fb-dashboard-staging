@@ -5,12 +5,8 @@ import { NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
 
 import { AIBusinessContextService } from '@/lib/ai-business-context'
-import { anthropic as anthropicClient, DEFAULT_CLAUDE_MODEL } from '@/lib/anthropic'
-import { getGeminiModel, convertToGeminiFormat } from '@/lib/gemini'
-
-const openaiClient = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-})
+// Use the unified AI providers instead of individual files
+import { openaiClient, anthropicClient, geminiClient, DEFAULT_CLAUDE_MODEL } from '@/lib/ai-providers'
 
 const aiBusinessContext = new AIBusinessContextService()
 
@@ -45,7 +41,7 @@ export async function POST(request) {
           })
         }
       } catch (error) {
-        console.error('Failed to get business context:', error)
+        // Business context unavailable - continue without it
       }
     }
 
@@ -65,7 +61,7 @@ export async function POST(request) {
         return NextResponse.json({ error: `Unknown provider: ${provider}` }, { status: 400 })
     }
   } catch (error) {
-    console.error('Unified chat error:', error)
+    // Chat error - return error response
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }
@@ -146,9 +142,18 @@ async function handleGemini(messages, model = 'gemini-1.5-flash', stream) {
   }
 
   try {
-    const geminiModel = getGeminiModel(model)
+    // Use Gemini client from unified ai-providers
+    if (!geminiClient) {
+      return NextResponse.json({ error: 'Gemini client not initialized' }, { status: 500 })
+    }
     
-    const geminiMessages = convertToGeminiFormat(messages)
+    const geminiModel = geminiClient.getGenerativeModel({ model: model || 'gemini-1.5-flash' })
+    
+    // Convert messages to Gemini format
+    const geminiMessages = messages.map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }]
+    }))
     
     const systemMessage = messages.find(m => m.role === 'system')?.content
     
@@ -201,7 +206,7 @@ async function handleGemini(messages, model = 'gemini-1.5-flash', stream) {
       })
     }
   } catch (error) {
-    console.error('Gemini error:', error)
+    // Gemini error - return error response
     return NextResponse.json(
       { error: `Gemini error: ${error.message}` },
       { status: 500 }

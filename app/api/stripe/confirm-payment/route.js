@@ -135,17 +135,7 @@ export async function POST(request) {
 async function sendBookingConfirmationEmail({ booking, customerEmail, customerName, amountPaid, remainingAmount, isDeposit }) {
   // For now, we'll implement a simple email notification
   // In production, you would integrate with SendGrid, AWS SES, or similar
-  console.log('Sending confirmation email:', {
-    to: customerEmail,
-    subject: 'Booking Confirmation',
-    customerName,
-    bookingId: booking.id,
-    serviceName: booking.service_name,
-    appointmentTime: booking.start_time,
-    amountPaid,
-    remainingAmount,
-    isDeposit
-  })
+  // Email details would be sent through email service
   
   // TODO: Integrate with actual email service
   // Example with SendGrid:

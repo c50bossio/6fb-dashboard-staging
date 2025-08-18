@@ -118,11 +118,6 @@ async function startRealtimeStreaming(userId, sessionId) {
     status: 'connected'
   }
   
-    sessionId,
-    services: connectionInfo.services,
-    timestamp: new Date().toISOString()
-  })
-  
   return connectionInfo
 }
 

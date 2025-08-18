@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -130,12 +133,6 @@ export async function GET(request) {
  */
 async function exchangeCodeForTokens(code) {
   const tokenUrl = 'https://oauth2.googleapis.com/token'
-  
-    has_client_id: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-    has_client_secret: !!process.env.GOOGLE_CLIENT_SECRET,
-    client_id_value: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.substring(0, 20) + '...',
-    redirect_uri: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/gmb/oauth/callback`
-  });
   
   const response = await fetch(tokenUrl, {
     method: 'POST',

@@ -147,12 +147,6 @@ export async function DELETE(request, { params }) {
     const deleteAll = searchParams.get('deleteAll') === 'true' // For recurring appointments
     const cancelDate = searchParams.get('cancelDate') // For cancelling single occurrence
     
-    console.log('Delete appointment request:', {
-      id, 
-      deleteAll, 
-      cancelDate,
-      url: request.url 
-    });
     
     const { data: appointment, error: fetchError } = await supabase
       .from('bookings')
@@ -168,11 +162,6 @@ export async function DELETE(request, { params }) {
       )
     }
     
-      id: appointment.id,
-      status: appointment.status,
-      is_recurring: appointment.is_recurring,
-      recurring_pattern: appointment.recurring_pattern
-    })
     
     // ===================================================
     // ===================================================
@@ -295,12 +284,6 @@ export async function DELETE(request, { params }) {
       })
     }
     
-      is_recurring: appointment.is_recurring,
-      has_pattern: !!appointment.recurring_pattern,
-      deleteAll: deleteAll,
-      cancelDate: cancelDate,
-      status: appointment.status
-    })
     
     const { error: deleteError } = await supabase
       .from('bookings')

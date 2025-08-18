@@ -140,10 +140,10 @@ function hashString(str) {
 }
 
 async function storeSampleBusinessData(businessData, dataType, userId) {
-    dataType,
-    itemCount: Array.isArray(businessData) ? businessData.length : Object.keys(businessData).length,
-    timestamp: new Date().toISOString()
-  })
+  // Business data storage would be implemented here
+  // dataType: dataType,
+  // itemCount: Array.isArray(businessData) ? businessData.length : Object.keys(businessData).length,
+  // timestamp: new Date().toISOString()
 }
 
 export async function GET(request) {

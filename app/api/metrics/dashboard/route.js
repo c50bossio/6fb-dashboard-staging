@@ -6,6 +6,9 @@ import { NextResponse } from 'next/server'
  * GDPR compliant with user consent verification
  */
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)

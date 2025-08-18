@@ -14,11 +14,6 @@ export async function POST(request) {
       userId
     } = await request.json()
 
-    console.log('Predictions request:', {
-      barbershopId,
-      timeframe,
-      models
-    });
 
     if (timeframe < 1 || timeframe > 90) {
       return NextResponse.json({

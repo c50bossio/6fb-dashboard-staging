@@ -35,11 +35,11 @@ export async function POST(request) {
     }
 
     try {
-        payment_intent_id,
-        status: paymentIntent.status,
-        amount: paymentIntent.amount,
-        updated_at: new Date().toISOString()
-      })
+      // Payment tracking would be implemented here
+      // payment_intent_id: payment_intent_id,
+      // status: paymentIntent.status,
+      // amount: paymentIntent.amount,
+      // updated_at: new Date().toISOString()
     } catch (dbError) {
       console.warn('Database update failed:', dbError.message)
     }

@@ -3,6 +3,10 @@ import path from 'path'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+// Force dynamic rendering to prevent build-time execution
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * System Health Monitoring Endpoint
  * Provides comprehensive health and performance metrics

@@ -15,7 +15,7 @@ try {
     if (process.env.NODE_ENV === 'development') {
     }
 } catch (error) {
-    console.error('Failed to import marketing services:', error.message);
+    // Marketing services not available - will use mock services
 }
 
 export async function GET(request) {
@@ -65,7 +65,7 @@ export async function GET(request) {
         });
 
     } catch (error) {
-        console.error('Marketing campaigns API error:', error);
+        // API error - return error response
         return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
@@ -125,25 +125,25 @@ export async function POST(request) {
             result = await sendGridService.sendWhiteLabelCampaign(
                 campaign,
                 shop,
-                mockRecipients
+                recipients
             );
         } else if (type === 'sms' && twilioSMSService) {
             result = await twilioSMSService.sendWhiteLabelSMSCampaign(
                 campaign,
                 shop,
-                mockRecipients
+                recipients
             );
         } else {
             result = {
                 success: true,
                 campaignId: campaign.id,
                 stats: {
-                    recipients: mockRecipients.length,
-                    sent: mockRecipients.length,
-                    delivered: Math.floor(mockRecipients.length * 0.95)
+                    recipients: recipients.length,
+                    sent: recipients.length,
+                    delivered: Math.floor(recipients.length * 0.95)
                 },
                 cost: {
-                    total: mockRecipients.length * (type === 'email' ? 0.002 : 0.0075)
+                    total: recipients.length * (type === 'email' ? 0.002 : 0.0075)
                 }
             };
         }
@@ -162,16 +162,16 @@ export async function POST(request) {
             campaign: {
                 ...campaign,
                 status: 'sent',
-                recipients_count: result.stats?.recipients || mockRecipients.length,
-                sent_count: result.stats?.sent || mockRecipients.length,
-                delivered_count: result.stats?.delivered || Math.floor(mockRecipients.length * 0.95)
+                recipients_count: result.stats?.recipients || recipients.length,
+                sent_count: result.stats?.sent || recipients.length,
+                delivered_count: result.stats?.delivered || Math.floor(recipients.length * 0.95)
             },
             result,
-            message: `${type.toUpperCase()} campaign sent successfully to ${mockRecipients.length} recipients`
+            message: `${type.toUpperCase()} campaign sent successfully to ${recipients.length} recipients`
         });
 
     } catch (error) {
-        console.error('Campaign creation error:', error);
+        // Campaign creation failed - return error response
         return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
@@ -205,7 +205,7 @@ export async function PUT(request) {
         });
 
     } catch (error) {
-        console.error('Campaign update error:', error);
+        // Campaign update failed - return error response
         return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
@@ -231,7 +231,7 @@ export async function DELETE(request) {
         });
 
     } catch (error) {
-        console.error('Campaign deletion error:', error);
+        // Campaign deletion failed - return error response
         return NextResponse.json(
             { success: false, error: error.message },
             { status: 500 }
