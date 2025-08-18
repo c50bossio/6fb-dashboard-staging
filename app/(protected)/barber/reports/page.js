@@ -179,12 +179,13 @@ export default function BarberReports() {
   }
 
   const processReportData = (appointments, transactions, range) => {
+    // Calculate real earnings from transaction data
     const earnings = {
-      total: transactions.reduce((sum, t) => sum + (t.total_amount || 0), 0),
-      services: transactions.filter(t => t.type === 'service').reduce((sum, t) => sum + (t.amount || 0), 0),
-      products: transactions.filter(t => t.type === 'product').reduce((sum, t) => sum + (t.amount || 0), 0),
-      tips: transactions.reduce((sum, t) => sum + (t.tip_amount || 0), 0),
-      commission: transactions.reduce((sum, t) => sum + (t.commission_amount || 0), 0)
+      total: transactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0),
+      services: transactions.filter(t => t.type === 'service').reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0),
+      products: transactions.filter(t => t.type === 'product').reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0),
+      tips: transactions.reduce((sum, t) => sum + (parseFloat(t.tip_amount) || 0), 0),
+      commission: transactions.reduce((sum, t) => sum + (parseFloat(t.commission_amount) || 0), 0)
     }
 
     const appointmentStats = {
@@ -194,22 +195,58 @@ export default function BarberReports() {
       noShow: appointments.filter(a => a.status === 'no_show').length
     }
 
+    // Get unique clients and calculate new vs returning based on first appointment date
     const uniqueClients = [...new Set(appointments.map(a => a.customer_id))].filter(Boolean)
-    const clientStats = {
-      total: uniqueClients.length,
-      new: Math.floor(uniqueClients.length * 0.3), // Mock calculation
-      returning: Math.floor(uniqueClients.length * 0.7),
-      topClients: [] // Would need customer table join
-    }
-
-    const serviceCounts = {}
+    
+    // To determine new vs returning, we need to check when each client first booked
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    
+    // Group appointments by client to find first booking date
+    const clientFirstBooking = {}
     appointments.forEach(apt => {
-      const service = apt.service_name || 'Unknown'
-      serviceCounts[service] = (serviceCounts[service] || 0) + 1
+      if (apt.customer_id) {
+        const aptDate = new Date(apt.created_at)
+        if (!clientFirstBooking[apt.customer_id] || aptDate < clientFirstBooking[apt.customer_id]) {
+          clientFirstBooking[apt.customer_id] = aptDate
+        }
+      }
     })
     
-    const popularServices = Object.entries(serviceCounts)
-      .map(([name, count]) => ({ name, count }))
+    // Count new clients (first booking within the date range)
+    const newClients = Object.entries(clientFirstBooking).filter(([clientId, firstDate]) => {
+      return firstDate >= thirtyDaysAgo
+    }).length
+    
+    const clientStats = {
+      total: uniqueClients.length,
+      new: newClients,
+      returning: uniqueClients.length - newClients,
+      topClients: [] // Would need customer table join for names
+    }
+
+    // Calculate service statistics with real revenue
+    const serviceStats = {}
+    appointments.forEach(apt => {
+      const service = apt.service_name || 'Unknown'
+      if (!serviceStats[service]) {
+        serviceStats[service] = { count: 0, revenue: 0 }
+      }
+      serviceStats[service].count += 1
+      
+      // Find the transaction for this appointment if it exists
+      const transaction = transactions.find(t => t.appointment_id === apt.id)
+      if (transaction) {
+        serviceStats[service].revenue += parseFloat(transaction.amount || transaction.total_amount || 0)
+      }
+    })
+    
+    const popularServices = Object.entries(serviceStats)
+      .map(([name, stats]) => ({ 
+        name, 
+        count: stats.count,
+        avgPrice: stats.count > 0 ? stats.revenue / stats.count : 0
+      }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
 
@@ -223,7 +260,9 @@ export default function BarberReports() {
         popular: popularServices,
         revenue: popularServices.map(s => ({
           name: s.name,
-          revenue: s.count * 45 // Mock average price
+          revenue: serviceStats[s.name]?.revenue || 0,
+          count: s.count,
+          avgPrice: s.avgPrice
         }))
       },
       trends

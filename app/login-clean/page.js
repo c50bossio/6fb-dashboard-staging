@@ -50,9 +50,7 @@ export default function CleanLogin() {
         setStatus('success')
         setMessage('Login successful! Redirecting...')
         
-        // Set bypass flags just in case
-        localStorage.setItem('dev_bypass', 'true')
-        document.cookie = 'dev_auth=true; path=/; max-age=86400'
+        // Authentication successful - proceed to dashboard
         
         setTimeout(() => router.push('/dashboard'), 2000)
         return
@@ -73,9 +71,7 @@ export default function CleanLogin() {
             setStatus('success')
             setMessage('Login successful! Redirecting...')
             
-            // Set bypass flags
-            localStorage.setItem('dev_bypass', 'true')
-            document.cookie = 'dev_auth=true; path=/; max-age=86400'
+            // Authentication successful - proceed to dashboard
             
             setTimeout(() => router.push('/dashboard'), 2000)
           }
@@ -141,12 +137,9 @@ export default function CleanLogin() {
     }
   }
   
-  const handleDevBypass = () => {
-    localStorage.setItem('dev_bypass', 'true')
-    localStorage.setItem('dev_session', JSON.stringify({
-      user: { email: 'dev@bookedbarber.com', id: 'dev-user' }
-    }))
-    document.cookie = 'dev_auth=true; path=/; max-age=86400'
+  // Removed dev bypass function - require real authentication only
+  const requireRealAuth = () => {
+    setMessage('Please use Google sign-in or email authentication')
     
     router.push('/dashboard')
   }
@@ -192,25 +185,10 @@ export default function CleanLogin() {
             Sign in with Email
           </button>
           
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-700"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-900 text-gray-400">Or</span>
-            </div>
-          </div>
-          
-          <button
-            onClick={handleDevBypass}
-            className="w-full px-6 py-3 bg-gray-800 text-yellow-400 rounded-lg hover:bg-gray-700 border border-yellow-600"
-          >
-            Development Access →
-          </button>
         </div>
         
         <div className="text-center text-sm text-gray-500">
-          <p>Having issues? Use Development Access to bypass authentication.</p>
+          <p>Use your Google account or email to sign in.</p>
         </div>
       </div>
     </div>

@@ -84,10 +84,6 @@ export default function LoginPage() {
           document.cookie = `user_email=${userData.email}; path=/; max-age=86400`
           document.cookie = `user_name=${encodeURIComponent(userData.name)}; path=/; max-age=86400`
           
-          // Set bypass flags for dashboard access
-          localStorage.setItem('dev_bypass', 'true')
-          document.cookie = 'dev_auth=true; path=/; max-age=86400'
-          
           console.log('OAuth successful, user data stored:', userData)
           
           // Redirect to dashboard
@@ -95,10 +91,7 @@ export default function LoginPage() {
         }
       } catch (err) {
         console.error('OAuth callback error:', err)
-        // Still redirect on error with bypass
-        localStorage.setItem('dev_bypass', 'true')
-        document.cookie = 'dev_auth=true; path=/; max-age=86400'
-        router.push('/dashboard')
+        setError('Authentication failed. Please try again.')
       }
     }
   }
@@ -188,8 +181,6 @@ export default function LoginPage() {
                 },
                 access_token: data.session?.access_token || 'new-user'
               }))
-              localStorage.setItem('dev_bypass', 'true')
-              document.cookie = 'dev_auth=true; path=/; max-age=86400'
               router.push('/dashboard')
             }, 1500)
           }
@@ -222,10 +213,6 @@ export default function LoginPage() {
             },
             access_token: data.session.access_token
           }))
-          
-          // Set bypass flags
-          localStorage.setItem('dev_bypass', 'true')
-          document.cookie = 'dev_auth=true; path=/; max-age=86400'
           
           setSuccess('Sign in successful! Redirecting...')
           setTimeout(() => router.push('/dashboard'), 500)

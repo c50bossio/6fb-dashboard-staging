@@ -99,20 +99,60 @@ export async function GET(request) {
     
     const activeArrangements = formattedArrangements.filter(a => a.is_active)
     
+    // Get the current month date range
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    
+    // Query real transaction data for commission calculations
+    const { data: transactions } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('barbershop_id', shop.id)
+      .gte('created_at', startOfMonth.toISOString())
+      .lte('created_at', endOfMonth.toISOString())
+      .eq('payment_status', 'completed')
+    
+    // Calculate real commissions from transactions
+    let totalCommissions = 0
+    if (transactions && transactions.length > 0) {
+      for (const arrangement of activeArrangements.filter(a => a.type === 'commission' || a.type === 'hybrid')) {
+        const barberTransactions = transactions.filter(t => t.barber_id === arrangement.barber_id)
+        const barberRevenue = barberTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0)
+        const commission = barberRevenue * (arrangement.commission_percentage / 100)
+        totalCommissions += commission
+      }
+    }
+    
+    // Calculate booth rent (this remains the same as it's a fixed amount)
+    const totalBoothRent = activeArrangements
+      .filter(a => a.type === 'booth_rent' || a.type === 'hybrid')
+      .reduce((sum, a) => {
+        if (a.booth_rent_frequency === 'monthly') return sum + (a.booth_rent_amount || 0)
+        if (a.booth_rent_frequency === 'weekly') return sum + ((a.booth_rent_amount || 0) * 4)
+        if (a.booth_rent_frequency === 'daily') return sum + ((a.booth_rent_amount || 0) * 30)
+        return sum
+      }, 0)
+    
+    // Query real payout data from Supabase
+    const { data: payouts } = await supabase
+      .from('payouts')
+      .select('*')
+      .eq('barbershop_id', shop.id)
+    
+    const pendingPayouts = payouts
+      ? payouts.filter(p => p.status === 'pending').reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+      : 0
+    
+    const completedPayouts = payouts
+      ? payouts.filter(p => p.status === 'completed').reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
+      : 0
+    
     const metrics = {
-      totalCommissions: activeArrangements
-        .filter(a => a.type === 'commission' || a.type === 'hybrid')
-        .length * 1500, // Mock average monthly commission
-      totalBoothRent: activeArrangements
-        .filter(a => a.type === 'booth_rent' || a.type === 'hybrid')
-        .reduce((sum, a) => {
-          if (a.booth_rent_frequency === 'monthly') return sum + (a.booth_rent_amount || 0)
-          if (a.booth_rent_frequency === 'weekly') return sum + ((a.booth_rent_amount || 0) * 4)
-          if (a.booth_rent_frequency === 'daily') return sum + ((a.booth_rent_amount || 0) * 30)
-          return sum
-        }, 0),
-      pendingPayouts: 2450, // Mock pending amount
-      completedPayouts: 18500 // Mock completed amount
+      totalCommissions,
+      totalBoothRent,
+      pendingPayouts,
+      completedPayouts
     }
     
     return NextResponse.json({

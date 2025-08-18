@@ -359,10 +359,13 @@ export async function PUT(request) {
     
     // Development mode bypass
     if (shouldBypass) {
-      console.log('🔧 Dev mode: Saving Cin7 credentials without user auth')
+      console.log('🔧 Dev mode: Cin7 credentials require a barbershop')
       
-      // Use the same barbershop as sync endpoint (Tomb45 Barbershop)
-      barbershop = { id: '8d5728b2-24ca-4d18-8823-0ed926e8913d', name: 'Tomb45 Barbershop' }
+      // Even in dev mode, we need a real barbershop from the database
+      return NextResponse.json({
+        error: 'No barbershop found',
+        message: 'Please ensure a barbershop exists in the database first'
+      }, { status: 404 })
     } else {
       // Production mode - require authenticated user
       const { data: { user }, error: authError } = await supabase.auth.getUser()

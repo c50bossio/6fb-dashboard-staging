@@ -85,7 +85,8 @@ export async function POST(request) {
             message,
             target_audience,
             billing_account,
-            user_id 
+            user_id,
+            shop_id 
         } = data;
 
         if (!type || (!subject && !message)) {
@@ -98,25 +99,105 @@ export async function POST(request) {
             );
         }
 
-        const recipients = []; // Real implementation should query customers table
+        if (!shop_id || !user_id) {
+            return NextResponse.json(
+                { 
+                    success: false, 
+                    error: 'Shop ID and User ID are required' 
+                },
+                { status: 400 }
+            );
+        }
+
+        // Query real barbershop from Supabase
+        const { data: shopData, error: shopError } = await supabase
+            .from('barbershops')
+            .select('*')
+            .eq('id', shop_id)
+            .single();
+
+        if (shopError || !shopData) {
+            return NextResponse.json(
+                { 
+                    success: false, 
+                    error: 'Barbershop not found' 
+                },
+                { status: 404 }
+            );
+        }
+
+        // Query real customers from Supabase based on target audience
+        let customerQuery = supabase
+            .from('customers')
+            .select('*')
+            .eq('shop_id', shop_id)
+            .eq('is_active', true);
+
+        // Apply target audience filters
+        if (target_audience === 'vip') {
+            customerQuery = customerQuery.eq('vip_status', true);
+        } else if (target_audience === 'new') {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            customerQuery = customerQuery.gte('created_at', thirtyDaysAgo.toISOString());
+        } else if (target_audience === 'inactive') {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            customerQuery = customerQuery.lte('last_visit_at', thirtyDaysAgo.toISOString());
+        }
+
+        const { data: customers, error: customersError } = await customerQuery;
+
+        if (customersError) {
+            console.error('Error fetching customers:', customersError);
+            return NextResponse.json(
+                { 
+                    success: false, 
+                    error: 'Failed to fetch customer list' 
+                },
+                { status: 500 }
+            );
+        }
+
+        const recipients = customers || [];
         
+        // Store campaign in Supabase
         const campaign = {
-            id: `campaign-${Date.now()}`,
+            shop_id: shop_id,
+            owner_id: user_id,
             name: name || `${type} Campaign - ${new Date().toLocaleDateString()}`,
             type,
             subject: subject || null,
             message: message || content || '',
+            target_audience: target_audience || 'all',
+            recipients_count: recipients.length,
             status: 'sending',
             created_at: new Date().toISOString(),
-            user_id: user_id || 'unknown',
             billing_account: billing_account || 'default'
         };
 
+        const { data: savedCampaign, error: campaignError } = await supabase
+            .from('marketing_campaigns')
+            .insert([campaign])
+            .select()
+            .single();
+
+        if (campaignError) {
+            console.error('Error saving campaign:', campaignError);
+            return NextResponse.json(
+                { 
+                    success: false, 
+                    error: 'Failed to save campaign' 
+                },
+                { status: 500 }
+            );
+        }
+
         const shop = {
-            id: 'shop-001',
-            name: 'Test Barbershop',
-            email: 'shop@testbarbershop.com',
-            phone: '+1234567890'
+            id: shopData.id,
+            name: shopData.name,
+            email: shopData.email || shopData.contact_email,
+            phone: shopData.phone || shopData.contact_phone
         };
 
         let result;
@@ -157,15 +238,26 @@ export async function POST(request) {
             result.billing = billingResult;
         }
 
+        // Update campaign status in Supabase
+        const { data: updatedCampaign, error: updateError } = await supabase
+            .from('marketing_campaigns')
+            .update({
+                status: 'sent',
+                sent_count: result.stats?.sent || recipients.length,
+                delivered_count: result.stats?.delivered || Math.floor(recipients.length * 0.95),
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', savedCampaign.id)
+            .select()
+            .single();
+
+        if (updateError) {
+            console.error('Error updating campaign status:', updateError);
+        }
+
         return NextResponse.json({
             success: true,
-            campaign: {
-                ...campaign,
-                status: 'sent',
-                recipients_count: result.stats?.recipients || recipients.length,
-                sent_count: result.stats?.sent || recipients.length,
-                delivered_count: result.stats?.delivered || Math.floor(recipients.length * 0.95)
-            },
+            campaign: updatedCampaign || savedCampaign,
             result,
             message: `${type.toUpperCase()} campaign sent successfully to ${recipients.length} recipients`
         });

@@ -102,52 +102,13 @@ export default function BarbershopDashboard() {
   }, [profile, router, loading, user])
 
 
-  // Development bypass - if bypass mode, create mock data
-  const isBypass = typeof window !== 'undefined' && 
-    (window.location.search.includes('bypass=true') || 
-     localStorage.getItem('dev_bypass') === 'true')
-  
-  // Try to get actual user data from session storage
-  let sessionUser = null
-  if (typeof window !== 'undefined') {
-    const sessionData = localStorage.getItem('user_session')
-    if (sessionData) {
-      try {
-        const session = JSON.parse(sessionData)
-        sessionUser = session.user
-      } catch (err) {
-        console.log('Could not parse user session')
-      }
-    }
-  }
-  
-  // Create mock user and profile for bypass mode, using real data if available
-  const mockUser = isBypass ? {
-    id: sessionUser?.id || 'bbb243c4-cc7d-4458-af03-3bfff742aee5',
-    email: sessionUser?.email || 'dev@bookedbarber.com',
-    user_metadata: { 
-      full_name: sessionUser?.name || 'Dev User',
-      avatar_url: sessionUser?.avatar
-    }
-  } : null
-  
-  const mockProfile = isBypass ? {
-    id: sessionUser?.id || 'bbb243c4-cc7d-4458-af03-3bfff742aee5',
-    email: sessionUser?.email || 'dev@bookedbarber.com',
-    full_name: sessionUser?.name || 'Dev User',
-    shop_name: 'Tomb45 Barbershop',
-    role: 'SHOP_OWNER',
-    onboarding_completed: false  // Changed to false to show onboarding
-  } : null
-  
-  // Use mock data in bypass mode, real data otherwise
-  let effectiveUser = isBypass ? mockUser : user
-  let effectiveProfile = isBypass ? mockProfile : profile
+  // Use real Supabase authentication only - no bypass allowed
+  const effectiveUser = user
+  const effectiveProfile = profile
   
   // Show loading state while auth is initializing
-  // Once we have user or timeout, proceed with dashboard
-  // Skip loading if in bypass mode
-  if (!isBypass && !user && loading && !loadingTimeout) {
+  // Require real authentication - no bypass allowed
+  if (!user && loading && !loadingTimeout) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -158,48 +119,25 @@ export default function BarbershopDashboard() {
     )
   }
   
-  // If bypass mode is enabled, always use mock data to avoid auth issues
-  if (isBypass) {
-    effectiveUser = mockUser || {
-      id: 'bbb243c4-cc7d-4458-af03-3bfff742aee5',
-      email: 'dev@bookedbarber.com',
-      user_metadata: { full_name: 'Dev User' }
-    }
-    effectiveProfile = mockProfile || {
-      id: 'bbb243c4-cc7d-4458-af03-3bfff742aee5',
-      email: 'dev@bookedbarber.com',
-      full_name: 'Dev User',
-      shop_name: 'Tomb45 Barbershop',
-      role: 'SHOP_OWNER',
-      onboarding_completed: false
-    }
+  // Redirect to login if no authenticated user
+  if (!user && !loading) {
+    router.push('/login')
+    return null
   }
   
-  // We no longer redirect when onboarding is needed - the dashboard will show with onboarding overlay
-  
-  // Create fallback user data if profile failed to load
-  const fallbackUser = user && !profile && loadingTimeout ? {
-    ...user,
-    profile: {
-      id: user.id,
-      email: user.email,
-      full_name: user.user_metadata?.full_name || 'Dev User',
-      shop_name: 'Tomb45 Barbershop',
-      role: 'SHOP_OWNER',
-      onboarding_completed: false  // Set to false so onboarding shows
-    },
-    barbershop_id: '8d5728b2-24ca-4d18-8823-0ed926e8913d' // Known barbershop ID
-  } : null
+  // If profile failed to load after timeout, we need to handle this properly
+  // Instead of using mock data, we should create a real profile in Supabase
+  const needsProfileCreation = user && !profile && loadingTimeout
 
   return (
     <div>
-      {/* Show timeout warning if profile failed to load and we're using fallback */}
-      {loadingTimeout && !profile && !loading && user && (
+      {/* Show warning if profile needs to be created */}
+      {needsProfileCreation && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
           <div className="flex">
             <div className="ml-3">
               <p className="text-sm text-yellow-700">
-                Profile data couldn't be loaded, using fallback data. Dashboard functionality may be limited.
+                Your profile needs to be set up. Please complete the onboarding process to continue.
               </p>
             </div>
           </div>
@@ -227,21 +165,20 @@ export default function BarbershopDashboard() {
         </div>
       )}
       
-      {/* Unified Dashboard Component - Pass effective user (mock, real, or fallback) */}
-      <UnifiedDashboard user={effectiveUser || fallbackUser || mockUser} profile={profile} />
+      {/* Unified Dashboard Component - Pass only real authenticated user */}
+      {effectiveUser && <UnifiedDashboard user={effectiveUser} profile={effectiveProfile} />}
       
       {/* Floating button removed - using top banner instead for cleaner UI */}
       
       {/* Show onboarding overlay if profile exists and onboarding is not complete */}
-      {/* Also show if we're using fallback data and onboarding isn't complete */}
-      {/* Or if user clicked Resume Setup */}
-      {(((effectiveProfile && effectiveProfile.onboarding_completed === false) || 
-        (fallbackUser && fallbackUser.profile && fallbackUser.profile.onboarding_completed === false)) || forceShowOnboarding) && (
+      {/* Or if user clicked Resume Setup, or if profile needs creation */}
+      {((effectiveProfile && effectiveProfile.onboarding_completed === false) || 
+        forceShowOnboarding || needsProfileCreation) && (
         <DashboardOnboarding 
           user={effectiveUser}
-          profile={effectiveProfile || (fallbackUser && fallbackUser.profile)}
+          profile={effectiveProfile}
           updateProfile={updateProfile}
-          forceShow={forceShowOnboarding}
+          forceShow={forceShowOnboarding || needsProfileCreation}
           onComplete={() => {
             setForceShowOnboarding(false)
             // Refresh the page to update the dashboard after onboarding

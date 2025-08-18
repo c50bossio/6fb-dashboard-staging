@@ -285,25 +285,40 @@ export async function POST(request) {
       }
     }
     
-    // Get user's barbershop
-    let barbershop = null
+    // Get user's barbershop - require real barbershop from database
+    const { data: userBarbershop, error: shopError } = await supabase
+      .from('barbershops')
+      .select('id, name')
+      .eq('owner_id', user.id)
+      .single()
     
-    if (devBypass) {
-      // Use an existing barbershop for development (Tomb45 Barbershop)
-      barbershop = { id: '8d5728b2-24ca-4d18-8823-0ed926e8913d', name: 'Tomb45 Barbershop' }
-    } else {
-      const { data: userBarbershop, error: shopError } = await supabase
-        .from('barbershops')
-        .select('id, name')
-        .eq('owner_id', user.id)
+    if (shopError || !userBarbershop) {
+      // Try to get barbershop from user's profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('barbershop_id')
+        .eq('id', user.id)
         .single()
       
-      if (shopError || !userBarbershop) {
+      if (profile?.barbershop_id) {
+        const { data: profileShop } = await supabase
+          .from('barbershops')
+          .select('id, name')
+          .eq('id', profile.barbershop_id)
+          .single()
+        
+        if (profileShop) {
+          barbershop = profileShop
+        }
+      }
+      
+      if (!barbershop) {
         return NextResponse.json(
           { error: 'No barbershop found for user' },
           { status: 404 }
         )
       }
+    } else {
       barbershop = userBarbershop
     }
     

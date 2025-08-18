@@ -61,18 +61,7 @@ export default function FinalLogin() {
     }
   }
   
-  const handleDevBypass = () => {
-    // Set all bypass flags
-    localStorage.setItem('dev_bypass', 'true')
-    localStorage.setItem('dev_session', JSON.stringify({
-      user: { email: 'dev@bookedbarber.com', id: 'dev-user' },
-      access_token: 'dev-token'
-    }))
-    document.cookie = 'dev_auth=true; path=/; max-age=86400; SameSite=Lax'
-    
-    setMessage('Redirecting to dashboard...')
-    router.push('/dashboard')
-  }
+  // Removed dev bypass function - require real authentication only
   
   useEffect(() => {
     // Check for OAuth callback parameters
@@ -92,9 +81,8 @@ export default function FinalLogin() {
     const code = searchParams.get('code')
     
     if (accessToken || code) {
-      // OAuth successful - set bypass flags and redirect
-      localStorage.setItem('dev_bypass', 'true')
-      localStorage.setItem('dev_session', JSON.stringify({
+      // OAuth successful - proceed with real authentication
+      localStorage.setItem('auth_session', JSON.stringify({
         user: { email: 'oauth@bookedbarber.com' },
         access_token: accessToken || 'oauth-token'
       }))
@@ -164,27 +152,10 @@ export default function FinalLogin() {
                 Send Magic Link
               </button>
             </div>
-            
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-gray-800/50 text-gray-400">Quick Access</span>
-              </div>
-            </div>
-            
-            {/* Dev Bypass */}
-            <button
-              onClick={handleDevBypass}
-              className="w-full px-6 py-3 bg-gradient-to-r from-yellow-600/20 to-orange-600/20 text-yellow-400 rounded-xl hover:from-yellow-600/30 hover:to-orange-600/30 border border-yellow-600/50 transition-all duration-200 font-medium"
-            >
-              Enter Dashboard (Development Mode)
-            </button>
           </div>
           
           <div className="mt-8 text-center text-xs text-gray-500">
-            <p>Having trouble? Use Development Mode for immediate access.</p>
+            <p>Sign in with your Google account or request a magic link.</p>
           </div>
         </div>
       </div>
