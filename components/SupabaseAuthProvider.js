@@ -292,16 +292,31 @@ function SupabaseAuthProvider({ children }) {
     try {
       console.log('🔐 Starting sign out process...')
       
+      // CRITICAL: Sign out from Supabase FIRST and WAIT for it
+      console.log('🔄 Signing out from Supabase...')
+      const { error: signOutError } = await supabase.auth.signOut()
+      
+      if (signOutError) {
+        console.error('⚠️ Supabase signOut error:', signOutError)
+        // Continue with logout even if there's an error
+      } else {
+        console.log('✅ Supabase signout complete')
+      }
+      
       if (typeof window !== 'undefined') {
         console.log('🧹 Clearing all session data...')
         
-        // Set force sign out flag FIRST
+        // Set force sign out flag
         sessionStorage.setItem('force_sign_out', 'true')
         
         // Clear all auth-related storage
         localStorage.removeItem('dev_session')
         localStorage.removeItem('dev_bypass')
-        document.cookie = 'dev_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        
+        // Clear ALL cookies related to auth
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/")
+        })
         
         // Clear ALL Supabase tokens comprehensively
         const keysToRemove = []
@@ -318,25 +333,25 @@ function SupabaseAuthProvider({ children }) {
           console.log(`🗑️ Removed: ${key}`)
         })
         
+        // Also clear sessionStorage
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+          const key = sessionStorage.key(i)
+          if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
+            sessionStorage.removeItem(key)
+            console.log(`🗑️ Removed from session: ${key}`)
+          }
+        }
+        
         console.log(`✅ Cleared ${keysToRemove.length} auth-related items`)
       }
       
-      // Clear React state immediately
+      // Clear React state
       setUser(null)
       setProfile(null)
       
-      // Sign out from Supabase (but don't wait for it)
-      console.log('🔄 Signing out from Supabase...')
-      supabase.auth.signOut().then(() => {
-        console.log('✅ Supabase signout complete')
-      }).catch(error => {
-        console.error('⚠️ Supabase signOut error:', error)
-      })
-      
-      // Use router for navigation to maintain React state
+      // Use router for navigation
       if (typeof window !== 'undefined') {
         console.log('🔗 Redirecting to login page...')
-        // Use router.push for client-side navigation
         router.push('/login')
       }
       
@@ -344,11 +359,22 @@ function SupabaseAuthProvider({ children }) {
     } catch (error) {
       console.error('❌ Sign out error:', error)
       
-      // On error, still clear state and redirect
+      // On error, still try to clear everything and redirect
       setUser(null)
       setProfile(null)
       
+      // Try to clear storage even on error
       if (typeof window !== 'undefined') {
+        sessionStorage.setItem('force_sign_out', 'true')
+        
+        // Clear all localStorage auth items
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i)
+          if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
+            localStorage.removeItem(key)
+          }
+        }
+        
         router.push('/login')
       }
       
