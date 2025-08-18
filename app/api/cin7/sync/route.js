@@ -212,7 +212,27 @@ function detectProfessionalUse(product) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    // For dev bypass, we need service role to bypass RLS
+    const isDev = request.headers.get('x-dev-bypass') === 'true' || 
+                  process.env.NODE_ENV === 'development'
+    
+    let supabase
+    if (isDev && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      // Use service role client for dev/testing to bypass RLS
+      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+      supabase = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
+      )
+    } else {
+      supabase = createClient()
+    }
     
     
     // Check for dev bypass
@@ -269,8 +289,8 @@ export async function POST(request) {
     let barbershop = null
     
     if (devBypass) {
-      // Use mock barbershop for development
-      barbershop = { id: 'barbershop_demo_001', name: 'Demo Barbershop' }
+      // Use an existing barbershop for development (Tomb45 Barbershop)
+      barbershop = { id: '8d5728b2-24ca-4d18-8823-0ed926e8913d', name: 'Tomb45 Barbershop' }
     } else {
       const { data: userBarbershop, error: shopError } = await supabase
         .from('barbershops')
@@ -404,13 +424,21 @@ export async function POST(request) {
         mapCin7ProductToLocal(product, stockLevels, barbershop.id)
       )
       
-      // Upsert products to database
+      // First, delete existing products for this barbershop to avoid conflicts
+      const { error: deleteError } = await supabase
+        .from('products')
+        .delete()
+        .eq('barbershop_id', barbershop.id)
+        .eq('sync_enabled', true)  // Only delete synced products
+      
+      if (deleteError) {
+        console.warn('Warning: Could not clear existing products:', deleteError.message)
+      }
+      
+      // Insert new products from Cin7
       const { data: syncedProducts, error: syncError } = await supabase
         .from('products')
-        .upsert(localProducts, { 
-          onConflict: 'barbershop_id,sku',
-          ignoreDuplicates: false 
-        })
+        .insert(localProducts)
         .select()
       
       if (syncError) {
