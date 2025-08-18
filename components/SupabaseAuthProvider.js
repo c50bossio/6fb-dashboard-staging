@@ -260,23 +260,31 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const signInWithGoogle = async (customRedirectTo) => {
-    // Always use the current origin for redirects to handle both dev and prod
+    // For production, ensure we use the correct redirect URL
+    // Supabase will handle the OAuth flow and redirect back to our app
     const redirectUrl = customRedirectTo || `${window.location.origin}/auth/callback`
     
-    console.log('🔗 OAuth redirect URL:', redirectUrl)
+    console.log('🔗 OAuth configuration:', {
+      hostname: window.location.hostname,
+      origin: window.location.origin,
+      redirectUrl
+    })
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
-        queryParams: {
-          // Force the redirect to our callback page
-          redirect_to: `${window.location.origin}/auth/callback`
-        }
+        // Skip any extra query params that might interfere
+        skipBrowserRedirect: false
       }
     })
     
-    if (error) throw error
+    if (error) {
+      console.error('❌ Google OAuth error:', error)
+      throw error
+    }
+    
+    console.log('✅ Google OAuth initiated successfully')
     return data
   }
 
