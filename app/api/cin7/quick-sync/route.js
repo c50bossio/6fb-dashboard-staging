@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { Cin7Client, decrypt } from '@/lib/cin7-client'
+import { Cin7Client, decrypt } from '@/lib/cin7-client.js'
 
 export async function POST(request) {
   const startTime = Date.now()

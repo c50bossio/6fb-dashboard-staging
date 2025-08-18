@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { encrypt, decrypt } from '@/lib/cin7-client'
+import { encrypt, decrypt } from '@/lib/cin7-client.js'
 
 async function registerCin7Webhooks(accountId, apiKey, webhookUrl) {
   try {

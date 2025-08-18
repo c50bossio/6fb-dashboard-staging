@@ -6,7 +6,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
-import { Cin7Client, encrypt } from '@/lib/cin7-client'
+import { Cin7Client, encrypt } from '@/lib/cin7-client.js'
 
 export async function POST(request) {
   try {

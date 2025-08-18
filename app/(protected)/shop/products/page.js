@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import Cin7IntegrationManager from '@/components/cin7-integration-manager'
+import Cin7IntegrationManager from '@/components/cin7-integration-manager.js'
 import SetupWizard from '@/components/cin7/SetupWizard'
 import StatusWidget from '@/components/cin7/StatusWidget'
 import StockBadge, { StockIndicator } from '@/components/cin7/StockBadge'

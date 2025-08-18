@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { Cin7Client } from '@/lib/cin7-client'
+import { Cin7Client } from '@/lib/cin7-client.js'
 
 export async function POST(request) {
   try {
