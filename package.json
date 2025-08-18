@@ -48,8 +48,7 @@
     "ci:full": "npm run claude:pre-commit && npm run test:e2e:full",
     "dev:backend": "python fastapi_backend.py",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:backend\"",
-    "dev:docker": "bash docker-dev-start.sh",
-    "postinstall": "npx playwright install chromium"
+    "dev:docker": "bash docker-dev-start.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
