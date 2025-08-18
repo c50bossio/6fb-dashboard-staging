@@ -283,8 +283,18 @@ export async function POST(request) {
       // Get authenticated user
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
       if (authError || !authUser) {
+        console.error('🚨 Authentication failed in sync POST:', {
+          authError: authError?.message,
+          user: authUser ? 'present' : 'null',
+          headers: Object.fromEntries(request.headers.entries())
+        })
+        
         return NextResponse.json(
-          { error: 'User not authenticated' },
+          { 
+            error: 'User not authenticated',
+            message: authError?.message || 'Session expired or invalid',
+            debug: process.env.NODE_ENV === 'development' ? { authError } : undefined
+          },
           { status: 401 }
         )
       }
@@ -499,10 +509,21 @@ export async function POST(request) {
     }
 
   } catch (error) {
-    console.error('Sync error:', error)
+    console.error('🚨 Sync error:', error)
+    
+    // Ensure we always return JSON, never HTML
     return NextResponse.json(
-      { error: 'Sync failed: ' + error.message },
-      { status: 500 }
+      { 
+        error: 'Sync failed',
+        message: error.message,
+        timestamp: new Date().toISOString()
+      },
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     )
   }
 }

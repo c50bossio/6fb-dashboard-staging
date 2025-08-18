@@ -128,8 +128,20 @@ export async function GET(request) {
     // Production mode - require authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
+      console.error('🚨 Authentication failed in credentials GET:', {
+        authError: authError?.message,
+        user: user ? 'present' : 'null',
+        headers: Object.fromEntries(request.headers.entries())
+      })
+      
+      // In production, try to provide more helpful error information
+      const errorMessage = authError?.message || 'User not authenticated'
       return NextResponse.json(
-        { error: 'User not authenticated' },
+        { 
+          error: 'User not authenticated',
+          message: errorMessage,
+          debug: process.env.NODE_ENV === 'development' ? { authError, user } : undefined
+        },
         { status: 401 }
       )
     }
