@@ -7,7 +7,7 @@ import { Home, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React from 'react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 class RouteErrorBoundary extends React.Component {
