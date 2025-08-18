@@ -1,4 +1,4 @@
-# Vercel Ignore
+# Vercel Ignore - Optimized for smaller deployments
 node_modules
 data
 *.log
@@ -9,3 +9,76 @@ scripts
 docker-*
 Dockerfile*
 *.sh
+
+# Test files and folders
+__tests__
+tests
+test-*.js
+test-*.html
+*.test.js
+*.spec.js
+jest.config.js
+playwright.config.js
+coverage
+
+# Development tools
+.claude
+monitoring
+backup
+
+# Documentation
+docs
+LICENSE
+CLAUDE*.md
+STRIPE*.md
+GOOGLE-OAUTH-SETUP.md
+URGENT*.txt
+
+# CI/CD
+.github
+.git
+
+# Database files
+*.db-shm
+*.db-wal
+*.sqlite
+*.db-journal
+
+# Python backend (not needed for Next.js deployment)
+*.py
+*.pyc
+__pycache__
+fastapi_backend.py
+routers
+services/memory_manager.py
+
+# Test/debug scripts
+cin7-*.js
+fix-*.js
+fix-*.sql
+validate-*.js
+verify-*.js
+inspect-*.js
+response*.txt
+response*.html
+refresh-*.sql
+run-*.sql
+serve-*.js
+
+# IDE
+.vscode
+.idea
+
+# Large packages to exclude from upload
+node_modules/@playwright
+node_modules/playwright
+node_modules/puppeteer
+node_modules/@sentry/cli
+node_modules/@fullcalendar
+node_modules/canvas-confetti
+node_modules/html2canvas
+node_modules/jspdf
+node_modules/@faker-js
+node_modules/@testing-library
+node_modules/jest
+node_modules/webpack-bundle-analyzer

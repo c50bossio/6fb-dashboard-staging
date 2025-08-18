@@ -8,6 +8,27 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
+  // Optimize bundle size for Vercel deployment
+  experimental: {
+    outputFileTracingExcludes: {
+      '*': [
+        'node_modules/@sentry/cli',
+        'node_modules/puppeteer',
+        'node_modules/@playwright',
+        'node_modules/playwright',
+        'node_modules/@fullcalendar',
+        'node_modules/canvas-confetti',
+        'node_modules/html2canvas',
+        'node_modules/jspdf',
+        'node_modules/chart.js',
+        'node_modules/recharts',
+        'node_modules/@faker-js',
+        'node_modules/@testing-library',
+        'node_modules/jest',
+        'node_modules/webpack-bundle-analyzer',
+      ],
+    },
+  },
   
   images: {
     remotePatterns: [
@@ -23,11 +44,36 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
   
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': __dirname,
     }
+    
+    // Exclude large packages from server bundles
+    if (isServer) {
+      config.externals = [
+        ...config.externals,
+        '@sentry/cli',
+        'puppeteer',
+        'playwright',
+        '@playwright/test',
+        'canvas-confetti',
+        'html2canvas',
+        'jspdf',
+        '@fullcalendar/core',
+        '@fullcalendar/daygrid',
+        '@fullcalendar/interaction',
+        '@fullcalendar/list',
+        '@fullcalendar/react',
+        '@fullcalendar/resource',
+        '@fullcalendar/resource-timegrid',
+        '@fullcalendar/resource-timeline',
+        '@fullcalendar/rrule',
+        '@fullcalendar/timegrid',
+      ];
+    }
+    
     return config
   },
   
