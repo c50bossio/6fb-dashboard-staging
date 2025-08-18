@@ -336,7 +336,24 @@ export async function PUT(request) {
     const isDevelopment = process.env.NODE_ENV === 'development'
     const bypassHeader = request.headers.get('x-cin7-bypass')
     const shouldBypass = isDevelopment || bypassHeader === 'true'
-    const supabase = createClient()
+    
+    // Use service role client for bypass mode to avoid RLS issues
+    let supabase
+    if (shouldBypass && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+      supabase = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
+      )
+    } else {
+      supabase = createClient()
+    }
     
     let barbershop = null
     
@@ -344,33 +361,8 @@ export async function PUT(request) {
     if (shouldBypass) {
       console.log('🔧 Dev mode: Saving Cin7 credentials without user auth')
       
-      // Use a fixed barbershop ID for development or create one
-      const { data: existingShop } = await supabase
-        .from('barbershops')
-        .select('id, name')
-        .limit(1)
-        .single()
-      
-      if (existingShop) {
-        barbershop = existingShop
-      } else {
-        // Create a dev barbershop if none exists
-        const { data: newShop, error: createError } = await supabase
-          .from('barbershops')
-          .insert({
-            name: 'Development Barbershop',
-            owner_id: '00000000-0000-0000-0000-000000000000' // Placeholder UUID
-          })
-          .select()
-          .single()
-        
-        if (createError) {
-          console.error('Failed to create dev barbershop:', createError)
-          barbershop = { id: 1, name: 'Development Barbershop' } // Fallback
-        } else {
-          barbershop = newShop
-        }
-      }
+      // Use the same barbershop as sync endpoint (Tomb45 Barbershop)
+      barbershop = { id: '8d5728b2-24ca-4d18-8823-0ed926e8913d', name: 'Tomb45 Barbershop' }
     } else {
       // Production mode - require authenticated user
       const { data: { user }, error: authError } = await supabase.auth.getUser()
