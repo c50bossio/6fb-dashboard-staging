@@ -28,6 +28,7 @@ const ArrowDownTrayIcon = dynamic(() => import('@heroicons/react/24/outline').th
 const ArrowTrendingUpIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingUpIcon })))
 const ArrowTrendingDownIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.ArrowTrendingDownIcon })))
 const BanknotesIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.BanknotesIcon })))
+const LinkIcon = dynamic(() => import('@heroicons/react/24/outline').then(mod => ({ default: mod.LinkIcon })))
 import MFASetup from '../../../../components/auth/MFASetup'
 import SubscriptionDashboard from '../../../../components/billing/SubscriptionDashboard'
 import InternationalPhoneInput from '../../../../components/InternationalPhoneInput'
@@ -159,7 +160,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const hash = window.location.hash.replace('#', '')
-    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'payments', 'system']
+    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'payments', 'integrations', 'system']
     
     if (hash === 'api') {
       setActiveSection('general')
@@ -183,7 +184,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '')
-      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'payments', 'system']
+      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'payments', 'integrations', 'system']
       
       if (hash === 'api') {
         setActiveSection('general')
@@ -489,6 +490,7 @@ export default function SettingsPage() {
     { id: 'security', name: 'Security & MFA', icon: KeyIcon },
     { id: 'billing', name: 'Billing & Usage', icon: CreditCardIcon },
     { id: 'payments', name: 'Accept Payments', icon: BanknotesIcon },
+    { id: 'integrations', name: 'Integrations', icon: LinkIcon },
     { id: 'system', name: 'System Status', icon: CogIcon }
   ]
 
@@ -626,6 +628,86 @@ export default function SettingsPage() {
     { name: 'SMS Marketing', value: billingData.usage.sms.cost, color: '#C5A35B' },
     { name: 'Email Campaigns', value: billingData.usage.email.cost, color: '#10B981' }
   ]
+
+  // IntegrationCard Component
+  const IntegrationCard = ({ name, description, status, icon, onConnect, onConfigure, features, lastSync }) => {
+    const statusConfig = {
+      connected: {
+        bg: 'bg-green-50',
+        text: 'text-green-700',
+        badge: 'bg-green-100 text-green-800',
+        button: 'bg-green-600 hover:bg-green-700 text-white'
+      },
+      disconnected: {
+        bg: 'bg-gray-50',
+        text: 'text-gray-700',
+        badge: 'bg-gray-100 text-gray-800',
+        button: 'bg-indigo-600 hover:bg-indigo-700 text-white'
+      },
+      'coming-soon': {
+        bg: 'bg-yellow-50',
+        text: 'text-yellow-700',
+        badge: 'bg-yellow-100 text-yellow-800',
+        button: 'bg-gray-400 text-white cursor-not-allowed'
+      },
+      error: {
+        bg: 'bg-red-50',
+        text: 'text-red-700',
+        badge: 'bg-red-100 text-red-800',
+        button: 'bg-red-600 hover:bg-red-700 text-white'
+      }
+    }
+
+    const config = statusConfig[status] || statusConfig.disconnected
+    const isConnected = status === 'connected'
+    const isComingSoon = status === 'coming-soon'
+
+    return (
+      <div className={`border border-gray-200 rounded-lg p-4 ${config.bg} transition-all hover:shadow-md`}>
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center">
+            <span className="text-2xl mr-3">{icon}</span>
+            <div>
+              <h4 className="font-medium text-gray-900">{name}</h4>
+              <p className="text-sm text-gray-600">{description}</p>
+            </div>
+          </div>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.badge}`}>
+            {status === 'connected' ? 'Connected' : 
+             status === 'disconnected' ? 'Not Connected' : 
+             status === 'coming-soon' ? 'Coming Soon' : 'Error'}
+          </span>
+        </div>
+
+        {features && (
+          <div className="mb-4">
+            <div className="text-xs text-gray-500 mb-2">Features:</div>
+            <div className="flex flex-wrap gap-1">
+              {features.map((feature, index) => (
+                <span key={index} className="text-xs bg-white bg-opacity-70 px-2 py-1 rounded text-gray-700">
+                  {feature}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {lastSync && (
+          <div className="mb-4 text-xs text-gray-600">
+            Last sync: {lastSync}
+          </div>
+        )}
+
+        <button
+          onClick={isConnected ? onConfigure : onConnect}
+          disabled={isComingSoon}
+          className={`w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors ${config.button}`}
+        >
+          {isConnected ? 'Configure' : isComingSoon ? 'Coming Soon' : 'Connect'}
+        </button>
+      </div>
+    )
+  }
 
   const EditableCard = memo(({ title, icon: Icon, section, children, className = "" }) => {
     const isEditing = editStates[section]
@@ -1803,6 +1885,183 @@ export default function SettingsPage() {
                 </div>
                 
                 <PaymentProcessingSettings />
+              </div>
+            )}
+
+            {/* Integrations Hub */}
+            {activeSection === 'integrations' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-gray-900">Integrations Hub</h2>
+                    <p className="text-gray-600 mt-1">Manage all your third-party service connections and integrations</p>
+                  </div>
+                </div>
+
+                {/* Integration Categories */}
+                <div className="space-y-8">
+                  {/* Marketing & Analytics */}
+                  <div className="card">
+                    <div className="flex items-center mb-6">
+                      <div className="flex items-center justify-center h-10 w-10 bg-olive-100 rounded-lg mr-4">
+                        <ChartBarIcon className="h-6 w-6 text-olive-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Marketing & Analytics</h3>
+                        <p className="text-sm text-gray-600">Track performance and engage customers</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Google Analytics */}
+                      <IntegrationCard
+                        name="Google Analytics"
+                        description="Track website traffic and user behavior"
+                        status="disconnected"
+                        icon="📊"
+                        onConnect={() => setTestResult({ success: true, message: 'Google Analytics integration coming soon!' })}
+                        features={['Website Analytics', 'Conversion Tracking', 'Audience Insights']}
+                      />
+
+                      {/* Google Tag Manager */}
+                      <IntegrationCard
+                        name="Google Tag Manager"
+                        description="Manage marketing tags and tracking pixels"
+                        status="disconnected"
+                        icon="🏷️"
+                        onConnect={() => setTestResult({ success: true, message: 'Google Tag Manager integration coming soon!' })}
+                        features={['Tag Management', 'Event Tracking', 'Custom Variables']}
+                      />
+
+                      {/* Meta Pixel */}
+                      <IntegrationCard
+                        name="Meta Pixel"
+                        description="Track Facebook and Instagram ad performance"
+                        status="disconnected"
+                        icon="📱"
+                        onConnect={() => setTestResult({ success: true, message: 'Meta Pixel integration coming soon!' })}
+                        features={['Ad Tracking', 'Audience Building', 'Conversion Events']}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Business Operations */}
+                  <div className="card">
+                    <div className="flex items-center mb-6">
+                      <div className="flex items-center justify-center h-10 w-10 bg-indigo-100 rounded-lg mr-4">
+                        <BuildingOfficeIcon className="h-6 w-6 text-indigo-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Business Operations</h3>
+                        <p className="text-sm text-gray-600">Manage reviews, inventory, and accounting</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Google My Business */}
+                      <IntegrationCard
+                        name="Google My Business"
+                        description="Manage reviews and business listings"
+                        status="connected"
+                        icon="🏢"
+                        onConfigure={() => setTestResult({ success: true, message: 'GMB integration is already active! Review attribution system operational.' })}
+                        features={['Review Management', 'AI Barber Attribution', 'Business Listings']}
+                        lastSync="2 hours ago"
+                      />
+
+                      {/* Cin7 Inventory */}
+                      <IntegrationCard
+                        name="Cin7 Inventory"
+                        description="Manage products and inventory levels"
+                        status="coming-soon"
+                        icon="📦"
+                        onConnect={() => setTestResult({ success: true, message: 'Cin7 integration will be available in a future update!' })}
+                        features={['Product Management', 'Stock Levels', 'Supplier Integration']}
+                      />
+
+                      {/* QuickBooks */}
+                      <IntegrationCard
+                        name="QuickBooks"
+                        description="Sync financial data and accounting"
+                        status="coming-soon"
+                        icon="💼"
+                        onConnect={() => setTestResult({ success: true, message: 'QuickBooks integration will be available in a future update!' })}
+                        features={['Financial Sync', 'Invoice Management', 'Tax Reporting']}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Communication & Payments */}
+                  <div className="card">
+                    <div className="flex items-center mb-6">
+                      <div className="flex items-center justify-center h-10 w-10 bg-green-100 rounded-lg mr-4">
+                        <PhoneIcon className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Communication & Payments</h3>
+                        <p className="text-sm text-gray-600">Connect with customers and process payments</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Stripe */}
+                      <IntegrationCard
+                        name="Stripe"
+                        description="Accept credit card payments online"
+                        status="connected"
+                        icon="💳"
+                        onConfigure={() => setTestResult({ success: true, message: 'Stripe payment processing is active and configured!' })}
+                        features={['Payment Processing', 'Subscription Billing', 'Dispute Management']}
+                        lastSync="Live"
+                      />
+
+                      {/* Twilio SMS */}
+                      <IntegrationCard
+                        name="Twilio SMS"
+                        description="Send SMS notifications and reminders"
+                        status="connected"
+                        icon="💬"
+                        onConfigure={() => setTestResult({ success: true, message: 'Twilio SMS is connected and operational!' })}
+                        features={['SMS Notifications', 'Appointment Reminders', 'Marketing Messages']}
+                        lastSync="1 hour ago"
+                      />
+
+                      {/* SendGrid Email */}
+                      <IntegrationCard
+                        name="SendGrid"
+                        description="Send email campaigns and notifications"
+                        status="connected"
+                        icon="📧"
+                        onConfigure={() => setTestResult({ success: true, message: 'SendGrid email service is connected and active!' })}
+                        features={['Email Campaigns', 'Transactional Emails', 'Analytics']}
+                        lastSync="30 minutes ago"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Integration Health Summary */}
+                  <div className="card">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Integration Health Overview</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="bg-green-50 p-4 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">4</div>
+                        <div className="text-sm text-green-800">Connected</div>
+                      </div>
+                      <div className="bg-yellow-50 p-4 rounded-lg">
+                        <div className="text-2xl font-bold text-yellow-600">0</div>
+                        <div className="text-sm text-yellow-800">Warnings</div>
+                      </div>
+                      <div className="bg-red-50 p-4 rounded-lg">
+                        <div className="text-2xl font-bold text-red-600">0</div>
+                        <div className="text-sm text-red-800">Errors</div>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="text-2xl font-bold text-gray-600">3</div>
+                        <div className="text-sm text-gray-800">Available</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

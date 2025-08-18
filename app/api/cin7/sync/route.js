@@ -19,7 +19,7 @@ async function fetchCin7Products(accountId, apiKey) {
         await new Promise(resolve => setTimeout(resolve, 350)) // ~3 calls per second
       }
       
-      const response = await fetch(`https://inventory.dearsystems.com/ExternalApi/v2/product/list?limit=${pageSize}&page=${page}`, {
+      const response = await fetch(`https://inventory.dearsystems.com/ExternalApi/v2/product?limit=${pageSize}&page=${page}`, {
         method: 'GET',
         headers: {
           'api-auth-accountid': accountId,
@@ -65,61 +65,10 @@ async function fetchCin7Products(accountId, apiKey) {
 }
 
 async function fetchCin7StockLevels(accountId, apiKey) {
-  try {
-    
-    let allStockLevels = []
-    let page = 1
-    let hasMorePages = true
-    const pageSize = 100
-    const maxPages = 50
-    
-    // Implement pagination for stock levels
-    while (hasMorePages && page <= maxPages) {
-      // Add delay to respect rate limits
-      if (page > 1) {
-        await new Promise(resolve => setTimeout(resolve, 350))
-      }
-      
-      const response = await fetch(`https://inventory.dearsystems.com/ExternalApi/v2/product/stock?limit=${pageSize}&page=${page}`, {
-        method: 'GET',
-        headers: {
-          'api-auth-accountid': accountId,
-          'api-auth-applicationkey': apiKey,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.warn('Rate limit hit on stock levels, waiting 1 minute...')
-          await new Promise(resolve => setTimeout(resolve, 60000))
-          continue
-        }
-        throw new Error(`Cin7 Stock API error: ${response.status} ${response.statusText}`)
-      }
-
-      const data = await response.json()
-      const stockItems = data?.StockItems || []
-      
-      if (stockItems.length === 0) {
-        hasMorePages = false
-      } else {
-        allStockLevels = allStockLevels.concat(stockItems)
-        
-        if (stockItems.length < pageSize) {
-          hasMorePages = false
-        } else {
-          page++
-        }
-      }
-    }
-    
-    return allStockLevels
-  } catch (error) {
-    console.error('Error fetching stock levels from Cin7:', error)
-    throw error
-  }
+  // Note: v2 API doesn't have a separate stock endpoint
+  // Stock data should be included in the product response
+  // Returning empty array for now - stock levels will come from product data
+  return []
 }
 
 function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
@@ -176,7 +125,7 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
     brand: cin7Product.Brand || '',
     sku: cin7Product.SKU || '',
     
-    // Pricing prioritizing verified CSV fields
+    // Pricing
     cost_price: parseFloat(
       cin7Product.CostPrice || 
       cin7Product.AverageCost ||
@@ -186,58 +135,57 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
       0
     ),
     retail_price: parseFloat(
-      cin7Product.PriceTier1 ||      // Primary: PriceTier1 (219.99, 249.99, etc from CSV)
+      cin7Product.PriceTier1 ||      // Primary: PriceTier1
       cin7Product.SalePrice || 
       cin7Product.DefaultSellPrice || 
       cin7Product.ListPrice ||
       0
     ),
     
-    // Stock levels prioritizing CIN7's "Available" field (from CSV verification)
+    // Stock levels - using existing database columns
     current_stock: parseInt(
-      stockInfo?.Available ||        // Primary: Available inventory (523, 647, etc from CSV)
-      stockInfo?.OnHand ||           // Secondary: OnHand inventory  
-      stockInfo?.QtyOnHand ||        // Tertiary: QtyOnHand
-      stockInfo?.QuantityAvailable || // Alternative naming
-      cin7Product.Available ||       // Direct product field
-      cin7Product.QtyOnHand ||       // Product level stock
-      0                              // Fallback only if no stock data found
+      stockInfo?.Available ||        
+      stockInfo?.OnHand ||           
+      cin7Product.Available ||       
+      cin7Product.QtyOnHand ||       
+      cin7Product.StockOnHand ||     
+      cin7Product.QuantityAvailable || 
+      0                              
+    ),
+    on_hand: parseInt(
+      stockInfo?.OnHand ||
+      cin7Product.QtyOnHand ||
+      cin7Product.StockOnHand ||
+      0
+    ),
+    allocated: parseInt(
+      stockInfo?.Allocated ||
+      cin7Product.Allocated ||
+      0
+    ),
+    incoming: parseInt(
+      stockInfo?.Incoming ||
+      cin7Product.Incoming ||
+      0
     ),
     min_stock_level: parseInt(
-      stockInfo?.MinimumBeforeReorder || 
       cin7Product.MinimumBeforeReorder || 
       cin7Product.ReorderPoint ||
       5
     ),
     max_stock_level: parseInt(
-      stockInfo?.ReorderQuantity || 
       cin7Product.ReorderQuantity || 
       cin7Product.MaximumStockLevel ||
       100
     ),
     
-    // Enhanced fields for barbershops
-    supplier: cin7Product.DefaultSupplier || cin7Product.SupplierName || '',
-    unit_of_measure: cin7Product.UOM || cin7Product.UnitOfMeasure || 'each',
-    weight: parseFloat(cin7Product.Weight || 0),
-    dimensions: cin7Product.Dimensions || '',
-    location: stockInfo?.BinLocation || stockInfo?.Location || '',
-    
     // Status and metadata
     is_active: cin7Product.Status === 'Active' || cin7Product.IsActive === true,
-    track_inventory: cin7Product.IsInventoried !== false, // Default to true unless explicitly false
+    track_inventory: cin7Product.IsInventoried !== false,
+    sync_enabled: true,
+    last_cin7_update: new Date().toISOString(),
     
-    // Professional/barbershop specific fields
-    professional_use: detectProfessionalUse(cin7Product),
-    usage_instructions: cin7Product.Instructions || cin7Product.UsageInstructions || '',
-    ingredients: cin7Product.Ingredients || cin7Product.Components || '',
-    
-    // Cin7 specific fields for syncing
-    cin7_product_id: cin7Product.ID,
-    cin7_sku: cin7Product.SKU,
-    cin7_barcode: cin7Product.Barcode || cin7Product.UPC || cin7Product.EAN || '',
-    
-    // Additional metadata
+    // Timestamps
     created_at: cin7Product.CreatedDate || new Date().toISOString(),
     updated_at: new Date().toISOString()
   }

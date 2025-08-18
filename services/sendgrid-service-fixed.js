@@ -37,7 +37,13 @@ class EnhancedSendGridService {
      */
     async initializeService() {
         
+        // Determine if we're in test mode based on environment
+        const isProduction = process.env.NODE_ENV === 'production';
+        
         if (!this.apiKey || this.apiKey.includes('placeholder')) {
+            if (isProduction) {
+                throw new Error('SendGrid API key is required in production environment');
+            }
             console.warn('⚠️  SendGrid API key not configured or is placeholder');
             this.testMode = true;
             this.validationStatus = 'API_KEY_MISSING';
@@ -51,6 +57,11 @@ class EnhancedSendGridService {
             this.testMode = false;
             this.validationStatus = 'VALIDATED';
         } catch (error) {
+            if (isProduction) {
+                // In production, validation failure should be treated seriously
+                console.error('❌ SendGrid API key validation failed in production:', error.message);
+                throw error;
+            }
             console.warn('⚠️  SendGrid API key validation failed:', error.message);
             this.testMode = true;
             this.validationStatus = 'VALIDATION_FAILED';

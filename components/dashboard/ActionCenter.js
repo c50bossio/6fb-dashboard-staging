@@ -13,58 +13,109 @@ import {
   PlayIcon,
   PauseIcon,
   ArrowPathIcon,
-  FlagIcon
+  FlagIcon,
+  CameraIcon,
+  WrenchScrewdriverIcon,
+  ChatBubbleLeftIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function ActionCenter({ data }) {
   const [activeTask, setActiveTask] = useState(null)
   const [completedTasks, setCompletedTasks] = useState([])
+  const [priorityTasks, setPriorityTasks] = useState([])
+  const [loadingActions, setLoadingActions] = useState(true)
+  const [actionsError, setActionsError] = useState(null)
   
   const appointments = data?.appointments || []
   const alerts = data?.alerts || []
   const realtime = data?.realtime || {}
+  const barbershopId = data?.barbershop_id || 'demo-shop-001'
 
-  const priorityTasks = [
+  // Load dynamic priority actions from API
+  useEffect(() => {
+    loadPriorityActions()
+  }, [barbershopId])
+
+  const loadPriorityActions = async () => {
+    try {
+      setLoadingActions(true)
+      setActionsError(null)
+      
+      const response = await fetch(`/api/operations/priority-actions?barbershop_id=${barbershopId}`)
+      const result = await response.json()
+      
+      if (result.success && result.data?.actions) {
+        // Map API response to component format
+        const formattedActions = result.data.actions.map(action => ({
+          id: action.id,
+          title: action.title,
+          description: action.description,
+          priority: action.priority,
+          estimatedTime: action.estimatedTime,
+          icon: getIconComponent(action.icon),
+          color: action.color,
+          actions: action.actions,
+          urgencyScore: action.urgencyScore,
+          data: action.data
+        }))
+        
+        setPriorityTasks(formattedActions)
+        console.log('📋 Priority actions loaded:', {
+          count: formattedActions.length,
+          source: 'AI-generated from real data',
+          barbershop_id: barbershopId
+        })
+      } else {
+        throw new Error(result.error || 'Failed to load priority actions')
+      }
+    } catch (error) {
+      console.error('Error loading priority actions:', error)
+      setActionsError(error.message)
+      
+      // Fallback to basic actions if API fails
+      setPriorityTasks(getFallbackActions())
+    } finally {
+      setLoadingActions(false)
+    }
+  }
+
+  // Map icon strings to components
+  const getIconComponent = (iconName) => {
+    const iconMap = {
+      PhoneIcon,
+      CalendarDaysIcon,
+      ChatBubbleLeftIcon,
+      CameraIcon,
+      ClockIcon,
+      WrenchScrewdriverIcon,
+      BellAlertIcon,
+      UserGroupIcon
+    }
+    return iconMap[iconName] || BellAlertIcon
+  }
+
+  // Fallback actions if API fails
+  const getFallbackActions = () => [
     {
-      id: 1,
-      title: 'Follow up with missed appointments',
-      description: `${appointments.filter(a => a.status === 'no_show').length || 3} customers missed appointments this week`,
-      priority: 'high',
-      estimatedTime: '15 minutes',
-      icon: PhoneIcon,
-      color: 'red',
-      actions: ['Call', 'Send SMS', 'Email']
-    },
-    {
-      id: 2,
-      title: 'Confirm tomorrow\'s appointments',
-      description: `${appointments.filter(a => a.status === 'pending').length || 12} appointments need confirmation`,
-      priority: 'high',
-      estimatedTime: '20 minutes',
-      icon: CalendarDaysIcon,
-      color: 'amber',
-      actions: ['Auto-confirm', 'Call all', 'Send reminders']
-    },
-    {
-      id: 3,
-      title: 'Post customer transformations',
-      description: 'Share success stories on Instagram',
+      id: 'fallback_1',
+      title: 'Check appointment status',
+      description: 'Review today\'s schedule and confirm appointments',
       priority: 'medium',
       estimatedTime: '10 minutes',
-      icon: UserGroupIcon,
+      icon: CalendarDaysIcon,
       color: 'blue',
-      actions: ['Upload photos', 'Write caption', 'Schedule post']
+      actions: ['Review schedule', 'Contact customers']
     },
     {
-      id: 4,
-      title: 'Review and respond to feedback',
-      description: '5 new reviews need responses',
-      priority: 'medium',
+      id: 'fallback_2', 
+      title: 'Update social media',
+      description: 'Share recent work and engage with customers',
+      priority: 'low',
       estimatedTime: '15 minutes',
-      icon: BellAlertIcon,
+      icon: CameraIcon,
       color: 'purple',
-      actions: ['View reviews', 'Draft responses', 'Publish']
+      actions: ['Create post', 'Upload photos']
     }
   ]
 
@@ -127,28 +178,71 @@ export default function ActionCenter({ data }) {
           <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <ClipboardDocumentCheckIcon className="h-6 w-6 text-green-500" />
             Priority Actions for Today
+            {!loadingActions && !actionsError && (
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-normal">
+                AI-Generated
+              </span>
+            )}
           </h3>
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>{completedTasks.length}/{priorityTasks.length} completed</span>
-            <div className="w-24 h-2 bg-gray-200 rounded-full">
-              <div 
-                className="h-2 bg-green-500 rounded-full transition-all"
-                style={{ width: `${(completedTasks.length / priorityTasks.length) * 100}%` }}
-              />
-            </div>
+            {loadingActions ? (
+              <ArrowPathIcon className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <span>{completedTasks.length}/{priorityTasks.length} completed</span>
+                <div className="w-24 h-2 bg-gray-200 rounded-full">
+                  <div 
+                    className="h-2 bg-green-500 rounded-full transition-all"
+                    style={{ width: `${priorityTasks.length ? (completedTasks.length / priorityTasks.length) * 100 : 0}%` }}
+                  />
+                </div>
+                <button 
+                  onClick={loadPriorityActions}
+                  className="ml-2 p-1 hover:bg-gray-100 rounded"
+                  title="Refresh priority actions"
+                >
+                  <ArrowPathIcon className="h-4 w-4" />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
         <div className="space-y-4">
-          {priorityTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              isActive={activeTask?.id === task.id}
-              isCompleted={completedTasks.includes(task.id)}
-              onAction={(action) => handleTaskAction(task, action)}
-            />
-          ))}
+          {loadingActions ? (
+            <div className="text-center py-8">
+              <ArrowPathIcon className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-500">Analyzing business data to generate priority actions...</p>
+            </div>
+          ) : actionsError ? (
+            <div className="text-center py-8 bg-yellow-50 rounded-lg border border-yellow-200">
+              <ExclamationTriangleIcon className="h-8 w-8 text-yellow-600 mx-auto mb-3" />
+              <p className="text-yellow-800 font-medium">Unable to generate AI actions</p>
+              <p className="text-yellow-700 text-sm mt-1">{actionsError}</p>
+              <button 
+                onClick={loadPriorityActions}
+                className="mt-3 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : priorityTasks.length === 0 ? (
+            <div className="text-center py-8 bg-green-50 rounded-lg border border-green-200">
+              <CheckCircleIcon className="h-8 w-8 text-green-600 mx-auto mb-3" />
+              <p className="text-green-800 font-medium">No urgent actions needed</p>
+              <p className="text-green-700 text-sm mt-1">Your business is running smoothly!</p>
+            </div>
+          ) : (
+            priorityTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                isActive={activeTask?.id === task.id}
+                isCompleted={completedTasks.includes(task.id)}
+                onAction={(action) => handleTaskAction(task, action)}
+              />
+            ))
+          )}
         </div>
       </div>
 
@@ -226,6 +320,7 @@ export default function ActionCenter({ data }) {
 }
 
 const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
+  const [showDetails, setShowDetails] = useState(false)
   const Icon = task.icon
   const priorityColors = {
     high: 'border-red-200 bg-red-50',
@@ -252,13 +347,58 @@ const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
   return (
     <div className={`p-4 rounded-lg border ${priorityColors[task.priority]} ${isActive ? 'ring-2 ring-indigo-500' : ''}`}>
       <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 flex-1">
           <div className={`p-2 bg-${task.color}-100 rounded-lg`}>
             <Icon className={`h-5 w-5 text-${task.color}-600`} />
           </div>
           <div className="flex-1">
-            <h4 className="font-medium text-gray-900">{task.title}</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-medium text-gray-900">{task.title}</h4>
+              {task.urgencyScore && task.urgencyScore > 80 && (
+                <span className="px-2 py-0.5 bg-red-100 text-red-600 text-xs font-medium rounded">
+                  URGENT
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+            
+            {/* Enhanced details for AI-generated actions */}
+            {task.data && showDetails && (
+              <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200 text-xs">
+                {task.data.count && (
+                  <div className="mb-2">
+                    <span className="font-medium">Count: </span>
+                    <span className="text-gray-600">{task.data.count} items</span>
+                  </div>
+                )}
+                {task.data.customers && (
+                  <div className="mb-2">
+                    <span className="font-medium">Recent customers: </span>
+                    <span className="text-gray-600">
+                      {task.data.customers.slice(0, 3).map(c => c.name).join(', ')}
+                      {task.data.customers.length > 3 && ` +${task.data.customers.length - 3} more`}
+                    </span>
+                  </div>
+                )}
+                {task.data.appointments && (
+                  <div className="mb-2">
+                    <span className="font-medium">Next appointments: </span>
+                    <span className="text-gray-600">
+                      {task.data.appointments.slice(0, 2).map(a => `${a.time} (${a.customer_name})`).join(', ')}
+                    </span>
+                  </div>
+                )}
+                {task.data.recent_reviews && (
+                  <div className="mb-2">
+                    <span className="font-medium">Recent review: </span>
+                    <span className="text-gray-600">
+                      "{task.data.recent_reviews[0]?.text}" - {task.data.recent_reviews[0]?.customer}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+            
             <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
               <span className="flex items-center gap-1">
                 <ClockIcon className="h-3 w-3" />
@@ -271,11 +411,19 @@ const TaskCard = ({ task, isActive, isCompleted, onAction }) => {
               }`}>
                 {task.priority} priority
               </span>
+              {task.data && (
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  {showDetails ? 'Hide' : 'Show'} details
+                </button>
+              )}
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-4">
           {isActive ? (
             <div className="px-3 py-1 bg-olive-500 text-white rounded-lg text-sm flex items-center gap-2">
               <ArrowPathIcon className="h-4 w-4 animate-spin" />

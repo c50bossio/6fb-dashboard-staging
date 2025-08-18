@@ -8,14 +8,29 @@ import {
   PhotoIcon,
   LinkIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import ReviewsList from '@/components/reviews/ReviewsList'
+import ReviewStats from '@/components/reviews/ReviewStats'
+import useReviews from '@/hooks/useReviews'
 
 export default function BarberProfilePage() {
-  const { user } = useAuth()
+  const { user, profile: userProfile } = useAuth()
   const [activeTab, setActiveTab] = useState('basic')
+  
+  // Get reviews for this barber
+  const { 
+    reviews, 
+    stats: reviewStats, 
+    loading: reviewsLoading,
+    refreshReviews 
+  } = useReviews({ 
+    barberId: userProfile?.id,
+    autoLoad: true 
+  })
   const [profile, setProfile] = useState({
     custom_path: '',
     page_title: '',
@@ -130,6 +145,7 @@ export default function BarberProfilePage() {
     { id: 'services', label: 'Services', icon: CurrencyDollarIcon },
     { id: 'availability', label: 'Availability', icon: CalendarDaysIcon },
     { id: 'portfolio', label: 'Portfolio', icon: PhotoIcon },
+    { id: 'reviews', label: 'My Reviews', icon: ChatBubbleLeftRightIcon },
     { id: 'social', label: 'Social Links', icon: LinkIcon }
   ]
 
@@ -554,6 +570,51 @@ export default function BarberProfilePage() {
                   Portfolio features coming soon. You'll be able to upload before/after photos, 
                   showcase your best work, and build a gallery that attracts new clients.
                 </p>
+              </div>
+            )}
+
+            {/* Reviews Tab */}
+            {activeTab === 'reviews' && (
+              <div className="space-y-6">
+                {/* Review Stats */}
+                <ReviewStats 
+                  stats={reviewStats} 
+                  showTrends={false}
+                  compact={false}
+                />
+                
+                {/* Reviews List */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Customer Reviews</h3>
+                    <button 
+                      onClick={refreshReviews}
+                      className="px-4 py-2 text-sm bg-olive-600 text-white rounded-lg hover:bg-olive-700"
+                    >
+                      Sync Reviews
+                    </button>
+                  </div>
+                  
+                  <ReviewsList
+                    reviews={reviews}
+                    loading={reviewsLoading}
+                    onRefresh={refreshReviews}
+                    showFilters={false}
+                    showSearch={true}
+                    showAttribution={true}
+                    compact={false}
+                  />
+                  
+                  {reviews.length === 0 && !reviewsLoading && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mt-6">
+                      <h4 className="text-yellow-900 font-medium mb-2">No Reviews Yet</h4>
+                      <p className="text-yellow-700 text-sm">
+                        Reviews from Google My Business that mention your name or are attributed to you will appear here.
+                        Make sure your barbershop has connected their Google My Business account.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

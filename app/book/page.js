@@ -23,80 +23,6 @@ import { useState, useEffect } from 'react'
 
 import { createClient } from '../../lib/supabase/client'
 
-const SERVICES = [
-  { 
-    id: 'haircut', 
-    name: 'Classic Haircut', 
-    duration: 30, 
-    price: 35, 
-    color: '#3B82F6',
-    description: 'Professional cut with wash and style',
-    popular: true
-  },
-  { 
-    id: 'beard', 
-    name: 'Beard Trim & Shape', 
-    duration: 20, 
-    price: 20, 
-    color: '#10B981',
-    description: 'Precision beard trimming and styling',
-    popular: false
-  },
-  { 
-    id: 'full', 
-    name: 'Full Service', 
-    duration: 50, 
-    price: 50, 
-    color: '#C5A35B',
-    description: 'Complete haircut + beard trim + hot towel',
-    popular: true
-  },
-  { 
-    id: 'kids', 
-    name: 'Kids Cut (12 & Under)', 
-    duration: 20, 
-    price: 25, 
-    color: '#F59E0B',
-    description: 'Kid-friendly cuts with patience and care',
-    popular: false
-  }
-]
-
-const BARBERS = [
-  { 
-    id: '1', 
-    name: 'Marcus Johnson', 
-    title: 'Master Barber',
-    specialty: 'Modern cuts & fades',
-    experience: '8+ years',
-    rating: 4.9,
-    avatar: '/api/placeholder/100/100',
-    bio: 'Specializes in contemporary styles and precision fades. Known for attention to detail.',
-    available: true
-  },
-  { 
-    id: '2', 
-    name: 'David Rodriguez', 
-    title: 'Senior Stylist',
-    specialty: 'Classic styles & beard work',
-    experience: '6+ years',
-    rating: 4.8,
-    avatar: '/api/placeholder/100/100',
-    bio: 'Expert in traditional barbering techniques and beard grooming.',
-    available: true
-  },
-  { 
-    id: '3', 
-    name: 'Mike Thompson', 
-    title: 'Beard Specialist',
-    specialty: 'Beard sculpting & styling',
-    experience: '5+ years',
-    rating: 4.9,
-    avatar: '/api/placeholder/100/100',
-    bio: 'Passionate about beard artistry and mens grooming.',
-    available: false // Unavailable today
-  }
-]
 
 const SHOP_INFO = {
   name: '6FB Barbershop',
@@ -123,6 +49,12 @@ export default function CustomerBookingPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [bookingConfirmed, setBookingConfirmed] = useState(false)
   
+  // Dynamic data from API
+  const [services, setServices] = useState([])
+  const [barbers, setBarbers] = useState([])
+  const [shopInfo, setShopInfo] = useState(null)
+  const [dataLoading, setDataLoading] = useState(true)
+  
   const [customerDetails, setCustomerDetails] = useState({
     firstName: '',
     lastName: '',
@@ -138,6 +70,144 @@ export default function CustomerBookingPage() {
   })
 
   const supabase = createClient()
+
+  // Load services and barbers from API
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setDataLoading(true)
+        
+        // Fetch services
+        const servicesResponse = await fetch('/api/services?barbershop_id=demo-shop-001&active_only=true')
+        if (servicesResponse.ok) {
+          const servicesResult = await servicesResponse.json()
+          if (servicesResult.success) {
+            // Transform API data to match expected format
+            const transformedServices = servicesResult.data.map((service, index) => ({
+              id: service.id,
+              name: service.name,
+              duration: service.duration_minutes || 30,
+              price: service.price || 0,
+              color: getServiceColor(service.category || 'default', index),
+              description: service.description || 'Professional service',
+              popular: service.category === 'Popular' || index < 2
+            }))
+            setServices(transformedServices)
+          }
+        }
+
+        // Fetch barbers
+        const barbersResponse = await fetch('/api/barbers?barbershop_id=demo-shop-001&active_only=true')
+        if (barbersResponse.ok) {
+          const barbersResult = await barbersResponse.json()
+          if (barbersResult.success) {
+            // Transform API data to match expected format
+            const transformedBarbers = barbersResult.data.map(barber => ({
+              id: barber.id,
+              name: barber.name,
+              title: barber.title || 'Barber',
+              specialty: barber.specialty || 'General barbering',
+              experience: barber.experience || '3+ years',
+              rating: barber.average_rating || 4.8,
+              avatar: barber.profile_image || '/api/placeholder/100/100',
+              bio: barber.bio || 'Professional barber with years of experience.',
+              available: barber.is_active !== false
+            }))
+            setBarbers(transformedBarbers)
+          }
+        }
+
+        // Use fallback shop info for now
+        setShopInfo({
+          name: '6FB Barbershop',
+          address: '123 Main Street, Downtown, CA 90210',
+          phone: '(555) 123-4567',
+          hours: {
+            'Monday': '9:00 AM - 6:00 PM',
+            'Tuesday': '9:00 AM - 6:00 PM', 
+            'Wednesday': '9:00 AM - 6:00 PM',
+            'Thursday': '9:00 AM - 6:00 PM',
+            'Friday': '9:00 AM - 7:00 PM',
+            'Saturday': '9:00 AM - 5:00 PM',
+            'Sunday': 'Closed'
+          }
+        })
+        
+      } catch (error) {
+        console.error('Failed to load booking data:', error)
+        // Fallback to hardcoded data if API fails
+        setServices(getFallbackServices())
+        setBarbers(getFallbackBarbers())
+        setShopInfo(SHOP_INFO)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  // Helper function to assign colors to services
+  const getServiceColor = (category, index) => {
+    const colors = ['#3B82F6', '#10B981', '#C5A35B', '#F59E0B', '#8B5CF6', '#EF4444']
+    return colors[index % colors.length]
+  }
+
+  // Fallback data in case API fails
+  const getFallbackServices = () => [
+    { 
+      id: 'haircut', 
+      name: 'Classic Haircut', 
+      duration: 30, 
+      price: 35, 
+      color: '#3B82F6',
+      description: 'Professional cut with wash and style',
+      popular: true
+    },
+    { 
+      id: 'beard', 
+      name: 'Beard Trim & Shape', 
+      duration: 20, 
+      price: 20, 
+      color: '#10B981',
+      description: 'Precision beard trimming and styling',
+      popular: false
+    },
+    { 
+      id: 'full', 
+      name: 'Full Service', 
+      duration: 50, 
+      price: 50, 
+      color: '#C5A35B',
+      description: 'Complete haircut + beard trim + hot towel',
+      popular: true
+    }
+  ]
+
+  const getFallbackBarbers = () => [
+    { 
+      id: '1', 
+      name: 'Marcus Johnson', 
+      title: 'Master Barber',
+      specialty: 'Modern cuts & fades',
+      experience: '8+ years',
+      rating: 4.9,
+      avatar: '/api/placeholder/100/100',
+      bio: 'Specializes in contemporary styles and precision fades.',
+      available: true
+    },
+    { 
+      id: '2', 
+      name: 'David Rodriguez', 
+      title: 'Senior Stylist',
+      specialty: 'Classic styles & beard work',
+      experience: '6+ years',
+      rating: 4.8,
+      avatar: '/api/placeholder/100/100',
+      bio: 'Expert in traditional barbering techniques.',
+      available: true
+    }
+  ]
 
   useEffect(() => {
     if (selectedBarber && selectedDate && selectedService) {
@@ -224,7 +294,7 @@ export default function CustomerBookingPage() {
       </div>
       
       <div className="grid gap-4 md:grid-cols-2">
-        {SERVICES.map((service) => (
+        {services.map((service) => (
           <button
             key={service.id}
             onClick={() => handleServiceSelect(service)}
@@ -268,7 +338,7 @@ export default function CustomerBookingPage() {
       </div>
       
       <div className="grid gap-6 md:grid-cols-2">
-        {BARBERS.filter(barber => barber.available).map((barber) => (
+        {barbers.filter(barber => barber.available).map((barber) => (
           <button
             key={barber.id}
             onClick={() => handleBarberSelect(barber)}
@@ -502,7 +572,7 @@ export default function CustomerBookingPage() {
               className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
             />
             <span className="ml-2 text-sm text-gray-700">
-              This is my first time at {SHOP_INFO.name}
+              This is my first time at {shopInfo?.name || '6FB Barbershop'}
             </span>
           </label>
 
@@ -627,7 +697,7 @@ export default function CustomerBookingPage() {
           <li>• You'll receive an SMS and email confirmation shortly</li>
           <li>• We'll send you a reminder 24 hours before your appointment</li>
           <li>• Please arrive 5 minutes early for your appointment</li>
-          <li>• If you need to cancel or reschedule, call us at {SHOP_INFO.phone}</li>
+          <li>• If you need to cancel or reschedule, call us at {shopInfo?.phone || '(555) 123-4567'}</li>
         </ul>
       </div>
       
@@ -636,9 +706,9 @@ export default function CustomerBookingPage() {
         <div className="flex items-start space-x-3">
           <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
           <div className="text-left">
-            <p className="font-medium text-gray-900">{SHOP_INFO.name}</p>
-            <p className="text-sm text-gray-600">{SHOP_INFO.address}</p>
-            <p className="text-sm text-gray-600">{SHOP_INFO.phone}</p>
+            <p className="font-medium text-gray-900">{shopInfo?.name || '6FB Barbershop'}</p>
+            <p className="text-sm text-gray-600">{shopInfo?.address || '123 Main Street, Downtown, CA 90210'}</p>
+            <p className="text-sm text-gray-600">{shopInfo?.phone || '(555) 123-4567'}</p>
           </div>
         </div>
       </div>
@@ -652,13 +722,25 @@ export default function CustomerBookingPage() {
     </div>
   )
 
+  // Show loading state while data is being fetched
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading booking system...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">{SHOP_INFO.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{shopInfo?.name || '6FB Barbershop'}</h1>
             <p className="text-gray-600 mt-2">Book your appointment online</p>
             
             {/* Progress Indicator */}
@@ -712,11 +794,11 @@ export default function CustomerBookingPage() {
               <div className="space-y-2 text-sm text-gray-300">
                 <div className="flex items-center">
                   <MapPinIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span>{SHOP_INFO.address}</span>
+                  <span>{shopInfo?.address || '123 Main Street, Downtown, CA 90210'}</span>
                 </div>
                 <div className="flex items-center">
                   <PhoneIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span>{SHOP_INFO.phone}</span>
+                  <span>{shopInfo?.phone || '(555) 123-4567'}</span>
                 </div>
               </div>
             </div>
@@ -724,7 +806,7 @@ export default function CustomerBookingPage() {
             <div>
               <h3 className="font-semibold mb-4">Hours of Operation</h3>
               <div className="space-y-1 text-sm text-gray-300">
-                {Object.entries(SHOP_INFO.hours).map(([day, hours]) => (
+                {Object.entries(shopInfo?.hours || {}).map(([day, hours]) => (
                   <div key={day} className="flex justify-between">
                     <span>{day}:</span>
                     <span>{hours}</span>
@@ -735,7 +817,7 @@ export default function CustomerBookingPage() {
           </div>
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>© 2024 {SHOP_INFO.name}. All rights reserved.</p>
+            <p>© 2024 {shopInfo?.name || '6FB Barbershop'}. All rights reserved.</p>
           </div>
         </div>
       </div>

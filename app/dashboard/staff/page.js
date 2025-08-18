@@ -21,97 +21,133 @@ import GlobalNavigation from '../../../components/GlobalNavigation'
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
-const Staff = [
-  {
-    id: 'marcus',
-    name: "Marcus Johnson",
-    email: "marcus.johnson@barbershop.com",
-    phone: "(555) 123-4567",
-    role: "Senior Barber",
-    hire_date: "2023-01-15",
-    commission_rate: 80,
-    hourly_rate: 25.00,
-    is_active: true,
-    specialties: ["Haircuts", "Beard Trims", "Hot Shaves"],
-    weekly_hours: 40,
-    total_appointments_week: 32,
-    total_revenue_week: 1280.00,
-    average_rating: 4.9,
-    total_reviews: 87,
-    schedule: {
-      monday: { start: "09:00", end: "17:00", available: true },
-      tuesday: { start: "09:00", end: "17:00", available: true },
-      wednesday: { start: "09:00", end: "17:00", available: true },
-      thursday: { start: "09:00", end: "17:00", available: true },
-      friday: { start: "09:00", end: "18:00", available: true },
-      saturday: { start: "08:00", end: "16:00", available: true },
-      sunday: { start: "", end: "", available: false }
-    },
-    profile_image: null
-  },
-  {
-    id: 'david',
-    name: "David Wilson",
-    email: "david.wilson@barbershop.com",
-    phone: "(555) 987-6543",
-    role: "Barber",
-    hire_date: "2023-06-20",
-    commission_rate: 75,
-    hourly_rate: 22.00,
-    is_active: true,
-    specialties: ["Haircuts", "Styling", "Color"],
-    weekly_hours: 35,
-    total_appointments_week: 28,
-    total_revenue_week: 980.00,
-    average_rating: 4.7,
-    total_reviews: 56,
-    schedule: {
-      monday: { start: "10:00", end: "18:00", available: true },
-      tuesday: { start: "10:00", end: "18:00", available: true },
-      wednesday: { start: "", end: "", available: false },
-      thursday: { start: "10:00", end: "18:00", available: true },
-      friday: { start: "10:00", end: "18:00", available: true },
-      saturday: { start: "09:00", end: "17:00", available: true },
-      sunday: { start: "10:00", end: "15:00", available: true }
-    },
-    profile_image: null
-  },
-  {
-    id: 'sophia',
-    name: "Sophia Martinez",
-    email: "sophia.martinez@barbershop.com",
-    phone: "(555) 456-7890",
-    role: "Master Barber",
-    hire_date: "2022-03-10",
-    commission_rate: 85,
-    hourly_rate: 28.00,
-    is_active: true,
-    specialties: ["Premium Cuts", "Beard Design", "Traditional Shaves"],
-    weekly_hours: 38,
-    total_appointments_week: 25,
-    total_revenue_week: 1375.00,
-    average_rating: 4.95,
-    total_reviews: 134,
-    schedule: {
-      monday: { start: "09:00", end: "17:00", available: true },
-      tuesday: { start: "09:00", end: "17:00", available: true },
-      wednesday: { start: "09:00", end: "17:00", available: true },
-      thursday: { start: "09:00", end: "17:00", available: true },
-      friday: { start: "09:00", end: "17:00", available: true },
-      saturday: { start: "08:00", end: "14:00", available: true },
-      sunday: { start: "", end: "", available: false }
-    },
-    profile_image: null
-  }
-]
-
 export default function StaffPage() {
   const { user, profile } = useAuth()
-  const [staff, setStaff] = useState(Staff)
+  const [staff, setStaff] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedStaff, setSelectedStaff] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Load staff from API
+  useEffect(() => {
+    const loadStaff = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        // Get barbershop ID from user profile or use demo
+        const barbershopId = profile?.barbershop_id || 'demo-shop-001'
+        
+        const response = await fetch(`/api/barbers?barbershop_id=${barbershopId}&active_only=false`)
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            // Transform API data to match expected format
+            const transformedStaff = result.data.map(barber => ({
+              id: barber.id,
+              name: barber.name,
+              email: barber.email || `${barber.name.toLowerCase().replace(' ', '.')}@barbershop.com`,
+              phone: barber.phone || '(555) 000-0000',
+              role: barber.title || 'Barber',
+              hire_date: barber.hire_date || new Date().toISOString().split('T')[0],
+              commission_rate: barber.commission_rate || 75,
+              hourly_rate: barber.hourly_rate || 22.00,
+              is_active: barber.is_active !== false,
+              specialties: barber.specialty ? [barber.specialty] : ['General barbering'],
+              weekly_hours: barber.weekly_hours || 40,
+              total_appointments_week: barber.weekly_appointments || 0,
+              total_revenue_week: barber.weekly_revenue || 0,
+              average_rating: barber.average_rating || 4.5,
+              total_reviews: barber.total_reviews || 0,
+              schedule: barber.schedule || getDefaultSchedule(),
+              profile_image: barber.profile_image
+            }))
+            setStaff(transformedStaff)
+          } else {
+            // Fallback to demo data
+            setStaff(getFallbackStaff())
+          }
+        } else {
+          throw new Error('Failed to fetch staff data')
+        }
+      } catch (err) {
+        console.error('Error loading staff:', err)
+        setError('Failed to load staff data')
+        // Use fallback data
+        setStaff(getFallbackStaff())
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (user) {
+      loadStaff()
+    }
+  }, [user, profile])
+
+  // Helper function for default schedule
+  const getDefaultSchedule = () => ({
+    monday: { start: "09:00", end: "17:00", available: true },
+    tuesday: { start: "09:00", end: "17:00", available: true },
+    wednesday: { start: "09:00", end: "17:00", available: true },
+    thursday: { start: "09:00", end: "17:00", available: true },
+    friday: { start: "09:00", end: "18:00", available: true },
+    saturday: { start: "08:00", end: "16:00", available: true },
+    sunday: { start: "", end: "", available: false }
+  })
+
+  // Fallback staff data
+  const getFallbackStaff = () => [
+    {
+      id: 'marcus',
+      name: "Marcus Johnson",
+      email: "marcus.johnson@barbershop.com",
+      phone: "(555) 123-4567",
+      role: "Senior Barber",
+      hire_date: "2023-01-15",
+      commission_rate: 80,
+      hourly_rate: 25.00,
+      is_active: true,
+      specialties: ["Haircuts", "Beard Trims", "Hot Shaves"],
+      weekly_hours: 40,
+      total_appointments_week: 32,
+      total_revenue_week: 1280.00,
+      average_rating: 4.9,
+      total_reviews: 87,
+      schedule: getDefaultSchedule(),
+      profile_image: null
+    },
+    {
+      id: 'david',
+      name: "David Wilson", 
+      email: "david.wilson@barbershop.com",
+      phone: "(555) 987-6543",
+      role: "Barber",
+      hire_date: "2023-06-20",
+      commission_rate: 75,
+      hourly_rate: 22.00,
+      is_active: true,
+      specialties: ["Haircuts", "Styling", "Color"],
+      weekly_hours: 35,
+      total_appointments_week: 28,
+      total_revenue_week: 980.00,
+      average_rating: 4.7,
+      total_reviews: 56,
+      schedule: {
+        monday: { start: "10:00", end: "18:00", available: true },
+        tuesday: { start: "10:00", end: "18:00", available: true },
+        wednesday: { start: "", end: "", available: false },
+        thursday: { start: "10:00", end: "18:00", available: true },
+        friday: { start: "10:00", end: "18:00", available: true },
+        saturday: { start: "09:00", end: "17:00", available: true },
+        sunday: { start: "10:00", end: "15:00", available: true }
+      },
+      profile_image: null
+    }
+  ]
 
   const filteredStaff = staff.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

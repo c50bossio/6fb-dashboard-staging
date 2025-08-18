@@ -341,7 +341,10 @@ export default function UnifiedDashboard({ user, profile }) {
         return <PredictiveAnalyticsPanel data={dashboardData} />
         
       case DASHBOARD_MODES.OPERATIONS:
-        return <ActionCenter data={dashboardData} />
+        return <ActionCenter data={{
+          ...dashboardData,
+          barbershop_id: profile?.barbershop_id || user?.barbershop_id || 'demo-shop-001'
+        }} />
         
       default:
         return null

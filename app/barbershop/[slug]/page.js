@@ -138,7 +138,7 @@ export default function BarbershopPublicPage() {
       >
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: barbershop.cover_image_url ? 'white' : brandColors.text }}>
-            {barbershop.hero_title || barbershop.name || 'Welcome to Our Barbershop'}
+            {barbershop.hero_title || barbershop.name || `Welcome to ${barbershop.name || 'the Barbershop'}`}
           </h2>
           <p className="text-xl mb-8" style={{ color: barbershop.cover_image_url ? 'white' : brandColors.text }}>
             {barbershop.hero_subtitle || barbershop.tagline || 'Professional barbering services'}
@@ -175,7 +175,7 @@ export default function BarbershopPublicPage() {
           <div className="text-center">
             <PhoneIcon className="h-8 w-8 mx-auto mb-4" style={{ color: brandColors.primary }} />
             <h4 className="text-xl font-semibold mb-2" style={{ color: brandColors.text }}>Call Us</h4>
-            <p className="text-gray-600">{barbershop.phone || '(555) 123-4567'}</p>
+            <p className="text-gray-600">{barbershop.phone || 'Contact us for details'}</p>
           </div>
 
           <div className="text-center">

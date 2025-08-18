@@ -13,7 +13,8 @@ import {
   ArrowRightOnRectangleIcon,
   AcademicCapIcon,
   SparklesIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -27,6 +28,13 @@ const navigation = [
   { name: 'Appointments', href: '/appointments', icon: CalendarIcon },
   { name: 'Customers', href: '/customers', icon: UsersIcon },
   { name: 'Staff', href: '/staff', icon: UserCircleIcon },
+  { name: 'Reviews', href: '/dashboard/reviews', icon: ChatBubbleLeftRightIcon,
+    subItems: [
+      { name: 'All Reviews', href: '/dashboard/reviews' },
+      { name: 'Location Reviews', href: '/dashboard/locations/reviews' },
+      { name: 'Enterprise Analytics', href: '/dashboard/enterprise/reviews' }
+    ]
+  },
   { name: 'Payments', href: '/payments', icon: BanknotesIcon },
   { name: 'Analytics', href: '/dashboard?mode=analytics', icon: ChartBarIcon },
   { name: 'AI Agents', href: '/ai-agents', icon: SparklesIcon },

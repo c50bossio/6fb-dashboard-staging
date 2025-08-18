@@ -373,9 +373,15 @@ app.add_middleware(
 )
 
 # CORS configuration
+# Configure CORS from environment
+cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
+if not cors_origins or cors_origins == ['']:
+    # Default origins for development only
+    cors_origins = ["http://localhost:9999", "http://localhost:3000"] if os.getenv('NODE_ENV') != 'production' else []
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:9999", "http://localhost:3000"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -413,7 +419,9 @@ def get_database_config():
             "type": "api_proxy",
             "supabase_url": supabase_url,
             "supabase_key": supabase_key,
-            "frontend_api_base": os.getenv('DOCKER_ENVIRONMENT') and 'http://frontend:9999' or 'http://localhost:9999'
+            "frontend_api_base": os.getenv('NEXT_PUBLIC_FRONTEND_URL', 
+                os.getenv('DOCKER_ENVIRONMENT') and 'http://frontend:9999' or 'http://localhost:9999'
+            )
         }
     else:
         # Fallback to SQLite for development

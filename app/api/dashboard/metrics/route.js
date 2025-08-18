@@ -159,12 +159,12 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
     const { data: customers } = await supabase
       .from('customers')
       .select('total_spent, total_visits')
-      .eq('shop_id', 'demo-shop-001')
+      // Shop ID should be dynamically provided
     
     const { data: services } = await supabase
       .from('services')
       .select('price')
-      .eq('shop_id', 'demo-shop-001')
+      // Shop ID should be dynamically provided
     
     const totalCustomers = customers?.length || 0
     const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
@@ -208,7 +208,7 @@ async function getUserEngagementMetrics(startDate, endDate) {
     const { data: customers } = await supabase
       .from('customers')
       .select('created_at, last_visit_at, shop_id')
-      .eq('shop_id', 'demo-shop-001')
+      // Shop ID should be dynamically provided
     
     if (customers && customers.length > 0) {
       const activeUsers = customers.filter(c => {
