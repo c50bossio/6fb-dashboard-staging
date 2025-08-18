@@ -387,30 +387,11 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     loadSavedProgress()
   }, [profile])
 
-  // Show a resume button if onboarding was skipped but not completed
+  // DISABLED: Floating resume button removed - using top banner instead for cleaner UI
+  // The top banner in dashboard/page.js handles the resume setup CTA
   if (!showOnboarding && !profile?.onboarding_completed && !forceShow) {
-    const wasSkipped = localStorage.getItem('onboarding_skipped') === 'true'
-    if (wasSkipped) {
-      return (
-        <div className="fixed bottom-4 right-4 z-40">
-          <button
-            onClick={() => {
-              setShowOnboarding(true)
-              localStorage.removeItem('onboarding_skipped')
-              // Track resumption
-              internalAnalytics.onboarding.restored(
-                steps[currentStep]?.id,
-                currentStep
-              )
-            }}
-            className="bg-brand-600 text-white px-4 py-3 rounded-lg shadow-lg hover:bg-brand-700 transition-all flex items-center gap-2 group"
-          >
-            <SparklesIcon className="h-5 w-5 group-hover:animate-pulse" />
-            <span>Resume Setup ({progress}% complete)</span>
-          </button>
-        </div>
-      )
-    }
+    // Previously showed floating button here when onboarding was skipped
+    // Now we rely on the top banner instead
     return null
   }
   
@@ -419,26 +400,12 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     return null
   }
 
+  // DISABLED: Minimized floating button removed - using top banner instead
+  // When user minimizes onboarding, it now completely hides rather than showing a floating button
   if (isMinimized) {
-    return (
-      <div className="fixed bottom-4 right-4 z-50">
-        <button
-          onClick={() => {
-            setIsMinimized(false)
-            // Track restoration
-            const currentStepData = steps[currentStep]
-            internalAnalytics.onboarding.restored(
-              currentStepData?.id,
-              currentStep
-            )
-          }}
-          className="bg-brand-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-brand-700 transition-colors flex items-center gap-2"
-        >
-          <SparklesIcon className="h-5 w-5" />
-          Complete Setup ({progress}%)
-        </button>
-      </div>
-    )
+    // Previously showed a floating "Complete Setup" button when minimized
+    // Now we rely on the top banner in the dashboard instead
+    return null
   }
 
   const currentStepData = steps[currentStep]
