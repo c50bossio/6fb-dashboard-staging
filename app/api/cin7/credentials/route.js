@@ -70,18 +70,60 @@ async function registerCin7Webhooks(accountId, apiKey, webhookUrl) {
 
 export async function GET() {
   try {
+    const isDevelopment = process.env.NODE_ENV === 'development'
     const supabase = createClient()
     
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      // Development mode bypass - return sample response
-      if (process.env.NODE_ENV === 'development') {
+    // Development mode bypass - check for credentials without user auth
+    if (isDevelopment) {
+      console.log('🔧 Dev mode: Checking Cin7 credentials without user auth')
+      
+      // Try to get any existing credentials (for development testing)
+      const { data: credentials, error } = await supabase
+        .from('cin7_credentials')
+        .select('barbershop_id, api_version, last_tested, updated_at, is_active, created_at, encrypted_account_id')
+        .eq('is_active', true)
+        .limit(1)
+        .single()
+      
+      if (error || !credentials) {
         return NextResponse.json({
           hasCredentials: false,
           message: 'No Cin7 credentials configured (dev mode)'
         })
       }
+      
+      // Decrypt and mask account ID for display
+      let maskedAccountId = null
+      if (credentials.encrypted_account_id) {
+        try {
+          const decryptedAccountId = decrypt(JSON.parse(credentials.encrypted_account_id))
+          maskedAccountId = decryptedAccountId.substring(0, 8) + '...' + decryptedAccountId.slice(-4)
+        } catch (decryptError) {
+          console.warn('Failed to decrypt account ID for masking:', decryptError)
+          maskedAccountId = 'Hidden'
+        }
+      }
+      
+      return NextResponse.json({
+        hasCredentials: true,
+        credentials: {
+          barbershop_id: credentials.barbershop_id,
+          api_version: credentials.api_version,
+          last_tested: credentials.last_tested,
+          updated_at: credentials.updated_at,
+          is_active: credentials.is_active,
+          created_at: credentials.created_at,
+          maskedAccountId,
+          lastTested: credentials.last_tested,
+          lastSynced: credentials.updated_at,
+          apiVersion: credentials.api_version
+        }
+      })
+    }
+    
+    // Production mode - require authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'User not authenticated' },
         { status: 401 }
@@ -226,29 +268,67 @@ export async function DELETE() {
 
 export async function PUT(request) {
   try {
+    const isDevelopment = process.env.NODE_ENV === 'development'
     const supabase = createClient()
     
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'User not authenticated' },
-        { status: 401 }
-      )
-    }
+    let barbershop = null
     
-    // Get user's barbershop
-    const { data: barbershop, error: shopError } = await supabase
-      .from('barbershops')
-      .select('id, name')
-      .eq('owner_id', user.id)
-      .single()
-    
-    if (shopError || !barbershop) {
-      return NextResponse.json({
-        error: 'No barbershop found',
-        message: 'No barbershop found for user'
-      }, { status: 404 })
+    // Development mode bypass
+    if (isDevelopment) {
+      console.log('🔧 Dev mode: Saving Cin7 credentials without user auth')
+      
+      // Use a fixed barbershop ID for development or create one
+      const { data: existingShop } = await supabase
+        .from('barbershops')
+        .select('id, name')
+        .limit(1)
+        .single()
+      
+      if (existingShop) {
+        barbershop = existingShop
+      } else {
+        // Create a dev barbershop if none exists
+        const { data: newShop, error: createError } = await supabase
+          .from('barbershops')
+          .insert({
+            name: 'Development Barbershop',
+            owner_id: '00000000-0000-0000-0000-000000000000' // Placeholder UUID
+          })
+          .select()
+          .single()
+        
+        if (createError) {
+          console.error('Failed to create dev barbershop:', createError)
+          barbershop = { id: 1, name: 'Development Barbershop' } // Fallback
+        } else {
+          barbershop = newShop
+        }
+      }
+    } else {
+      // Production mode - require authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        return NextResponse.json(
+          { error: 'User not authenticated' },
+          { status: 401 }
+        )
+      }
+      
+      // Get user's barbershop
+      const { data: userBarbershop, error: shopError } = await supabase
+        .from('barbershops')
+        .select('id, name')
+        .eq('owner_id', user.id)
+        .single()
+      
+      if (shopError || !userBarbershop) {
+        return NextResponse.json({
+          error: 'No barbershop found',
+          message: 'No barbershop found for user'
+        }, { status: 404 })
+      }
+      
+      barbershop = userBarbershop
     }
     
     const body = await request.json()
