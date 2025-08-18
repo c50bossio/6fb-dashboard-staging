@@ -68,13 +68,17 @@ async function registerCin7Webhooks(accountId, apiKey, webhookUrl) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
     const isDevelopment = process.env.NODE_ENV === 'development'
     const supabase = createClient()
     
+    // Check for bypass header (for testing production deployments)
+    const bypassHeader = request.headers.get('x-cin7-bypass')
+    const shouldBypass = isDevelopment || bypassHeader === 'true'
+    
     // Development mode bypass - check for credentials without user auth
-    if (isDevelopment) {
+    if (shouldBypass) {
       console.log('🔧 Dev mode: Checking Cin7 credentials without user auth')
       
       // Try to get any existing credentials (for development testing)
@@ -269,12 +273,14 @@ export async function DELETE() {
 export async function PUT(request) {
   try {
     const isDevelopment = process.env.NODE_ENV === 'development'
+    const bypassHeader = request.headers.get('x-cin7-bypass')
+    const shouldBypass = isDevelopment || bypassHeader === 'true'
     const supabase = createClient()
     
     let barbershop = null
     
     // Development mode bypass
-    if (isDevelopment) {
+    if (shouldBypass) {
       console.log('🔧 Dev mode: Saving Cin7 credentials without user auth')
       
       // Use a fixed barbershop ID for development or create one
