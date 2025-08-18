@@ -55,8 +55,8 @@ export default function FixedAuthCallback() {
         
         setMessage('Exchanging code for session...')
         
-        // Exchange code server-side
-        const response = await fetch('/api/auth/exchange-code', {
+        // Exchange code server-side using v2 endpoint with better error handling
+        const response = await fetch('/api/auth/exchange-code-v2', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code })
