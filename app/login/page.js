@@ -57,11 +57,18 @@ export default function LoginPage() {
             console.log('Exchanging code for session...')
             
             try {
-              const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+              // Add timeout to the specific exchange call
+              const exchangePromise = supabase.auth.exchangeCodeForSession(code)
+              const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Code exchange timeout')), 5000)
+              })
+              
+              const { data, error } = await Promise.race([exchangePromise, timeoutPromise])
               console.log('Code exchange result:', { data, error })
               
               if (error) {
                 console.error('Code exchange error:', error)
+                clearTimeout(timeoutId)
                 setError(`Authentication failed: ${error.message}`)
                 setIsLoading(false)
                 return
@@ -93,6 +100,22 @@ export default function LoginPage() {
             } catch (exchangeError) {
               console.error('Code exchange failed with exception:', exchangeError)
               clearTimeout(timeoutId)
+              
+              // If exchange fails, try alternative approach - manual session retrieval
+              console.log('Attempting alternative authentication...')
+              try {
+                const { data: { user }, error: userError } = await supabase.auth.getUser()
+                if (user && !userError) {
+                  console.log('Alternative auth successful:', user)
+                  setSuccess('Authentication successful! Redirecting...')
+                  window.history.replaceState({}, document.title, '/login')
+                  setTimeout(() => router.push('/dashboard'), 500)
+                  return
+                }
+              } catch (altError) {
+                console.error('Alternative auth failed:', altError)
+              }
+              
               setError(`Authentication error: ${exchangeError.message}`)
               setIsLoading(false)
               return
