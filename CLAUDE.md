@@ -162,6 +162,203 @@ User Action → Next.js API Route → Supabase RLS → Database → Real-time Up
 - **Security**: CSP headers, rate limiting, input validation, audit logging
 - **Monitoring**: Sentry error tracking with memory monitoring
 
+## 🛡️ SUPABASE DATABASE BEST PRACTICES - MANDATORY
+
+**All database operations MUST follow these production-grade practices:**
+
+### Row Level Security (RLS) - CRITICAL
+```sql
+-- 🚨 ALWAYS enable RLS on every table in public schema
+ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;
+
+-- ✅ Proper policy structure with role targeting
+CREATE POLICY "policy_name" ON table_name
+  FOR SELECT                    -- Specify operation type
+  TO authenticated             -- Always specify role (never omit)
+  USING ((SELECT auth.uid()) = user_id);  -- Wrap functions in SELECT
+
+-- ❌ NEVER create policies without role targeting
+-- ❌ NEVER use auth.uid() without SELECT wrapper
+```
+
+### Database Schema Design
+```sql
+-- ✅ Always include audit fields
+CREATE TABLE table_name (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  -- Your fields here
+);
+
+-- ✅ Create indexes for RLS policy columns
+CREATE INDEX idx_table_user_id ON table_name(user_id);
+
+-- ✅ Create update trigger for updated_at
+CREATE TRIGGER set_updated_at 
+  BEFORE UPDATE ON table_name 
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+```
+
+### Performance Optimization Rules
+1. **Index RLS Policy Columns**: Always add indexes on columns used in RLS policies
+2. **Wrap Functions in SELECT**: Use `(SELECT auth.uid())` not `auth.uid()`
+3. **Add Explicit Filters**: Include `.eq('user_id', userId)` in queries even with RLS
+4. **Use Security Definer Functions**: For complex queries crossing multiple tables
+5. **Minimize Joins in RLS**: Rewrite policies to avoid table joins when possible
+
+### Security Definer Functions (For Complex RLS)
+```sql
+-- ✅ Create in private schema (never exposed to API)
+CREATE SCHEMA IF NOT EXISTS private;
+
+CREATE OR REPLACE FUNCTION private.user_has_role(target_role TEXT)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER  -- Bypasses RLS on lookup tables
+SET search_path = ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM user_roles 
+    WHERE user_id = auth.uid() AND role = target_role
+  );
+$$;
+
+-- ✅ Use in RLS policies
+CREATE POLICY "admin_only" ON sensitive_table
+  TO authenticated
+  USING ((SELECT private.user_has_role('admin')));
+```
+
+### Query Performance Patterns
+```sql
+-- ✅ Efficient policy (fetches user's teams once)
+CREATE POLICY "team_access" ON documents
+  TO authenticated  
+  USING (
+    team_id IN (
+      SELECT team_id FROM team_members 
+      WHERE user_id = (SELECT auth.uid())
+    )
+  );
+
+-- ❌ Inefficient policy (joins on each row)
+CREATE POLICY "team_access_slow" ON documents  
+  TO authenticated
+  USING (
+    (SELECT auth.uid()) IN (
+      SELECT user_id FROM team_members 
+      WHERE team_id = documents.team_id  -- BAD: row-by-row join
+    )
+  );
+```
+
+### Database Testing Requirements
+```sql
+-- ✅ Every RLS policy MUST have pgTAP tests
+BEGIN;
+SELECT plan(3);
+
+-- Test user can only see own data
+SET LOCAL role authenticated;
+SET LOCAL "request.jwt.claims" TO '{"sub":"user-uuid","role":"authenticated"}';
+
+SELECT results_eq(
+  'SELECT count(*) FROM table_name',
+  ARRAY[2::bigint],
+  'User sees only their records'
+);
+
+SELECT * FROM finish();
+ROLLBACK;
+```
+
+### Monitoring & Observability
+```sql
+-- ✅ Enable query performance monitoring
+-- Check slow queries regularly
+SELECT query, calls, total_time, mean_time
+FROM pg_stat_statements 
+WHERE total_time > 1000
+ORDER BY total_time DESC;
+
+-- ✅ Monitor cache hit rates (should be >99%)
+SELECT 'table hit rate' as name,
+  sum(heap_blks_hit) / nullif(sum(heap_blks_hit) + sum(heap_blks_read), 0) * 100 as ratio
+FROM pg_statio_user_tables;
+```
+
+### Data Validation & Constraints
+```sql
+-- ✅ Always use proper constraints
+CREATE TABLE users (
+  email TEXT NOT NULL CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+  status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'pending')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ✅ Use domains for reusable constraints
+CREATE DOMAIN email_type AS TEXT
+  CHECK (VALUE ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+```
+
+### Migration Safety
+```sql
+-- ✅ Safe migrations pattern
+BEGIN;
+  -- Create new column as nullable first
+  ALTER TABLE table_name ADD COLUMN new_field TEXT;
+  
+  -- Backfill data in batches
+  UPDATE table_name SET new_field = 'default_value' WHERE new_field IS NULL;
+  
+  -- Add NOT NULL constraint after backfill
+  ALTER TABLE table_name ALTER COLUMN new_field SET NOT NULL;
+COMMIT;
+
+-- ❌ NEVER drop columns in same migration as adding them
+-- ❌ NEVER add NOT NULL columns without default values
+```
+
+### Supabase-Specific Patterns
+```sql
+-- ✅ Leverage auth.users properly
+CREATE TABLE profiles (
+  id UUID REFERENCES auth.users(id) PRIMARY KEY,
+  -- Never duplicate auth.users data here
+  display_name TEXT,
+  avatar_url TEXT
+);
+
+-- ✅ Use Supabase helper functions
+SELECT auth.uid();           -- Current user ID
+SELECT auth.jwt();           -- Full JWT claims  
+SELECT auth.email();         -- Current user email
+
+-- ✅ Proper real-time setup
+ALTER PUBLICATION supabase_realtime ADD TABLE table_name;
+```
+
+### Error Handling & Logging
+```sql
+-- ✅ Use structured error handling
+CREATE OR REPLACE FUNCTION safe_operation()
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- Operation logic here
+  
+EXCEPTION 
+  WHEN OTHERS THEN
+    -- Log error details
+    RAISE LOG 'Operation failed: % %', SQLERRM, SQLSTATE;
+    -- Re-raise with user-friendly message
+    RAISE EXCEPTION 'Operation failed. Please try again.';
+END;
+$$;
+
 ## 📝 Common Development Tasks
 
 ### Adding a New Feature
