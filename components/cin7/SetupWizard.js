@@ -9,7 +9,9 @@ import {
   CubeIcon,
   SparklesIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -33,6 +35,7 @@ export default function SetupWizard({ onComplete, onClose }) {
   const [testStatus, setTestStatus] = useState(null)
   const [syncProgress, setSyncProgress] = useState(0)
   const [errors, setErrors] = useState({})
+  const [showApiKey, setShowApiKey] = useState(false)
 
   const steps = [
     { id: 'welcome', title: 'Welcome', icon: SparklesIcon },
@@ -336,6 +339,10 @@ export default function SetupWizard({ onComplete, onClose }) {
                   value={formData.accountId}
                   onChange={(e) => setFormData(prev => ({ ...prev, accountId: e.target.value }))}
                   placeholder="Paste your Account ID here"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 ${
                     errors.accountId ? 'border-red-300' : 'border-gray-300'
                   }`}
@@ -349,15 +356,33 @@ export default function SetupWizard({ onComplete, onClose }) {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   API Application Key
                 </label>
-                <input
-                  type="password"
-                  value={formData.apiKey}
-                  onChange={(e) => setFormData(prev => ({ ...prev, apiKey: e.target.value }))}
-                  placeholder="Paste your API Key here"
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 ${
-                    errors.apiKey ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                />
+                <div className="relative">
+                  <input
+                    type={showApiKey ? "text" : "password"}
+                    value={formData.apiKey}
+                    onChange={(e) => setFormData(prev => ({ ...prev, apiKey: e.target.value }))}
+                    placeholder="Paste your API Key here"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
+                    className={`w-full px-4 py-2 pr-12 border rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 ${
+                      errors.apiKey ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                    title={showApiKey ? "Hide API Key" : "Show API Key"}
+                  >
+                    {showApiKey ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
                 {errors.apiKey && (
                   <p className="mt-1 text-sm text-red-600">{errors.apiKey}</p>
                 )}

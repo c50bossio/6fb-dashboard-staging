@@ -51,8 +51,18 @@ export default function LoginPage() {
     setError('')
     
     try {
-      // Use centralized auth provider - redirect to login for OAuth callback
-      await signInWithGoogle(`${window.location.origin}/login`)
+      // Create client directly for OAuth
+      const supabase = createClient()
+      
+      // Use API callback route for OAuth
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`
+        }
+      })
+      
+      if (error) throw error
     } catch (err) {
       setError('Failed to connect with Google. Please try again.')
       setIsLoading(false)

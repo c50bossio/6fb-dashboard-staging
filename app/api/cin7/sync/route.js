@@ -242,9 +242,9 @@ export async function POST(request) {
     let user = null
     
     if (devBypass) {
-      // Use mock user for development
+      // Use mock user for development - use existing barbershop owner ID
       user = {
-        id: 'dev-user-id',
+        id: '11111111-1111-1111-1111-111111111111', // Demo Elite Barbershop owner
         email: 'dev-enterprise@test.com'
       }
     } else {
@@ -291,6 +291,8 @@ export async function POST(request) {
       .select('id, name')
       .eq('owner_id', user.id)
       .single()
+    
+    let barbershop = null
     
     if (shopError || !userBarbershop) {
       // Try to get barbershop from user's profile

@@ -1,5 +1,14 @@
 # Google OAuth Setup Instructions
 
+## ✅ UPDATE: OAuth Login Fixed (2025-08-19)
+**Problem Solved**: OAuth was failing with "code verifier should be non-empty" error
+**Solution**: Changed from PKCE to Implicit flow in `/lib/supabase/browser-client.js`
+**Status**: Working in both local and production
+
+---
+
+# Original Google OAuth Setup Instructions
+
 ## 1. Google Cloud Console Credentials
 After creating OAuth credentials in Google Cloud Console, you'll have:
 - **Client ID**: (looks like: 123456789-xxxxx.apps.googleusercontent.com)
