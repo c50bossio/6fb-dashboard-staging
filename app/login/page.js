@@ -1,6 +1,6 @@
 'use client'
 
-// Removed direct Supabase client import - using centralized auth provider
+import { createClient } from '@/lib/supabase/browser-client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogoHeader } from '@/components/ui/Logo'
@@ -24,9 +24,68 @@ export default function LoginPage() {
   const router = useRouter()
   const { signInWithGoogle, signIn, signUp, resetPassword } = useAuth()
   
-  // Use centralized auth provider instead of creating local Supabase client
-  
-  // Removed OAuth callback handling - now handled centrally in SupabaseAuthProvider
+  // Check for OAuth callback on page load
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const code = urlParams.get('code')
+      const error = urlParams.get('error')
+      const accessToken = hashParams.get('access_token')
+      
+      if (error) {
+        setError(`OAuth error: ${error}`)
+        return
+      }
+      
+      if (code || accessToken) {
+        console.log('OAuth callback detected, processing...', { code: !!code, accessToken: !!accessToken })
+        setIsLoading(true)
+        
+        try {
+          const supabase = createClient()
+          
+          if (code) {
+            // PKCE flow - exchange code for session
+            console.log('Exchanging code for session...')
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+            
+            if (error) {
+              console.error('Code exchange error:', error)
+              setError('Authentication failed. Please try again.')
+              setIsLoading(false)
+              return
+            }
+            
+            if (data?.session) {
+              console.log('Session created successfully, redirecting to dashboard...')
+              // Clear URL parameters and redirect
+              window.history.replaceState({}, document.title, '/login')
+              router.push('/dashboard')
+              return
+            }
+          }
+          
+          if (accessToken) {
+            // Implicit flow - access token received directly
+            console.log('Access token received, redirecting to dashboard...')
+            // Clear URL hash and redirect
+            window.history.replaceState({}, document.title, '/login')
+            router.push('/dashboard')
+            return
+          }
+          
+        } catch (err) {
+          console.error('OAuth processing error:', err)
+          setError('Authentication failed. Please try again.')
+        }
+        
+        setIsLoading(false)
+      }
+    }
+    
+    handleOAuthCallback()
+  }, [])
   
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
