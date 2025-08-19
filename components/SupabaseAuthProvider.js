@@ -121,8 +121,10 @@ function SupabaseAuthProvider({ children }) {
     checkUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth state change event:', event, 'Has session:', !!session)
       
       if (event === 'SIGNED_IN' && session) {
+        console.log('✅ User signed in successfully:', session.user.email)
         setUser(session.user)
         
         try {
@@ -181,8 +183,13 @@ function SupabaseAuthProvider({ children }) {
           // Direct navigation logic - immediate redirect on sign-in from login page
           console.log('Auth state change - SIGNED_IN completed, current path:', window.location.pathname)
           
-          if (window.location.pathname === '/login' || window.location.pathname === '/login-clean') {
+          // Check if we're on login page (including with OAuth code parameters)
+          if (window.location.pathname === '/login' || 
+              window.location.pathname === '/login-clean' ||
+              window.location.pathname.startsWith('/login')) {
             console.log('Redirecting to dashboard immediately after successful sign-in')
+            // Clean the URL and redirect
+            window.history.replaceState({}, document.title, window.location.pathname)
             router.push('/dashboard')
           }
         } catch (error) {
