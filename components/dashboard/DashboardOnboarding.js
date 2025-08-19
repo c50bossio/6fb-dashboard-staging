@@ -79,6 +79,7 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     // Show onboarding if forced or if incomplete and not previously skipped
     if (forceShow) {
       setShowOnboarding(true)
+      setIsMinimized(false) // Ensure it's not minimized when forced to show
       localStorage.removeItem('onboarding_skipped')
     } else if (wasSkipped && isIncomplete) {
       setShowOnboarding(false)
@@ -107,7 +108,7 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
         )
       }
     }
-  }, [])
+  }, [forceShow])
 
   // Define steps based on user role
   const getStepsForRole = (role) => {
@@ -389,7 +390,8 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
 
   // DISABLED: Floating resume button removed - using top banner instead for cleaner UI
   // The top banner in dashboard/page.js handles the resume setup CTA
-  if (!showOnboarding && !profile?.onboarding_completed && !forceShow) {
+  // Only return null if not being forced to show AND onboarding isn't showing
+  if (!showOnboarding && !forceShow) {
     // Previously showed floating button here when onboarding was skipped
     // Now we rely on the top banner instead
     return null

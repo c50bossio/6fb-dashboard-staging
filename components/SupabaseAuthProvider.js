@@ -85,22 +85,50 @@ function SupabaseAuthProvider({ children }) {
         } else if (user) {
           setUser(user)
           
-          // Get user profile - handle errors gracefully
+          // Get user profile from users table with barbershop associations
           try {
+            // First get the user profile from users table
             const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
+              .from('users')
+              .select(`
+                *,
+                barbershops!barbershop_id (
+                  id,
+                  name,
+                  slug
+                ),
+                organizations!organization_id (
+                  id,
+                  name
+                )
+              `)
               .eq('id', user.id)
               .maybeSingle()
             
-            
             if (!profileError && profileData) {
+              // Check if user has direct barbershop_id or needs to fetch from barbershop_staff
+              if (!profileData.barbershop_id && profileData.role === 'BARBER') {
+                // Employee barber - fetch barbershop via barbershop_staff table
+                const { data: staffData } = await supabase
+                  .from('barbershop_staff')
+                  .select('barbershop_id, barbershops!inner(id, name, slug)')
+                  .eq('user_id', user.id)
+                  .eq('is_active', true)
+                  .maybeSingle()
+                
+                if (staffData) {
+                  profileData.barbershop_id = staffData.barbershop_id
+                  profileData.barbershops = staffData.barbershops
+                }
+              }
+              
               setProfile(profileData)
               
               // No redirect needed - dashboard will handle onboarding overlay
             } else if (profileError) {
               console.error('Profile error in checkUser:', profileError)
             } else {
+              console.log('No profile found for user:', user.id)
             }
           } catch (error) {
             console.error('Error loading profile in checkUser:', error)
@@ -131,10 +159,21 @@ function SupabaseAuthProvider({ children }) {
           // Fetch or create profile
           let userProfile = null
           
-          // Simple profile fetch
+          // Fetch from users table with barbershop associations
           const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('*')
+            .from('users')
+            .select(`
+              *,
+              barbershops!barbershop_id (
+                id,
+                name,
+                slug
+              ),
+              organizations!organization_id (
+                id,
+                name
+              )
+            `)
             .eq('id', session.user.id)
             .maybeSingle()
         
@@ -158,7 +197,7 @@ function SupabaseAuthProvider({ children }) {
             console.log('Creating new profile for OAuth user:', newProfileData)
             
             const { data: newProfile, error: createError } = await supabase
-              .from('profiles')
+              .from('users')
               .insert(newProfileData)
               .select()
               .single()
@@ -367,14 +406,14 @@ function SupabaseAuthProvider({ children }) {
     try {
       // First, try to update without select to avoid 406 errors
       const { error } = await supabase
-        .from('profiles')
+        .from('users')
         .update(updates)
         .eq('id', user.id)
       
       if (error && error.code === 'PGRST116') {
         // No profile exists, create one with the updates
         const { data: newProfile, error: insertError } = await supabase
-          .from('profiles')
+          .from('users')
           .insert({
             id: user.id,
             email: user.email,
@@ -395,7 +434,7 @@ function SupabaseAuthProvider({ children }) {
       
       // Fetch updated profile separately
       const { data: updatedProfile } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', user.id)
         .single()

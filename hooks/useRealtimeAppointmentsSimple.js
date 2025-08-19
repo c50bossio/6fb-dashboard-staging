@@ -57,11 +57,9 @@ export function useRealtimeAppointmentsSimple(shopId) {
       return
     }
     
-    const serviceRoleKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY || 
-                          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
-    
-    const supabase = createClient(supabaseUrl, serviceRoleKey)
-    console.log('✅ Simple hook: Supabase client created with service role for realtime')
+    // Use anon key for client-side - NEVER expose service role key to browser
+    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    console.log('✅ Simple hook: Supabase client created with anon key for realtime')
     
     const fetchAppointments = async () => {
       try {
