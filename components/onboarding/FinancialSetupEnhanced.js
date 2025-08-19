@@ -156,12 +156,23 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   const createStripeConnectAccount = async () => {
     setLoading(true)
     setError('')
+    setSuccess('')
+    
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        setLoading(false)
+        setError('Request timed out. Please check your connection and try again.')
+      }
+    }, 30000) // 30 second timeout
     
     try {
       const { data: { user } } = await supabase.auth.getUser()
       
       // Use fallback email if user is not authenticated
       const email = user?.email || 'demo@bookedbarber.com'
+      
+      console.log('Creating Stripe Connect account for:', email)
       
       const response = await fetch('/api/payments/connect/create', {
         method: 'POST',
@@ -178,19 +189,45 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment account')
+        throw new Error(data.error || data.details || 'Failed to create payment account')
       }
       
-      setStripeAccountId(data.account_id)
-      setSuccess('Payment account created! Redirecting to Stripe...')
-      
-      // Start onboarding flow for real Stripe accounts
-      await startStripeOnboarding(data.account_id)
+      // If account already exists, use it
+      if (data.account_id) {
+        setStripeAccountId(data.account_id)
+        
+        // Check if onboarding is already completed
+        if (data.onboarding_completed) {
+          setSuccess('Payment account already set up!')
+          setAccountStatus({
+            onboardingCompleted: true,
+            chargesEnabled: data.charges_enabled,
+            payoutsEnabled: data.payouts_enabled,
+            requirementsCount: 0,
+            verificationStatus: data.verification_status || 'verified'
+          })
+        } else {
+          setSuccess('Payment account created! Redirecting to Stripe...')
+          // Start onboarding flow for incomplete accounts
+          await startStripeOnboarding(data.account_id)
+        }
+      }
       
     } catch (err) {
       console.error('Stripe Connect creation error:', err)
-      setError(err.message || 'Failed to create payment account. Please try again.')
+      
+      // Provide more specific error messages
+      if (err.message.includes('Authentication required')) {
+        setError('Please log in to set up payment processing.')
+      } else if (err.message.includes('Payment system not configured')) {
+        setError('Payment system is not configured. Please contact support.')
+      } else if (err.message.includes('Network error') || err.message.includes('Failed to fetch')) {
+        setError('Connection error. Please check your internet connection and try again.')
+      } else {
+        setError(err.message || 'Failed to create payment account. Please try again.')
+      }
     } finally {
+      clearTimeout(timeoutId)
       setLoading(false)
     }
   }
@@ -504,6 +541,31 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
             <p className="text-sm text-gray-600 mb-6">
               Connect your bank account to receive payouts from customer payments. This is required to accept online payments.
             </p>
+            
+            {/* Error and Success Messages */}
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-start">
+                  <ExclamationCircleIcon className="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-red-800">Error</p>
+                    <p className="text-sm text-red-700 mt-1">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {success && (
+              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-start">
+                  <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-800">Success</p>
+                    <p className="text-sm text-green-700 mt-1">{success}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {!stripeAccountId ? (
               // No account yet - create one

@@ -46,15 +46,44 @@ self.addEventListener('fetch', (event) => {
 
   if (request.method !== 'GET') return;
 
-  // Skip service worker for authentication-related routes
-  const authPaths = ['/auth/', '/api/auth/', '/login', '/register', '/api/supabase/'];
-  if (authPaths.some(path => url.pathname.startsWith(path))) {
+  // Skip service worker for authentication and payment-related routes
+  const skipPaths = [
+    '/auth/', 
+    '/api/auth/', 
+    '/login', 
+    '/register', 
+    '/api/supabase/',
+    '/api/payments/',  // Skip all payment-related APIs
+    '/api/stripe/',    // Skip Stripe-related APIs
+    '/api/onboarding/' // Skip onboarding APIs
+  ];
+  
+  if (skipPaths.some(path => url.pathname.startsWith(path))) {
     return; // Let the browser handle these requests directly
   }
 
+  // For other API routes, use network-first but don't fail if network is down
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      networkFirstStrategy(request, API_CACHE, API_CACHE_MAX_AGE)
+      fetch(request)
+        .then(response => {
+          if (response.ok) {
+            const cache = caches.open(API_CACHE);
+            cache.then(c => c.put(request, response.clone()));
+          }
+          return response;
+        })
+        .catch(() => {
+          // For API routes, return from cache if available, otherwise return error
+          return caches.match(request).then(cached => {
+            if (cached) return cached;
+            // Return a proper error response instead of failing silently
+            return new Response(JSON.stringify({ error: 'Network error' }), {
+              status: 503,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          });
+        })
     );
     return;
   }

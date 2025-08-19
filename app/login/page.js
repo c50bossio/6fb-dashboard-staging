@@ -54,10 +54,15 @@ export default function LoginPage() {
       // Supabase best practice: simple OAuth with proper redirect
       const supabase = createClient()
       
+      // Use the current origin to handle both domain variations
+      // This ensures the callback URL matches the domain the user is accessing from
+      const currentOrigin = window.location.origin
+      console.log('OAuth redirect URL:', `${currentOrigin}/auth/callback`)
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: `${currentOrigin}/auth/callback`
         }
       })
       

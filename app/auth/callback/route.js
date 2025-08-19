@@ -42,10 +42,24 @@ export async function GET(request) {
     
     if (!error) {
       // Successfully authenticated - redirect to dashboard
-      return NextResponse.redirect(`${origin}${next}`)
+      // Handle both domain variations (bookedbarber.com and bookedibarber.com)
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      const host = request.headers.get('host')
+      
+      // Use the actual host the user is accessing
+      const actualHost = forwardedHost || host || new URL(origin).host
+      const protocol = actualHost.includes('localhost') ? 'http' : 'https'
+      const redirectUrl = `${protocol}://${actualHost}${next}`
+      
+      return NextResponse.redirect(redirectUrl)
     }
   }
   
-  // Auth failed - redirect to login
-  return NextResponse.redirect(`${origin}/login`)
+  // Auth failed - redirect to login with proper host handling
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const host = request.headers.get('host')
+  const actualHost = forwardedHost || host || new URL(origin).host
+  const protocol = actualHost.includes('localhost') ? 'http' : 'https'
+  
+  return NextResponse.redirect(`${protocol}://${actualHost}/login`)
 }

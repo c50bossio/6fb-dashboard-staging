@@ -30,8 +30,10 @@ import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../
 import { 
   DEFAULT_RESOURCES, 
   DEFAULT_SERVICES, 
-  formatAppointment 
+  formatAppointment,
+  exportToCSV 
 } from '../../../../lib/calendar-data'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
@@ -70,7 +72,8 @@ const CancelConfirmationModal = dynamic(
 )
 
 export default function CalendarPage() {
-  console.log('🔥 CALENDAR PAGE RENDERING')
+  // Get auth context
+  const { user, profile } = useAuth()
   
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
@@ -102,7 +105,7 @@ export default function CalendarPage() {
   const [cancelling, setCancelling] = useState(false)
   const [services, setServices] = useState([])
   // Get barbershop ID from auth context - required for production
-  const barbershopId = profile?.barbershop_id || user?.barbershop_id
+  const barbershopId = profile?.barbershop_id || user?.barbershop_id || 'demo-shop-001'
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBarber, setFilterBarber] = useState('all')
@@ -606,12 +609,13 @@ export default function CalendarPage() {
 
   const handleRescheduleConfirm = async (rescheduleData) => {
     try {
-      const response = await fetch(`/api/calendar/appointments/${rescheduleData.appointmentId}`, {
+      const response = await fetch('/api/calendar/appointments', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          id: rescheduleData.appointmentId,
           start_time: rescheduleData.newTime.start,
           end_time: rescheduleData.newTime.end,
           barber_id: rescheduleData.newTime.barberId,
@@ -867,20 +871,71 @@ export default function CalendarPage() {
     }
   }
 
+  const handleExportCSV = () => {
+    try {
+      const csv = exportToCSV(filteredEvents, resources)
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `calendar-export-${new Date().toISOString().split('T')[0]}.csv`
+      a.click()
+      window.URL.revokeObjectURL(url)
+      success('Calendar exported to CSV successfully')
+    } catch (error) {
+      console.error('Export error:', error)
+      showError('Failed to export calendar')
+    }
+  }
+  
+  const handleExportICS = () => {
+    try {
+      let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//BookedBarber//Calendar Export//EN\n'
+      
+      filteredEvents.forEach(event => {
+        const start = new Date(event.start).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+        const end = new Date(event.end || event.start).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+        const created = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+        
+        icsContent += 'BEGIN:VEVENT\n'
+        icsContent += `UID:${event.id}@bookedbarber.com\n`
+        icsContent += `DTSTART:${start}\n`
+        icsContent += `DTEND:${end}\n`
+        icsContent += `SUMMARY:${event.title}\n`
+        icsContent += `DESCRIPTION:${event.extendedProps?.notes || ''}\n`
+        icsContent += `LOCATION:${event.extendedProps?.location || 'Barbershop'}\n`
+        icsContent += `STATUS:${event.extendedProps?.status === 'cancelled' ? 'CANCELLED' : 'CONFIRMED'}\n`
+        icsContent += `CREATED:${created}\n`
+        icsContent += 'END:VEVENT\n'
+      })
+      
+      icsContent += 'END:VCALENDAR'
+      
+      const blob = new Blob([icsContent], { type: 'text/calendar' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `calendar-export-${new Date().toISOString().split('T')[0]}.ics`
+      a.click()
+      window.URL.revokeObjectURL(url)
+      success('Calendar exported to iCal format successfully')
+    } catch (error) {
+      console.error('Export error:', error)
+      showError('Failed to export calendar')
+    }
+  }
+
   const handleCancelAppointment = async () => {
     if (!appointmentToCancel) return
     
     setCancelling(true)
     
     try {
-      const response = await fetch('/api/calendar/appointments/cancel', {
-        method: 'POST',
+      const response = await fetch(`/api/calendar/appointments?id=${appointmentToCancel.id}&soft_delete=true&reason=Customer%20Request`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          appointmentId: appointmentToCancel.id
-        })
+        }
       })
       
       const result = await response.json()
@@ -1230,6 +1285,29 @@ export default function CalendarPage() {
                 <span className="hidden sm:inline">Clear</span>
               </button>
             )}
+            
+            {/* Export Buttons */}
+            <div className="flex-shrink-0 flex space-x-2">
+              <button
+                onClick={handleExportCSV}
+                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center space-x-1 min-h-[44px]"
+                title="Export to CSV"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="hidden sm:inline">CSV</span>
+              </button>
+              
+              <button
+                onClick={handleExportICS}
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center space-x-1 min-h-[44px]"
+                title="Export to iCal"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">iCal</span>
+              </button>
+            </div>
           </div>
           
           {/* Results Count */}
@@ -1252,7 +1330,6 @@ export default function CalendarPage() {
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
           <ProfessionalCalendar
-            key={`calendar-${filteredEvents.length}-${filteredResources.length}-${Date.now()}`} // Force re-render on events/resources change
             resources={filteredResources} // Use filtered resources
             events={filteredEvents} // Use filtered events
             currentView={currentCalendarView}

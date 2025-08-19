@@ -383,3 +383,175 @@ export async function POST(request) {
     )
   }
 }
+
+export async function PATCH(request) {
+  try {
+    const body = await request.json()
+    const { id, ...updateData } = body
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Appointment ID is required for update' },
+        { status: 400 }
+      )
+    }
+    
+    // Handle date/time updates
+    if (updateData.start_time || updateData.scheduled_at) {
+      updateData.start_time = updateData.start_time || updateData.scheduled_at
+    }
+    
+    if (updateData.end_time || (updateData.start_time && updateData.duration_minutes)) {
+      if (!updateData.end_time && updateData.duration_minutes) {
+        const startTime = new Date(updateData.start_time)
+        updateData.end_time = new Date(startTime.getTime() + updateData.duration_minutes * 60000).toISOString()
+      }
+    }
+    
+    // Update the appointment
+    const { data: updatedBooking, error: updateError } = await supabase
+      .from('bookings')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (updateError) {
+      console.error('Error updating booking:', updateError)
+      return NextResponse.json(
+        { error: 'Failed to update appointment', details: updateError.message },
+        { status: 500 }
+      )
+    }
+    
+    // Send notification if requested
+    if (body.send_notification && updatedBooking.customer_id) {
+      const { data: customer } = await supabase
+        .from('customers')
+        .select('name, email, phone, notification_preferences')
+        .eq('id', updatedBooking.customer_id)
+        .single()
+      
+      if (customer && customer.notification_preferences?.updates) {
+        // Notification logic would go here
+        console.log('Update notification would be sent to:', customer.name)
+      }
+    }
+    
+    return NextResponse.json({
+      appointment: updatedBooking,
+      message: 'Appointment updated successfully'
+    })
+    
+  } catch (error) {
+    console.error('Error updating appointment:', error)
+    return NextResponse.json(
+      { error: 'Failed to update appointment', details: error.message },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    const reason = searchParams.get('reason')
+    const notify = searchParams.get('notify') === 'true'
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Appointment ID is required' },
+        { status: 400 }
+      )
+    }
+    
+    // Get appointment details before deletion for notifications
+    const { data: appointment } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        customers (
+          name,
+          email,
+          phone,
+          notification_preferences
+        ),
+        services (
+          name
+        ),
+        barbers (
+          name
+        )
+      `)
+      .eq('id', id)
+      .single()
+    
+    if (!appointment) {
+      return NextResponse.json(
+        { error: 'Appointment not found' },
+        { status: 404 }
+      )
+    }
+    
+    // Option to soft delete (cancel) instead of hard delete
+    if (searchParams.get('soft_delete') === 'true') {
+      const { error: updateError } = await supabase
+        .from('bookings')
+        .update({ 
+          status: 'cancelled',
+          cancellation_reason: reason,
+          cancelled_at: new Date().toISOString()
+        })
+        .eq('id', id)
+      
+      if (updateError) {
+        throw updateError
+      }
+      
+      // Send cancellation notification if requested
+      if (notify && appointment.customers?.notification_preferences?.cancellations) {
+        // Notification logic would go here
+        console.log('Cancellation notification would be sent to:', appointment.customers.name)
+      }
+      
+      return NextResponse.json({
+        message: 'Appointment cancelled successfully',
+        appointment_id: id,
+        status: 'cancelled'
+      })
+    }
+    
+    // Hard delete the appointment
+    const { error: deleteError } = await supabase
+      .from('bookings')
+      .delete()
+      .eq('id', id)
+    
+    if (deleteError) {
+      console.error('Error deleting booking:', deleteError)
+      return NextResponse.json(
+        { error: 'Failed to delete appointment', details: deleteError.message },
+        { status: 500 }
+      )
+    }
+    
+    // Send deletion notification if requested
+    if (notify && appointment.customers?.notification_preferences?.cancellations) {
+      // Notification logic would go here
+      console.log('Deletion notification would be sent to:', appointment.customers.name)
+    }
+    
+    return NextResponse.json({
+      message: 'Appointment deleted successfully',
+      appointment_id: id
+    })
+    
+  } catch (error) {
+    console.error('Error deleting appointment:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete appointment', details: error.message },
+      { status: 500 }
+    )
+  }
+}

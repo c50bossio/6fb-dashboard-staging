@@ -311,8 +311,6 @@ export default function EnhancedProfessionalCalendar({
           rrulePlugin
         ]}
         
-        timeZone='local'
-        
         initialView={controlledView || defaultView}
         headerToolbar={{
           left: 'prev,next today',
@@ -342,8 +340,7 @@ export default function EnhancedProfessionalCalendar({
           }
         }}
         
-        initialResources={resources}
-        resources={resources}
+        resources={resources}  // Only use resources prop, not initialResources
         events={processedEvents}  // Use processed events
         resourcesInitiallyExpanded={true}
         refetchResourcesOnNavigate={false}  // Prevent unnecessary resource refetching

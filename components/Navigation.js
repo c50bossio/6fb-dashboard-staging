@@ -206,16 +206,6 @@ const enterpriseOperations = [
 // - Location Management (manage all shops)
 // - Cross-Shop Analytics (performance comparison)
 
-const legacyPages = [
-  { 
-    name: 'Legacy Dashboard', 
-    href: '/', 
-    icon: HomeIcon,
-    description: 'Original dashboard (deprecated)',
-    isLegacy: true
-  }
-]
-
 export default function Navigation() {
   const pathname = usePathname()
   const { isCollapsed, setIsCollapsed } = useNavigation()
@@ -711,46 +701,6 @@ export default function Navigation() {
         </ul>
         </div>
       )}
-
-      {/* Legacy Pages */}
-      <div className={`${collapsed ? 'px-2' : 'px-4'} py-2`}>
-        <ul className="space-y-1">
-          {legacyPages.map((item) => {
-            const isActive = pathname === item.href
-            
-            return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-2'} rounded-lg transition-colors opacity-60 ${isActive ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}`}
-                >
-                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
-                    <item.icon className={`${collapsed ? '' : 'mt-0.5'} h-4 w-4 flex-shrink-0 text-gray-400`} title={collapsed ? item.name : undefined} />
-                    {!collapsed && (
-                      <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium truncate text-gray-600">
-                          {item.name}
-                        </p>
-                        <span className="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-500">
-                          Legacy
-                        </span>
-                      </div>
-                      {item.description && (
-                        <p className="mt-1 text-xs text-gray-400 leading-tight">
-                          {item.description}
-                        </p>
-                      )}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
     </>
   )
 
