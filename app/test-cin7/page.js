@@ -1,11 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function TestCin7Page() {
+  const router = useRouter()
   const [accountId, setAccountId] = useState('1fd319f3-0a8b-4314-bb82-603f47fe2069')
   const [apiKey, setApiKey] = useState('509db449-eafc-66bd-ac73-f02c7392426a')
+  
+  // Redirect to products page in production
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined') {
+      router.push('/shop/products')
+    }
+  }, [router])
   const [testResult, setTestResult] = useState(null)
   const [syncResult, setSyncResult] = useState(null)
   const [loading, setLoading] = useState(false)

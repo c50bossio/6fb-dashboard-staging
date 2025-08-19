@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { createClient } from '../lib/supabase/browser-client'
 
 const AuthContext = createContext({})
@@ -19,7 +19,9 @@ function SupabaseAuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(false) // Start with false to not block login page
   const router = useRouter()
-  const supabase = createClient()
+  
+  // Use useMemo to ensure single client instance per provider
+  const supabase = useMemo(() => createClient(), [])
 
 
   useEffect(() => {
