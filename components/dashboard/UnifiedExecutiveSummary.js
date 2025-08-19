@@ -32,15 +32,20 @@ export default function UnifiedExecutiveSummary({ data }) {
   }
 
   const calculateHealthScore = () => {
-    const revenueScore = metrics.revenue > 140000 ? 25 : metrics.revenue > 100000 ? 20 : 15
-    const customerScore = metrics.customers > 1000 ? 25 : metrics.customers > 500 ? 20 : 15
-    const appointmentScore = metrics.appointments > 300 ? 25 : metrics.appointments > 200 ? 20 : 15
-    const satisfactionScore = metrics.satisfaction > 4.5 ? 25 : metrics.satisfaction > 4.0 ? 20 : 15
+    // If there's no business activity, return 0
+    if (metrics.revenue === 0 && metrics.customers === 0 && metrics.appointments === 0) {
+      return 0
+    }
+    
+    const revenueScore = metrics.revenue > 140000 ? 25 : metrics.revenue > 100000 ? 20 : metrics.revenue > 50000 ? 15 : metrics.revenue > 0 ? 10 : 0
+    const customerScore = metrics.customers > 1000 ? 25 : metrics.customers > 500 ? 20 : metrics.customers > 100 ? 15 : metrics.customers > 0 ? 10 : 0
+    const appointmentScore = metrics.appointments > 300 ? 25 : metrics.appointments > 200 ? 20 : metrics.appointments > 50 ? 15 : metrics.appointments > 0 ? 10 : 0
+    const satisfactionScore = metrics.satisfaction > 4.5 ? 25 : metrics.satisfaction > 4.0 ? 20 : metrics.satisfaction > 3.0 ? 15 : metrics.satisfaction > 0 ? 10 : 0
     return revenueScore + customerScore + appointmentScore + satisfactionScore
   }
 
   const healthScore = calculateHealthScore()
-  const healthStatus = healthScore >= 90 ? 'Excellent' : healthScore >= 70 ? 'Good' : healthScore >= 50 ? 'Fair' : 'Needs Attention'
+  const healthStatus = healthScore === 0 ? 'No Data' : healthScore >= 90 ? 'Excellent' : healthScore >= 70 ? 'Good' : healthScore >= 50 ? 'Fair' : 'Needs Attention'
   const healthColor = healthScore >= 90 ? 'green' : healthScore >= 70 ? 'blue' : healthScore >= 50 ? 'yellow' : 'red'
 
   const rawInsights = data?.insights || []
@@ -155,7 +160,7 @@ export default function UnifiedExecutiveSummary({ data }) {
                   {formatChange(0.2, '+')}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
-                  {metrics.satisfaction.toFixed(2)}
+                  {metrics.satisfaction > 0 ? metrics.satisfaction.toFixed(2) : '0.00'}
                 </div>
                 <div className="text-sm text-gray-600">Satisfaction</div>
               </div>

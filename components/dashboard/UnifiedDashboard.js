@@ -116,7 +116,7 @@ export default function UnifiedDashboard({ user, profile }) {
               revenue: apiData.total_revenue || 0,
               customers: apiData.total_customers || 0,
               appointments: apiData.total_appointments || 0,
-              satisfaction: 4.5 // Default until we implement rating system
+              satisfaction: apiData.satisfaction || apiData.avg_satisfaction || 0 // Use real data
             },
             todayMetrics: {
               revenue: apiData.daily_revenue || 0,
