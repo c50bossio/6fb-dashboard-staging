@@ -228,7 +228,9 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       monthly_revenue: thisMonthTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0),
       daily_revenue: todayTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0),
       weekly_revenue: Math.round(totalRevenue / 4), // Approximate
-      average_service_price: services.length > 0 ? services.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0) / services.length : 0,
+      // Calculate average ticket size from actual transactions, not service list prices
+      average_service_price: transactions.length > 0 ? 
+        transactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0) / transactions.length : 0,
       
       // Appointment metrics
       total_appointments: totalAppointments,
