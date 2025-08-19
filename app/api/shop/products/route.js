@@ -1,17 +1,23 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 
 export async function GET(request) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
+    const supabase = createClient()
     
+    // Get the authenticated user from the session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    const userId = '64f11f63-fba4-40de-8280-867e036a6797'
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      )
+    }
     
-    const isDevelopment = true // Force development mode for testing
+    const userId = user.id
+    const isDevelopment = process.env.NODE_ENV === 'development'
     
     let profile = null
     if (userId) {
@@ -93,28 +99,20 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
+    const supabase = createClient()
     
-    const isDevelopment = true // Force development mode for testing
-    
+    // Get the authenticated user from the session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    if (!isDevelopment && (authError || !user)) {
+    if (authError || !user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please log in' },
         { status: 401 }
       )
     }
     
     const productData = await request.json()
-    
-    let userId = user?.id
-    if (isDevelopment && !userId) {
-      userId = '64f11f63-fba4-40de-8280-867e036a6797' // Elite Cuts owner with products
-    }
+    const userId = user.id
     
     let profile = null
     if (userId) {
