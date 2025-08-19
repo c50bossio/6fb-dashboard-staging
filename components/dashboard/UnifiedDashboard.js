@@ -26,6 +26,7 @@ import ExecutiveLoadingState from './ExecutiveLoadingState'
 import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
+import { getUserBarbershopId, createBarbershopForOwner } from '@/lib/barbershop-helper'
 
 
 const DASHBOARD_MODES = {
@@ -97,13 +98,26 @@ export default function UnifiedDashboard({ user, profile }) {
   const [cacheTimestamp, setCacheTimestamp] = useState(null)
 
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
-    // Get barbershop_id from profile - required for production
-    const barbershopId = profile?.barbershop_id || user?.barbershop_id
+    // Get barbershop_id using helper function
+    let barbershopId = await getUserBarbershopId(user, profile)
+    
+    // For shop owners without a barbershop, create one automatically
+    if (!barbershopId && profile?.role === 'SHOP_OWNER') {
+      try {
+        console.log('Creating barbershop for shop owner...')
+        const newBarbershop = await createBarbershopForOwner(user, {
+          name: profile.shop_name || profile.business_name
+        })
+        barbershopId = newBarbershop.id
+      } catch (error) {
+        console.error('Failed to create barbershop:', error)
+      }
+    }
     
     if (!barbershopId) {
       console.error('No barbershop ID found in user profile')
       setDashboardData({
-        error: 'No barbershop associated with your account. Please contact support.',
+        error: 'No barbershop associated with your account. Please complete onboarding or contact support.',
         system_health: { status: 'error', database: { healthy: false } }
       })
       setIsLoading(false)

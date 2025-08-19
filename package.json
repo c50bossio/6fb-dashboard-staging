@@ -10,6 +10,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "check:production": "node scripts/verify-production-readiness.js",
+    "fix:barbershop-ids": "node scripts/fix-barbershop-associations.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --coverage --watchAll=false",

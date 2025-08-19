@@ -322,51 +322,73 @@ function SupabaseAuthProvider({ children }) {
 
   const signOut = async () => {
     try {
-      
-      // Import auth helpers dynamically to avoid circular deps
-      const { performSignOut } = await import('../lib/supabase/auth-helpers')
+      console.log('Sign out initiated...')
       
       // Immediately clear React state
       setUser(null)
       setProfile(null)
       
-      // Use the robust sign out helper
-      const result = await performSignOut(supabase)
+      // Perform sign out directly
+      const { error } = await supabase.auth.signOut()
       
-      if (result.success) {
+      if (error) {
+        console.error('Sign out API error:', error)
+        // Continue with cleanup even if API call fails
+      }
+      
+      // Clear auth storage directly without dynamic import
+      if (typeof window !== 'undefined') {
+        // Clear localStorage auth tokens
+        const authPatterns = [
+          /^sb-.*-auth-token$/,
+          /^supabase\.auth\.token$/,
+          /^supabase-auth-token$/
+        ]
+        
+        Object.keys(localStorage).forEach(key => {
+          if (authPatterns.some(pattern => pattern.test(key))) {
+            localStorage.removeItem(key)
+          }
+        })
+        
+        // Clear sessionStorage
+        Object.keys(sessionStorage).forEach(key => {
+          if (authPatterns.some(pattern => pattern.test(key))) {
+            sessionStorage.removeItem(key)
+          }
+        })
+        
+        // Clear auth cookies
+        document.cookie.split(';').forEach(cookie => {
+          const eqPos = cookie.indexOf('=')
+          const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
+          if (name.startsWith('sb-') || name.includes('supabase')) {
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+          }
+        })
         
         // Set flag for ProtectedRoute to detect
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('force_sign_out', 'true')
-        }
-        
-        // Use router for navigation to maintain SPA behavior
-        router.push('/login')
-        
-        return { success: true }
-      } else {
-        console.warn('⚠️ Sign out completed with warnings:', result.error)
-        
-        // Still redirect even if there were issues
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('force_sign_out', 'true')
-          router.push('/login')
-        }
-        
-        return { success: true, warnings: result.error }
+        sessionStorage.setItem('force_sign_out', 'true')
       }
-    } catch (error) {
-      console.error('❌ Sign out error:', error)
       
-      // Fallback: clear state and redirect
+      console.log('Sign out complete, redirecting to login...')
+      
+      // Use router for navigation
+      router.push('/login')
+      
+      return { success: true }
+    } catch (error) {
+      console.error('❌ Critical sign out error:', error)
+      
+      // Fallback: clear state and redirect anyway
       setUser(null)
       setProfile(null)
       
       if (typeof window !== 'undefined') {
-        // Import and use auth helpers for cleanup
+        // Try to clear storage even on error
         try {
-          const { clearAuthStorage } = await import('../lib/supabase/auth-helpers')
-          clearAuthStorage()
+          localStorage.clear()
+          sessionStorage.clear()
         } catch (helperError) {
           console.error('Failed to load auth helpers:', helperError)
           // Fallback to simple clear
