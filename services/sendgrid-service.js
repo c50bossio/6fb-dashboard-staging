@@ -149,7 +149,10 @@ class EnhancedSendGridService {
     /**
      * Send enhanced test email with comprehensive error handling
      */
-    async sendTestEmail(testRecipient = 'test@6fbmentorship.com') {
+    async sendTestEmail(testRecipient) {
+        if (!testRecipient) {
+            throw new Error('Test recipient email is required');
+        }
 
         if (this.testMode) {
             return this.simulateEmailSend(testRecipient);
@@ -526,7 +529,7 @@ if (require.main === module) {
         };
         
         const recipients = [
-            { id: 'cust-001', email: 'test@6fbmentorship.com', name: 'Test Customer' }
+            { id: 'cust-001', email: 'customer@example.com', name: 'Test Customer' }
         ];
         
         const campaignResult = await service.sendWhiteLabelCampaign(campaign, barbershop, recipients);

@@ -104,31 +104,33 @@ export default function ExecutiveSummary({ data }) {
         </div>
       </div>
 
-      {/* Performance Trends */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TrendCard
-          title="Revenue Trend"
-          data={[
-            { month: 'Jan', value: 120000 },
-            { month: 'Feb', value: 125000 },
-            { month: 'Mar', value: 118000 },
-            { month: 'Apr', value: 135000 },
-            { month: 'May', value: 142000 },
-            { month: 'Jun', value: 145000 }
-          ]}
-        />
-        <TrendCard
-          title="Customer Growth"
-          data={[
-            { month: 'Jan', value: 980 },
-            { month: 'Feb', value: 1020 },
-            { month: 'Mar', value: 1080 },
-            { month: 'Apr', value: 1120 },
-            { month: 'May', value: 1180 },
-            { month: 'Jun', value: 1210 }
-          ]}
-        />
-      </div>
+      {/* Performance Trends - Only show if we have real trend data */}
+      {data?.trends && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {data.trends.revenue && (
+            <TrendCard
+              title="Revenue Trend"
+              data={data.trends.revenue}
+            />
+          )}
+          {data.trends.customers && (
+            <TrendCard
+              title="Customer Growth"
+              data={data.trends.customers}
+            />
+          )}
+        </div>
+      )}
+      
+      {/* Show placeholder when no trend data available */}
+      {!data?.trends && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+          <div className="text-center text-gray-500">
+            <ChartBarIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-sm">Performance trends will appear here once we have enough historical data</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

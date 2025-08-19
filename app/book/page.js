@@ -77,8 +77,28 @@ export default function CustomerBookingPage() {
       try {
         setDataLoading(true)
         
+        // Get barbershop ID from URL parameters or find the first available shop
+        const urlParams = new URLSearchParams(window.location.search)
+        let barbershopId = urlParams.get('shop_id') || urlParams.get('barbershop_id')
+        
+        // If no barbershop ID in URL, we need to get it from somewhere
+        if (!barbershopId) {
+          // Try to fetch from authenticated user or find first available barbershop
+          const barbershopsResponse = await fetch('/api/barbershops')
+          if (barbershopsResponse.ok) {
+            const barbershopsResult = await barbershopsResponse.json()
+            if (barbershopsResult.success && barbershopsResult.data.length > 0) {
+              barbershopId = barbershopsResult.data[0].id
+            }
+          }
+        }
+        
+        if (!barbershopId) {
+          throw new Error('No barbershop found. Please contact support.')
+        }
+        
         // Fetch services
-        const servicesResponse = await fetch('/api/services?barbershop_id=demo-shop-001&active_only=true')
+        const servicesResponse = await fetch(`/api/services?barbershop_id=${barbershopId}&active_only=true`)
         if (servicesResponse.ok) {
           const servicesResult = await servicesResponse.json()
           if (servicesResult.success) {
@@ -97,7 +117,7 @@ export default function CustomerBookingPage() {
         }
 
         // Fetch barbers
-        const barbersResponse = await fetch('/api/barbers?barbershop_id=demo-shop-001&active_only=true')
+        const barbersResponse = await fetch(`/api/barbers?barbershop_id=${barbershopId}&active_only=true`)
         if (barbersResponse.ok) {
           const barbersResult = await barbersResponse.json()
           if (barbersResult.success) {
@@ -117,28 +137,40 @@ export default function CustomerBookingPage() {
           }
         }
 
-        // Use fallback shop info for now
-        setShopInfo({
-          name: '6FB Barbershop',
-          address: '123 Main Street, Downtown, CA 90210',
-          phone: '(555) 123-4567',
-          hours: {
-            'Monday': '9:00 AM - 6:00 PM',
-            'Tuesday': '9:00 AM - 6:00 PM', 
-            'Wednesday': '9:00 AM - 6:00 PM',
-            'Thursday': '9:00 AM - 6:00 PM',
-            'Friday': '9:00 AM - 7:00 PM',
-            'Saturday': '9:00 AM - 5:00 PM',
-            'Sunday': 'Closed'
+        // Fetch barbershop information
+        const barbershopResponse = await fetch(`/api/barbershops/${barbershopId}`)
+        if (barbershopResponse.ok) {
+          const barbershopResult = await barbershopResponse.json()
+          if (barbershopResult.success) {
+            const barbershop = barbershopResult.data
+            setShopInfo({
+              id: barbershop.id,
+              name: barbershop.name || '6FB Barbershop',
+              address: barbershop.address || 'Address not available',
+              phone: barbershop.phone || 'Phone not available',
+              hours: barbershop.business_hours || {
+                'Monday': '9:00 AM - 6:00 PM',
+                'Tuesday': '9:00 AM - 6:00 PM', 
+                'Wednesday': '9:00 AM - 6:00 PM',
+                'Thursday': '9:00 AM - 6:00 PM',
+                'Friday': '9:00 AM - 7:00 PM',
+                'Saturday': '9:00 AM - 5:00 PM',
+                'Sunday': 'Closed'
+              }
+            })
+          } else {
+            throw new Error('Failed to load barbershop information')
           }
-        })
+        } else {
+          throw new Error('Barbershop not found')
+        }
         
       } catch (error) {
         console.error('Failed to load booking data:', error)
-        // Fallback to hardcoded data if API fails
-        setServices(getFallbackServices())
-        setBarbers(getFallbackBarbers())
-        setShopInfo(SHOP_INFO)
+        // Instead of fallback data, show error message
+        setServices([])
+        setBarbers([])
+        setShopInfo(null)
       } finally {
         setDataLoading(false)
       }
@@ -729,6 +761,36 @@ export default function CustomerBookingPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading booking system...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state if no shop data is available
+  if (!shopInfo || services.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Unavailable</h2>
+          <p className="text-gray-600 mb-6">
+            Sorry, we couldn't load the booking information for this barbershop. 
+            This may be because the shop is not yet set up for online booking.
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-olive-600 text-white py-2 px-4 rounded-md hover:bg-olive-700 transition-colors"
+            >
+              Try Again
+            </button>
+            <a
+              href="/"
+              className="block w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Return to Home
+            </a>
+          </div>
         </div>
       </div>
     )

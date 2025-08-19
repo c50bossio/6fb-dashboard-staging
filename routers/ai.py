@@ -82,10 +82,8 @@ router = APIRouter(prefix="/api/v1", tags=["AI"])
 # Authentication dependency
 security = HTTPBearer()
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Basic auth verification for API endpoints"""
-    # This should be replaced with proper JWT verification
-    return {"user_id": "demo_user"}
+# Import the real authentication function
+from routers.auth import get_current_user
 
 @router.get("/ai/models")
 async def get_ai_models():

@@ -6,64 +6,23 @@ export async function GET(request) {
   const code = requestUrl.searchParams.get('code')
   const error = requestUrl.searchParams.get('error')
   const errorDescription = requestUrl.searchParams.get('error_description')
-  
-  console.log('🚀 Server-side OAuth callback:', {
-    hasCode: !!code,
-    hasError: !!error,
-    timestamp: new Date().toISOString()
-  })
 
-  // Handle OAuth errors
   if (error) {
-    console.error('OAuth error:', error, errorDescription)
-    return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(errorDescription || error)}`, requestUrl.origin)
-    )
+    console.error('Auth callback error:', error, errorDescription)
+    return NextResponse.redirect(new URL('/auth/error?message=' + encodeURIComponent(errorDescription || error), requestUrl.origin))
   }
 
   if (code) {
-    try {
-      const supabase = createClient()
-      
-      // Exchange the code for a session
-      console.log('Exchanging code for session...')
-      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-      
-      if (exchangeError) {
-        console.error('Exchange error:', exchangeError)
-        
-        // Try to get session anyway
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session) {
-          console.log('Found existing session despite error')
-          return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
-        }
-        
-        return NextResponse.redirect(
-          new URL(`/login?error=${encodeURIComponent(exchangeError.message)}`, requestUrl.origin)
-        )
-      }
-      
-      if (data?.session) {
-        console.log('Session created successfully')
-        return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
-      }
-      
-      // No session created
-      return NextResponse.redirect(
-        new URL('/login?error=no_session', requestUrl.origin)
-      )
-      
-    } catch (error) {
-      console.error('Server callback error:', error)
-      return NextResponse.redirect(
-        new URL('/login?error=server_error', requestUrl.origin)
-      )
+    const supabase = createClient()
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (exchangeError) {
+      console.error('Code exchange error:', exchangeError)
+      return NextResponse.redirect(new URL('/auth/error?message=' + encodeURIComponent(exchangeError.message), requestUrl.origin))
     }
   }
-  
-  // No code provided
-  return NextResponse.redirect(
-    new URL('/login?error=no_code', requestUrl.origin)
-  )
+
+  // URL to redirect to after sign in process completes
+  const redirectTo = requestUrl.searchParams.get('redirect_to') || '/dashboard'
+  return NextResponse.redirect(new URL(redirectTo, requestUrl.origin))
 }

@@ -53,9 +53,8 @@ router = APIRouter(prefix="/api/v1", tags=["Dashboard"])
 # Security
 security = HTTPBearer()
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Basic auth verification for API endpoints"""
-    return {"user_id": "demo_user", "barbershop_id": "demo_shop"}
+# Import the real authentication function
+from routers.auth import get_current_user
 
 # Real data functions using Supabase
 async def get_real_dashboard_stats(barbershop_id: str) -> DashboardStats:
@@ -317,7 +316,13 @@ async def get_comprehensive_analytics(barbershop_id: str, period_days: int = 30)
 @router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
     """Get dashboard statistics from real Supabase data"""
-    barbershop_id = current_user.get("barbershop_id", "demo-shop-001")
+    barbershop_id = current_user.get("barbershop_id")
+    
+    if not barbershop_id:
+        raise HTTPException(
+            status_code=404,
+            detail="No barbershop associated with this user"
+        )
     
     with memory_manager.memory_context("dashboard_stats"):
         stats = await get_real_dashboard_stats(barbershop_id)
@@ -341,7 +346,13 @@ async def get_recent_bookings(
     current_user: dict = Depends(get_current_user)
 ):
     """Get recent bookings from real Supabase data"""
-    barbershop_id = current_user.get("barbershop_id", "demo-shop-001")
+    barbershop_id = current_user.get("barbershop_id")
+    
+    if not barbershop_id:
+        raise HTTPException(
+            status_code=404,
+            detail="No barbershop associated with this user"
+        )
     
     with memory_manager.memory_context("recent_bookings"):
         bookings = await get_real_recent_bookings(barbershop_id, limit)
@@ -367,7 +378,13 @@ async def get_api_health():
 @router.get("/analytics/live-metrics")
 async def get_live_metrics(current_user: dict = Depends(get_current_user)):
     """Get live analytics metrics from real Supabase data"""
-    barbershop_id = current_user.get("barbershop_id", "demo-shop-001")
+    barbershop_id = current_user.get("barbershop_id")
+    
+    if not barbershop_id:
+        raise HTTPException(
+            status_code=404,
+            detail="No barbershop associated with this user"
+        )
     
     with memory_manager.memory_context("live_metrics"):
         # Get real-time metrics from database
@@ -406,7 +423,13 @@ async def get_comprehensive_analytics_endpoint(
     current_user: dict = Depends(get_current_user)
 ):
     """Get comprehensive analytics data for dashboard"""
-    barbershop_id = current_user.get("barbershop_id", "demo-shop-001")
+    barbershop_id = current_user.get("barbershop_id")
+    
+    if not barbershop_id:
+        raise HTTPException(
+            status_code=404,
+            detail="No barbershop associated with this user"
+        )
     
     with memory_manager.memory_context("comprehensive_analytics"):
         analytics = await get_comprehensive_analytics(barbershop_id, period_days)
@@ -415,7 +438,13 @@ async def get_comprehensive_analytics_endpoint(
 @router.post("/analytics/refresh")
 async def refresh_analytics(current_user: dict = Depends(get_current_user)):
     """Refresh analytics data from Supabase"""
-    barbershop_id = current_user.get("barbershop_id", "demo-shop-001")
+    barbershop_id = current_user.get("barbershop_id")
+    
+    if not barbershop_id:
+        raise HTTPException(
+            status_code=404,
+            detail="No barbershop associated with this user"
+        )
     
     with memory_manager.memory_context("refresh_analytics"):
         # Perform actual data refresh
@@ -459,7 +488,13 @@ async def get_analytics_cache_status():
 @router.get("/business-data/metrics")
 async def get_business_metrics(current_user: dict = Depends(get_current_user)):
     """Get business performance metrics from real Supabase data"""
-    barbershop_id = current_user.get("barbershop_id", "demo-shop-001")
+    barbershop_id = current_user.get("barbershop_id")
+    
+    if not barbershop_id:
+        raise HTTPException(
+            status_code=404,
+            detail="No barbershop associated with this user"
+        )
     
     with memory_manager.memory_context("business_metrics"):
         metrics = await get_real_business_metrics(barbershop_id)

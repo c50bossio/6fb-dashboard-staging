@@ -113,6 +113,7 @@ export async function POST(request) {
     
     const productData = await request.json()
     const userId = user.id
+    const isDevelopment = process.env.NODE_ENV === 'development'
     
     let profile = null
     if (userId) {

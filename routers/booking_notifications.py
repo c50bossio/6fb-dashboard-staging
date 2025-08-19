@@ -82,10 +82,8 @@ router = APIRouter(prefix="/api/v1/booking-notifications", tags=["Booking Notifi
 # Security
 security = HTTPBearer()
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Basic auth verification for API endpoints"""
-    # In production, implement proper JWT token validation
-    return {"user_id": "demo_user", "role": "admin"}
+# Import the real authentication function
+from routers.auth import get_current_user
 
 def create_booking_data(request: BookingNotificationRequest) -> BookingNotificationData:
     """Convert request to BookingNotificationData"""

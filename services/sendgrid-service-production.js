@@ -35,7 +35,7 @@ class ProductionSendGridService {
         this.maxPersonalizations = parseInt(process.env.SENDGRID_MAX_PERSONALIZATIONS) || 1000;
         
         this.unsubscribeUrl = process.env.UNSUBSCRIBE_URL || 'https://6fbmentorship.com/unsubscribe';
-        this.physicalAddress = process.env.PHYSICAL_ADDRESS || '123 Business St, City, State 12345';
+        this.physicalAddress = process.env.PHYSICAL_ADDRESS;
         this.companyName = process.env.COMPANY_NAME || '6FB AI Agent System';
         
         if (this.apiKey && !this.apiKey.includes('placeholder')) {

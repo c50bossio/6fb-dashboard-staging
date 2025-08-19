@@ -1991,53 +1991,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {/* Communication & Payments */}
-                  <div className="card">
-                    <div className="flex items-center mb-6">
-                      <div className="flex items-center justify-center h-10 w-10 bg-green-100 rounded-lg mr-4">
-                        <PhoneIcon className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Communication & Payments</h3>
-                        <p className="text-sm text-gray-600">Connect with customers and process payments</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {/* Stripe */}
-                      <IntegrationCard
-                        name="Stripe"
-                        description="Accept credit card payments online"
-                        status="connected"
-                        icon="💳"
-                        onConfigure={() => setTestResult({ success: true, message: 'Stripe payment processing is active and configured!' })}
-                        features={['Payment Processing', 'Subscription Billing', 'Dispute Management']}
-                        lastSync="Live"
-                      />
-
-                      {/* Twilio SMS */}
-                      <IntegrationCard
-                        name="Twilio SMS"
-                        description="Send SMS notifications and reminders"
-                        status="connected"
-                        icon="💬"
-                        onConfigure={() => setTestResult({ success: true, message: 'Twilio SMS is connected and operational!' })}
-                        features={['SMS Notifications', 'Appointment Reminders', 'Marketing Messages']}
-                        lastSync="1 hour ago"
-                      />
-
-                      {/* SendGrid Email */}
-                      <IntegrationCard
-                        name="SendGrid"
-                        description="Send email campaigns and notifications"
-                        status="connected"
-                        icon="📧"
-                        onConfigure={() => setTestResult({ success: true, message: 'SendGrid email service is connected and active!' })}
-                        features={['Email Campaigns', 'Transactional Emails', 'Analytics']}
-                        lastSync="30 minutes ago"
-                      />
-                    </div>
-                  </div>
+                  {/** Communication & Payments removed — we provide these centrally, not via third‑party connections **/}
 
                   {/* Integration Health Summary */}
                   <div className="card">

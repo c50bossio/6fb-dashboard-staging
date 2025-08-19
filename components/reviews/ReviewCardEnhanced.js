@@ -65,24 +65,19 @@ export default function ReviewCardEnhanced({
       const response = await fetch(`/api/barbers/${barberId}/services`)
       if (response.ok) {
         const data = await response.json()
-        setBarberServices(data.services || getDemoServices())
+        setBarberServices(data.services || [])
       } else {
-        // Use demo services as fallback
-        setBarberServices(getDemoServices())
+        // No fallback - show empty state if services can't be loaded
+        setBarberServices([])
+        console.error('Failed to load barber services:', response.status)
       }
     } catch (error) {
       console.error('Error loading services:', error)
-      setBarberServices(getDemoServices())
+      setBarberServices([])
     } finally {
       setLoadingServices(false)
     }
   }
-
-  const getDemoServices = () => [
-    { id: 1, name: 'Signature Cut', duration: 45, price: 55, description: 'Premium haircut with consultation' },
-    { id: 2, name: 'Fade & Style', duration: 40, price: 45, description: 'Expert fade with styling' },
-    { id: 3, name: 'Beard Trim', duration: 20, price: 25, description: 'Professional beard shaping' }
-  ]
 
   const handleBarberClick = () => {
     if (review.attribution?.barber?.id) {
@@ -210,7 +205,7 @@ export default function ReviewCardEnhanced({
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
             </div>
-          ) : (
+          ) : barberServices.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               {barberServices.slice(0, 3).map(service => (
                 <div key={service.id} className="bg-white rounded-lg p-4 border border-gray-200">
@@ -222,6 +217,12 @@ export default function ReviewCardEnhanced({
                   </div>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-6 text-gray-500">
+              <ScissorsIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+              <p className="text-sm">No services available at this time</p>
+              <p className="text-xs mt-1">Please check back later or contact the barbershop directly</p>
             </div>
           )}
 

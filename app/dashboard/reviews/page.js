@@ -52,7 +52,13 @@ export default function ReviewsPage() {
         setIsLoading(true)
         setError(null)
         
-        const barbershopId = profile?.barbershop_id || 'demo-shop-001'
+        const barbershopId = profile?.shop_id || profile?.barbershop_id
+        
+        if (!barbershopId) {
+          setError('No barbershop associated with your account. Please contact support.')
+          setIsLoading(false)
+          return
+        }
         
         // Load barbers for filter
         const barbersResponse = await fetch(`/api/barbers?barbershop_id=${barbershopId}&active_only=true`)
@@ -97,9 +103,9 @@ export default function ReviewsPage() {
             setReviews(formattedReviews)
             setFilteredReviews(formattedReviews)
           } else {
-            // Use fallback demo data for demonstration
-            setReviews(getFallbackReviews())
-            setFilteredReviews(getFallbackReviews())
+            // No reviews found - show empty state
+            setReviews([])
+            setFilteredReviews([])
           }
         } else {
           throw new Error('Failed to load reviews')
@@ -108,10 +114,10 @@ export default function ReviewsPage() {
       } catch (err) {
         console.error('Error loading reviews:', err)
         setError(err.message)
-        // Use fallback data
-        setReviews(getFallbackReviews())
-        setFilteredReviews(getFallbackReviews())
-        setBarbers(getFallbackBarbers())
+        // Set empty data on error
+        setReviews([])
+        setFilteredReviews([])
+        setBarbers([])
       } finally {
         setIsLoading(false)
       }
@@ -177,65 +183,7 @@ export default function ReviewsPage() {
     setFilteredReviews(filtered)
   }, [reviews, searchTerm, selectedBarber, selectedRating, selectedConfidence, selectedSentiment, dateRange])
 
-  // Fallback data for demo purposes
-  const getFallbackReviews = () => [
-    {
-      id: 'review_001',
-      googleReviewId: 'google_001',
-      reviewerName: 'Sarah Johnson',
-      reviewText: 'Mike gave me the best fade I\'ve ever had! Amazing attention to detail and super friendly. Will definitely be coming back.',
-      starRating: 5,
-      reviewDate: new Date('2024-01-15'),
-      reviewUrl: 'https://g.co/kgs/review1',
-      attribution: {
-        barber: { id: 'barber_001', name: 'Marcus Johnson', photo: null },
-        confidence: 'high',
-        confidenceScore: 85,
-        sentiment: 'positive',
-        sentimentScore: 0.8,
-        mentionedPhrases: ['Mike', 'best fade', 'amazing'],
-        extractedNames: ['Mike'],
-        aiReasoning: 'Review explicitly mentions "Mike" and describes a haircut service with positive sentiment.',
-        manualOverride: false
-      }
-    },
-    {
-      id: 'review_002', 
-      googleReviewId: 'google_002',
-      reviewerName: 'David Martinez',
-      reviewText: 'Great barbershop! The service was professional and my cut looks fantastic. Highly recommend this place.',
-      starRating: 5,
-      reviewDate: new Date('2024-01-12'),
-      reviewUrl: 'https://g.co/kgs/review2', 
-      attribution: null
-    },
-    {
-      id: 'review_003',
-      googleReviewId: 'google_003', 
-      reviewerName: 'Tony Reeves',
-      reviewText: 'Ask for Carlos - he knows exactly what he\'s doing with beard trims. Walked out looking fresh!',
-      starRating: 5,
-      reviewDate: new Date('2024-01-10'),
-      reviewUrl: 'https://g.co/kgs/review3',
-      attribution: {
-        barber: { id: 'barber_003', name: 'Carlos Martinez', photo: null },
-        confidence: 'certain',
-        confidenceScore: 95,
-        sentiment: 'positive', 
-        sentimentScore: 0.9,
-        mentionedPhrases: ['Carlos', 'beard trims', 'fresh'],
-        extractedNames: ['Carlos'],
-        aiReasoning: 'Review directly recommends "Carlos" and describes beard trimming service with high praise.',
-        manualOverride: false
-      }
-    }
-  ]
-
-  const getFallbackBarbers = () => [
-    { id: 'barber_001', name: 'Marcus Johnson' },
-    { id: 'barber_002', name: 'David Wilson' },
-    { id: 'barber_003', name: 'Carlos Martinez' }
-  ]
+  // No fallback data - always use real data from database
 
   // Helper functions
   const getConfidenceColor = (confidence) => {

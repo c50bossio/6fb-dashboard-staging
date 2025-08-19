@@ -49,9 +49,8 @@ router = APIRouter(prefix="/api/v1/notifications", tags=["Notifications"])
 # Security
 security = HTTPBearer()
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Basic auth verification for API endpoints"""
-    return {"user_id": "demo_user", "barbershop_id": "demo_shop"}
+# Import the real authentication function
+from routers.auth import get_current_user
 
 # Mock notification storage
 NOTIFICATION_HISTORY = []
