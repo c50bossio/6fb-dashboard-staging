@@ -72,8 +72,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState({
     barbershop: {
       name: 'Demo Barbershop',
-      address: '123 Main Street, City, State 12345',
-      phone: '+1 (555) 123-4567',
+      address: '',
+      phone: '',
       email: 'demo@barbershop.com',
       timezone: 'America/New_York'
     },

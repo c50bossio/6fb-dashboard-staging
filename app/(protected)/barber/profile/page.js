@@ -630,7 +630,7 @@ export default function BarberProfilePage() {
                       type="tel"
                       value={profile.display_phone}
                       onChange={(e) => handleInputChange('display_phone', e.target.value)}
-                      placeholder="(555) 123-4567"
+                      placeholder="(555) 000-0000"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                     />
                   </div>

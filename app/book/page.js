@@ -27,7 +27,7 @@ import { createClient } from '../../lib/supabase/client'
 const SHOP_INFO = {
   name: '6FB Barbershop',
   address: '123 Main Street, Downtown, CA 90210',
-  phone: '(555) 123-4567',
+  phone: 'Contact shop for booking information',
   hours: {
     'Monday': '9:00 AM - 6:00 PM',
     'Tuesday': '9:00 AM - 6:00 PM',
@@ -568,7 +568,7 @@ export default function CustomerBookingPage() {
             value={customerDetails.phone}
             onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
-            placeholder="+1 (555) 123-4567"
+            placeholder="+1 (555) 000-0000"
           />
         </div>
 
@@ -729,7 +729,7 @@ export default function CustomerBookingPage() {
           <li>• You'll receive an SMS and email confirmation shortly</li>
           <li>• We'll send you a reminder 24 hours before your appointment</li>
           <li>• Please arrive 5 minutes early for your appointment</li>
-          <li>• If you need to cancel or reschedule, call us at {shopInfo?.phone || '(555) 123-4567'}</li>
+          <li>• If you need to cancel or reschedule, call us at {shopInfo?.phone || 'Contact shop directly'}</li>
         </ul>
       </div>
       
@@ -740,7 +740,7 @@ export default function CustomerBookingPage() {
           <div className="text-left">
             <p className="font-medium text-gray-900">{shopInfo?.name || '6FB Barbershop'}</p>
             <p className="text-sm text-gray-600">{shopInfo?.address || '123 Main Street, Downtown, CA 90210'}</p>
-            <p className="text-sm text-gray-600">{shopInfo?.phone || '(555) 123-4567'}</p>
+            <p className="text-sm text-gray-600">{shopInfo?.phone || 'Contact information not available'}</p>
           </div>
         </div>
       </div>
@@ -860,7 +860,7 @@ export default function CustomerBookingPage() {
                 </div>
                 <div className="flex items-center">
                   <PhoneIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span>{shopInfo?.phone || '(555) 123-4567'}</span>
+                  <span>{shopInfo?.phone || 'Phone not available'}</span>
                 </div>
               </div>
             </div>

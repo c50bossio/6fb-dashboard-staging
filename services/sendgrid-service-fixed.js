@@ -530,7 +530,7 @@ if (require.main === module) {
             id: 'shop-001',
             name: 'Elite Cuts Barbershop',
             email: 'owner@elitecuts.com',
-            phone: '(555) 123-4567',
+            phone: 'Contact for information',
             address: '123 Main St, Anytown, USA'
         };
         
