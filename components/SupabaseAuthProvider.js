@@ -26,6 +26,7 @@ function SupabaseAuthProvider({ children }) {
 
   useEffect(() => {
     const checkUser = async () => {
+      console.log('🔍 Auth Provider: Starting checkUser...')
       const publicPaths = ['/login', '/register', '/forgot-password', '/subscribe', '/success', '/pricing', '/']
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
       const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams()
@@ -37,12 +38,17 @@ function SupabaseAuthProvider({ children }) {
         return currentPath === path || currentPath.startsWith(path + '/') || currentPath.startsWith(path + '?')
       })
       
-      // SUPABASE BEST PRACTICE: Set loading state appropriately
-      setLoading(!isPublicPage)
+      console.log('🔍 Auth Provider: Current path:', currentPath, 'Is public:', isPublicPage)
+      
+      // SUPABASE BEST PRACTICE: Always start with loading true during auth check
+      setLoading(true)
       
       try {
+        console.log('🔍 Auth Provider: Getting session...')
         // SUPABASE BEST PRACTICE: Use getSession() instead of getUser() for initial check
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        console.log('🔍 Auth Provider: Session result:', { hasSession: !!session, error: sessionError })
         
         if (sessionError || !session) {
           console.log('No active session found')
@@ -108,16 +114,26 @@ function SupabaseAuthProvider({ children }) {
           setUser(session.user)
           setProfile(null)
         }
+        
+        console.log('🔍 Auth Provider: Profile set successfully')
       } catch (error) {
         console.error('Auth initialization error:', error)
         setUser(null)
         setProfile(null)
       } finally {
+        console.log('🔍 Auth Provider: Setting loading to false in finally block')
         setLoading(false)
       }
     }
     
+    console.log('🔍 Auth Provider: Calling checkUser...')
     checkUser()
+    
+    // Safety timeout - if auth check takes too long, set loading to false
+    const loadingTimeout = setTimeout(() => {
+      console.warn('⚠️ Auth Provider: Loading timeout reached, forcing loading to false')
+      setLoading(false)
+    }, 5000) // 5 second timeout
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔐 Auth state change event:', event, 'Has session:', !!session)
@@ -248,6 +264,7 @@ function SupabaseAuthProvider({ children }) {
     })
 
     return () => {
+      clearTimeout(loadingTimeout)
       subscription.unsubscribe()
     }
   }, [router, supabase])
