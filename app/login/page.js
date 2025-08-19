@@ -51,19 +51,19 @@ export default function LoginPage() {
     setError('')
     
     try {
-      // Create client directly for OAuth
+      // Supabase best practice: simple OAuth with proper redirect
       const supabase = createClient()
       
-      // Use API callback route for OAuth
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/api/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback`
         }
       })
       
       if (error) throw error
     } catch (err) {
+      console.error('OAuth initiation error:', err)
       setError('Failed to connect with Google. Please try again.')
       setIsLoading(false)
     }
