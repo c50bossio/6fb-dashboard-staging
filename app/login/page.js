@@ -86,8 +86,11 @@ export default function LoginPage() {
           
           console.log('OAuth successful, user data stored:', userData)
           
-          // Redirect to dashboard
-          router.push('/dashboard')
+          // Wait a bit longer for auth state to propagate before redirecting
+          setTimeout(() => {
+            console.log('Redirecting to dashboard after auth state update...')
+            window.location.href = '/dashboard' // Use window.location for more reliable navigation
+          }, 1000)
         }
       } catch (err) {
         console.error('OAuth callback error:', err)

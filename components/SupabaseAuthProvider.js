@@ -17,7 +17,7 @@ export const useAuth = () => {
 function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(false) // Start with false to not block login page
+  const [loading, setLoading] = useState(true) // Start with true to check auth state first
   const router = useRouter()
   
   // Use useMemo to ensure single client instance per provider
@@ -68,9 +68,11 @@ function SupabaseAuthProvider({ children }) {
         return
       }
       
-      // Only set loading true if we're on a protected page
-      if (!isPublicPage) {
-        setLoading(true)
+      // Always check auth state, but don't block login page
+      if (isPublicPage) {
+        setLoading(false) // Don't block public pages
+      } else {
+        setLoading(true) // Protected pages need auth check
       }
       
       try {
@@ -169,11 +171,14 @@ function SupabaseAuthProvider({ children }) {
           }
           
           // Simple navigation logic - redirect on sign-in from login page
+          console.log('Auth state change - SIGNED_IN completed, current path:', window.location.pathname)
           
-          if (window.location.pathname === '/login') {
-            // Redirect directly to dashboard - dashboard will handle onboarding overlay
-            router.push('/dashboard')
-          } else {
+          if (window.location.pathname === '/login' || window.location.pathname === '/login-clean') {
+            // Wait a bit for React state to update before redirecting
+            setTimeout(() => {
+              console.log('Redirecting from auth provider after state update...')
+              router.push('/dashboard')
+            }, 500)
           }
         } catch (error) {
           console.error('❌ Error in auth state change handler:', error)
