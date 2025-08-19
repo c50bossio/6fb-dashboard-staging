@@ -23,35 +23,10 @@ export default function ProtectedRoute({ children }) {
       return
     }
     
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    const isCalendarPage = window.location.pathname.includes('/calendar')
-    const isAnalyticsPage = window.location.pathname.includes('/analytics')
-    const isShopPage = window.location.pathname.includes('/shop')
-    const isBarberPage = window.location.pathname.includes('/barber')
-    const isSeoPage = window.location.pathname.includes('/seo')
-    const isDashboardPage = window.location.pathname.includes('/dashboard')
-    const isInventoryPage = window.location.pathname.includes('/inventory')
-    
-    const devAuth = document.cookie.includes('dev_auth=true')
-    const devSession = localStorage.getItem('dev_session')
-    const devBypass = localStorage.getItem('dev_bypass') === 'true'
-    const enableDevBypass = isBarberPage || isSeoPage || isInventoryPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage || isDashboardPage))
-    
-    if (devAuth || devSession || devBypass || enableDevBypass) {
-      return
-    }
-    
-    // Simple bypass for development
-    if (window.location.search.includes('bypass=true')) {
-      return
-    }
-    
-    // Add a small delay to ensure auth state is properly initialized
-    // This prevents the immediate bypass issue
+    // SUPABASE BEST PRACTICE: Simple auth check without complex bypasses
     const checkAuth = setTimeout(() => {
       if (!loading && !user) {
         router.push('/login')
-      } else if (user) {
       }
     }, 100) // Small delay to let auth state settle
     
@@ -80,23 +55,6 @@ export default function ProtectedRoute({ children }) {
     }
     return null
   }
-  
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const isCalendarPage = window.location.pathname.includes('/calendar')
-  const isAnalyticsPage = window.location.pathname.includes('/analytics')
-  const isShopPage = window.location.pathname.includes('/shop')
-  const isBarberPage = window.location.pathname.includes('/barber')
-  const isSeoPage = window.location.pathname.includes('/seo')
-  const isDashboardPage = window.location.pathname.includes('/dashboard')
-  
-  const devAuth = document.cookie.includes('dev_auth=true')
-  const devSession = localStorage.getItem('dev_session')
-  
-  const enableDevBypass = isBarberPage || isSeoPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
-  
-  if (devAuth || devSession || enableDevBypass) {
-    return <>{children}</>
-  }
 
   if (loading) {
     return (
@@ -104,7 +62,7 @@ export default function ProtectedRoute({ children }) {
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <LoadingSpinner size="large" />
-            <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+            <p className="mt-4 text-gray-600">Authenticating...</p>
           </div>
         </div>
       </div>

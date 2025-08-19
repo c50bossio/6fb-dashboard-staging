@@ -14,7 +14,6 @@ export default function BarbershopDashboard() {
   const { user, profile, loading, updateProfile } = useAuth()
   const router = useRouter()
   const [timeOfDay, setTimeOfDay] = useState('')
-  const [loadingTimeout, setLoadingTimeout] = useState(false)
   
   // State for forcing onboarding display
   const [forceShowOnboarding, setForceShowOnboarding] = useState(false)
@@ -54,8 +53,7 @@ export default function BarbershopDashboard() {
     hasProfile: !!profile,
     profileEmail: profile?.email,
     profileOnboarding: profile?.onboarding_completed,
-    loading,
-    loadingTimeout
+    loading
   })
 
   useEffect(() => {
@@ -65,23 +63,7 @@ export default function BarbershopDashboard() {
     else setTimeOfDay('evening')
   }, [])
 
-  // Add timeout for loading state to prevent infinite loading
-  useEffect(() => {
-    // Start timeout as soon as we have a user, regardless of loading state
-    if (user && !profile && loading) {
-      console.log('Starting profile loading timeout...')
-      const timeout = setTimeout(() => {
-        console.log('Profile loading timeout reached, proceeding with fallback')
-        setLoadingTimeout(true)
-      }, 5000) // Increased to 5 seconds to give profile time to load
-
-      return () => clearTimeout(timeout)
-    }
-    // Reset timeout if profile loads
-    if (profile) {
-      setLoadingTimeout(false)
-    }
-  }, [user, profile, loading])
+  // Remove timeout logic - let auth provider handle loading state properly
   
   useEffect(() => {
     console.log('Dashboard checking onboarding status...', {
@@ -107,8 +89,7 @@ export default function BarbershopDashboard() {
   const effectiveProfile = profile
   
   // Show loading state while auth is initializing
-  // Require real authentication - no bypass allowed
-  if (!user && loading && !loadingTimeout) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -120,14 +101,13 @@ export default function BarbershopDashboard() {
   }
   
   // Redirect to login if no authenticated user
-  if (!user && !loading) {
+  if (!user) {
     router.push('/login')
     return null
   }
   
-  // If profile failed to load after timeout, we need to handle this properly
-  // Instead of using mock data, we should create a real profile in Supabase
-  const needsProfileCreation = user && !profile && loadingTimeout
+  // Check if profile needs creation
+  const needsProfileCreation = user && !profile
 
   return (
     <div>

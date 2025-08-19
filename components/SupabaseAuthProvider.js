@@ -37,108 +37,79 @@ function SupabaseAuthProvider({ children }) {
         return currentPath === path || currentPath.startsWith(path + '/') || currentPath.startsWith(path + '?')
       })
       
-      // Check for development mode
-      const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost'
-      const isDevPort = typeof window !== 'undefined' && window.location.port === '9999'
-      
-      if (isLocalhost && isDevPort && !isPublicPage) {
-        const demoUser = {
-          id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
-          email: 'dev-enterprise@test.com',
-          user_metadata: {
-            full_name: 'Demo User'
-          },
-          aud: 'authenticated',
-          role: 'authenticated'
-        }
-        
-        const demoProfile = {
-          id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
-          email: 'dev-enterprise@test.com',
-          full_name: 'Demo User',
-          role: 'ENTERPRISE_OWNER',
-          subscription_status: 'active',
-          onboarding_completed: false,
-          onboarding_step: 0
-        }
-        
-        setUser(demoUser)
-        setProfile(demoProfile)
-        setLoading(false)
-        return
-      }
-      
-      // Always check auth state, but don't block login page
-      if (isPublicPage) {
-        setLoading(false) // Don't block public pages
-      } else {
-        setLoading(true) // Protected pages need auth check
-      }
+      // SUPABASE BEST PRACTICE: Set loading state appropriately
+      setLoading(!isPublicPage)
       
       try {
-        // Simple auth check - trust Supabase
-        const { data: { user }, error } = await supabase.auth.getUser()
+        // SUPABASE BEST PRACTICE: Use getSession() instead of getUser() for initial check
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
-        if (error) {
+        if (sessionError || !session) {
+          console.log('No active session found')
           setUser(null)
           setProfile(null)
-        } else if (user) {
-          setUser(user)
+          setLoading(false)
+          return
+        }
+        
+        // User is authenticated, fetch complete profile with associations
+        console.log('Session found, fetching profile for:', session.user.email)
+        
+        // SUPABASE BEST PRACTICE: Single query with all related data
+        const { data: profileData, error: profileError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle()
+        
+        if (profileError) {
+          console.error('Profile fetch error:', profileError)
+          setUser(session.user)
+          setProfile(null)
+        } else if (profileData) {
+          // Fetch barbershop data based on role
+          let barbershopData = null
           
-          // Get user profile from users table with barbershop associations
-          try {
-            // First get the user profile from users table
-            const { data: profileData, error: profileError } = await supabase
-              .from('users')
-              .select(`
-                *,
-                barbershops!barbershop_id (
-                  id,
-                  name,
-                  slug
-                ),
-                organizations!organization_id (
-                  id,
-                  name
-                )
-              `)
-              .eq('id', user.id)
+          if (profileData.role === 'shop_owner' || profileData.role === 'SHOP_OWNER') {
+            const { data: ownedShop } = await supabase
+              .from('barbershops')
+              .select('id, name, slug')
+              .eq('owner_id', session.user.id)
               .maybeSingle()
             
-            if (!profileError && profileData) {
-              // Check if user has direct barbershop_id or needs to fetch from barbershop_staff
-              if (!profileData.barbershop_id && profileData.role === 'BARBER') {
-                // Employee barber - fetch barbershop via barbershop_staff table
-                const { data: staffData } = await supabase
-                  .from('barbershop_staff')
-                  .select('barbershop_id, barbershops!inner(id, name, slug)')
-                  .eq('user_id', user.id)
-                  .eq('is_active', true)
-                  .maybeSingle()
-                
-                if (staffData) {
-                  profileData.barbershop_id = staffData.barbershop_id
-                  profileData.barbershops = staffData.barbershops
-                }
-              }
-              
-              setProfile(profileData)
-              
-              // No redirect needed - dashboard will handle onboarding overlay
-            } else if (profileError) {
-              console.error('Profile error in checkUser:', profileError)
-            } else {
-              console.log('No profile found for user:', user.id)
+            if (ownedShop) {
+              barbershopData = ownedShop
             }
-          } catch (error) {
-            console.error('Error loading profile in checkUser:', error)
+          } else if (profileData.role === 'BARBER' || profileData.role === 'barber') {
+            const { data: staffData } = await supabase
+              .from('barbershop_staff')
+              .select('barbershop_id, barbershops!inner(id, name, slug)')
+              .eq('user_id', session.user.id)
+              .eq('is_active', true)
+              .maybeSingle()
+            
+            if (staffData) {
+              barbershopData = staffData.barbershops
+            }
           }
+          
+          // Add barbershop data if found
+          if (barbershopData) {
+            profileData.barbershop_id = barbershopData.id
+            profileData.barbershops = barbershopData
+          }
+          
+          // SUPABASE BEST PRACTICE: Set all state in one operation
+          setUser(session.user)
+          setProfile(profileData)
         } else {
-          setUser(null)
+          // User exists but no profile
+          console.log('User exists but no profile found')
+          setUser(session.user)
           setProfile(null)
         }
       } catch (error) {
-        console.error('Error checking auth:', error)
+        console.error('Auth initialization error:', error)
         setUser(null)
         setProfile(null)
       } finally {
@@ -151,6 +122,12 @@ function SupabaseAuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔐 Auth state change event:', event, 'Has session:', !!session)
       
+      // SUPABASE BEST PRACTICE: Handle INITIAL_SESSION separately
+      if (event === 'INITIAL_SESSION') {
+        // Skip - already handled in checkUser() above
+        return
+      }
+      
       if (event === 'SIGNED_IN' && session) {
         console.log('✅ User signed in successfully:', session.user.email)
         setUser(session.user)
@@ -159,21 +136,10 @@ function SupabaseAuthProvider({ children }) {
           // Fetch or create profile
           let userProfile = null
           
-          // Fetch from users table with barbershop associations
+          // Fetch from users table
           const { data: profileData, error } = await supabase
             .from('users')
-            .select(`
-              *,
-              barbershops!barbershop_id (
-                id,
-                name,
-                slug
-              ),
-              organizations!organization_id (
-                id,
-                name
-              )
-            `)
+            .select('*')
             .eq('id', session.user.id)
             .maybeSingle()
         
@@ -186,10 +152,8 @@ function SupabaseAuthProvider({ children }) {
               full_name: session.user.user_metadata?.full_name || 
                        session.user.user_metadata?.name || 
                        session.user.email.split('@')[0],
-              role: 'SHOP_OWNER',
+              role: 'shop_owner',  // Use lowercase for database constraint
               subscription_status: 'active',
-              onboarding_completed: false,
-              onboarding_step: 0,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             }
@@ -213,6 +177,21 @@ function SupabaseAuthProvider({ children }) {
               userProfile = newProfile
             }
           } else if (profileData) {
+            // For shop owners, check if they own a barbershop
+            if (profileData.role === 'shop_owner' || profileData.role === 'SHOP_OWNER') {
+              const { data: ownedShop } = await supabase
+                .from('barbershops')
+                .select('id, name, slug')
+                .eq('owner_id', session.user.id)
+                .maybeSingle()
+              
+              if (ownedShop) {
+                // Add barbershop_id to profile data for compatibility
+                profileData.barbershop_id = ownedShop.id
+                profileData.barbershops = ownedShop
+              }
+            }
+            
             setProfile(profileData)
             userProfile = profileData
           } else if (error) {
