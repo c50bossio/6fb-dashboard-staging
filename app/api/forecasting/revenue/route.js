@@ -13,7 +13,14 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id') || user.barbershop_id || 'demo-shop-001'
+    const barbershopId = searchParams.get('barbershop_id') || user.barbershop_id
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id is required'
+      }, { status: 400 })
+    }
     const timeHorizons = searchParams.get('time_horizons')?.split(',') || ['1_week', '1_month', '3_months']
 
     try {
@@ -105,7 +112,14 @@ export async function POST(request) {
     }
 
     const { action, parameters } = await request.json()
-    const barbershopId = parameters?.barbershop_id || user.barbershop_id || 'demo-shop-001'
+    const barbershopId = parameters?.barbershop_id || user.barbershop_id
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id is required'
+      }, { status: 400 })
+    }
     
     try {
       let response

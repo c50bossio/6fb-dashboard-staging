@@ -55,10 +55,7 @@ export default function UnifiedExecutiveSummary({ data }) {
           ? insight.description || insight.message || insight.title || 'Insight available'
           : insight
       )
-    : [
-        'Your premium services are performing 40% better than standard cuts',
-        'Tuesday bookings are consistently 50% lower - opportunity for promotion'
-      ]
+    : [] // No fallback insights - show empty state when no real data
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -254,12 +251,16 @@ export default function UnifiedExecutiveSummary({ data }) {
             <div className="flex-1">
               <h4 className="text-sm font-semibold text-gray-900 mb-2">AI Insights</h4>
               <div className="space-y-2">
-                {aiInsights.slice(0, 2).map((insight, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <span className="text-gold-600">•</span>
-                    <p className="text-sm text-gray-700">{insight}</p>
-                  </div>
-                ))}
+                {aiInsights.length > 0 ? (
+                  aiInsights.slice(0, 2).map((insight, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <span className="text-gold-600">•</span>
+                      <p className="text-sm text-gray-700">{insight}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500 italic">No AI insights available yet. Insights will appear as your business generates data.</p>
+                )}
               </div>
             </div>
           </div>

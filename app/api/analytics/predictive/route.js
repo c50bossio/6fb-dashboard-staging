@@ -263,7 +263,10 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
   const supabase = createClient()
   
   try {
-    const shopId = barbershopId || 'demo-shop-001'
+    if (!barbershopId) {
+      throw new Error('barbershop_id is required')
+    }
+    const shopId = barbershopId
     
     const { data: customers } = await supabase
       .from('customers')

@@ -10,7 +10,14 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001'
+    const barbershopId = searchParams.get('barbershop_id')
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id parameter is required'
+      }, { status: 400 })
+    }
     const limit = parseInt(searchParams.get('limit')) || 50
     const offset = parseInt(searchParams.get('offset')) || 0
     const search = searchParams.get('search')
@@ -77,7 +84,7 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      barbershop_id = 'demo-shop-001',
+      barbershop_id,
       name,
       phone,
       email,
@@ -90,6 +97,13 @@ export async function POST(request) {
         confirmations: true
       }
     } = body
+
+    if (!barbershop_id) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id is required'
+      }, { status: 400 })
+    }
 
     if (!name || (!phone && !email)) {
       return NextResponse.json(

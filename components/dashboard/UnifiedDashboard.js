@@ -97,8 +97,18 @@ export default function UnifiedDashboard({ user, profile }) {
   const [cacheTimestamp, setCacheTimestamp] = useState(null)
 
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
-    // Use barbershop_id from profile if available, otherwise fallback to demo
-    const barbershopId = profile?.barbershop_id || user?.barbershop_id || 'demo-shop-001'
+    // Get barbershop_id from profile - required for production
+    const barbershopId = profile?.barbershop_id || user?.barbershop_id
+    
+    if (!barbershopId) {
+      console.error('No barbershop ID found in user profile')
+      setDashboardData({
+        error: 'No barbershop associated with your account. Please contact support.',
+        system_health: { status: 'error', database: { healthy: false } }
+      })
+      setIsLoading(false)
+      return
+    }
     
     setIsLoading(true)
     try {
@@ -240,7 +250,8 @@ export default function UnifiedDashboard({ user, profile }) {
 
   const handleExecutiveModeHover = useCallback(() => {
     if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
-      const barbershopId = profile?.barbershop_id || user?.barbershop_id || 'demo-shop-001'
+      const barbershopId = profile?.barbershop_id || user?.barbershop_id
+      if (!barbershopId) return // Don't prefetch without barbershop ID
       fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
         .then(response => response.json())
         .then(result => {
@@ -352,7 +363,7 @@ export default function UnifiedDashboard({ user, profile }) {
       case DASHBOARD_MODES.OPERATIONS:
         return <ActionCenter data={{
           ...dashboardData,
-          barbershop_id: profile?.barbershop_id || user?.barbershop_id || 'demo-shop-001'
+          barbershop_id: profile?.barbershop_id || user?.barbershop_id
         }} />
         
       default:
@@ -383,7 +394,9 @@ export default function UnifiedDashboard({ user, profile }) {
           ) : dashboardData ? (
             <>
               <UnifiedExecutiveSummary data={dashboardData} />
-              <SmartAlertsPanel barbershop_id={profile?.barbershop_id || user?.barbershop_id || 'demo'} />
+              {(profile?.barbershop_id || user?.barbershop_id) && (
+                <SmartAlertsPanel barbershop_id={profile?.barbershop_id || user?.barbershop_id} />
+              )}
             </>
           ) : null}
         </>

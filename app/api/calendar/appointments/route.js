@@ -32,8 +32,13 @@ export async function GET(request) {
     let query = supabase.from('bookings').select('*')
     
     // Add shop_id filter to prevent returning entire database
-    const filterShopId = shopId || 'demo-shop-001'
-    query = query.eq('shop_id', filterShopId)
+    if (!shopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'shop_id parameter is required'
+      }, { status: 400 })
+    }
+    query = query.eq('shop_id', shopId)
     
     if (startDate) {
       query = query.gte('start_time', startDate)
@@ -232,7 +237,7 @@ export async function POST(request) {
         name: body.client_name || body.customer_name,
         email: body.client_email || body.customer_email,
         phone: body.client_phone || body.customer_phone,
-        shop_id: body.shop_id || body.barbershop_id || 'demo-shop-001',
+        shop_id: body.shop_id || body.barbershop_id,
         notification_preferences: body.notification_preferences || {
           sms: true,
           email: true,

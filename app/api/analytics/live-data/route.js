@@ -47,7 +47,7 @@ export async function GET(request) {
 
     const cacheType = 'live-analytics';
     const cacheParams = { 
-      barbershopId: barbershopId || 'demo-shop-001', 
+      barbershopId, 
       format, 
       metric, 
       periodType,
@@ -145,7 +145,14 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
     const { createClient } = await import('../../../../lib/supabase/server');
     const supabase = createClient();
     
-    const shopId = barbershopId || 'demo-shop-001';
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id is required'
+      }, { status: 400 })
+    }
+    
+    const shopId = barbershopId;
     
     // Query all relevant tables for comprehensive analytics
     const [

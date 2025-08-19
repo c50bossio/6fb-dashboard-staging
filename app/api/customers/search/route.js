@@ -11,7 +11,14 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
-    const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001'
+    const barbershopId = searchParams.get('barbershop_id')
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        customers: [],
+        error: 'barbershop_id parameter is required'
+      }, { status: 400 })
+    }
     const limit = parseInt(searchParams.get('limit')) || 10
 
     if (!query || query.length < 2) {
@@ -87,7 +94,13 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { phone, email, barbershop_id = 'demo-shop-001' } = await request.json()
+    const { phone, email, barbershop_id } = await request.json()
+    
+    if (!barbershop_id) {
+      return NextResponse.json({
+        error: 'barbershop_id is required'
+      }, { status: 400 })
+    }
 
     if (!phone && !email) {
       return NextResponse.json(
