@@ -79,7 +79,6 @@ export function middleware(request) {
 
   // 🛡️ AUTHENTICATION BYPASS: Allow auth flows to proceed
   const authPaths = [
-    '/auth/callback',
     '/api/auth/callback', 
     '/auth/login',
     '/auth/signup',
