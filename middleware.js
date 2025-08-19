@@ -3,6 +3,11 @@ import { NextResponse } from 'next/server'
 export function middleware(request) {
   const { pathname } = request.nextUrl
   
+  // 🔓 Skip middleware for auth callback routes to prevent OAuth interference
+  if (pathname.startsWith('/auth/callback')) {
+    return NextResponse.next()
+  }
+  
   // 🛡️ Block access to sensitive files
   const blockedPaths = [
     '/.env',
