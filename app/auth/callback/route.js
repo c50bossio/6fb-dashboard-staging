@@ -7,17 +7,10 @@ export async function GET(request) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
   
-  console.log('🔐 OAuth callback received:', { 
-    hasCode: !!code, 
-    next,
-    origin,
-    url: request.url 
-  })
-
   if (code) {
     const cookieStore = cookies()
     
-    // Create Supabase client with proper cookie handling for OAuth
+    // Create Supabase server client
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -28,64 +21,31 @@ export async function GET(request) {
           },
           set(name, value, options) {
             try {
-              cookieStore.set({ 
-                name, 
-                value, 
-                ...options,
-                sameSite: 'lax',
-                secure: true 
-              })
-            } catch (error) {
-              // This is fine - Server Components can't set cookies after streaming starts
+              cookieStore.set({ name, value, ...options })
+            } catch {
+              // Server component cookie handling - this is expected
             }
           },
           remove(name, options) {
             try {
-              cookieStore.delete(name)
-            } catch (error) {
-              // This is fine - Server Components can't set cookies after streaming starts
+              cookieStore.set({ name, value: '', ...options })
+            } catch {
+              // Server component cookie handling - this is expected
             }
           },
         },
       }
     )
     
-    try {
-      // Exchange the code for a session
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-      
-      if (error) {
-        console.error('❌ OAuth exchange error:', error)
-        return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`)
-      }
-      
-      if (data?.session) {
-        console.log('✅ OAuth successful, session created for:', data.session.user.email)
-        
-        // Successfully authenticated - redirect to dashboard or requested page
-        const forwardedHost = request.headers.get('x-forwarded-host')
-        const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'https'
-        
-        if (forwardedHost) {
-          // Production environment with custom domain
-          return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${next}`)
-        }
-        
-        // Default redirect
-        return NextResponse.redirect(`${origin}${next}`)
-      }
-      
-      // No error but also no session - something went wrong
-      console.warn('⚠️ No session created after code exchange')
-      return NextResponse.redirect(`${origin}/login?error=Failed to create session`)
-      
-    } catch (error) {
-      console.error('❌ Unexpected error in OAuth callback:', error)
-      return NextResponse.redirect(`${origin}/login?error=Authentication failed`)
+    // Exchange code for session
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (!error) {
+      // Successfully authenticated - redirect to dashboard
+      return NextResponse.redirect(`${origin}${next}`)
     }
   }
-
-  // No code provided - redirect to login
-  console.warn('⚠️ OAuth callback called without code parameter')
-  return NextResponse.redirect(`${origin}/login?error=No authorization code provided`)
+  
+  // Auth failed - redirect to login
+  return NextResponse.redirect(`${origin}/login`)
 }

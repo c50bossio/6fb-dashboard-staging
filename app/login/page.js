@@ -62,6 +62,8 @@ export default function LoginPage() {
       })
       
       if (error) throw error
+      
+      // OAuth initiated successfully - browser will redirect
     } catch (err) {
       console.error('OAuth initiation error:', err)
       setError('Failed to connect with Google. Please try again.')
