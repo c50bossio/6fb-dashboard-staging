@@ -24,122 +24,22 @@ export default function LoginPage() {
   const router = useRouter()
   const { signInWithGoogle, signIn, signUp, resetPassword } = useAuth()
   
-  // Check for OAuth callback on page load
+  // Check for OAuth errors on page load - let Supabase handle session detection automatically
   useEffect(() => {
-    const handleOAuthCallback = async () => {
+    const handleOAuthCallback = () => {
       const urlParams = new URLSearchParams(window.location.search)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1))
-      const code = urlParams.get('code')
       const error = urlParams.get('error')
-      const accessToken = hashParams.get('access_token')
       
       if (error) {
         setError(`OAuth error: ${error}`)
         return
       }
       
-      if (code || accessToken) {
-        console.log('OAuth callback detected, processing...', { code: !!code, accessToken: !!accessToken })
-        setIsLoading(true)
-        
-        // Set a timeout to prevent infinite loading
-        const timeoutId = setTimeout(() => {
-          console.error('OAuth processing timeout')
-          setError('Authentication timeout. Please try again.')
-          setIsLoading(false)
-        }, 10000) // 10 second timeout
-        
-        try {
-          const supabase = createClient()
-          
-          if (code) {
-            // PKCE flow - exchange code for session
-            console.log('Exchanging code for session...')
-            
-            try {
-              // Add timeout to the specific exchange call
-              const exchangePromise = supabase.auth.exchangeCodeForSession(code)
-              const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Code exchange timeout')), 5000)
-              })
-              
-              const { data, error } = await Promise.race([exchangePromise, timeoutPromise])
-              console.log('Code exchange result:', { data, error })
-              
-              if (error) {
-                console.error('Code exchange error:', error)
-                clearTimeout(timeoutId)
-                setError(`Authentication failed: ${error.message}`)
-                setIsLoading(false)
-                return
-              }
-              
-              if (data?.session) {
-                console.log('Session created successfully:', data.session)
-                console.log('User data:', data.user)
-                
-                clearTimeout(timeoutId) // Clear the timeout
-                
-                // Clear URL parameters and redirect
-                window.history.replaceState({}, document.title, '/login')
-                
-                // Set success message briefly before redirect
-                setSuccess('Authentication successful! Redirecting...')
-                
-                setTimeout(() => {
-                  router.push('/dashboard')
-                }, 500)
-                return
-              } else {
-                console.warn('No session in exchange response:', data)
-                clearTimeout(timeoutId)
-                setError('Authentication failed: No session created')
-                setIsLoading(false)
-                return
-              }
-            } catch (exchangeError) {
-              console.error('Code exchange failed with exception:', exchangeError)
-              clearTimeout(timeoutId)
-              
-              // If exchange fails, try alternative approach - manual session retrieval
-              console.log('Attempting alternative authentication...')
-              try {
-                const { data: { user }, error: userError } = await supabase.auth.getUser()
-                if (user && !userError) {
-                  console.log('Alternative auth successful:', user)
-                  setSuccess('Authentication successful! Redirecting...')
-                  window.history.replaceState({}, document.title, '/login')
-                  setTimeout(() => router.push('/dashboard'), 500)
-                  return
-                }
-              } catch (altError) {
-                console.error('Alternative auth failed:', altError)
-              }
-              
-              setError(`Authentication error: ${exchangeError.message}`)
-              setIsLoading(false)
-              return
-            }
-          }
-          
-          if (accessToken) {
-            // Implicit flow - access token received directly
-            console.log('Access token received, redirecting to dashboard...')
-            clearTimeout(timeoutId)
-            // Clear URL hash and redirect
-            window.history.replaceState({}, document.title, '/login')
-            router.push('/dashboard')
-            return
-          }
-          
-        } catch (err) {
-          console.error('OAuth processing error:', err)
-          clearTimeout(timeoutId)
-          setError('Authentication failed. Please try again.')
-        }
-        
-        clearTimeout(timeoutId)
-        setIsLoading(false)
+      // If there's a code parameter, Supabase will automatically handle it via detectSessionInUrl
+      const code = urlParams.get('code')
+      if (code) {
+        console.log('OAuth callback detected - Supabase will handle automatically')
+        setSuccess('Processing authentication...')
       }
     }
     
