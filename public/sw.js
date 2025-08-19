@@ -46,6 +46,12 @@ self.addEventListener('fetch', (event) => {
 
   if (request.method !== 'GET') return;
 
+  // Skip service worker for authentication-related routes
+  const authPaths = ['/auth/', '/api/auth/', '/login', '/register', '/api/supabase/'];
+  if (authPaths.some(path => url.pathname.startsWith(path))) {
+    return; // Let the browser handle these requests directly
+  }
+
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       networkFirstStrategy(request, API_CACHE, API_CACHE_MAX_AGE)
@@ -96,6 +102,7 @@ async function networkFirstStrategy(request, cacheName, maxAge) {
     
     return response;
   } catch (error) {
+    console.log('[SW] Network request failed, trying cache:', request.url);
     const cached = await caches.match(request);
     
     if (cached) {
