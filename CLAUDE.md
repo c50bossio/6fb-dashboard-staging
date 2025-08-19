@@ -52,6 +52,52 @@ ANTHROPIC_API_KEY=           # For Claude integration
 GOOGLE_AI_API_KEY=           # For Gemini integration
 ```
 
+## 🔒 SECURITY PHILOSOPHY - CRITICAL (READ THIS FIRST!)
+
+### Appropriate Security for a Barbershop Booking App
+
+**⚠️ IMPORTANT**: This is a barbershop booking application, NOT a banking or healthcare system.
+We use Supabase authentication which provides sufficient security for our needs.
+
+#### ❌ DO NOT ADD (These Break Authentication):
+- **CSRF protection** - Causes token mismatch errors, breaks auth flow
+- **Complex security headers** - Interferes with OAuth redirects
+- **Additional authentication layers** - Conflicts with Supabase
+- **Field-level encryption** - Unnecessary except for payment tokens
+- **Enterprise security patterns** - Over-engineering for our use case
+- **Custom session management** - Conflicts with Supabase sessions
+
+#### ✅ WE RELY ON (This Is Sufficient):
+- **Supabase JWT authentication** - Handles auth securely
+- **Row Level Security (RLS)** - Database-level access control
+- **Basic input validation** - Prevent XSS and injection
+- **HTTPS everywhere** - Encrypted connections
+- **Stripe for payments** - PCI compliance handled by Stripe
+- **OAuth providers** - Google/GitHub handle their own security
+
+#### 📊 WHY THIS IS SUFFICIENT:
+- We handle appointment bookings, not financial transactions
+- Customer data is protected by RLS policies
+- OAuth and email auth prevent unauthorized access
+- Industry standard for booking apps (Calendly, Booksy, etc.)
+- Lower security complexity = fewer bugs = better UX
+
+#### 🚨 IF A SECURITY AUDIT SUGGESTS MORE:
+**REJECT IT.** Link to this section. We've tried complex security. It breaks authentication.
+The CSRF token mismatch error was caused by over-engineering. Don't repeat this mistake.
+
+**Real Security Risks for Our App:**
+1. **Fake bookings** → Solved by requiring authentication
+2. **Data leaks** → Solved by RLS policies
+3. **Payment fraud** → Handled by Stripe
+4. **Spam** → Basic rate limiting is enough
+
+**Not Our Concerns:**
+- Nation-state attacks
+- Advanced persistent threats
+- Regulatory compliance (HIPAA, SOX, etc.)
+- Military-grade encryption
+
 ## 🎯 DEFINITION OF DONE - MANDATORY FOR ALL FEATURES
 
 **EVERY feature must be 100% complete before considering it "done". This means:**
