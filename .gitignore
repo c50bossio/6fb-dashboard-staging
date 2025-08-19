@@ -180,3 +180,4 @@ evaluations/__pycache__/
 services/__pycache__/
 
 .env.vercel-check
+.env.vercel
