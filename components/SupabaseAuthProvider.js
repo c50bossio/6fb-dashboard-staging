@@ -181,16 +181,27 @@ function SupabaseAuthProvider({ children }) {
           }
           
           // Direct navigation logic - immediate redirect on sign-in from login page
-          console.log('Auth state change - SIGNED_IN completed, current path:', window.location.pathname)
+          const currentPath = window.location.pathname
+          const currentUrl = window.location.href
+          console.log('Auth state change - SIGNED_IN completed, current path:', currentPath, 'Full URL:', currentUrl)
           
           // Check if we're on login page (including with OAuth code parameters)
-          if (window.location.pathname === '/login' || 
-              window.location.pathname === '/login-clean' ||
-              window.location.pathname.startsWith('/login')) {
-            console.log('Redirecting to dashboard immediately after successful sign-in')
+          // Also check the full URL in case the pathname isn't what we expect
+          if (currentPath === '/login' || 
+              currentPath === '/login-clean' ||
+              currentPath.startsWith('/login') ||
+              currentUrl.includes('/login')) {
+            console.log('✅ Redirecting to dashboard immediately after successful sign-in')
             // Clean the URL and redirect
-            window.history.replaceState({}, document.title, window.location.pathname)
+            window.history.replaceState({}, document.title, '/login')
             router.push('/dashboard')
+          } else {
+            console.log('⚠️ Not on login page, current path:', currentPath)
+            // If we're not on login but user just signed in, still redirect to dashboard
+            if (!currentPath.startsWith('/dashboard')) {
+              console.log('🔄 Redirecting to dashboard from:', currentPath)
+              router.push('/dashboard')
+            }
           }
         } catch (error) {
           console.error('❌ Error in auth state change handler:', error)
