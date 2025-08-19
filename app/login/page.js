@@ -42,26 +42,59 @@ export default function LoginPage() {
         console.log('OAuth callback detected, processing...', { code: !!code, accessToken: !!accessToken })
         setIsLoading(true)
         
+        // Set a timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => {
+          console.error('OAuth processing timeout')
+          setError('Authentication timeout. Please try again.')
+          setIsLoading(false)
+        }, 10000) // 10 second timeout
+        
         try {
           const supabase = createClient()
           
           if (code) {
             // PKCE flow - exchange code for session
             console.log('Exchanging code for session...')
-            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
             
-            if (error) {
-              console.error('Code exchange error:', error)
-              setError('Authentication failed. Please try again.')
+            try {
+              const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+              console.log('Code exchange result:', { data, error })
+              
+              if (error) {
+                console.error('Code exchange error:', error)
+                setError(`Authentication failed: ${error.message}`)
+                setIsLoading(false)
+                return
+              }
+              
+              if (data?.session) {
+                console.log('Session created successfully:', data.session)
+                console.log('User data:', data.user)
+                
+                clearTimeout(timeoutId) // Clear the timeout
+                
+                // Clear URL parameters and redirect
+                window.history.replaceState({}, document.title, '/login')
+                
+                // Set success message briefly before redirect
+                setSuccess('Authentication successful! Redirecting...')
+                
+                setTimeout(() => {
+                  router.push('/dashboard')
+                }, 500)
+                return
+              } else {
+                console.warn('No session in exchange response:', data)
+                clearTimeout(timeoutId)
+                setError('Authentication failed: No session created')
+                setIsLoading(false)
+                return
+              }
+            } catch (exchangeError) {
+              console.error('Code exchange failed with exception:', exchangeError)
+              clearTimeout(timeoutId)
+              setError(`Authentication error: ${exchangeError.message}`)
               setIsLoading(false)
-              return
-            }
-            
-            if (data?.session) {
-              console.log('Session created successfully, redirecting to dashboard...')
-              // Clear URL parameters and redirect
-              window.history.replaceState({}, document.title, '/login')
-              router.push('/dashboard')
               return
             }
           }
@@ -69,6 +102,7 @@ export default function LoginPage() {
           if (accessToken) {
             // Implicit flow - access token received directly
             console.log('Access token received, redirecting to dashboard...')
+            clearTimeout(timeoutId)
             // Clear URL hash and redirect
             window.history.replaceState({}, document.title, '/login')
             router.push('/dashboard')
@@ -77,9 +111,11 @@ export default function LoginPage() {
           
         } catch (err) {
           console.error('OAuth processing error:', err)
+          clearTimeout(timeoutId)
           setError('Authentication failed. Please try again.')
         }
         
+        clearTimeout(timeoutId)
         setIsLoading(false)
       }
     }
