@@ -38,23 +38,31 @@ export async function GET(request) {
     )
     
     // Exchange the code for a session
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
-    if (!error) {
+    if (!error && data?.session) {
+      // Successful authentication - redirect to dashboard
+      const redirectTo = next === '/' ? '/dashboard' : next
+      
       // Handle production environment with potential load balancers
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
       
       if (isLocalEnv) {
         // Local development - no load balancer
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${redirectTo}`)
       } else if (forwardedHost) {
         // Production with load balancer
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        return NextResponse.redirect(`https://${forwardedHost}${redirectTo}`)
       } else {
         // Production without load balancer
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${redirectTo}`)
       }
+    }
+    
+    // Log error for debugging
+    if (error) {
+      console.error('OAuth exchange error:', error)
     }
   }
 
