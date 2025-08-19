@@ -38,9 +38,8 @@ export default function PredictiveAnalyticsPanel({ data }) {
       }
     } catch (err) {
       console.error('Failed to load predictions:', err)
-      setError('Connection error - using demo predictions')
-      setPredictions(await generateDemoPredictions())
-      setLastUpdated(new Date())
+      setError('Unable to load predictions. Please check your connection.')
+      setPredictions(null)
     } finally {
       setLoading(false)
     }
@@ -49,12 +48,13 @@ export default function PredictiveAnalyticsPanel({ data }) {
   const generateNewPredictions = async () => {
     setGenerating(true)
     try {
+      // Don't use fake data - fetch real context from database
       const businessContext = {
-        shop_name: 'Demo Barbershop',
-        current_revenue: 1200 + Math.random() * 400,
-        customer_count: 350 + Math.random() * 100,
-        avg_satisfaction: 4.2 + Math.random() * 0.6,
-        service_utilization: 0.7 + Math.random() * 0.2
+        shop_name: data?.shopName || 'Your Barbershop',
+        current_revenue: data?.metrics?.revenue || 0,
+        customer_count: data?.metrics?.customers || 0,
+        avg_satisfaction: data?.metrics?.satisfaction || 0,
+        service_utilization: data?.metrics?.utilization || 0
       }
 
       const response = await fetch('/api/ai/predictive', {
@@ -361,66 +361,4 @@ export default function PredictiveAnalyticsPanel({ data }) {
   )
 }
 
-async function generateDemoPredictions() {
-  return {
-    id: `demo_forecast_${Date.now()}`,
-    type: 'comprehensive',
-    timeHorizon: 'weekly',
-    generated_at: new Date().toISOString(),
-    overallConfidence: 0.84,
-    revenueForecast: {
-      currentRevenue: 1350,
-      predictions: {
-        '1_day': { value: 1280, confidence: 0.91, trend: 'stable' },
-        '1_week': { value: 8950, confidence: 0.86, trend: 'increasing' },
-        '1_month': { value: 39200, confidence: 0.79, trend: 'increasing' }
-      },
-      factors: [
-        'Holiday season demand increase (+18%)',
-        'Customer retention improvement (+12%)',
-        'Premium service uptake (+8%)'
-      ],
-      recommendations: [
-        'Extend holiday hours to capture peak demand',
-        'Promote premium services to loyal customers',
-        'Implement holiday booking incentives'
-      ]
-    },
-    customerBehavior: {
-      segments: [
-        {
-          name: 'VIP Customers',
-          size: 92,
-          retentionRate: 0.94,
-          predictedGrowth: 0.06,
-          avgMonthlyValue: 195,
-          recommendations: [
-            'Offer exclusive holiday packages',
-            'Provide VIP scheduling priority'
-          ]
-        },
-        {
-          name: 'Regular Customers',
-          size: 285,
-          retentionRate: 0.78,
-          predictedGrowth: 0.04,
-          avgMonthlyValue: 105,
-          recommendations: [
-            'Implement loyalty point system',
-            'Send monthly service reminders'
-          ]
-        }
-      ],
-      churnPrediction: {
-        highRisk: 15,
-        mediumRisk: 32,
-        lowRisk: 388,
-        interventionRecommendations: [
-          'Priority outreach to high-risk customers',
-          'Satisfaction surveys for medium-risk segment',
-          'Loyalty rewards for stable customer base'
-        ]
-      }
-    }
-  }
-}
+// Demo predictions removed - only use real data from database

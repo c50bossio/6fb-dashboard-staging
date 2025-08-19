@@ -113,13 +113,22 @@ async def chat_endpoint(request: ChatRequest, current_user: dict = Depends(get_c
         raise HTTPException(status_code=503, detail="AI orchestrator not available")
     
     try:
+        # Extract barbershop_id from authenticated user context
+        barbershop_id = request.barbershop_id or current_user.get("barbershop_id")
+        
+        if not barbershop_id:
+            raise HTTPException(
+                status_code=400, 
+                detail="No barbershop associated with user. Please set up your barbershop profile first."
+            )
+        
         # Use memory manager for chat operations
         with memory_manager.memory_context("chat_endpoint"):
             response = await ai_orchestrator.process_chat(
                 message=request.message,
                 model=request.model,
                 context=request.context,
-                barbershop_id=request.barbershop_id
+                barbershop_id=barbershop_id
             )
             
             return ChatResponse(
@@ -138,12 +147,22 @@ async def unified_chat(request: UnifiedChatRequest, current_user: dict = Depends
         raise HTTPException(status_code=503, detail="AI orchestrator not available")
     
     try:
+        # Extract real user context
+        barbershop_id = request.barbershop_id or current_user.get("barbershop_id")
+        user_id = request.user_id or current_user.get("user_id")
+        
+        if not barbershop_id:
+            raise HTTPException(
+                status_code=400, 
+                detail="No barbershop associated with user. Please set up your barbershop profile first."
+            )
+        
         with memory_manager.memory_context("unified_chat"):
             response = await ai_orchestrator.unified_chat(
                 user_message=request.user_message,
                 context=request.context,
-                barbershop_id=request.barbershop_id,
-                user_id=request.user_id,
+                barbershop_id=barbershop_id,
+                user_id=user_id,
                 conversation_id=request.conversation_id
             )
             return response
@@ -157,11 +176,20 @@ async def enhanced_chat(request: EnhancedChatRequest, current_user: dict = Depen
         raise HTTPException(status_code=503, detail="AI orchestrator not available")
     
     try:
+        # Extract barbershop_id from authenticated user context
+        barbershop_id = request.barbershop_id or current_user.get("barbershop_id")
+        
+        if not barbershop_id:
+            raise HTTPException(
+                status_code=400, 
+                detail="No barbershop associated with user. Please set up your barbershop profile first."
+            )
+        
         with memory_manager.memory_context("enhanced_chat"):
             response = await ai_orchestrator.enhanced_chat(
                 message=request.message,
                 context=request.context,
-                barbershop_id=request.barbershop_id,
+                barbershop_id=barbershop_id,
                 model=request.model,
                 temperature=request.temperature,
                 max_tokens=request.max_tokens
@@ -243,6 +271,29 @@ async def clear_ai_cache(current_user: dict = Depends(get_current_user)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear cache: {str(e)}")
 
+@router.post("/ai/cache/invalidate")
+async def invalidate_barbershop_cache(current_user: dict = Depends(get_current_user)):
+    """Invalidate AI cache for current user's barbershop"""
+    if not AI_ORCHESTRATOR_AVAILABLE:
+        raise HTTPException(status_code=503, detail="AI orchestrator not available")
+    
+    try:
+        barbershop_id = current_user.get("barbershop_id")
+        if not barbershop_id:
+            raise HTTPException(
+                status_code=400, 
+                detail="No barbershop associated with user"
+            )
+        
+        keys_deleted = await ai_orchestrator.invalidate_barbershop_cache(barbershop_id)
+        return {
+            "status": "invalidated", 
+            "barbershop_id": barbershop_id,
+            "keys_deleted": keys_deleted
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to invalidate cache: {str(e)}")
+
 @router.post("/ai/cache/warm")
 async def warm_ai_cache(current_user: dict = Depends(get_current_user)):
     """Warm up AI cache"""
@@ -286,6 +337,18 @@ async def generate_ai_insights(request: Dict[str, Any], current_user: dict = Dep
         raise HTTPException(status_code=503, detail="AI orchestrator not available")
     
     try:
+        # Extract barbershop_id from authenticated user context
+        barbershop_id = request.get("barbershop_id") or current_user.get("barbershop_id")
+        
+        if not barbershop_id:
+            raise HTTPException(
+                status_code=400, 
+                detail="No barbershop associated with user. Please set up your barbershop profile first."
+            )
+        
+        # Ensure barbershop_id is in the request
+        request["barbershop_id"] = barbershop_id
+        
         with memory_manager.memory_context("generate_insights"):
             insights = await ai_orchestrator.generate_insights(request)
             return insights
@@ -323,6 +386,18 @@ async def generate_predictive_analytics(request: Dict[str, Any], current_user: d
         raise HTTPException(status_code=503, detail="AI orchestrator not available")
     
     try:
+        # Extract barbershop_id from authenticated user context
+        barbershop_id = request.get("barbershop_id") or current_user.get("barbershop_id")
+        
+        if not barbershop_id:
+            raise HTTPException(
+                status_code=400, 
+                detail="No barbershop associated with user. Please set up your barbershop profile first."
+            )
+        
+        # Ensure barbershop_id is in the request
+        request["barbershop_id"] = barbershop_id
+        
         with memory_manager.memory_context("predictive_analytics"):
             predictions = await ai_orchestrator.generate_predictive_analytics(request)
             return predictions

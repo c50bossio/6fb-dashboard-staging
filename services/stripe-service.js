@@ -407,6 +407,217 @@ class StripeService {
       };
     }
   }
+
+  // ==========================================
+  // Refund Methods
+  // ==========================================
+
+  async createRefund(paymentIntentId, options = {}) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    const {
+      amount = null, // null for full refund
+      reason = 'requested_by_customer',
+      metadata = {}
+    } = options;
+
+    try {
+      const refundParams = {
+        payment_intent: paymentIntentId,
+        reason: reason,
+        metadata: {
+          refund_requested_at: new Date().toISOString(),
+          ...metadata
+        }
+      };
+
+      if (amount) {
+        refundParams.amount = Math.round(amount * 100); // Convert to cents
+      }
+
+      const refund = await this.stripe.refunds.create(refundParams);
+
+      return {
+        success: true,
+        refundId: refund.id,
+        amount: refund.amount / 100,
+        currency: refund.currency,
+        status: refund.status,
+        reason: refund.reason
+      };
+    } catch (error) {
+      console.error('Stripe refund creation error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async getRefund(refundId) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const refund = await this.stripe.refunds.retrieve(refundId);
+
+      return {
+        success: true,
+        refund: {
+          id: refund.id,
+          amount: refund.amount / 100,
+          currency: refund.currency,
+          status: refund.status,
+          reason: refund.reason,
+          created: new Date(refund.created * 1000),
+          paymentIntentId: refund.payment_intent
+        }
+      };
+    } catch (error) {
+      console.error('Stripe refund retrieval error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async listRefunds(paymentIntentId, limit = 10) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const refunds = await this.stripe.refunds.list({
+        payment_intent: paymentIntentId,
+        limit: limit
+      });
+
+      return {
+        success: true,
+        refunds: refunds.data.map(refund => ({
+          id: refund.id,
+          amount: refund.amount / 100,
+          currency: refund.currency,
+          status: refund.status,
+          reason: refund.reason,
+          created: new Date(refund.created * 1000)
+        }))
+      };
+    } catch (error) {
+      console.error('Stripe refunds list error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async cancelRefund(refundId) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const refund = await this.stripe.refunds.cancel(refundId);
+
+      return {
+        success: true,
+        refundId: refund.id,
+        status: refund.status
+      };
+    } catch (error) {
+      console.error('Stripe refund cancellation error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // ==========================================
+  // Payment Intent Methods for Booking Refunds
+  // ==========================================
+
+  async getPaymentIntent(paymentIntentId) {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
+
+      return {
+        success: true,
+        paymentIntent: {
+          id: paymentIntent.id,
+          amount: paymentIntent.amount / 100,
+          currency: paymentIntent.currency,
+          status: paymentIntent.status,
+          created: new Date(paymentIntent.created * 1000),
+          metadata: paymentIntent.metadata
+        }
+      };
+    } catch (error) {
+      console.error('Stripe payment intent retrieval error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async processBookingRefund(bookingId, paymentIntentId, refundAmount, reason = 'requested_by_customer') {
+    if (!this.initialized) {
+      throw new Error('Stripe not initialized - missing API key');
+    }
+
+    try {
+      // First, get the payment intent to validate
+      const paymentIntentResult = await this.getPaymentIntent(paymentIntentId);
+      if (!paymentIntentResult.success) {
+        throw new Error(`Unable to retrieve payment intent: ${paymentIntentResult.error}`);
+      }
+
+      const paymentIntent = paymentIntentResult.paymentIntent;
+
+      // Validate refund amount
+      if (refundAmount > paymentIntent.amount) {
+        throw new Error(`Refund amount ($${refundAmount}) cannot exceed original payment ($${paymentIntent.amount})`);
+      }
+
+      // Create the refund
+      const refundResult = await this.createRefund(paymentIntentId, {
+        amount: refundAmount,
+        reason: reason,
+        metadata: {
+          booking_id: bookingId,
+          refund_type: 'booking_cancellation'
+        }
+      });
+
+      if (!refundResult.success) {
+        throw new Error(`Refund failed: ${refundResult.error}`);
+      }
+
+      return {
+        success: true,
+        refund: refundResult,
+        originalPayment: paymentIntent,
+        message: `Successfully processed refund of $${refundAmount} for booking ${bookingId}`
+      };
+
+    } catch (error) {
+      console.error('Booking refund processing error:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 const stripeService = new StripeService();

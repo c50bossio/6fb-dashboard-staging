@@ -266,9 +266,34 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
       .limit(200)
 
     const totalRevenue = bookings?.reduce((sum, b) => sum + (b.price || 0), 0) || 0
-    const avgDailyRevenue = totalRevenue / 90  // Over 90 days now
     const totalBookings = bookings?.length || 0
-    const avgDailyBookings = totalBookings / 90
+    
+    // Only calculate averages if we have data
+    const avgDailyRevenue = totalBookings > 0 ? totalRevenue / 90 : 0
+    const avgDailyBookings = totalBookings > 0 ? totalBookings / 90 : 0
+    
+    // If no bookings, return empty predictions
+    if (totalBookings === 0) {
+      return {
+        id: `forecast_${Date.now()}`,
+        type: forecastType,
+        timeHorizon,
+        generated_at: new Date().toISOString(),
+        overallConfidence: 0,
+        dataSource: 'insufficient_data',
+        message: 'Not enough data to generate predictions. Start booking appointments to see forecasts.',
+        revenueForecast: {
+          currentRevenue: 0,
+          predictions: {
+            '1_day': { value: 0, confidence: 0, trend: 'no_data' },
+            '1_week': { value: 0, confidence: 0, trend: 'no_data' },
+            '1_month': { value: 0, confidence: 0, trend: 'no_data' }
+          },
+          factors: ['No historical data available'],
+          recommendations: ['Start collecting booking data to enable predictions']
+        }
+      }
+    }
     
     const seasonalAnalysis = analyzeSeasonalPatterns(bookings)
     const customerLifecycle = analyzeCustomerLifecycle(bookings, customers)
@@ -302,18 +327,18 @@ async function fetchRealPredictionsFromSupabase(supabase, userId, forecastType =
         predictions: {
           '1_day': { 
             value: Math.round(avgDailyRevenue * 0.95), 
-            confidence: 0.89, 
-            trend: avgDailyRevenue > 1000 ? 'increasing' : 'stable' 
+            confidence: totalBookings > 30 ? 0.89 : 0.45, 
+            trend: totalBookings > 10 ? (avgDailyRevenue > 100 ? 'increasing' : 'stable') : 'insufficient_data'
           },
           '1_week': { 
             value: Math.round(avgDailyRevenue * 7 * 1.02), 
-            confidence: 0.84, 
-            trend: 'increasing' 
+            confidence: totalBookings > 30 ? 0.84 : 0.40, 
+            trend: totalBookings > 10 ? 'stable' : 'insufficient_data'
           },
           '1_month': { 
             value: Math.round(avgDailyRevenue * 30 * 1.05), 
-            confidence: 0.78, 
-            trend: 'increasing' 
+            confidence: totalBookings > 30 ? 0.78 : 0.35, 
+            trend: totalBookings > 10 ? 'stable' : 'insufficient_data'
           }
         },
         factors: [

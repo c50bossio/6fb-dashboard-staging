@@ -24,60 +24,51 @@ export default function AICoachPanel({ data }) {
   const insights = data?.insights || []
   const recommendations = data?.recommendations || []
 
-  const coaches = [
+  // Define coach templates - insights will come from database
+  const coachTemplates = [
     {
       id: 'financial',
       name: 'Financial Coach',
       icon: CurrencyDollarIcon,
       color: 'green',
-      description: 'Revenue optimization & financial planning',
-      status: agents.find(a => a.name === 'Financial Coach')?.status || 'active',
-      insights: [
-        'Peak hours are 25% under-priced compared to market',
-        'Tuesday promotions could increase revenue by $3,000/month',
-        'Consider bundle packages for regular customers'
-      ]
+      description: 'Revenue optimization & financial planning'
     },
     {
       id: 'strategic',
       name: 'Strategic Pricing',
       icon: ChartBarIcon,
       color: 'blue',
-      description: 'Dynamic pricing & market positioning',
-      status: agents.find(a => a.name === 'Strategic Pricing')?.status || 'active',
-      insights: [
-        'Implement surge pricing for Saturday mornings',
-        'Loyalty program could increase retention by 30%',
-        'Service bundling opportunity identified'
-      ]
+      description: 'Dynamic pricing & market positioning'
     },
     {
       id: 'marketing',
       name: 'Marketing Expert',
       icon: MegaphoneIcon,
       color: 'purple',
-      description: 'Customer acquisition & engagement',
-      status: agents.find(a => a.name === 'Marketing Expert')?.status || 'active',
-      insights: [
-        'Social media engagement up 40% this month',
-        'Email campaign ROI: 5.2x',
-        'Referral program ready for launch'
-      ]
+      description: 'Customer acquisition & engagement'
     },
     {
       id: 'operations',
       name: 'Operations Manager',
       icon: CogIcon,
       color: 'amber',
-      description: 'Efficiency & resource optimization',
-      status: agents.find(a => a.name === 'Operations Manager')?.status || 'idle',
-      insights: [
-        'Staff utilization at 85% - optimal range',
-        'Appointment gaps reduced by 20%',
-        'Supply costs optimized, saving $500/month'
-      ]
+      description: 'Efficiency & resource optimization'
     }
   ]
+
+  // Merge real agent data with templates
+  const coaches = coachTemplates.map(template => {
+    const agentData = agents.find(a => a.name === template.name)
+    const agentInsights = insights.filter(i => i.agent_type === template.id)
+    
+    return {
+      ...template,
+      status: agentData?.status || 'inactive',
+      insights: agentInsights.map(i => i.message) || [],
+      lastActivity: agentData?.lastInsight || null,
+      confidence: agentData?.confidence || 0
+    }
+  })
 
   const handleCoachInteraction = async (coach) => {
     setSelectedCoach(coach)
@@ -138,7 +129,8 @@ export default function AICoachPanel({ data }) {
           {recommendations.length === 0 && (
             <div className="text-center py-8">
               <SparklesIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">AI coaches are analyzing your business...</p>
+              <p className="text-gray-500">No recommendations available yet</p>
+              <p className="text-xs text-gray-400 mt-2">AI coaches need more data to generate insights</p>
             </div>
           )}
         </div>
@@ -231,9 +223,15 @@ const CoachCard = ({ coach, onInteract, isSelected, isLoading }) => {
 
       <div className="space-y-2">
         <div className="text-xs text-gray-500">Latest insight:</div>
-        <p className="text-sm text-gray-700 line-clamp-2">
-          {coach.insights[0]}
-        </p>
+        {coach.insights && coach.insights.length > 0 ? (
+          <p className="text-sm text-gray-700 line-clamp-2">
+            {coach.insights[0]}
+          </p>
+        ) : (
+          <p className="text-sm text-gray-400 italic">
+            {coach.status === 'active' ? 'Analyzing data...' : 'No insights available'}
+          </p>
+        )}
       </div>
 
       <button className={`

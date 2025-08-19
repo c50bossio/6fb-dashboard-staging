@@ -183,9 +183,10 @@ export default function UnifiedDashboard({ user, profile }) {
         // Handle AI insights mode
         if (currentMode === DASHBOARD_MODES.AI_INSIGHTS) {
           const aiData = processedData.ai_activity || {}
+          // Use real counts from database, no defaults
           setAiAgents({
-            total: 6, // Default AI agent count
-            active: aiData.active_agents || 4
+            total: aiData.total_agents || 0,
+            active: aiData.active_agents || 0
           })
         }
 
@@ -318,14 +319,22 @@ export default function UnifiedDashboard({ user, profile }) {
                   <p className="text-gold-100">Intelligent recommendations to grow your business</p>
                 </div>
                 <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold">{aiAgents.total || 6}</div>
-                    <div className="text-sm text-gold-100">AI Coaches</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold">{aiAgents.active || 4}</div>
-                    <div className="text-sm text-gold-100">Working for You</div>
-                  </div>
+                  {aiAgents.total > 0 ? (
+                    <>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold">{aiAgents.total}</div>
+                        <div className="text-sm text-gold-100">AI Coaches</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold">{aiAgents.active}</div>
+                        <div className="text-sm text-gold-100">Working for You</div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-sm text-gold-100">
+                      AI agents initializing...
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

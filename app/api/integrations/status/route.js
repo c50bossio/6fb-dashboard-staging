@@ -1,133 +1,206 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { integrationConfigService } from '@/services/integration-config-service'
+
+export const runtime = 'nodejs'
 
 /**
  * GET /api/integrations/status
- * Get the status of all integrations for the integrations hub
+ * Get integration status for the current user's barbershop
  */
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001'
+    const supabase = createClient()
     
-    // Mock integration status data for now
-    // In a real implementation, this would check actual service connections
-    const integrationStatus = {
-      marketing: {
-        google_analytics: {
-          name: 'Google Analytics',
-          status: 'disconnected',
-          lastSync: null,
-          config: {
-            tracking_id: null,
-            goals_configured: 0
-          }
-        },
-        google_tag_manager: {
-          name: 'Google Tag Manager',
-          status: 'disconnected',
-          lastSync: null,
-          config: {
-            container_id: null,
-            tags_active: 0
-          }
-        },
-        meta_pixel: {
-          name: 'Meta Pixel',
-          status: 'disconnected',
-          lastSync: null,
-          config: {
-            pixel_id: null,
-            events_configured: 0
-          }
-        }
-      },
-      business_operations: {
-        google_my_business: {
-          name: 'Google My Business',
-          status: 'connected',
-          lastSync: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-          config: {
-            locations_connected: 1,
-            reviews_synced: true,
-            ai_attribution_enabled: true
-          }
-        },
-        cin7_inventory: {
-          name: 'Cin7 Inventory',
-          status: 'coming-soon',
-          lastSync: null,
-          config: null
-        },
-        quickbooks: {
-          name: 'QuickBooks',
-          status: 'coming-soon',
-          lastSync: null,
-          config: null
-        }
-      },
-      communication: {
-        stripe: {
-          name: 'Stripe',
-          status: 'connected',
-          lastSync: 'live',
-          config: {
-            account_id: 'acct_xxx',
-            webhooks_configured: true,
-            payment_methods: ['card', 'bank_transfer']
-          }
-        },
-        twilio_sms: {
-          name: 'Twilio SMS',
-          status: 'connected',
-          lastSync: new Date(Date.now() - 60 * 60 * 1000).toISOString(), // 1 hour ago
-          config: {
-            phone_number: '+1555XXXX',
-            messages_sent_today: 12
-          }
-        },
-        sendgrid: {
-          name: 'SendGrid',
-          status: 'connected',
-          lastSync: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
-          config: {
-            verified_sender: true,
-            emails_sent_today: 45
-          }
-        }
-      }
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Authentication required'
+      }, { status: 401 })
     }
 
-    // Calculate health summary
-    const allIntegrations = [
-      ...Object.values(integrationStatus.marketing),
-      ...Object.values(integrationStatus.business_operations),
-      ...Object.values(integrationStatus.communication)
-    ]
+    // Get user's barbershop
+    const { data: barbershop, error: shopError } = await supabase
+      .from('barbershops')
+      .select('id, name')
+      .eq('owner_id', user.id)
+      .single()
 
-    const healthSummary = {
-      total: allIntegrations.length,
-      connected: allIntegrations.filter(i => i.status === 'connected').length,
-      disconnected: allIntegrations.filter(i => i.status === 'disconnected').length,
-      coming_soon: allIntegrations.filter(i => i.status === 'coming-soon').length,
-      errors: allIntegrations.filter(i => i.status === 'error').length,
-      warnings: allIntegrations.filter(i => i.status === 'warning').length
+    if (shopError || !barbershop) {
+      return NextResponse.json({
+        success: false,
+        error: 'Barbershop not found'
+      }, { status: 404 })
     }
+
+    // Get integration status
+    const status = await integrationConfigService.getIntegrationStatus(
+      barbershop.id, 
+      user.id
+    )
 
     return NextResponse.json({
       success: true,
-      data: {
-        barbershop_id: barbershopId,
-        integrations: integrationStatus,
-        health_summary: healthSummary,
-        last_updated: new Date().toISOString()
-      }
+      barbershop: {
+        id: barbershop.id,
+        name: barbershop.name
+      },
+      ...status
     })
 
   } catch (error) {
-    console.error('Error fetching integration status:', error)
+    console.error('Error getting integration status:', error)
     return NextResponse.json({
       success: false,
-      error: 'Failed to fetch integration status'
+      error: 'Failed to get integration status'
+    }, { status: 500 })
+  }
+}
+
+/**
+ * POST /api/integrations/status
+ * Toggle integration on/off or update settings
+ */
+export async function POST(request) {
+  try {
+    const supabase = createClient()
+    
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Authentication required'
+      }, { status: 401 })
+    }
+
+    // Get user's barbershop
+    const { data: barbershop, error: shopError } = await supabase
+      .from('barbershops')
+      .select('id')
+      .eq('owner_id', user.id)
+      .single()
+
+    if (shopError || !barbershop) {
+      return NextResponse.json({
+        success: false,
+        error: 'Barbershop not found'
+      }, { status: 404 })
+    }
+
+    const { action, integration, enabled, settings } = await request.json()
+
+    let result
+
+    switch (action) {
+      case 'toggle':
+        if (!integration || enabled === undefined) {
+          return NextResponse.json({
+            success: false,
+            error: 'Integration and enabled status required'
+          }, { status: 400 })
+        }
+        
+        result = await integrationConfigService.toggleIntegration(
+          integration,
+          barbershop.id,
+          user.id,
+          enabled
+        )
+        break
+
+      case 'save_settings':
+        if (!integration || !settings) {
+          return NextResponse.json({
+            success: false,
+            error: 'Integration and settings required'
+          }, { status: 400 })
+        }
+        
+        result = await integrationConfigService.saveIntegrationSettings(
+          barbershop.id,
+          user.id,
+          integration,
+          settings
+        )
+        break
+
+      case 'test':
+        if (!integration) {
+          return NextResponse.json({
+            success: false,
+            error: 'Integration required'
+          }, { status: 400 })
+        }
+        
+        result = await integrationConfigService.testIntegration(
+          integration,
+          barbershop.id,
+          user.id
+        )
+        break
+
+      default:
+        return NextResponse.json({
+          success: false,
+          error: 'Invalid action. Use: toggle, save_settings, or test'
+        }, { status: 400 })
+    }
+
+    return NextResponse.json(result)
+
+  } catch (error) {
+    console.error('Error managing integration:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to manage integration'
+    }, { status: 500 })
+  }
+}
+
+/**
+ * PUT /api/integrations/status
+ * Get recommendations for integrations
+ */
+export async function PUT(request) {
+  try {
+    const supabase = createClient()
+    
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({
+        success: false,
+        error: 'Authentication required'
+      }, { status: 401 })
+    }
+
+    // Get user's barbershop
+    const { data: barbershop, error: shopError } = await supabase
+      .from('barbershops')
+      .select('id')
+      .eq('owner_id', user.id)
+      .single()
+
+    if (shopError || !barbershop) {
+      return NextResponse.json({
+        success: false,
+        error: 'Barbershop not found'
+      }, { status: 404 })
+    }
+
+    // Get recommendations
+    const recommendations = await integrationConfigService.getRecommendations(barbershop.id)
+
+    return NextResponse.json(recommendations)
+
+  } catch (error) {
+    console.error('Error getting recommendations:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to get recommendations'
     }, { status: 500 })
   }
 }

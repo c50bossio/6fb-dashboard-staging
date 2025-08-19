@@ -116,9 +116,9 @@ export async function POST(request) {
     
     return NextResponse.json({
       success: true,
-      company: userData.Company || 'Unknown',
-      userName: userData.UserName || 'Unknown',
-      hasProducts,
+      accountName: userData.Company || userData.UserName || 'Connected',
+      productCount: hasProducts ? 1 : 0,
+      lastActivity: new Date().toLocaleString(),
       message: 'Connection successful'
     })
     
