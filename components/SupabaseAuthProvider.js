@@ -48,7 +48,12 @@ function SupabaseAuthProvider({ children }) {
         // SUPABASE BEST PRACTICE: Use getSession() instead of getUser() for initial check
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         
-        console.log('🔍 Auth Provider: Session result:', { hasSession: !!session, error: sessionError })
+        console.log('🔍 Auth Provider: Session result:', { 
+          hasSession: !!session, 
+          sessionUser: session?.user?.email,
+          sessionExpiry: session?.expires_at,
+          error: sessionError 
+        })
         
         if (sessionError || !session) {
           console.log('No active session found')
