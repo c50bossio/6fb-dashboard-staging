@@ -11,17 +11,26 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function SentimentDashboard({ userId = 'demo_user' }) {
+export default function SentimentDashboard({ userId }) {
   const [sentimentData, setSentimentData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState(30) // days
   const [analytics, setAnalytics] = useState(null)
 
   useEffect(() => {
-    loadSentimentData()
+    if (userId) {
+      loadSentimentData()
+    } else {
+      setLoading(false)
+    }
   }, [userId, timeRange])
 
   const loadSentimentData = async () => {
+    if (!userId) {
+      setLoading(false)
+      return
+    }
+    
     setLoading(true)
     try {
       const response = await fetch(`/api/ai/emotion?action=sentiment_history&userId=${userId}&days=${timeRange}`)
@@ -76,6 +85,18 @@ export default function SentimentDashboard({ userId = 'demo_user' }) {
     return trend === 'improving' ? 'text-green-600' : 
            trend === 'declining' ? 'text-red-600' : 
            'text-gray-600'
+  }
+
+  if (!userId) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">User ID Required</h3>
+        <p className="text-gray-600">
+          A valid user ID is required to display sentiment analytics.
+        </p>
+      </div>
+    )
   }
 
   if (loading) {

@@ -35,7 +35,11 @@ export default function BookingsPage() {
       setLoading(true)
       setError(null)
       
-      const barbershopId = user.barbershop_id || 'demo-shop-001'
+      if (!user.barbershop_id) {
+        throw new Error('No barbershop associated with your account. Please contact support.')
+      }
+      
+      const barbershopId = user.barbershop_id
       
       const today = new Date()
       const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)

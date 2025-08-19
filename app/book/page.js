@@ -304,18 +304,70 @@ export default function CustomerBookingPage() {
     e.preventDefault()
     setIsLoading(true)
     
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    console.log('Booking created:', {
-      service: selectedService,
-      barber: selectedBarber,
-      time: selectedTime,
-      customer: customerDetails
-    })
-    
-    setBookingConfirmed(true)
-    setCurrentStep('confirmation')
-    setIsLoading(false)
+    try {
+      // Prepare booking data for API
+      const bookingData = {
+        barbershop_id: shopInfo?.id,
+        barber_id: selectedBarber.id,
+        service_id: selectedService.id,
+        scheduled_at: selectedTime.time.toISOString(),
+        duration_minutes: selectedService.duration,
+        service_price: selectedService.price,
+        tip_amount: 0,
+        client_name: `${customerDetails.firstName} ${customerDetails.lastName}`.trim(),
+        client_email: customerDetails.email,
+        client_phone: customerDetails.phone,
+        client_notes: customerDetails.notes,
+        payment_method: 'cash', // Default for customer bookings
+        is_walk_in: false,
+        sms_opt_in: customerDetails.reminderPrefs.sms,
+        email_opt_in: customerDetails.reminderPrefs.email,
+        marketing_opt_in: customerDetails.marketingOptIn
+      }
+
+      console.log('📤 Submitting booking:', bookingData)
+
+      // Call the booking API
+      const response = await fetch('/api/bookings/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData)
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create booking')
+      }
+
+      console.log('✅ Booking created successfully:', result)
+
+      // Store the booking result for confirmation display
+      setBookingConfirmed({
+        success: true,
+        booking: result.booking,
+        integrations: result.integrations,
+        message: result.message
+      })
+      
+      setCurrentStep('confirmation')
+      
+    } catch (error) {
+      console.error('❌ Booking submission error:', error)
+      
+      // Store error for display
+      setBookingConfirmed({
+        success: false,
+        error: error.message,
+        integrations: null
+      })
+      
+      setCurrentStep('confirmation')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const ServiceSelection = () => (
@@ -687,72 +739,159 @@ export default function CustomerBookingPage() {
     </div>
   )
 
-  const BookingConfirmation = () => (
-    <div className="text-center space-y-6">
-      <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-        <CheckCircleIcon className="h-10 w-10 text-green-600" />
-      </div>
-      
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Confirmed!</h2>
-        <p className="text-gray-600">
-          Your appointment has been scheduled and confirmation details have been sent to your email and phone.
-        </p>
-      </div>
-      
-      {/* Booking Details Card */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-left">
-        <h3 className="font-semibold text-green-900 mb-4">Appointment Details</h3>
-        <div className="space-y-2 text-sm text-green-700">
-          <p><strong>Service:</strong> {selectedService.name}</p>
-          <p><strong>Barber:</strong> {selectedBarber.name}</p>
-          <p><strong>Date:</strong> {selectedTime.time.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}</p>
-          <p><strong>Time:</strong> {selectedTime.time.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit'
-          })}</p>
-          <p><strong>Duration:</strong> {selectedService.duration} minutes</p>
-          <p><strong>Total:</strong> ${selectedService.price}</p>
-          <p><strong>Customer:</strong> {customerDetails.firstName} {customerDetails.lastName}</p>
+  const BookingConfirmation = () => {
+    if (!bookingConfirmed) return null
+
+    const isSuccess = bookingConfirmed.success
+    const booking = bookingConfirmed.booking
+    const integrations = bookingConfirmed.integrations
+
+    return (
+      <div className="text-center space-y-6">
+        <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center ${
+          isSuccess ? 'bg-green-100' : 'bg-red-100'
+        }`}>
+          {isSuccess ? (
+            <CheckCircleIcon className="h-10 w-10 text-green-600" />
+          ) : (
+            <XCircleIcon className="h-10 w-10 text-red-600" />
+          )}
+        </div>
+        
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {isSuccess ? 'Booking Confirmed!' : 'Booking Failed'}
+          </h2>
+          <p className="text-gray-600">
+            {isSuccess 
+              ? 'Your appointment has been scheduled successfully.'
+              : `Sorry, we couldn't complete your booking. ${bookingConfirmed.error || 'Please try again.'}`
+            }
+          </p>
+        </div>
+        
+        {isSuccess && booking && (
+          <>
+            {/* Booking Details Card */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-left">
+              <h3 className="font-semibold text-green-900 mb-4">Appointment Details</h3>
+              <div className="space-y-2 text-sm text-green-700">
+                <p><strong>Service:</strong> {selectedService.name}</p>
+                <p><strong>Barber:</strong> {selectedBarber.name}</p>
+                <p><strong>Date:</strong> {selectedTime.time.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}</p>
+                <p><strong>Time:</strong> {selectedTime.time.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit'
+                })}</p>
+                <p><strong>Duration:</strong> {selectedService.duration} minutes</p>
+                <p><strong>Total:</strong> ${selectedService.price}</p>
+                <p><strong>Customer:</strong> {customerDetails.firstName} {customerDetails.lastName}</p>
+                {booking.id && <p><strong>Booking ID:</strong> {booking.id}</p>}
+              </div>
+            </div>
+
+            {/* Integration Status */}
+            {integrations && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-3">Confirmation Status</h4>
+                <div className="space-y-2 text-sm">
+                  {/* Email/SMS Notifications */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-700">Email/SMS Confirmations:</span>
+                    <div className="flex items-center">
+                      {integrations.notifications?.success ? (
+                        <>
+                          <CheckCircleIcon className="h-4 w-4 text-green-600 mr-1" />
+                          <span className="text-green-700">
+                            Sent via {integrations.notifications.results?.filter(r => r.success).map(r => r.channel).join(', ') || 'email/SMS'}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircleIcon className="h-4 w-4 text-yellow-600 mr-1" />
+                          <span className="text-yellow-700">Pending</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Calendar Sync */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-700">Calendar Sync:</span>
+                    <div className="flex items-center">
+                      {integrations.calendar_sync?.success ? (
+                        <>
+                          <CheckCircleIcon className="h-4 w-4 text-green-600 mr-1" />
+                          <span className="text-green-700">Synced to Google Calendar</span>
+                        </>
+                      ) : (
+                        <>
+                          <XCircleIcon className="h-4 w-4 text-gray-400 mr-1" />
+                          <span className="text-gray-500">Not configured</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Next Steps */}
+            <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
+              <h4 className="font-medium text-olive-900 mb-2">What's Next?</h4>
+              <ul className="text-sm text-olive-700 space-y-1 text-left">
+                {integrations?.notifications?.success ? (
+                  <>
+                    <li>• Check your email and phone for confirmation details</li>
+                    <li>• We'll send you a reminder 24 hours before your appointment</li>
+                  </>
+                ) : (
+                  <li>• Your booking is confirmed - confirmation emails are being processed</li>
+                )}
+                <li>• Please arrive 5 minutes early for your appointment</li>
+                <li>• If you need to cancel or reschedule, call us at {shopInfo?.phone || 'Contact shop directly'}</li>
+              </ul>
+            </div>
+            
+            {/* Shop Information */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div className="text-left">
+                  <p className="font-medium text-gray-900">{shopInfo?.name || '6FB Barbershop'}</p>
+                  <p className="text-sm text-gray-600">{shopInfo?.address || '123 Main Street, Downtown, CA 90210'}</p>
+                  <p className="text-sm text-gray-600">{shopInfo?.phone || 'Contact information not available'}</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        
+        <div className="space-y-2">
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full bg-olive-600 text-white py-3 rounded-md hover:bg-olive-700 font-medium"
+          >
+            {isSuccess ? 'Book Another Appointment' : 'Try Again'}
+          </button>
+          
+          {!isSuccess && (
+            <button
+              onClick={() => setCurrentStep('details')}
+              className="w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 font-medium"
+            >
+              Go Back to Booking Details
+            </button>
+          )}
         </div>
       </div>
-      
-      {/* Next Steps */}
-      <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
-        <h4 className="font-medium text-olive-900 mb-2">What's Next?</h4>
-        <ul className="text-sm text-olive-700 space-y-1 text-left">
-          <li>• You'll receive an SMS and email confirmation shortly</li>
-          <li>• We'll send you a reminder 24 hours before your appointment</li>
-          <li>• Please arrive 5 minutes early for your appointment</li>
-          <li>• If you need to cancel or reschedule, call us at {shopInfo?.phone || 'Contact shop directly'}</li>
-        </ul>
-      </div>
-      
-      {/* Shop Information */}
-      <div className="border border-gray-200 rounded-lg p-4">
-        <div className="flex items-start space-x-3">
-          <MapPinIcon className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-          <div className="text-left">
-            <p className="font-medium text-gray-900">{shopInfo?.name || '6FB Barbershop'}</p>
-            <p className="text-sm text-gray-600">{shopInfo?.address || '123 Main Street, Downtown, CA 90210'}</p>
-            <p className="text-sm text-gray-600">{shopInfo?.phone || 'Contact information not available'}</p>
-          </div>
-        </div>
-      </div>
-      
-      <button
-        onClick={() => window.location.reload()}
-        className="w-full bg-olive-600 text-white py-3 rounded-md hover:bg-olive-700 font-medium"
-      >
-        Book Another Appointment
-      </button>
-    </div>
-  )
+    )
+  }
 
   // Show loading state while data is being fetched
   if (dataLoading) {

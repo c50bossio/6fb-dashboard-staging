@@ -395,6 +395,10 @@ export default function FloatingAIChat() {
 
   const analyzeMessageEmotion = async (messageText) => {
     if (!messageText.trim()) return null
+    if (!user?.id) {
+      console.warn('Cannot analyze emotion without user ID')
+      return null
+    }
 
     setIsAnalyzingEmotion(true)
     
@@ -405,7 +409,7 @@ export default function FloatingAIChat() {
         body: JSON.stringify({
           text: messageText,
           action: 'analyze',
-          userId: user?.id || 'demo_user',
+          userId: user.id,
           context: {
             sessionId: sessionId,
             previousEmotion: currentMood,
@@ -748,7 +752,7 @@ export default function FloatingAIChat() {
             data: {
               agent: data.agent_details?.primary_agent || 'FloatingChat',
               topic: data.message_type || 'general',
-              userId: 'demo_user',
+              userId: user?.id || null,
               sessionId: `floating_${Date.now()}`
             }
           })

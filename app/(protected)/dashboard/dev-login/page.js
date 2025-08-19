@@ -7,31 +7,54 @@ export default function DevLoginPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const handleDevLogin = () => {
+  const handleDevLogin = async () => {
     setLoading(true)
     
-    const devSession = {
-      user: {
-        id: 'dev-user-001',
-        email: 'dev@6fb-ai.com',
-        name: 'Development User',
-        role: 'SHOP_OWNER'
-      },
-      profile: {
-        shop_id: 'demo-shop-001',
-        shop_name: 'Demo Barbershop'
-      },
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+    try {
+      // For development, create a session with actual data from the database
+      const response = await fetch('/api/dev/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create_dev_session' })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to create development session')
+      }
+      
+      const devSession = await response.json()
+      
+      if (!devSession.user?.barbershop_id) {
+        // Fallback for development - create minimal session
+        const fallbackSession = {
+          user: {
+            id: 'dev-user-001',
+            email: 'dev@6fb-ai.com',
+            name: 'Development User',
+            role: 'SHOP_OWNER',
+            barbershop_id: null
+          },
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }
+        
+        localStorage.setItem('dev_session', JSON.stringify(fallbackSession))
+        sessionStorage.setItem('dev_session', JSON.stringify(fallbackSession))
+      } else {
+        localStorage.setItem('dev_session', JSON.stringify(devSession))
+        sessionStorage.setItem('dev_session', JSON.stringify(devSession))
+      }
+      
+      document.cookie = `dev_auth=true; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`
+      
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 500)
+      
+    } catch (error) {
+      console.error('Dev login error:', error)
+      alert('Failed to create development session. Please try again.')
+      setLoading(false)
     }
-    
-    localStorage.setItem('dev_session', JSON.stringify(devSession))
-    sessionStorage.setItem('dev_session', JSON.stringify(devSession))
-    
-    document.cookie = `dev_auth=true; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax`
-    
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 500)
   }
 
   return (

@@ -40,7 +40,6 @@ export async function GET(request) {
     const { data: customers, error } = await query
 
     if (error) {
-      console.error('Error fetching customers:', error)
       return NextResponse.json(
         { error: 'Failed to fetch customers', details: error.message },
         { status: 500 }
@@ -60,7 +59,7 @@ export async function GET(request) {
     const { count, error: countError } = await countQuery
 
     if (countError) {
-      console.warn('Error getting customer count:', countError)
+      // Count error handled silently for non-critical functionality
     }
 
     return NextResponse.json({
@@ -72,7 +71,6 @@ export async function GET(request) {
     })
 
   } catch (error) {
-    console.error('Error in customers API:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }
@@ -157,7 +155,6 @@ export async function POST(request) {
       .single()
 
     if (error) {
-      console.error('Error creating customer:', error)
       return NextResponse.json(
         { error: 'Failed to create customer', details: error.message },
         { status: 500 }
@@ -170,7 +167,6 @@ export async function POST(request) {
     }, { status: 201 })
 
   } catch (error) {
-    console.error('Error in customer creation:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }
@@ -203,7 +199,6 @@ export async function PATCH(request) {
       .single()
 
     if (error) {
-      console.error('Error updating customer:', error)
       return NextResponse.json(
         { error: 'Failed to update customer', details: error.message },
         { status: 500 }
@@ -216,7 +211,6 @@ export async function PATCH(request) {
     })
 
   } catch (error) {
-    console.error('Error in customer update:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }

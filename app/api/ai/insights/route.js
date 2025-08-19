@@ -17,7 +17,14 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '10')
     const type = searchParams.get('type') // Optional filter by insight type
-    const barbershopId = user.barbershop_id || 'demo-shop-001'
+    const barbershopId = user.barbershop_id
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'No barbershop associated with your account'
+      }, { status: 400 })
+    }
 
     try {
       const insights = await getDatabaseInsights(barbershopId, { limit, type })
@@ -62,7 +69,14 @@ export async function POST(request) {
     }
 
     const { businessContext, forceRefresh } = await request.json()
-    const barbershopId = user.barbershop_id || 'demo-shop-001'
+    const barbershopId = user.barbershop_id
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'No barbershop associated with your account'
+      }, { status: 400 })
+    }
 
     try {
       const insights = await generateInsightsToDatabase(barbershopId, businessContext, forceRefresh)

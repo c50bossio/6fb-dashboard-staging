@@ -45,31 +45,35 @@ export default function DevDashboard() {
         email: profile?.email || 'dev@bookedbarber.com',
         user_metadata: {
           full_name: profile?.full_name || 'Dev User',
-          shop_name: profile?.shop_name || barbershop?.name || 'Tomb45 Barbershop'
+          shop_name: profile?.shop_name || barbershop?.name || 'Development Barbershop'
         },
         profile: profile,
         barbershop: barbershop,
-        barbershop_id: barbershop?.id || 'demo-shop-001'
+        barbershop_id: barbershop?.id || null
       }
       
       // Load dashboard data
-      try {
-        const response = await fetch(`/api/analytics/live-data?barbershop_id=${user.barbershop_id}&format=json&force_refresh=true`)
-        const result = await response.json()
-        
-        if (response.ok && result.success) {
-          const apiData = result.data
-          setDashboardData({
-            revenue: apiData.total_revenue || 0,
-            customers: apiData.total_customers || 0,
-            appointments: apiData.total_appointments || 0,
-            satisfaction: 4.5,
-            dailyRevenue: apiData.daily_revenue || 0,
-            occupancyRate: Math.round((apiData.occupancy_rate || 0) * 100)
-          })
+      if (user.barbershop_id) {
+        try {
+          const response = await fetch(`/api/analytics/live-data?barbershop_id=${user.barbershop_id}&format=json&force_refresh=true`)
+          const result = await response.json()
+          
+          if (response.ok && result.success) {
+            const apiData = result.data
+            setDashboardData({
+              revenue: apiData.total_revenue || 0,
+              customers: apiData.total_customers || 0,
+              appointments: apiData.total_appointments || 0,
+              satisfaction: 4.5,
+              dailyRevenue: apiData.daily_revenue || 0,
+              occupancyRate: Math.round((apiData.occupancy_rate || 0) * 100)
+            })
+          }
+        } catch (error) {
+          console.error('Failed to load dashboard data:', error)
         }
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error)
+      } else {
+        console.warn('No barbershop_id available, skipping dashboard data load')
       }
       
       console.log('✅ Loaded real data:', {

@@ -1,7 +1,16 @@
+/**
+ * DEVELOPMENT MIGRATION SCRIPT
+ * 
+ * WARNING: This script is for development and testing purposes only.
+ * DO NOT run this script in production environments.
+ * 
+ * This script helps set up database tables and test data for local development.
+ */
+
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -65,18 +74,19 @@ async function checkAndFixDatabase() {
       if (createError) {
         console.log('⚠️  Could not create via RPC, trying direct approach...');
         
-        // For dev/demo, ensure demo user has profile
-        const demoUserId = 'befcd3e1-8722-449b-8dd3-cdf7e1f59483';
+        // For development environment only - create test profile
+        // Note: This should not be used in production
+        const testUserId = process.env.DEV_TEST_USER_ID || 'befcd3e1-8722-449b-8dd3-cdf7e1f59483';
         
         const { error: insertError } = await supabase
           .from('profiles')
           .upsert({
-            id: demoUserId,
-            shop_id: 'demo-shop-001',
+            id: testUserId,
+            shop_id: process.env.DEV_TEST_SHOP_ID || null,
             role: 'shop_owner',
-            barbershop_name: 'Demo Barbershop',
-            full_name: 'Demo User',
-            email: 'demo@bookedbarber.com',
+            barbershop_name: 'Development Test Shop',
+            full_name: 'Development User',
+            email: process.env.DEV_TEST_EMAIL || 'dev@bookedbarber.com',
             onboarding_completed: false
           }, {
             onConflict: 'id'
@@ -109,11 +119,12 @@ async function checkAndFixDatabase() {
     console.log('❌ stripe_connected_accounts table missing:', stripeError.message);
     console.log('📦 Creating stripe_connected_accounts table...');
     
-    // Try to create the table
+    // Try to create the table by inserting test data
+    const testUserId = process.env.DEV_TEST_USER_ID || 'befcd3e1-8722-449b-8dd3-cdf7e1f59483';
     const { data, error: createStripeError } = await supabase
       .from('stripe_connected_accounts')
       .insert({
-        user_id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
+        user_id: testUserId,
         stripe_account_id: 'acct_test_' + Date.now(),
         account_type: 'express',
         business_type: 'individual',

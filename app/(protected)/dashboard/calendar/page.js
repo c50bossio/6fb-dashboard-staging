@@ -101,7 +101,8 @@ export default function CalendarPage() {
   const [appointmentToCancel, setAppointmentToCancel] = useState(null)
   const [cancelling, setCancelling] = useState(false)
   const [services, setServices] = useState([])
-  const [barbershopId] = useState('demo-shop-001') // For production, get from context
+  // Get barbershop ID from auth context - required for production
+  const barbershopId = profile?.barbershop_id || user?.barbershop_id
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBarber, setFilterBarber] = useState('all')
@@ -276,7 +277,11 @@ export default function CalendarPage() {
       params.append('start_date', now.toISOString())
       params.append('end_date', oneWeekFromNow.toISOString())
       // 🚨 CRITICAL FIX: Add shop_id parameter to prevent getting entire database
-      params.append('shop_id', 'demo-shop-001')
+      if (!barbershopId) {
+        console.error('No barbershop ID available for calendar')
+        return
+      }
+      params.append('shop_id', barbershopId)
 
       const apiUrl = `/api/calendar/appointments?${params.toString()}`
       console.log('🚨 CRITICAL: Making API request with shop filter:', apiUrl)

@@ -47,7 +47,6 @@ export async function GET(request) {
       .limit(limit)
 
     if (error) {
-      console.error('Error searching customers:', error)
       if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return NextResponse.json({
           customers: [],
@@ -84,7 +83,6 @@ export async function GET(request) {
     })
 
   } catch (error) {
-    console.error('Error in customer search:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }
@@ -137,7 +135,6 @@ export async function POST(request) {
     const { data: customers, error } = await query
 
     if (error) {
-      console.error('Error looking up customer:', error)
       if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return NextResponse.json({
           customer: null,
@@ -180,7 +177,6 @@ export async function POST(request) {
     })
 
   } catch (error) {
-    console.error('Error in customer lookup:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }

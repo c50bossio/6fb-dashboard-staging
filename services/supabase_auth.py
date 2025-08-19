@@ -46,14 +46,31 @@ class SupabaseAuth:
             except Exception:
                 pass
             
-            # Fallback: decode JWT manually (less secure, development only)
-            # Remove 'Bearer ' prefix if present
+            # SECURITY: Proper JWT verification with Supabase public key
             if token.startswith('Bearer '):
                 token = token[7:]
             
-            # Decode without verification (development only)
-            payload = jwt.decode(token, options={"verify_signature": False})
-            return payload
+            # Get JWT secret from environment
+            jwt_secret = os.environ.get("SUPABASE_JWT_SECRET")
+            if not jwt_secret:
+                print("SECURITY ERROR: SUPABASE_JWT_SECRET not configured")
+                return None
+            
+            # Verify JWT signature and decode
+            try:
+                payload = jwt.decode(
+                    token, 
+                    jwt_secret, 
+                    algorithms=["HS256"],
+                    options={"verify_signature": True, "verify_exp": True}
+                )
+                return payload
+            except jwt.ExpiredSignatureError:
+                print("Token has expired")
+                return None
+            except jwt.InvalidTokenError as e:
+                print(f"Invalid token: {e}")
+                return None
             
         except Exception as e:
             print(f"Token verification failed: {e}")

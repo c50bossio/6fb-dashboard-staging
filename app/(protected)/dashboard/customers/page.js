@@ -124,13 +124,21 @@ export default function CustomersPage() {
 
   const addCustomer = async (customerData) => {
     try {
+      // Get barbershop_id from user context
+      const userResponse = await fetch('/api/auth/user')
+      const userData = await userResponse.json()
+      
+      if (!userData.user?.barbershop_id) {
+        throw new Error('No barbershop associated with your account. Please contact support.')
+      }
+
       const response = await fetch('/api/customers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barbershop_id: 'demo-shop-001',
+          barbershop_id: userData.user.barbershop_id,
           name: customerData.name,
           email: customerData.email,
           phone: customerData.phone,

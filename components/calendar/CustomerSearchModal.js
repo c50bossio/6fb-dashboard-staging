@@ -10,7 +10,7 @@ export default function CustomerSearchModal({
   onClose,
   onSelectCustomer,
   onCreateNewCustomer,
-  barbershopId = 'demo-shop-001'
+  barbershopId
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [customers, setCustomers] = useState([])

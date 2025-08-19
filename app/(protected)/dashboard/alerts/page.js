@@ -21,14 +21,30 @@ const AlertsDashboardPage = () => {
   const [activeTab, setActiveTab] = useState('alerts');
   
   useEffect(() => {
-    const User = {
-      id: 'user_001',
-      barbershop_id: 'demo_shop_001',
-      name: 'Demo User',
-      email: 'demo@barbershop.com'
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('/api/auth/user');
+        const userData = await response.json();
+        
+        if (userData.user) {
+          setUser(userData.user);
+        } else {
+          // Fallback for development
+          const fallbackUser = {
+            id: 'user_001',
+            barbershop_id: null,
+            name: 'Development User',
+            email: 'dev@barbershop.com'
+          };
+          setUser(fallbackUser);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        setUser(null);
+      }
     };
     
-    setUser(mockUser);
+    fetchUserData();
     fetchSystemStatus();
     fetchIntegrationStatus();
     setLoading(false);
@@ -67,7 +83,7 @@ const AlertsDashboardPage = () => {
         }
       };
       
-      setIntegrationStatus(mockIntegrationStatus);
+      setIntegrationStatus(IntegrationStatus);
     } catch (error) {
       console.error('Failed to fetch integration status:', error);
     }

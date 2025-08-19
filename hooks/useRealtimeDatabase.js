@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '../lib/supabase/client'
 
-export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
+export function useRealtime(channelName, barbershopId) {
   const [data, setData] = useState(null)
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState(null)

@@ -10,7 +10,8 @@ export default function BookingConfirmationModal({
   onClose,
   appointmentData,
   barberName,
-  serviceName
+  serviceName,
+  integrationResults = null
 }) {
   const [showCheckmark, setShowCheckmark] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -235,6 +236,56 @@ Booking ID: ${appointmentData.id}
                     )}
                   </div>
                 </div>
+
+                {/* Integration Status */}
+                {integrationResults && (
+                  <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <h4 className="font-medium text-blue-900 mb-3 text-sm">Integration Status</h4>
+                    <div className="space-y-2 text-xs">
+                      {/* Email/SMS Notifications */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-blue-700">Notifications:</span>
+                        <div className="flex items-center">
+                          {integrationResults.notifications?.success ? (
+                            <>
+                              <CheckCircleIcon className="h-3 w-3 text-green-600 mr-1" />
+                              <span className="text-green-700 text-xs">
+                                Sent ({integrationResults.notifications.results?.filter(r => r.success).map(r => r.channel).join(', ') || 'email/SMS'})
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <XMarkIcon className="h-3 w-3 text-red-500 mr-1" />
+                              <span className="text-red-700 text-xs">
+                                {integrationResults.notifications?.error || 'Failed'}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Calendar Sync */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-blue-700">Calendar Sync:</span>
+                        <div className="flex items-center">
+                          {integrationResults.calendar_sync?.success ? (
+                            <>
+                              <CheckCircleIcon className="h-3 w-3 text-green-600 mr-1" />
+                              <span className="text-green-700 text-xs">Synced to Google Calendar</span>
+                            </>
+                          ) : (
+                            <>
+                              <XMarkIcon className="h-3 w-3 text-gray-400 mr-1" />
+                              <span className="text-gray-500 text-xs">
+                                {integrationResults.calendar_sync?.message || 'Not configured'}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Booking ID */}
                 <div className="mt-4 text-center">

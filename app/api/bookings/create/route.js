@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '../../../../lib/supabase/client'
-export const runtime = 'edge'
+
+// Import the existing services
+const { notificationService } = require('../../../../services/notification-service')
+const { calendarIntegrationService } = require('../../../../services/calendar-integration-service')
+const { integrationConfigService } = require('../../../../services/integration-config-service')
+
+export const runtime = 'nodejs'
 
 const bookingSchema = z.object({
   barbershop_id: z.string().min(1),
@@ -16,43 +22,142 @@ const bookingSchema = z.object({
   client_email: z.string().email(),
   client_notes: z.string().max(500).optional(),
   payment_method: z.enum(['online', 'cash', 'card']).optional().default('cash'),
-  is_walk_in: z.boolean().optional().default(false)
+  is_walk_in: z.boolean().optional().default(false),
+  // New fields for customer preferences
+  sms_opt_in: z.boolean().optional().default(false),
+  email_opt_in: z.boolean().optional().default(true),
+  marketing_opt_in: z.boolean().optional().default(false)
 })
 
-async function sendNotifications(booking) {
+async function sendNotificationsAndSync(booking, barbershopData, barberData) {
+  const results = {
+    notifications: { success: false, results: [] },
+    calendar_sync: { success: false, message: 'Not attempted' }
+  }
+
   try {
-    
-    const emailNotification = {
-      to: booking.client_email,
-      subject: 'Booking Confirmation',
-      template: 'booking_confirmation',
-      data: {
-        clientName: booking.client_name,
-        serviceName: booking.service?.name || 'Service',
-        scheduledAt: booking.scheduled_at,
-        barberName: booking.barber?.name || 'Barber',
-        totalAmount: booking.total_amount
+    console.log('🔔 Starting notification and calendar sync process...')
+
+    // Prepare notification data structure
+    const notificationData = {
+      booking: {
+        id: booking.id,
+        appointment_date: booking.scheduled_at.split('T')[0],
+        appointment_time: new Date(booking.scheduled_at).toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        service_name: booking.service?.name || 'Service',
+        total_amount: booking.total_amount,
+        notes: booking.client_notes
+      },
+      customer: {
+        id: booking.id, // Using booking ID as customer identifier
+        first_name: booking.client_name.split(' ')[0] || booking.client_name,
+        last_name: booking.client_name.split(' ').slice(1).join(' ') || '',
+        name: booking.client_name,
+        email: booking.client_email,
+        phone: booking.client_phone,
+        sms_opt_in: booking.sms_opt_in || false,
+        email_opt_in: booking.email_opt_in !== false
+      },
+      barbershop: {
+        id: booking.barbershop_id,
+        name: barbershopData?.name || 'Barbershop',
+        phone: barbershopData?.phone || '',
+        address: barbershopData?.address || ''
+      },
+      barber: {
+        first_name: barberData?.name?.split(' ')[0] || barberData?.name || 'Barber',
+        last_name: barberData?.name?.split(' ').slice(1).join(' ') || '',
+        name: barberData?.name || 'Barber'
       }
     }
-    
-    let smsNotification = null
-    if (booking.client_phone) {
-      smsNotification = {
-        to: booking.client_phone,
-        message: `Booking confirmed for ${booking.scheduled_at}. See you soon!`
+
+    // Send notifications via notification service
+    try {
+      const notificationResult = await notificationService.sendAppointmentConfirmation(notificationData)
+      results.notifications = notificationResult
+      console.log('📧 Notifications sent:', notificationResult)
+    } catch (error) {
+      console.error('❌ Notification service error:', error)
+      results.notifications = {
+        success: false,
+        error: error.message,
+        results: []
       }
     }
-    
-    return {
-      email: { sent: true, data: emailNotification },
-      sms: smsNotification ? { sent: true, data: smsNotification } : { sent: false, reason: 'No phone number' }
+
+    // Try calendar sync if configured for the barbershop
+    try {
+      // Get the barber's user ID to check for calendar integration
+      const { data: barberUser } = await createClient()
+        .from('profiles')
+        .select('id')
+        .eq('id', booking.barber_id)
+        .single()
+
+      if (barberUser) {
+        // Check if Google Calendar is configured for this user
+        const calendarStatus = await integrationConfigService.checkIntegrationStatus(
+          'google_calendar',
+          booking.barbershop_id,
+          barberUser.id
+        )
+
+        if (calendarStatus.enabled && calendarStatus.healthy) {
+          // Prepare calendar appointment data
+          const appointmentData = {
+            title: `${booking.service?.name || 'Appointment'} - ${booking.client_name}`,
+            description: booking.client_notes || '',
+            startDateTime: booking.scheduled_at,
+            endDateTime: new Date(new Date(booking.scheduled_at).getTime() + booking.duration_minutes * 60000).toISOString(),
+            customerName: booking.client_name,
+            customerEmail: booking.client_email,
+            customerPhone: booking.client_phone,
+            barbershopName: barbershopData?.name || 'Barbershop',
+            barbershopAddress: barbershopData?.address || '',
+            barberName: barberData?.name || 'Barber',
+            serviceName: booking.service?.name || 'Service',
+            bookingId: booking.id,
+            timeZone: barbershopData?.timezone || 'America/New_York'
+          }
+
+          const calendarResult = await calendarIntegrationService.createAppointmentEvent(
+            barberUser.id,
+            appointmentData
+          )
+          
+          results.calendar_sync = calendarResult
+          console.log('📅 Calendar sync result:', calendarResult)
+        } else {
+          results.calendar_sync = {
+            success: false,
+            message: 'Google Calendar not configured or not healthy for this barber'
+          }
+          console.log('📅 Calendar sync skipped - not configured')
+        }
+      }
+    } catch (error) {
+      console.error('❌ Calendar sync error:', error)
+      results.calendar_sync = {
+        success: false,
+        error: error.message,
+        message: 'Calendar sync failed'
+      }
     }
+
+    return results
+
   } catch (error) {
-    console.error('Notification error:', error)
-    return {
-      email: { sent: false, error: error.message },
-      sms: { sent: false, error: error.message }
+    console.error('❌ Overall notification/sync error:', error)
+    results.notifications = {
+      success: false,
+      error: error.message,
+      results: []
     }
+    return results
   }
 }
 
@@ -164,6 +269,9 @@ export async function POST(request) {
       payment_status: paymentResult?.status || 'pending',
       transaction_id: paymentResult?.transaction_id,
       is_walk_in: bookingData.is_walk_in,
+      sms_opt_in: bookingData.sms_opt_in || false,
+      email_opt_in: bookingData.email_opt_in !== false,
+      marketing_opt_in: bookingData.marketing_opt_in || false,
       status: 'CONFIRMED',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -188,16 +296,32 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    sendNotifications(booking).then(notificationResult => {
-    }).catch(notificationError => {
-      console.error('Notification error (non-blocking):', notificationError)
-    })
+    // Send notifications and sync to calendar asynchronously but capture results
+    let integrationResults = {
+      notifications: { success: false, message: 'Not attempted' },
+      calendar_sync: { success: false, message: 'Not attempted' }
+    }
 
+    try {
+      integrationResults = await sendNotificationsAndSync(
+        booking, 
+        booking.barbershop, 
+        booking.barber
+      )
+      console.log('✅ Integration results:', integrationResults)
+    } catch (error) {
+      console.error('❌ Integration error (non-blocking):', error)
+      integrationResults = {
+        notifications: { success: false, error: error.message },
+        calendar_sync: { success: false, error: error.message }
+      }
+    }
 
     return NextResponse.json({
       success: true,
       booking,
       payment_result: paymentResult,
+      integrations: integrationResults,
       message: 'Booking confirmed successfully'
     }, { status: 201 })
 

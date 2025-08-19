@@ -20,8 +20,8 @@ export default function AnalyticsPreview() {
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
-        // Use demo shop for landing page showcase
-        const response = await fetch('/api/analytics/live-data?barbershop_id=demo-shop-001&format=formatted')
+        // Try to get any available barbershop for landing page showcase
+        const response = await fetch('/api/analytics/preview?format=formatted')
         const result = await response.json()
         
         if (result.success && result.data) {

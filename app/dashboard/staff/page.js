@@ -38,8 +38,12 @@ export default function StaffPage() {
         setIsLoading(true)
         setError(null)
         
-        // Get barbershop ID from user profile or use demo
-        const barbershopId = profile?.barbershop_id || 'demo-shop-001'
+        // Get barbershop ID from user profile - required for production
+        const barbershopId = profile?.barbershop_id
+        
+        if (!barbershopId) {
+          throw new Error('No barbershop associated with your account. Please contact support.')
+        }
         
         const response = await fetch(`/api/barbers?barbershop_id=${barbershopId}&active_only=false`)
         if (response.ok) {

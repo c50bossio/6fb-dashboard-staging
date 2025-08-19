@@ -10,13 +10,15 @@ import {
 import { useState, useEffect } from 'react'
 import ModelSelector from './ModelSelector'
 
-export default function AIAgentChat() {
+export default function AIAgentChat({ barbershopId }) {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'assistant',
-      content: "Hello! I'm your AI business assistant. I'm connecting to your live business data to provide real insights about your bookings, revenue, and customers. What would you like to know?",
+      content: barbershopId 
+        ? "Hello! I'm your AI business assistant. I'm connecting to your live business data to provide real insights about your bookings, revenue, and customers. What would you like to know?"
+        : "Hello! I'm your AI business assistant. I need a valid barbershop ID to access your business data. Please make sure you're properly logged in to get personalized insights.",
       agent: 'Marcus',
       timestamp: new Date(Date.now() - 60000)
     }
@@ -49,6 +51,17 @@ export default function AIAgentChat() {
 
   const handleSendMessage = async () => {
     if (!message.trim()) return
+    if (!barbershopId) {
+      const errorResponse = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: "I need a valid barbershop ID to access your business data and provide personalized insights. Please make sure you're properly logged in.",
+        agent: 'Marcus',
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, errorResponse])
+      return
+    }
 
     const newMessage = {
       id: Date.now(),
@@ -86,7 +99,7 @@ export default function AIAgentChat() {
           model: selectedModel,
           stream: false,
           includeBusinessContext: true,
-          barbershopId: 'demo-shop-001'
+          barbershopId: barbershopId
         }),
       })
 
@@ -247,29 +260,29 @@ export default function AIAgentChat() {
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={() => setMessage("Show me today's bookings and revenue")}
-            className="px-3 py-1 text-xs bg-olive-50 text-olive-700 rounded-full hover:bg-olive-100"
-            disabled={!apiConnected}
+            className="px-3 py-1 text-xs bg-olive-50 text-olive-700 rounded-full hover:bg-olive-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiConnected || !barbershopId}
           >
             Today's Performance
           </button>
           <button
             onClick={() => setMessage("Analyze my customer booking patterns this month")}
-            className="px-3 py-1 text-xs bg-gold-50 text-gold-700 rounded-full hover:bg-gold-100"
-            disabled={!apiConnected}
+            className="px-3 py-1 text-xs bg-gold-50 text-gold-700 rounded-full hover:bg-gold-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiConnected || !barbershopId}
           >
             Customer Analytics
           </button>
           <button
             onClick={() => setMessage("What's my most popular service and best revenue opportunities?")}
-            className="px-3 py-1 text-xs bg-green-50 text-green-700 rounded-full hover:bg-green-100"
-            disabled={!apiConnected}
+            className="px-3 py-1 text-xs bg-green-50 text-green-700 rounded-full hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiConnected || !barbershopId}
           >
             Revenue Insights
           </button>
           <button
             onClick={() => setMessage("Show me my weekly schedule and suggest optimizations")}
-            className="px-3 py-1 text-xs bg-orange-50 text-orange-700 rounded-full hover:bg-orange-100"
-            disabled={!apiConnected}
+            className="px-3 py-1 text-xs bg-orange-50 text-orange-700 rounded-full hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiConnected || !barbershopId}
           >
             Schedule Analysis
           </button>

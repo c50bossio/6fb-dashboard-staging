@@ -12,10 +12,17 @@ export async function POST(request) {
     const { 
       text, 
       action = 'analyze',
-      userId = 'demo_user',
+      userId,
       context = {},
       businessContext = {}
     } = body
+
+    if (!userId) {
+      return NextResponse.json({
+        success: false,
+        error: 'userId is required for emotion analysis'
+      }, { status: 400 })
+    }
 
 
     switch (action) {
@@ -55,7 +62,14 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action') || 'health'
-    const userId = searchParams.get('userId') || 'demo_user'
+    const userId = searchParams.get('userId')
+    
+    if (!userId && (action === 'sentiment_history' || action === 'analytics')) {
+      return NextResponse.json({
+        success: false,
+        error: 'userId is required for this action'
+      }, { status: 400 })
+    }
 
     switch (action) {
       case 'health':

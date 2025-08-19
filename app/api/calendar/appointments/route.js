@@ -260,8 +260,16 @@ export async function POST(request) {
       }
     }
     
+    const shopId = body.shop_id || body.barbershop_id
+    if (!shopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'shop_id or barbershop_id is required'
+      }, { status: 400 })
+    }
+    
     const bookingData = {
-      shop_id: body.shop_id || body.barbershop_id || 'demo-shop-001',
+      shop_id: shopId,
       barber_id: body.barber_id,
       customer_id: customerId,
       service_id: isBlockedTime ? null : body.service_id,

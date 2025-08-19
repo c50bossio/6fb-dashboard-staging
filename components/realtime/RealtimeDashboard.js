@@ -16,13 +16,26 @@ import { useEffect, useState } from 'react'
 
 import { useRealtimeMetrics } from '../../hooks/useRealtimeDatabase'
 
-export default function RealtimeDashboard() {
+export default function RealtimeDashboard({ barbershopId }) {
+  // Validate required barbershopId
+  if (!barbershopId) {
+    return (
+      <div className="text-center py-8 bg-white rounded-lg shadow">
+        <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Barbershop ID Required</h3>
+        <p className="text-gray-600">
+          A valid barbershop ID is required to display real-time metrics.
+        </p>
+      </div>
+    )
+  }
+
   const {
     data: realtimeMetrics,
     isConnected,
     error: connectionError,
     lastUpdate
-  } = useRealtimeMetrics('demo-shop-001')
+  } = useRealtimeMetrics(barbershopId)
 
   const [notifications, setNotifications] = useState([])
   const connectionStatus = isConnected ? 'connected' : connectionError ? 'error' : 'connecting'

@@ -16,7 +16,13 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001';
+    const barbershopId = searchParams.get('barbershop_id');
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id parameter is required'
+      }, { status: 400 });
+    }
 
     const alerts = await cacheQuery('intelligent-alerts', { barbershopId }, async () => {
       return await generateIntelligentAlerts(barbershopId);

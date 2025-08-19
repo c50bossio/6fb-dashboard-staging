@@ -32,7 +32,8 @@ export default function PerformanceIndicator({ className = '' }) {
       const cacheData = await cacheResponse.json();
 
       const startTime = Date.now();
-      const apiResponse = await fetch('/api/analytics/live-data?barbershop_id=demo-shop-001');
+      // Test API response time with a basic health check instead of specific barbershop
+      const apiResponse = await fetch('/api/health');
       const apiResponseTime = Date.now() - startTime;
       const apiData = await apiResponse.json();
 

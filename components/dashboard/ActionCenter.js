@@ -30,7 +30,18 @@ export default function ActionCenter({ data }) {
   const appointments = data?.appointments || []
   const alerts = data?.alerts || []
   const realtime = data?.realtime || {}
-  const barbershopId = data?.barbershop_id || 'demo-shop-001'
+  const barbershopId = data?.barbershop_id
+  
+  if (!barbershopId) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="text-center text-gray-500">
+          <p>Action Center requires barbershop context</p>
+          <p className="text-sm mt-1">Please contact support</p>
+        </div>
+      </div>
+    )
+  }
 
   // Load dynamic priority actions from API
   useEffect(() => {

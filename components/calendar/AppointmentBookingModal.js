@@ -687,7 +687,7 @@ export default function AppointmentBookingModal({
         client_email: '',
         service_price: 0,
         tip_amount: 0,
-        shop_id: barbershopId || 'demo-shop-001',
+        shop_id: barbershopId,
         is_blocked_time: true // Special flag for UI handling
       }
       

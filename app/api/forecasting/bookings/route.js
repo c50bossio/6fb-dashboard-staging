@@ -13,7 +13,14 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id') || user.barbershop_id || 'demo-shop-001'
+    const barbershopId = searchParams.get('barbershop_id') || user.barbershop_id
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id is required'
+      }, { status: 400 })
+    }
     const forecastDays = Math.min(parseInt(searchParams.get('forecast_days')) || 30, 90) // Max 90 days
     const serviceType = searchParams.get('service_type') || 'all'
 
@@ -112,7 +119,14 @@ export async function POST(request) {
     }
 
     const { action, parameters } = await request.json()
-    const barbershopId = parameters?.barbershop_id || user.barbershop_id || 'demo-shop-001'
+    const barbershopId = parameters?.barbershop_id || user.barbershop_id
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id is required'
+      }, { status: 400 })
+    }
     
     try {
       let response

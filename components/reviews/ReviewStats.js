@@ -5,7 +5,7 @@ import {
   ChatBubbleLeftRightIcon,
   UserGroupIcon,
   CheckCircleIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
@@ -172,7 +172,7 @@ export default function ReviewStats({
                   {weeklyTrend > 0 ? '+' : ''}{weeklyTrend}%
                 </p>
               </div>
-              <TrendingUpIcon className={`h-8 w-8 ${weeklyTrend >= 0 ? 'text-green-500' : 'text-red-500 rotate-180'}`} />
+              <ArrowTrendingUpIcon className={`h-8 w-8 ${weeklyTrend >= 0 ? 'text-green-500' : 'text-red-500 rotate-180'}`} />
             </div>
           </div>
           

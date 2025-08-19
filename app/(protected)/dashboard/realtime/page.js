@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { useState } from 'react'
 
 import { useRealtimeNotifications } from '@/hooks/useRealtimeDatabase'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 
 const RealtimeDashboard = dynamic(
@@ -18,8 +19,22 @@ const RealtimeChat = dynamic(
 )
 
 export default function RealtimePage() {
+  const { user, profile } = useAuth()
   const [activeTab, setActiveTab] = useState('dashboard')
-  const { data: notifications = [], refresh } = useRealtimeNotifications('demo-shop-001')
+  
+  const barbershopId = profile?.barbershop_id || user?.barbershop_id
+  const { data: notifications = [], refresh } = useRealtimeNotifications(barbershopId)
+  
+  if (!barbershopId) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">No barbershop associated with your account.</p>
+          <p className="text-sm text-gray-500 mt-1">Please contact support.</p>
+        </div>
+      </div>
+    )
+  }
   
   const clearNotifications = () => {
     refresh()

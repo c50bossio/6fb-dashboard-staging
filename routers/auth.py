@@ -12,7 +12,7 @@ from datetime import datetime
 import os
 
 # Import our Supabase authentication service
-from services.supabase_auth import supabase_auth
+from services.supabase_auth import SupabaseAuth
 
 # Response models
 class UserProfile(BaseModel):
@@ -41,7 +41,7 @@ security = HTTPBearer()
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
     """Get current authenticated user from Supabase"""
     token = credentials.credentials
-    return await supabase_auth.validate_user_and_get_context(token)
+    return await SupabaseAuth.validate_user_and_get_context(token)
 
 async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer(auto_error=False))) -> Optional[Dict[str, Any]]:
     """Get current authenticated user (optional - doesn't raise error if no auth)"""
@@ -49,7 +49,7 @@ async def get_current_user_optional(credentials: Optional[HTTPAuthorizationCrede
         return None
     try:
         token = credentials.credentials
-        return await supabase_auth.validate_user_and_get_context(token)
+        return await SupabaseAuth.validate_user_and_get_context(token)
     except HTTPException:
         return None
 

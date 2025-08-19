@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-export function useRealtimeDashboard(barbershopId = 'demo-shop-001', enabled = true) {
+export function useRealtimeDashboard(barbershopId, enabled = true) {
   const [data, setData] = useState(null);
   const [connected, setConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);

@@ -3,7 +3,7 @@
 import { 
   BuildingOffice2Icon,
   ChartBarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   MapPinIcon,
   UsersIcon,
   StarIcon,
@@ -278,7 +278,7 @@ export default function EnterpriseReviewsPage() {
                       <p className="text-3xl font-bold text-gray-900">78%</p>
                       <p className="text-xs text-green-600 mt-1">+5% from last month</p>
                     </div>
-                    <TrendingUpIcon className="h-8 w-8 text-green-500" />
+                    <ArrowTrendingUpIcon className="h-8 w-8 text-green-500" />
                   </div>
                 </div>
               </div>
