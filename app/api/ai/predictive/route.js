@@ -24,13 +24,18 @@ export async function GET(request) {
     try {
       const predictions = await cacheQuery(cacheType, cacheParams, async () => {
         try {
-          return await getPredictiveAnalytics('demo-user', { 
+          // Check if we have a real user and barbershop context
+          if (barbershopId === 'default' || barbershopId === 'demo') {
+            throw new Error('Real barbershop ID required - no demo data')
+          }
+          
+          return await getPredictiveAnalytics(barbershopId, { 
             forecastType, 
             timeHorizon, 
             barbershopId 
           });
         } catch (aiError) {
-          return await fetchRealPredictionsFromSupabase(supabase, 'demo-user', forecastType, timeHorizon);
+          throw new Error('Insufficient barbershop data for predictions');
         }
       });
 
@@ -60,10 +65,16 @@ export async function GET(request) {
       const cacheStats = getCacheStats();
       return NextResponse.json({
         success: false,
-        error: 'Predictive analytics service failed',
+        error: error.message || 'Insufficient data for predictions',
+        insufficient_data: true,
+        requirements: {
+          minimum_bookings: 5,
+          minimum_revenue_history: '7 days',
+          barbershop_setup_required: true
+        },
         cacheStats,
         timestamp: new Date().toISOString()
-      }, { status: 500 })
+      }, { status: 200 }) // Return 200 to indicate this is expected behavior
     }
 
   } catch (error) {
@@ -83,12 +94,16 @@ export async function POST(request) {
     if (analysis_type === 'strategic_pricing') {
       
       try {
-        const strategicPricing = await generateStrategicPricingRecommendations(barbershop_id || 'demo-barbershop', current_pricing || {})
+        if (!barbershop_id || barbershop_id === 'demo' || barbershop_id === 'demo-barbershop') {
+          throw new Error('Real barbershop ID required for strategic pricing')
+        }
+        
+        const strategicPricing = await generateStrategicPricingRecommendations(barbershop_id, current_pricing || {})
         
         return NextResponse.json({
           success: true,
           analysis_type: 'strategic_pricing',
-          barbershop_id: barbershop_id || 'demo-barbershop',
+          barbershop_id: barbershop_id,
           strategic_pricing_recommendations: strategicPricing,
           metadata: {
             approach: '60/90-day strategic analysis',
@@ -130,7 +145,11 @@ export async function POST(request) {
     }
 
     try {
-      const forecast = await generatePredictiveForecast('demo-user', {
+      if (!barbershop_id || barbershop_id === 'demo' || barbershop_id === 'demo-barbershop') {
+        throw new Error('Real barbershop ID required for forecast generation')
+      }
+      
+      const forecast = await generatePredictiveForecast(barbershop_id, {
         forecastType: forecastType || 'comprehensive',
         businessContext: businessContext || {},
         timeHorizon: timeHorizon || 'weekly',
@@ -147,13 +166,15 @@ export async function POST(request) {
     } catch (aiError) {
       console.error('Predictive forecast generation error:', aiError)
       
-      const fallbackForecast = await fetchRealPredictionsFromSupabase(supabase, 'demo-user', forecastType || 'comprehensive', timeHorizon || 'weekly')
-      
       return NextResponse.json({
-        success: true,
-        forecast: fallbackForecast,
-        generated: true,
-        dataSource: 'supabase',
+        success: false,
+        error: aiError.message || 'Cannot generate forecast without sufficient data',
+        insufficient_data: true,
+        requirements: {
+          minimum_bookings: 5,
+          minimum_customers: 3,
+          barbershop_setup_required: true
+        },
         timestamp: new Date().toISOString()
       })
     }

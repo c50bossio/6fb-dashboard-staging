@@ -41,12 +41,18 @@ export async function GET(request) {
     } catch (analyticsError) {
       console.error('Predictive analytics error:', analyticsError)
       
-      const fallbackData = generateFallbackAnalytics(barbershopId, forecastType)
-      
       return NextResponse.json({
-        success: true,
-        data: fallbackData,
-        fallback: true,
+        success: false,
+        error: 'Insufficient data for predictive analytics',
+        data: {
+          insufficient_data: true,
+          historical_records: 0,
+          minimum_requirements: {
+            bookings: 5,
+            customers: 3,
+            days_of_history: 7
+          }
+        },
         timestamp: new Date().toISOString()
       })
     }
@@ -315,28 +321,28 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
       barbershop_id: barbershopId,
       forecast_type: forecastType,
       generated_at: currentTime.toISOString(),
-      confidence_level: totalCustomers > 5 ? 0.84 : 0.65, // Lower confidence with less data
+      confidence_level: Math.min(0.95, Math.max(0.1, totalCustomers / 50)), // Real confidence based on data volume
       
       revenue_forecast: {
         current: baseRevenue || 0,
         predictions: {
           '1_day': {
             value: Math.round((baseRevenue || 0) * revenueMultiplier * 1.05),
-            confidence: totalCustomers > 10 ? 0.87 : 0.65,
-            trend: totalRevenue > 0 ? 'increasing' : 'stable',
-            factors: totalRevenue > 0 ? ['Weekend boost', 'Peak hour activity', 'Seasonal trends'] : ['Insufficient data for trend analysis']
+            confidence: Math.min(0.95, Math.max(0.1, totalCustomers / 20)),
+            trend: totalRevenue > 0 && totalCustomers > 10 ? 'increasing' : 'insufficient_data',
+            factors: totalRevenue > 0 ? [`Based on ${totalCustomers} customers`, `${totalAppointments} total appointments`] : ['Insufficient booking history']
           },
           '1_week': {
             value: Math.round((baseRevenue || 0) * revenueMultiplier * 1.12),
-            confidence: totalCustomers > 5 ? 0.82 : 0.60,
-            trend: totalRevenue > 1000 ? 'increasing' : 'stable',
-            factors: totalCustomers > 5 ? ['Historical growth pattern', 'Customer retention improvement'] : ['Limited historical data']
+            confidence: Math.min(0.90, Math.max(0.1, totalCustomers / 25)),
+            trend: totalRevenue > 1000 && totalCustomers > 20 ? 'increasing' : 'insufficient_data',
+            factors: totalCustomers > 5 ? [`${totalCustomers} customer base`, 'Historical booking patterns'] : ['Need more booking history']
           },
           '1_month': {
             value: Math.round((baseRevenue || 0) * revenueMultiplier * 1.25),
-            confidence: totalCustomers > 15 ? 0.76 : 0.55,
-            trend: totalRevenue > 2000 ? 'increasing' : 'stable',
-            factors: totalCustomers > 15 ? ['Market expansion', 'Service portfolio growth'] : ['Building customer base']
+            confidence: Math.min(0.85, Math.max(0.1, totalCustomers / 40)),
+            trend: totalRevenue > 2000 && totalCustomers > 30 ? 'increasing' : 'insufficient_data',
+            factors: totalCustomers > 15 ? ['Established customer base', 'Revenue growth patterns'] : ['Insufficient data for long-term predictions']
           }
         },
         method: 'database_analytics',
@@ -519,58 +525,7 @@ function generateWeeklyDemandForecast() {
   }]
 }
 
-function generateFallbackAnalytics(barbershopId, forecastType) {
-  return {
-    forecast_id: `empty_${barbershopId}_${Date.now()}`,
-    barbershop_id: barbershopId,
-    forecast_type: forecastType,
-    generated_at: new Date().toISOString(),
-    confidence_level: 0,
-    fallback_mode: false,
-    data_available: false,
-    
-    revenue_forecast: {
-      current: 0,
-      predictions: {
-        '1_day': { value: 0, confidence: 0, trend: 'unknown', insufficient_data: true },
-        '1_week': { value: 0, confidence: 0, trend: 'unknown', insufficient_data: true },
-        '1_month': { value: 0, confidence: 0, trend: 'unknown', insufficient_data: true }
-      },
-      method: 'no_data',
-      message: 'Predictive analytics requires historical booking and revenue data'
-    },
-    
-    ai_insights: [
-      {
-        type: 'setup_required',
-        title: 'Start Tracking Business Data',
-        description: 'Begin recording bookings, services, and customer data to enable AI predictions.',
-        confidence: 1.0,
-        priority: 'high',
-        recommendations: [
-          'Record all bookings with accurate pricing',
-          'Track service durations and types',
-          'Store customer visit history',
-          'Monitor daily revenue metrics'
-        ]
-      }
-    ],
-    
-    recommendations: [
-      'Create bookings in the database to generate revenue data',
-      'Add services with pricing information',
-      'Record customer information for behavior analysis',
-      'Track at least 30 days of data for meaningful predictions'
-    ],
-    
-    data_requirements: {
-      minimum_bookings: 50,
-      minimum_customers: 20,
-      minimum_days: 30,
-      current_status: 'Insufficient data for analytics'
-    }
-  }
-}
+// Fallback function removed - no longer generating fake analytics data for live barbershops
 
 async function handleAnalyticsAction(action, data, userId) {
   switch (action) {

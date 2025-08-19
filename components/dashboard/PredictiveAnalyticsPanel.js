@@ -27,18 +27,32 @@ export default function PredictiveAnalyticsPanel({ data }) {
   const loadPredictions = async () => {
     try {
       setError(null)
-      const response = await fetch(`/api/ai/predictive?barbershop_id=demo`)
-      const data = await response.json()
+      
+      // Don't use demo data - require real barbershop context
+      if (!data?.shopId && !data?.barbershop_id) {
+        setError('Barbershop data required for predictions')
+        setPredictions(null)
+        setLoading(false)
+        return
+      }
+      
+      const barbershopId = data?.shopId || data?.barbershop_id
+      const response = await fetch(`/api/analytics/predictive?barbershop_id=${barbershopId}`)
+      const result = await response.json()
 
-      if (data.success) {
-        setPredictions(data.predictions)
+      if (result.success && result.data?.historical_records > 0) {
+        setPredictions(result.data)
         setLastUpdated(new Date())
+      } else if (result.fallback || result.data?.insufficient_data) {
+        setError('Insufficient booking data for predictions. Start recording bookings to see forecasts.')
+        setPredictions(null)
       } else {
-        setError(data.error || 'Failed to load predictions')
+        setError(result.error || 'Failed to load predictions')
+        setPredictions(null)
       }
     } catch (err) {
       console.error('Failed to load predictions:', err)
-      setError('Unable to load predictions. Please check your connection.')
+      setError('Unable to connect to analytics service. Please try again later.')
       setPredictions(null)
     } finally {
       setLoading(false)
@@ -48,38 +62,27 @@ export default function PredictiveAnalyticsPanel({ data }) {
   const generateNewPredictions = async () => {
     setGenerating(true)
     try {
-      // Don't use fake data - fetch real context from database
-      const businessContext = {
-        shop_name: data?.shopName || 'Your Barbershop',
-        current_revenue: data?.metrics?.revenue || 0,
-        customer_count: data?.metrics?.customers || 0,
-        avg_satisfaction: data?.metrics?.satisfaction || 0,
-        service_utilization: data?.metrics?.utilization || 0
+      // Validate real barbershop data exists
+      if (!data?.shopId && !data?.barbershop_id) {
+        throw new Error('Barbershop configuration required')
       }
 
-      const response = await fetch('/api/ai/predictive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          prediction_type: 'revenue_forecast',
-          barbershop_id: 'demo',
-          parameters: { 
-            timeframe: selectedTimeHorizon === 'weekly' ? 7 : selectedTimeHorizon === 'monthly' ? 30 : 1,
-            confidence_level: 0.85
-          }
-        })
-      })
-
-      const data = await response.json()
-      if (data.success) {
-        setPredictions(data.forecast)
-        setLastUpdated(new Date())
-      } else {
-        throw new Error(data.error || 'Generation failed')
+      const barbershopId = data?.shopId || data?.barbershop_id
+      
+      // Check if we have sufficient data before attempting generation
+      const response = await fetch(`/api/analytics/predictive?barbershop_id=${barbershopId}`)
+      const result = await response.json()
+      
+      if (!result.success || result.data?.insufficient_data || result.data?.historical_records < 5) {
+        throw new Error('Insufficient booking history. Need at least 5 completed bookings to generate predictions.')
       }
+
+      // If we have data, reload the existing predictions
+      await loadPredictions()
+      
     } catch (err) {
       console.error('Failed to generate predictions:', err)
-      setError('Failed to generate new predictions')
+      setError(err.message || 'Cannot generate predictions without sufficient booking data')
     } finally {
       setGenerating(false)
     }
@@ -347,14 +350,43 @@ export default function PredictiveAnalyticsPanel({ data }) {
         </div>
       ) : (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
-          <p className="text-gray-600 mb-4">No predictions available</p>
-          <button
-            onClick={generateNewPredictions}
-            disabled={generating}
-            className="px-6 py-3 bg-gold-700 text-white rounded-lg hover:bg-gold-700 disabled:bg-gray-300"
-          >
-            Generate Predictions
-          </button>
+          <div className="mb-6">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <span className="text-2xl">📊</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No Predictions Available
+            </h3>
+            <p className="text-gray-600 mb-4 max-w-md mx-auto">
+              Start collecting booking data to generate AI-powered revenue forecasts and business insights.
+            </p>
+          </div>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 max-w-lg mx-auto">
+            <h4 className="font-medium text-blue-900 mb-2">To enable predictions, you need:</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• At least 5 completed bookings</li>
+              <li>• Accurate pricing and service data</li>
+              <li>• Customer information</li>
+              <li>• 30+ days of booking history (recommended)</li>
+            </ul>
+          </div>
+          
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.href = '/dashboard/bookings'}
+              className="px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700 mr-3"
+            >
+              Start Recording Bookings
+            </button>
+            <button
+              onClick={loadPredictions}
+              disabled={loading}
+              className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-300"
+            >
+              {loading ? 'Checking...' : 'Check for Data'}
+            </button>
+          </div>
         </div>
       )}
     </div>

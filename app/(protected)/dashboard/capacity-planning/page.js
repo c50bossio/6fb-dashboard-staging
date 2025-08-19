@@ -93,7 +93,7 @@ export default function CapacityPlanningPage() {
               </div>
 
               {/* Main Capacity Planning Component */}
-              <CapacityPlanningPanel barbershop_id={profile?.shop_id || 'demo'} />
+              <CapacityPlanningPanel barbershop_id={profile?.shop_id} />
 
               {/* Additional Resources */}
               <div className="mt-8 bg-olive-50 rounded-lg border border-olive-200 p-6">

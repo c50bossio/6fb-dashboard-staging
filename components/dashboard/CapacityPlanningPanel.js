@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
+export default function CapacityPlanningPanel({ barbershop_id }) {
   const [capacityData, setCapacityData] = useState(null)
   const [recommendations, setRecommendations] = useState([])
   const [loading, setLoading] = useState(true)
@@ -29,6 +29,16 @@ export default function CapacityPlanningPanel({ barbershop_id = 'demo' }) {
   const loadCapacityData = async () => {
     try {
       setLoading(true)
+      
+      // Validate barbershop_id is provided and not demo
+      if (!barbershop_id || barbershop_id === 'demo' || barbershop_id === 'demo-shop-001') {
+        setCapacityData({
+          error: 'Barbershop setup required',
+          message: 'Configure your barbershop profile to enable capacity planning'
+        })
+        setLoading(false)
+        return
+      }
       
       const [predictiveData, alertsData, analyticsData] = await Promise.allSettled([
         fetch(`/api/ai/predictive?type=comprehensive&shopId=${barbershop_id}&focus=capacity`).then(r => r.json()),
