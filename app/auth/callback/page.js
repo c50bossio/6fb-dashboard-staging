@@ -17,15 +17,23 @@ export default function AuthCallback() {
         // Import auth helpers
         const { handleOAuthCallback, checkSession } = await import('@/lib/supabase/auth-helpers')
         
-        // Get the code from URL
+        // Get the code from URL (check both query params and hash fragments)
         const searchParams = new URLSearchParams(window.location.search)
-        const code = searchParams.get('code')
-        const error = searchParams.get('error')
-        const errorDescription = searchParams.get('error_description')
+        const hashParams = new URLSearchParams(window.location.hash.substring(1))
+        
+        const code = searchParams.get('code') || hashParams.get('code')
+        const error = searchParams.get('error') || hashParams.get('error')
+        const errorDescription = searchParams.get('error_description') || hashParams.get('error_description')
+        
+        // Also check for access_token in hash (implicit flow)
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
         
         console.log('📍 Callback params:', {
           hasCode: !!code,
           hasError: !!error,
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
           url: window.location.href
         })
         
@@ -120,6 +128,37 @@ export default function AuthCallback() {
             // Ultimate fallback: redirect to login with error
             router.push(`/login?error=callback_timeout`)
           }
+        } else if (accessToken) {
+          console.log('🔑 Found access token in hash, handling implicit flow...')
+          
+          // For implicit flow, Supabase should have already set the session
+          // Let's check for existing session and redirect accordingly
+          try {
+            const { data: { session: implicitSession } } = await supabase.auth.getSession()
+            if (implicitSession?.user) {
+              console.log('✅ Implicit flow session found, redirecting to dashboard')
+              router.push('/dashboard')
+              return
+            } else {
+              console.log('⚠️ Access token found but no session, trying to set session manually')
+              // Try to use the session from URL hash
+              const sessionFromHash = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+              })
+              
+              if (sessionFromHash.data?.session) {
+                console.log('✅ Session set from hash tokens, redirecting to dashboard')
+                router.push('/dashboard')
+                return
+              }
+            }
+          } catch (implicitError) {
+            console.error('❌ Implicit flow session handling failed:', implicitError)
+          }
+          
+          // If implicit flow fails, redirect to login
+          router.push('/login?error=implicit_flow_failed')
         } else {
           console.log('⚠️ No code in callback, checking for existing session')
           
