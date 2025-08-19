@@ -138,7 +138,7 @@ function SupabaseAuthProvider({ children }) {
         
           
           if (error && error.code === 'PGRST116') {
-            // No profile exists, create one
+            // No profile exists, create one with enhanced user data
             const newProfileData = {
               id: session.user.id,
               email: session.user.email,
@@ -148,8 +148,12 @@ function SupabaseAuthProvider({ children }) {
               role: 'SHOP_OWNER',
               subscription_status: 'active',
               onboarding_completed: false,
-              onboarding_step: 0
+              onboarding_step: 0,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
             }
+            
+            console.log('Creating new profile for OAuth user:', newProfileData)
             
             const { data: newProfile, error: createError } = await supabase
               .from('profiles')
@@ -159,7 +163,11 @@ function SupabaseAuthProvider({ children }) {
             
             if (createError) {
               console.error('❌ Profile creation error:', createError)
+              // Set user anyway - profile can be created later
+              setUser(session.user)
+              setProfile(null)
             } else if (newProfile) {
+              console.log('✅ Profile created successfully:', newProfile)
               setProfile(newProfile)
               userProfile = newProfile
             }
@@ -170,15 +178,12 @@ function SupabaseAuthProvider({ children }) {
             console.error('❌ Profile error:', error)
           }
           
-          // Simple navigation logic - redirect on sign-in from login page
+          // Direct navigation logic - immediate redirect on sign-in from login page
           console.log('Auth state change - SIGNED_IN completed, current path:', window.location.pathname)
           
           if (window.location.pathname === '/login' || window.location.pathname === '/login-clean') {
-            // Wait a bit for React state to update before redirecting
-            setTimeout(() => {
-              console.log('Redirecting from auth provider after state update...')
-              router.push('/dashboard')
-            }, 500)
+            console.log('Redirecting to dashboard immediately after successful sign-in')
+            router.push('/dashboard')
           }
         } catch (error) {
           console.error('❌ Error in auth state change handler:', error)
@@ -236,16 +241,15 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const signInWithGoogle = async (customRedirectTo) => {
-    // For production, ensure we use the correct redirect URL
-    // Supabase will handle the OAuth flow and redirect back to our app
-    const redirectUrl = customRedirectTo || `${window.location.origin}/auth/callback`
+    // Optimized OAuth redirect - direct to login page for auth state handling
+    const redirectUrl = customRedirectTo || `${window.location.origin}/login`
     
+    console.log('🔐 Starting Google OAuth with redirect to:', redirectUrl)
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
-        // Skip any extra query params that might interfere
         skipBrowserRedirect: false
       }
     })
@@ -255,6 +259,7 @@ function SupabaseAuthProvider({ children }) {
       throw error
     }
     
+    console.log('✅ Google OAuth initiated successfully')
     return data
   }
 

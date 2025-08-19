@@ -1,9 +1,10 @@
 'use client'
 
-import { createClient } from '@supabase/supabase-js'
+// Removed direct Supabase client import - using centralized auth provider
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogoHeader } from '@/components/ui/Logo'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 import { 
   EnvelopeIcon, 
   LockClosedIcon, 
@@ -21,98 +22,19 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const router = useRouter()
+  const { signInWithGoogle, signIn, signUp, resetPassword } = useAuth()
   
-  // Initialize Supabase client with production credentials
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co'
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUyMTI1MzIsImV4cCI6MjA1MDc4ODUzMn0.qOJBWy5BEu6LYo0n2CYjgvYOJHPYC7K5KnL7y2O6Uws'
+  // Use centralized auth provider instead of creating local Supabase client
   
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
-  
-  useEffect(() => {
-    // Check if returning from OAuth
-    checkOAuthCallback()
-  }, [])
-  
-  const checkOAuthCallback = async () => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1))
-    const searchParams = new URLSearchParams(window.location.search)
-    const accessToken = hashParams.get('access_token')
-    const code = searchParams.get('code')
-    
-    if (accessToken || code) {
-      // OAuth successful - get full user data
-      try {
-        let userData = null
-        
-        if (accessToken) {
-          // Try to get user from access token
-          const { data: { user } } = await supabase.auth.getUser(accessToken)
-          if (user) {
-            userData = {
-              id: user.id,
-              email: user.email,
-              name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0],
-              avatar: user.user_metadata?.avatar_url || user.user_metadata?.picture,
-              provider: 'google',
-              raw_metadata: user.user_metadata
-            }
-          }
-        } else if (code) {
-          // Exchange code for session
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-          if (data?.session?.user) {
-            userData = {
-              id: data.session.user.id,
-              email: data.session.user.email,
-              name: data.session.user.user_metadata?.full_name || data.session.user.user_metadata?.name || data.session.user.email?.split('@')[0],
-              avatar: data.session.user.user_metadata?.avatar_url || data.session.user.user_metadata?.picture,
-              provider: 'google',
-              raw_metadata: data.session.user.user_metadata
-            }
-          }
-        }
-        
-        if (userData) {
-          // Store complete user session
-          localStorage.setItem('user_session', JSON.stringify({
-            user: userData,
-            access_token: accessToken || 'oauth-token',
-            timestamp: new Date().toISOString()
-          }))
-          
-          // Store email in cookie for reference
-          document.cookie = `user_email=${userData.email}; path=/; max-age=86400`
-          document.cookie = `user_name=${encodeURIComponent(userData.name)}; path=/; max-age=86400`
-          
-          console.log('OAuth successful, user data stored:', userData)
-          
-          // Wait a bit longer for auth state to propagate before redirecting
-          setTimeout(() => {
-            console.log('Redirecting to dashboard after auth state update...')
-            window.location.href = '/dashboard' // Use window.location for more reliable navigation
-          }, 1000)
-        }
-      } catch (err) {
-        console.error('OAuth callback error:', err)
-        setError('Authentication failed. Please try again.')
-      }
-    }
-  }
+  // Removed OAuth callback handling - now handled centrally in SupabaseAuthProvider
   
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     setError('')
     
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/login`
-        }
-      })
-      
-      if (error) throw error
-      
+      // Use centralized auth provider - redirect to login for OAuth callback
+      await signInWithGoogle(`${window.location.origin}/login`)
     } catch (err) {
       setError('Failed to connect with Google. Please try again.')
       setIsLoading(false)
@@ -146,79 +68,32 @@ export default function LoginPage() {
     
     try {
       if (isSignUp) {
-        // Sign up new user with metadata
-        const { data, error } = await supabase.auth.signUp({
+        // Sign up new user with metadata using centralized auth
+        const data = await signUp({
           email,
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: {
-              full_name: fullName.trim(),
-              role: 'CLIENT'
-            }
+          metadata: {
+            full_name: fullName.trim(),
+            role: 'CLIENT'
           }
         })
-        
-        if (error) {
-          if (error.message.includes('already registered')) {
-            setError('This email is already registered. Please sign in instead.')
-          } else {
-            throw error
-          }
-          return
-        }
         
         if (data?.user) {
           // Check if email confirmation is required
           if (data.user.identities?.length === 0) {
             setSuccess('Account created! Please check your email to confirm your account before signing in.')
           } else {
-            // Auto sign-in if email confirmation not required
+            // Auto sign-in if email confirmation not required - auth provider will handle redirect
             setSuccess('Account created successfully! Signing you in...')
-            setTimeout(() => {
-              localStorage.setItem('user_session', JSON.stringify({
-                user: {
-                  id: data.user.id,
-                  email: data.user.email,
-                  name: fullName.trim()
-                },
-                access_token: data.session?.access_token || 'new-user'
-              }))
-              router.push('/dashboard')
-            }, 1500)
           }
         }
       } else {
-        // Sign in existing user
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        })
-        
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            setError('Invalid email or password. Please try again.')
-          } else if (error.message.includes('Email not confirmed')) {
-            setError('Please confirm your email before signing in. Check your inbox.')
-          } else {
-            throw error
-          }
-          return
-        }
+        // Sign in existing user using centralized auth
+        const data = await signIn({ email, password })
         
         if (data?.user) {
-          // Store session and redirect
-          localStorage.setItem('user_session', JSON.stringify({
-            user: {
-              id: data.user.id,
-              email: data.user.email,
-              name: data.user.user_metadata?.full_name || email.split('@')[0]
-            },
-            access_token: data.session.access_token
-          }))
-          
           setSuccess('Sign in successful! Redirecting...')
-          setTimeout(() => router.push('/dashboard'), 500)
+          // Auth provider will handle the redirect to dashboard
         }
       }
     } catch (err) {
@@ -239,16 +114,9 @@ export default function LoginPage() {
     setError('')
     
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
-        }
-      })
-      
-      if (error) throw error
-      
-      alert('Check your email for the login link!')
+      // Use centralized auth provider for magic link
+      await resetPassword(email)
+      setSuccess('Check your email for the login link!')
     } catch (err) {
       setError('Failed to send magic link. Please try again.')
     } finally {
