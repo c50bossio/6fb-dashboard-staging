@@ -131,10 +131,18 @@ export default function AuthCallback() {
         } else if (accessToken) {
           console.log('🔑 Found access token in hash, handling implicit flow...')
           
-          // For implicit flow, Supabase should have already set the session
-          // Let's check for existing session and redirect accordingly
+          // Wait a moment for Supabase to auto-detect the session from URL
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+          // For implicit flow, Supabase should auto-detect with detectSessionInUrl: true
           try {
             const { data: { session: implicitSession } } = await supabase.auth.getSession()
+            console.log('📊 Implicit session check:', {
+              hasSession: !!implicitSession,
+              hasUser: !!implicitSession?.user,
+              userEmail: implicitSession?.user?.email
+            })
+            
             if (implicitSession?.user) {
               console.log('✅ Implicit flow session found, redirecting to dashboard')
               router.push('/dashboard')
@@ -147,9 +155,26 @@ export default function AuthCallback() {
                 refresh_token: refreshToken
               })
               
+              console.log('📊 SetSession result:', {
+                hasSession: !!sessionFromHash.data?.session,
+                hasUser: !!sessionFromHash.data?.session?.user,
+                hasError: !!sessionFromHash.error,
+                error: sessionFromHash.error?.message
+              })
+              
+              if (sessionFromHash.error) {
+                console.error('❌ Failed to set session from hash:', sessionFromHash.error)
+                router.push('/login?error=session_set_failed')
+                return
+              }
+              
               if (sessionFromHash.data?.session) {
                 console.log('✅ Session set from hash tokens, redirecting to dashboard')
                 router.push('/dashboard')
+                return
+              } else {
+                console.error('❌ No session returned from setSession')
+                router.push('/login?error=no_session_returned')
                 return
               }
             }
