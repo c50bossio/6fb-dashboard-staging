@@ -31,23 +31,15 @@ export default function EnhancedProfessionalCalendar({
     }
   }, [controlledView])
   
-  const defaultResources = [
-    { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
-    { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#546355' },
-    { id: 'barber-3', title: 'Mike Brown', eventColor: '#f59e0b' },
-    { id: 'barber-4', title: 'Lisa Davis', eventColor: '#D4B878' }
-  ]
-  
-  const resources = externalResources || defaultResources
+  // Use external resources or empty array - let parent handle defaults
+  const resources = externalResources || []
   
   const events = externalEvents || []
   
   const processedEvents = events
   
   useEffect(() => {
-    if (events.length > 0) {
-    } else {
-    }
+    // Calendar state updates handled by FullCalendar internally
   }, [events.length, currentView])
   
   const handleDateSelect = useCallback((selectInfo) => {
@@ -222,10 +214,7 @@ export default function EnhancedProfessionalCalendar({
   }, [onViewChange])
   
   useEffect(() => {
-    if (events.length > 0) {
-    } else {
-    }
-    
+    // Ensure calendar API is accessible for external references
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi()
       if (calendarApi) {
@@ -240,63 +229,21 @@ export default function EnhancedProfessionalCalendar({
   return (
     <div className="enhanced-professional-calendar-wrapper">
       <style jsx global>{`
+        /* Essential calendar styling - keep minimal for stability */
         .fc-event {
           border-radius: 4px !important;
-          padding: 4px !important;
-          margin-bottom: 2px !important;
-          border: 1px solid rgba(0,0,0,0.1) !important;
           cursor: pointer !important;
-        }
-        .fc-event-title {
-          font-weight: 600 !important;
-          font-size: 12px !important;
-          line-height: 1.3 !important;
-        }
-        .fc-event-time {
-          font-size: 11px !important;
-          font-weight: 500 !important;
-        }
-        .fc-timegrid-event {
-          min-height: 30px !important;
-        }
-        .fc-timegrid-event-harness {
-          margin-right: 2px !important;
         }
         .fc-timegrid-now-indicator-line {
           border-color: #ef4444 !important;
           border-width: 2px !important;
-          z-index: 10 !important;
-        }
-        .fc-timegrid-now-indicator-arrow {
-          border-color: #ef4444 !important;
         }
         .fc-resource-area {
-          width: 15% !important;
           min-width: 120px !important;
-          display: block !important;
         }
         .fc-resource-area-header {
           background: #f3f4f6 !important;
           font-weight: 600 !important;
-        }
-        .fc-resource-cell {
-          padding: 8px !important;
-          background: #ffffff !important;
-          border-right: 1px solid #e5e7eb !important;
-        }
-        .fc-resource-lane {
-          min-height: 50px !important;
-        }
-        .fc-resource-timegrid .fc-resource-col {
-          width: 25% !important; /* 4 barbers = 25% each */
-        }
-        .fc-resource-timegrid-divider {
-          display: block !important;
-        }
-        @keyframes pulse {
-          0% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.2); }
-          100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
       <FullCalendar
@@ -345,6 +292,7 @@ export default function EnhancedProfessionalCalendar({
         resourcesInitiallyExpanded={true}
         refetchResourcesOnNavigate={false}  // Prevent unnecessary resource refetching
         resourceLabelDidMount={(info) => {
+          // Resource labels use default styling
         }}
         
         timeZone="local"  // Use local timezone to prevent date/time issues
@@ -391,7 +339,6 @@ export default function EnhancedProfessionalCalendar({
         unselectCancel=".fc-event,.modal"  // Don't unselect when clicking events or modals
         select={handleDateSelect}
         dateClick={(info) => {
-          
           if (info.view.type.includes('timeGrid') || info.view.type.includes('resource')) {
             const provisionalEnd = new Date(info.date)
             provisionalEnd.setHours(provisionalEnd.getHours() + 1)
@@ -414,7 +361,6 @@ export default function EnhancedProfessionalCalendar({
               barberName: info.resource?.title || null
             }
             
-            
             if (onSlotClick) {
               onSlotClick(slotData)
             }
@@ -432,7 +378,6 @@ export default function EnhancedProfessionalCalendar({
               selectionType: 'click',
               duration: 60
             }
-            
             
             if (onSlotClick) {
               onSlotClick(slotData)
@@ -463,12 +408,7 @@ export default function EnhancedProfessionalCalendar({
         viewDidMount={handleViewChange}
         datesSet={handleViewChange}  // Also handle when navigating dates
         loading={(isLoading) => {
-        }}
-        eventAdd={(info) => {
-        }}
-        eventChange={(info) => {
-        }}
-        eventRemove={(info) => {
+          // Loading state handled by parent component
         }}
         
         eventTimeFormat={{  // Better time formatting
@@ -495,53 +435,6 @@ export default function EnhancedProfessionalCalendar({
             info.el.classList.add(`event-status-${event.extendedProps.status}`)
           }
         }}
-        //   
-        //   // Parse the title to separate customer and service
-        //   
-        //       <div class="fc-event-main-frame" style="height: 100%; cursor: pointer; ${isOptimistic ? 'opacity: 0.7; position: relative;' : ''}">
-        //         ${isOptimistic ? '<div style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; animation: pulse 1.5s infinite;"></div>' : ''}
-        //         <div class="fc-event-title-container">
-        //           <div class="fc-event-title fc-sticky" style="font-weight: 600; font-size: 12px;">
-        //             ${isRecurring || isRecurringInstance ? '🔄 ' : ''}${isOptimistic ? '⏳ ' : ''}${customer}
-        //           </div>
-        //           ${service ? `<div style="font-size: 11px; opacity: 0.9;">${service}</div>` : ''}
-        //           ${isOptimistic ? '<div style="font-size: 10px; opacity: 0.7; font-style: italic;">Booking...</div>' : ''}
-        //         </div>
-        //       </div>
-        //     `
-        //   }
-        // }}
-          
-        //   // Parse the title to separate customer and service
-          
-        //     <div className="p-1 h-full overflow-hidden">
-        //       <div className="flex items-start justify-between mb-1">
-        //         <div className="flex items-center min-w-0 flex-1">
-        //           {(isRecurring || isRecurringInstance) && (
-        //             <span className="text-xs mr-1 flex-shrink-0" title={isRecurring ? 'Recurring Series' : 'Recurring Instance'}>
-        //               🔄
-        //             </span>
-        //           )}
-        //           <div className="min-w-0 flex-1">
-        //             <div className="font-semibold text-xs leading-tight truncate" title={customer}>
-        //               {customer}
-        //             </div>
-        //             {service && (
-        //               <div className="text-xs leading-tight opacity-90 truncate" title={service}>
-        //                 {service}
-        //               </div>
-        //             )}
-        //           </div>
-        //         </div>
-        //       </div>
-        //       {event.extendedProps?.status && event.extendedProps.status !== 'confirmed' && (
-        //         <div className="text-xs opacity-75 leading-tight">
-        //           {event.extendedProps.status}
-        //         </div>
-        //       )}
-        //     </div>
-        //   )
-        // }}
         
         schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
         resourceAreaHeaderContent="Barbers"

@@ -90,6 +90,7 @@ terraform.tfvars
 secure-credentials/
 *.env.production
 *.env.staging
+.env.vercel.production
 .env.local.secure
 admin-credentials.txt
 jwt-secret.txt

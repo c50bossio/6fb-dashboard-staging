@@ -1,8 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function AuthCodeError() {
+function AuthCodeErrorContent() {
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
+  const exchangeError = searchParams.get('exchange_error')
+  const errorDescription = searchParams.get('error_description')
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-sand-50">
       <div className="max-w-md w-full space-y-8 p-8">
@@ -32,11 +38,25 @@ export default function AuthCodeError() {
                 What happened?
               </h3>
               <div className="mt-2 text-sm text-yellow-700">
+                {exchangeError && (
+                  <div className="mb-2 p-2 bg-red-50 rounded">
+                    <p className="font-semibold">Exchange Error:</p>
+                    <p className="text-red-600">{exchangeError}</p>
+                  </div>
+                )}
+                {error && (
+                  <div className="mb-2 p-2 bg-red-50 rounded">
+                    <p className="font-semibold">OAuth Error:</p>
+                    <p className="text-red-600">{error}</p>
+                    {errorDescription && <p className="text-red-500 text-xs mt-1">{errorDescription}</p>}
+                  </div>
+                )}
                 <p>The authentication code from the OAuth provider could not be processed. This might happen if:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>The authentication session expired</li>
                   <li>The code was already used</li>
                   <li>There was a network error</li>
+                  <li>Supabase configuration mismatch</li>
                 </ul>
               </div>
             </div>
@@ -66,5 +86,17 @@ export default function AuthCodeError() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AuthCodeError() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    }>
+      <AuthCodeErrorContent />
+    </Suspense>
   )
 }

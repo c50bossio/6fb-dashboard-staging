@@ -84,7 +84,7 @@
     "@stripe/react-stripe-js": "^3.9.0",
     "@stripe/stripe-js": "^2.1.11",
     "@supabase/ssr": "^0.0.10",
-    "@supabase/supabase-js": "^2.38.4",
+    "@supabase/supabase-js": "^2.55.0",
     "@vercel/edge-config": "^1.4.0",
     "ai": "^5.0.15",
     "bcryptjs": "^2.4.3",

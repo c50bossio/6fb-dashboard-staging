@@ -96,14 +96,20 @@ function SupabaseAuthProvider({ children }) {
   useEffect(() => {
     // Get initial session and profile
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        await fetchProfile(session.user.id)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setUser(session?.user ?? null)
+        
+        if (session?.user) {
+          // Don't let profile fetch block loading completion
+          fetchProfile(session.user.id).catch(console.error)
+        }
+        
+        setLoading(false)
+      } catch (error) {
+        console.error('Error getting initial session:', error)
+        setLoading(false) // Always complete loading even on error
       }
-      
-      setLoading(false)
     }
 
     getInitialSession()
@@ -114,7 +120,8 @@ function SupabaseAuthProvider({ children }) {
         setUser(session?.user ?? null)
         
         if (session?.user) {
-          await fetchProfile(session.user.id)
+          // Don't await profile fetch to prevent blocking
+          fetchProfile(session.user.id).catch(console.error)
         } else {
           setProfile(null)
         }
@@ -138,7 +145,7 @@ function SupabaseAuthProvider({ children }) {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${window.location.origin}/dashboard`,
         // Ensure PKCE is used for better security and compatibility
         queryParams: {
           access_type: 'offline',

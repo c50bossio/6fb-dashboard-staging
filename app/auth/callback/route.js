@@ -2,71 +2,63 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server-client'
 
 export async function GET(request) {
-  const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const error = requestUrl.searchParams.get('error')
+  const errorDescription = requestUrl.searchParams.get('error_description')
 
-  console.log('OAuth callback received:', {
-    origin,
-    code: code ? `${code.substring(0, 10)}...` : null,
-    hasCode: !!code,
-    cookies: request.headers.get('cookie') ? 'present' : 'missing'
-  })
+  console.log('OAuth callback - URL:', requestUrl.toString())
+  console.log('OAuth callback - Code present:', !!code)
+  console.log('OAuth callback - Error:', error)
 
-  if (code) {
-    const supabase = createClient()
-    
-    // Debug cookie presence for PKCE
-    const cookies = request.headers.get('cookie') || ''
-    const hasPKCECookie = cookies.includes('sb-') && (cookies.includes('code_verifier') || cookies.includes('pkce'))
-    console.log('PKCE cookie check:', { hasPKCECookie, cookieCount: cookies.split(';').length })
-    
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-
-    if (!error && data?.session) {
-      console.log('OAuth exchange successful, redirecting to:', `${origin}${next}`)
-      // Create response with explicit cookie forwarding
-      const response = NextResponse.redirect(`${origin}${next}`)
-      
-      // Ensure session cookies are properly set
-      if (data.session) {
-        const accessToken = data.session.access_token
-        const refreshToken = data.session.refresh_token
-        
-        // Set cookies manually to ensure they persist
-        response.cookies.set('sb-access-token', accessToken, {
-          maxAge: 60 * 60, // 1 hour
-          httpOnly: false, // Allow client access
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/'
-        })
-        
-        response.cookies.set('sb-refresh-token', refreshToken, {
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-          httpOnly: false, // Allow client access  
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/'
-        })
-      }
-      
-      return response
-    } else {
-      console.error('OAuth exchange failed:', {
-        error: error?.message,
-        errorCode: error?.status,
-        errorName: error?.name,
-        hasSession: !!data?.session,
-        hasPKCECookie,
-        possibleCause: !hasPKCECookie ? 'Missing PKCE cookies - check cookie persistence' : 'Unknown'
-      })
-    }
-  } else {
-    console.error('No authorization code received in callback')
+  // Handle OAuth errors
+  if (error) {
+    console.error('OAuth error:', error, errorDescription)
+    return NextResponse.redirect(
+      new URL(`/auth/auth-code-error?error=${encodeURIComponent(error)}&description=${encodeURIComponent(errorDescription || '')}`, request.url)
+    )
   }
 
-  // return the user to an error page with instructions
-  console.log('Redirecting to error page')
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+  // Handle missing authorization code
+  if (!code) {
+    console.error('OAuth callback: No authorization code received')
+    return NextResponse.redirect(
+      new URL('/auth/auth-code-error?error=missing_code&description=No authorization code received', request.url)
+    )
+  }
+
+  try {
+    const supabase = await createClient()
+    
+    console.log('Attempting to exchange code for session...')
+    const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (exchangeError) {
+      console.error('Code exchange failed:', exchangeError)
+      
+      // Specific handling for PKCE-related errors
+      if (exchangeError.message?.includes('code verifier') || 
+          exchangeError.message?.includes('invalid request')) {
+        console.error('PKCE validation failed - check cookie configuration')
+      }
+      
+      return NextResponse.redirect(
+        new URL(`/auth/auth-code-error?error=exchange_failed&description=${encodeURIComponent(exchangeError.message)}`, request.url)
+      )
+    }
+
+    console.log('OAuth exchange successful:', {
+      user: data.user?.email,
+      session: !!data.session
+    })
+
+    // Successful authentication - redirect to dashboard
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+
+  } catch (error) {
+    console.error('OAuth callback exception:', error)
+    return NextResponse.redirect(
+      new URL(`/auth/auth-code-error?error=callback_exception&description=${encodeURIComponent(error.message)}`, request.url)
+    )
+  }
 }

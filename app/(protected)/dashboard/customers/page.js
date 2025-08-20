@@ -59,7 +59,19 @@ export default function CustomersPage() {
       setLoading(true)
       setError(null)
       
-      const response = await fetch('/api/customers?limit=100')
+      // Get barbershop_id from user profile
+      const userResponse = await fetch('/api/auth/user')
+      const userData = await userResponse.json()
+      
+      if (!userData.user?.barbershop_id) {
+        setError('Please complete your barbershop setup first. Go to Settings > Barbershop Setup to get started.')
+        setCustomers([])
+        setFilteredCustomers([])
+        setLoading(false)
+        return
+      }
+      
+      const response = await fetch(`/api/customers?limit=100&barbershop_id=${userData.user.barbershop_id}`)
       
       if (!response.ok) {
         throw new Error(`Failed to fetch customers: ${response.statusText}`)
@@ -129,7 +141,7 @@ export default function CustomersPage() {
       const userData = await userResponse.json()
       
       if (!userData.user?.barbershop_id) {
-        throw new Error('No barbershop associated with your account. Please contact support.')
+        throw new Error('Please complete your barbershop setup first. Go to Settings > Barbershop Setup to get started.')
       }
 
       const response = await fetch('/api/customers', {
