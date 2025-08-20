@@ -36,6 +36,17 @@ from services.memory_manager import (
     cleanup_oauth_session
 )
 
+# Import shop management router and service
+try:
+    from routers.shop_management import router as shop_management_router
+    from services.shop_service import ShopService
+    SHOP_MANAGEMENT_AVAILABLE = True
+    print("✅ Shop management module loaded successfully")
+except ImportError as e:
+    SHOP_MANAGEMENT_AVAILABLE = False
+    shop_management_router = None
+    print(f"⚠️ Shop management module not available: {e}")
+
 # 🚨 CRITICAL: Import Sentry for production error monitoring
 from services.sentry_service import (
     initialize_sentry,
@@ -721,6 +732,11 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         )
 
 # Routes
+# Include shop management router if available
+if SHOP_MANAGEMENT_AVAILABLE and shop_management_router:
+    app.include_router(shop_management_router)
+    print("✅ Shop management endpoints registered")
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize database on startup"""
@@ -3906,6 +3922,24 @@ except ImportError as e:
 # Removed: print(f"⚠️ Analytics Router not available: {e}")
 
 try:
+    from routers.customer_analytics import router as customer_analytics_router
+    app.include_router(customer_analytics_router)
+# Removed: print("✅ Customer Analytics Router included at /customer-analytics/*")
+    CUSTOMER_ANALYTICS_ROUTER_AVAILABLE = True
+except ImportError as e:
+    CUSTOMER_ANALYTICS_ROUTER_AVAILABLE = False
+# Removed: print(f"⚠️ Customer Analytics Router not available: {e}")
+
+try:
+    from routers.customer_campaigns import router as customer_campaigns_router
+    app.include_router(customer_campaigns_router)
+# Removed: print("✅ Customer Campaigns Router included at /campaigns/*")
+    CUSTOMER_CAMPAIGNS_ROUTER_AVAILABLE = True
+except ImportError as e:
+    CUSTOMER_CAMPAIGNS_ROUTER_AVAILABLE = False
+# Removed: print(f"⚠️ Customer Campaigns Router not available: {e}")
+
+try:
     from routers.appointments import router as appointments_router
     app.include_router(appointments_router)
 # Removed: print("✅ Appointments Router included at /api/v1/appointments/*")
@@ -3913,6 +3947,16 @@ try:
 except ImportError as e:
     APPOINTMENTS_ROUTER_AVAILABLE = False
 # Removed: print(f"⚠️ Appointments Router not available: {e}")
+
+# Customer Loyalty Router
+try:
+    from routers.customer_loyalty import router as customer_loyalty_router
+    app.include_router(customer_loyalty_router)
+# Removed: print("✅ Customer Loyalty Router included at /loyalty/*")
+    CUSTOMER_LOYALTY_ROUTER_AVAILABLE = True
+except ImportError as e:
+    CUSTOMER_LOYALTY_ROUTER_AVAILABLE = False
+# Removed: print(f"⚠️ Customer Loyalty Router not available: {e}")
 
 # Import and include Notion Integration router
 try:

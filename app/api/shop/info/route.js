@@ -131,7 +131,7 @@ export async function PUT(request) {
     const { data: updatedShop, error: updateError } = await supabase
       .from('barbershops')
       .update(updates)
-      .eq('owner_id', userId)
+      .eq('owner_id', user.id)
       .select()
       .single()
     

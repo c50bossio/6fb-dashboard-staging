@@ -112,26 +112,31 @@ export async function POST(request) {
       // Continue even if this fails - we'll still update the profile
     }
     
-    // Also save analytics event for tracking using service client
-    const { error: analyticsError } = await serviceClient
-      .from('analytics_events')
-      .insert({
-        user_id: user.id,
-        event_name: 'onboarding_progress_saved',
-        event_properties: {
-          step_name: step,
-          timestamp: new Date().toISOString(),
-          data_keys: Object.keys(stepData || {})
-        },
-        user_properties: {
-          user_id: user.id
-        },
-        session_id: request.headers.get('x-session-id') || null
-      })
-    
-    if (analyticsError) {
-      console.error('Error saving analytics:', analyticsError)
-      // Continue even if analytics fails
+    // Save analytics event for tracking using service client
+    try {
+      const { error: analyticsError } = await serviceClient
+        .from('analytics_events')
+        .insert({
+          user_id: user.id,
+          event_name: 'onboarding_progress_saved',
+          event_properties: {
+            step_name: step,
+            timestamp: new Date().toISOString(),
+            data_keys: Object.keys(stepData || {})
+          },
+          user_properties: {
+            user_id: user.id
+          },
+          session_id: request.headers.get('x-session-id') || null
+        })
+      
+      if (analyticsError) {
+        console.error('Error saving analytics:', analyticsError)
+        // Continue even if analytics fails
+      }
+    } catch (error) {
+      // Log analytics errors but continue
+      console.debug('Analytics error:', error.message)
     }
     
     // Update profile with current progress - try with all fields first

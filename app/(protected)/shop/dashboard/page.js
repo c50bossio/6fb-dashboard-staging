@@ -12,7 +12,8 @@ import {
   UserPlusIcon,
   ScissorsIcon,
   BuildingStorefrontIcon,
-  CreditCardIcon
+  CreditCardIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
@@ -41,33 +42,38 @@ export default function ShopDashboard() {
 
   const loadShopData = async () => {
     try {
-      const demoResponse = await fetch('/api/shop/demo-data')
-      if (demoResponse.ok) {
-        const demoData = await demoResponse.json()
-        setShopData(demoData.shopInfo)
-        setBarbers(demoData.barbers)
-        setMetrics(demoData.metrics)
-      } else {
-        const shopResponse = await fetch('/api/shop/info')
-        if (shopResponse.ok) {
-          const shop = await shopResponse.json()
-          setShopData(shop)
-        }
+      // Load real shop data - no demo fallback
+      const [shopResponse, barbersResponse, metricsResponse] = await Promise.all([
+        fetch('/api/shop/info'),
+        fetch('/api/shop/barbers'),
+        fetch('/api/shop/metrics')
+      ])
 
-        const barbersResponse = await fetch('/api/shop/barbers')
-        if (barbersResponse.ok) {
-          const { barbers } = await barbersResponse.json()
-          setBarbers(barbers)
-        }
+      if (shopResponse.ok) {
+        const shop = await shopResponse.json()
+        setShopData(shop)
+      } else if (shopResponse.status === 404) {
+        // Shop not found - needs setup
+        setShopData({
+          setup_required: true,
+          error: 'No barbershop found. Please complete shop setup.'
+        })
+      }
 
-        const metricsResponse = await fetch('/api/shop/metrics')
-        if (metricsResponse.ok) {
-          const metricsData = await metricsResponse.json()
-          setMetrics(metricsData)
-        }
+      if (barbersResponse.ok) {
+        const { barbers } = await barbersResponse.json()
+        setBarbers(barbers || [])
+      }
+
+      if (metricsResponse.ok) {
+        const metricsData = await metricsResponse.json()
+        setMetrics(metricsData)
       }
     } catch (error) {
       console.error('Error loading shop data:', error)
+      setShopData({
+        error: 'Failed to load shop data. Please refresh the page.'
+      })
     } finally {
       setLoading(false)
     }
@@ -77,6 +83,46 @@ export default function ShopDashboard() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
+      </div>
+    )
+  }
+
+  // Check if shop setup is required
+  if (shopData?.setup_required) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+          <BuildingStorefrontIcon className="h-16 w-16 text-yellow-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Shop Setup Required</h2>
+          <p className="text-gray-600 mb-6">
+            {shopData.error || 'Please complete your barbershop setup to access the dashboard.'}
+          </p>
+          <Link
+            href="/onboarding"
+            className="inline-flex items-center px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
+          >
+            Complete Shop Setup
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Check for errors
+  if (shopData?.error && !shopData?.setup_required) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+          <ExclamationTriangleIcon className="h-16 w-16 text-red-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Shop Data</h2>
+          <p className="text-gray-600 mb-6">{shopData.error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Refresh Page
+          </button>
+        </div>
       </div>
     )
   }
