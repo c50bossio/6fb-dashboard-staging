@@ -41,6 +41,7 @@ import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { getOrAssignShopId } from '../../../../lib/ensure-user-shop'
 import EmptyBarberState from '../../../../components/calendar/EmptyBarberState'
 import OnboardingRequiredDialog from '../../../../components/onboarding/OnboardingRequiredDialog'
+import AddBarberGuidanceDialog from '../../../../components/calendar/AddBarberGuidanceDialog'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
@@ -126,6 +127,7 @@ export default function CalendarPage() {
   const [realtimeConnected, setRealtimeConnected] = useState(false)
   const [realtimeError, setRealtimeError] = useState(null)
   const [showOnboardingDialog, setShowOnboardingDialog] = useState(false)
+  const [showAddBarberDialog, setShowAddBarberDialog] = useState(false)
   
   
   const { 
@@ -1055,13 +1057,19 @@ export default function CalendarPage() {
       return
     }
     
-    // Navigate to add barber page
-    window.location.href = '/shop/barbers/add'
+    // Show guidance dialog for completed users
+    console.info('Showing add barber guidance for completed user')
+    setShowAddBarberDialog(true)
   }
   
   const handleGoToOnboarding = () => {
     setShowOnboardingDialog(false)
     window.location.href = '/onboarding'
+  }
+  
+  const handleProceedToAddBarber = () => {
+    setShowAddBarberDialog(false)
+    window.location.href = '/shop/barbers/add'
   }
 
   // Show empty state if no barbers are configured
@@ -1742,6 +1750,14 @@ export default function CalendarPage() {
         onClose={() => setShowOnboardingDialog(false)}
         onGoToOnboarding={handleGoToOnboarding}
         actionAttempted="add your first barber"
+      />
+      
+      {/* Add Barber Guidance Dialog */}
+      <AddBarberGuidanceDialog
+        isOpen={showAddBarberDialog}
+        onClose={() => setShowAddBarberDialog(false)}
+        onProceedToAdd={handleProceedToAddBarber}
+        shopName={shopName}
       />
       
       {/* Diagnostics Toggle Button */}
