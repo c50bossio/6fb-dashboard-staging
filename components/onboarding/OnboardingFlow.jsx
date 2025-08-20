@@ -1,9 +1,11 @@
 'use client'
 
-import { CheckCircleIcon, ArrowRightIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, ArrowRightIcon, XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import confetti from 'canvas-confetti'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { extractUserData, formatForForm, getOnboardingStatus } from '@/lib/user-data-extractor'
 
 const ONBOARDING_STEPS = [
   {
@@ -27,42 +29,7 @@ const ONBOARDING_STEPS = [
     id: 'profile',
     title: 'Complete Your Profile',
     description: 'Tell us about your barbershop',
-    content: (
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Barbershop Name
-          </label>
-          <input
-            type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
-            placeholder="Elite Cuts Barbershop"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Barbers
-          </label>
-          <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500">
-            <option>1-3</option>
-            <option>4-7</option>
-            <option>8-15</option>
-            <option>16+</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Primary Goal
-          </label>
-          <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500">
-            <option>Increase bookings</option>
-            <option>Improve customer retention</option>
-            <option>Streamline operations</option>
-            <option>Grow revenue</option>
-          </select>
-        </div>
-      </div>
-    )
+    content: 'DYNAMIC_PROFILE_FORM' // Will be replaced with dynamic content
   },
   {
     id: 'features',
@@ -143,6 +110,10 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
   const [currentStep, setCurrentStep] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
   const [userData, setUserData] = useState({})
+  const [formData, setFormData] = useState({})
+  const [prePopulatedData, setPrePopulatedData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -150,8 +121,199 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
     const hasCompletedOnboarding = localStorage.getItem('onboarding-completed')
     if (hasCompletedOnboarding) {
       setIsVisible(false)
+      return
     }
+
+    // Load user data and pre-populate forms
+    loadUserData()
   }, [])
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true)
+      const supabase = createClient()
+      
+      // Get current user
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError) {
+        console.error('Error fetching user:', userError)
+        setLoading(false)
+        return
+      }
+      
+      if (!currentUser) {
+        console.log('No authenticated user found')
+        setLoading(false)
+        return
+      }
+      
+      setUser(currentUser)
+      
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .maybeSingle()
+      
+      if (profileError) {
+        console.error('Error fetching profile:', profileError)
+      }
+      
+      // Extract and format user data
+      const extractedData = extractUserData(currentUser)
+      const formattedData = formatForForm(extractedData)
+      const onboardingStatus = getOnboardingStatus(currentUser, profile)
+      
+      console.log('Pre-populated data:', formattedData)
+      
+      setPrePopulatedData(formattedData)
+      setFormData({
+        barbershopName: formattedData.barbershopName,
+        numberOfBarbers: '1-3',
+        primaryGoal: 'Increase bookings',
+        ...formattedData
+      })
+      
+      // Skip to appropriate step if partially completed
+      if (onboardingStatus.nextStep === 'shop_creation') {
+        setCurrentStep(2) // Skip to features step since profile is done
+      } else if (onboardingStatus.nextStep === 'shop_association') {
+        setCurrentStep(3) // Skip to integration step
+      }
+      
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleFormChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const handleSuggestionSelect = (suggestion) => {
+    setFormData(prev => ({
+      ...prev,
+      barbershopName: suggestion
+    }))
+  }
+
+  const renderProfileForm = () => {
+    if (!prePopulatedData) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-500"></div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Pre-population indicator */}
+        {prePopulatedData.hasName && (
+          <div className="bg-olive-50 border border-olive-200 rounded-lg p-4 mb-4">
+            <div className="flex items-center">
+              <SparklesIcon className="h-5 w-5 text-olive-600 mr-2" />
+              <span className="text-sm font-medium text-olive-800">
+                We've pre-filled some information from your {prePopulatedData.provider === 'google' ? 'Google' : prePopulatedData.provider} account
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Barbershop Name with Suggestions */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Barbershop Name
+          </label>
+          <input
+            type="text"
+            value={formData.barbershopName || ''}
+            onChange={(e) => handleFormChange('barbershopName', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
+            placeholder="Enter your barbershop name"
+          />
+          
+          {/* Smart Suggestions */}
+          {prePopulatedData.barbershopAlternatives?.length > 0 && (
+            <div className="mt-2">
+              <p className="text-xs text-gray-500 mb-2">Suggestions based on your profile:</p>
+              <div className="flex flex-wrap gap-2">
+                {[prePopulatedData.barbershopName, ...prePopulatedData.barbershopAlternatives].filter(Boolean).slice(0, 3).map((suggestion, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleSuggestionSelect(suggestion)}
+                    className="px-3 py-1 text-xs bg-gray-100 hover:bg-olive-100 border border-gray-200 rounded-full transition-colors"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Number of Barbers */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Number of Barbers
+          </label>
+          <select 
+            value={formData.numberOfBarbers || '1-3'}
+            onChange={(e) => handleFormChange('numberOfBarbers', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
+          >
+            <option>1-3</option>
+            <option>4-7</option>
+            <option>8-15</option>
+            <option>16+</option>
+          </select>
+        </div>
+
+        {/* Primary Goal */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Primary Goal
+          </label>
+          <select 
+            value={formData.primaryGoal || 'Increase bookings'}
+            onChange={(e) => handleFormChange('primaryGoal', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500"
+          >
+            <option>Increase bookings</option>
+            <option>Improve customer retention</option>
+            <option>Streamline operations</option>
+            <option>Grow revenue</option>
+          </select>
+        </div>
+
+        {/* User Info Preview (for debugging/transparency) */}
+        {prePopulatedData.hasName && (
+          <div className="pt-4 border-t border-gray-200">
+            <p className="text-xs text-gray-500 mb-2">
+              Profile information from {prePopulatedData.provider === 'google' ? 'Google' : prePopulatedData.provider}:
+            </p>
+            <div className="flex items-center space-x-3 text-sm text-gray-600">
+              {prePopulatedData.avatar && (
+                <img src={prePopulatedData.avatar} alt="Profile" className="w-8 h-8 rounded-full" />
+              )}
+              <div>
+                <p className="font-medium">{prePopulatedData.displayName}</p>
+                <p className="text-xs">{prePopulatedData.email}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   const handleNext = () => {
     if (currentStep < ONBOARDING_STEPS.length - 1) {
@@ -182,14 +344,23 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
     // Save completion status
     localStorage.setItem('onboarding-completed', 'true')
-    localStorage.setItem('onboarding-data', JSON.stringify(userData))
+    localStorage.setItem('onboarding-data', JSON.stringify({
+      ...userData,
+      ...formData
+    }))
 
-    // Save to backend
+    // Save to backend with form data
     try {
+      const dataToSave = {
+        ...userData,
+        ...formData,
+        prePopulatedData
+      }
+      
       await fetch('/api/onboarding/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(dataToSave)
       })
     } catch (error) {
       console.error('Failed to save onboarding data:', error)
@@ -197,7 +368,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
     // Callback or redirect
     if (onComplete) {
-      onComplete(userData)
+      onComplete({ ...userData, ...formData })
     } else {
       setTimeout(() => {
         setIsVisible(false)
@@ -241,7 +412,16 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
 
         {/* Content */}
         <div className="p-6 max-h-[60vh] overflow-y-auto">
-          {step.content}
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-500"></div>
+              <span className="ml-3 text-gray-600">Loading your information...</span>
+            </div>
+          ) : step.content === 'DYNAMIC_PROFILE_FORM' ? (
+            renderProfileForm()
+          ) : (
+            step.content
+          )}
         </div>
 
         {/* Footer */}

@@ -11,10 +11,32 @@ export async function POST(request) {
     }
     
     const body = await request.json()
-    const { completedSteps, skippedSteps, data: onboardingData } = body
+    const { completedSteps, skippedSteps, data: onboardingData, prePopulatedData } = body
     
-    // If old format (just onboardingData), handle it
-    const finalData = onboardingData || body.onboardingData || {}
+    // Handle multiple data formats for backward compatibility
+    let finalData = onboardingData || body.onboardingData || body
+    
+    // Map new onboarding fields to expected format
+    if (finalData.barbershopName && !finalData.businessName) {
+      finalData.businessName = finalData.barbershopName
+    }
+    if (finalData.numberOfBarbers && !finalData.businessSize) {
+      finalData.businessSize = finalData.numberOfBarbers
+    }
+    if (finalData.primaryGoal && !finalData.goals) {
+      finalData.goals = [finalData.primaryGoal]
+    }
+    
+    // Include pre-populated metadata for analytics
+    if (prePopulatedData) {
+      finalData.prePopulatedMetadata = {
+        provider: prePopulatedData.provider,
+        hasName: prePopulatedData.hasName,
+        hasPhone: prePopulatedData.hasPhone,
+        isOAuthUser: prePopulatedData.isOAuthUser,
+        dataSource: 'oauth_extraction'
+      }
+    }
     
     const results = {
       profile: null,
@@ -60,7 +82,11 @@ export async function POST(request) {
       onboarding_progress_percentage: 100,
       user_goals: finalData.goals || [],
       business_size: finalData.businessSize || null,
-      role: mapRole(finalData.role),
+      role: mapRole(finalData.role || 'SHOP_OWNER'), // Default to shop owner if no role specified
+      // Add extracted user metadata for profile enrichment
+      full_name: prePopulatedData?.displayName || user.user_metadata?.full_name || null,
+      phone: prePopulatedData?.phone || user.user_metadata?.phone || null,
+      avatar_url: prePopulatedData?.avatar || user.user_metadata?.avatar_url || null,
       updated_at: new Date().toISOString()
     }
     
@@ -99,12 +125,21 @@ export async function POST(request) {
     } else {
       const shopSlug = generateSlug(finalData.businessName)
       
+      // Use pre-populated data for better defaults
+      const shopEmail = finalData.businessEmail || 
+                       prePopulatedData?.email || 
+                       user.email
+      const shopPhone = finalData.businessPhone || 
+                       prePopulatedData?.phone || 
+                       user.user_metadata?.phone || ''
+      
       const { data: shopData, error: shopError } = await supabase
         .from('barbershops')
         .insert({
           name: finalData.businessName,
+          email: shopEmail,
+          phone: shopPhone,
           address: finalData.businessAddress,
-          phone: finalData.businessPhone,
           owner_id: user.id,
           business_type: finalData.businessType,
           business_hours_template: finalData.schedule || finalData.businessHours,
@@ -116,7 +151,9 @@ export async function POST(request) {
           brand_colors: {
             primary: finalData.branding?.primaryColor || '#3B82F6',
             secondary: finalData.branding?.secondaryColor || '#1F2937'
-          }
+          },
+          // Add metadata about pre-population for analytics
+          onboarding_metadata: finalData.prePopulatedMetadata || null
         })
         .select()
         .single()
