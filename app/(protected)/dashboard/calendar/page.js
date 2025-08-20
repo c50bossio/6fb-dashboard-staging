@@ -1044,7 +1044,6 @@ export default function CalendarPage() {
               <CalendarIcon className="h-8 w-8 text-olive-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Booking Calendar</h1>
-                <p className="text-sm text-gray-600">Stable FullCalendar Implementation</p>
               </div>
             </div>
             
