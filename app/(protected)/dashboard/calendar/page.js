@@ -29,12 +29,18 @@ import { useToast } from '../../../../components/ToastContainer'
 import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
 import { 
   DEFAULT_RESOURCES, 
+  EMPTY_BARBER_PLACEHOLDER,
   DEFAULT_SERVICES, 
+  fetchRealBarbers,
+  fetchRealEvents,
+  fetchRecurringEvents,
   formatAppointment,
   exportToCSV 
 } from '../../../../lib/calendar-data'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { getOrAssignShopId } from '../../../../lib/ensure-user-shop'
+import EmptyBarberState from '../../../../components/calendar/EmptyBarberState'
+import OnboardingRequiredDialog from '../../../../components/onboarding/OnboardingRequiredDialog'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
@@ -105,7 +111,7 @@ export default function CalendarPage() {
   const [appointmentToCancel, setAppointmentToCancel] = useState(null)
   const [cancelling, setCancelling] = useState(false)
   const [services, setServices] = useState([])
-  const [barbershopId, setBarbershopId] = useState('0b2d7524-49bc-47db-920d-db9c9822c416') // Default shop
+  const [barbershopId, setBarbershopId] = useState(null) // Dynamic shop ID from user context
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBarber, setFilterBarber] = useState('all')
@@ -119,6 +125,7 @@ export default function CalendarPage() {
   
   const [realtimeConnected, setRealtimeConnected] = useState(false)
   const [realtimeError, setRealtimeError] = useState(null)
+  const [showOnboardingDialog, setShowOnboardingDialog] = useState(false)
   
   
   const { 
@@ -183,14 +190,41 @@ export default function CalendarPage() {
     updateTime() // Set initial time
     const timeInterval = setInterval(updateTime, 1000)
     
-    // Don't set default resources immediately - let fetchRealBarbers handle it
+    // Don't set default resources immediately - let loadCalendarData handle it
     setServices(DEFAULT_SERVICES)
-    
-    fetchRealBarbers()
-    fetchServices()
     
     return () => clearInterval(timeInterval)
   }, [user, profile])
+  
+  // Load calendar data when barbershopId is available
+  useEffect(() => {
+    if (barbershopId) {
+      loadCalendarData()
+    }
+  }, [barbershopId])
+  
+  const loadCalendarData = async () => {
+    if (!barbershopId) {
+      console.warn('No barbershop ID available for loading calendar data')
+      return
+    }
+    
+    try {
+      // Load barbers and services concurrently
+      const [barbersData, servicesData] = await Promise.all([
+        fetchRealBarbers(barbershopId),
+        fetchServices()
+      ])
+      
+      console.log('📅 Loaded calendar data:', { barbers: barbersData.length, shopId: barbershopId })
+      
+      setResources(barbersData)
+      generateQuickLinks(barbersData)
+    } catch (error) {
+      console.error('Error loading calendar data:', error)
+      setResources(EMPTY_BARBER_PLACEHOLDER)
+    }
+  }
   
   const deduplicateAppointments = (appointments) => {
     const seen = new Map()
@@ -361,37 +395,7 @@ export default function CalendarPage() {
     }
   }
 
-  const fetchRealBarbers = async () => {
-    try {
-      const response = await fetch('/api/calendar/barbers')
-      const result = await response.json()
-      
-      console.log('📅 Fetched barbers:', result)
-      
-      if (response.ok && result.barbers?.length) {
-        const transformedResources = result.barbers.map(barber => ({
-          id: barber.id,
-          title: barber.title || barber.name,
-          eventColor: barber.eventColor || barber.color || '#546355',
-          ...barber
-        }))
-        setResources(transformedResources)
-        generateQuickLinks(transformedResources)
-      } else {
-        // Only show placeholder if truly no barbers exist
-        // Empty array means calendar will show without barber lanes
-        console.log('📅 No barbers found - showing empty calendar')
-        setResources([])
-        generateQuickLinks([])
-      }
-    } catch (error) {
-      console.error('Error fetching barbers:', error)
-      // On error, show empty instead of placeholder
-      // This prevents hardcoded barbers from appearing
-      setResources([])
-      generateQuickLinks([])
-    }
-  }
+  // Legacy fetchRealBarbers function removed - now handled by loadCalendarData()
 
   const generateQuickLinks = (barberResources) => {
     const baseUrl = typeof window !== 'undefined' && window.location ? window.location.origin : 'https://6fb-ai.com'
@@ -1030,6 +1034,62 @@ export default function CalendarPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading calendar...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Check if barbershop has no barbers (empty state)
+  const hasEmptyBarbers = resources.length === 0 || 
+    (resources.length === 1 && resources[0]?.extendedProps?.isEmpty)
+  
+  const shopName = profile?.shop_name || user?.user_metadata?.shop_name || 'your barbershop'
+
+  const handleAddBarber = () => {
+    // Check if user has completed onboarding and has barbershop ID
+    const isOnboardingComplete = profile?.onboarding_completed && barbershopId
+    
+    if (!isOnboardingComplete) {
+      console.info('User needs to complete onboarding before adding barbers')
+      setShowOnboardingDialog(true)
+      return
+    }
+    
+    // Navigate to add barber page
+    window.location.href = '/shop/barbers/add'
+  }
+  
+  const handleGoToOnboarding = () => {
+    setShowOnboardingDialog(false)
+    window.location.href = '/onboarding'
+  }
+
+  // Show empty state if no barbers are configured
+  if (hasEmptyBarbers && barbershopId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <CalendarIcon className="h-8 w-8 text-olive-600" />
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Booking Calendar</h1>
+                  <p className="text-gray-600">Set up your first barber to start accepting bookings</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Empty State */}
+        <div className="px-6 py-8">
+          <EmptyBarberState 
+            onAddBarber={handleAddBarber}
+            shopName={shopName}
+            onboardingIncomplete={!profile?.onboarding_completed || !barbershopId}
+          />
         </div>
       </div>
     )
@@ -1675,6 +1735,14 @@ export default function CalendarPage() {
           intervalMs={10000} // Check every 10 seconds as fallback
         />
       )}
+      
+      {/* Onboarding Required Dialog */}
+      <OnboardingRequiredDialog
+        isOpen={showOnboardingDialog}
+        onClose={() => setShowOnboardingDialog(false)}
+        onGoToOnboarding={handleGoToOnboarding}
+        actionAttempted="add your first barber"
+      />
       
       {/* Diagnostics Toggle Button */}
       <button
