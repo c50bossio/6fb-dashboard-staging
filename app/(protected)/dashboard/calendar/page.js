@@ -183,7 +183,7 @@ export default function CalendarPage() {
     updateTime() // Set initial time
     const timeInterval = setInterval(updateTime, 1000)
     
-    setResources(DEFAULT_RESOURCES)
+    // Don't set default resources immediately - let fetchRealBarbers handle it
     setServices(DEFAULT_SERVICES)
     
     fetchRealBarbers()
@@ -378,13 +378,18 @@ export default function CalendarPage() {
         setResources(transformedResources)
         generateQuickLinks(transformedResources)
       } else {
-        setResources(DEFAULT_RESOURCES)
-        generateQuickLinks(DEFAULT_RESOURCES)
+        // Only show placeholder if truly no barbers exist
+        // Empty array means calendar will show without barber lanes
+        console.log('📅 No barbers found - showing empty calendar')
+        setResources([])
+        generateQuickLinks([])
       }
     } catch (error) {
       console.error('Error fetching barbers:', error)
-      setResources(DEFAULT_RESOURCES)
-      generateQuickLinks(DEFAULT_RESOURCES)
+      // On error, show empty instead of placeholder
+      // This prevents hardcoded barbers from appearing
+      setResources([])
+      generateQuickLinks([])
     }
   }
 

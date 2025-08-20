@@ -195,11 +195,22 @@ export default function AppointmentBookingModal({
     // 2. User hasn't dragged to select a specific duration
     const userSelectedDuration = selectedSlot?.duration && selectedSlot?.selectionType === 'drag'
     
+    // Debug logging
+    console.log('📅 Duration logic check:', {
+      isBlockMode,
+      userSelectedDuration,
+      slotDuration: selectedSlot?.duration,
+      selectionType: selectedSlot?.selectionType,
+      serviceId: formData.service_id,
+      currentDuration: formData.duration_minutes
+    })
+    
     if (!isBlockMode && !userSelectedDuration && formData.service_id) {
       const selectedService = services.find(s => s.id === formData.service_id)
       if (selectedService) {
-        if (formData.duration_minutes !== selectedService.duration_minutes ||
-            formData.service_price !== parseFloat(selectedService.price)) {
+        // Only update if duration actually needs to change
+        if (formData.duration_minutes !== selectedService.duration_minutes) {
+          console.log('📅 Updating duration from service:', selectedService.duration_minutes)
           setFormData(prev => ({
             ...prev,
             duration_minutes: selectedService.duration_minutes,
@@ -207,6 +218,8 @@ export default function AppointmentBookingModal({
           }))
         }
       }
+    } else if (userSelectedDuration) {
+      console.log('📅 Preserving user-dragged duration:', selectedSlot.duration)
     }
   }, [isBlockMode, formData.service_id, services, selectedSlot?.duration, selectedSlot?.selectionType])
 
