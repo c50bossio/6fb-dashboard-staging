@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { getUserBarbershopId } from '@/lib/barbershop-helper'
+import { hasPermission } from '@/lib/permissions'
 export const runtime = 'edge'
 
 export async function GET(request) {
@@ -76,6 +77,23 @@ export async function GET(request) {
     // Get barbershop ID using helper function
     const barbershopId = await getUserBarbershopId(session.user, profile)
     
+    // Determine customer management access based on subscription tier and permissions
+    const subscriptionTier = profile?.subscription_tier || 'individual'
+    let hasCustomerAccess = false
+    
+    if (subscriptionTier === 'individual') {
+      // Individual barber subscription gets automatic customer access
+      hasCustomerAccess = true
+    } else if (barbershopId) {
+      // Employee barber - check shop owner's permission settings
+      try {
+        hasCustomerAccess = await hasPermission(session.user.id, barbershopId, 'can_view_all_clients')
+      } catch (error) {
+        console.warn('Error checking customer permission:', error)
+        hasCustomerAccess = false
+      }
+    }
+    
     // Return user data in format expected by customer management page
     return NextResponse.json({
       authenticated: true,
@@ -83,6 +101,8 @@ export async function GET(request) {
         id: session.user.id,
         email: session.user.email,
         barbershop_id: barbershopId,
+        has_customer_access: hasCustomerAccess,
+        subscription_tier: subscriptionTier,
         profile: profile,
         role: profile.role,
         full_name: profile.full_name || session.user.user_metadata?.full_name

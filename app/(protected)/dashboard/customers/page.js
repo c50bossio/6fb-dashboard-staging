@@ -71,6 +71,19 @@ export default function CustomersPage() {
         return
       }
       
+      if (!userData.user?.has_customer_access) {
+        const subscriptionTier = userData.user?.subscription_tier || 'individual'
+        if (subscriptionTier === 'individual') {
+          setError('Customer management is included with your subscription. Please contact support if you\'re seeing this message.')
+        } else {
+          setError('Customer management access not enabled. Please ask your shop owner to grant customer management permissions in Staff Settings.')
+        }
+        setCustomers([])
+        setFilteredCustomers([])
+        setLoading(false)
+        return
+      }
+      
       const response = await fetch(`/api/customers?limit=100&barbershop_id=${userData.user.barbershop_id}`)
       
       if (!response.ok) {
@@ -142,6 +155,15 @@ export default function CustomersPage() {
       
       if (!userData.user?.barbershop_id) {
         throw new Error('Please complete your barbershop setup first. Go to Settings > Barbershop Setup to get started.')
+      }
+      
+      if (!userData.user?.has_customer_access) {
+        const subscriptionTier = userData.user?.subscription_tier || 'individual'
+        if (subscriptionTier === 'individual') {
+          throw new Error('Customer management is included with your subscription. Please contact support if you\'re seeing this message.')
+        } else {
+          throw new Error('Customer management access not enabled. Please ask your shop owner to grant customer management permissions in Staff Settings.')
+        }
       }
 
       const response = await fetch('/api/customers', {
