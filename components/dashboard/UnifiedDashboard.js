@@ -264,7 +264,8 @@ export default function UnifiedDashboard({ user, profile }) {
 
   const handleExecutiveModeHover = useCallback(() => {
     if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
-      const barbershopId = profile?.barbershop_id || user?.barbershop_id
+      // Use shop_id first (profiles table), then fallback to barbershop_id
+      const barbershopId = profile?.shop_id || profile?.barbershop_id || user?.shop_id || user?.barbershop_id
       if (!barbershopId) return // Don't prefetch without barbershop ID
       fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
         .then(response => response.json())

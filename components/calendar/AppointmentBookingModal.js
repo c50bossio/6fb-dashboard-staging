@@ -190,8 +190,12 @@ export default function AppointmentBookingModal({
   }, [formData.scheduled_at, formData.duration_minutes])
 
   useEffect(() => {
-    // Only override duration with service duration if NOT in block mode
-    if (!isBlockMode && formData.service_id) {
+    // Only override duration with service duration if:
+    // 1. NOT in block mode
+    // 2. User hasn't dragged to select a specific duration
+    const userSelectedDuration = selectedSlot?.duration && selectedSlot?.selectionType === 'drag'
+    
+    if (!isBlockMode && !userSelectedDuration && formData.service_id) {
       const selectedService = services.find(s => s.id === formData.service_id)
       if (selectedService) {
         if (formData.duration_minutes !== selectedService.duration_minutes ||
@@ -204,7 +208,7 @@ export default function AppointmentBookingModal({
         }
       }
     }
-  }, [isBlockMode, formData.service_id, services])
+  }, [isBlockMode, formData.service_id, services, selectedSlot?.duration, selectedSlot?.selectionType])
 
   // Preserve dragged duration when entering block mode
   useEffect(() => {

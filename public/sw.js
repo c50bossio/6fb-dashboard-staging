@@ -71,7 +71,14 @@ self.addEventListener('fetch', (event) => {
             // Clone BEFORE using the response
             const responseToCache = response.clone();
             caches.open(API_CACHE).then(cache => {
-              cache.put(request, responseToCache);
+              // Wrap in try-catch to prevent network errors
+              try {
+                cache.put(request, responseToCache).catch(err => {
+                  console.log('[SW] Cache.put error (API):', err);
+                });
+              } catch (err) {
+                console.log('[SW] Cache operation failed:', err);
+              }
             });
           }
           return response;
@@ -129,7 +136,13 @@ async function networkFirstStrategy(request, cacheName, maxAge) {
     
     if (response.ok) {
       const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
+      try {
+        await cache.put(request, response.clone()).catch(err => {
+          console.log('[SW] Cache.put error (network-first):', err);
+        });
+      } catch (err) {
+        console.log('[SW] Cache operation failed:', err);
+      }
     }
     
     return response;
@@ -156,7 +169,13 @@ async function fetchAndCache(request, cacheName) {
   
   if (response.ok) {
     const cache = await caches.open(cacheName);
-    cache.put(request, response.clone());
+    try {
+      await cache.put(request, response.clone()).catch(err => {
+        console.log('[SW] Cache.put error (fetchAndCache):', err);
+      });
+    } catch (err) {
+      console.log('[SW] Cache operation failed:', err);
+    }
   }
   
   return response;
