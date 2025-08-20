@@ -47,8 +47,18 @@ export function useRealtimeAppointmentsSimple(shopId) {
   useEffect(() => {
     console.log('🎯 Simple WebSocket hook starting for shop:', shopId)
     
+    // Don't attempt connection if no shop ID (user in onboarding)
+    if (!shopId) {
+      console.info('⏸️ Skipping WebSocket connection - no shop ID (user may be in onboarding)')
+      setLoading(false)
+      return
+    }
+    
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    // Use base64-encoded JWT token to avoid Vercel environment variable corruption
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_B64 
+      ? atob(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_B64).trim()
+      : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
     if (!supabaseUrl || !supabaseAnonKey) {
       console.error('❌ Missing Supabase environment variables')
