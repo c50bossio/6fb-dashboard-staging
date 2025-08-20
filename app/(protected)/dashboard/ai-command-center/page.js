@@ -692,21 +692,23 @@ Try the quick actions below or just start chatting! 💬`,
       }
       setMessages(prev => [...prev, loadingMessage])
 
-      const response = await fetch('/api/ai/orchestrator', {
+      const response = await fetch('/api/ai/agentic-executor', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: messageText,
-          model: modelConfig.model,
-          provider: modelConfig.provider,
           context: {
-            user_id: user?.id,
-            business_name: 'Elite Cuts Barbershop',
-            conversation_id: activeConversation || `conv_${Date.now()}`,
+            shopId: user?.id || 'command-center-user',
+            testMode: false,
+            dryRun: false,
+            userId: user?.id,
+            businessName: 'Elite Cuts Barbershop',
+            conversationId: activeConversation || `conv_${Date.now()}`,
             timestamp: new Date().toISOString()
-          }
+          },
+          mode: 'tools'
         }),
       })
 
@@ -723,17 +725,21 @@ Try the quick actions below or just start chatting! 💬`,
         const filtered = prev.filter(msg => !msg.isLoading)
         const aiMessage = {
           id: `ai-${Date.now()}`,
-          text: data.response || data.message || 'I apologize, but I encountered an issue processing your request. Please try again.',
+          text: data.message || 'I apologize, but I encountered an issue processing your request. Please try again.',
           isUser: false,
           agent: {
-            name: data.agent_name || 'AI Agent',
-            personality: data.agent_personality || 'strategic_mindset',
-            confidence: data.confidence || 0.8,
-            recommendations: data.recommendations || [],
-            action_items: data.action_items || [],
-            follow_up_questions: data.follow_up_questions || []
+            name: data.agent?.name || 'AI Agent',
+            id: data.agent?.id || 'unknown',
+            specialties: data.agent?.specialties || [],
+            personality: data.agent?.personality || 'strategic_mindset',
+            confidence: 0.95,
+            recommendations: [],
+            action_items: [],
+            follow_up_questions: [],
+            toolsUsed: data.toolsUsed || []
           },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          executionTime: data.executionTime || 0
         }
         return [...filtered, aiMessage]
       })

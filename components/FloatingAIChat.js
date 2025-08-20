@@ -658,66 +658,45 @@ export default function FloatingAIChat() {
         mood_trend: currentMood
       }
       
-      const response = await fetch('/api/ai/analytics-enhanced-chat', {
+      const response = await fetch('/api/ai/agentic-executor', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: currentMessage,
-          session_id: sessionId,
-          business_context: enhancedBusinessContext && contextLoaded ? {
-            shop: enhancedBusinessContext.shop,
-            analytics: enhancedBusinessContext.analytics,
-            predictions: enhancedBusinessContext.predictions,
-            alerts: enhancedBusinessContext.alerts,
-            
-            current_emotion: enhancedBusinessContext.current_emotion,
-            emotion_history: enhancedBusinessContext.emotion_history,
-            mood_trend: enhancedBusinessContext.mood_trend,
-            
-            shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
-            customer_count: realTimeMetrics?.total_customers || 0,
-            monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
+          context: {
+            shopId: profileData?.shop_id || 'floating-chat',
+            testMode: false,
+            dryRun: false,
+            sessionId: sessionId,
+            userId: user?.id,
+            businessContext: enhancedBusinessContext && contextLoaded ? {
+              shop: enhancedBusinessContext.shop,
+              analytics: enhancedBusinessContext.analytics,
+              predictions: enhancedBusinessContext.predictions,
+              alerts: enhancedBusinessContext.alerts
+            } : null,
+            shopName: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
+            customerCount: realTimeMetrics?.total_customers || 0,
+            monthlyRevenue: realTimeMetrics?.monthly_revenue || 0,
             location: shopData?.location || 'Main Location',
-            staff_count: shopData?.staff_count || 1,
-            barbershop_id: shopData?.shop_id || user?.id,
-            user_role: shopData?.user_role || 'owner',
-            today_appointments: realTimeMetrics?.today_appointments || 0,
-            total_revenue: realTimeMetrics?.total_revenue || 0,
-            
-            context_version: '2.1', // Updated for emotion support
-            context_loaded: contextLoaded,
-            emotion_enabled: true,
-            last_updated: businessContext?.last_updated,
-            data_sources: {
-              analytics: !!businessContext?.analytics,
-              predictions: !!businessContext?.predictions,
-              alerts: !!businessContext?.alerts,
-              real_time_metrics: !!realTimeMetrics,
-              emotion_analysis: !!emotionAnalysis
-            }
-          } : {
-            shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
-            customer_count: realTimeMetrics?.total_customers || 0,
-            monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
-            location: shopData?.location || 'Main Location',
-            staff_count: shopData?.staff_count || 1,
-            barbershop_id: shopData?.shop_id || user?.id,
-            user_role: shopData?.user_role || 'owner',
-            today_appointments: realTimeMetrics?.today_appointments || 0,
-            total_revenue: realTimeMetrics?.total_revenue || 0,
-            context_version: '1.0',
-            context_loaded: false
+            staffCount: shopData?.staff_count || 1,
+            barbershopId: shopData?.shop_id || user?.id,
+            userRole: shopData?.user_role || 'owner',
+            todayAppointments: realTimeMetrics?.today_appointments || 0,
+            totalRevenue: realTimeMetrics?.total_revenue || 0
           },
-          barbershop_id: shopData?.shop_id || user?.id
+          mode: 'tools'
         })
       })
 
       const data = await response.json()
       const responseTime = (Date.now() - startTime) / 1000 // Convert to seconds
       
-      const responseText = data.response || data.message || "I'm here to help! What would you like to know about your business?"
+      const responseText = data.message || "I'm here to help! What would you like to know about your business?"
+      const agentUsed = data.agent?.name || 'AI Assistant'
+      const toolsUsed = data.toolsUsed || []
       const smartActions = []
       
       if (responseText.toLowerCase().includes('appointment') || responseText.toLowerCase().includes('booking')) {

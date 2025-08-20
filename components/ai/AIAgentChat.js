@@ -75,31 +75,21 @@ export default function AIAgentChat({ barbershopId }) {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/ai/unified-chat', {
+      const response = await fetch('/api/ai/agentic-executor', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: 'You are Marcus, an expert AI business assistant for a barbershop. Use the business context provided to give specific, actionable insights based on real data.'
-            },
-            ...messages.filter(msg => msg.type !== 'system').map(msg => ({
-              role: msg.type === 'user' ? 'user' : 'assistant',
-              content: msg.content
-            })),
-            {
-              role: 'user',
-              content: message
-            }
-          ],
-          provider: selectedModel.startsWith('gpt') ? 'openai' : selectedModel.startsWith('claude') ? 'anthropic' : 'google',
-          model: selectedModel,
-          stream: false,
-          includeBusinessContext: true,
-          barbershopId: barbershopId
+          message: message,
+          context: {
+            shopId: barbershopId || 'ai-agent-chat',
+            testMode: false,
+            dryRun: false,
+            userId: 'ai-chat-user',
+            businessName: 'Barbershop'
+          },
+          mode: 'tools'
         }),
       })
 
@@ -112,8 +102,11 @@ export default function AIAgentChat({ barbershopId }) {
       const aiResponse = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: data.content || "I apologize, but I'm having trouble accessing your business data right now. Please try again in a moment.",
-        agent: 'Marcus',
+        content: data.message || "I apologize, but I'm having trouble accessing your business data right now. Please try again in a moment.",
+        agent: data.agent?.name || 'AI Agent',
+        agentId: data.agent?.id || 'unknown',
+        toolsUsed: data.toolsUsed || [],
+        executionTime: data.executionTime || 0,
         timestamp: new Date()
       }
 
