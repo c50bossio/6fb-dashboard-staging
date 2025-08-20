@@ -34,11 +34,12 @@ export default function AppointmentBookingModal({
     return ''
   }
   
+
   const [formData, setFormData] = useState({
     barber_id: selectedSlot?.barberId || '',
     service_id: '',
     scheduled_at: getInitialDateTime(),
-    duration_minutes: 60,
+    duration_minutes: selectedSlot?.duration || 60,
     service_price: 0,
     tip_amount: 0,
     client_name: '',
@@ -170,7 +171,7 @@ export default function AppointmentBookingModal({
   const getTimeRangeDisplay = useCallback(() => {
     if (formData.scheduled_at && formData.duration_minutes) {
       const start = new Date(formData.scheduled_at)
-      const end = calculateEndTime()
+      const end = new Date(start.getTime() + formData.duration_minutes * 60000)
       if (end) {
         const startTime = start.toLocaleTimeString('en-US', { 
           hour: 'numeric', 
@@ -186,10 +187,11 @@ export default function AppointmentBookingModal({
       }
     }
     return null
-  }, [formData.scheduled_at, formData.duration_minutes, calculateEndTime])
+  }, [formData.scheduled_at, formData.duration_minutes])
 
   useEffect(() => {
-    if (formData.service_id) {
+    // Only override duration with service duration if NOT in block mode
+    if (!isBlockMode && formData.service_id) {
       const selectedService = services.find(s => s.id === formData.service_id)
       if (selectedService) {
         if (formData.duration_minutes !== selectedService.duration_minutes ||
@@ -202,7 +204,18 @@ export default function AppointmentBookingModal({
         }
       }
     }
-  }, [formData.service_id, formData.duration_minutes, formData.service_price, services])
+  }, [isBlockMode, formData.service_id, services])
+
+  // Preserve dragged duration when entering block mode
+  useEffect(() => {
+    if (isBlockMode && selectedSlot?.duration) {
+      setFormData(prev => ({
+        ...prev,
+        duration_minutes: selectedSlot.duration,
+        service_id: '' // Clear service selection in block mode
+      }))
+    }
+  }, [isBlockMode, selectedSlot?.duration])
 
   const checkAvailability = useCallback(async () => {
     if (!formData.barber_id || !formData.scheduled_at || !formData.duration_minutes) return
