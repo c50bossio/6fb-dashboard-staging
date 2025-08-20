@@ -2,16 +2,16 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/analytics-cache.js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
-
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
 export async function GET(request) {
   try {
+    // Initialize Supabase client inside the function to ensure env vars are available
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
 
     const { searchParams } = new URL(request.url)
     const forecastType = searchParams.get('type') || 'comprehensive'
