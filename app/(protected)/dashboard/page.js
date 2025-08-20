@@ -4,6 +4,7 @@ import { SparklesIcon } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import DashboardOnboarding from '../../../components/dashboard/DashboardOnboarding'
+import DashboardErrorBoundary from '../../../components/dashboard/DashboardErrorBoundary'
 // import OnboardingResumeButton from '../../../components/dashboard/OnboardingResumeButton' // Removed to avoid duplicate UI
 import UnifiedDashboard from '../../../components/dashboard/UnifiedDashboard'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
@@ -91,10 +92,10 @@ export default function BarbershopDashboard() {
   // Show loading state while auth is initializing
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-dark-bg">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          <p className="mt-4 text-gray-600">Loading your dashboard...</p>
+          <p className="mt-4 text-gray-600 dark:text-dark-text-secondary">Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -137,7 +138,7 @@ export default function BarbershopDashboard() {
             </div>
             <button
               onClick={() => setForceShowOnboarding(true)}
-              className="bg-white text-brand-600 px-4 py-2 rounded-lg font-medium hover:bg-brand-50 transition-colors"
+              className="bg-white dark:bg-dark-bg-elevated-1 text-brand-600 px-4 py-2 rounded-lg font-medium hover:bg-brand-50 transition-colors"
             >
               Resume Setup
             </button>
@@ -146,7 +147,11 @@ export default function BarbershopDashboard() {
       )}
       
       {/* Unified Dashboard Component - Pass only real authenticated user */}
-      {effectiveUser && <UnifiedDashboard user={effectiveUser} profile={effectiveProfile} />}
+      {effectiveUser && (
+        <DashboardErrorBoundary>
+          <UnifiedDashboard user={effectiveUser} profile={effectiveProfile} />
+        </DashboardErrorBoundary>
+      )}
       
       {/* Floating button removed - using top banner instead for cleaner UI */}
       

@@ -8,6 +8,7 @@ import {
   ArrowPathIcon,
   Squares2X2Icon,
   PresentationChartLineIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline'
 import { 
   ChartBarIcon as ChartBarSolid,
@@ -96,30 +97,81 @@ export default function UnifiedDashboard({ user, profile }) {
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [cachedData, setCachedData] = useState(null)
   const [cacheTimestamp, setCacheTimestamp] = useState(null)
+  const [errorState, setErrorState] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const [circuitBreakerOpen, setCircuitBreakerOpen] = useState(false)
 
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
-    // Get barbershop_id using helper function
-    let barbershopId = await getUserBarbershopId(user, profile)
-    
-    // For shop owners without a barbershop, create one automatically
-    if (!barbershopId && profile?.role === 'SHOP_OWNER') {
-      try {
-        console.log('Creating barbershop for shop owner...')
-        const newBarbershop = await createBarbershopForOwner(user, {
-          name: profile.shop_name || profile.business_name
-        })
-        barbershopId = newBarbershop.id
-      } catch (error) {
-        console.error('Failed to create barbershop:', error)
-      }
+    // Circuit breaker: prevent infinite loops
+    if (circuitBreakerOpen && !forceRefresh) {
+      console.warn('Circuit breaker open - skipping dashboard data load')
+      return
     }
-    
-    if (!barbershopId) {
-      console.error('No barbershop ID found in user profile')
-      setDashboardData({
-        error: 'No barbershop associated with your account. Please complete onboarding or contact support.',
-        system_health: { status: 'error', database: { healthy: false } }
-      })
+
+    // Rate limiting: prevent excessive retries
+    if (retryCount >= 3 && !forceRefresh) {
+      console.warn('Max retry attempts reached - stopping dashboard data load')
+      setCircuitBreakerOpen(true)
+      setErrorState('Max retry attempts reached. Please refresh the page.')
+      return
+    }
+
+    try {
+      // Clear any previous error state on successful retry
+      if (forceRefresh) {
+        setErrorState(null)
+        setRetryCount(0)
+        setCircuitBreakerOpen(false)
+      }
+
+      // Get barbershop_id using helper function
+      let barbershopId = await getUserBarbershopId(user, profile)
+      
+      // For shop owners without a barbershop, create one automatically
+      if (!barbershopId && profile?.role === 'SHOP_OWNER') {
+        try {
+          console.log('Creating barbershop for shop owner...')
+          const newBarbershop = await createBarbershopForOwner(user, {
+            name: profile.shop_name || profile.business_name
+          })
+          barbershopId = newBarbershop.id
+          console.log('Successfully created barbershop:', barbershopId)
+        } catch (error) {
+          console.error('Failed to create barbershop:', error)
+          setRetryCount(prev => prev + 1)
+        }
+      }
+      
+      if (!barbershopId) {
+        console.error('No barbershop ID found in user profile')
+        const errorMessage = profile?.role === 'BARBER' 
+          ? 'Your barber account is not associated with a barbershop. Please contact your shop owner or support.'
+          : profile?.role === 'SHOP_OWNER'
+          ? 'Unable to create your barbershop automatically. Please complete your profile setup.'
+          : 'No barbershop associated with your account. Please complete onboarding or contact support.'
+        
+        setErrorState(errorMessage)
+        setDashboardData({
+          error: errorMessage,
+          system_health: { status: 'error', database: { healthy: false } }
+        })
+        setIsLoading(false)
+        setRetryCount(prev => prev + 1)
+        
+        // Open circuit breaker after 3 failed attempts
+        if (retryCount >= 2) {
+          setCircuitBreakerOpen(true)
+        }
+        return
+      }
+
+      // Reset error state on successful barbershop ID retrieval
+      setErrorState(null)
+      setRetryCount(0)
+    } catch (error) {
+      console.error('Error in barbershop ID retrieval:', error)
+      setRetryCount(prev => prev + 1)
+      setErrorState('Failed to load barbershop information. Please try again.')
       setIsLoading(false)
       return
     }
@@ -228,7 +280,7 @@ export default function UnifiedDashboard({ user, profile }) {
     } finally {
       setIsLoading(false)
     }
-  }, [currentMode, user, profile])
+  }, [currentMode, user, profile, retryCount, circuitBreakerOpen])
 
 
   useEffect(() => {
@@ -278,7 +330,7 @@ export default function UnifiedDashboard({ user, profile }) {
   }, [currentMode, user])
 
   const ModeSelector = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex flex-wrap gap-2">
+    <div className="bg-white dark:bg-charcoal-700 rounded-xl shadow-sm border border-gray-200 dark:border-charcoal-600 p-2 flex flex-wrap gap-2">
       {Object.entries(DASHBOARD_MODES).map(([key, value]) => {
         const config = modeConfigs[value]
         const Icon = currentMode === value ? config.solidIcon : config.icon
@@ -294,7 +346,7 @@ export default function UnifiedDashboard({ user, profile }) {
               transition-all duration-200 
               ${isActive 
                 ? `${colorClasses[config.color]} text-white shadow-lg scale-105` 
-                : `bg-gray-50 text-gray-700 hover:bg-gray-100`
+                : `bg-gray-50 dark:bg-charcoal-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-charcoal-500`
               }
             `}
           >
@@ -308,7 +360,7 @@ export default function UnifiedDashboard({ user, profile }) {
       <button
         onClick={() => loadDashboardData(true)}
         disabled={isLoading}
-        className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+        className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-charcoal-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-charcoal-500 transition-colors"
       >
         <ArrowPathIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
         <span className="text-xs hidden lg:inline">
@@ -323,8 +375,8 @@ export default function UnifiedDashboard({ user, profile }) {
       return (
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
-            <ArrowPathIcon className="h-12 w-12 text-gray-400 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">Loading dashboard...</p>
+            <ArrowPathIcon className="h-12 w-12 text-gray-400 dark:text-gray-500 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600 dark:text-gray-400">Loading dashboard...</p>
           </div>
         </div>
       )
@@ -338,7 +390,7 @@ export default function UnifiedDashboard({ user, profile }) {
         return (
           <div className="space-y-6">
             {/* AI Business Insights Header */}
-            <div className="bg-gradient-to-r from-gold-500 to-indigo-600 rounded-xl p-6 text-white">
+            <div className="bg-gradient-to-r from-gold-500 to-olive-600 rounded-xl p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold mb-1">AI Business Insights</h3>
@@ -392,14 +444,42 @@ export default function UnifiedDashboard({ user, profile }) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Main Dashboard</h2>
-            <p className="text-gray-600 mt-1">{modeConfigs[currentMode].description}</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Main Dashboard</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{modeConfigs[currentMode].description}</p>
           </div>
           <ModeSelector />
         </div>
         
       </div>
 
+
+      {/* Error State Display */}
+      {errorState && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-6">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <XCircleIcon className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3 flex-1">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                Dashboard Error
+              </h3>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                {errorState}
+              </p>
+              {circuitBreakerOpen && (
+                <button
+                  onClick={() => loadDashboardData(true)}
+                  className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700"
+                >
+                  <ArrowPathIcon className="h-4 w-4 mr-2" />
+                  Retry Dashboard Load
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Executive Mode Content */}
       {currentMode === DASHBOARD_MODES.EXECUTIVE && (
