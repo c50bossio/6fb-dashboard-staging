@@ -34,12 +34,15 @@ export default function AppointmentBookingModal({
     return ''
   }
   
+  // Initialize with dragged duration or default
+  const initialDuration = selectedSlot?.duration || 60
+  console.log('📅 Modal initializing with duration:', initialDuration, 'from slot:', selectedSlot)
 
   const [formData, setFormData] = useState({
     barber_id: selectedSlot?.barberId || '',
     service_id: '',
     scheduled_at: getInitialDateTime(),
-    duration_minutes: selectedSlot?.duration || 60,
+    duration_minutes: initialDuration,
     service_price: 0,
     tip_amount: 0,
     client_name: '',
@@ -1026,6 +1029,15 @@ export default function AppointmentBookingModal({
                                   onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
                                   className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
                                 >
+                                  {/* If the current duration is not in the standard options, add it as the first option */}
+                                  {formData.duration_minutes && 
+                                   ![15, 30, 45, 60, 90, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720].includes(formData.duration_minutes) && (
+                                    <option value={formData.duration_minutes}>
+                                      {formData.duration_minutes >= 60 
+                                        ? `${(formData.duration_minutes / 60).toFixed(1)} hours (custom)`
+                                        : `${formData.duration_minutes} minutes (custom)`}
+                                    </option>
+                                  )}
                                   <option value="15">15 minutes</option>
                                   <option value="30">30 minutes</option>
                                   <option value="45">45 minutes</option>
