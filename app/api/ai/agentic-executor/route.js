@@ -320,78 +320,113 @@ async function executeTool(toolName, context, agent) {
 }
 
 /**
- * Real Business Metrics from Supabase Database
+ * Real Business Metrics with Data Sufficiency Analysis
  */
 async function getBusinessMetrics(context, testMode) {
   const startTime = Date.now()
   
-  if (testMode) {
-    return {
-      period: context.period || 'today',
-      revenue: '$1,250.00',
-      appointments: 15,
-      customers: 12,
-      averageTicket: '$83.33',
-      utilizationRate: '75%',
-      growth: '+12% vs last week',
-      executionTime: Date.now() - startTime
-    }
-  }
+  // Never use test mode - always check real data and provide honest responses
+  const supabase = createClient()
+  const shopId = context.shopId || 'default-shop'
 
   try {
-    const supabase = createClient()
-    const period = context.period || 'today'
-    
-    // Calculate date range
-    const now = new Date()
-    let startDate, endDate
-    
-    if (period === 'today') {
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
-    } else if (period === 'week') {
-      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      endDate = now
-    } else if (period === 'month') {
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-      endDate = now
-    }
-
-    // Get appointments and revenue data
-    const { data: appointments, error } = await supabase
+    // Get real appointments data
+    const { data: appointments, error: aptError } = await supabase
       .from('appointments')
       .select('*')
-      .gte('created_at', startDate.toISOString())
-      .lt('created_at', endDate.toISOString())
-      .eq('shop_id', context.shopId)
+      .eq('barbershop_id', shopId)
 
-    if (error) throw error
+    // Get real bookings data  
+    const { data: bookings, error: bookError } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('shop_id', shopId)
 
-    const totalRevenue = appointments?.reduce((sum, apt) => sum + (apt.price || 0), 0) || 0
+    // Get real customers data
+    const { data: customers, error: custError } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('barbershop_id', shopId)
+
     const appointmentCount = appointments?.length || 0
-    const uniqueCustomers = new Set(appointments?.map(apt => apt.customer_id)).size || 0
-    const averageTicket = appointmentCount > 0 ? totalRevenue / appointmentCount : 0
+    const bookingCount = bookings?.length || 0
+    const customerCount = customers?.length || 0
+    const totalTransactions = appointmentCount + bookingCount
+
+    // Calculate real revenue
+    let totalRevenue = 0
+    if (appointments) {
+      totalRevenue += appointments.reduce((sum, apt) => sum + (parseFloat(apt.price) || 0), 0)
+    }
+    if (bookings) {
+      totalRevenue += bookings.reduce((sum, booking) => sum + (parseFloat(booking.price) || 0), 0)
+    }
+
+    const averageTicket = totalTransactions > 0 ? totalRevenue / totalTransactions : 0
+
+    // Assess data sufficiency for AI analysis
+    const hasMinimumData = totalTransactions >= 10 && customerCount >= 5
+    const hasGoodData = totalTransactions >= 30 && customerCount >= 15
+    const hasExcellentData = totalTransactions >= 100 && customerCount >= 30
+
+    let aiReadiness
+    if (hasExcellentData) {
+      aiReadiness = {
+        level: 'excellent',
+        confidence: 95,
+        status: 'Full AI analytics available',
+        capabilities: ['Revenue Forecasting', 'Trend Analysis', 'Customer Insights', 'Operational Optimization']
+      }
+    } else if (hasGoodData) {
+      aiReadiness = {
+        level: 'good', 
+        confidence: 80,
+        status: 'Advanced AI features available',
+        capabilities: ['Basic Analytics', 'Customer Segmentation', 'Schedule Optimization']
+      }
+    } else if (hasMinimumData) {
+      aiReadiness = {
+        level: 'basic',
+        confidence: 60,
+        status: 'Limited AI insights available',
+        capabilities: ['Basic Metrics', 'Simple Trends']
+      }
+    } else {
+      aiReadiness = {
+        level: 'insufficient',
+        confidence: 0,
+        status: 'Insufficient data for AI analysis',
+        capabilities: [],
+        needed: {
+          transactions: Math.max(0, 10 - totalTransactions),
+          customers: Math.max(0, 5 - customerCount),
+          message: `Need ${Math.max(0, 10 - totalTransactions)} more bookings and ${Math.max(0, 5 - customerCount)} more customers for basic AI insights`
+        }
+      }
+    }
 
     return {
-      period: period,
-      revenue: `$${totalRevenue.toFixed(2)}`,
+      period: context.period || 'all time',
+      revenue: totalRevenue,
       appointments: appointmentCount,
-      customers: uniqueCustomers,
-      averageTicket: `$${averageTicket.toFixed(2)}`,
-      utilizationRate: '75%', // Would calculate from available slots
+      bookings: bookingCount, 
+      customers: customerCount,
+      totalTransactions: totalTransactions,
+      averageTicket: averageTicket,
+      aiReadiness: aiReadiness,
+      dataAvailable: totalTransactions > 0 || customerCount > 0,
       executionTime: Date.now() - startTime
     }
   } catch (error) {
     console.error('Business metrics error:', error)
-    // Fallback to mock data
     return {
-      period: context.period || 'today',
-      revenue: '$1,250.00',
-      appointments: 15,
-      customers: 12,
-      averageTicket: '$83.33',
-      utilizationRate: '75%',
-      error: 'Using fallback data',
+      error: error.message,
+      aiReadiness: {
+        level: 'error',
+        confidence: 0,
+        status: 'Unable to access business data',
+        capabilities: []
+      },
       executionTime: Date.now() - startTime
     }
   }
@@ -743,8 +778,41 @@ async function generateAgentResponse(message, agent, toolResults, context) {
 
   // Generate contextual response based on agent and tools used
   if (agent.id === 'marcus' && businessMetrics) {
-    response += `Today's revenue is ${businessMetrics.revenue} from ${businessMetrics.appointments} appointments. `
-    response += `Your average ticket is ${businessMetrics.averageTicket} with ${businessMetrics.utilizationRate} capacity utilization.`
+    const aiReadiness = businessMetrics.aiReadiness
+    
+    if (aiReadiness.level === 'insufficient') {
+      response += `⚠️ **Insufficient Data for Complete Analysis**\n\n`
+      response += `📊 **Current Status:**\n`
+      response += `- Transactions: ${businessMetrics.totalTransactions}/10 needed\n`
+      response += `- Customers: ${businessMetrics.customers}/5 needed\n`
+      response += `- Revenue: $${businessMetrics.revenue.toFixed(2)}\n\n`
+      response += `📈 **To unlock full AI insights, you need:**\n`
+      response += `- ${aiReadiness.needed.transactions} more bookings\n`
+      response += `- ${aiReadiness.needed.customers} more customers\n\n`
+      response += `💡 **Quick Start Tips:**\n`
+      response += `1. Complete a few more appointments to build your data foundation\n`
+      response += `2. Encourage customers to create accounts\n`
+      response += `3. Track all services and pricing\n\n`
+      response += `I'll provide detailed insights once you reach the minimum data threshold! 🚀`
+    } else if (aiReadiness.level === 'basic') {
+      response += `📊 **Basic Analysis Available** (${aiReadiness.confidence}% confidence)\n\n`
+      response += `**Current Performance:**\n`
+      response += `- Total Revenue: $${businessMetrics.revenue.toFixed(2)}\n`
+      response += `- Transactions: ${businessMetrics.totalTransactions}\n`
+      response += `- Customers: ${businessMetrics.customers}\n`
+      response += `- Average Transaction: $${businessMetrics.averageTicket.toFixed(2)}\n\n`
+      response += `🔓 **Available:** ${aiReadiness.capabilities.join(', ')}\n\n`
+      response += `💡 **To unlock advanced insights:** Add ${30 - businessMetrics.totalTransactions} more transactions and ${15 - businessMetrics.customers} more customers`
+    } else {
+      response += `✅ **Full Analysis Available** (${aiReadiness.confidence}% confidence)\n\n`
+      response += `**Performance Summary:**\n`
+      response += `- Total Revenue: $${businessMetrics.revenue.toFixed(2)}\n`
+      response += `- Transactions: ${businessMetrics.totalTransactions}\n`
+      response += `- Customers: ${businessMetrics.customers}\n`
+      response += `- Average Transaction: $${businessMetrics.averageTicket.toFixed(2)}\n\n`
+      response += `🚀 **Available Features:** ${aiReadiness.capabilities.join(', ')}\n\n`
+      response += `Ready for advanced business intelligence and recommendations!`
+    }
   }
   
   else if (agent.id === 'david' && availability) {
