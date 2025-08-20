@@ -34,6 +34,7 @@ import {
   exportToCSV 
 } from '../../../../lib/calendar-data'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { getOrAssignShopId } from '../../../../lib/ensure-user-shop'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
@@ -104,8 +105,7 @@ export default function CalendarPage() {
   const [appointmentToCancel, setAppointmentToCancel] = useState(null)
   const [cancelling, setCancelling] = useState(false)
   const [services, setServices] = useState([])
-  // Get barbershop ID from auth context - required for production
-  const barbershopId = profile?.barbershop_id || user?.barbershop_id || 'demo-shop-001'
+  const [barbershopId, setBarbershopId] = useState('0b2d7524-49bc-47db-920d-db9c9822c416') // Default shop
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBarber, setFilterBarber] = useState('all')
@@ -156,6 +156,14 @@ export default function CalendarPage() {
   useEffect(() => {
     setMounted(true)
     
+    // Get or assign shop ID for the user
+    const setupShopId = async () => {
+      const shopId = await getOrAssignShopId(user, profile)
+      setBarbershopId(shopId)
+      console.log('Calendar using shop ID:', shopId)
+    }
+    setupShopId()
+    
     if (typeof window !== 'undefined') {
       localStorage.setItem('componentDebugAfter', JSON.stringify({
         hookReturned: true,
@@ -182,7 +190,7 @@ export default function CalendarPage() {
     fetchServices()
     
     return () => clearInterval(timeInterval)
-  }, [])
+  }, [user, profile])
   
   const deduplicateAppointments = (appointments) => {
     const seen = new Map()

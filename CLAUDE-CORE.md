@@ -34,6 +34,27 @@ routers/           # FastAPI feature routers
 - `profiles`, `barbershops`, `barbershop_staff`
 - `customers`, `services`, `appointments`, `transactions`
 
+## Subscription Model & Shop Assignment
+
+### Two Subscription Types:
+1. **Individual Barber Subscription**
+   - Barber subscribes directly (solo practitioner)
+   - Has `shop_id` directly in their `profiles` record
+   - They ARE the barbershop
+
+2. **Barbershop Subscription**  
+   - Barbershop owner has the subscription
+   - Owner has `shop_id` in their profile
+   - Employee barbers linked via `barbershop_staff` table
+   - Employees get shop access through `barbershop_staff` lookup
+
+### Shop ID Resolution Logic:
+1. Check `profiles.shop_id` first (individual barbers)
+2. If null, check `barbershop_staff` table (employees)
+3. Fallback to default shop for demos/testing
+
+**CRITICAL**: Never assume all users have `shop_id` - always check both paths!
+
 ## Required Environment
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=

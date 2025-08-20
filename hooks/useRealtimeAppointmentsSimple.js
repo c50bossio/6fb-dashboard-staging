@@ -58,7 +58,11 @@ export function useRealtimeAppointmentsSimple(shopId) {
     }
     
     // Use anon key for client-side - NEVER expose service role key to browser
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    // Trim any whitespace/newlines from the keys to prevent WebSocket connection issues
+    const cleanUrl = supabaseUrl.trim()
+    const cleanKey = supabaseAnonKey.trim()
+    
+    const supabase = createClient(cleanUrl, cleanKey)
     console.log('✅ Simple hook: Supabase client created with anon key for realtime')
     
     const fetchAppointments = async () => {
@@ -164,7 +168,10 @@ export function useRealtimeAppointmentsSimple(shopId) {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
     if (supabaseUrl && supabaseAnonKey) {
-      const supabase = createClient(supabaseUrl, supabaseAnonKey)
+      // Trim any whitespace/newlines from the keys
+      const cleanUrl = supabaseUrl.trim()
+      const cleanKey = supabaseAnonKey.trim()
+      const supabase = createClient(cleanUrl, cleanKey)
       
       const { data, error } = await supabase
         .from('bookings')
