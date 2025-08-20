@@ -26,17 +26,29 @@ function SupabaseAuthProvider({ children }) {
     if (!userId) return null
     
     try {
-      // First try to get existing profile
-      const { data: existingProfile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
+      // Get both profile and user data to merge subscription info
+      const [profileResult, userResult] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('users').select('subscription_tier, subscription_status, role').eq('id', userId).single()
+      ])
+      
+      const { data: existingProfile, error: fetchError } = profileResult
+      const { data: userData } = userResult
       
       if (existingProfile) {
-        console.log('Profile fetched:', existingProfile)
-        setProfile(existingProfile)
-        return existingProfile
+        // Merge users table data with profiles table data for complete access info
+        const mergedProfile = {
+          ...existingProfile,
+          // Use users table subscription_tier if available (more recent)
+          subscription_tier: userData?.subscription_tier || existingProfile.subscription_tier || 'individual',
+          subscription_status: userData?.subscription_status || existingProfile.subscription_status || 'active',
+          // Keep profile role as primary, but fallback to users role if needed
+          role: existingProfile.role || userData?.role || 'CLIENT'
+        }
+        
+        console.log('Profile fetched and merged:', mergedProfile)
+        setProfile(mergedProfile)
+        return mergedProfile
       }
       
       // If no profile exists, create one
@@ -203,12 +215,20 @@ function SupabaseAuthProvider({ children }) {
 
   // Helper functions for tier checking
   const subscriptionTier = profile?.subscription_tier || 'individual'
+  const userRole = profile?.role || 'CLIENT'
   const isIndividualBarber = subscriptionTier === 'individual'
   const isShopOwner = subscriptionTier === 'shop_owner' || subscriptionTier === 'shop'
   const isEnterprise = subscriptionTier === 'enterprise'
+  const isSuperAdmin = userRole === 'SUPER_ADMIN'
+  const isEnterpriseOwner = userRole === 'ENTERPRISE_OWNER'
   
   // Check if user has access to a tier (hierarchical)
   const hasTierAccess = (requiredTier) => {
+    // SUPER_ADMIN and ENTERPRISE_OWNER roles bypass all tier restrictions
+    if (isSuperAdmin || isEnterpriseOwner) {
+      return true
+    }
+    
     const tierLevels = {
       'individual': 1,
       'shop_owner': 2,
@@ -234,9 +254,12 @@ function SupabaseAuthProvider({ children }) {
     updateProfile,
     // Tier helpers
     subscriptionTier,
+    userRole,
     isIndividualBarber,
     isShopOwner,
     isEnterprise,
+    isSuperAdmin,
+    isEnterpriseOwner,
     hasTierAccess
   }
 
