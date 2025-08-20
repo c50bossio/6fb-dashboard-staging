@@ -143,10 +143,15 @@ export default function UnifiedDashboard({ user, profile }) {
       }
       
       if (!barbershopId) {
-        console.error('No barbershop ID found in user profile')
-        
         // Check if this is an onboarding issue vs technical issue
         const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
+        
+        // Only log as error if it's a technical issue, not onboarding
+        if (!isOnboardingIncomplete) {
+          console.error('No barbershop ID found for user who completed onboarding')
+        } else {
+          console.info('User needs to complete onboarding to get barbershop ID')
+        }
         
         if (isOnboardingIncomplete) {
           // This is a friendly onboarding prompt, not an error
