@@ -144,22 +144,45 @@ export default function UnifiedDashboard({ user, profile }) {
       
       if (!barbershopId) {
         console.error('No barbershop ID found in user profile')
-        const errorMessage = profile?.role === 'BARBER' 
-          ? 'Your barber account is not associated with a barbershop. Please contact your shop owner or support.'
-          : profile?.role === 'SHOP_OWNER'
-          ? 'Unable to create your barbershop automatically. Please complete your profile setup.'
-          : 'No barbershop associated with your account. Please complete onboarding or contact support.'
         
-        setErrorState(errorMessage)
+        // Check if this is an onboarding issue vs technical issue
+        const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
+        
+        if (isOnboardingIncomplete) {
+          // This is a friendly onboarding prompt, not an error
+          const setupMessage = profile?.role === 'BARBER' 
+            ? 'Welcome! Your barber account needs to be connected to a barbershop. Please complete your setup or ask your shop owner to add you to their team.'
+            : profile?.role === 'SHOP_OWNER'
+            ? 'Welcome! Let\'s finish setting up your barbershop account. You\'re just a few steps away from getting started.'
+            : 'Welcome! Let\'s complete your account setup to unlock all dashboard features.'
+          
+          setErrorState({
+            type: 'onboarding_needed',
+            message: setupMessage,
+            isWelcome: true
+          })
+        } else {
+          // This is a technical error after onboarding should be complete
+          const errorMessage = profile?.role === 'BARBER' 
+            ? 'Your barber account is not properly associated with a barbershop. Please contact your shop owner or support for assistance.'
+            : 'Technical issue: Unable to load your barbershop data. Please contact support if this problem persists.'
+          
+          setErrorState({
+            type: 'technical_error',
+            message: errorMessage,
+            isWelcome: false
+          })
+        }
+        
         setDashboardData({
-          error: errorMessage,
-          system_health: { status: 'error', database: { healthy: false } }
+          error: 'barbershop_id_missing',
+          system_health: { status: 'setup_needed', database: { healthy: true } }
         })
         setIsLoading(false)
         setRetryCount(prev => prev + 1)
         
-        // Open circuit breaker after 3 failed attempts
-        if (retryCount >= 2) {
+        // Only open circuit breaker for technical errors, not onboarding issues
+        if (retryCount >= 2 && !isOnboardingIncomplete) {
           setCircuitBreakerOpen(true)
         }
         return
@@ -171,7 +194,11 @@ export default function UnifiedDashboard({ user, profile }) {
     } catch (error) {
       console.error('Error in barbershop ID retrieval:', error)
       setRetryCount(prev => prev + 1)
-      setErrorState('Failed to load barbershop information. Please try again.')
+      setErrorState({
+        type: 'technical_error',
+        message: 'Failed to load barbershop information. Please try again.',
+        isWelcome: false
+      })
       setIsLoading(false)
       return
     }
@@ -273,6 +300,11 @@ export default function UnifiedDashboard({ user, profile }) {
       
     } catch (error) {
       console.error('Failed to load dashboard data:', error)
+      setErrorState({
+        type: 'technical_error',
+        message: 'Network error: Unable to load dashboard data. Please check your connection and try again.',
+        isWelcome: false
+      })
       setDashboardData({
         error: 'Network error: Unable to load dashboard data',
         system_health: { status: 'error', database: { healthy: false } }
@@ -453,29 +485,80 @@ export default function UnifiedDashboard({ user, profile }) {
       </div>
 
 
-      {/* Error State Display */}
+      {/* Welcome Setup Prompt or Error State Display */}
       {errorState && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 mb-6">
+        <div className={`
+          rounded-xl p-6 mb-6 border
+          ${errorState.isWelcome 
+            ? 'bg-gradient-to-r from-brand-50 to-purple-50 dark:from-brand-900/20 dark:to-purple-900/20 border-brand-200 dark:border-brand-700' 
+            : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+          }
+        `}>
           <div className="flex items-start">
             <div className="flex-shrink-0">
-              <XCircleIcon className="h-5 w-5 text-red-400" />
+              {errorState.isWelcome ? (
+                <SparklesIcon className="h-6 w-6 text-brand-600" />
+              ) : (
+                <XCircleIcon className="h-5 w-5 text-red-400" />
+              )}
             </div>
             <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-                Dashboard Error
+              <h3 className={`
+                text-lg font-semibold mb-2
+                ${errorState.isWelcome 
+                  ? 'text-brand-800 dark:text-brand-200' 
+                  : 'text-red-800 dark:text-red-200'
+                }
+              `}>
+                {errorState.isWelcome ? 'Almost There!' : 'Dashboard Error'}
               </h3>
-              <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-                {errorState}
+              <p className={`
+                text-sm mb-4
+                ${errorState.isWelcome 
+                  ? 'text-brand-700 dark:text-brand-300' 
+                  : 'text-red-700 dark:text-red-300'
+                }
+              `}>
+                {typeof errorState === 'string' ? errorState : errorState.message}
               </p>
-              {circuitBreakerOpen && (
-                <button
-                  onClick={() => loadDashboardData(true)}
-                  className="mt-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700"
-                >
-                  <ArrowPathIcon className="h-4 w-4 mr-2" />
-                  Retry Dashboard Load
-                </button>
-              )}
+              
+              <div className="flex flex-wrap gap-3">
+                {errorState.isWelcome ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        // Dispatch custom event to launch onboarding
+                        window.dispatchEvent(new CustomEvent('launchOnboarding', { 
+                          detail: { from: 'dashboard_welcome_prompt' } 
+                        }))
+                      }}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+                    >
+                      <SparklesIcon className="h-4 w-4 mr-2" />
+                      Complete Setup
+                    </button>
+                    <button
+                      onClick={() => loadDashboardData(true)}
+                      className="inline-flex items-center px-3 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-lg text-brand-700 dark:text-brand-300 bg-white dark:bg-brand-900/20 hover:bg-brand-50 dark:hover:bg-brand-800/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+                    >
+                      <ArrowPathIcon className="h-4 w-4 mr-2" />
+                      Try Again
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {circuitBreakerOpen && (
+                      <button
+                        onClick={() => loadDashboardData(true)}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700"
+                      >
+                        <ArrowPathIcon className="h-4 w-4 mr-2" />
+                        Retry Dashboard Load
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
