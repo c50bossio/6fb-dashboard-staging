@@ -81,7 +81,7 @@ const CancelConfirmationModal = dynamic(
 
 export default function CalendarPage() {
   // Get auth context
-  const { user, profile } = useAuth()
+  const { user, profile, loading } = useAuth()
   
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
@@ -1048,26 +1048,21 @@ export default function CalendarPage() {
   const shopName = profile?.shop_name || user?.user_metadata?.shop_name || 'your barbershop'
 
   const handleAddBarber = () => {
-    // Check if user has completed onboarding and has barbershop ID
-    const isOnboardingComplete = profile?.onboarding_completed && barbershopId
+    console.log('🔍 handleAddBarber called - showing modal immediately')
     
-    if (!isOnboardingComplete) {
-      console.info('User needs to complete onboarding before adding barbers')
-      setShowOnboardingDialog(true)
-      return
-    }
-    
-    // Show guidance dialog for completed users
-    console.info('Showing add barber guidance for completed user')
+    // SIMPLIFIED: Always show the guidance modal
+    // This eliminates the complex auth checks that were causing redirects
     setShowAddBarberDialog(true)
   }
   
   const handleGoToOnboarding = () => {
+    console.log('🔍 Going to onboarding page')
     setShowOnboardingDialog(false)
     window.location.href = '/onboarding'
   }
   
   const handleProceedToAddBarber = () => {
+    console.log('🔍 Going to add barber page')
     setShowAddBarberDialog(false)
     window.location.href = '/shop/barbers/add'
   }
@@ -1747,7 +1742,10 @@ export default function CalendarPage() {
       {/* Onboarding Required Dialog */}
       <OnboardingRequiredDialog
         isOpen={showOnboardingDialog}
-        onClose={() => setShowOnboardingDialog(false)}
+        onClose={() => {
+          console.log('🔍 OnboardingRequiredDialog closed')
+          setShowOnboardingDialog(false)
+        }}
         onGoToOnboarding={handleGoToOnboarding}
         actionAttempted="add your first barber"
       />
@@ -1755,10 +1753,20 @@ export default function CalendarPage() {
       {/* Add Barber Guidance Dialog */}
       <AddBarberGuidanceDialog
         isOpen={showAddBarberDialog}
-        onClose={() => setShowAddBarberDialog(false)}
+        onClose={() => {
+          console.log('🔍 AddBarberGuidanceDialog closed')
+          setShowAddBarberDialog(false)
+        }}
         onProceedToAdd={handleProceedToAddBarber}
         shopName={shopName}
       />
+      
+      {/* Debug Modal State */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-4 right-4 bg-black text-white p-2 text-xs z-50 rounded">
+          Modals: Onboarding={showOnboardingDialog.toString()}, AddBarber={showAddBarberDialog.toString()}
+        </div>
+      )}
       
       {/* Diagnostics Toggle Button */}
       <button
