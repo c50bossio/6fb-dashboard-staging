@@ -6,6 +6,8 @@ export { default as CustomerJourneyVisualizer } from './CustomerJourneyVisualize
 export { default as SegmentBuilder } from './SegmentBuilder'
 export { default as CustomerProfileEnhanced } from './CustomerProfileEnhanced'
 export { default as ChurnRiskMonitor } from './ChurnRiskMonitor'
+export { default as SmartRebookButton } from './SmartRebookButton'
+export { default as QuickNotesTimeline } from './QuickNotesTimeline'
 
 // Usage Examples:
 // import { CustomerIntelligenceDashboard, CustomerJourneyVisualizer } from '../components/customers'

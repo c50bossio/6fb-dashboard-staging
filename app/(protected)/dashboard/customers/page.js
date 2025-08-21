@@ -27,6 +27,7 @@ import {
   CustomerProfileEnhanced, 
   ChurnRiskMonitor 
 } from '../../../../components/customers'
+import SmartRebookButton from '../../../../components/customers/SmartRebookButton'
 
 export default function CustomersPage() {
   const searchParams = useSearchParams()
@@ -624,16 +625,29 @@ export default function CustomersPage() {
                   </div>
                 </div>
                 <div className="flex space-x-2">
+                  <SmartRebookButton 
+                    customer={{
+                      ...customer,
+                      last_visit: customer.lastVisit === 'Never' ? null : new Date(customer.lastVisit).toISOString(),
+                      total_visits: customer.totalVisits,
+                      total_spent: customer.totalSpent,
+                      vip_status: customer.isVip
+                    }}
+                    onRebook={(id) => {
+                      console.log('Rebook initiated for customer:', id)
+                      fetchCustomers()
+                    }}
+                  />
                   <button
                     onClick={() => setSelectedCustomer(customer.id)}
-                    className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
                   >
                     <EyeIcon className="h-4 w-4 mr-1 inline" />
-                    View Profile
+                    Profile
                   </button>
                   <button
                     onClick={() => setSelectedJourneyCustomer(customer.id)}
-                    className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
                   >
                     Journey
                   </button>
