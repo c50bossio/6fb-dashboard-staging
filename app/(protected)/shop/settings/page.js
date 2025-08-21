@@ -13,11 +13,15 @@ import {
   PencilIcon,
   CalendarDaysIcon,
   BellIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  ExclamationTriangleIcon,
+  CogIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import PaymentProcessingSettings from '@/components/settings/PaymentProcessingSettings'
 
 export default function ShopSettings() {
   const { user } = useAuth()
@@ -26,6 +30,9 @@ export default function ShopSettings() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
+  const [notification, setNotification] = useState({ show: false, type: '', message: '' })
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [shopId, setShopId] = useState(null)
   const [shopData, setShopData] = useState({
     name: '',
     description: '',
@@ -36,7 +43,7 @@ export default function ShopSettings() {
     address: '',
     city: '',
     state: '',
-    zip: '',
+    zip_code: '',
     country: 'USA',
     
     hours: {
@@ -84,6 +91,25 @@ export default function ShopSettings() {
       smsCancellations: false,
       dailyReport: true,
       weeklyReport: true
+    },
+    
+    appointment: {
+      defaultDuration: 30,
+      slotIntervals: [15, 30, 45, 60],
+      bufferBetweenAppointments: 5,
+      maxPerCustomerPerDay: 1,
+      allowDoubleBooking: false,
+      requireDeposit: false,
+      depositPercentage: 20
+    },
+    
+    tax: {
+      salesTaxRate: 8.5,
+      includeTaxInPrice: false,
+      taxIdNumber: '',
+      businessLicenseNumber: '',
+      insuranceProvider: '',
+      insurancePolicyNumber: ''
     }
   })
 
@@ -105,8 +131,13 @@ export default function ShopSettings() {
       
       if (error) {
         console.error('Error loading shop:', error)
-        alert('Failed to load shop settings. Please check your connection.')
+        setNotification({
+          show: true,
+          type: 'error',
+          message: 'Failed to load shop settings. Please check your connection.'
+        })
       } else if (shop) {
+        setShopId(shop.id)
         setShopData(prev => ({
           ...prev,
           name: shop.name || prev.name,
@@ -117,12 +148,14 @@ export default function ShopSettings() {
           address: shop.address || prev.address,
           city: shop.city || prev.city,
           state: shop.state || prev.state,
-          zip: shop.zip || prev.zip,
-          hours: shop.business_hours ? JSON.parse(shop.business_hours) : prev.hours,
-          payment: shop.payment_settings ? JSON.parse(shop.payment_settings) : prev.payment,
-          commission: shop.commission_settings ? JSON.parse(shop.commission_settings) : prev.commission,
-          booking: shop.booking_settings ? JSON.parse(shop.booking_settings) : prev.booking,
-          notifications: shop.notification_settings ? JSON.parse(shop.notification_settings) : prev.notifications
+          zip_code: shop.zip_code || prev.zip_code,
+          hours: shop.business_hours || prev.hours,
+          payment: shop.payment_settings || prev.payment,
+          commission: shop.commission_settings || prev.commission,
+          booking: shop.booking_settings || prev.booking,
+          notifications: shop.notification_settings || prev.notifications,
+          appointment: shop.appointment_settings || prev.appointment,
+          tax: shop.tax_settings || prev.tax
         }))
       }
     } catch (error) {
@@ -134,6 +167,7 @@ export default function ShopSettings() {
 
   const handleSave = async () => {
     setSaving(true)
+    setNotification({ show: false, type: '', message: '' })
     
     try {
       const { error } = await supabase
@@ -147,26 +181,44 @@ export default function ShopSettings() {
           address: shopData.address,
           city: shopData.city,
           state: shopData.state,
-          zip: shopData.zip,
+          zip_code: shopData.zip_code,
           country: shopData.country,
-          business_hours: JSON.stringify(shopData.hours),
-          payment_settings: JSON.stringify(shopData.payment),
-          commission_settings: JSON.stringify(shopData.commission),
-          booking_settings: JSON.stringify(shopData.booking),
-          notification_settings: JSON.stringify(shopData.notifications),
+          business_hours: shopData.hours,
+          payment_settings: shopData.payment,
+          commission_settings: shopData.commission,
+          booking_settings: shopData.booking,
+          notification_settings: shopData.notifications,
+          appointment_settings: shopData.appointment,
+          tax_settings: shopData.tax,
           updated_at: new Date().toISOString()
         })
         .eq('owner_id', user?.id)
       
       if (error) {
         console.error('Error saving settings:', error)
-        alert('Failed to save settings. Please try again.')
+        setNotification({
+          show: true,
+          type: 'error',
+          message: `Failed to save settings: ${error.message}`
+        })
       } else {
-        alert('Settings saved successfully!')
+        setHasUnsavedChanges(false)
+        setNotification({
+          show: true,
+          type: 'success',
+          message: 'Settings saved successfully!'
+        })
+        setTimeout(() => {
+          setNotification({ show: false, type: '', message: '' })
+        }, 3000)
       }
     } catch (error) {
       console.error('Error saving:', error)
-      alert('An error occurred while saving.')
+      setNotification({
+        show: true,
+        type: 'error',
+        message: 'An unexpected error occurred while saving.'
+      })
     } finally {
       setSaving(false)
     }
@@ -195,6 +247,28 @@ export default function ShopSettings() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Notification Toast */}
+      {notification.show && (
+        <div className="fixed top-4 right-4 z-50 animate-fade-in">
+          <div className={`flex items-center px-4 py-3 rounded-lg shadow-lg ${
+            notification.type === 'success' 
+              ? 'bg-green-50 border border-green-200' 
+              : 'bg-red-50 border border-red-200'
+          }`}>
+            {notification.type === 'success' ? (
+              <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
+            ) : (
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-500 mr-2" />
+            )}
+            <span className={`text-sm font-medium ${
+              notification.type === 'success' ? 'text-green-800' : 'text-red-800'
+            }`}>
+              {notification.message}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="px-6 py-4">
@@ -203,13 +277,31 @@ export default function ShopSettings() {
               <h1 className="text-2xl font-bold text-gray-900">Shop Settings</h1>
               <p className="text-sm text-gray-600">Manage your barbershop configuration</p>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
+            <div className="flex items-center space-x-3">
+              {hasUnsavedChanges && (
+                <span className="text-sm text-amber-600 flex items-center">
+                  <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
+                  Unsaved changes
+                </span>
+              )}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                {saving ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -222,7 +314,10 @@ export default function ShopSettings() {
               { id: 'general', label: 'General Info', icon: BuildingStorefrontIcon },
               { id: 'hours', label: 'Business Hours', icon: ClockIcon },
               { id: 'payment', label: 'Payment & Commission', icon: CreditCardIcon },
+              { id: 'processing', label: 'Payment Processing', icon: BanknotesIcon },
               { id: 'booking', label: 'Booking Settings', icon: CalendarDaysIcon },
+              { id: 'appointments', label: 'Appointments', icon: CogIcon },
+              { id: 'tax', label: 'Tax & Compliance', icon: PhotoIcon },
               { id: 'staff', label: 'Staff Permissions', icon: UserGroupIcon },
               { id: 'notifications', label: 'Notifications', icon: BellIcon }
             ].map(tab => (
@@ -360,8 +455,8 @@ export default function ShopSettings() {
                   </label>
                   <input
                     type="text"
-                    value={shopData.zip}
-                    onChange={(e) => setShopData({...shopData, zip: e.target.value})}
+                    value={shopData.zip_code}
+                    onChange={(e) => setShopData({...shopData, zip_code: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -787,6 +882,254 @@ export default function ShopSettings() {
                     <span className="text-gray-600">Analytics access:</span>
                     <span className="font-medium text-gray-900">Advanced+</span>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Processing Tab - Stripe Connect */}
+          {activeTab === 'processing' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Payment Processing</h2>
+                <p className="text-gray-600">Accept credit cards and digital payments through Stripe</p>
+              </div>
+              <div className="p-6">
+                <PaymentProcessingSettings />
+              </div>
+            </div>
+          )}
+
+          {/* Appointments Configuration Tab */}
+          {activeTab === 'appointments' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">Appointment Configuration</h2>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Default Appointment Duration (Minutes)
+                    </label>
+                    <select
+                      value={shopData.appointment.defaultDuration}
+                      onChange={(e) => setShopData({
+                        ...shopData,
+                        appointment: {...shopData.appointment, defaultDuration: parseInt(e.target.value)}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="15">15 minutes</option>
+                      <option value="30">30 minutes</option>
+                      <option value="45">45 minutes</option>
+                      <option value="60">60 minutes</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Buffer Between Appointments (Minutes)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="30"
+                      value={shopData.appointment.bufferBetweenAppointments}
+                      onChange={(e) => setShopData({
+                        ...shopData,
+                        appointment: {...shopData.appointment, bufferBetweenAppointments: parseInt(e.target.value)}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Max Bookings Per Customer Per Day
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={shopData.appointment.maxPerCustomerPerDay}
+                      onChange={(e) => setShopData({
+                        ...shopData,
+                        appointment: {...shopData.appointment, maxPerCustomerPerDay: parseInt(e.target.value)}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Deposit Percentage (if required)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={shopData.appointment.depositPercentage}
+                      onChange={(e) => setShopData({
+                        ...shopData,
+                        appointment: {...shopData.appointment, depositPercentage: parseInt(e.target.value)}
+                      })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Appointment Policies</h3>
+                  <div className="space-y-3">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={shopData.appointment.allowDoubleBooking}
+                        onChange={(e) => setShopData({
+                          ...shopData,
+                          appointment: {...shopData.appointment, allowDoubleBooking: e.target.checked}
+                        })}
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
+                      />
+                      <span className="text-sm text-gray-700">Allow double booking (multiple barbers same time slot)</span>
+                    </label>
+                    
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={shopData.appointment.requireDeposit}
+                        onChange={(e) => setShopData({
+                          ...shopData,
+                          appointment: {...shopData.appointment, requireDeposit: e.target.checked}
+                        })}
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
+                      />
+                      <span className="text-sm text-gray-700">Require deposit for appointments</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-olive-50 rounded-lg">
+                  <p className="text-sm text-olive-800">
+                    💡 Tip: Configure these settings based on your typical service duration and shop capacity. Buffer time helps prevent delays between appointments.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tax & Compliance Tab */}
+          {activeTab === 'tax' && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">Tax & Compliance Settings</h2>
+              
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Tax Configuration</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Sales Tax Rate (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={shopData.tax.salesTaxRate}
+                        onChange={(e) => setShopData({
+                          ...shopData,
+                          tax: {...shopData.tax, salesTaxRate: parseFloat(e.target.value)}
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={shopData.tax.includeTaxInPrice}
+                          onChange={(e) => setShopData({
+                            ...shopData,
+                            tax: {...shopData.tax, includeTaxInPrice: e.target.checked}
+                          })}
+                          className="h-4 w-4 text-olive-600 rounded mr-3"
+                        />
+                        <span className="text-sm text-gray-700">Include tax in displayed prices</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Business Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tax ID Number (EIN/SSN)
+                      </label>
+                      <input
+                        type="text"
+                        value={shopData.tax.taxIdNumber}
+                        onChange={(e) => setShopData({
+                          ...shopData,
+                          tax: {...shopData.tax, taxIdNumber: e.target.value}
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="XX-XXXXXXX"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Business License Number
+                      </label>
+                      <input
+                        type="text"
+                        value={shopData.tax.businessLicenseNumber}
+                        onChange={(e) => setShopData({
+                          ...shopData,
+                          tax: {...shopData.tax, businessLicenseNumber: e.target.value}
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Insurance Provider
+                      </label>
+                      <input
+                        type="text"
+                        value={shopData.tax.insuranceProvider}
+                        onChange={(e) => setShopData({
+                          ...shopData,
+                          tax: {...shopData.tax, insuranceProvider: e.target.value}
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Insurance Policy Number
+                      </label>
+                      <input
+                        type="text"
+                        value={shopData.tax.insurancePolicyNumber}
+                        onChange={(e) => setShopData({
+                          ...shopData,
+                          tax: {...shopData.tax, insurancePolicyNumber: e.target.value}
+                        })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-amber-50 rounded-lg">
+                  <p className="text-sm text-amber-800">
+                    ⚠️ Important: Ensure all tax and compliance information is accurate and up-to-date. Consult with a tax professional if needed.
+                  </p>
                 </div>
               </div>
             </div>

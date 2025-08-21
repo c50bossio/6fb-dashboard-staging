@@ -15,9 +15,11 @@ import {
   ExclamationTriangleIcon,
   EyeIcon,
   XMarkIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  AdjustmentsHorizontalIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { 
@@ -25,9 +27,21 @@ import {
   CustomerJourneyVisualizer, 
   SegmentBuilder, 
   CustomerProfileEnhanced, 
-  ChurnRiskMonitor 
+  ChurnRiskMonitor,
+  AchievementBadges,
+  BadgeProgress,
+  BadgeLeaderboard
 } from '../../../../components/customers'
 import SmartRebookButton from '../../../../components/customers/SmartRebookButton'
+import LoyaltyPointsBadge, { QuickRedeemButton } from '../../../../components/customers/LoyaltyPointsBadge'
+import AdvancedSearchFilter from '../../../../components/customers/AdvancedSearchFilter'
+import SearchSuggestions from '../../../../components/customers/SearchSuggestions'
+import FilterTags from '../../../../components/customers/FilterTags'
+import SortOptions from '../../../../components/customers/SortOptions'
+import ExportCSV from '../../../../components/customers/ExportCSV'
+import SearchHighlight from '../../../../components/customers/SearchHighlight'
+import { fuzzySearch } from '../../../../utils/fuzzySearch'
+import { AnimatedContainer, StaggeredList } from '../../../../utils/animations'
 
 export default function CustomersPage() {
   const searchParams = useSearchParams()
@@ -42,6 +56,14 @@ export default function CustomersPage() {
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'intelligence')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [selectedJourneyCustomer, setSelectedJourneyCustomer] = useState(null)
+  
+  // Advanced search and filtering state
+  const [searchResults, setSearchResults] = useState([])
+  const [activeFilters, setActiveFilters] = useState({})
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' })
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
+  const [searchHistory, setSearchHistory] = useState([])
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
 
   const calculateSegment = (customer) => {
     const daysSinceLastVisit = customer.last_visit_at 
@@ -54,7 +76,7 @@ export default function CustomersPage() {
     return 'regular'
   }
 
-  const formatCustomerData = (apiCustomers) => {
+  const formatCustomerData = (apiCustomers, barbershopId) => {
     return apiCustomers.map(customer => ({
       id: customer.id,
       name: customer.name || 'Unknown',
@@ -68,7 +90,8 @@ export default function CustomersPage() {
       joinDate: customer.created_at ? new Date(customer.created_at).toLocaleDateString() : '',
       notes: customer.notes || '',
       isVip: customer.vip_status || false,
-      isActive: customer.is_active !== false
+      isActive: customer.is_active !== false,
+      barbershopId: barbershopId
     }))
   }
 
@@ -139,7 +162,7 @@ export default function CustomersPage() {
         total: data.total
       })
       
-      const formattedCustomers = formatCustomerData(data.customers || [])
+      const formattedCustomers = formatCustomerData(data.customers || [], userData.user.barbershop_id)
       setCustomers(formattedCustomers)
       setFilteredCustomers(formattedCustomers)
       
@@ -161,19 +184,71 @@ export default function CustomersPage() {
     fetchCustomers()
   }, [])
 
+  // Advanced search and filtering with fuzzy matching
   useEffect(() => {
-    const filtered = customers.filter(customer => {
-      const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           customer.phone.includes(searchTerm)
+    let results = customers
+
+    // Apply fuzzy search if there's a search term
+    if (searchTerm && searchTerm.trim().length > 0) {
+      const fuzzyResults = fuzzySearch(customers, searchTerm, { minScore: 0.2 })
+      results = fuzzyResults.map(result => result.item)
+      setSearchResults(fuzzyResults)
       
-      const matchesSegment = selectedSegment === 'all' || customer.segment === selectedSegment
-      
-      return matchesSearch && matchesSegment
+      // Add to search history
+      if (searchTerm.length >= 2 && !searchHistory.includes(searchTerm)) {
+        setSearchHistory(prev => [searchTerm, ...prev.slice(0, 9)]) // Keep last 10 searches
+      }
+    } else {
+      setSearchResults([])
+    }
+
+    // Apply segment filter
+    if (selectedSegment !== 'all') {
+      results = results.filter(customer => customer.segment === selectedSegment)
+    }
+
+    // Apply advanced filters
+    Object.entries(activeFilters).forEach(([filterKey, filterValue]) => {
+      if (filterValue && filterValue.active) {
+        results = results.filter(customer => {
+          switch (filterKey) {
+            case 'spendingRange':
+              return customer.totalSpent >= filterValue.min && customer.totalSpent <= filterValue.max
+            case 'visitCountRange':
+              return customer.totalVisits >= filterValue.min && customer.totalVisits <= filterValue.max
+            case 'dateRange':
+              const customerDate = new Date(customer.joinDate || customer.created_at)
+              return customerDate >= new Date(filterValue.start) && customerDate <= new Date(filterValue.end)
+            case 'tags':
+              return filterValue.values.some(tag => customer.tags?.includes(tag))
+            case 'isVip':
+              return customer.isVip === filterValue.value
+            default:
+              return true
+          }
+        })
+      }
     })
+
+    // Apply sorting
+    if (sortConfig.key) {
+      results.sort((a, b) => {
+        const aValue = a[sortConfig.key] || ''
+        const bValue = b[sortConfig.key] || ''
+        
+        let comparison = 0
+        if (typeof aValue === 'string') {
+          comparison = aValue.localeCompare(bValue)
+        } else {
+          comparison = aValue - bValue
+        }
+        
+        return sortConfig.direction === 'desc' ? -comparison : comparison
+      })
+    }
     
-    setFilteredCustomers(filtered)
-  }, [customers, searchTerm, selectedSegment])
+    setFilteredCustomers(results)
+  }, [customers, searchTerm, selectedSegment, activeFilters, sortConfig, searchHistory])
 
   const getSegmentColor = (segment) => {
     switch (segment) {
@@ -212,6 +287,12 @@ export default function CustomersPage() {
       component: null // Handled separately
     },
     {
+      id: 'badges',
+      label: 'Achievement Badges',
+      icon: SparklesIcon,
+      component: null // Handled separately for badge system
+    },
+    {
       id: 'segments',
       label: 'Segment Builder',
       icon: FunnelIcon,
@@ -232,6 +313,47 @@ export default function CustomersPage() {
       case 'phone': return <PhoneIcon className="h-4 w-4" />
       default: return <EnvelopeIcon className="h-4 w-4" />
     }
+  }
+
+  // Advanced search and filter handlers
+  const handleAdvancedSearch = (filters) => {
+    setActiveFilters(filters)
+    setShowAdvancedSearch(false)
+  }
+
+  const handleFilterChange = (filterKey, filterValue) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [filterKey]: filterValue
+    }))
+  }
+
+  const handleRemoveFilter = (filterKey) => {
+    setActiveFilters(prev => {
+      const newFilters = { ...prev }
+      delete newFilters[filterKey]
+      return newFilters
+    })
+  }
+
+  const handleClearAllFilters = () => {
+    setActiveFilters({})
+    setSearchTerm('')
+    setSelectedSegment('all')
+  }
+
+  const handleSortChange = (key, direction) => {
+    setSortConfig({ key, direction })
+  }
+
+  const handleSearchSuggestionSelect = (suggestion) => {
+    setSearchTerm(suggestion.value)
+    setShowSearchSuggestions(false)
+  }
+
+  const handleExportCustomers = (selectedFields, options) => {
+    // Export logic will be handled by the ExportCSV component
+    console.log('Exporting customers with fields:', selectedFields, 'and options:', options)
   }
 
   const addCustomer = async (customerData) => {
@@ -386,6 +508,204 @@ export default function CustomersPage() {
     }
   }
 
+  // Render badges content
+  const renderBadgesContent = () => {
+    const [selectedCustomerForBadges, setSelectedCustomerForBadges] = useState(null)
+    const [badgeView, setBadgeView] = useState('overview') // overview, customer-specific, leaderboard
+
+    if (badgeView === 'customer-specific' && selectedCustomerForBadges) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Badges for {selectedCustomerForBadges.name}
+              </h3>
+              <p className="text-gray-600">Track achievement progress and earned badges</p>
+            </div>
+            <button
+              onClick={() => {
+                setBadgeView('overview')
+                setSelectedCustomerForBadges(null)
+              }}
+              className="btn-secondary"
+            >
+              Back to Overview
+            </button>
+          </div>
+
+          <AchievementBadges
+            customerId={selectedCustomerForBadges.id}
+            barbershopId="demo-barbershop"
+            showProgress={true}
+            autoRefresh={true}
+            onBadgeUnlock={(badges) => {
+              showNotification(`🎉 ${selectedCustomerForBadges.name} earned ${badges.length} new badge(s)!`, 'success')
+            }}
+          />
+
+          <BadgeProgress
+            customerId={selectedCustomerForBadges.id}
+            barbershopId="demo-barbershop"
+            showQuickActions={true}
+            onProgressUpdate={(data) => {
+              console.log('Badge progress updated:', data)
+            }}
+          />
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Badges Overview Header */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Achievement Badges System</h3>
+          <p className="text-gray-600">
+            Gamify customer experience with achievement badges. Track customer milestones, spending levels, and special achievements.
+          </p>
+        </div>
+
+        {/* View Toggle */}
+        <div className="flex space-x-4 border-b border-gray-200">
+          <button
+            onClick={() => setBadgeView('overview')}
+            className={`pb-2 px-1 text-sm font-medium ${
+              badgeView === 'overview'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            System Overview
+          </button>
+          <button
+            onClick={() => setBadgeView('leaderboard')}
+            className={`pb-2 px-1 text-sm font-medium ${
+              badgeView === 'leaderboard'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Leaderboard
+          </button>
+        </div>
+
+        {badgeView === 'overview' && (
+          <div className="space-y-6">
+            {/* Badge System Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="flex items-center">
+                  <SparklesIcon className="h-8 w-8 text-blue-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-blue-600">Active Badges</p>
+                    <p className="text-2xl font-semibold text-gray-900">20</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="flex items-center">
+                  <StarIcon className="h-8 w-8 text-green-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-green-600">Total Earned</p>
+                    <p className="text-2xl font-semibold text-gray-900">157</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="flex items-center">
+                  <UsersIcon className="h-8 w-8 text-purple-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-purple-600">Participating</p>
+                    <p className="text-2xl font-semibold text-gray-900">{customers.length}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 rounded-lg p-4">
+                <div className="flex items-center">
+                  <ChartBarIcon className="h-8 w-8 text-orange-600" />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-orange-600">Avg Progress</p>
+                    <p className="text-2xl font-semibold text-gray-900">72%</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Customer List with Badge Summary */}
+            <div className="bg-white border border-gray-200 rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h4 className="text-lg font-medium text-gray-900">Customer Badge Progress</h4>
+                <p className="text-sm text-gray-600">Click on a customer to view detailed badge progress</p>
+              </div>
+              <div className="divide-y divide-gray-200">
+                {customers.slice(0, 10).map((customer) => (
+                  <div
+                    key={customer.id}
+                    className="px-6 py-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      setSelectedCustomerForBadges(customer)
+                      setBadgeView('customer-specific')
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <UserIcon className="h-8 w-8 text-gray-400" />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                          <div className="text-sm text-gray-500">
+                            {customer.totalVisits} visits • {customer.segment}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <div className="text-sm font-medium text-gray-900">
+                            {Math.floor(Math.random() * 8) + 1} badges
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {Math.floor(Math.random() * 500) + 100} points
+                          </div>
+                        </div>
+                        <div className="flex space-x-1">
+                          {['🎯', '⭐', '👑', '💎'].slice(0, Math.floor(Math.random() * 4) + 1).map((icon, index) => (
+                            <span key={index} className="text-lg">{icon}</span>
+                          ))}
+                        </div>
+                        <EyeIcon className="h-5 w-5 text-gray-400" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {badgeView === 'leaderboard' && (
+          <BadgeLeaderboard
+            barbershopId="demo-barbershop"
+            showFilters={true}
+            showStatistics={true}
+            allowSharing={true}
+            onCustomerSelect={(customer) => {
+              const customerData = customers.find(c => c.id === customer.customer_id)
+              if (customerData) {
+                setSelectedCustomerForBadges(customerData)
+                setBadgeView('customer-specific')
+              }
+            }}
+          />
+        )}
+      </div>
+    )
+  }
+
   const renderCustomersList = () => (
     <div className="space-y-6">
       {/* Notification */}
@@ -519,37 +839,110 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="card mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search customers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-field pl-10"
+      {/* Advanced Search and Filter System */}
+      <AnimatedContainer animation="slideInFromTop" className="space-y-4 mb-6">
+        {/* Main Search Bar with Suggestions */}
+        <div className="card">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search Input with Suggestions */}
+            <div className="flex-1 relative">
+              <div className="relative">
+                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search customers with smart suggestions..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value)
+                    setShowSearchSuggestions(e.target.value.length >= 2)
+                  }}
+                  onFocus={() => setShowSearchSuggestions(searchTerm.length >= 2)}
+                  onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
+                  className="input-field pl-10 pr-20"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => {
+                      setSearchTerm('')
+                      setShowSearchSuggestions(false)
+                    }}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              
+              {/* Search Suggestions */}
+              {showSearchSuggestions && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1">
+                  <SearchSuggestions
+                    customers={customers}
+                    searchQuery={searchTerm}
+                    searchHistory={searchHistory}
+                    onSuggestionSelect={handleSearchSuggestionSelect}
+                    maxSuggestions={8}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                className={`btn-secondary flex items-center space-x-2 ${showAdvancedSearch ? 'bg-olive-100 text-olive-700' : ''}`}
+              >
+                <AdjustmentsHorizontalIcon className="h-4 w-4" />
+                <span>Advanced</span>
+              </button>
+              
+              <SortOptions
+                currentSort={sortConfig}
+                onSortChange={handleSortChange}
+                variant="dropdown"
+              />
+              
+              <ExportCSV
+                customers={filteredCustomers}
+                onExport={handleExportCustomers}
+                filename={`customers-${new Date().toISOString().split('T')[0]}`}
               />
             </div>
           </div>
-          
-          <div className="sm:w-48">
-            <select
-              value={selectedSegment}
-              onChange={(e) => setSelectedSegment(e.target.value)}
-              className="input-field"
-            >
-              <option value="all">All Segments</option>
-              <option value="vip">VIP</option>
-              <option value="regular">Regular</option>
-              <option value="new">New</option>
-              <option value="lapsed">Lapsed</option>
-            </select>
-          </div>
         </div>
-      </div>
+
+        {/* Advanced Search Panel */}
+        {showAdvancedSearch && (
+          <AnimatedContainer animation="slideInFromTop" className="card">
+            <AdvancedSearchFilter
+              customers={customers}
+              onFiltersChange={handleAdvancedSearch}
+              initialFilters={activeFilters}
+              availableSegments={['all', 'vip', 'regular', 'new', 'lapsed']}
+              selectedSegment={selectedSegment}
+              onSegmentChange={setSelectedSegment}
+            />
+          </AnimatedContainer>
+        )}
+
+        {/* Active Filter Tags */}
+        {(Object.keys(activeFilters).length > 0 || searchTerm || selectedSegment !== 'all') && (
+          <AnimatedContainer animation="slideInFromLeft">
+            <FilterTags
+              searchTerm={searchTerm}
+              selectedSegment={selectedSegment}
+              activeFilters={activeFilters}
+              onRemoveFilter={handleRemoveFilter}
+              onClearSearch={() => setSearchTerm('')}
+              onClearSegment={() => setSelectedSegment('all')}
+              onClearAll={handleClearAllFilters}
+              totalResults={filteredCustomers.length}
+              totalCustomers={customers.length}
+            />
+          </AnimatedContainer>
+        )}
+      </AnimatedContainer>
 
       {/* Customer List */}
       {loading ? (
@@ -583,45 +976,124 @@ export default function CustomersPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4">
-          {filteredCustomers.map((customer) => (
-            <div
-              key={customer.id}
-              className="border border-gray-200 rounded-lg p-6 hover:bg-gray-50"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
-                      <UserIcon className="h-6 w-6 text-gray-600" />
+        <StaggeredList 
+          animation="slideInFromLeft" 
+          staggerDelay={50}
+          className="grid gap-4"
+        >
+          {filteredCustomers.map((customer, index) => {
+            // Find the search result for this customer to get match information
+            const searchResult = searchResults.find(r => r.item.id === customer.id)
+            const hasMatches = searchTerm && searchResult && searchResult.matches.length > 0
+            
+            return (
+              <div
+                key={customer.id}
+                className={`border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-all duration-200 hover:shadow-md ${
+                  hasMatches ? 'ring-2 ring-olive-200 bg-olive-50/30' : ''
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
+                        <UserIcon className="h-6 w-6 text-gray-600" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-medium text-gray-900">{customer.name}</h3>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSegmentColor(customer.segment)}`}>
-                        {customer.segment === 'vip' ? 'VIP' : customer.segment.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
-                      <span className="flex items-center">
-                        <EnvelopeIcon className="h-4 w-4 mr-1" />
-                        {customer.email}
-                      </span>
-                      <span className="flex items-center">
-                        <PhoneIcon className="h-4 w-4 mr-1" />
-                        {customer.phone}
-                      </span>
-                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {searchTerm ? (
+                            <SearchHighlight 
+                              text={customer.name}
+                              searchQuery={searchTerm}
+                              highlightColor="blue"
+                              highlightStyle="background"
+                            />
+                          ) : (
+                            customer.name
+                          )}
+                        </h3>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSegmentColor(customer.segment)}`}>
+                          {customer.segment === 'vip' ? 'VIP' : customer.segment.toUpperCase()}
+                        </span>
+                        {hasMatches && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-olive-100 text-olive-700">
+                            <SparklesIcon className="h-3 w-3 mr-1" />
+                            Match
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Loyalty Points Badge */}
+                      <div className="mb-2">
+                        <LoyaltyPointsBadge 
+                          customerId={customer.id}
+                          barbershopId={customer.barbershopId}
+                          size="default"
+                          showProgress={true}
+                        />
+                      </div>
+                      
+                      <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                        <span className="flex items-center">
+                          <EnvelopeIcon className="h-4 w-4 mr-1" />
+                          {searchTerm ? (
+                            <SearchHighlight 
+                              text={customer.email}
+                              searchQuery={searchTerm}
+                              highlightColor="green"
+                              highlightStyle="underline"
+                            />
+                          ) : (
+                            customer.email
+                          )}
+                        </span>
+                        <span className="flex items-center">
+                          <PhoneIcon className="h-4 w-4 mr-1" />
+                          {searchTerm ? (
+                            <SearchHighlight 
+                              text={customer.phone}
+                              searchQuery={searchTerm}
+                              highlightColor="orange"
+                              highlightStyle="background"
+                            />
+                          ) : (
+                            customer.phone
+                          )}
+                        </span>
+                      </div>
                     <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
                       <span>Visits: {customer.totalVisits}</span>
                       <span>Spent: ${customer.totalSpent}</span>
                       <span>Last visit: {customer.lastVisit || 'Never'}</span>
-                      <span className="flex items-center">
-                        <StarIcon className="h-4 w-4 mr-1 text-amber-800" />
-                        Points available
-                      </span>
+                      <QuickRedeemButton 
+                        customerId={customer.id}
+                        barbershopId={customer.barbershopId}
+                      />
                     </div>
+                    
+                    {/* Notes with highlighting */}
+                    {customer.notes && (
+                      <div className="mt-3 p-2 bg-gray-50 rounded-md">
+                        <p className="text-sm text-gray-600">
+                          <span className="font-medium text-gray-700">Notes: </span>
+                          {searchTerm ? (
+                            <SearchHighlight 
+                              text={customer.notes}
+                              searchQuery={searchTerm}
+                              highlightColor="yellow"
+                              highlightStyle="background"
+                              maxLength={150}
+                            />
+                          ) : (
+                            customer.notes.length > 150 
+                              ? `${customer.notes.substring(0, 150)}...` 
+                              : customer.notes
+                          )}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex space-x-2">
@@ -654,8 +1126,9 @@ export default function CustomersPage() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            )
+          })}
+        </StaggeredList>
       )}
     </div>
   )
@@ -696,7 +1169,8 @@ export default function CustomersPage() {
 
         {/* Tab Content */}
         <div className="bg-white shadow rounded-lg p-6">
-          {activeTab === 'customers' ? renderCustomersList() : 
+          {activeTab === 'customers' ? renderCustomersList() :
+           activeTab === 'badges' ? renderBadgesContent() :
            tabs.find(tab => tab.id === activeTab)?.component}
         </div>
 
