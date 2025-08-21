@@ -435,10 +435,20 @@ export default function UnifiedDashboard({ user, profile }) {
       const savedMode = localStorage.getItem('preferredDashboardMode')
       if (savedMode && Object.values(DASHBOARD_MODES).includes(savedMode)) {
         setCurrentMode(savedMode)
-        router.replace(`/dashboard?mode=${savedMode}`)
+        // Only update URL if we're on the dashboard page itself
+        // Don't redirect if we're on a sub-route like /dashboard/calendar
+        const currentPath = window.location.pathname
+        if (currentPath === '/dashboard') {
+          // Use replace with shallow routing to avoid navigation
+          router.replace(`/dashboard?mode=${savedMode}`, undefined, { shallow: true })
+        }
       } else {
         setCurrentMode(DASHBOARD_MODES.EXECUTIVE)
-        router.replace(`/dashboard?mode=${DASHBOARD_MODES.EXECUTIVE}`)
+        // Only update URL if we're on the dashboard page itself
+        const currentPath = window.location.pathname
+        if (currentPath === '/dashboard') {
+          router.replace(`/dashboard?mode=${DASHBOARD_MODES.EXECUTIVE}`, undefined, { shallow: true })
+        }
       }
     }
   }, [modeParam, router])
