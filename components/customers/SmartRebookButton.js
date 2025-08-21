@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Calendar, MessageSquare, Clock, Send, Check, AlertCircle } from 'lucide-react'
-import { Button } from '../ui/button'
+import { Button } from '../ui/Button'
 import { toast } from 'sonner'
 
 export default function SmartRebookButton({ customer, onRebook }) {

@@ -22,7 +22,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
+import { Button } from '../ui/Button'
 
 // Risk Level Component
 const RiskLevelIndicator = ({ level, score }) => {

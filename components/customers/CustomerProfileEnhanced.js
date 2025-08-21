@@ -23,7 +23,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
+import { Button } from '../ui/Button'
 
 // Health Score Gauge Component
 const HealthScoreGauge = ({ score, size = 'sm' }) => {
