@@ -247,7 +247,24 @@ export default function CustomerIntelligenceDashboardOptimized() {
     try {
       setAnalyticsState(prev => ({ ...prev, loading: true, error: null }))
       
-      // Fetch data with pagination limits
+      // Get user session for authorization
+      const userResponse = await fetch('/api/auth/user', { signal })
+      const userData = await userResponse.json()
+      
+      if (!userData.authenticated) {
+        setAnalyticsState(prev => ({ 
+          ...prev, 
+          error: 'Authentication required for analytics'
+        }))
+        return
+      }
+      
+      const authHeaders = {
+        'Authorization': `Bearer ${userData.session?.access_token || ''}`,
+        'Content-Type': 'application/json'
+      }
+      
+      // Fetch data with pagination limits and authentication
       const endpoints = [
         `/api/customers/analytics/health-scores?barbershop_id=${barbershopId}&limit=${pagination.healthScores.limit}&page=${pagination.healthScores.page}`,
         `/api/customers/analytics/clv?barbershop_id=${barbershopId}&limit=${pagination.clv.limit}&page=${pagination.clv.page}&sort_by=total_clv&sort_desc=true`,
@@ -255,9 +272,12 @@ export default function CustomerIntelligenceDashboardOptimized() {
         `/api/customers/analytics/segments?barbershop_id=${barbershopId}`
       ]
       
-      // Fetch in parallel with proper error handling
+      // Fetch in parallel with proper error handling and authentication
       const responses = await Promise.allSettled(
-        endpoints.map(url => fetch(url, { signal }))
+        endpoints.map(url => fetch(url, { 
+          signal, 
+          headers: authHeaders 
+        }))
       )
       
       const successfulResponses = responses
