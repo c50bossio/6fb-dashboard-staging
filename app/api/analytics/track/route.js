@@ -3,10 +3,17 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 export const runtime = 'edge'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+// Initialize Supabase client inside functions to avoid build-time errors
+function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!url || !key) {
+    throw new Error('Supabase credentials not configured');
+  }
+  
+  return createClient(url, key);
+}
 
 function parseUserAgent(userAgent) {
   const ua = userAgent?.toLowerCase() || ''
@@ -61,6 +68,7 @@ async function getGeographicData(ipAddress) {
 
 export async function POST(request) {
   try {
+    const supabase = getSupabaseClient();
     const body = await request.json()
     const headersList = headers()
     
@@ -194,6 +202,7 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
+    const supabase = getSupabaseClient();
     const { searchParams } = new URL(request.url)
     const linkId = searchParams.get('linkId')
     const days = parseInt(searchParams.get('days')) || 30
