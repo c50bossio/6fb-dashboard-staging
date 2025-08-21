@@ -281,7 +281,7 @@ export default function CustomersPage() {
       id: 'intelligence',
       label: 'Intelligence Dashboard',
       icon: ChartBarIcon,
-      component: <CustomerIntelligenceDashboard />
+      component: <CustomerIntelligenceDashboardOptimized />
     },
     {
       id: 'customers',
