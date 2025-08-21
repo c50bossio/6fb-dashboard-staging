@@ -272,26 +272,26 @@ export default function BarbershopDashboard() {
           isExplicitlyIncomplete
         });
         
-        return shouldShowOnboarding;
-      })() && (
-        <DashboardOnboarding 
-          user={effectiveUser}
-          profile={effectiveProfile}
-          updateProfile={updateProfile}
-          forceShow={shouldForceShow || needsProfileCreation}
-          onComplete={() => {
-            console.log('Onboarding complete callback triggered')
-            setForceShowOnboarding(false)
-            // Show success celebration before refreshing
-            setShowSuccessCelebration(true)
-            
-            // Delay the page refresh to show celebration
-            setTimeout(() => {
-              window.location.reload()
-            }, 3000) // Show celebration for 3 seconds
-          }}
-        />
-      )}
+        return shouldShowOnboarding ? (
+          <DashboardOnboarding 
+            user={effectiveUser}
+            profile={effectiveProfile}
+            updateProfile={updateProfile}
+            forceShow={shouldForceShow || needsProfileCreation}
+            onComplete={() => {
+              console.log('Onboarding complete callback triggered')
+              setForceShowOnboarding(false)
+              // Show success celebration before refreshing
+              setShowSuccessCelebration(true)
+              
+              // Delay the page refresh to show celebration
+              setTimeout(() => {
+                window.location.reload()
+              }, 3000) // Show celebration for 3 seconds
+            }}
+          />
+        ) : null;
+      })()}
       
       {/* Success Celebration Overlay */}
       {showSuccessCelebration && (
