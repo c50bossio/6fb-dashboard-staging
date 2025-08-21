@@ -22,13 +22,20 @@ export default function BarbershopDashboard() {
   // State for setup completion celebration
   const [showSuccessCelebration, setShowSuccessCelebration] = useState(false)
   
-  // Check URL parameter for forcing onboarding display (for demos/pitches)
+  // Check URL parameters for forcing onboarding display (for demos/pitches)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search)
       const showOnboardingParam = urlParams.get('onboarding') === 'true'
-      if (showOnboardingParam) {
-        console.log('URL parameter detected: forcing onboarding to show')
+      const showOnboardingNewParam = urlParams.get('show_onboarding') === 'true'
+      const forceShowParam = urlParams.get('force_show') === 'true'
+      
+      if (showOnboardingParam || showOnboardingNewParam || forceShowParam) {
+        console.log('URL parameter detected: forcing onboarding to show', {
+          onboarding: showOnboardingParam,
+          show_onboarding: showOnboardingNewParam,
+          force_show: forceShowParam
+        })
         setForceShowOnboarding(true)
       }
     }
@@ -49,6 +56,8 @@ export default function BarbershopDashboard() {
       if (typeof window !== 'undefined') {
         const currentUrl = new URL(window.location)
         currentUrl.searchParams.delete('onboarding')
+        currentUrl.searchParams.delete('show_onboarding')
+        currentUrl.searchParams.delete('force_show')
         window.history.replaceState({}, '', currentUrl.toString())
       }
       
@@ -56,13 +65,39 @@ export default function BarbershopDashboard() {
       console.log('✅ Onboarding launch event processed successfully')
     }
 
+    const handleShowOnboarding = (event) => {
+      console.log('🎯 Show onboarding event received:', {
+        detail: event.detail,
+        timestamp: new Date().toISOString(),
+        currentState: forceShowOnboarding
+      })
+      
+      setForceShowOnboarding(true)
+      
+      // Clear any existing URL parameters that might interfere
+      if (typeof window !== 'undefined') {
+        const currentUrl = new URL(window.location)
+        currentUrl.searchParams.delete('onboarding')
+        currentUrl.searchParams.delete('show_onboarding')
+        currentUrl.searchParams.delete('force_show')
+        window.history.replaceState({}, '', currentUrl.toString())
+      }
+      
+      // Confirm the event was processed successfully
+      console.log('✅ Show onboarding event processed successfully')
+    }
+
     // Enhanced error handling for event listener setup
     if (typeof window !== 'undefined') {
       try {
-        // Listen for the primary event
+        // Listen for the primary events
         window.addEventListener('launchOnboarding', handleLaunchOnboarding, { 
           passive: false,
           capture: true // Ensure we catch the event during capture phase
+        })
+        window.addEventListener('showOnboarding', handleShowOnboarding, { 
+          passive: false,
+          capture: true
         })
         
         // Also listen on document in case window events don't work
@@ -70,13 +105,19 @@ export default function BarbershopDashboard() {
           passive: false,
           capture: true
         })
+        document.addEventListener('showOnboarding', handleShowOnboarding, {
+          passive: false,
+          capture: true
+        })
         
-        console.log('📡 Enhanced onboarding event listeners registered')
+        console.log('📡 Enhanced onboarding event listeners registered (launchOnboarding + showOnboarding)')
         
         return () => {
           try {
             window.removeEventListener('launchOnboarding', handleLaunchOnboarding, { capture: true })
+            window.removeEventListener('showOnboarding', handleShowOnboarding, { capture: true })
             document.removeEventListener('launchOnboarding', handleLaunchOnboarding, { capture: true })
+            document.removeEventListener('showOnboarding', handleShowOnboarding, { capture: true })
             console.log('🧹 Onboarding event listeners cleaned up')
           } catch (error) {
             console.warn('⚠️ Error cleaning up onboarding event listeners:', error)

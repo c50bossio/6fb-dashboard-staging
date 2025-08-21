@@ -1056,9 +1056,19 @@ export default function CalendarPage() {
   }
   
   const handleGoToOnboarding = () => {
-    console.log('🔍 Going to onboarding page')
+    console.log('🔍 Triggering onboarding modal')
     setShowOnboardingDialog(false)
-    window.location.href = '/onboarding'
+    
+    // Dispatch event to show onboarding modal
+    window.dispatchEvent(new CustomEvent('launchOnboarding', { 
+      detail: { from: 'calendar_onboarding_dialog' },
+      bubbles: true
+    }))
+    
+    // Fallback: navigate to main dashboard with modal trigger
+    setTimeout(() => {
+      window.location.href = '/dashboard?show_onboarding=true'
+    }, 500)
   }
   
   const handleProceedToAddBarber = () => {

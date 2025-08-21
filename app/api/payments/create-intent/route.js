@@ -93,7 +93,31 @@ export async function POST(request) {
       }
     }
 
-    // Create payment intent with proper routing
+    // Get financial arrangement for commission calculation
+    let arrangementData = null
+    if (barber_id && (barbershop_id || (barber_id && typeof barber_id === 'string'))) {
+      const shopId = barbershop_id || (await supabase
+        .from('barbers')
+        .select('barbershop_id')
+        .eq('id', barber_id)
+        .single())?.data?.barbershop_id
+
+      if (shopId) {
+        const { data: arrangement } = await supabase
+          .from('financial_arrangements')
+          .select('*')
+          .eq('barbershop_id', shopId)
+          .eq('barber_id', barber_id)
+          .eq('is_active', true)
+          .single()
+        
+        if (arrangement) {
+          arrangementData = arrangement
+        }
+      }
+    }
+
+    // Create payment intent with proper routing and commission metadata
     const paymentIntentParams = {
       amount: Math.round(amount * 100), // Convert to cents
       currency: 'usd',
@@ -103,7 +127,12 @@ export async function POST(request) {
         barber_id: barber_id || 'staff',
         barbershop_id: barbershop_id || '',
         service_id,
-        payment_type: payment_type || 'full_payment'
+        payment_type: payment_type || 'full_payment',
+        // Add arrangement data for commission processing
+        arrangement_id: arrangementData?.id || '',
+        arrangement_type: arrangementData?.type || '',
+        commission_percentage: arrangementData?.commission_percentage || '',
+        product_commission_percentage: arrangementData?.product_commission_percentage || ''
       },
       description: `Payment for ${serviceInfo.name}`,
       automatic_payment_methods: {

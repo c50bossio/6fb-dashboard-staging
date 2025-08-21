@@ -678,23 +678,26 @@ export default function UnifiedDashboard({ user, profile }) {
                               bubbles: true // Ensure event bubbles up
                             }))
                             
-                            // Fallback 1: Direct navigation after short delay if event fails
+                            // Fallback 1: Trigger dashboard modal event after short delay if primary event fails
                             setTimeout(() => {
                               const onboardingModal = document.querySelector('[data-onboarding-modal]')
                               if (!onboardingModal || !onboardingModal.style.display || onboardingModal.style.display === 'none') {
-                                console.log('Onboarding modal not detected - using navigation fallback')
-                                router?.push('/onboarding') || window.location.assign('/onboarding')
+                                console.log('Onboarding modal not detected - triggering show_onboarding event')
+                                window.dispatchEvent(new CustomEvent('showOnboarding', { 
+                                  detail: { source: 'dashboard_fallback' },
+                                  bubbles: true 
+                                }))
                               }
                             }, 1000)
                             
-                            // Fallback 2: Force URL parameter approach
+                            // Fallback 2: Force dashboard URL parameter approach to show modal
                             setTimeout(() => {
                               if (typeof window !== 'undefined') {
                                 const urlParams = new URLSearchParams(window.location.search)
-                                if (!urlParams.get('onboarding')) {
-                                  console.log('Using URL parameter fallback for onboarding')
+                                if (!urlParams.get('show_onboarding')) {
+                                  console.log('Using dashboard URL parameter fallback for onboarding modal')
                                   const currentUrl = new URL(window.location)
-                                  currentUrl.searchParams.set('onboarding', 'true')
+                                  currentUrl.searchParams.set('show_onboarding', 'true')
                                   window.location.href = currentUrl.toString()
                                 }
                               }
@@ -702,9 +705,12 @@ export default function UnifiedDashboard({ user, profile }) {
                             
                           } catch (error) {
                             console.error('Continue Setup button error:', error)
-                            // Ultimate fallback: direct navigation
+                            // Ultimate fallback: force dashboard onboarding modal via URL parameter
                             if (typeof window !== 'undefined') {
-                              window.location.assign('/onboarding')
+                              const currentUrl = new URL(window.location)
+                              currentUrl.searchParams.set('show_onboarding', 'true')
+                              currentUrl.searchParams.set('force_show', 'true')
+                              window.location.assign(currentUrl.toString())
                             }
                           }
                         }}

@@ -53,7 +53,6 @@ const protectedRoutes = [
   '/dashboard/enterprise/analytics',
   
   // Other Protected Routes
-  '/onboarding',
   '/profile',
   '/settings'
 ]

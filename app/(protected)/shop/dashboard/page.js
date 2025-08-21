@@ -97,12 +97,22 @@ export default function ShopDashboard() {
           <p className="text-gray-600 mb-6">
             {shopData.error || 'Please complete your barbershop setup to access the dashboard.'}
           </p>
-          <Link
-            href="/onboarding"
+          <button
+            onClick={() => {
+              // Dispatch event to show onboarding modal
+              window.dispatchEvent(new CustomEvent('launchOnboarding', { 
+                detail: { from: 'shop_dashboard_setup_required' },
+                bubbles: true
+              }))
+              // Fallback: navigate to main dashboard with modal trigger
+              setTimeout(() => {
+                window.location.href = '/dashboard?show_onboarding=true'
+              }, 500)
+            }}
             className="inline-flex items-center px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
           >
             Complete Shop Setup
-          </Link>
+          </button>
         </div>
       </div>
     )

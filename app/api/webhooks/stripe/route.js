@@ -773,6 +773,9 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
       paymentMethod: 'card'
     })
 
+    // Calculate and record commission if financial arrangement exists
+    await processCommissionCalculation(paymentIntent, supabase)
+
     // Send notification via booking notification service
     await sendBookingNotification({
       event_type: 'payment_intent.succeeded',
@@ -877,6 +880,121 @@ async function sendBookingConfirmationEmail({ booking, customerEmail, customerNa
   // TODO: Integrate with actual email service
   // For now, this is just logging the email details
   return true
+}
+
+// ==========================================
+// Commission Calculation Functions
+// ==========================================
+
+async function processCommissionCalculation(paymentIntent, supabase) {
+  try {
+    const metadata = paymentIntent.metadata
+    const arrangementId = metadata.arrangement_id
+    const barberId = metadata.barber_id
+    const barbershopId = metadata.barbershop_id
+    
+    // Skip if no arrangement data
+    if (!arrangementId || !barberId || !barbershopId) {
+      console.log('No commission arrangement found for payment:', paymentIntent.id)
+      return
+    }
+
+    // Get the financial arrangement details
+    const { data: arrangement, error: arrangementError } = await supabase
+      .from('financial_arrangements')
+      .select('*')
+      .eq('id', arrangementId)
+      .eq('is_active', true)
+      .single()
+
+    if (arrangementError || !arrangement) {
+      console.error('Error fetching arrangement:', arrangementError)
+      return
+    }
+
+    const paymentAmount = paymentIntent.amount / 100 // Convert from cents
+    let commissionAmount = 0
+    let shopAmount = 0
+
+    // Calculate commission based on arrangement type
+    if (arrangement.type === 'commission' || arrangement.type === 'hybrid') {
+      commissionAmount = paymentAmount * (arrangement.commission_percentage / 100)
+      shopAmount = paymentAmount - commissionAmount
+    } else if (arrangement.type === 'booth_rent') {
+      // For booth rent, barber keeps everything except fixed rent
+      commissionAmount = paymentAmount
+      shopAmount = 0 // Shop gets their rent separately
+    }
+
+    // Record the commission transaction
+    const commissionTransaction = {
+      payment_intent_id: paymentIntent.id,
+      arrangement_id: arrangementId,
+      barber_id: barberId,
+      barbershop_id: barbershopId,
+      payment_amount: paymentAmount,
+      commission_amount: commissionAmount,
+      shop_amount: shopAmount,
+      commission_percentage: arrangement.commission_percentage,
+      arrangement_type: arrangement.type,
+      status: 'pending_payout',
+      created_at: new Date().toISOString(),
+      metadata: {
+        booking_id: metadata.booking_id,
+        service_id: metadata.service_id,
+        payment_type: metadata.payment_type
+      }
+    }
+
+    const { error: insertError } = await supabase
+      .from('commission_transactions')
+      .insert(commissionTransaction)
+
+    if (insertError) {
+      console.error('Error recording commission transaction:', insertError)
+      return
+    }
+
+    // Update barber's commission balance
+    const { data: existingBalance } = await supabase
+      .from('barber_commission_balances')
+      .select('*')
+      .eq('barber_id', barberId)
+      .eq('barbershop_id', barbershopId)
+      .single()
+
+    if (existingBalance) {
+      // Update existing balance
+      await supabase
+        .from('barber_commission_balances')
+        .update({
+          pending_amount: (existingBalance.pending_amount || 0) + commissionAmount,
+          total_earned: (existingBalance.total_earned || 0) + commissionAmount,
+          last_transaction_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingBalance.id)
+    } else {
+      // Create new balance record
+      await supabase
+        .from('barber_commission_balances')
+        .insert({
+          barber_id: barberId,
+          barbershop_id: barbershopId,
+          pending_amount: commissionAmount,
+          paid_amount: 0,
+          total_earned: commissionAmount,
+          last_transaction_at: new Date().toISOString(),
+          created_at: new Date().toISOString()
+        })
+    }
+
+    console.log(`Commission calculated for payment ${paymentIntent.id}: $${commissionAmount} for barber ${barberId}`)
+
+  } catch (error) {
+    console.error('Error processing commission calculation:', error)
+    // Don't throw - webhook should still succeed even if commission calculation fails
+  }
 }
 
 // ==========================================

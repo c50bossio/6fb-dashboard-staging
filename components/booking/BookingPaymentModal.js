@@ -41,6 +41,22 @@ export default function BookingPaymentModal({
       setLoading(true)
       setError('')
 
+      // First, check shop's accepted payment methods
+      const shopId = booking.shop_id || booking.barbershop_id
+      if (shopId) {
+        const paymentMethodsResponse = await fetch(`/api/shop/payment-methods?shop_id=${shopId}`)
+        if (paymentMethodsResponse.ok) {
+          const { accepted_methods } = await paymentMethodsResponse.json()
+          
+          // Check if card payments are accepted
+          if (!accepted_methods.includes('card')) {
+            setError('Online card payments are not currently accepted by this shop. Please contact the shop directly.')
+            setLoading(false)
+            return
+          }
+        }
+      }
+
       const response = await fetch('/api/payments/create-intent', {
         method: 'POST',
         headers: {
@@ -51,7 +67,8 @@ export default function BookingPaymentModal({
           customer_id: booking.customer_id || user?.id,
           barber_id: booking.barber_id,
           service_id: booking.service_id,
-          payment_type: paymentType
+          payment_type: paymentType,
+          shop_id: shopId
         })
       })
 

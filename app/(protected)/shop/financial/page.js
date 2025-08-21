@@ -11,11 +11,15 @@ import {
   BanknotesIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowTrendingUpIcon,
+  ArrowPathIcon,
+  CreditCardIcon,
+  BellIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function FinancialArrangements() {
+export default function FinancialManagement() {
   const [arrangements, setArrangements] = useState([])
   const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
@@ -28,13 +32,41 @@ export default function FinancialArrangements() {
     pendingPayouts: 0,
     completedPayouts: 0
   })
+  const [commissionBalances, setCommissionBalances] = useState([])
+  const [recentTransactions, setRecentTransactions] = useState([])
+  const [paymentIntegrationStatus, setPaymentIntegrationStatus] = useState({
+    connected: false,
+    processing_enabled: false,
+    commissions_automated: false
+  })
+  const [processingPayout, setProcessingPayout] = useState(null)
+  const [payoutStatus, setPayoutStatus] = useState(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [confirmAction, setConfirmAction] = useState(null)
+  const [notifications, setNotifications] = useState([])
+  const [showNotifications, setShowNotifications] = useState(false)
 
   useEffect(() => {
     loadFinancialData()
   }, [])
 
+  // Notification helper
+  const addNotification = (notification) => {
+    const id = Date.now()
+    const newNotification = { id, ...notification, timestamp: new Date() }
+    setNotifications(prev => [newNotification, ...prev.slice(0, 9)]) // Keep last 10
+    
+    // Auto-remove after 10 seconds for success notifications
+    if (notification.type === 'success') {
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id))
+      }, 10000)
+    }
+  }
+
   const loadFinancialData = async () => {
     try {
+      // Load arrangements and metrics
       const arrangementsResponse = await fetch('/api/shop/financial/arrangements')
       if (arrangementsResponse.ok) {
         const data = await arrangementsResponse.json()
@@ -47,11 +79,34 @@ export default function FinancialArrangements() {
         })
       }
 
+      // Load barbers
       const barbersResponse = await fetch('/api/shop/barbers')
       if (barbersResponse.ok) {
         const { barbers } = await barbersResponse.json()
         setBarbers(barbers || [])
       }
+
+      // Load commission balances (from new automated system)
+      const balancesResponse = await fetch('/api/shop/financial/commission-balances')
+      if (balancesResponse.ok) {
+        const { balances } = await balancesResponse.json()
+        setCommissionBalances(balances || [])
+      }
+
+      // Load recent commission transactions
+      const transactionsResponse = await fetch('/api/shop/financial/recent-transactions')
+      if (transactionsResponse.ok) {
+        const { transactions } = await transactionsResponse.json()
+        setRecentTransactions(transactions || [])
+      }
+
+      // Check payment integration status
+      const integrationResponse = await fetch('/api/shop/financial/integration-status')
+      if (integrationResponse.ok) {
+        const status = await integrationResponse.json()
+        setPaymentIntegrationStatus(status)
+      }
+
     } catch (error) {
       console.error('Error loading financial data:', error)
       setError('Failed to load financial data. Please refresh the page.')
@@ -87,6 +142,159 @@ export default function FinancialArrangements() {
     } catch (error) {
       console.error('Error saving arrangement:', error)
       alert('An error occurred while saving. Please try again.')
+    }
+  }
+
+  const handleProcessSinglePayout = async (barberId, barberName, amount) => {
+    setConfirmAction({
+      type: 'single',
+      barberId,
+      barberName,
+      amount,
+      title: 'Confirm Payout',
+      message: `Process payout of $${amount.toFixed(2)} to ${barberName}?`,
+      details: `This will transfer funds to ${barberName} via their configured payout method.`
+    })
+    setShowConfirmModal(true)
+    return
+  }
+
+  const executeSinglePayout = async (barberId, barberName, amount) => {
+
+    setProcessingPayout(barberId)
+    setPayoutStatus(null)
+
+    try {
+      const response = await fetch('/api/shop/financial/payouts/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'process_single',
+          barber_id: barberId
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setPayoutStatus({
+          type: 'success',
+          message: result.message || `Payout processed successfully for ${barberName}`
+        })
+        
+        // Add notification
+        addNotification({
+          type: 'success',
+          title: 'Payout Processed',
+          message: `$${amount.toFixed(2)} payout to ${barberName} completed successfully`,
+          details: `Method: ${result.method || 'Automatic'}`,
+          action: 'single_payout'
+        })
+        
+        // Reload financial data to reflect changes
+        await loadFinancialData()
+      } else {
+        setPayoutStatus({
+          type: 'error',
+          message: result.error || 'Failed to process payout'
+        })
+        
+        // Add error notification
+        addNotification({
+          type: 'error',
+          title: 'Payout Failed',
+          message: `Failed to process $${amount.toFixed(2)} payout to ${barberName}`,
+          details: result.error || 'Unknown error occurred',
+          action: 'single_payout_failed'
+        })
+      }
+    } catch (error) {
+      console.error('Error processing payout:', error)
+      setPayoutStatus({
+        type: 'error',
+        message: 'An error occurred while processing the payout'
+      })
+    } finally {
+      setProcessingPayout(null)
+    }
+  }
+
+  const handleProcessAllPayouts = async () => {
+    const pendingPayouts = commissionBalances.filter(b => b.pending_amount > 0)
+    const totalAmount = pendingPayouts.reduce((sum, b) => sum + b.pending_amount, 0)
+    
+    setConfirmAction({
+      type: 'all',
+      title: 'Confirm Bulk Payouts',
+      message: `Process ${pendingPayouts.length} payouts totaling $${totalAmount.toFixed(2)}?`,
+      details: `This will process payouts for: ${pendingPayouts.map(p => p.barber_name).join(', ')}`,
+      pendingPayouts,
+      totalAmount
+    })
+    setShowConfirmModal(true)
+    return
+  }
+
+  const executeAllPayouts = async () => {
+
+    setProcessingPayout('all')
+    setPayoutStatus(null)
+
+    try {
+      const response = await fetch('/api/shop/financial/payouts/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'process_all'
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setPayoutStatus({
+          type: 'success',
+          message: result.message || 'All payouts processed successfully'
+        })
+        
+        // Add notification
+        addNotification({
+          type: 'success',
+          title: 'Bulk Payouts Completed',
+          message: `Successfully processed ${result.details?.processed || 0} payouts`,
+          details: `Total processed: ${result.details?.processed || 0}, Errors: ${result.details?.errors || 0}`,
+          action: 'bulk_payout'
+        })
+        
+        // Reload financial data
+        await loadFinancialData()
+      } else {
+        setPayoutStatus({
+          type: 'error',
+          message: result.error || 'Failed to process payouts'
+        })
+        
+        // Add error notification
+        addNotification({
+          type: 'error',
+          title: 'Bulk Payout Failed',
+          message: 'Failed to process bulk payouts',
+          details: result.error || 'Unknown error occurred',
+          action: 'bulk_payout_failed'
+        })
+      }
+    } catch (error) {
+      console.error('Error processing payouts:', error)
+      setPayoutStatus({
+        type: 'error',
+        message: 'An error occurred while processing payouts'
+      })
+    } finally {
+      setProcessingPayout(null)
     }
   }
 
@@ -126,8 +334,121 @@ export default function FinancialArrangements() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Financial Arrangements</h1>
-        <p className="text-gray-600 mt-2">Manage commission structures and booth rent agreements</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Financial Management</h1>
+            <p className="text-gray-600 mt-2">Manage commission structures, track automated payouts, and monitor financial performance</p>
+          </div>
+          
+          {/* Notification Bell */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <BellIcon className="h-6 w-6 text-gray-600" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {notifications.length > 9 ? '9+' : notifications.length}
+                </span>
+              )}
+            </button>
+            
+            {/* Notification Panel */}
+            {showNotifications && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">Payout Notifications</h3>
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={() => setNotifications([])}
+                        className="text-sm text-gray-500 hover:text-gray-700"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="max-h-80 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <BellIcon className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">No notifications yet</p>
+                    </div>
+                  ) : (
+                    notifications.map((notification) => (
+                      <div key={notification.id} className="p-4 border-b border-gray-100 hover:bg-gray-50">
+                        <div className="flex items-start">
+                          <div className={`flex-shrink-0 h-2 w-2 rounded-full mt-2 mr-3 ${
+                            notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900">
+                              {notification.title}
+                            </p>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {notification.message}
+                            </p>
+                            {notification.details && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {notification.details}
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-400 mt-2">
+                              {new Date(notification.timestamp).toLocaleTimeString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Integration Status */}
+      <div className={`mb-6 p-4 rounded-lg flex items-start ${
+        paymentIntegrationStatus.commissions_automated 
+          ? 'bg-green-50 border border-green-200' 
+          : 'bg-yellow-50 border border-yellow-200'
+      }`}>
+        {paymentIntegrationStatus.commissions_automated ? (
+          <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+        ) : (
+          <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500 mt-0.5 mr-2" />
+        )}
+        <div className="flex-1">
+          <h3 className={`font-medium ${
+            paymentIntegrationStatus.commissions_automated ? 'text-green-900' : 'text-yellow-900'
+          }`}>
+            {paymentIntegrationStatus.commissions_automated 
+              ? '🎉 Automated Commission System Active' 
+              : 'Commission Automation Setup Required'
+            }
+          </h3>
+          <p className={`text-sm mt-1 ${
+            paymentIntegrationStatus.commissions_automated ? 'text-green-800' : 'text-yellow-800'
+          }`}>
+            {paymentIntegrationStatus.commissions_automated 
+              ? 'Payments automatically calculate commissions and update barber balances in real-time.'
+              : 'Complete payment setup to enable automatic commission calculation from customer payments.'
+            }
+          </p>
+          {!paymentIntegrationStatus.commissions_automated && (
+            <a 
+              href="/shop/settings/payment-setup" 
+              className="inline-flex items-center mt-2 text-sm text-yellow-700 hover:text-yellow-900 font-medium"
+            >
+              <CreditCardIcon className="h-4 w-4 mr-1" />
+              Complete Payment Setup →
+            </a>
+          )}
+        </div>
       </div>
 
       {/* Metrics */}
@@ -181,10 +502,160 @@ export default function FinancialArrangements() {
         </div>
       </div>
 
+      {/* Payout Status Notification */}
+      {payoutStatus && (
+        <div className={`mb-6 p-4 rounded-lg flex items-start ${
+          payoutStatus.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+        }`}>
+          {payoutStatus.type === 'success' ? (
+            <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+          ) : (
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-500 mt-0.5 mr-2" />
+          )}
+          <div className="flex-1">
+            <p className={`text-sm ${
+              payoutStatus.type === 'success' ? 'text-green-800' : 'text-red-800'
+            }`}>
+              {payoutStatus.message}
+            </p>
+          </div>
+          <button
+            onClick={() => setPayoutStatus(null)}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Real-Time Commission Balances */}
+      {paymentIntegrationStatus.commissions_automated && commissionBalances.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                <ArrowTrendingUpIcon className="h-5 w-5 mr-2 text-green-600" />
+                Live Commission Balances
+              </h2>
+              <div className="flex items-center space-x-3">
+                {commissionBalances.some(balance => balance.pending_amount > 0) && (
+                  <button
+                    onClick={handleProcessAllPayouts}
+                    disabled={processingPayout}
+                    className="px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm font-medium"
+                  >
+                    {processingPayout ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowPathIcon className="h-4 w-4 mr-2" />
+                        Process All Payouts
+                      </>
+                    )}
+                  </button>
+                )}
+                <span className="text-sm text-green-600 font-medium">Auto-Updated</span>
+              </div>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Barber
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Pending Balance
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total Earned
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Last Payment
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {commissionBalances.map((balance) => (
+                  <tr key={balance.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {balance.barber_name || 'Unknown Barber'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-green-600">
+                        ${balance.pending_amount?.toFixed(2) || '0.00'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        ${balance.total_earned?.toFixed(2) || '0.00'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">
+                        {balance.last_transaction_at 
+                          ? new Date(balance.last_transaction_at).toLocaleDateString()
+                          : 'Never'
+                        }
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      {balance.pending_amount > 0 && (
+                        <button 
+                          onClick={() => handleProcessSinglePayout(balance.barber_id, balance.barber_name, balance.pending_amount)}
+                          className="text-olive-600 hover:text-olive-900 font-medium"
+                        >
+                          Process Payout
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Payout Summary */}
+          {commissionBalances.length > 0 && (
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center space-x-4">
+                  <span className="text-gray-600">
+                    Total Barbers: <span className="font-medium text-gray-900">{commissionBalances.length}</span>
+                  </span>
+                  <span className="text-gray-600">
+                    Pending Payouts: <span className="font-medium text-green-600">
+                      {commissionBalances.filter(b => b.pending_amount > 0).length}
+                    </span>
+                  </span>
+                  <span className="text-gray-600">
+                    Total Pending: <span className="font-medium text-green-600">
+                      ${commissionBalances.reduce((sum, b) => sum + (b.pending_amount || 0), 0).toFixed(2)}
+                    </span>
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500">
+                  Updates automatically on new payments
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Actions Bar */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Active Arrangements</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Commission Arrangements</h2>
           <button
             onClick={() => setShowArrangementModal(true)}
             className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 flex items-center"
@@ -312,6 +783,26 @@ export default function FinancialArrangements() {
           </div>
         )}
       </div>
+
+      {/* Payout Confirmation Modal */}
+      {showConfirmModal && confirmAction && (
+        <PayoutConfirmModal
+          action={confirmAction}
+          onConfirm={async () => {
+            setShowConfirmModal(false)
+            if (confirmAction.type === 'single') {
+              await executeSinglePayout(confirmAction.barberId, confirmAction.barberName, confirmAction.amount)
+            } else if (confirmAction.type === 'all') {
+              await executeAllPayouts()
+            }
+            setConfirmAction(null)
+          }}
+          onCancel={() => {
+            setShowConfirmModal(false)
+            setConfirmAction(null)
+          }}
+        />
+      )}
 
       {/* Arrangement Modal */}
       {showArrangementModal && (
@@ -546,6 +1037,82 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PayoutConfirmModal({ action, onConfirm, onCancel }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl max-w-md w-full p-6">
+        <div className="text-center">
+          {/* Icon */}
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gold-100 mb-4">
+            <CurrencyDollarIcon className="h-6 w-6 text-gold-600" />
+          </div>
+          
+          {/* Title */}
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {action.title}
+          </h3>
+          
+          {/* Message */}
+          <p className="text-gray-600 mb-4">
+            {action.message}
+          </p>
+          
+          {/* Details */}
+          <div className="bg-gray-50 rounded-lg p-3 mb-6">
+            <p className="text-sm text-gray-700">
+              {action.details}
+            </p>
+            
+            {/* Additional info for bulk payouts */}
+            {action.type === 'all' && action.pendingPayouts && (
+              <div className="mt-3 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Total Barbers:</span>
+                  <span className="font-medium">{action.pendingPayouts.length}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Total Amount:</span>
+                  <span className="font-medium text-green-600">${action.totalAmount?.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Single payout details */}
+            {action.type === 'single' && (
+              <div className="mt-3 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Barber:</span>
+                  <span className="font-medium">{action.barberName}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Amount:</span>
+                  <span className="font-medium text-green-600">${action.amount?.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex space-x-3">
+            <button
+              onClick={onCancel}
+              className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              className="flex-1 px-4 py-2 bg-gold-600 text-white rounded-lg hover:bg-gold-700"
+            >
+              {action.type === 'all' ? 'Process All Payouts' : 'Process Payout'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
