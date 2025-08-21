@@ -501,6 +501,9 @@ export function downloadCSV(csvData) {
   window.URL.revokeObjectURL(url)
 }
 
+// Named export for the main search function
+export const fuzzySearch = multiFieldSearch
+
 export default {
   levenshteinDistance,
   calculateSimilarityScore,
@@ -512,5 +515,6 @@ export default {
   generateSearchSuggestions,
   highlightMatches,
   exportToCSV,
-  downloadCSV
+  downloadCSV,
+  fuzzySearch
 }

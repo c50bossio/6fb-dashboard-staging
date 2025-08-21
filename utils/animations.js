@@ -463,6 +463,9 @@ export function useInViewAnimation(options = {}) {
   return [setRef, isInView]
 }
 
+// Named exports for commonly used functions
+export const CountUp = AnimatedCounter
+
 export default {
   ANIMATION_CONFIG,
   animationClasses,
@@ -476,5 +479,6 @@ export default {
   useInViewAnimation,
   createStaggerAnimation,
   createStaggerClasses,
-  prefersReducedMotion
+  prefersReducedMotion,
+  CountUp
 }

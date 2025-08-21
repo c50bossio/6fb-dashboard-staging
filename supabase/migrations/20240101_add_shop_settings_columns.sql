@@ -86,10 +86,4 @@ CREATE INDEX IF NOT EXISTS idx_barbershops_business_hours ON barbershops USING g
 CREATE INDEX IF NOT EXISTS idx_barbershops_payment_settings ON barbershops USING gin(payment_settings);
 CREATE INDEX IF NOT EXISTS idx_barbershops_booking_settings ON barbershops USING gin(booking_settings);
 
--- Update RLS policies to ensure proper access control
--- Shop owners can update their own settings
-CREATE POLICY "Shop owners can update their settings" ON barbershops
-  FOR UPDATE
-  TO authenticated
-  USING ((SELECT auth.uid()) = owner_id)
-  WITH CHECK ((SELECT auth.uid()) = owner_id);
+-- RLS policies already exist, skipping duplicate policy creation
