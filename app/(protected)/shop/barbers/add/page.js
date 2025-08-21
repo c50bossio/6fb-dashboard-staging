@@ -526,8 +526,150 @@ export default function AddBarber() {
             </div>
           )}
 
-          {/* Step 4: Review */}
+          {/* Step 4: Documents & Requirements */}
           {step === 4 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <DocumentTextIcon className="h-5 w-5 mr-2 text-olive-600" />
+                Documents & Requirements
+              </h2>
+              
+              <div className="space-y-6">
+                {/* Document Requirements */}
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Required Documents</h3>
+                  <div className="space-y-4">
+                    <label className="flex items-start p-4 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={barberData.requiresLicense}
+                        onChange={(e) => setBarberData({...barberData, requiresLicense: e.target.checked})}
+                        className="mt-1 h-4 w-4 text-olive-600 rounded"
+                      />
+                      <div className="ml-3">
+                        <p className="font-medium">Barber License</p>
+                        <p className="text-sm text-gray-600">Professional barber license required</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start p-4 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={barberData.requiresInsurance}
+                        onChange={(e) => setBarberData({...barberData, requiresInsurance: e.target.checked})}
+                        className="mt-1 h-4 w-4 text-olive-600 rounded"
+                      />
+                      <div className="ml-3">
+                        <p className="font-medium">Liability Insurance</p>
+                        <p className="text-sm text-gray-600">Professional liability insurance documentation</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start p-4 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={barberData.requiresContract}
+                        onChange={(e) => setBarberData({...barberData, requiresContract: e.target.checked})}
+                        className="mt-1 h-4 w-4 text-olive-600 rounded"
+                      />
+                      <div className="ml-3">
+                        <p className="font-medium">Employment Contract</p>
+                        <p className="text-sm text-gray-600">Signed employment or contractor agreement</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+                
+                {/* Emergency Contact */}
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Emergency Contact</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Contact Name
+                      </label>
+                      <input
+                        type="text"
+                        value={barberData.emergencyContactName}
+                        onChange={(e) => setBarberData({...barberData, emergencyContactName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        placeholder="Emergency contact name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Contact Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={barberData.emergencyContactPhone}
+                        onChange={(e) => setBarberData({...barberData, emergencyContactPhone: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Additional Settings */}
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Additional Settings</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Chair Number
+                      </label>
+                      <input
+                        type="text"
+                        value={barberData.chairNumber}
+                        onChange={(e) => setBarberData({...barberData, chairNumber: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        placeholder="e.g., 4"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Payment Frequency
+                      </label>
+                      <select
+                        value={barberData.paymentFrequency}
+                        onChange={(e) => setBarberData({...barberData, paymentFrequency: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+                      >
+                        <option value="weekly">Weekly</option>
+                        <option value="biweekly">Bi-weekly</option>
+                        <option value="monthly">Monthly</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={barberData.acceptsWalkIns}
+                        onChange={(e) => setBarberData({...barberData, acceptsWalkIns: e.target.checked})}
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
+                      />
+                      <span className="text-sm text-gray-700">Accepts walk-in appointments</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800 flex items-start">
+                    <InformationCircleIcon className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                    Documents can be uploaded after the barber account is created. The barber will receive instructions to complete their profile.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Review */}
+          {step === 5 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                 <CheckCircleIcon className="h-5 w-5 mr-2 text-olive-600" />
@@ -575,6 +717,27 @@ export default function AddBarber() {
                   </div>
                 </div>
                 
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-3">Documents & Requirements</h3>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <p className="text-sm">
+                      <span className="font-medium">Required Documents:</span>{' '}
+                      {[
+                        barberData.requiresLicense && 'License',
+                        barberData.requiresInsurance && 'Insurance',
+                        barberData.requiresContract && 'Contract'
+                      ].filter(Boolean).join(', ') || 'None'}
+                    </p>
+                    {barberData.chairNumber && (
+                      <p className="text-sm"><span className="font-medium">Chair Number:</span> {barberData.chairNumber}</p>
+                    )}
+                    {barberData.emergencyContactName && (
+                      <p className="text-sm"><span className="font-medium">Emergency Contact:</span> {barberData.emergencyContactName}</p>
+                    )}
+                    <p className="text-sm"><span className="font-medium">Walk-ins:</span> {barberData.acceptsWalkIns ? 'Accepted' : 'Not Accepted'}</p>
+                  </div>
+                </div>
+                
                 <div className="p-4 bg-olive-50 rounded-lg">
                   <p className="text-sm text-olive-800">
                     <strong>Note:</strong> The barber will receive an email invitation to set up their password and access their dashboard.
@@ -598,7 +761,7 @@ export default function AddBarber() {
               Previous
             </button>
             
-            {step < 4 ? (
+            {step < 5 ? (
               <button
                 onClick={nextStep}
                 className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
