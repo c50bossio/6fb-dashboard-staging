@@ -198,7 +198,7 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     }
   }
 
-  const handleSkip = async () => {
+  const handleSkip = () => {
     const currentStepData = steps[currentStep]
     
     // Track skip
@@ -216,18 +216,23 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
       'user_skipped'
     )
     
-    // Save skip status to database instead of localStorage
-    try {
-      await updateProfile({
-        onboarding_status: 'skipped',
+    // Close modal immediately for responsive UI
+    setShowOnboarding(false)
+    
+    // Save skip status to database in background (non-blocking)
+    updateProfile({
+      onboarding_status: 'skipped',
+      onboarding_step: currentStep,
+      onboarding_last_step: currentStepData?.id
+    }).catch(error => {
+      // If onboarding_status column doesn't exist, try without it
+      updateProfile({
         onboarding_step: currentStep,
         onboarding_last_step: currentStepData?.id
+      }).catch(fallbackError => {
+        console.log('Profile update failed (non-critical):', fallbackError)
       })
-    } catch (error) {
-      console.error('Error updating skip status:', error)
-    }
-    
-    setShowOnboarding(false)
+    })
   }
 
   const handleComplete = async () => {
@@ -466,24 +471,31 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={async () => {
+                  onClick={() => {
+                    // Minimize immediately for responsive UI
                     setIsMinimized(true)
+                    
                     // Track minimize
                     const currentStepData = steps[currentStep]
                     internalAnalytics.onboarding.minimized(
                       currentStepData?.id,
                       currentStep
                     )
-                    // Save minimized status to database
-                    try {
-                      await updateProfile({
-                        onboarding_status: 'minimized',
+                    
+                    // Save minimized status to database in background (non-blocking)
+                    updateProfile({
+                      onboarding_status: 'minimized',
+                      onboarding_step: currentStep,
+                      onboarding_last_step: currentStepData?.id
+                    }).catch(error => {
+                      // If onboarding_status column doesn't exist, try without it
+                      updateProfile({
                         onboarding_step: currentStep,
                         onboarding_last_step: currentStepData?.id
+                      }).catch(fallbackError => {
+                        console.log('Profile update failed (non-critical):', fallbackError)
                       })
-                    } catch (error) {
-                      console.error('Error updating minimize status:', error)
-                    }
+                    })
                   }}
                   className="text-white/80 hover:text-white transition-colors"
                   title="Minimize"
