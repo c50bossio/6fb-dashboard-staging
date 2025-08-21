@@ -223,6 +223,14 @@ export default function CustomerIntelligenceDashboard() {
 
   // Determine empty state type based on data availability
   const getEmptyStateType = () => {
+    console.log('🎯 Intelligence Dashboard Debug:', {
+      totalCustomers: summaryMetrics.totalCustomers,
+      loading,
+      analyticsLoading,
+      error,
+      analyticsError
+    })
+    
     if (summaryMetrics.totalCustomers === 0) return 'no-customers'
     if (summaryMetrics.totalCustomers < 5) return 'insufficient-data'
     if (summaryMetrics.totalCustomers < 10) return 'new-barbershop'
@@ -231,6 +239,12 @@ export default function CustomerIntelligenceDashboard() {
 
   const emptyStateType = getEmptyStateType()
   const hasInsufficientData = emptyStateType !== null
+  
+  console.log('🔧 Intelligence Dashboard State:', {
+    emptyStateType,
+    hasInsufficientData,
+    willShowEmptyState: hasInsufficientData
+  })
 
   // Journey stage distribution
   const stageDistribution = journeyStages.reduce((acc, stage) => {
