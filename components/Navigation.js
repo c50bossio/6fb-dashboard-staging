@@ -38,6 +38,7 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useNavigation } from '../contexts/NavigationContext'
 import Logo, { LogoHeader } from './ui/Logo'
+import { useAuth } from './SupabaseAuthProvider'
 
 const navigation = [
   { 
@@ -195,16 +196,32 @@ const marketingOperations = [
 
 const enterpriseOperations = [
   { 
+    name: 'Enterprise Dashboard', 
+    href: '/enterprise/dashboard', 
+    icon: ChartPieIcon,
+    description: 'Multi-location overview and analytics',
+    badge: 'Overview'
+  },
+  { 
     name: 'Enterprise Portal', 
     href: '/enterprise/website', 
     icon: BuildingOffice2Icon,
     description: 'Manage multi-location website and portal',
     badge: 'NEW'
+  },
+  { 
+    name: 'Location Management', 
+    href: '/enterprise/locations', 
+    icon: BuildingStorefrontIcon,
+    description: 'Manage all barbershop locations and settings'
+  },
+  { 
+    name: 'Cross-Shop Analytics', 
+    href: '/enterprise/analytics', 
+    icon: DocumentChartBarIcon,
+    description: 'Performance comparison across all locations'
   }
 ]
-// - Enterprise Dashboard (multi-location overview)
-// - Location Management (manage all shops)
-// - Cross-Shop Analytics (performance comparison)
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -214,7 +231,9 @@ export default function Navigation() {
   const [currentTime, setCurrentTime] = useState('--:--') // Consistent initial state
   const [isClient, setIsClient] = useState(false)
   
-  const userRole = 'SHOP_OWNER' // This would normally be: const { user } = useAuth() and user.role
+  // Get user role from authentication context
+  const { profile } = useAuth()
+  const userRole = profile?.role || 'BARBER' // Default to BARBER if no role is set
 
   useEffect(() => {
     setIsClient(true)
