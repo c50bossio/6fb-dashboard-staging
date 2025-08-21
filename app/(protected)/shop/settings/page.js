@@ -138,6 +138,22 @@ export default function ShopSettings() {
         })
       } else if (shop) {
         setShopId(shop.id)
+        
+        // Helper function to safely parse JSONB data
+        const safeParseJSON = (data, fallback) => {
+          if (!data) return fallback
+          if (typeof data === 'object') return data
+          if (typeof data === 'string') {
+            try {
+              return JSON.parse(data)
+            } catch (e) {
+              console.warn('Failed to parse JSON:', data)
+              return fallback
+            }
+          }
+          return fallback
+        }
+        
         setShopData(prev => ({
           ...prev,
           name: shop.name || prev.name,
@@ -149,13 +165,13 @@ export default function ShopSettings() {
           city: shop.city || prev.city,
           state: shop.state || prev.state,
           zip_code: shop.zip_code || prev.zip_code,
-          hours: shop.business_hours || prev.hours,
-          payment: shop.payment_settings || prev.payment,
-          commission: shop.commission_settings || prev.commission,
-          booking: shop.booking_settings || prev.booking,
-          notifications: shop.notification_settings || prev.notifications,
-          appointment: shop.appointment_settings || prev.appointment,
-          tax: shop.tax_settings || prev.tax
+          hours: safeParseJSON(shop.business_hours, prev.hours),
+          payment: safeParseJSON(shop.payment_settings, prev.payment),
+          commission: safeParseJSON(shop.commission_settings, prev.commission),
+          booking: safeParseJSON(shop.booking_settings, prev.booking),
+          notifications: safeParseJSON(shop.notification_settings, prev.notifications),
+          appointment: safeParseJSON(shop.appointment_settings, prev.appointment),
+          tax: safeParseJSON(shop.tax_settings, prev.tax)
         }))
       }
     } catch (error) {
