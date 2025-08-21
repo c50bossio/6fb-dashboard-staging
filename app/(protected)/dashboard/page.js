@@ -221,9 +221,19 @@ export default function BarbershopDashboard() {
               </div>
             </div>
             <button
-              onClick={() => {
+              onClick={async () => {
                 console.log('Resume Setup clicked - setting forceShowOnboarding to true')
                 setForceShowOnboarding(true)
+                
+                // Update profile status to active when manually resuming (moved from useEffect)
+                if (effectiveProfile?.onboarding_status === 'skipped' || effectiveProfile?.onboarding_status === 'minimized') {
+                  try {
+                    await updateProfile({ onboarding_status: 'active' })
+                    console.log('Profile updated to active status')
+                  } catch (error) {
+                    console.warn('Profile update failed (non-critical):', error)
+                  }
+                }
               }}
               className="bg-white dark:bg-dark-bg-elevated-1 text-brand-600 px-4 py-2 rounded-lg font-medium hover:bg-brand-50 transition-colors"
             >

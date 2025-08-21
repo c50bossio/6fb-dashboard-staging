@@ -70,29 +70,38 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     completedSteps: []
   })
 
-  // Initialize analytics on mount and check onboarding status from profile
+  // Initialize analytics on mount and determine visibility (NO ASYNC UPDATES)
   useEffect(() => {
-    // Check onboarding status from profile (single source of truth)
+    // Simple visibility logic without async updates to prevent render loops
     const wasSkipped = profile?.onboarding_status === 'skipped'
     const wasMinimized = profile?.onboarding_status === 'minimized'
-    const isIncomplete = profile && !profile?.onboarding_completed
+    const isCompleted = profile?.onboarding_completed === true
     
-    // Show onboarding if forced or if incomplete and not previously skipped
-    if (forceShow) {
-      setShowOnboarding(true)
-      setIsMinimized(false) // Ensure it's not minimized when forced to show
-      // Update profile status to active when forced
-      if (profile?.onboarding_status === 'skipped' || profile?.onboarding_status === 'minimized') {
-        updateProfile({ onboarding_status: 'active' }).catch(console.error)
-      }
-    } else if (wasSkipped && isIncomplete) {
+    // Don't show if already completed (unless forced)
+    if (isCompleted && !forceShow) {
       setShowOnboarding(false)
-    } else if (wasMinimized) {
-      setIsMinimized(true)
-      setShowOnboarding(false)
+      return
     }
     
-    if (showOnboarding && !profile?.onboarding_completed && !wasSkipped) {
+    // Don't show if skipped (unless forced)  
+    if (wasSkipped && !forceShow) {
+      setShowOnboarding(false)
+      return
+    }
+    
+    // Show minimized if was minimized (unless forced)
+    if (wasMinimized && !forceShow) {
+      setIsMinimized(true)
+      setShowOnboarding(false)
+      return
+    }
+    
+    // Show onboarding for all other cases
+    setShowOnboarding(true)
+    setIsMinimized(false)
+    
+    // Track analytics (safe - no state updates)
+    if (!wasSkipped && !isCompleted) {
       internalAnalytics.onboarding.started(
         profile?.role || 'SHOP_OWNER',
         onboardingData.businessType || 'barbershop'
@@ -103,16 +112,6 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     return () => {
       if (autoSaveInterval.current) {
         clearInterval(autoSaveInterval.current)
-      }
-      // Track abandonment if not completed
-      if (showOnboarding && !profile?.onboarding_completed) {
-        const currentStepData = steps[currentStep]
-        internalAnalytics.onboarding.abandoned(
-          currentStepData?.id,
-          currentStep,
-          steps.length,
-          'component_unmounted'
-        )
       }
     }
   }, [forceShow, profile?.onboarding_status, profile?.onboarding_completed])
@@ -354,93 +353,43 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     }))
   }
 
-  // Auto-save every 30 seconds
+  // Auto-save temporarily disabled to prevent render loops - manual save only
+  // TODO: Re-implement auto-save with proper debouncing once core functionality is stable
   useEffect(() => {
-    if (showOnboarding && !profile?.onboarding_completed) {
-      autoSaveInterval.current = setInterval(() => {
-        saveProgress(true)
-      }, 30000) // 30 seconds
-    }
-
+    // Auto-save disabled for stability
     return () => {
       if (autoSaveInterval.current) {
         clearInterval(autoSaveInterval.current)
       }
     }
-  }, [showOnboarding, profile?.onboarding_completed])
+  }, [])
 
-  // Load saved progress
+  // Load saved progress from profile only (simplified)
   useEffect(() => {
-    const loadSavedProgress = async () => {
-      if (profile?.onboarding_step !== undefined) {
-        setCurrentStep(profile.onboarding_step)
-      }
-      if (profile?.onboarding_data) {
-        try {
-          // Check if it's already an object or needs parsing
-          const savedData = typeof profile.onboarding_data === 'string' 
-            ? JSON.parse(profile.onboarding_data)
-            : profile.onboarding_data
-          
-          // Only set if it's a valid object
-          if (savedData && typeof savedData === 'object' && !Array.isArray(savedData)) {
-            setOnboardingData(prev => ({ ...prev, ...savedData }))
-          }
-        } catch (error) {
-          console.warn('Could not parse onboarding data, using defaults')
-        }
-      }
-      
-      // Load progress from API (only on initial load, not during navigation)
+    if (profile?.onboarding_step !== undefined) {
+      setCurrentStep(profile.onboarding_step)
+    }
+    if (profile?.onboarding_data) {
       try {
-        const response = await fetch('/api/onboarding/save-progress')
-        if (response.ok) {
-          const data = await response.json()
-          // Only set currentStep from API if we haven't already set it from profile
-          if (data.currentStep !== undefined && profile?.onboarding_step === undefined) {
-            setCurrentStep(data.currentStep)
-          }
-          if (data.steps) {
-            data.steps.forEach(step => {
-              if (step.step_name) {
-                completedSteps.current.add(step.step_name)
-              }
-            })
-          }
-        } else if (response.status === 401) {
-          // Silently ignore auth errors - we'll use profile data instead
-          console.log('Using profile data for onboarding state (API auth failed)')
+        // Check if it's already an object or needs parsing
+        const savedData = typeof profile.onboarding_data === 'string' 
+          ? JSON.parse(profile.onboarding_data)
+          : profile.onboarding_data
+        
+        // Only set if it's a valid object
+        if (savedData && typeof savedData === 'object' && !Array.isArray(savedData)) {
+          setOnboardingData(prev => ({ ...prev, ...savedData }))
         }
       } catch (error) {
-        // Silently handle errors - don't break the UI
-        console.log('Using profile data for onboarding state (API unavailable)')
+        console.warn('Could not parse onboarding data, using defaults')
       }
     }
-    
-    loadSavedProgress()
-  }, [profile])
+  }, [profile?.onboarding_step, profile?.onboarding_data])
 
-  // DISABLED: Floating resume button removed - using top banner instead for cleaner UI
-  // The top banner in dashboard/page.js handles the resume setup CTA
-  // Only return null if not being forced to show AND onboarding isn't showing
-  if (!showOnboarding && !forceShow) {
-    // Previously showed floating button here when onboarding was skipped
-    // Now we rely on the top banner instead
-    return null
-  }
+  // Simplified visibility logic - single source of truth
+  const shouldShowModal = showOnboarding && !isMinimized
   
-  // Don't show if onboarding is already completed (unless forced)
-  if (profile?.onboarding_completed && !forceShow) {
-    return null
-  }
-
-  // Don't show when minimized (unless forced)
-  if (isMinimized && !forceShow) {
-    return null
-  }
-  
-  // Don't show if user skipped (unless forced)
-  if (profile?.onboarding_status === 'skipped' && !forceShow) {
+  if (!shouldShowModal) {
     return null
   }
 
