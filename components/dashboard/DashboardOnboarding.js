@@ -70,18 +70,25 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     completedSteps: []
   })
 
-  // Initialize analytics on mount and check if user previously skipped
+  // Initialize analytics on mount and check onboarding status from profile
   useEffect(() => {
-    // Check if user previously skipped onboarding
-    const wasSkipped = localStorage.getItem('onboarding_skipped') === 'true'
+    // Check onboarding status from profile (single source of truth)
+    const wasSkipped = profile?.onboarding_status === 'skipped'
+    const wasMinimized = profile?.onboarding_status === 'minimized'
     const isIncomplete = profile && !profile?.onboarding_completed
     
     // Show onboarding if forced or if incomplete and not previously skipped
     if (forceShow) {
       setShowOnboarding(true)
       setIsMinimized(false) // Ensure it's not minimized when forced to show
-      localStorage.removeItem('onboarding_skipped')
+      // Update profile status to active when forced
+      if (profile?.onboarding_status === 'skipped' || profile?.onboarding_status === 'minimized') {
+        updateProfile({ onboarding_status: 'active' }).catch(console.error)
+      }
     } else if (wasSkipped && isIncomplete) {
+      setShowOnboarding(false)
+    } else if (wasMinimized) {
+      setIsMinimized(true)
       setShowOnboarding(false)
     }
     
@@ -108,7 +115,7 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
         )
       }
     }
-  }, [forceShow])
+  }, [forceShow, profile?.onboarding_status, profile?.onboarding_completed])
 
   // Define steps based on user role
   const getStepsForRole = (role) => {
@@ -191,7 +198,7 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     }
   }
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
     const currentStepData = steps[currentStep]
     
     // Track skip
@@ -209,9 +216,18 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
       'user_skipped'
     )
     
+    // Save skip status to database instead of localStorage
+    try {
+      await updateProfile({
+        onboarding_status: 'skipped',
+        onboarding_step: currentStep,
+        onboarding_last_step: currentStepData?.id
+      })
+    } catch (error) {
+      console.error('Error updating skip status:', error)
+    }
+    
     setShowOnboarding(false)
-    // Save that user skipped onboarding
-    localStorage.setItem('onboarding_skipped', 'true')
   }
 
   const handleComplete = async () => {
@@ -234,7 +250,8 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
         onboarding_completed: true,
         onboarding_completed_at: new Date().toISOString(),
         onboarding_data: JSON.stringify(onboardingData),
-        onboarding_progress_percentage: 100
+        onboarding_progress_percentage: 100,
+        onboarding_status: 'completed'
       })
       
       // Save to API
@@ -397,16 +414,18 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     return null
   }
   
-  // Don't show if onboarding is already completed
-  if (profile?.onboarding_completed) {
+  // Don't show if onboarding is already completed (unless forced)
+  if (profile?.onboarding_completed && !forceShow) {
     return null
   }
 
-  // DISABLED: Minimized floating button removed - using top banner instead
-  // When user minimizes onboarding, it now completely hides rather than showing a floating button
-  if (isMinimized) {
-    // Previously showed a floating "Complete Setup" button when minimized
-    // Now we rely on the top banner in the dashboard instead
+  // Don't show when minimized (unless forced)
+  if (isMinimized && !forceShow) {
+    return null
+  }
+  
+  // Don't show if user skipped (unless forced)
+  if (profile?.onboarding_status === 'skipped' && !forceShow) {
     return null
   }
 
@@ -437,7 +456,7 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setIsMinimized(true)
                     // Track minimize
                     const currentStepData = steps[currentStep]
@@ -445,6 +464,16 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
                       currentStepData?.id,
                       currentStep
                     )
+                    // Save minimized status to database
+                    try {
+                      await updateProfile({
+                        onboarding_status: 'minimized',
+                        onboarding_step: currentStep,
+                        onboarding_last_step: currentStepData?.id
+                      })
+                    } catch (error) {
+                      console.error('Error updating minimize status:', error)
+                    }
                   }}
                   className="text-white/80 hover:text-white transition-colors"
                   title="Minimize"

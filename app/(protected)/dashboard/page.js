@@ -207,8 +207,10 @@ export default function BarbershopDashboard() {
         </div>
       )}
       
-      {/* Show setup reminder banner if onboarding is incomplete */}
-      {effectiveProfile && !effectiveProfile.onboarding_completed && !forceShowOnboarding && (
+      {/* Show setup reminder banner if onboarding is incomplete or skipped */}
+      {effectiveProfile && !effectiveProfile.onboarding_completed && 
+       !forceShowOnboarding && 
+       (effectiveProfile.onboarding_status === 'skipped' || effectiveProfile.onboarding_status === 'minimized' || !effectiveProfile.onboarding_status) && (
         <div className="max-w-7xl mx-auto px-4 mb-6">
           <div className="bg-gradient-to-r from-brand-600 to-brand-700 rounded-lg p-4 text-white flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-3">
@@ -219,7 +221,10 @@ export default function BarbershopDashboard() {
               </div>
             </div>
             <button
-              onClick={() => setForceShowOnboarding(true)}
+              onClick={() => {
+                console.log('Resume Setup clicked - setting forceShowOnboarding to true')
+                setForceShowOnboarding(true)
+              }}
               className="bg-white dark:bg-dark-bg-elevated-1 text-brand-600 px-4 py-2 rounded-lg font-medium hover:bg-brand-50 transition-colors"
             >
               Resume Setup
@@ -239,14 +244,27 @@ export default function BarbershopDashboard() {
       
       {/* Show onboarding overlay if profile exists and onboarding is not complete */}
       {/* Or if user clicked Resume Setup, or if profile needs creation */}
-      {((effectiveProfile && effectiveProfile.onboarding_completed === false) || 
-        forceShowOnboarding || needsProfileCreation) && (
+      {(() => {
+        const shouldShowOnboarding = ((effectiveProfile && effectiveProfile.onboarding_completed === false) || 
+          forceShowOnboarding || needsProfileCreation);
+        
+        console.log('Onboarding render check:', {
+          shouldShow: shouldShowOnboarding,
+          forceShowOnboarding,
+          needsProfileCreation,
+          onboarding_completed: effectiveProfile?.onboarding_completed,
+          onboarding_status: effectiveProfile?.onboarding_status
+        });
+        
+        return shouldShowOnboarding;
+      })() && (
         <DashboardOnboarding 
           user={effectiveUser}
           profile={effectiveProfile}
           updateProfile={updateProfile}
           forceShow={forceShowOnboarding || needsProfileCreation}
           onComplete={() => {
+            console.log('Onboarding complete callback triggered')
             setForceShowOnboarding(false)
             // Show success celebration before refreshing
             setShowSuccessCelebration(true)
