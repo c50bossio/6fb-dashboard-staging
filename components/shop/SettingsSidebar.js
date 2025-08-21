@@ -90,6 +90,14 @@ const settingsGroups = [
       { id: 'integrations', name: 'Integrations', icon: ArrowPathIcon, path: '/shop/settings/integrations' },
       { id: 'backup', name: 'Backup & Export', icon: CloudArrowUpIcon, path: '/shop/settings/backup' }
     ]
+  },
+  {
+    id: 'system',
+    name: 'System & Maintenance',
+    icon: Cog6ToothIcon,
+    sections: [
+      { id: 'cache', name: 'Cache Management', icon: ArrowPathIcon, path: '/shop/settings/system/cache' }
+    ]
   }
 ]
 
