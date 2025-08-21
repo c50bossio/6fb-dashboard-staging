@@ -41,13 +41,7 @@ export default function BarbershopDashboard() {
     }
   }, [])
   
-  // Auto-clear forceShowOnboarding when onboarding is actually completed
-  useEffect(() => {
-    if (forceShowOnboarding && profile?.onboarding_completed === true) {
-      console.log('Auto-clearing forceShowOnboarding since onboarding is complete')
-      setForceShowOnboarding(false)
-    }
-  }, [forceShowOnboarding, profile?.onboarding_completed])
+  // Auto-clear logic moved to render cycle to prevent timing race condition
   
   // Enhanced event listener for Launch Onboarding button with debugging and fallbacks
   useEffect(() => {
@@ -263,19 +257,19 @@ export default function BarbershopDashboard() {
       {/* Show onboarding overlay if profile exists and onboarding is not complete */}
       {/* Or if user clicked Resume Setup, or if profile needs creation */}
       {(() => {
-        // Fix: Only show onboarding if explicitly incomplete OR forced by user action
+        // Synchronous auto-clear: only force show if onboarding is NOT completed
+        const shouldForceShow = forceShowOnboarding && effectiveProfile?.onboarding_completed !== true
         const isExplicitlyIncomplete = effectiveProfile && effectiveProfile.onboarding_completed === false
-        const isForced = forceShowOnboarding && effectiveProfile?.onboarding_completed !== true
-        const shouldShowOnboarding = isExplicitlyIncomplete || isForced || needsProfileCreation;
+        const shouldShowOnboarding = isExplicitlyIncomplete || shouldForceShow || needsProfileCreation;
         
         console.log('Onboarding render check:', {
           shouldShow: shouldShowOnboarding,
           forceShowOnboarding,
+          shouldForceShow,
           needsProfileCreation,
           onboarding_completed: effectiveProfile?.onboarding_completed,
           onboarding_status: effectiveProfile?.onboarding_status,
-          isExplicitlyIncomplete,
-          isForced
+          isExplicitlyIncomplete
         });
         
         return shouldShowOnboarding;
@@ -284,7 +278,7 @@ export default function BarbershopDashboard() {
           user={effectiveUser}
           profile={effectiveProfile}
           updateProfile={updateProfile}
-          forceShow={forceShowOnboarding || needsProfileCreation}
+          forceShow={shouldForceShow || needsProfileCreation}
           onComplete={() => {
             console.log('Onboarding complete callback triggered')
             setForceShowOnboarding(false)
