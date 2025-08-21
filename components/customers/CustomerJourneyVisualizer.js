@@ -242,17 +242,8 @@ export default function CustomerJourneyVisualizer({ customerId }) {
     const fetchJourneyData = async () => {
       try {
         setLoading(true)
-        const baseUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://your-api-domain.com'
-          : 'http://localhost:8001'
-
-        const token = await user.getIdToken()
-
         const response = await fetch(
-          `${baseUrl}/customer-journey/${customerId}?days_back=${selectedTimeframe}&include_events=true&include_touchpoints=true&include_milestones=true`,
-          {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }
+          `/api/customers/analytics/journey?barbershop_id=${profile.barbershop_id}&customer_id=${customerId}&days_back=${selectedTimeframe}&include_events=true&include_touchpoints=true&include_milestones=true`
         )
 
         if (!response.ok) {

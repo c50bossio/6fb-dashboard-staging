@@ -24,10 +24,11 @@ export async function GET(request) {
     const sortBy = searchParams.get('sort_by') || 'last_visit_at'
     const sortOrder = searchParams.get('sort_order') || 'desc'
 
+    // Handle both shop_id and barbershop_id for backward compatibility
     let query = supabase
       .from('customers')
       .select('*')
-      .eq('shop_id', barbershopId)
+      .or(`shop_id.eq.${barbershopId},barbershop_id.eq.${barbershopId}`)
       .eq('is_active', true)
       .range(offset, offset + limit - 1)
 
@@ -49,7 +50,7 @@ export async function GET(request) {
     let countQuery = supabase
       .from('customers')
       .select('id', { count: 'exact', head: true })
-      .eq('shop_id', barbershopId)
+      .or(`shop_id.eq.${barbershopId},barbershop_id.eq.${barbershopId}`)
       .eq('is_active', true)
 
     if (search) {
@@ -113,7 +114,7 @@ export async function POST(request) {
     let existingQuery = supabase
       .from('customers')
       .select('id, name, phone, email')
-      .eq('shop_id', barbershop_id)
+      .or(`shop_id.eq.${barbershop_id},barbershop_id.eq.${barbershop_id}`)
       .eq('is_active', true)
 
     if (phone && email) {
@@ -140,6 +141,7 @@ export async function POST(request) {
       .from('customers')
       .insert([{
         shop_id: barbershop_id,
+        barbershop_id: barbershop_id, // Set both for compatibility
         name,
         phone,
         email,

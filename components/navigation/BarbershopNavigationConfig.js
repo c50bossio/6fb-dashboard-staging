@@ -16,7 +16,9 @@ import {
   PresentationChartLineIcon,
   DevicePhoneMobileIcon,
   MegaphoneIcon,
-  LinkIcon
+  LinkIcon,
+  ExclamationTriangleIcon,
+  FunnelIcon
 } from '@heroicons/react/24/outline'
 
 export const BARBERSHOP_NAVIGATION = [
@@ -77,12 +79,30 @@ export const BARBERSHOP_NAVIGATION = [
     name: 'Customers',
     href: '/dashboard/customers',
     icon: UserGroupIcon,
-    description: 'Client profiles & history',
+    description: 'Advanced customer intelligence & management',
+    badge: 'AI',
     children: [
       {
-        name: 'All Customers',
-        href: '/dashboard/customers',
+        name: 'Intelligence Dashboard',
+        href: '/dashboard/customers?tab=intelligence',
+        icon: ChartBarIcon,
+        badge: 'AI'
+      },
+      {
+        name: 'Customer Directory',
+        href: '/dashboard/customers?tab=customers',
         icon: UserGroupIcon
+      },
+      {
+        name: 'Churn Monitor',
+        href: '/dashboard/customers?tab=churn',
+        icon: ExclamationTriangleIcon,
+        badge: 'Live'
+      },
+      {
+        name: 'Segment Builder',
+        href: '/dashboard/customers?tab=segments',
+        icon: FunnelIcon
       },
       {
         name: 'Loyalty Program',

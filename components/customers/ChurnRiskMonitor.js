@@ -357,23 +357,11 @@ export default function ChurnRiskMonitor() {
     const fetchChurnData = async () => {
       try {
         setLoading(true)
-        const baseUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://your-api-domain.com'
-          : 'http://localhost:8001'
-
-        const token = await user.getIdToken()
-
-        // Fetch risk customers and trends
+        // Fetch churn risk data from our Next.js API routes
         const [riskResponse, trendsResponse, summaryResponse] = await Promise.all([
-          fetch(`${baseUrl}/customer-churn-risk?${selectedRiskLevel !== 'all' ? `risk_level=${selectedRiskLevel}&` : ''}limit=50`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${baseUrl}/customer-analytics/churn-trends?time_period=month`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${baseUrl}/customer-analytics/churn-summary`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
+          fetch(`/api/customers/analytics/churn?barbershop_id=${profile.barbershop_id}&${selectedRiskLevel !== 'all' ? `risk_level=${selectedRiskLevel}&` : ''}limit=50`),
+          fetch(`/api/customers/analytics/insights?barbershop_id=${profile.barbershop_id}&type=churn_trends&time_period=month`),
+          fetch(`/api/customers/analytics/insights?barbershop_id=${profile.barbershop_id}&type=churn_summary`)
         ])
 
         if (riskResponse.ok) {
@@ -412,15 +400,10 @@ export default function ChurnRiskMonitor() {
   // Handle dismiss alert
   const handleDismissAlert = async (customerId) => {
     try {
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://your-api-domain.com'
-        : 'http://localhost:8001'
-
-      const token = await user.getIdToken()
-
-      await fetch(`${baseUrl}/customer-churn-risk/${customerId}/dismiss`, {
+      await fetch(`/api/customers/analytics/churn/${customerId}/dismiss`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ barbershop_id: profile.barbershop_id })
       })
 
       // Remove from local state

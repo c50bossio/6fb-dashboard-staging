@@ -142,29 +142,13 @@ export default function CustomerIntelligenceDashboard() {
     const fetchAnalyticsData = async () => {
       try {
         setLoading(true)
-        const baseUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://your-api-domain.com'
-          : 'http://localhost:8001'
-
-        const token = await user.getIdToken()
-
-        // Fetch all analytics data in parallel
+        // Fetch customer analytics data from our Next.js API routes
         const [healthResponse, clvResponse, churnResponse, segmentsResponse, insightsResponse] = await Promise.all([
-          fetch(`${baseUrl}/customer-health-scores?limit=50`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${baseUrl}/customer-clv?limit=50&sort_by=total_clv&sort_desc=true`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${baseUrl}/customer-churn-risk?limit=20&min_probability=0.3`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${baseUrl}/customer-segments`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${baseUrl}/customer-analytics/insights?insight_type=summary&time_period=${selectedTimeframe}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
+          fetch(`/api/customers/analytics/health-scores?barbershop_id=${profile.barbershop_id}&limit=50`),
+          fetch(`/api/customers/analytics/clv?barbershop_id=${profile.barbershop_id}&limit=50&sort_by=total_clv&sort_desc=true`),
+          fetch(`/api/customers/analytics/churn?barbershop_id=${profile.barbershop_id}&limit=20&min_probability=0.3`),
+          fetch(`/api/customers/analytics/segments?barbershop_id=${profile.barbershop_id}`),
+          fetch(`/api/customers/analytics/insights?barbershop_id=${profile.barbershop_id}&insight_type=summary&time_period=${selectedTimeframe}`)
         ])
 
         if (!healthResponse.ok || !clvResponse.ok || !churnResponse.ok || !segmentsResponse.ok) {
