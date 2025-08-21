@@ -5,6 +5,8 @@
 
 const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
+const path = require('path')
+require('dotenv').config()
 
 async function applyPerformanceIndexes() {
   console.log('🚀 Applying Performance Indexes to Supabase...')
@@ -15,7 +17,7 @@ async function applyPerformanceIndexes() {
   )
 
   try {
-    const sqlContent = fs.readFileSync('./database/add-performance-indexes.sql', 'utf8')
+    const sqlContent = fs.readFileSync(path.join(__dirname, '../database/migrations/006_performance_indexes.sql'), 'utf8')
     
     const sqlCommands = sqlContent
       .split(';')

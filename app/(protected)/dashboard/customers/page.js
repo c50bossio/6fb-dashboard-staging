@@ -23,7 +23,6 @@ import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { 
-  CustomerIntelligenceDashboard, 
   CustomerJourneyVisualizer, 
   SegmentBuilder, 
   CustomerProfileEnhanced, 
@@ -32,6 +31,7 @@ import {
   BadgeProgress,
   BadgeLeaderboard
 } from '../../../../components/customers'
+import CustomerIntelligenceDashboardOptimized from '../../../../components/customers/CustomerIntelligenceDashboardOptimized'
 import SmartRebookButton from '../../../../components/customers/SmartRebookButton'
 import LoyaltyPointsBadge, { QuickRedeemButton } from '../../../../components/customers/LoyaltyPointsBadge'
 import AdvancedSearchFilter from '../../../../components/customers/AdvancedSearchFilter'
@@ -280,7 +280,7 @@ export default function CustomersPage() {
       id: 'intelligence',
       label: 'Intelligence Dashboard',
       icon: ChartBarIcon,
-      component: <CustomerIntelligenceDashboard />
+      component: <CustomerIntelligenceDashboardOptimized />
     },
     {
       id: 'customers',

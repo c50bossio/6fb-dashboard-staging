@@ -21,20 +21,23 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
 
 export default function ShopWebsiteCustomization() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('general')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [previewMode, setPreviewMode] = useState('desktop')
+  const [shopId, setShopId] = useState(null)
+  const [barberPages, setBarberPages] = useState([])
   
   const [settings, setSettings] = useState({
-    name: 'Elite Cuts Barbershop',
-    tagline: 'Where Style Meets Precision',
-    description: 'Premier barbershop offering classic cuts and modern styles',
-    slug: 'elite-cuts',
+    name: '',
+    tagline: '',
+    description: '',
+    slug: '',
     
     phone: '(555) 123-4567',
     email: 'info@elitecuts.com',
@@ -84,33 +87,6 @@ export default function ShopWebsiteCustomization() {
     barber_page_template: 'profile',
     booking_widget_position: 'bottom-right',
     
-    barber_pages: [
-      {
-        id: '1',
-        name: 'John Martinez',
-        slug: 'john-martinez',
-        approved: true,
-        published: true,
-        custom_branding: false
-      },
-      {
-        id: '2',
-        name: 'Mike Johnson',
-        slug: 'mike-johnson',
-        approved: true,
-        published: true,
-        custom_branding: false
-      },
-      {
-        id: '3',
-        name: 'Chris Williams',
-        slug: 'chris-williams',
-        approved: false,
-        published: false,
-        custom_branding: true
-      }
-    ],
-    
     instagram_url: 'https://instagram.com/elitecuts',
     facebook_url: 'https://facebook.com/elitecuts',
     google_business_url: 'https://g.page/elitecuts',
@@ -153,23 +129,105 @@ export default function ShopWebsiteCustomization() {
     'Poppins', 'Raleway', 'Playfair Display', 'Bebas Neue'
   ]
 
+  // Fetch shop data and website settings on mount
+  useEffect(() => {
+    const fetchShopData = async () => {
+      if (!user) return
+      
+      try {
+        setLoading(true)
+        const supabase = createClient()
+        
+        // Get user's barbershop
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('barbershop_id')
+          .eq('id', user.id)
+          .single()
+        
+        if (profileError || !profile?.barbershop_id) {
+          setMessage({ type: 'error', text: 'No barbershop associated with your account' })
+          setLoading(false)
+          return
+        }
+        
+        setShopId(profile.barbershop_id)
+        
+        // Fetch website settings
+        const response = await fetch(`/api/shop/${profile.barbershop_id}/website`)
+        if (response.ok) {
+          const { data } = await response.json()
+          setSettings(data)
+        }
+        
+        // Fetch barber pages for this shop
+        const { data: barbers, error: barbersError } = await supabase
+          .from('barber_page_customization')
+          .select(`
+            *,
+            user:users(id, full_name)
+          `)
+          .eq('barbershop_id', profile.barbershop_id)
+          .order('created_at', { ascending: false })
+        
+        if (barbers && !barbersError) {
+          setBarberPages(barbers.map(barber => ({
+            id: barber.user_id,
+            name: barber.user?.full_name || barber.display_name,
+            slug: barber.slug,
+            approved: barber.page_approved,
+            published: barber.is_published,
+            custom_branding: barber.can_override_branding
+          })))
+        }
+        
+      } catch (error) {
+        console.error('Error fetching shop data:', error)
+        setMessage({ type: 'error', text: 'Failed to load website settings' })
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchShopData()
+  }, [user])
+
   const handleSave = async () => {
+    if (!shopId) {
+      setMessage({ type: 'error', text: 'Shop ID not found' })
+      return
+    }
+    
     setSaving(true)
     setMessage({ type: '', text: '' })
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      setMessage({ 
-        type: 'success', 
-        text: 'Website settings saved successfully!' 
+      const response = await fetch(`/api/shop/${shopId}/website`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings)
       })
+      
+      if (response.ok) {
+        const { data } = await response.json()
+        setSettings(data)
+        setMessage({ 
+          type: 'success', 
+          text: 'Website settings saved successfully!' 
+        })
+      } else {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to save')
+      }
       
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (error) {
+      console.error('Save error:', error)
       setMessage({ 
         type: 'error', 
-        text: 'Failed to save settings. Please try again.' 
+        text: error.message || 'Failed to save settings. Please try again.' 
       })
     } finally {
       setSaving(false)
@@ -177,14 +235,28 @@ export default function ShopWebsiteCustomization() {
   }
 
   const handlePublish = async () => {
+    if (!shopId) return
+    
     setSaving(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setSettings({ ...settings, is_published: !settings.is_published })
-      setMessage({ 
-        type: 'success', 
-        text: settings.is_published ? 'Website unpublished' : 'Website published successfully!' 
+      const newPublishState = !settings.is_published
+      const response = await fetch(`/api/shop/${shopId}/website`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ...settings, is_published: newPublishState })
       })
+      
+      if (response.ok) {
+        setSettings({ ...settings, is_published: newPublishState })
+        setMessage({ 
+          type: 'success', 
+          text: newPublishState ? 'Website published successfully!' : 'Website unpublished' 
+        })
+      } else {
+        throw new Error('Failed to update publish status')
+      }
       setTimeout(() => setMessage({ type: '', text: '' }), 3000)
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to update publish status' })
@@ -192,15 +264,43 @@ export default function ShopWebsiteCustomization() {
       setSaving(false)
     }
   }
-
-  const handleBarberApproval = (barberId, approved) => {
-    setSettings({
-      ...settings,
-      barber_pages: settings.barber_pages.map(barber =>
-        barber.id === barberId ? { ...barber, approved, published: approved } : barber
-      )
-    })
+  
+  const handleBarberPageApproval = async (barberId, approve) => {
+    try {
+      const response = await fetch(`/api/barber/${barberId}/page`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          action: approve ? 'approve' : 'reject',
+          notes: approve ? 'Approved by shop owner' : 'Changes requested'
+        })
+      })
+      
+      if (response.ok) {
+        setBarberPages(barberPages.map(barber =>
+          barber.id === barberId 
+            ? { ...barber, approved: approve, published: approve } 
+            : barber
+        ))
+        setMessage({ 
+          type: 'success', 
+          text: approve ? 'Barber page approved' : 'Approval revoked' 
+        })
+        setTimeout(() => setMessage({ type: '', text: '' }), 3000)
+      } else {
+        throw new Error('Failed to update approval status')
+      }
+    } catch (error) {
+      console.error('Approval error:', error)
+      setMessage({ 
+        type: 'error', 
+        text: 'Failed to update approval status' 
+      })
+    }
   }
+
 
   const updateBusinessHours = (day, field, value) => {
     setSettings({
@@ -213,6 +313,17 @@ export default function ShopWebsiteCustomization() {
         }
       }
     })
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading website settings...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -947,31 +1058,32 @@ export default function ShopWebsiteCustomization() {
               </div>
 
               <div className="space-y-4">
-                {settings.barber_pages.map((barber) => (
-                  <div key={barber.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                          <UsersIcon className="h-6 w-6 text-gray-500" />
+                {barberPages.length > 0 ? (
+                  barberPages.map((barber) => (
+                    <div key={barber.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                            <UsersIcon className="h-6 w-6 text-gray-500" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-gray-900">{barber.name}</h3>
+                            <p className="text-sm text-gray-500">
+                              6fb.com/shop/{settings.slug}/barber/{barber.slug}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-medium text-gray-900">{barber.name}</h3>
-                          <p className="text-sm text-gray-500">
-                            6fb.com/shop/{settings.slug}/barber/{barber.slug}
-                          </p>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center space-x-4">
-                        {barber.custom_branding && (
-                          <span className="px-2 py-1 bg-gold-100 text-gold-700 text-xs font-medium rounded-full">
-                            Custom Branding
-                          </span>
-                        )}
+                        <div className="flex items-center space-x-4">
+                          {barber.custom_branding && (
+                            <span className="px-2 py-1 bg-gold-100 text-gold-700 text-xs font-medium rounded-full">
+                              Custom Branding
+                            </span>
+                          )}
 
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => handleBarberApproval(barber.id, !barber.approved)}
+                            onClick={() => handleBarberPageApproval(barber.id, !barber.approved)}
                             className={`px-3 py-1 text-sm font-medium rounded-lg ${
                               barber.approved
                                 ? 'bg-moss-100 text-moss-800 hover:bg-green-200'
@@ -999,7 +1111,14 @@ export default function ShopWebsiteCustomization() {
                       </div>
                     )}
                   </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="py-8 text-center text-gray-500">
+                    <UsersIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                    <p>No barber pages created yet</p>
+                    <p className="text-sm mt-1">Barbers can create their pages from their dashboard</p>
+                  </div>
+                )}
               </div>
             </div>
 

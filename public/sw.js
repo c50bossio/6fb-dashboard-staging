@@ -93,11 +93,14 @@ self.addEventListener('fetch', (event) => {
     '/api/supabase/',
     '/api/payments/',  // Skip all payment-related APIs
     '/api/stripe/',    // Skip Stripe-related APIs
-    '/api/onboarding/' // Skip onboarding APIs
+    '/api/onboarding/', // Skip onboarding APIs
+    '/dashboard'       // Skip dashboard to prevent modal issues
   ];
   
   if (skipPaths.some(path => url.pathname.startsWith(path))) {
-    return; // Let the browser handle these requests directly
+    // CRITICAL FIX: Must return the fetch request, not just return void
+    event.respondWith(fetch(request));
+    return;
   }
 
   // For other API routes, use network-first but don't fail if network is down
