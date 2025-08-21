@@ -34,21 +34,59 @@ export default function BarbershopDashboard() {
     }
   }, [])
   
-  // Add event listener for Launch Onboarding button
+  // Enhanced event listener for Launch Onboarding button with debugging and fallbacks
   useEffect(() => {
     const handleLaunchOnboarding = (event) => {
-      console.log('Launch onboarding event received:', event.detail)
+      console.log('🎯 Launch onboarding event received:', {
+        detail: event.detail,
+        timestamp: new Date().toISOString(),
+        currentState: forceShowOnboarding
+      })
+      
       setForceShowOnboarding(true)
+      
+      // Clear any existing URL parameters that might interfere
+      if (typeof window !== 'undefined') {
+        const currentUrl = new URL(window.location)
+        currentUrl.searchParams.delete('onboarding')
+        window.history.replaceState({}, '', currentUrl.toString())
+      }
+      
+      // Confirm the event was processed successfully
+      console.log('✅ Onboarding launch event processed successfully')
     }
 
+    // Enhanced error handling for event listener setup
     if (typeof window !== 'undefined') {
-      window.addEventListener('launchOnboarding', handleLaunchOnboarding)
-      
-      return () => {
-        window.removeEventListener('launchOnboarding', handleLaunchOnboarding)
+      try {
+        // Listen for the primary event
+        window.addEventListener('launchOnboarding', handleLaunchOnboarding, { 
+          passive: false,
+          capture: true // Ensure we catch the event during capture phase
+        })
+        
+        // Also listen on document in case window events don't work
+        document.addEventListener('launchOnboarding', handleLaunchOnboarding, {
+          passive: false,
+          capture: true
+        })
+        
+        console.log('📡 Enhanced onboarding event listeners registered')
+        
+        return () => {
+          try {
+            window.removeEventListener('launchOnboarding', handleLaunchOnboarding, { capture: true })
+            document.removeEventListener('launchOnboarding', handleLaunchOnboarding, { capture: true })
+            console.log('🧹 Onboarding event listeners cleaned up')
+          } catch (error) {
+            console.warn('⚠️ Error cleaning up onboarding event listeners:', error)
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error setting up onboarding event listeners:', error)
       }
     }
-  }, [])
+  }, [forceShowOnboarding])
   
   console.log('Dashboard state:', {
     hasUser: !!user,

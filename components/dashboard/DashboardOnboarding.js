@@ -419,7 +419,10 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
         <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
 
         {/* Modal */}
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div 
+          data-onboarding-modal="true" 
+          className="relative bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+        >
           {/* Header */}
           <div className="bg-gradient-to-r from-brand-600 to-brand-700 text-white p-6">
             <div className="flex items-center justify-between mb-4">

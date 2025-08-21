@@ -670,10 +670,43 @@ export default function UnifiedDashboard({ user, profile }) {
                     <div className="flex flex-wrap gap-3">
                       <button
                         onClick={() => {
-                          // Dispatch custom event to launch onboarding
-                          window.dispatchEvent(new CustomEvent('launchOnboarding', { 
-                            detail: { from: 'dashboard_welcome_prompt' } 
-                          }))
+                          try {
+                            // Primary: Dispatch custom event to launch onboarding
+                            console.log('Continue Setup button clicked - dispatching launchOnboarding event')
+                            window.dispatchEvent(new CustomEvent('launchOnboarding', { 
+                              detail: { from: 'dashboard_welcome_prompt', timestamp: Date.now() },
+                              bubbles: true // Ensure event bubbles up
+                            }))
+                            
+                            // Fallback 1: Direct navigation after short delay if event fails
+                            setTimeout(() => {
+                              const onboardingModal = document.querySelector('[data-onboarding-modal]')
+                              if (!onboardingModal || !onboardingModal.style.display || onboardingModal.style.display === 'none') {
+                                console.log('Onboarding modal not detected - using navigation fallback')
+                                router?.push('/onboarding') || window.location.assign('/onboarding')
+                              }
+                            }, 1000)
+                            
+                            // Fallback 2: Force URL parameter approach
+                            setTimeout(() => {
+                              if (typeof window !== 'undefined') {
+                                const urlParams = new URLSearchParams(window.location.search)
+                                if (!urlParams.get('onboarding')) {
+                                  console.log('Using URL parameter fallback for onboarding')
+                                  const currentUrl = new URL(window.location)
+                                  currentUrl.searchParams.set('onboarding', 'true')
+                                  window.location.href = currentUrl.toString()
+                                }
+                              }
+                            }, 2000)
+                            
+                          } catch (error) {
+                            console.error('Continue Setup button error:', error)
+                            // Ultimate fallback: direct navigation
+                            if (typeof window !== 'undefined') {
+                              window.location.assign('/onboarding')
+                            }
+                          }
                         }}
                         className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
                       >
