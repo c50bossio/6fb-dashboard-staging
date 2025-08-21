@@ -11,6 +11,12 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Shop ID is required' }, { status: 400 })
     }
 
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
     const { data: barbershop, error: shopError } = await supabase
       .from('barbershops')
       .select(`
@@ -21,10 +27,14 @@ export async function GET(request, { params }) {
         customer_testimonials(*)
       `)
       .eq('id', shopId)
+      .eq('owner_id', user.id)  // Ensure user owns this barbershop
       .single()
 
     if (shopError) {
       console.error('Error fetching barbershop:', shopError)
+      if (shopError.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Barbershop not found or access denied' }, { status: 403 })
+      }
       return NextResponse.json({ error: 'Barbershop not found' }, { status: 404 })
     }
 
@@ -102,6 +112,24 @@ export async function PUT(request, { params }) {
 
     if (!shopId) {
       return NextResponse.json({ error: 'Shop ID is required' }, { status: 400 })
+    }
+
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
+    // Verify user owns this barbershop
+    const { data: barbershop, error: verifyError } = await supabase
+      .from('barbershops')
+      .select('id')
+      .eq('id', shopId)
+      .eq('owner_id', user.id)
+      .single()
+
+    if (verifyError || !barbershop) {
+      return NextResponse.json({ error: 'Barbershop not found or access denied' }, { status: 403 })
     }
 
     // }
@@ -220,6 +248,24 @@ export async function DELETE(request, { params }) {
 
     if (!shopId) {
       return NextResponse.json({ error: 'Shop ID is required' }, { status: 400 })
+    }
+
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
+    // Verify user owns this barbershop
+    const { data: barbershop, error: verifyError } = await supabase
+      .from('barbershops')
+      .select('id')
+      .eq('id', shopId)
+      .eq('owner_id', user.id)
+      .single()
+
+    if (verifyError || !barbershop) {
+      return NextResponse.json({ error: 'Barbershop not found or access denied' }, { status: 403 })
     }
 
     const defaultSettings = {

@@ -251,14 +251,14 @@ app = FastAPI(
 # 🚨 Initialize Sentry error monitoring for production
 initialize_sentry(app)
 if sentry_service.initialized:
-# Removed: print("✅ Sentry error monitoring initialized")
+    pass  # Removed: print("✅ Sentry error monitoring initialized")
     # Add startup breadcrumb
     add_breadcrumb("FastAPI application started", category="startup", level="info")
     # Test Sentry in development
     if os.getenv('NODE_ENV') == 'development' and os.getenv('SENTRY_TEST_ON_START'):
         sentry_service.test_sentry()
 else:
-# Removed: print("⚠️ Sentry not configured - error monitoring disabled")
+    pass  # Sentry not configured
 
 # 🧠 CRITICAL: Memory management middleware to fix OAuth callback loops
 @app.middleware("http")
@@ -357,7 +357,7 @@ async def track_metrics(request, call_next):
     # Log memory pressure warnings for auth endpoints
     if endpoint.startswith('/auth') or endpoint.startswith('/api/auth'):
         if memory_stats.memory_pressure > 0.8:
-# Removed: print(f"⚠️ High memory pressure during auth request: {memory_stats.memory_pressure:.1%}")
+            pass  # Removed: print(f"⚠️ High memory pressure during auth request: {memory_stats.memory_pressure:.1%}")
     
     return response
 
@@ -422,7 +422,7 @@ def get_database_config():
     supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
     
     if supabase_url and supabase_key:
-# Removed: print(f"🔄 PHASE 2: Configuring FastAPI to use Supabase data via API proxy")
+        pass  # Removed: print(f"🔄 PHASE 2: Configuring FastAPI to use Supabase data via API proxy")
 # Removed: print(f"🔗 Supabase URL: {supabase_url}")
 # Removed: print(f"📡 Strategy: FastAPI → Next.js API → Supabase (proven working path)")
         
@@ -745,7 +745,7 @@ async def startup_event():
     # PHASE 2: Configure API proxy or database connection
     if db_config["type"] == "api_proxy":
         try:
-# Removed: print("🔄 PHASE 2: Testing Next.js API connectivity for Supabase proxy...")
+            pass  # Removed: print("🔄 PHASE 2: Testing Next.js API connectivity for Supabase proxy...")
             
             # Test connection to Next.js APIs that connect to Supabase
             import httpx
@@ -766,7 +766,7 @@ async def startup_event():
                     raise Exception(f"API test failed with status {response.status_code}")
             
         except Exception as e:
-# Removed: print(f"❌ PHASE 2: API proxy test failed: {e}")
+            pass  # Removed: print(f"❌ PHASE 2: API proxy test failed: {e}")
 # Removed: print("🔄 Falling back to SQLite for this session...")
             
             # Fallback to SQLite if API proxy fails
@@ -787,7 +787,7 @@ async def startup_event():
         init_db()  # Only for SQLite - Supabase handles schema via migrations
 # Removed: print("✅ SQLite database schema initialized")
     else:
-# Removed: print("✅ Using existing Supabase data via Next.js API proxy")
+        pass  # Removed: print("✅ Using existing Supabase data via Next.js API proxy")
     
     # Start notification queue processing
     asyncio.create_task(notification_queue.start_worker())
@@ -1012,12 +1012,12 @@ async def login(user: UserLogin):
     
 # Removed: print(f"DB USER FOUND: {db_user is not None}")
     if db_user:
-# Removed: print(f"DB USER: id={db_user['id']}, email={db_user['email']}")
+        pass  # Removed: print(f"DB USER: id={db_user['id']}, email={db_user['email']}")
         password_verified = verify_password(user.password, db_user["password_hash"])
 # Removed: print(f"Authentication result: {'SUCCESS' if password_verified else 'FAILED'}")
     
     if not db_user or not verify_password(user.password, db_user["password_hash"]):
-# Removed: print("LOGIN FAILED: Invalid credentials")
+        pass  # Removed: print("LOGIN FAILED: Invalid credentials")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
@@ -1196,10 +1196,10 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
                     }
                 }
             else:
-# Removed: print(f"⚠️ PHASE 3: Analytics API failed, using fallback: {analytics_result.get('error')}")
+                pass  # Removed: print(f"⚠️ PHASE 3: Analytics API failed, using fallback: {analytics_result.get('error')}")
                 
         except Exception as e:
-# Removed: print(f"❌ PHASE 3: Dashboard stats conversion failed: {e}")
+            pass  # Removed: print(f"❌ PHASE 3: Dashboard stats conversion failed: {e}")
     
     # Fallback to original mock data for backward compatibility
     return {
@@ -1271,10 +1271,10 @@ async def get_recent_bookings(current_user: dict = Depends(get_current_user)):
                 return recent_bookings
                 
             else:
-# Removed: print(f"⚠️ PHASE 3: Appointments API failed, using fallback: {appointments_result.get('error')}")
+                pass  # Removed: print(f"⚠️ PHASE 3: Appointments API failed, using fallback: {appointments_result.get('error')}")
                 
         except Exception as e:
-# Removed: print(f"❌ PHASE 3: Recent bookings conversion failed: {e}")
+            pass  # Removed: print(f"❌ PHASE 3: Recent bookings conversion failed: {e}")
     
     # Fallback to original mock data for backward compatibility
     return [
@@ -1954,7 +1954,7 @@ async def enhanced_ai_chat(request: dict):
         }
         
     except Exception as e:
-# Removed: print(f"❌ AI Orchestrator error: {e}")
+        pass  # Removed: print(f"❌ AI Orchestrator error: {e}")
         # Return fallback response
         return {
             "success": False,
@@ -2013,7 +2013,7 @@ async def get_agent_system_status():
         }
         
     except Exception as e:
-# Removed: print(f"❌ Agent system status error: {e}")
+        pass  # Removed: print(f"❌ Agent system status error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2084,7 +2084,7 @@ async def batch_process_messages(request: dict):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Batch processing error: {e}")
+        pass  # Removed: print(f"❌ Batch processing error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -2129,7 +2129,7 @@ async def get_parallel_processing_metrics():
         }
         
     except Exception as e:
-# Removed: print(f"❌ Parallel metrics error: {e}")
+        pass  # Removed: print(f"❌ Parallel metrics error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -2149,7 +2149,7 @@ async def get_ai_cache_performance():
         }
         
     except Exception as e:
-# Removed: print(f"❌ AI cache performance error: {e}")
+        pass  # Removed: print(f"❌ AI cache performance error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2179,7 +2179,7 @@ async def clear_ai_cache(request: dict = {}):
         }
         
     except Exception as e:
-# Removed: print(f"❌ AI cache clear error: {e}")
+        pass  # Removed: print(f"❌ AI cache clear error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2200,7 +2200,7 @@ async def warm_ai_cache():
         }
         
     except Exception as e:
-# Removed: print(f"❌ AI cache warming error: {e}")
+        pass  # Removed: print(f"❌ AI cache warming error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2221,7 +2221,7 @@ async def get_ai_cache_health():
         }
         
     except Exception as e:
-# Removed: print(f"❌ AI cache health check error: {e}")
+        pass  # Removed: print(f"❌ AI cache health check error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2269,7 +2269,7 @@ async def get_database_pool_statistics():
         }
         
     except Exception as e:
-# Removed: print(f"❌ Database pool stats error: {e}")
+        pass  # Removed: print(f"❌ Database pool stats error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2322,7 +2322,7 @@ async def optimize_database_cache(request: dict = {}):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Database cache optimization error: {e}")
+        pass  # Removed: print(f"❌ Database cache optimization error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -2348,7 +2348,7 @@ async def get_ai_insights(limit: int = 10, type: str = None):
         }
         
     except Exception as e:
-# Removed: print(f"❌ AI Insights error: {e}")
+        pass  # Removed: print(f"❌ AI Insights error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2396,7 +2396,7 @@ async def generate_ai_insights(request: dict):
         }
         
     except Exception as e:
-# Removed: print(f"❌ AI Insights generation error: {e}")
+        pass  # Removed: print(f"❌ AI Insights generation error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2419,7 +2419,7 @@ async def dismiss_ai_insight(insight_id: str):
         }
         
     except Exception as e:
-# Removed: print(f"❌ AI Insight dismissal error: {e}")
+        pass  # Removed: print(f"❌ AI Insight dismissal error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2458,7 +2458,7 @@ async def get_predictive_analytics(
         }
         
     except Exception as e:
-# Removed: print(f"❌ Predictive Analytics error: {e}")
+        pass  # Removed: print(f"❌ Predictive Analytics error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2548,7 +2548,7 @@ async def generate_predictive_forecast(request: dict):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Predictive Forecast generation error: {e}")
+        pass  # Removed: print(f"❌ Predictive Forecast generation error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2572,7 +2572,7 @@ async def get_predictive_dashboard(barbershop_id: str):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Predictive Dashboard error: {e}")
+        pass  # Removed: print(f"❌ Predictive Dashboard error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2648,7 +2648,7 @@ async def generate_business_recommendations(request: BusinessRecommendationsRequ
         }
         
     except Exception as e:
-# Removed: print(f"❌ Business recommendations error: {e}")
+        pass  # Removed: print(f"❌ Business recommendations error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2689,7 +2689,7 @@ async def get_recommendations_engine_status():
         }
         
     except Exception as e:
-# Removed: print(f"❌ Engine status error: {e}")
+        pass  # Removed: print(f"❌ Engine status error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2719,7 +2719,7 @@ async def track_recommendation_implementation(
         }
         
     except Exception as e:
-# Removed: print(f"❌ Track recommendation error: {e}")
+        pass  # Removed: print(f"❌ Track recommendation error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2756,7 +2756,7 @@ async def get_realtime_performance_metrics():
         }
         
     except Exception as e:
-# Removed: print(f"❌ Real-time metrics error: {e}")
+        pass  # Removed: print(f"❌ Real-time metrics error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2809,7 +2809,7 @@ async def get_system_performance_report():
         }
         
     except Exception as e:
-# Removed: print(f"❌ Performance report error: {e}")
+        pass  # Removed: print(f"❌ Performance report error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2843,7 +2843,7 @@ async def get_monitoring_system_status():
         }
         
     except Exception as e:
-# Removed: print(f"❌ Monitoring status error: {e}")
+        pass  # Removed: print(f"❌ Monitoring status error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2895,7 +2895,7 @@ async def record_performance_metric(request: PerformanceMetricRequest):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Record metric error: {e}")
+        pass  # Removed: print(f"❌ Record metric error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2937,7 +2937,7 @@ async def get_component_health(component_name: str):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Component health error: {e}")
+        pass  # Removed: print(f"❌ Component health error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -2996,7 +2996,7 @@ async def get_enhanced_knowledge_status():
         }
         
     except Exception as e:
-# Removed: print(f"❌ Enhanced knowledge status error: {e}")
+        pass  # Removed: print(f"❌ Enhanced knowledge status error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3074,7 +3074,7 @@ async def search_enhanced_knowledge(request: KnowledgeSearchRequest):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Enhanced knowledge search error: {e}")
+        pass  # Removed: print(f"❌ Enhanced knowledge search error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3110,7 +3110,7 @@ async def get_enhanced_contextual_insights(request: KnowledgeInsightsRequest):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Enhanced contextual insights error: {e}")
+        pass  # Removed: print(f"❌ Enhanced contextual insights error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3168,7 +3168,7 @@ async def store_enhanced_knowledge(request: StoreKnowledgeRequest):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Store enhanced knowledge error: {e}")
+        pass  # Removed: print(f"❌ Store enhanced knowledge error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3264,7 +3264,7 @@ async def perform_enhanced_contextual_search(request: Dict[str, Any]):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Enhanced contextual search error: {e}")
+        pass  # Removed: print(f"❌ Enhanced contextual search error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3313,7 +3313,7 @@ async def generate_enhanced_business_recommendations(request: EnhancedRecommenda
         }
         
     except Exception as e:
-# Removed: print(f"❌ Enhanced recommendations error: {e}")
+        pass  # Removed: print(f"❌ Enhanced recommendations error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3339,7 +3339,7 @@ async def get_recommendations_status(barbershop_id: str):
         }
         
     except Exception as e:
-# Removed: print(f"❌ Recommendations status error: {e}")
+        pass  # Removed: print(f"❌ Recommendations status error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3398,9 +3398,9 @@ async def get_live_metrics(
                         "timestamp": datetime.now().isoformat()
                     }
                 else:
-# Removed: print(f"⚠️ PHASE 3: Supabase analytics proxy failed: {result.get('error')}")
+                    pass  # Removed: print(f"⚠️ PHASE 3: Supabase analytics proxy failed: {result.get('error')}")
             except Exception as proxy_error:
-# Removed: print(f"❌ PHASE 3: Analytics conversion failed: {proxy_error}")
+                pass  # Removed: print(f"❌ PHASE 3: Analytics conversion failed: {proxy_error}")
         
         # Fallback to original error for unavailable service
         if not ANALYTICS_SERVICE_AVAILABLE:
@@ -3532,7 +3532,7 @@ YEAR-TO-DATE ANALYTICS COMPARISON
             }
     
     except Exception as e:
-# Removed: print(f"❌ Analytics metrics error: {e}")
+        pass  # Removed: print(f"❌ Analytics metrics error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3574,7 +3574,7 @@ async def refresh_analytics(request: dict):
             }
     
     except Exception as e:
-# Removed: print(f"❌ Analytics refresh error: {e}")
+        pass  # Removed: print(f"❌ Analytics refresh error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3598,7 +3598,7 @@ async def get_analytics_cache_status():
         }
     
     except Exception as e:
-# Removed: print(f"❌ Analytics cache status error: {e}")
+        pass  # Removed: print(f"❌ Analytics cache status error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3662,7 +3662,7 @@ async def get_unified_business_metrics(
             }
     
     except Exception as e:
-# Removed: print(f"❌ Unified business data error: {e}")
+        pass  # Removed: print(f"❌ Unified business data error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3717,7 +3717,7 @@ async def get_unified_business_metrics_post(request: dict):
             }
     
     except Exception as e:
-# Removed: print(f"❌ Unified business data POST error: {e}")
+        pass  # Removed: print(f"❌ Unified business data POST error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3760,7 +3760,7 @@ async def refresh_unified_business_data(request: dict):
             }
     
     except Exception as e:
-# Removed: print(f"❌ Unified business data refresh error: {e}")
+        pass  # Removed: print(f"❌ Unified business data refresh error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3784,7 +3784,7 @@ async def get_unified_business_data_cache_status():
         }
     
     except Exception as e:
-# Removed: print(f"❌ Unified business data cache status error: {e}")
+        pass  # Removed: print(f"❌ Unified business data cache status error: {e}")
         return {
             "success": False,
             "error": str(e)
@@ -3831,7 +3831,7 @@ async def enhanced_ai_chat(request: dict):
         return response
     
     except Exception as e:
-# Removed: print(f"❌ Enhanced AI chat error: {e}")
+        pass  # Removed: print(f"❌ Enhanced AI chat error: {e}")
         return {
             "success": False,
             "error": str(e),
@@ -3969,9 +3969,9 @@ try:
         app.include_router(payments_router)
 # Removed: print("✅ Payment router loaded successfully")
     except ImportError as e:
-# Removed: print(f"⚠️ Payment router not available: {e}")
+        pass  # Removed: print(f"⚠️ Payment router not available: {e}")
     except Exception as e:
-# Removed: print(f"❌ Error loading payment router: {e}")
+        pass  # Removed: print(f"❌ Error loading payment router: {e}")
 # Removed: print("✅ Notion Integration System included at /notion/*")
     NOTION_INTEGRATION_AVAILABLE = True
 except ImportError as e:

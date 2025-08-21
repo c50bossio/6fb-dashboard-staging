@@ -64,11 +64,38 @@ export default function WebsiteSettingsPage() {
     seo_keywords: ''
   })
 
-  const [shopId, setShopId] = useState('demo-barbershop')
+  const [shopId, setShopId] = useState(null)
   
   useEffect(() => {
-    setShopId('demo-barbershop')
-  }, [])
+    if (user?.id) {
+      // Get shop_id from user profile
+      const fetchUserShopId = async () => {
+        try {
+          const response = await fetch('/api/profile')
+          if (response.ok) {
+            const { profile } = await response.json()
+            if (profile?.shop_id) {
+              setShopId(profile.shop_id)
+            } else {
+              // If no shop_id in profile, check if user owns any barbershops
+              const shopResponse = await fetch('/api/barbershops/user-shops')
+              if (shopResponse.ok) {
+                const { shops } = await shopResponse.json()
+                if (shops && shops.length > 0) {
+                  setShopId(shops[0].id) // Use first owned shop
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user shop ID:', error)
+          setMessage({ type: 'error', text: 'Unable to load your barbershop. Please contact support.' })
+        }
+      }
+      
+      fetchUserShopId()
+    }
+  }, [user])
 
   const tabs = [
     { id: 'general', name: 'General', icon: Cog6ToothIcon },
@@ -102,22 +129,17 @@ export default function WebsiteSettingsPage() {
   ]
 
   useEffect(() => {
-    loadSettings()
-  }, [])
+    if (shopId) {
+      loadSettings()
+    }
+  }, [shopId])
 
   const loadSettings = async () => {
+    if (!shopId) return
+    
     setLoading(true)
     try {
-      const demoResponse = await fetch('/api/demo/setup', { method: 'POST' })
-      const demoResult = await demoResponse.json()
-      
-      let actualShopId = shopId
-      if (demoResult.shopId) {
-        actualShopId = demoResult.shopId
-        setShopId(actualShopId)
-      }
-
-      const response = await fetch(`/api/customization/${actualShopId}/settings`)
+      const response = await fetch(`/api/customization/${shopId}/settings`)
       if (response.ok) {
         const { data } = await response.json()
         setSettings({
@@ -128,30 +150,28 @@ export default function WebsiteSettingsPage() {
           social_links: data.social_links || settings.social_links
         })
         setMessage({ type: 'success', text: 'Settings loaded successfully' })
+      } else if (response.status === 404) {
+        setMessage({ type: 'info', text: 'No custom settings found - using defaults. Save to create your website customization.' })
       } else {
-        setMessage({ type: 'info', text: 'Using default settings - save to create your barbershop profile' })
+        setMessage({ type: 'error', text: 'Failed to load settings' })
       }
     } catch (error) {
       console.error('Error loading settings:', error)
-      setMessage({ type: 'error', text: 'Using default settings - save to create your profile' })
+      setMessage({ type: 'error', text: 'Error loading settings: ' + error.message })
     } finally {
       setLoading(false)
     }
   }
 
   const saveSettings = async () => {
+    if (!shopId) {
+      setMessage({ type: 'error', text: 'No barbershop found. Please contact support.' })
+      return
+    }
+    
     setSaving(true)
     try {
-      const createResponse = await fetch('/api/demo/simple-setup', { method: 'POST' })
-      const createResult = await createResponse.json()
-      
-      let actualShopId = shopId
-      if (createResult.shopId) {
-        actualShopId = createResult.shopId
-        setShopId(actualShopId)
-      }
-
-      const response = await fetch(`/api/customization/${actualShopId}/settings`, {
+      const response = await fetch(`/api/customization/${shopId}/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -160,7 +180,9 @@ export default function WebsiteSettingsPage() {
       })
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Settings saved successfully!' })
+        setMessage({ type: 'success', text: 'Website settings saved successfully!' })
+        // Reload settings to get any server-side updates
+        await loadSettings()
       } else {
         const errorData = await response.json()
         setMessage({ type: 'error', text: errorData.error || 'Failed to save settings' })
@@ -239,10 +261,15 @@ export default function WebsiteSettingsPage() {
     handleInputChange('shop_slug', slug)
   }
 
-  if (loading) {
+  if (loading || !shopId) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">
+            {!shopId ? 'Loading your barbershop...' : 'Loading website settings...'}
+          </p>
+        </div>
       </div>
     )
   }

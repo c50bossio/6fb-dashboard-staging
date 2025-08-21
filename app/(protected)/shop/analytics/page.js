@@ -25,6 +25,7 @@ export default function ShopAnalytics() {
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('month') // week, month, quarter, year
   const [analyticsData, setAnalyticsData] = useState({})
+  const [showExportMenu, setShowExportMenu] = useState(false)
 
   useEffect(() => {
     loadAnalyticsData()
@@ -32,109 +33,161 @@ export default function ShopAnalytics() {
 
   const loadAnalyticsData = async () => {
     try {
-      const mockData = {
+      setLoading(true)
+      
+      // Determine period days based on time range
+      const periodDaysMap = {
+        'week': 7,
+        'month': 30,
+        'quarter': 90,
+        'year': 365
+      }
+      const periodDays = periodDaysMap[timeRange] || 30
+
+      // Load comprehensive analytics from FastAPI
+      const [dashboardResponse, liveMetricsResponse, businessMetricsResponse] = await Promise.all([
+        fetch(`/api/shop/analytics/dashboard?period_days=${periodDays}`),
+        fetch('/api/shop/analytics/live-metrics'),
+        fetch('/api/shop/analytics/business-metrics')
+      ])
+
+      const [dashboardData, liveMetrics, businessMetrics] = await Promise.all([
+        dashboardResponse.json(),
+        liveMetricsResponse.json(),
+        businessMetricsResponse.json()
+      ])
+
+      // Transform real data to match UI expectations
+      const transformedData = {
         overview: {
-          totalRevenue: 18750,
-          revenueChange: 12.5,
-          totalBookings: 156,
-          bookingsChange: 8.3,
-          totalClients: 247,
-          clientsChange: 15.2,
-          averageRating: 4.8,
-          ratingChange: 0.2
+          totalRevenue: dashboardData.summary?.total_revenue || 0,
+          revenueChange: businessMetrics.growth_rate || 0,
+          totalBookings: dashboardData.summary?.total_appointments || 0,
+          bookingsChange: businessMetrics.trends?.customer_growth || 0,
+          totalClients: dashboardData.summary?.total_customers || 0,
+          clientsChange: businessMetrics.trends?.customer_growth || 0,
+          averageRating: businessMetrics.customer_satisfaction || 4.5,
+          ratingChange: 0.1
         },
         
-        revenueData: [
-          { date: '2024-11-01', revenue: 580, bookings: 12 },
-          { date: '2024-11-02', revenue: 720, bookings: 15 },
-          { date: '2024-11-03', revenue: 650, bookings: 13 },
-          { date: '2024-11-04', revenue: 890, bookings: 18 },
-          { date: '2024-11-05', revenue: 620, bookings: 14 },
-          { date: '2024-11-06', revenue: 750, bookings: 16 },
-          { date: '2024-11-07', revenue: 680, bookings: 15 },
-          { date: '2024-11-08', revenue: 820, bookings: 17 },
-          { date: '2024-11-09', revenue: 590, bookings: 12 },
-          { date: '2024-11-10', revenue: 910, bookings: 19 }
-        ],
+        revenueData: Object.entries(dashboardData.daily_revenue || {}).map(([date, revenue]) => ({
+          date,
+          revenue: revenue || 0,
+          bookings: Math.floor((revenue || 0) / (dashboardData.summary?.average_appointment_value || 40)) // Estimate bookings
+        })).slice(-10), // Show last 10 days
 
-        barberPerformance: [
-          {
-            id: 'barber-alex-123',
-            name: 'Alex Rodriguez',
-            revenue: 6250,
-            bookings: 52,
-            rating: 4.9,
-            retention: 85,
-            commission: 4062.50,
-            clients: 87,
-            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'
-          },
-          {
-            id: 'barber-jamie-123',
-            name: 'Jamie Chen',
-            revenue: 5890,
-            bookings: 47,
-            rating: 4.8,
-            retention: 78,
-            commission: 4005.20,
-            clients: 64,
-            avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332-111?w=150'
-          },
-          {
-            id: 'barber-mike-123',
-            name: 'Mike Thompson',
-            revenue: 6610,
-            bookings: 57,
-            rating: 4.9,
-            retention: 92,
-            commission: 4627.00,
-            clients: 102,
-            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
-          }
-        ],
+        barberPerformance: [], // This would need a separate endpoint or data structure
 
-        serviceAnalytics: [
-          { name: 'Classic Haircut', bookings: 89, revenue: 3115, percentage: 35.2 },
-          { name: 'Fade Cut', bookings: 67, revenue: 2680, percentage: 30.3 },
-          { name: 'Full Package', bookings: 23, revenue: 1725, percentage: 19.5 },
-          { name: 'Beard Trim', bookings: 45, revenue: 1125, percentage: 12.7 },
-          { name: 'Hot Shave', bookings: 5, revenue: 225, percentage: 2.3 }
-        ],
+        serviceAnalytics: (dashboardData.popular_services || []).map(service => ({
+          name: service.service || 'Unknown Service',
+          bookings: service.count || 0,
+          revenue: service.count * 35, // Estimate revenue per service
+          percentage: service.percentage || 0
+        })),
 
-        timeAnalytics: [
-          { hour: '9:00', bookings: 8, revenue: 320 },
-          { hour: '10:00', bookings: 12, revenue: 480 },
-          { hour: '11:00', bookings: 15, revenue: 600 },
-          { hour: '12:00', bookings: 10, revenue: 400 },
-          { hour: '13:00', bookings: 8, revenue: 320 },
-          { hour: '14:00', bookings: 18, revenue: 720 },
-          { hour: '15:00', bookings: 20, revenue: 800 },
-          { hour: '16:00', bookings: 22, revenue: 880 },
-          { hour: '17:00', bookings: 15, revenue: 600 },
-          { hour: '18:00', bookings: 12, revenue: 480 }
-        ],
+        timeAnalytics: [], // This would need hourly breakdown data
 
         customerMetrics: {
-          newClients: 23,
-          returningClients: 134,
-          retentionRate: 78.5,
-          averageLifetimeValue: 420,
-          averageVisitFrequency: 6.2,
-          topClients: [
-            { name: 'Robert Brown', visits: 18, spent: 1350, lastVisit: '2024-11-15' },
-            { name: 'John Smith', visits: 12, spent: 420, lastVisit: '2024-12-08' },
-            { name: 'Michael Johnson', visits: 8, spent: 320, lastVisit: '2024-12-07' }
-          ]
+          newClients: Math.floor((dashboardData.summary?.total_customers || 0) * 0.3), // Estimate 30% new
+          returningClients: Math.floor((dashboardData.summary?.total_customers || 0) * 0.7), // Estimate 70% returning
+          retentionRate: dashboardData.summary?.customer_retention_rate || 0,
+          averageLifetimeValue: (dashboardData.summary?.total_revenue || 0) / Math.max(dashboardData.summary?.total_customers || 1, 1),
+          averageVisitFrequency: 6.2, // Default until we have this metric
+          topClients: [] // This would need a separate endpoint
+        },
+
+        // Store raw data for debugging
+        _rawData: {
+          dashboard: dashboardData,
+          liveMetrics,
+          businessMetrics
         }
       }
 
-      setAnalyticsData(mockData)
+      setAnalyticsData(transformedData)
     } catch (error) {
       console.error('Error loading analytics:', error)
+      
+      // Fallback to empty data structure
+      setAnalyticsData({
+        overview: {
+          totalRevenue: 0,
+          revenueChange: 0,
+          totalBookings: 0,
+          bookingsChange: 0,
+          totalClients: 0,
+          clientsChange: 0,
+          averageRating: 0,
+          ratingChange: 0
+        },
+        revenueData: [],
+        barberPerformance: [],
+        serviceAnalytics: [],
+        timeAnalytics: [],
+        customerMetrics: {
+          newClients: 0,
+          returningClients: 0,
+          retentionRate: 0,
+          averageLifetimeValue: 0,
+          averageVisitFrequency: 0,
+          topClients: []
+        }
+      })
     } finally {
       setLoading(false)
     }
   }
+
+  const handleExport = async (format) => {
+    try {
+      setShowExportMenu(false)
+      
+      const periodDaysMap = {
+        'week': 7,
+        'month': 30,
+        'quarter': 90,
+        'year': 365
+      }
+      const periodDays = periodDaysMap[timeRange] || 30
+      
+      const response = await fetch(`/api/shop/analytics/export?format=${format}&period_days=${periodDays}&include_details=true`)
+      
+      if (!response.ok) {
+        throw new Error('Export failed')
+      }
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      
+      const timestamp = new Date().toISOString().split('T')[0]
+      link.download = `shop-analytics-${timestamp}.${format}`
+      
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+    } catch (error) {
+      console.error('Export error:', error)
+      alert('Failed to export analytics data. Please try again.')
+    }
+  }
+
+  // Close export menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showExportMenu && !event.target.closest('.relative')) {
+        setShowExportMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showExportMenu])
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#C5A35B']
 
@@ -174,10 +227,34 @@ export default function ShopAnalytics() {
               <option value="quarter">Last 3 Months</option>
               <option value="year">Last Year</option>
             </select>
-            <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center">
-              <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
-              Export Report
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center"
+              >
+                <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
+                Export Report
+              </button>
+              
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                  <div className="py-1">
+                    <button
+                      onClick={() => handleExport('json')}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Export as JSON
+                    </button>
+                    <button
+                      onClick={() => handleExport('csv')}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      Export as CSV
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -8,10 +8,17 @@ import {
   CurrencyDollarIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  DocumentTextIcon,
+  ChartBarIcon,
+  CogIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  ClockIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 
@@ -21,7 +28,9 @@ export default function AddBarber() {
   const router = useRouter()
   
   const [loading, setLoading] = useState(false)
-  const [step, setStep] = useState(1) // 1: Basic Info, 2: Financial, 3: Schedule, 4: Review
+  const [step, setStep] = useState(1) // 1: Basic Info, 2: Financial, 3: Schedule, 4: Documents, 5: Review
+  const [errors, setErrors] = useState({})
+  const [validationErrors, setValidationErrors] = useState({})
   const [barberData, setBarberData] = useState({
     email: '',
     fullName: '',
@@ -52,113 +61,84 @@ export default function AddBarber() {
     
     enableCustomPage: true,
     customPageSlug: '',
-    profilePhotoUrl: ''
+    profilePhotoUrl: '',
+    
+    // Enhanced fields
+    specialties: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    paymentMethod: 'bank_transfer',
+    paymentFrequency: 'weekly',
+    acceptsWalkIns: false,
+    chairNumber: '',
+    
+    // Documents
+    requiresLicense: true,
+    requiresInsurance: true,
+    requiresContract: true,
+    
+    // Initial goals
+    monthlyRevenueGoal: 0,
+    monthlyAppointmentGoal: 0
   })
 
+  // Enhanced validation
+  const validateStep = (stepNumber) => {
+    const newErrors = {}
+    
+    if (stepNumber === 1) {
+      if (!barberData.email) newErrors.email = 'Email is required'
+      if (!barberData.fullName) newErrors.fullName = 'Full name is required'
+      if (!barberData.phone) newErrors.phone = 'Phone number is required'
+      if (barberData.yearsExperience < 0) newErrors.yearsExperience = 'Experience cannot be negative'
+    }
+    
+    if (stepNumber === 2) {
+      if (barberData.financialModel === 'commission') {
+        if (barberData.commissionRate <= 0 || barberData.commissionRate > 100) {
+          newErrors.commissionRate = 'Commission rate must be between 1-100%'
+        }
+      } else if (barberData.financialModel === 'booth_rent') {
+        if (barberData.boothRentAmount <= 0) {
+          newErrors.boothRentAmount = 'Booth rent amount must be greater than 0'
+        }
+      }
+    }
+    
+    setValidationErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = async () => {
+    if (!validateStep(step)) return
+    
     setLoading(true)
+    setErrors({})
     
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: barberData.email,
-        password: generateTempPassword(), // Generate temporary password
-        options: {
-          data: {
-            full_name: barberData.fullName,
-            role: 'BARBER'
-          }
-        }
+      // Use enhanced API endpoint
+      const response = await fetch('/api/shop/barbers/enhanced', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(barberData)
       })
       
-      if (authError) {
-        console.error('Error creating barber account:', authError)
-        alert('Failed to create barber account. They may already have an account.')
-        setLoading(false)
-        return
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create barber')
       }
       
-      const { data: shop } = await supabase
-        .from('barbershops')
-        .select('id')
-        .eq('owner_id', user?.id)
-        .single()
-      
-      if (!shop) {
-        alert('No barbershop found for this owner')
-        setLoading(false)
-        return
-      }
-      
-      const { error: staffError } = await supabase
-        .from('barbershop_staff')
-        .insert({
-          barbershop_id: shop.id,
-          user_id: authData.user?.id,
-          role: 'BARBER',
-          is_active: true,
-          commission_rate: barberData.commissionRate,
-          booth_rent_amount: barberData.boothRentAmount,
-          financial_model: barberData.financialModel,
-          can_manage_schedule: barberData.canManageOwnSchedule,
-          can_view_reports: barberData.canViewOwnReports,
-          can_manage_clients: barberData.canManageOwnClients,
-          can_sell_products: barberData.canSellProducts
-        })
-      
-      if (staffError) {
-        console.error('Error adding barber to staff:', staffError)
-        alert('Failed to add barber to staff')
-        setLoading(false)
-        return
-      }
-      
-      const { error: customError } = await supabase
-        .from('barber_customizations')
-        .insert({
-          barbershop_id: shop.id,
-          barber_id: authData.user?.id,
-          slug: barberData.customPageSlug || barberData.fullName.toLowerCase().replace(/\s+/g, '-'),
-          display_name: barberData.fullName,
-          bio: barberData.bio,
-          specialty: barberData.specialty,
-          years_experience: barberData.yearsExperience,
-          profile_photo_url: barberData.profilePhotoUrl
-        })
-      
-      if (customError) {
-        console.error('Error creating barber customization:', customError)
-      }
-      
-      const availabilityPromises = Object.entries(barberData.defaultSchedule)
-        .filter(([_, schedule]) => schedule.enabled)
-        .map(([day, schedule], index) => {
-          const dayMap = {
-            'monday': 1, 'tuesday': 2, 'wednesday': 3, 'thursday': 4,
-            'friday': 5, 'saturday': 6, 'sunday': 0
-          }
-          
-          return supabase
-            .from('barber_availability')
-            .insert({
-              barbershop_id: shop.id,
-              barber_id: authData.user?.id,
-              day_of_week: dayMap[day],
-              start_time: schedule.start,
-              end_time: schedule.end,
-              is_available: true
-            })
-        })
-      
-      await Promise.all(availabilityPromises)
-      
-      console.log('Sending welcome email to:', barberData.email)
-      
-      alert(`Barber ${barberData.fullName} added successfully! They will receive an email to set up their password.`)
-      router.push('/shop/dashboard')
+      // Success - redirect to onboarding
+      router.push(`/shop/barbers/${result.barberId}/onboarding?welcome=true`)
       
     } catch (error) {
       console.error('Error adding barber:', error)
-      alert('An error occurred while adding the barber')
+      setErrors({ 
+        submit: error.message || 'An error occurred while adding the barber'
+      })
     } finally {
       setLoading(false)
     }
@@ -182,11 +162,8 @@ export default function AddBarber() {
   }
 
   const nextStep = () => {
-    if (step === 1) {
-      if (!barberData.email || !barberData.fullName) {
-        alert('Please fill in all required fields')
-        return
-      }
+    if (!validateStep(step)) {
+      return
     }
     setStep(step + 1)
   }
@@ -204,15 +181,34 @@ export default function AddBarber() {
               <p className="text-sm text-gray-600">Add a barber to your shop team</p>
             </div>
             <div className="flex items-center space-x-4">
-              {/* Step Indicators */}
+              {/* Enhanced Step Indicators */}
               <div className="flex items-center space-x-2">
-                {[1, 2, 3, 4].map((s) => (
-                  <div
-                    key={s}
-                    className={`h-2 w-8 rounded-full ${
-                      s === step ? 'bg-olive-600' : s < step ? 'bg-indigo-200' : 'bg-gray-200'
-                    }`}
-                  />
+                {[
+                  { num: 1, label: 'Basic Info', icon: UserIcon },
+                  { num: 2, label: 'Financial', icon: CurrencyDollarIcon },
+                  { num: 3, label: 'Schedule', icon: CalendarDaysIcon },
+                  { num: 4, label: 'Documents', icon: DocumentTextIcon },
+                  { num: 5, label: 'Review', icon: CheckCircleIcon }
+                ].map((s) => (
+                  <div key={s.num} className="flex items-center">
+                    <div
+                      className={`flex items-center justify-center h-8 w-8 rounded-full text-xs font-medium ${
+                        s.num === step 
+                          ? 'bg-olive-600 text-white' 
+                          : s.num < step 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-gray-200 text-gray-500'
+                      }`}
+                    >
+                      {s.num < step ? (
+                        <CheckCircleIcon className="h-4 w-4" />
+                      ) : (
+                        s.num
+                      )}
+                    </div>
+                    <span className="ml-2 text-xs text-gray-600 hidden md:block">{s.label}</span>
+                    {s.num < 5 && <div className="w-8 h-0.5 bg-gray-200 mx-2" />}
+                  </div>
                 ))}
               </div>
             </div>
@@ -240,9 +236,16 @@ export default function AddBarber() {
                       type="text"
                       value={barberData.fullName}
                       onChange={(e) => setBarberData({...barberData, fullName: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        validationErrors.fullName 
+                          ? 'border-red-300 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-olive-500'
+                      }`}
                       placeholder="Enter barber's full name"
                     />
+                    {validationErrors.fullName && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.fullName}</p>
+                    )}
                   </div>
                   
                   <div>

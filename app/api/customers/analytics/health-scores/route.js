@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const FASTAPI_URL = process.env.FASTAPI_URL || 'http://localhost:8001';
 
 export async function GET(request) {

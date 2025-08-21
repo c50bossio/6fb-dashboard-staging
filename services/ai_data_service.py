@@ -122,15 +122,23 @@ class AIDataService:
     
     @staticmethod
     async def get_customer_insights(barbershop_id: str) -> Dict[str, Any]:
-        """Get customer data and insights"""
+        """Get customer data and insights with intelligence metrics"""
         try:
-            # Get customers
+            # Get customers with intelligence data
             customers_response = supabase.table('customers').select('*').eq('barbershop_id', barbershop_id).execute()
             customers = customers_response.data or []
             
-            # Get customer segments if available
+            # Get customer intelligence data
+            intelligence_response = supabase.table('customer_intelligence').select('*').eq('barbershop_id', barbershop_id).execute()
+            intelligence_data = intelligence_response.data or []
+            
+            # Get customer segments
             segments_response = supabase.table('customer_segments').select('*').eq('barbershop_id', barbershop_id).execute()
             segments = segments_response.data or []
+            
+            # Get loyalty data
+            loyalty_response = supabase.table('customer_loyalty').select('*').eq('barbershop_id', barbershop_id).execute()
+            loyalty_data = loyalty_response.data or []
             
             # Calculate customer insights
             total_customers = len(customers)
@@ -138,11 +146,69 @@ class AIDataService:
                                  datetime.fromisoformat(c['created_at'].replace('Z', '+00:00')) > 
                                  datetime.now() - timedelta(days=30)])
             
+            # Calculate intelligence metrics
+            total_clv = sum(float(intel.get('clv', 0)) for intel in intelligence_data if intel.get('clv'))
+            avg_clv = total_clv / len(intelligence_data) if intelligence_data else 0
+            
+            # Health score distribution
+            health_scores = [intel.get('health_score', 0) for intel in intelligence_data if intel.get('health_score')]
+            avg_health_score = sum(health_scores) / len(health_scores) if health_scores else 0
+            
+            # Churn risk analysis
+            high_churn_risk = len([intel for intel in intelligence_data if intel.get('churn_risk_score', 0) > 0.7])
+            medium_churn_risk = len([intel for intel in intelligence_data if 0.3 < intel.get('churn_risk_score', 0) <= 0.7])
+            low_churn_risk = len([intel for intel in intelligence_data if intel.get('churn_risk_score', 0) <= 0.3])
+            
+            # Loyalty metrics
+            total_loyalty_points = sum(float(loyalty.get('points', 0)) for loyalty in loyalty_data if loyalty.get('points'))
+            avg_loyalty_points = total_loyalty_points / len(loyalty_data) if loyalty_data else 0
+            
+            # Tier distribution
+            tier_distribution = {}
+            for loyalty in loyalty_data:
+                tier = loyalty.get('tier', 'bronze')
+                tier_distribution[tier] = tier_distribution.get(tier, 0) + 1
+            
+            # Segment distribution
+            segment_distribution = {}
+            for segment in segments:
+                seg_name = segment.get('segment_name', 'unknown')
+                segment_distribution[seg_name] = segment_distribution.get(seg_name, 0) + 1
+            
             return {
                 "total_customers": total_customers,
                 "recent_customers": recent_customers,
-                "customer_segments": segments,
                 "growth_rate": (recent_customers / total_customers * 100) if total_customers > 0 else 0,
+                "intelligence_metrics": {
+                    "total_clv": total_clv,
+                    "average_clv": avg_clv,
+                    "average_health_score": avg_health_score,
+                    "churn_risk_distribution": {
+                        "high_risk": high_churn_risk,
+                        "medium_risk": medium_churn_risk,
+                        "low_risk": low_churn_risk
+                    },
+                    "health_score_range": {
+                        "min": min(health_scores) if health_scores else 0,
+                        "max": max(health_scores) if health_scores else 0
+                    }
+                },
+                "loyalty_metrics": {
+                    "total_points": total_loyalty_points,
+                    "average_points": avg_loyalty_points,
+                    "tier_distribution": tier_distribution,
+                    "active_loyalty_members": len(loyalty_data)
+                },
+                "segmentation": {
+                    "segments": segments,
+                    "segment_distribution": segment_distribution,
+                    "total_segments": len(segments)
+                },
+                "raw_data": {
+                    "customers": customers,
+                    "intelligence": intelligence_data,
+                    "loyalty": loyalty_data
+                },
                 "data_available": total_customers > 0
             }
             
@@ -226,6 +292,105 @@ class AIDataService:
         return has_customers and has_appointments
     
     @staticmethod
+    async def get_customer_intelligence_data(barbershop_id: str, customer_id: Optional[str] = None) -> Dict[str, Any]:
+        """Get detailed customer intelligence data for AI analysis"""
+        try:
+            # Base query for customer intelligence
+            query = supabase.table('customer_intelligence').select('*').eq('barbershop_id', barbershop_id)
+            
+            if customer_id:
+                query = query.eq('customer_id', customer_id)
+                
+            intelligence_response = query.execute()
+            intelligence_data = intelligence_response.data or []
+            
+            # Get related customer data
+            customer_query = supabase.table('customers').select('*').eq('barbershop_id', barbershop_id)
+            if customer_id:
+                customer_query = customer_query.eq('id', customer_id)
+            customer_response = customer_query.execute()
+            customers = customer_response.data or []
+            
+            # Get loyalty data
+            loyalty_query = supabase.table('customer_loyalty').select('*').eq('barbershop_id', barbershop_id)
+            if customer_id:
+                loyalty_query = loyalty_query.eq('customer_id', customer_id)
+            loyalty_response = loyalty_query.execute()
+            loyalty_data = loyalty_response.data or []
+            
+            # Get feedback data
+            feedback_query = supabase.table('customer_feedback').select('*').eq('barbershop_id', barbershop_id)
+            if customer_id:
+                feedback_query = feedback_query.eq('customer_id', customer_id)
+            feedback_response = feedback_query.execute()
+            feedback_data = feedback_response.data or []
+            
+            return {
+                "intelligence": intelligence_data,
+                "customers": customers,
+                "loyalty": loyalty_data,
+                "feedback": feedback_data,
+                "has_data": len(intelligence_data) > 0
+            }
+            
+        except Exception as e:
+            print(f"Error getting customer intelligence data: {e}")
+            return {"error": str(e), "has_data": False}
+    
+    @staticmethod
+    async def get_customer_segments_for_ai(barbershop_id: str) -> Dict[str, Any]:
+        """Get customer segments with AI-ready analytics"""
+        try:
+            segments_response = supabase.table('customer_segments').select('*').eq('barbershop_id', barbershop_id).execute()
+            segments = segments_response.data or []
+            
+            # Get segment-specific intelligence data
+            segment_analytics = {}
+            for segment in segments:
+                segment_id = segment.get('id')
+                if segment_id:
+                    # Get customers in this segment
+                    segment_customers_response = supabase.table('customer_segment_memberships')\
+                        .select('customer_id')\
+                        .eq('segment_id', segment_id)\
+                        .execute()
+                    
+                    customer_ids = [sc['customer_id'] for sc in segment_customers_response.data or []]
+                    
+                    if customer_ids:
+                        # Get intelligence data for these customers
+                        intelligence_response = supabase.table('customer_intelligence')\
+                            .select('*')\
+                            .in_('customer_id', customer_ids)\
+                            .execute()
+                        
+                        intelligence_data = intelligence_response.data or []
+                        
+                        # Calculate segment metrics
+                        avg_clv = sum(float(intel.get('clv', 0)) for intel in intelligence_data) / len(intelligence_data) if intelligence_data else 0
+                        avg_health_score = sum(intel.get('health_score', 0) for intel in intelligence_data) / len(intelligence_data) if intelligence_data else 0
+                        avg_churn_risk = sum(intel.get('churn_risk_score', 0) for intel in intelligence_data) / len(intelligence_data) if intelligence_data else 0
+                        
+                        segment_analytics[segment_id] = {
+                            "customer_count": len(customer_ids),
+                            "avg_clv": avg_clv,
+                            "avg_health_score": avg_health_score,
+                            "avg_churn_risk": avg_churn_risk,
+                            "segment_info": segment
+                        }
+            
+            return {
+                "segments": segments,
+                "segment_analytics": segment_analytics,
+                "total_segments": len(segments),
+                "has_data": len(segments) > 0
+            }
+            
+        except Exception as e:
+            print(f"Error getting customer segments: {e}")
+            return {"error": str(e), "has_data": False}
+    
+    @staticmethod
     async def get_ai_training_data(barbershop_id: str) -> Dict[str, Any]:
         """Get comprehensive data for AI model training and insights"""
         try:
@@ -237,6 +402,12 @@ class AIDataService:
             # Get additional revenue analysis
             revenue_analysis = await AIDataService.get_revenue_analysis(barbershop_id)
             context['revenue_analysis'] = revenue_analysis
+            
+            # Get customer intelligence data
+            customer_intelligence = await AIDataService.get_customer_intelligence_data(barbershop_id)
+            
+            # Get segment analytics
+            segment_analytics = await AIDataService.get_customer_segments_for_ai(barbershop_id)
             
             # Compile training data structure
             training_data = {
@@ -256,13 +427,17 @@ class AIDataService:
                     "services": context['staff'].get('barber_services', [])
                 },
                 "customers": context['customers'],
+                "customer_intelligence": customer_intelligence,
+                "segment_analytics": segment_analytics,
                 "data_quality": {
                     "sufficient_for_analysis": context['has_sufficient_data'],
                     "data_sources": {
                         "appointments": context['appointments'].get('data_available', False),
                         "customers": context['customers'].get('data_available', False),
                         "revenue": revenue_analysis.get('data_available', False),
-                        "staff": context['staff'].get('data_available', False)
+                        "staff": context['staff'].get('data_available', False),
+                        "intelligence": customer_intelligence.get('has_data', False),
+                        "segments": segment_analytics.get('has_data', False)
                     }
                 }
             }

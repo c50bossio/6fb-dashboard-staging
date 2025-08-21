@@ -34,6 +34,16 @@ export default function StaffPermissions() {
   const [editingPermissions, setEditingPermissions] = useState(false)
   const [barbershopId, setBarbershopId] = useState(null)
   const [canManage, setCanManage] = useState(false)
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false)
+  const [newStaffData, setNewStaffData] = useState({
+    email: '',
+    name: '',
+    role: 'BARBER',
+    commission_rate: 0.5,
+    financial_model: 'commission'
+  })
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState({ type: '', text: '' })
 
   useEffect(() => {
     loadStaffData()
@@ -57,20 +67,30 @@ export default function StaffPermissions() {
         return
       }
 
-      const { data: staffData, error: staffError } = await supabase
-        .from('barbershop_staff')
-        .select(`
-          *,
-          user:users(*),
-          permissions:barber_permissions(*)
-        `)
-        .eq('barbershop_id', shopId)
-        .eq('is_active', true)
-
-      if (staffError) {
-        console.error('Error loading staff:', staffError)
-      } else {
+      // Load staff from FastAPI backend
+      const staffResponse = await fetch('/api/shop/staff')
+      if (staffResponse.ok) {
+        const staffData = await staffResponse.json()
         setStaff(staffData || [])
+      } else {
+        console.error('Error loading staff from FastAPI')
+        
+        // Fallback to direct Supabase query
+        const { data: staffData, error: staffError } = await supabase
+          .from('barbershop_staff')
+          .select(`
+            *,
+            user:users(*),
+            permissions:barber_permissions(*)
+          `)
+          .eq('barbershop_id', shopId)
+          .eq('is_active', true)
+
+        if (staffError) {
+          console.error('Error loading staff:', staffError)
+        } else {
+          setStaff(staffData || [])
+        }
       }
 
       const templatesData = await getPermissionTemplates(true) // System templates only
@@ -84,7 +104,29 @@ export default function StaffPermissions() {
   }
 
   const getUserBarbershop = async () => {
-    return 'placeholder-barbershop-id'
+    try {
+      const response = await fetch('/api/profile')
+      if (response.ok) {
+        const { profile } = await response.json()
+        if (profile?.shop_id) {
+          return profile.shop_id
+        }
+      }
+      
+      // Fallback: check if user owns any barbershops
+      const shopResponse = await fetch('/api/barbershops/user-shops')
+      if (shopResponse.ok) {
+        const { shops } = await shopResponse.json()
+        if (shops && shops.length > 0) {
+          return shops[0].id
+        }
+      }
+      
+      return null
+    } catch (error) {
+      console.error('Error getting user barbershop:', error)
+      return null
+    }
   }
 
   const handleApplyTemplate = async (barberId, templateId) => {
@@ -99,6 +141,71 @@ export default function StaffPermissions() {
       }
     } catch (error) {
       console.error('Error applying template:', error)
+    }
+  }
+
+  const handleAddStaff = async (staffData) => {
+    try {
+      const response = await fetch('/api/shop/staff', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(staffData)
+      })
+
+      if (response.ok) {
+        await loadStaffData()
+        return { success: true }
+      } else {
+        const error = await response.json()
+        return { success: false, error: error.error }
+      }
+    } catch (error) {
+      console.error('Error adding staff:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  const handleUpdateStaff = async (staffId, staffData) => {
+    try {
+      const response = await fetch(`/api/shop/staff/${staffId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(staffData)
+      })
+
+      if (response.ok) {
+        await loadStaffData()
+        return { success: true }
+      } else {
+        const error = await response.json()
+        return { success: false, error: error.error }
+      }
+    } catch (error) {
+      console.error('Error updating staff:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  const handleRemoveStaff = async (staffId) => {
+    try {
+      const response = await fetch(`/api/shop/staff/${staffId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        await loadStaffData()
+        return { success: true }
+      } else {
+        const error = await response.json()
+        return { success: false, error: error.error }
+      }
+    } catch (error) {
+      console.error('Error removing staff:', error)
+      return { success: false, error: error.message }
     }
   }
 
@@ -211,7 +318,10 @@ export default function StaffPermissions() {
               <h2 className="text-lg font-semibold text-gray-900">Staff Members</h2>
               <p className="text-gray-600">Manage individual barber permissions</p>
             </div>
-            <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center">
+            <button 
+              onClick={() => setShowAddStaffModal(true)}
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
+            >
               <PlusIcon className="h-5 w-5 mr-2" />
               Invite Staff
             </button>
@@ -223,7 +333,10 @@ export default function StaffPermissions() {
             <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No Staff Members</h3>
             <p className="text-gray-600 mb-4">Start by inviting barbers to join your shop</p>
-            <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
+            <button 
+              onClick={() => setShowAddStaffModal(true)}
+              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
+            >
               Invite Your First Barber
             </button>
           </div>
@@ -355,6 +468,131 @@ export default function StaffPermissions() {
           </div>
         </div>
       </div>
+
+      {/* Add Staff Modal */}
+      {showAddStaffModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Invite Staff Member</h3>
+              <button 
+                onClick={() => setShowAddStaffModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircleIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {message.text && (
+              <div className={`mb-4 p-3 rounded-lg ${
+                message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+              }`}>
+                {message.text}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  value={newStaffData.email}
+                  onChange={(e) => setNewStaffData({...newStaffData, email: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                  placeholder="barber@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={newStaffData.name}
+                  onChange={(e) => setNewStaffData({...newStaffData, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                  placeholder="John Doe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role
+                </label>
+                <select
+                  value={newStaffData.role}
+                  onChange={(e) => setNewStaffData({...newStaffData, role: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                >
+                  <option value="BARBER">Barber</option>
+                  <option value="MANAGER">Manager</option>
+                  <option value="RECEPTIONIST">Receptionist</option>
+                  <option value="APPRENTICE">Apprentice</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Commission Rate (%)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  value={newStaffData.commission_rate * 100}
+                  onChange={(e) => setNewStaffData({...newStaffData, commission_rate: e.target.value / 100})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex space-x-3">
+              <button
+                onClick={() => setShowAddStaffModal(false)}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setSaving(true)
+                  setMessage({ type: '', text: '' })
+                  
+                  const result = await handleAddStaff(newStaffData)
+                  
+                  if (result.success) {
+                    setMessage({ type: 'success', text: 'Staff member invited successfully!' })
+                    setNewStaffData({ email: '', name: '', role: 'BARBER', commission_rate: 0.5, financial_model: 'commission' })
+                    setTimeout(() => {
+                      setShowAddStaffModal(false)
+                      setMessage({ type: '', text: '' })
+                    }, 2000)
+                  } else {
+                    setMessage({ type: 'error', text: result.error || 'Failed to invite staff member' })
+                  }
+                  
+                  setSaving(false)
+                }}
+                disabled={saving || !newStaffData.email || !newStaffData.name}
+                className="flex-1 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:bg-gray-400 flex items-center justify-center"
+              >
+                {saving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Inviting...
+                  </>
+                ) : (
+                  'Send Invitation'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
