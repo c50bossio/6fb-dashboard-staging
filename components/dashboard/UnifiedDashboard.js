@@ -105,6 +105,46 @@ export default function UnifiedDashboard({ user, profile }) {
     // Circuit breaker: prevent infinite loops
     if (circuitBreakerOpen && !forceRefresh) {
       console.warn('Circuit breaker open - skipping dashboard data load')
+      
+      // Even with circuit breaker, check if this is an onboarding issue
+      const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
+      
+      if (isOnboardingIncomplete && !errorState?.isWelcome) {
+        // Show welcome message instead of blocking
+        const roleSpecificMessage = profile?.role === 'BARBER' 
+          ? {
+              title: 'Connect to Your Barbershop',
+              message: 'Your barber profile is ready! To access your dashboard, you need to be connected to a barbershop. Either complete your setup or ask your shop owner to add you to their team.',
+              timeEstimate: '2-3 minutes',
+              nextSteps: ['Verify barbershop association', 'Set your working hours', 'Add your specialties'],
+              buttonText: 'Connect to Barbershop'
+            }
+          : profile?.role === 'SHOP_OWNER'
+          ? {
+              title: 'Finish Your Barbershop Setup',
+              message: 'You\'re almost ready to start managing your barbershop! Just a few more steps to unlock your full business dashboard.',
+              timeEstimate: '3-5 minutes',
+              nextSteps: ['Add barbershop details', 'Set operating hours', 'Configure services & pricing'],
+              buttonText: 'Complete Barbershop Setup'
+            }
+          : {
+              title: 'Complete Your Account Setup',
+              message: 'Welcome to 6FB AI! Let\'s finish setting up your account to unlock all dashboard features and start managing your business.',
+              timeEstimate: '2-4 minutes', 
+              nextSteps: ['Choose your role', 'Add business information', 'Configure preferences'],
+              buttonText: 'Continue Setup'
+            }
+        
+        setErrorState({
+          type: 'onboarding_needed',
+          message: roleSpecificMessage.message,
+          title: roleSpecificMessage.title,
+          timeEstimate: roleSpecificMessage.timeEstimate,
+          nextSteps: roleSpecificMessage.nextSteps,
+          buttonText: roleSpecificMessage.buttonText,
+          isWelcome: true
+        })
+      }
       return
     }
 
@@ -112,7 +152,53 @@ export default function UnifiedDashboard({ user, profile }) {
     if (retryCount >= 3 && !forceRefresh) {
       console.warn('Max retry attempts reached - stopping dashboard data load')
       setCircuitBreakerOpen(true)
-      setErrorState('Max retry attempts reached. Please refresh the page.')
+      
+      // Check if this is an onboarding issue vs technical issue before setting error
+      const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
+      
+      if (isOnboardingIncomplete) {
+        // This is still an onboarding issue, show welcome message
+        const roleSpecificMessage = profile?.role === 'BARBER' 
+          ? {
+              title: 'Connect to Your Barbershop',
+              message: 'Your barber profile is ready! To access your dashboard, you need to be connected to a barbershop. Either complete your setup or ask your shop owner to add you to their team.',
+              timeEstimate: '2-3 minutes',
+              nextSteps: ['Verify barbershop association', 'Set your working hours', 'Add your specialties'],
+              buttonText: 'Connect to Barbershop'
+            }
+          : profile?.role === 'SHOP_OWNER'
+          ? {
+              title: 'Finish Your Barbershop Setup',
+              message: 'You\'re almost ready to start managing your barbershop! Just a few more steps to unlock your full business dashboard.',
+              timeEstimate: '3-5 minutes',
+              nextSteps: ['Add barbershop details', 'Set operating hours', 'Configure services & pricing'],
+              buttonText: 'Complete Barbershop Setup'
+            }
+          : {
+              title: 'Complete Your Account Setup',
+              message: 'Welcome to 6FB AI! Let\'s finish setting up your account to unlock all dashboard features and start managing your business.',
+              timeEstimate: '2-4 minutes', 
+              nextSteps: ['Choose your role', 'Add business information', 'Configure preferences'],
+              buttonText: 'Continue Setup'
+            }
+        
+        setErrorState({
+          type: 'onboarding_needed',
+          message: roleSpecificMessage.message,
+          title: roleSpecificMessage.title,
+          timeEstimate: roleSpecificMessage.timeEstimate,
+          nextSteps: roleSpecificMessage.nextSteps,
+          buttonText: roleSpecificMessage.buttonText,
+          isWelcome: true
+        })
+      } else {
+        // This is a technical error after onboarding should be complete
+        setErrorState({
+          type: 'technical_error',
+          message: 'Max retry attempts reached. Please refresh the page.',
+          isWelcome: false
+        })
+      }
       return
     }
 
