@@ -23,7 +23,7 @@ import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 import { 
-  CustomerIntelligenceDashboardOptimized as CustomerIntelligenceDashboard,
+  CustomerIntelligenceDashboard,
   CustomerJourneyVisualizer, 
   SegmentBuilder, 
   CustomerProfileEnhanced, 
