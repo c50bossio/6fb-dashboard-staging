@@ -10,14 +10,14 @@ import {
   HeartIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
 import IntelligenceDashboardEmptyState from './IntelligenceDashboardEmptyState'
 
-// Performance optimized gauge component with React.memo
-const HealthScoreGauge = React.memo(({ score, label, size = 'md' }) => {
+// Performance optimized gauge component with memo
+const HealthScoreGauge = memo(({ score, label, size = 'md' }) => {
   const radius = size === 'lg' ? 60 : 40
   const circumference = 2 * Math.PI * radius
   const strokeDasharray = circumference
@@ -67,7 +67,7 @@ const HealthScoreGauge = React.memo(({ score, label, size = 'md' }) => {
 })
 
 // Memoized Risk Badge Component
-const RiskBadge = React.memo(({ risk, className = "" }) => {
+const RiskBadge = memo(({ risk, className = "" }) => {
   const getRiskColor = (risk) => {
     switch (risk) {
       case 'low': return 'bg-green-100 text-green-800'
@@ -119,7 +119,7 @@ const SkeletonLoader = ({ type = 'card' }) => {
 }
 
 // CLV Trend Component with memoization
-const CLVTrend = React.memo(({ current, predicted, trend }) => {
+const CLVTrend = memo(({ current, predicted, trend }) => {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
