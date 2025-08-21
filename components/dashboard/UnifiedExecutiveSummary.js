@@ -30,6 +30,15 @@ export default function UnifiedExecutiveSummary({ data }) {
     capacity: data?.capacityUtilization || 0,
     nextAppointment: data?.nextAppointment || 'No appointments'
   }
+  
+  // Use real trends from API, or null if not available
+  const trends = data?.trends || {
+    revenue_trend: null,
+    customers_trend: null,
+    appointments_trend: null,
+    satisfaction_trend: null,
+    has_sufficient_data: false
+  }
 
   const calculateHealthScore = () => {
     // If there's no business activity, return 0
@@ -80,10 +89,15 @@ export default function UnifiedExecutiveSummary({ data }) {
   }
 
   const formatChange = (value, prefix = '') => {
+    // If no trend data available, don't show anything
+    if (value === null || value === undefined) {
+      return null
+    }
+    
     const isPositive = value > 0
     return (
-      <span className={`text-sm font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-        {isPositive ? '↑' : '↓'}{prefix}{Math.abs(value)}%
+      <span className={`text-sm font-medium ${isPositive ? 'text-green-600' : value < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+        {isPositive ? '↑' : value < 0 ? '↓' : ''}{prefix}{Math.abs(value)}%
       </span>
     )
   }
@@ -121,45 +135,57 @@ export default function UnifiedExecutiveSummary({ data }) {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <CurrencyDollarIcon className="h-5 w-5 text-olive-600" />
-                  {formatChange(12.5)}
+                  {trends.has_sufficient_data && formatChange(trends.revenue_trend)}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
                   ${metrics.revenue >= 1000 ? `${(metrics.revenue / 1000).toFixed(1)}k` : metrics.revenue.toFixed(0)}
                 </div>
                 <div className="text-sm text-gray-600">Revenue</div>
+                {!trends.has_sufficient_data && metrics.revenue === 0 && (
+                  <div className="text-xs text-gray-400 mt-1">Building history...</div>
+                )}
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <UserGroupIcon className="h-5 w-5 text-olive-600" />
-                  {formatChange(8.3)}
+                  {trends.has_sufficient_data && formatChange(trends.customers_trend)}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
                   {metrics.customers.toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-600">Customers</div>
+                {!trends.has_sufficient_data && metrics.customers === 0 && (
+                  <div className="text-xs text-gray-400 mt-1">Building history...</div>
+                )}
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <CalendarDaysIcon className="h-5 w-5 text-green-600" />
-                  {formatChange(15)}
+                  {trends.has_sufficient_data && formatChange(trends.appointments_trend)}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
                   {metrics.appointments}
                 </div>
                 <div className="text-sm text-gray-600">Appointments</div>
+                {!trends.has_sufficient_data && metrics.appointments === 0 && (
+                  <div className="text-xs text-gray-400 mt-1">Building history...</div>
+                )}
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <StarIcon className="h-5 w-5 text-amber-800" />
-                  {formatChange(0.2, '+')}
+                  {trends.has_sufficient_data && trends.satisfaction_trend !== null && formatChange(trends.satisfaction_trend, '+')}
                 </div>
                 <div className="text-2xl font-bold text-gray-900">
                   {metrics.satisfaction > 0 ? metrics.satisfaction.toFixed(2) : '0.00'}
                 </div>
                 <div className="text-sm text-gray-600">Satisfaction</div>
+                {!trends.has_sufficient_data && metrics.satisfaction === 0 && (
+                  <div className="text-xs text-gray-400 mt-1">Awaiting ratings...</div>
+                )}
               </div>
             </div>
           </div>

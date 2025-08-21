@@ -182,6 +182,10 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
+    // Calculate previous period dates for trend comparison
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0); // Last day of previous month
+    
     const todayAppointments = appointments.filter(a => 
       new Date(a.start_time) >= todayStart
     );
@@ -191,6 +195,20 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
     const thisMonthTransactions = transactions.filter(t => 
       new Date(t.created_at) >= thisMonth
     );
+    
+    // Previous period data for trend calculation
+    const lastMonthTransactions = transactions.filter(t => {
+      const date = new Date(t.created_at);
+      return date >= lastMonth && date <= lastMonthEnd;
+    });
+    const lastMonthAppointments = appointments.filter(a => {
+      const date = new Date(a.start_time);
+      return date >= lastMonth && date <= lastMonthEnd;
+    });
+    const lastMonthCustomers = customers.filter(c => {
+      const date = new Date(c.created_at);
+      return date >= lastMonth && date <= lastMonthEnd;
+    });
     
     // Status breakdown
     const appointmentsByStatus = {};
@@ -229,10 +247,48 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       .slice(0, 3)
       .map(([hour]) => parseInt(hour));
     
+    // Calculate trend percentages (comparing current vs previous period)
+    const calculateTrend = (current, previous) => {
+      // Validate inputs
+      if (typeof current !== 'number' || typeof previous !== 'number') return null;
+      if (isNaN(current) || isNaN(previous)) return null;
+      
+      // If no previous data, return null (no trend to show)
+      if (previous === 0) {
+        // If current is also 0, no change
+        if (current === 0) return 0;
+        // If we went from 0 to something, that's new growth (show as null to avoid infinity)
+        return null;
+      }
+      
+      // Calculate percentage change
+      const change = ((current - previous) / previous) * 100;
+      
+      // Cap extreme changes at ±999% to avoid display issues
+      if (change > 999) return 999;
+      if (change < -999) return -999;
+      
+      return Math.round(change * 10) / 10; // Round to 1 decimal place
+    };
+    
+    // Calculate current and previous period metrics
+    const currentMonthRevenue = thisMonthTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0);
+    const lastMonthRevenue = lastMonthTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0);
+    const currentMonthAppointments = thisMonthTransactions.length;
+    const lastMonthAppointmentsCount = lastMonthAppointments.length;
+    const currentMonthNewCustomers = customers.filter(c => new Date(c.created_at) >= thisMonth).length;
+    const lastMonthNewCustomers = lastMonthCustomers.length;
+    
+    // Calculate satisfaction from actual ratings if available
+    const ratingsData = appointments.filter(a => a.rating && a.rating > 0);
+    const currentSatisfaction = ratingsData.length > 0 
+      ? ratingsData.reduce((sum, a) => sum + a.rating, 0) / ratingsData.length 
+      : 0;
+    
     const analyticsMetrics = {
       // Revenue metrics
       total_revenue: totalRevenue,
-      monthly_revenue: thisMonthTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0),
+      monthly_revenue: currentMonthRevenue,
       daily_revenue: todayTransactions.reduce((sum, t) => sum + (parseFloat(t.total_amount) || 0), 0),
       weekly_revenue: Math.round(totalRevenue / 4), // Approximate
       // Calculate average ticket size from actual transactions, not service list prices
@@ -268,6 +324,18 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       active_barbers: services.length > 0 ? Math.ceil(services.length / 3) : 1,
       payment_success_rate: transactions.length > 0 ? 
         (transactions.filter(t => t.payment_status === 'completed').length / transactions.length) * 100 : 0,
+      
+      // Add real trend data based on period comparisons
+      trends: {
+        revenue_trend: calculateTrend(currentMonthRevenue, lastMonthRevenue),
+        customers_trend: calculateTrend(currentMonthNewCustomers, lastMonthNewCustomers),
+        appointments_trend: calculateTrend(currentMonthAppointments, lastMonthAppointmentsCount),
+        satisfaction_trend: null, // Need historical satisfaction data for trends
+        has_sufficient_data: (lastMonthRevenue > 0 || lastMonthAppointmentsCount > 0 || lastMonthNewCustomers > 0)
+      },
+      
+      // Satisfaction metric (use actual if available)
+      satisfaction: currentSatisfaction,
       
       last_updated: new Date().toISOString(),
       data_freshness: "supabase_comprehensive"

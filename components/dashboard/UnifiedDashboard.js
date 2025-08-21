@@ -340,6 +340,14 @@ export default function UnifiedDashboard({ user, profile }) {
               capacity: Math.round(apiData.occupancy_rate || 0),
               nextAppointment: apiData.appointments_today > 0 ? 'Check calendar' : 'No appointments'
             },
+            // Pass through the real trends data from API
+            trends: apiData.trends || {
+              revenue_trend: null,
+              customers_trend: null,
+              appointments_trend: null,
+              satisfaction_trend: null,
+              has_sufficient_data: false
+            },
             business_insights: {
               active_barbershops: 1,
               total_ai_recommendations: apiData.most_popular_services?.length || 0,
