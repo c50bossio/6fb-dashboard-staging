@@ -176,13 +176,15 @@ export default function CustomerIntelligenceDashboardOptimized() {
   const cacheRef = useRef({})
   const abortControllerRef = useRef(null)
   
-  // Get barbershop ID with memoization
-  const barbershopId = useMemo(() => {
+  // Get barbershop ID (using same pattern as original)
+  const getBarbershopId = useCallback(() => {
     return profile?.barbershop_id || profile?.shop_id || profile?.barbershopId
   }, [profile])
 
   // Fetch customer count with abort control
   useEffect(() => {
+    const barbershopId = getBarbershopId()
+    
     if (!user || !barbershopId) {
       setLoading(false)
       return
@@ -214,10 +216,11 @@ export default function CustomerIntelligenceDashboardOptimized() {
     fetchCustomerCount()
     
     return () => controller.abort()
-  }, [user, barbershopId])
+  }, [user, getBarbershopId])
 
   // Lazy load analytics with caching and pagination
   const fetchAnalyticsData = useCallback(async (forceRefresh = false) => {
+    const barbershopId = getBarbershopId()
     if (!user || !barbershopId || actualCustomerCount < 5) return
     
     // Check cache first
@@ -297,7 +300,7 @@ export default function CustomerIntelligenceDashboardOptimized() {
     } finally {
       setAnalyticsState(prev => ({ ...prev, loading: false }))
     }
-  }, [user, barbershopId, actualCustomerCount, selectedTimeframe, pagination])
+  }, [user, getBarbershopId, actualCustomerCount, selectedTimeframe, pagination])
 
   // Lazy load analytics only when needed
   useEffect(() => {
