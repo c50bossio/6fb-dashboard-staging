@@ -142,18 +142,39 @@ export default function CustomerIntelligenceDashboard() {
 
   // Fetch actual customer count from the working customer API
   useEffect(() => {
-    if (!user || !profile?.barbershop_id) return
+    // Try multiple possible barbershop ID fields
+    const barbershopId = profile?.barbershop_id || profile?.shop_id || profile?.barbershopId
+    
+    console.log('🔍 Intelligence Dashboard: Looking for barbershop ID', {
+      profile,
+      barbershop_id: profile?.barbershop_id,
+      shop_id: profile?.shop_id,
+      barbershopId: profile?.barbershopId,
+      resolvedId: barbershopId
+    })
+    
+    if (!user || !barbershopId) {
+      console.log('⚠️ Intelligence Dashboard: Missing user or barbershop ID')
+      setLoading(false)
+      return
+    }
 
     const fetchCustomerCount = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`/api/customers?barbershop_id=${profile.barbershop_id}&limit=1`)
+        console.log('📊 Intelligence Dashboard: Fetching customer count for barbershop:', barbershopId)
+        const response = await fetch(`/api/customers?barbershop_id=${barbershopId}&limit=1`)
         const data = await response.json()
+        console.log('📊 Intelligence Dashboard: Customer API response:', data)
+        
         if (data.success && data.total !== undefined) {
           setActualCustomerCount(data.total)
+          console.log('✅ Intelligence Dashboard: Customer count set to:', data.total)
+        } else {
+          console.log('⚠️ Intelligence Dashboard: No customer count in response')
         }
       } catch (error) {
-        console.error('Failed to fetch customer count:', error)
+        console.error('❌ Intelligence Dashboard: Failed to fetch customer count:', error)
         setError('Failed to load customer data')
       } finally {
         setLoading(false)
@@ -165,7 +186,8 @@ export default function CustomerIntelligenceDashboard() {
 
   // Fetch customer analytics data (optional - don't block UI if this fails)
   useEffect(() => {
-    if (!user || !profile?.barbershop_id) return
+    const barbershopId = profile?.barbershop_id || profile?.shop_id || profile?.barbershopId
+    if (!user || !barbershopId) return
 
     const fetchAnalyticsData = async () => {
       try {
@@ -174,11 +196,11 @@ export default function CustomerIntelligenceDashboard() {
         
         // Fetch customer analytics data from our Next.js API routes
         const [healthResponse, clvResponse, churnResponse, segmentsResponse, insightsResponse] = await Promise.all([
-          fetch(`/api/customers/analytics/health-scores?barbershop_id=${profile.barbershop_id}&limit=50`),
-          fetch(`/api/customers/analytics/clv?barbershop_id=${profile.barbershop_id}&limit=50&sort_by=total_clv&sort_desc=true`),
-          fetch(`/api/customers/analytics/churn?barbershop_id=${profile.barbershop_id}&limit=20&min_probability=0.3`),
-          fetch(`/api/customers/analytics/segments?barbershop_id=${profile.barbershop_id}`),
-          fetch(`/api/customers/analytics/insights?barbershop_id=${profile.barbershop_id}&insight_type=summary&time_period=${selectedTimeframe}`)
+          fetch(`/api/customers/analytics/health-scores?barbershop_id=${barbershopId}&limit=50`),
+          fetch(`/api/customers/analytics/clv?barbershop_id=${barbershopId}&limit=50&sort_by=total_clv&sort_desc=true`),
+          fetch(`/api/customers/analytics/churn?barbershop_id=${barbershopId}&limit=20&min_probability=0.3`),
+          fetch(`/api/customers/analytics/segments?barbershop_id=${barbershopId}`),
+          fetch(`/api/customers/analytics/insights?barbershop_id=${barbershopId}&insight_type=summary&time_period=${selectedTimeframe}`)
         ])
 
         if (!healthResponse.ok || !clvResponse.ok || !churnResponse.ok || !segmentsResponse.ok) {
@@ -209,7 +231,7 @@ export default function CustomerIntelligenceDashboard() {
     }
 
     fetchAnalyticsData()
-  }, [user, profile?.barbershop_id, selectedTimeframe])
+  }, [user, profile?.barbershop_id, profile?.shop_id, profile?.barbershopId, selectedTimeframe])
 
   // Calculate summary metrics
   const summaryMetrics = {
