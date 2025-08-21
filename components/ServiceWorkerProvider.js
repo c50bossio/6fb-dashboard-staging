@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from '@/hooks/use-toast'
+import cacheManager from '@/lib/cacheManager'
 
 export default function ServiceWorkerProvider({ children }) {
   const [isOnline, setIsOnline] = useState(true)
@@ -11,6 +12,26 @@ export default function ServiceWorkerProvider({ children }) {
   useEffect(() => {
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       registerServiceWorker()
+      
+      // Setup automatic update detection
+      cacheManager.setupUpdatePrompt((registration) => {
+        setSwUpdateAvailable(true)
+        setSwRegistration(registration)
+        
+        toast({
+          title: "Update Available",
+          description: "A new version is ready. Click to update.",
+          action: (
+            <button
+              onClick={() => handleUpdate(registration)}
+              className="text-sm font-medium underline"
+            >
+              Update Now
+            </button>
+          ),
+          duration: 10000
+        })
+      })
     }
 
     const handleOnline = () => {
@@ -74,9 +95,16 @@ export default function ServiceWorkerProvider({ children }) {
         })
       })
 
+      // Check for updates more frequently - every 5 minutes
       setInterval(() => {
         registration.update()
-      }, 60 * 60 * 1000)
+        cacheManager.checkForUpdates().then(result => {
+          if (result.updateAvailable) {
+            console.log('[ServiceWorker] Update detected via build check')
+            setSwUpdateAvailable(true)
+          }
+        })
+      }, 5 * 60 * 1000)
 
     } catch (error) {
       console.error('Service Worker registration failed:', error)
@@ -89,6 +117,17 @@ export default function ServiceWorkerProvider({ children }) {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload()
     })
+  }
+  
+  async function handleUpdate(registration) {
+    try {
+      // Use cache manager to handle the update properly
+      await cacheManager.applyUpdate(registration)
+    } catch (error) {
+      console.error('Update failed:', error)
+      // Fallback to simple reload
+      window.location.reload(true)
+    }
   }
 
   useEffect(() => {

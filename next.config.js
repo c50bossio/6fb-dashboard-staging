@@ -8,6 +8,20 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
+  // Generate unique build ID for cache busting
+  generateBuildId: async () => {
+    // Use timestamp for unique build ID
+    const buildId = Date.now().toString();
+    console.log(`[Build] Generating build ID: ${buildId}`);
+    return buildId;
+  },
+  
+  // Expose build ID to client for cache validation
+  env: {
+    NEXT_PUBLIC_BUILD_ID: Date.now().toString(),
+    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+  },
+  
   // Experimental features for optimizing bundle
   experimental: {
     outputFileTracingExcludes: {
@@ -66,6 +80,26 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: "frame-ancestors *;",
+          },
+        ],
+      },
+      // Add cache control headers for static assets
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, immutable, max-age=31536000',
+          },
+        ],
+      },
+      // Use stale-while-revalidate for HTML pages
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 's-maxage=1, stale-while-revalidate=59',
           },
         ],
       },

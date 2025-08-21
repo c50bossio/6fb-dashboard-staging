@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 /**
  * Standardized Button component for consistent styling across the dashboard
  * Replaces scattered button classes with a reusable component

@@ -53,6 +53,8 @@ export default function CustomersPage() {
   const [notification, setNotification] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [selectedCustomerForBadges, setSelectedCustomerForBadges] = useState(null)
+  const [badgeView, setBadgeView] = useState('overview') // overview, customer-specific, leaderboard
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'intelligence')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [selectedJourneyCustomer, setSelectedJourneyCustomer] = useState(null)
@@ -510,9 +512,6 @@ export default function CustomersPage() {
 
   // Render badges content
   const renderBadgesContent = () => {
-    const [selectedCustomerForBadges, setSelectedCustomerForBadges] = useState(null)
-    const [badgeView, setBadgeView] = useState('overview') // overview, customer-specific, leaderboard
-
     if (badgeView === 'customer-specific' && selectedCustomerForBadges) {
       return (
         <div className="space-y-6">
