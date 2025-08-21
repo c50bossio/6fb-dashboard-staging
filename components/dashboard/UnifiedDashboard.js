@@ -99,17 +99,12 @@ export default function UnifiedDashboard({ user, profile }) {
   const [cacheTimestamp, setCacheTimestamp] = useState(null)
   const [errorState, setErrorState] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
-  const [circuitBreakerOpen, setCircuitBreakerOpen] = useState(false)
 
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
-    // Circuit breaker: prevent infinite loops
-    if (circuitBreakerOpen && !forceRefresh) {
-      console.warn('Circuit breaker open - skipping dashboard data load')
-      
-      // Even with circuit breaker, check if this is an onboarding issue
-      const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
-      
-      if (isOnboardingIncomplete && !errorState?.isWelcome) {
+    // Check if onboarding is incomplete
+    const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
+    
+    if (isOnboardingIncomplete && !errorState?.isWelcome) {
         // Show welcome message instead of blocking
         const roleSpecificMessage = profile?.role === 'BARBER' 
           ? {
@@ -144,14 +139,12 @@ export default function UnifiedDashboard({ user, profile }) {
           buttonText: roleSpecificMessage.buttonText,
           isWelcome: true
         })
-      }
       return
     }
 
     // Rate limiting: prevent excessive retries
     if (retryCount >= 3 && !forceRefresh) {
       console.warn('Max retry attempts reached - stopping dashboard data load')
-      setCircuitBreakerOpen(true)
       
       // Check if this is an onboarding issue vs technical issue before setting error
       const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
@@ -207,7 +200,6 @@ export default function UnifiedDashboard({ user, profile }) {
       if (forceRefresh) {
         setErrorState(null)
         setRetryCount(0)
-        setCircuitBreakerOpen(false)
       }
 
       // Get barbershop_id using helper function
@@ -296,7 +288,6 @@ export default function UnifiedDashboard({ user, profile }) {
         
         // Only open circuit breaker for technical errors, not onboarding issues
         if (retryCount >= 2 && !isOnboardingIncomplete) {
-          setCircuitBreakerOpen(true)
         }
         return
       }
@@ -433,7 +424,7 @@ export default function UnifiedDashboard({ user, profile }) {
     } finally {
       setIsLoading(false)
     }
-  }, [currentMode, user, profile, retryCount, circuitBreakerOpen])
+  }, [currentMode, user, profile, retryCount])
 
 
   useEffect(() => {
@@ -746,7 +737,7 @@ export default function UnifiedDashboard({ user, profile }) {
                   </p>
                   
                   <div className="flex flex-wrap gap-3">
-                    {circuitBreakerOpen && (
+                    {retryCount >= 3 && (
                       <button
                         onClick={() => loadDashboardData(true)}
                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700"

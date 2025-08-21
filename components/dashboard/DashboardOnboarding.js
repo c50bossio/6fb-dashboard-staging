@@ -39,9 +39,22 @@ import StaffSetup from '../onboarding/StaffSetup'
 
 // Import analytics
 
-export default function DashboardOnboarding({ user, profile, onComplete, updateProfile, forceShow = false }) {
-  // Initialize from profile if available
-  const [currentStep, setCurrentStep] = useState(profile?.onboarding_step || 0)
+export default function DashboardOnboarding({ 
+  user, 
+  profile, 
+  currentStep: initialStep = 0,
+  onStepChange,
+  onComplete, 
+  onSkip,
+  onMinimize 
+}) {
+  // Use controlled step from parent
+  const currentStep = initialStep
+  const setCurrentStep = (step) => {
+    if (onStepChange) {
+      onStepChange(step)
+    }
+  }
   const [isMinimized, setIsMinimized] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -70,42 +83,16 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
     completedSteps: []
   })
 
-  // Initialize analytics on mount and determine visibility (NO ASYNC UPDATES)
+  // Component is only rendered when it should be shown,
+  // so we can simplify initialization
   useEffect(() => {
-    // Simple visibility logic without async updates to prevent render loops
-    const wasSkipped = profile?.onboarding_status === 'skipped'
-    const wasMinimized = profile?.onboarding_status === 'minimized'
-    const isCompleted = profile?.onboarding_completed === true
-    
-    // Don't show if already completed (unless forced)
-    if (isCompleted && !forceShow) {
-      setShowOnboarding(false)
-      return
-    }
-    
-    // Don't show if skipped (unless forced)  
-    if (wasSkipped && !forceShow) {
-      setShowOnboarding(false)
-      return
-    }
-    
-    // Show minimized if was minimized (unless forced)
-    if (wasMinimized && !forceShow) {
-      setIsMinimized(true)
-      setShowOnboarding(false)
-      return
-    }
-    
-    // Show onboarding for all other cases
-    setShowOnboarding(true)
-    setIsMinimized(false)
-    
-    // Track analytics (safe - no state updates)
-    if (!wasSkipped && !isCompleted) {
-      internalAnalytics.onboarding.started(
-        profile?.role || 'SHOP_OWNER',
-        onboardingData.businessType || 'barbershop'
-      )
+    // Track onboarding start
+    if (typeof window !== 'undefined') {
+      internalAnalytics.track('onboarding_started', {
+        userId: user?.id,
+        step: currentStep,
+        role: profile?.role || 'SHOP_OWNER'
+      })
     }
 
     // Cleanup on unmount
@@ -114,7 +101,7 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
         clearInterval(autoSaveInterval.current)
       }
     }
-  }, [forceShow, profile?.onboarding_status, profile?.onboarding_completed])
+  }, [])
 
   // Define steps based on user role
   const getStepsForRole = (role) => {
@@ -198,40 +185,18 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
   }
 
   const handleSkip = () => {
-    const currentStepData = steps[currentStep]
-    
     // Track skip
-    internalAnalytics.onboarding.stepSkipped(
-      currentStepData.id,
-      currentStep,
-      'user_closed_modal'
-    )
-    
-    // Track abandonment
-    internalAnalytics.onboarding.abandoned(
-      currentStepData.id,
-      currentStep,
-      steps.length,
-      'user_skipped'
-    )
-    
-    // Close modal immediately for responsive UI
-    setShowOnboarding(false)
-    
-    // Save skip status to database in background (non-blocking)
-    updateProfile({
-      onboarding_status: 'skipped',
-      onboarding_step: currentStep,
-      onboarding_last_step: currentStepData?.id
-    }).catch(error => {
-      // If onboarding_status column doesn't exist, try without it
-      updateProfile({
-        onboarding_step: currentStep,
-        onboarding_last_step: currentStepData?.id
-      }).catch(fallbackError => {
-        console.log('Profile update failed (non-critical):', fallbackError)
+    if (typeof window !== 'undefined') {
+      internalAnalytics.track('onboarding_skipped', {
+        userId: user?.id,
+        step: currentStep
       })
-    })
+    }
+    
+    // Call parent's skip handler
+    if (onSkip) {
+      onSkip()
+    }
   }
 
   const handleComplete = async () => {
@@ -421,30 +386,18 @@ export default function DashboardOnboarding({ user, profile, onComplete, updateP
               <div className="flex gap-2">
                 <button
                   onClick={() => {
-                    // Minimize immediately for responsive UI
-                    setIsMinimized(true)
-                    
                     // Track minimize
-                    const currentStepData = steps[currentStep]
-                    internalAnalytics.onboarding.minimized(
-                      currentStepData?.id,
-                      currentStep
-                    )
-                    
-                    // Save minimized status to database in background (non-blocking)
-                    updateProfile({
-                      onboarding_status: 'minimized',
-                      onboarding_step: currentStep,
-                      onboarding_last_step: currentStepData?.id
-                    }).catch(error => {
-                      // If onboarding_status column doesn't exist, try without it
-                      updateProfile({
-                        onboarding_step: currentStep,
-                        onboarding_last_step: currentStepData?.id
-                      }).catch(fallbackError => {
-                        console.log('Profile update failed (non-critical):', fallbackError)
+                    if (typeof window !== 'undefined') {
+                      internalAnalytics.track('onboarding_minimized', {
+                        userId: user?.id,
+                        step: currentStep
                       })
-                    })
+                    }
+                    
+                    // Call parent's minimize handler
+                    if (onMinimize) {
+                      onMinimize()
+                    }
                   }}
                   className="text-white/80 hover:text-white transition-colors"
                   title="Minimize"
