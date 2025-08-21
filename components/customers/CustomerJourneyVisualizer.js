@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import React, { 
   CalendarDaysIcon,
   ChatBubbleLeftRightIcon,
   EnvelopeIcon,
@@ -14,9 +14,9 @@ import {
   TrophyIcon,
   HeartIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
-import { useAuth } from '../SupabaseAuthProvider'
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '../ui'
+import React, { useState, useEffect } from 'react'
+import React, { useAuth } from '../SupabaseAuthProvider'
+import React, { Card, CardHeader, CardTitle, CardContent, Badge } from '../ui'
 
 // Timeline Event Component
 const TimelineEvent = ({ event, isLast }) => {
