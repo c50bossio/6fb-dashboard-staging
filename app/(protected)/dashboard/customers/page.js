@@ -24,6 +24,7 @@ import { useSearchParams } from 'next/navigation'
 
 import { 
   CustomerIntelligenceDashboard,
+  CustomerIntelligenceDashboardOptimized,
   CustomerJourneyVisualizer, 
   SegmentBuilder, 
   CustomerProfileEnhanced, 
