@@ -22,9 +22,13 @@ import {
 import dynamic from 'next/dynamic'
 import QRCode from 'qrcode'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import AddBarberGuidanceDialog from '../../../../components/calendar/AddBarberGuidanceDialog'
 import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
+import EmptyBarberState from '../../../../components/calendar/EmptyBarberState'
 import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
+import OnboardingRequiredDialog from '../../../../components/onboarding/OnboardingRequiredDialog'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { useToast } from '../../../../components/ToastContainer'
 import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
 import { 
@@ -37,11 +41,7 @@ import {
   formatAppointment,
   exportToCSV 
 } from '../../../../lib/calendar-data'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { getOrAssignShopId } from '../../../../lib/ensure-user-shop'
-import EmptyBarberState from '../../../../components/calendar/EmptyBarberState'
-import OnboardingRequiredDialog from '../../../../components/onboarding/OnboardingRequiredDialog'
-import AddBarberGuidanceDialog from '../../../../components/calendar/AddBarberGuidanceDialog'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views

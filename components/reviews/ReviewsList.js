@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   FunnelIcon,
   MagnifyingGlassIcon,
@@ -8,8 +7,9 @@ import {
   ArrowPathIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
-import ReviewCard from './ReviewCard'
+import { useState, useEffect } from 'react'
 import ReviewAttributionModal from './ReviewAttributionModal'
+import ReviewCard from './ReviewCard'
 
 export default function ReviewsList({ 
   reviews = [],

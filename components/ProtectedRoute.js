@@ -10,6 +10,14 @@ export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [isClient, setIsClient] = useState(false)
+  
+  // Debug authentication state
+  console.log('🔒 [PROTECTED ROUTE] Auth state:', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    loading,
+    isClient
+  })
 
   useEffect(() => {
     setIsClient(true)

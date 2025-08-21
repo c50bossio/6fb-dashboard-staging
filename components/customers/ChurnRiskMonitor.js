@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   ExclamationTriangleIcon,
   BellIcon,
@@ -19,8 +18,9 @@ import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '../ui'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '../ui'
 
 // Risk Level Component
 const RiskLevelIndicator = ({ level, score }) => {

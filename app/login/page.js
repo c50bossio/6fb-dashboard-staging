@@ -1,10 +1,5 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/browser-client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { LogoHeader } from '@/components/ui/Logo'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { 
   EnvelopeIcon, 
   LockClosedIcon, 
@@ -12,6 +7,11 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { LogoHeader } from '@/components/ui/Logo'
+import { createClient } from '@/lib/supabase/browser-client'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')

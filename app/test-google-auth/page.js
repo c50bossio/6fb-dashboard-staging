@@ -1,7 +1,7 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/browser-client'
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/browser-client'
 
 export default function TestGoogleAuth() {
   const [status, setStatus] = useState('')

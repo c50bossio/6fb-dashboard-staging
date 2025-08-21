@@ -3,8 +3,8 @@
  * Handles leaderboards, achievements, badges, and gamification features
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -145,7 +145,7 @@ export async function POST(request) {
     }
 
     // Get barbershop for user
-    let { data: barbershops, error: shopError } = await supabase
+    const { data: barbershops, error: shopError } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
@@ -823,7 +823,7 @@ async function getCustomerStreak(customerId, barbershopId) {
 
     // Check consecutive months
     const now = new Date();
-    let checkMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const checkMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
     while (monthsWithVisits.has(`${checkMonth.getFullYear()}-${checkMonth.getMonth()}`)) {
       streak++;

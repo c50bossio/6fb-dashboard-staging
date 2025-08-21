@@ -1,8 +1,8 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/browser-client'
-import { useRouter } from 'next/navigation'
 
 export default function SimpleLogin() {
   const [loading, setLoading] = useState(false)

@@ -3,8 +3,8 @@
  * Handles referral tracking, rewards, and referral program management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -155,7 +155,7 @@ export async function POST(request) {
     }
 
     // Get barbershop for user
-    let { data: barbershops, error: shopError } = await supabase
+    const { data: barbershops, error: shopError } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
@@ -324,7 +324,7 @@ export async function PUT(request) {
     }
 
     // Get barbershop for user
-    let { data: barbershops, error: shopError } = await supabase
+    const { data: barbershops, error: shopError } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)

@@ -1,9 +1,9 @@
 'use client'
 
-import { useSearchParams, useRouter } from 'next/navigation'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 const plans = {
   individual: {

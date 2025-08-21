@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function OAuthImplicit() {
   const [loading, setLoading] = useState(false)

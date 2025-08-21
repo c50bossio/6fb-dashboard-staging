@@ -3,16 +3,16 @@
  * Comprehensive feedback collection interface for customer reviews, NPS, and surveys
  */
 
-import React, { useState, useEffect } from 'react'
-import { Button } from '../ui/Button'
-import { Modal } from '../ui/Modal'
-import { Textarea } from '../ui/Textarea'
-import { Input } from '../ui/Input'
-import { Card } from '../ui/card'
-import { Badge } from '../ui/badge'
-import { Tabs } from '../ui/tabs'
-import { toast } from '../ui/toast'
 import { StarIcon, ThumbsUpIcon, ThumbsDownIcon, SendIcon, MessageSquareIcon, BarChart3Icon } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/Button'
+import { Card } from '../ui/card'
+import { Input } from '../ui/Input'
+import { Modal } from '../ui/Modal'
+import { Tabs } from '../ui/tabs'
+import { Textarea } from '../ui/Textarea'
+import { toast } from '../ui/toast'
 
 const FeedbackCollector = ({
   customerId,

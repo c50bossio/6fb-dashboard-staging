@@ -4,8 +4,8 @@ import { BellIcon, ChatBubbleLeftRightIcon, ChartBarIcon } from '@heroicons/reac
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 
-import { useRealtimeNotifications } from '@/hooks/useRealtimeDatabase'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useRealtimeNotifications } from '@/hooks/useRealtimeDatabase'
 
 
 const RealtimeDashboard = dynamic(

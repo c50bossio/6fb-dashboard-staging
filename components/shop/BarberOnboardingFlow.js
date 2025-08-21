@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   DocumentTextIcon,
   CheckCircleIcon,
@@ -14,6 +13,7 @@ import {
   CogIcon,
   CloudArrowUpIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function BarberOnboardingFlow({ barberId, onComplete }) {
   const [onboardingData, setOnboardingData] = useState(null)

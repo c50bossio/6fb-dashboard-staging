@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
 import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import React from 'react'
 
 class ComponentErrorBoundary extends React.Component {
   constructor(props) {

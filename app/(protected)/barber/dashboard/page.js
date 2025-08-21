@@ -14,8 +14,8 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import ComponentErrorBoundary from '../../../../components/dashboard/ComponentErrorBoundary'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberDashboard() {
   const { user, profile } = useAuth()

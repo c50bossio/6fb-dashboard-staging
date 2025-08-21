@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { decrypt } from '@/lib/cin7-client.js'
+import { createClient } from '@/lib/supabase/server'
 
 async function fetchCin7Products(accountId, apiKey) {
   try {

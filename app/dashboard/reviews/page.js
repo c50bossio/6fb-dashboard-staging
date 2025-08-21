@@ -20,8 +20,8 @@ import { useState, useEffect } from 'react'
 
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import ProtectedRoute from '../../../components/ProtectedRoute'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
 import ReviewCardEnhanced from '../../../components/reviews/ReviewCardEnhanced'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
 
 export default function ReviewsPage() {
   const { user, profile } = useAuth()

@@ -1,6 +1,5 @@
 'use client'
 
-import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { 
   ExclamationTriangleIcon, 
@@ -8,6 +7,7 @@ import {
   ArrowRightIcon,
   XMarkIcon 
 } from '@heroicons/react/24/outline'
+import { Fragment } from 'react'
 
 export default function OnboardingRequiredDialog({ 
   isOpen, 

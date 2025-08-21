@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from './SupabaseAuthProvider'
+import { useEffect } from 'react'
 import LoadingSpinner from './LoadingSpinner'
+import { useAuth } from './SupabaseAuthProvider'
 
 /**
  * Tier Protection Component

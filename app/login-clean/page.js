@@ -1,8 +1,8 @@
 'use client'
 
 import { createClient } from '@supabase/supabase-js'
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function CleanLogin() {
   const [status, setStatus] = useState('idle')

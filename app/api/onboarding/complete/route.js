@@ -14,7 +14,7 @@ export async function POST(request) {
     const { completedSteps, skippedSteps, data: onboardingData, prePopulatedData } = body
     
     // Handle multiple data formats for backward compatibility
-    let finalData = onboardingData || body.onboardingData || body
+    const finalData = onboardingData || body.onboardingData || body
     
     // Map new onboarding fields to expected format
     if (finalData.barbershopName && !finalData.businessName) {

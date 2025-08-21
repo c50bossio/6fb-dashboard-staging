@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   UserIcon,
   PhoneIcon,
@@ -20,8 +19,9 @@ import {
   PlusIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '../ui'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '../ui'
 
 // Health Score Gauge Component
 const HealthScoreGauge = ({ score, size = 'sm' }) => {

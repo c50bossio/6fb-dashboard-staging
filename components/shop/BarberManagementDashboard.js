@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   UserIcon,
   UserPlusIcon,
@@ -17,6 +16,7 @@ import {
   TrashIcon,
   StarIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function BarberManagementDashboard() {
   const [barbers, setBarbers] = useState([])

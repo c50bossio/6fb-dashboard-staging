@@ -18,9 +18,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-import GlobalNavigation from '../../components/GlobalNavigation'
-import ProtectedRoute from '../../components/ProtectedRoute'
-import { useAuth } from '../../components/SupabaseAuthProvider'
 import { 
   CustomerIntelligenceDashboard, 
   CustomerJourneyVisualizer, 
@@ -28,6 +25,9 @@ import {
   CustomerProfileEnhanced, 
   ChurnRiskMonitor 
 } from '../../components/customers'
+import GlobalNavigation from '../../components/GlobalNavigation'
+import ProtectedRoute from '../../components/ProtectedRoute'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 
 const Customers = [
   {

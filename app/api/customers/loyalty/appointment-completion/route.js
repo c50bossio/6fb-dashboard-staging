@@ -3,8 +3,8 @@
  * Handles loyalty points, health score updates, and feedback requests after appointment completion
  */
 
-import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from 'next/server'
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -75,7 +75,7 @@ async function calculateLoyaltyPoints(serviceAmount, loyaltyProgram) {
     const bonusThreshold = earningRules.bonus_threshold || null
     const bonusPoints = earningRules.bonus_points || 0
     
-    let basePoints = Math.floor(serviceAmount * pointsPerDollar * multiplier)
+    const basePoints = Math.floor(serviceAmount * pointsPerDollar * multiplier)
     let bonusAmount = 0
     
     // Apply bonus if service amount exceeds threshold

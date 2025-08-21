@@ -3,9 +3,9 @@ import { z } from 'zod'
 import { createClient } from '../../../../lib/supabase/client'
 
 // Import the existing services
-const { notificationService } = require('../../../../services/notification-service')
 const { calendarIntegrationService } = require('../../../../services/calendar-integration-service')
 const { integrationConfigService } = require('../../../../services/integration-config-service')
+const { notificationService } = require('../../../../services/notification-service')
 
 export const runtime = 'nodejs'
 

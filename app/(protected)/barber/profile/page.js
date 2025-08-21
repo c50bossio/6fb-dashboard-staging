@@ -12,9 +12,9 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import ReviewsList from '@/components/reviews/ReviewsList'
 import ReviewStats from '@/components/reviews/ReviewStats'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 import useReviews from '@/hooks/useReviews'
 
 export default function BarberProfilePage() {

@@ -20,6 +20,7 @@ import {
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 
+import { getUserBarbershopId, createBarbershopForOwner } from '@/lib/barbershop-helper'
 import ActionCenter from './ActionCenter'
 import AICoachPanel from './AICoachPanel'
 import AnalyticsPanel from './AnalyticsPanel'
@@ -27,7 +28,6 @@ import ExecutiveLoadingState from './ExecutiveLoadingState'
 import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
-import { getUserBarbershopId, createBarbershopForOwner } from '@/lib/barbershop-helper'
 
 
 const DASHBOARD_MODES = {
@@ -427,26 +427,26 @@ export default function UnifiedDashboard({ user, profile }) {
         return (
           <div className="space-y-6">
             {/* AI Business Insights Header */}
-            <div className="bg-gradient-to-r from-gold-500 to-olive-600 rounded-xl p-6 text-white">
+            <div className="bg-olive-600 rounded-xl p-6 text-white">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold mb-1">AI Business Insights</h3>
-                  <p className="text-gold-100">Intelligent recommendations to grow your business</p>
+                  <p className="text-olive-100">Intelligent recommendations to grow your business</p>
                 </div>
                 <div className="flex items-center gap-6">
                   {aiAgents.total > 0 ? (
                     <>
                       <div className="text-center">
                         <div className="text-3xl font-bold">{aiAgents.total}</div>
-                        <div className="text-sm text-gold-100">AI Coaches</div>
+                        <div className="text-sm text-olive-100">AI Coaches</div>
                       </div>
                       <div className="text-center">
                         <div className="text-3xl font-bold">{aiAgents.active}</div>
-                        <div className="text-sm text-gold-100">Working for You</div>
+                        <div className="text-sm text-olive-100">Working for You</div>
                       </div>
                     </>
                   ) : (
-                    <div className="text-sm text-gold-100">
+                    <div className="text-sm text-olive-100">
                       AI agents initializing...
                     </div>
                   )}

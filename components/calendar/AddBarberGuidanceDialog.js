@@ -1,6 +1,5 @@
 'use client'
 
-import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { 
   UserPlusIcon, 
@@ -11,6 +10,7 @@ import {
   ClockIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
+import { Fragment } from 'react'
 
 export default function AddBarberGuidanceDialog({ 
   isOpen, 

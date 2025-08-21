@@ -91,17 +91,17 @@ export default function UnifiedExecutiveSummary({ data }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-gold-600 text-white px-6 py-4">
+      <div className="bg-olive-600 text-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold">Executive Overview</h2>
-            <p className="text-indigo-100 text-sm mt-1">
+            <p className="text-olive-100 text-sm mt-1">
               {greeting} • {formatDate(currentTime)}
             </p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-            <div className="text-sm text-indigo-100">Local Time</div>
+            <div className="text-sm text-olive-100">Local Time</div>
           </div>
         </div>
       </div>

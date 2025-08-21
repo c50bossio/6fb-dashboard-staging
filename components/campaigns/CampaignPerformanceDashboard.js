@@ -6,10 +6,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '../ui/card';
 import { Button } from '../ui/Button';
-import { StatsCard } from '../ui/StatsCard';
+import { Card } from '../ui/card';
 import { Loading } from '../ui/Loading';
+import { StatsCard } from '../ui/StatsCard';
 
 // Simple chart component (you can replace with Chart.js, Recharts, etc.)
 const SimpleChart = ({ data, title, type = 'line' }) => {

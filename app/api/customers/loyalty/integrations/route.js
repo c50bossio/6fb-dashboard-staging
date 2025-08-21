@@ -3,8 +3,8 @@
  * Handles integration with appointments, payments, and other systems
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -124,7 +124,7 @@ async function handleAppointmentCompleted(data) {
       const bonusMultipliers = earningRules.bonus_multipliers || {};
 
       // Base points calculation
-      let basePoints = Math.floor(parseFloat(service_amount) * pointsPerDollar);
+      const basePoints = Math.floor(parseFloat(service_amount) * pointsPerDollar);
 
       // Apply tier multiplier if customer has a tier
       let tierMultiplier = 1.0;

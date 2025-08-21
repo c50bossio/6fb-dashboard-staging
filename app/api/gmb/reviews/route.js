@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { checkGMBRateLimit, logGMBApiUsage } from '@/lib/gmb-rate-limiter'
 import { logGMBAPIRequest } from '@/lib/gmb-audit-logger'
+import { checkGMBRateLimit, logGMBApiUsage } from '@/lib/gmb-rate-limiter'
 export const runtime = 'edge'
 
 const supabase = createClient(
@@ -15,7 +15,7 @@ const supabase = createClient(
  */
 export async function GET(request) {
   const startTime = Date.now()
-  let auditData = {
+  const auditData = {
     barbershop_id: null,
     user_id: null,
     endpoint: '/api/gmb/reviews',
