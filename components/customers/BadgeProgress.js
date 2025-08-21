@@ -8,6 +8,7 @@ import {
   BADGE_CATEGORIES,
   formatProgressText 
 } from '../../utils/badgeSystem'
+import { Trophy, Star, Award, Gift, Calendar } from 'lucide-react'
 
 const categoryIcons = {
   loyalty: Trophy,
