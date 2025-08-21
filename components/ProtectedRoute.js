@@ -24,9 +24,17 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     setIsClient(true)
     
+    console.log('🔒 [PROTECTED ROUTE] useEffect triggered with:', {
+      pathname,
+      hasUser: !!user,
+      loading,
+      isClient
+    })
+    
     // Check force sign out FIRST before any other checks
     const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
     if (forceSignOut) {
+      console.log('🔒 [PROTECTED ROUTE] Force sign out detected')
       sessionStorage.removeItem('force_sign_out')
       router.push('/login')
       return
@@ -42,11 +50,13 @@ export default function ProtectedRoute({ children }) {
         sessionStorage.setItem('auth_return_url', pathname)
         console.log('🔒 [PROTECTED ROUTE] Storing return URL for redirect:', pathname)
       }
-      console.log('🔒 [PROTECTED ROUTE] No authenticated user, redirecting to login')
+      console.log('🔒 [PROTECTED ROUTE] No authenticated user, redirecting to login from:', pathname)
       router.push('/login')
     } else if (!loading && user) {
       // User is authenticated, stay on current page
       console.log('🔒 [PROTECTED ROUTE] User authenticated, staying on:', pathname)
+    } else if (loading) {
+      console.log('🔒 [PROTECTED ROUTE] Still loading auth state...')
     }
   }, [loading, user, router, pathname])
 

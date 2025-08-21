@@ -244,6 +244,9 @@ function SupabaseAuthProvider({ children }) {
 
     getInitialSession()
 
+    // Track if this is the initial page load
+    let isInitialLoad = true
+    
     // Listen for auth changes - official Supabase pattern
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -252,7 +255,8 @@ function SupabaseAuthProvider({ children }) {
           hasSession: !!session,
           hasUser: !!session?.user,
           userEmail: session?.user?.email,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          isInitialLoad
         })
         
         setUser(session?.user ?? null)
@@ -268,10 +272,31 @@ function SupabaseAuthProvider({ children }) {
         
         setLoading(false)
 
+        // Debug: Log current location before any redirect logic
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : 'unknown'
+        console.log('🔍 [AUTH DEBUG] Current path before redirect logic:', currentPath)
+        
+        // CRITICAL FIX: Never redirect on initial page load
+        // Only redirect when user explicitly signs in AFTER the page has loaded
+        if (isInitialLoad) {
+          console.log('✅ [AUTH DEBUG] Initial page load - NO REDIRECT. Staying on:', currentPath)
+          isInitialLoad = false
+          return // Exit early, no redirects on initial load
+        }
+        
         // Only redirect on actual sign-in (not on session recovery/refresh)
         // INITIAL_SESSION is fired on page load/refresh when recovering existing session
         // SIGNED_IN is fired only when user actively signs in
         if (event === 'SIGNED_IN') {
+          console.log('🚨 [AUTH DEBUG] SIGNED_IN event after initial load - checking if redirect needed')
+          
+          // Double-check this isn't a refresh by checking if we just loaded
+          const timeSinceLoad = Date.now() - window.performance.timing.navigationStart
+          if (timeSinceLoad < 5000) { // If less than 5 seconds since page load
+            console.log('✅ [AUTH DEBUG] SIGNED_IN event too close to page load, likely a refresh. NO REDIRECT.')
+            return
+          }
+          
           // Check for stored return URL from ProtectedRoute
           const returnUrl = sessionStorage.getItem('auth_return_url')
           if (returnUrl) {
@@ -287,7 +312,12 @@ function SupabaseAuthProvider({ children }) {
         // Do NOT redirect on INITIAL_SESSION or TOKEN_REFRESHED events
         // These occur during page refresh and should not cause navigation
         if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-          console.log('🔍 [AUTH DEBUG] Session recovered/refreshed, staying on current page')
+          console.log('✅ [AUTH DEBUG] Session recovered/refreshed, staying on current page:', currentPath)
+        }
+        
+        // Log any other events that might cause issues
+        if (event !== 'SIGNED_IN' && event !== 'INITIAL_SESSION' && event !== 'TOKEN_REFRESHED' && event !== 'SIGNED_OUT') {
+          console.log('⚠️ [AUTH DEBUG] Unexpected auth event:', event)
         }
         
         if (event === 'SIGNED_OUT') {
