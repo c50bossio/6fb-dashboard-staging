@@ -12,7 +12,6 @@ import { useState, useEffect } from 'react'
 
 import { useAuth } from '../../components/SupabaseAuthProvider'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui'
-import { useTenant } from '../../contexts/TenantContext'
 
 
 const ONBOARDING_STEPS = [
@@ -44,8 +43,11 @@ const ONBOARDING_STEPS = [
 
 export default function OnboardingPage() {
   const { user } = useAuth()
-  const { tenant, setTenant, tenantId } = useTenant()
   const router = useRouter()
+  
+  // Optional tenant context - may not be available outside protected routes
+  const [tenant, setTenant] = useState(null)
+  const [tenantId, setTenantId] = useState(null)
   const [currentStep, setCurrentStep] = useState(0)
   const [onboardingData, setOnboardingData] = useState({
     businessName: '',
