@@ -133,17 +133,45 @@ export default function CustomerIntelligenceDashboard() {
   const [churnRisks, setChurnRisks] = useState([])
   const [segments, setSegments] = useState([])
   const [journeyStages, setJourneyStages] = useState([])
+  const [actualCustomerCount, setActualCustomerCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [analyticsError, setAnalyticsError] = useState(null)
   const [selectedTimeframe, setSelectedTimeframe] = useState('month')
 
-  // Fetch customer analytics data
+  // Fetch actual customer count from the working customer API
+  useEffect(() => {
+    if (!user || !profile?.barbershop_id) return
+
+    const fetchCustomerCount = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/customers?barbershop_id=${profile.barbershop_id}&limit=1`)
+        const data = await response.json()
+        if (data.success && data.total !== undefined) {
+          setActualCustomerCount(data.total)
+        }
+      } catch (error) {
+        console.error('Failed to fetch customer count:', error)
+        setError('Failed to load customer data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchCustomerCount()
+  }, [user, profile])
+
+  // Fetch customer analytics data (optional - don't block UI if this fails)
   useEffect(() => {
     if (!user || !profile?.barbershop_id) return
 
     const fetchAnalyticsData = async () => {
       try {
-        setLoading(true)
+        setAnalyticsLoading(true)
+        setAnalyticsError(null)
+        
         // Fetch customer analytics data from our Next.js API routes
         const [healthResponse, clvResponse, churnResponse, segmentsResponse, insightsResponse] = await Promise.all([
           fetch(`/api/customers/analytics/health-scores?barbershop_id=${profile.barbershop_id}&limit=50`),
@@ -154,7 +182,7 @@ export default function CustomerIntelligenceDashboard() {
         ])
 
         if (!healthResponse.ok || !clvResponse.ok || !churnResponse.ok || !segmentsResponse.ok) {
-          throw new Error('Failed to fetch analytics data')
+          throw new Error('Analytics services temporarily unavailable')
         }
 
         const [healthData, clvData, churnData, segmentsData, insightsData] = await Promise.all([
@@ -172,10 +200,11 @@ export default function CustomerIntelligenceDashboard() {
         setJourneyStages(insightsData?.journey_stages || [])
 
       } catch (err) {
-        setError(err.message)
-        console.error('Error fetching analytics data:', err)
+        setAnalyticsError(err.message)
+        console.log('Analytics temporarily unavailable:', err.message)
+        // Don't set main error - this is expected when FastAPI isn't running
       } finally {
-        setLoading(false)
+        setAnalyticsLoading(false)
       }
     }
 
@@ -189,7 +218,7 @@ export default function CustomerIntelligenceDashboard() {
       : 0,
     totalCLV: clvData.reduce((sum, c) => sum + c.total_clv, 0),
     highRiskCustomers: churnRisks.filter(c => ['high', 'critical'].includes(c.churn_risk_level)).length,
-    totalCustomers: healthScores.length
+    totalCustomers: actualCustomerCount
   }
 
   // Determine empty state type based on data availability
@@ -224,12 +253,12 @@ export default function CustomerIntelligenceDashboard() {
     )
   }
 
-  if (error) {
+  if (error && actualCustomerCount === 0) {
     return (
       <Card className="p-6">
         <div className="text-center">
           <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Analytics</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Customer Data</h3>
           <p className="text-gray-600">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
@@ -301,7 +330,15 @@ export default function CustomerIntelligenceDashboard() {
     <div className="space-y-6">
       {/* Header with Timeframe Selector */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Customer Intelligence Dashboard</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Customer Intelligence Dashboard</h2>
+          {analyticsError && (
+            <p className="text-sm text-amber-600 mt-1 flex items-center gap-1">
+              <ExclamationTriangleIcon className="h-4 w-4" />
+              Advanced analytics temporarily unavailable - showing basic insights
+            </p>
+          )}
+        </div>
         <select
           value={selectedTimeframe}
           onChange={(e) => setSelectedTimeframe(e.target.value)}
