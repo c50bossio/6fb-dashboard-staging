@@ -268,6 +268,9 @@ function SupabaseAuthProvider({ children }) {
         
         setLoading(false)
 
+        // Only redirect on actual sign-in (not on session recovery/refresh)
+        // INITIAL_SESSION is fired on page load/refresh when recovering existing session
+        // SIGNED_IN is fired only when user actively signs in
         if (event === 'SIGNED_IN') {
           // Check for stored return URL from ProtectedRoute
           const returnUrl = sessionStorage.getItem('auth_return_url')
@@ -280,6 +283,13 @@ function SupabaseAuthProvider({ children }) {
             router.push('/dashboard')
           }
         }
+        
+        // Do NOT redirect on INITIAL_SESSION or TOKEN_REFRESHED events
+        // These occur during page refresh and should not cause navigation
+        if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+          console.log('🔍 [AUTH DEBUG] Session recovered/refreshed, staying on current page')
+        }
+        
         if (event === 'SIGNED_OUT') {
           console.log('🔍 [AUTH DEBUG] User signed out, redirecting to login')
           setProfile(null)

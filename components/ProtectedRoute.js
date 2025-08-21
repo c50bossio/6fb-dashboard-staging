@@ -36,11 +36,17 @@ export default function ProtectedRoute({ children }) {
     // This prevents premature redirects during session recovery
     if (!loading && !user) {
       // Store the current path so we can return here after login
-      if (pathname && pathname !== '/login') {
+      // This ensures that if user manually navigates to login or their session expires,
+      // they'll be returned to where they were trying to go
+      if (pathname && pathname !== '/login' && pathname !== '/') {
         sessionStorage.setItem('auth_return_url', pathname)
-        console.log('🔒 [PROTECTED ROUTE] Storing return URL:', pathname)
+        console.log('🔒 [PROTECTED ROUTE] Storing return URL for redirect:', pathname)
       }
+      console.log('🔒 [PROTECTED ROUTE] No authenticated user, redirecting to login')
       router.push('/login')
+    } else if (!loading && user) {
+      // User is authenticated, stay on current page
+      console.log('🔒 [PROTECTED ROUTE] User authenticated, staying on:', pathname)
     }
   }, [loading, user, router, pathname])
 
