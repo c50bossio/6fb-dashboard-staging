@@ -11,7 +11,7 @@ import {
   PhoneIcon,
   BuildingOfficeIcon,
   SparklesIcon,
-  TrendingUpIcon
+  ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
 import SearchHighlight from './SearchHighlight'
 import { generateSearchSuggestions, fuzzyMatch } from '../../utils/fuzzySearch'
@@ -73,7 +73,7 @@ const SUGGESTION_CATEGORIES = {
   },
   popular: {
     name: 'Popular Searches',
-    icon: TrendingUpIcon,
+    icon: ArrowTrendingUpIcon,
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-50',
     limit: 2

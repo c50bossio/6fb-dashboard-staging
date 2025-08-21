@@ -11,7 +11,8 @@ import {
   RocketLaunchIcon
 } from '@heroicons/react/24/outline'
 import { Button } from '../ui'
-import { AnimatedContainer, StaggeredFadeIn } from '../../utils/animations'
+import { AnimatedContainer } from '../../utils/animations'
+import { StaggeredFadeIn } from './CustomerMicroInteractions'
 import { customerDesignTokens } from './CustomerDesignSystem'
 
 /**

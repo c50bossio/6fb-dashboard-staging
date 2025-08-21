@@ -11,8 +11,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import {
   ChartBarIcon,
   ChartPieIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CalendarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
@@ -287,7 +287,7 @@ export function CustomerTrendsChart({
     <div ref={animationRef} className={`bg-white rounded-xl border border-gray-200 p-6 ${className}`}>
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold text-gray-900 flex items-center">
-          <TrendingUpIcon className="h-5 w-5 mr-2 text-olive-600" />
+          <ArrowTrendingUpIcon className="h-5 w-5 mr-2 text-olive-600" />
           {title}
         </h3>
         
@@ -511,7 +511,7 @@ export function CustomerMetricsDashboard({
         <MetricCard
           title="New This Month"
           value={newCustomers}
-          icon={TrendingUpIcon}
+          icon={ArrowTrendingUpIcon}
           color="green"
           trend={+15}
         />
@@ -594,9 +594,9 @@ function MetricCard({
               trend >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {trend >= 0 ? (
-                <TrendingUpIcon className="h-4 w-4 mr-1" />
+                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
               ) : (
-                <TrendingDownIcon className="h-4 w-4 mr-1" />
+                <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
               <span>{Math.abs(trend)}% from last month</span>
             </div>

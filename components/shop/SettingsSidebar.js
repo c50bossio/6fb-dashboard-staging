@@ -58,7 +58,7 @@ const settingsGroups = [
     icon: CreditCardIcon,
     sections: [
       { id: 'payment', name: 'Payment Methods', icon: CreditCardIcon, path: '/shop/settings/payment' },
-      { id: 'commission', name: 'Commissions', icon: ChartBarIcon, path: '/shop/settings/commission' },
+      { id: 'commission', name: 'Commissions', icon: ChartBarIcon, path: '/shop/financial' },
       { id: 'processing', name: 'Payment Processing', icon: BanknotesIcon, path: '/shop/settings/processing' }
     ]
   },

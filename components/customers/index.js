@@ -24,7 +24,7 @@ export { default as SearchSuggestions } from './SearchSuggestions'
 export { default as FilterTags } from './FilterTags'
 export { default as SortOptions } from './SortOptions'
 export { default as ExportCSV } from './ExportCSV'
-export { default as SearchHighlight, HighlightedField, SearchResultCard, BatchHighlight } from './SearchHighlight'
+export { default as SearchHighlight, FuzzySearchHighlight, MultiFieldSearchHighlight } from './SearchHighlight'
 
 // Achievement Badge System Components
 export { default as AchievementBadges } from './AchievementBadges'
@@ -105,8 +105,7 @@ export {
   AnimatedBarChart,
   AnimatedDonutChart,
   CustomerTrendsChart,
-  CustomerMetricsDashboard,
-  MetricCard
+  CustomerMetricsDashboard
 } from './CustomerDataVisualizations'
 
 // Usage Examples:
