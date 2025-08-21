@@ -143,10 +143,11 @@ const shopManagement = [
     description: 'Configure shop details and preferences'
   },
   { 
-    name: 'Add Barber', 
-    href: '/shop/barbers/add', 
-    icon: UserPlusIcon,
-    description: 'Add new barbers to your team'
+    name: 'Barber Management', 
+    href: '/shop/barbers', 
+    icon: ScissorsIcon,
+    description: 'Manage your team, add barbers, and track performance',
+    badge: 'Team'
   },
   { 
     name: 'Financial Overview', 
@@ -160,7 +161,6 @@ const shopManagement = [
     icon: CubeIcon,
     description: 'Manage product inventory'
   }
-  // - Staff Management (manage all barbers)
   // - Point of Sale (process sales)
   // - Advanced Reports (detailed analytics)
 ]

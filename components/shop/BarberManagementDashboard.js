@@ -14,16 +14,21 @@ import {
   EyeIcon,
   PencilIcon,
   TrashIcon,
-  StarIcon
+  StarIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function BarberManagementDashboard() {
+  const router = useRouter()
   const [barbers, setBarbers] = useState([])
   const [loading, setLoading] = useState(true)
   const [view, setView] = useState('overview') // overview, performance, onboarding
   const [selectedBarber, setSelectedBarber] = useState(null)
-  const [showAddModal, setShowAddModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all') // all, active, inactive, onboarding
 
   useEffect(() => {
     fetchBarbers()
@@ -216,12 +221,43 @@ export default function BarberManagementDashboard() {
             <p className="text-gray-600">Manage your shop's barber team</p>
           </div>
           <button 
-            onClick={() => setShowAddModal(true)}
-            className="bg-olive-600 text-white px-4 py-2 rounded-lg hover:bg-olive-700 transition-colors flex items-center"
+            onClick={() => router.push('/shop/barbers/add')}
+            className="bg-olive-600 text-white px-4 py-2 rounded-lg hover:bg-olive-700 transition-colors flex items-center shadow-sm"
           >
             <UserPlusIcon className="h-5 w-5 mr-2" />
-            Add Barber
+            Add New Barber
           </button>
+        </div>
+        
+        {/* Search and Filter Bar */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="flex-1">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search barbers by name, email, or specialty..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="onboarding">Onboarding</option>
+            </select>
+            <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+              <FunnelIcon className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
         </div>
         
         <ViewTabs />
@@ -289,27 +325,81 @@ export default function BarberManagementDashboard() {
         </div>
       </div>
 
-      {/* Barbers Grid */}
-      {barbers.length === 0 ? (
+      {/* Filter barbers based on search and status */}
+      {(() => {
+        let filteredBarbers = barbers
+        
+        // Apply search filter
+        if (searchQuery) {
+          filteredBarbers = filteredBarbers.filter(barber => {
+            const query = searchQuery.toLowerCase()
+            return (
+              barber.user?.full_name?.toLowerCase().includes(query) ||
+              barber.user?.email?.toLowerCase().includes(query) ||
+              barber.customization?.specialties?.toLowerCase().includes(query) ||
+              barber.customization?.bio?.toLowerCase().includes(query)
+            )
+          })
+        }
+        
+        // Apply status filter
+        if (filterStatus !== 'all') {
+          filteredBarbers = filteredBarbers.filter(barber => {
+            if (filterStatus === 'active') return barber.is_active
+            if (filterStatus === 'inactive') return !barber.is_active
+            if (filterStatus === 'onboarding') return !barber.onboarding_completed
+            return true
+          })
+        }
+        
+        return filteredBarbers
+      })().length === 0 ? (
         <div className="text-center py-12">
           <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No barbers</h3>
           <p className="mt-1 text-sm text-gray-500">Get started by adding your first barber.</p>
           <div className="mt-6">
             <button 
-              onClick={() => setShowAddModal(true)}
+              onClick={() => router.push('/shop/barbers/add')}
               className="bg-olive-600 text-white px-4 py-2 rounded-lg hover:bg-olive-700 transition-colors inline-flex items-center"
             >
               <UserPlusIcon className="h-5 w-5 mr-2" />
-              Add Barber
+              Add Your First Barber
             </button>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {barbers.map((barber) => (
-            <BarberCard key={barber.id} barber={barber} />
-          ))}
+          {(() => {
+            let filteredBarbers = barbers
+            
+            // Apply search filter
+            if (searchQuery) {
+              filteredBarbers = filteredBarbers.filter(barber => {
+                const query = searchQuery.toLowerCase()
+                return (
+                  barber.user?.full_name?.toLowerCase().includes(query) ||
+                  barber.user?.email?.toLowerCase().includes(query) ||
+                  barber.customization?.specialties?.toLowerCase().includes(query) ||
+                  barber.customization?.bio?.toLowerCase().includes(query)
+                )
+              })
+            }
+            
+            // Apply status filter
+            if (filterStatus !== 'all') {
+              filteredBarbers = filteredBarbers.filter(barber => {
+                if (filterStatus === 'active') return barber.is_active
+                if (filterStatus === 'inactive') return !barber.is_active
+                if (filterStatus === 'onboarding') return !barber.onboarding_completed
+                return true
+              })
+            }
+            
+            return filteredBarbers.map((barber) => (
+              <BarberCard key={barber.id} barber={barber} />
+            ))
+          })()}
         </div>
       )}
 

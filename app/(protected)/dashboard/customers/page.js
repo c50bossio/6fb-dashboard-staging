@@ -76,12 +76,30 @@ export default function CustomersPage() {
       setLoading(true)
       setError(null)
       
+      console.log('🔄 Fetching customer data...')
+      
       // Get barbershop_id from user profile
       const userResponse = await fetch('/api/auth/user')
       const userData = await userResponse.json()
       
+      console.log('👤 User data received:', {
+        authenticated: userData.authenticated,
+        hasUser: !!userData.user,
+        barbershopId: userData.user?.barbershop_id,
+        hasCustomerAccess: userData.user?.has_customer_access,
+        subscriptionTier: userData.user?.subscription_tier
+      })
+      
+      if (!userData.authenticated) {
+        setError('Please log in to access customer management.')
+        setCustomers([])
+        setFilteredCustomers([])
+        setLoading(false)
+        return
+      }
+      
       if (!userData.user?.barbershop_id) {
-        setError('Please complete your barbershop setup first. Go to Settings > Barbershop Setup to get started.')
+        setError('🏪 Barbershop setup incomplete. Your profile needs to be associated with a barbershop. Please contact support or try refreshing the page.')
         setCustomers([])
         setFilteredCustomers([])
         setLoading(false)
@@ -101,6 +119,8 @@ export default function CustomersPage() {
         return
       }
       
+      console.log('📞 Fetching customers for barbershop:', userData.user.barbershop_id)
+      
       const response = await fetch(`/api/customers?limit=100&barbershop_id=${userData.user.barbershop_id}`)
       
       if (!response.ok) {
@@ -113,13 +133,22 @@ export default function CustomersPage() {
         throw new Error(data.error)
       }
       
+      console.log('✅ Customer data received:', {
+        count: data.customers?.length || 0,
+        total: data.total
+      })
+      
       const formattedCustomers = formatCustomerData(data.customers || [])
       setCustomers(formattedCustomers)
       setFilteredCustomers(formattedCustomers)
       
+      if (formattedCustomers.length === 0) {
+        console.log('📝 No customers found - this is normal for new barbershops')
+      }
+      
     } catch (err) {
-      console.error('Error fetching customers:', err)
-      setError(err.message)
+      console.error('❌ Error fetching customers:', err)
+      setError(`Failed to load customers: ${err.message}. Please try refreshing the page.`)
       setCustomers([])
       setFilteredCustomers([])
     } finally {
@@ -397,14 +426,28 @@ export default function CustomersPage() {
       {/* Error Message */}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
-          <p className="font-medium">Error loading customers</p>
-          <p className="text-sm mt-1">{error}</p>
-          <button 
-            onClick={fetchCustomers}
-            className="text-sm underline mt-2 hover:no-underline"
-          >
-            Try again
-          </button>
+          <div className="flex items-start space-x-3">
+            <ExclamationTriangleIcon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-medium">Unable to load customer data</p>
+              <p className="text-sm mt-1">{error}</p>
+              <div className="mt-3 flex space-x-3">
+                <button 
+                  onClick={fetchCustomers}
+                  className="text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded border border-red-300 transition-colors"
+                  disabled={loading}
+                >
+                  {loading ? 'Retrying...' : 'Try Again'}
+                </button>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="text-sm text-red-600 hover:text-red-800 underline hover:no-underline"
+                >
+                  Refresh Page
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -518,12 +561,25 @@ export default function CustomersPage() {
       ) : filteredCustomers.length === 0 ? (
         <div className="p-8 text-center">
           <UserIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500 font-medium">No customers found</p>
+          <p className="text-gray-500 font-medium">
+            {searchTerm || selectedSegment !== 'all' 
+              ? 'No customers match your filters' 
+              : 'No customers yet'}
+          </p>
           <p className="text-gray-400 text-sm mt-1">
             {searchTerm || selectedSegment !== 'all' 
               ? 'Try adjusting your search or filters' 
-              : 'Start by adding your first customer'}
+              : 'Add your first customer to start building your client database'}
           </p>
+          {!searchTerm && selectedSegment === 'all' && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="mt-4 btn-primary"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add Your First Customer
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid gap-4">
