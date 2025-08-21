@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import LoadingSpinner from './LoadingSpinner'
@@ -9,6 +9,7 @@ import { useAuth } from './SupabaseAuthProvider'
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
   const [isClient, setIsClient] = useState(false)
   
   // Debug authentication state
@@ -16,12 +17,12 @@ export default function ProtectedRoute({ children }) {
     hasUser: !!user,
     userEmail: user?.email,
     loading,
-    isClient
+    isClient,
+    currentPath: pathname
   })
 
   useEffect(() => {
     setIsClient(true)
-    
     
     // Check force sign out FIRST before any other checks
     const forceSignOut = sessionStorage.getItem('force_sign_out') === 'true'
@@ -31,15 +32,17 @@ export default function ProtectedRoute({ children }) {
       return
     }
     
-    // SUPABASE BEST PRACTICE: Simple auth check without complex bypasses
-    const checkAuth = setTimeout(() => {
-      if (!loading && !user) {
-        router.push('/login')
+    // Only redirect if auth loading is complete AND there's no user
+    // This prevents premature redirects during session recovery
+    if (!loading && !user) {
+      // Store the current path so we can return here after login
+      if (pathname && pathname !== '/login') {
+        sessionStorage.setItem('auth_return_url', pathname)
+        console.log('🔒 [PROTECTED ROUTE] Storing return URL:', pathname)
       }
-    }, 100) // Small delay to let auth state settle
-    
-    return () => clearTimeout(checkAuth)
-  }, [loading, user, router])
+      router.push('/login')
+    }
+  }, [loading, user, router, pathname])
 
   if (!isClient) {
     return (

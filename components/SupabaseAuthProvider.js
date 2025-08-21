@@ -269,8 +269,16 @@ function SupabaseAuthProvider({ children }) {
         setLoading(false)
 
         if (event === 'SIGNED_IN') {
-          console.log('🔍 [AUTH DEBUG] User signed in, redirecting to dashboard')
-          router.push('/dashboard')
+          // Check for stored return URL from ProtectedRoute
+          const returnUrl = sessionStorage.getItem('auth_return_url')
+          if (returnUrl) {
+            console.log('🔍 [AUTH DEBUG] User signed in, redirecting to stored URL:', returnUrl)
+            sessionStorage.removeItem('auth_return_url')
+            router.push(returnUrl)
+          } else {
+            console.log('🔍 [AUTH DEBUG] User signed in, redirecting to dashboard')
+            router.push('/dashboard')
+          }
         }
         if (event === 'SIGNED_OUT') {
           console.log('🔍 [AUTH DEBUG] User signed out, redirecting to login')
@@ -284,10 +292,14 @@ function SupabaseAuthProvider({ children }) {
   }, [router, supabase])
 
   const signInWithGoogle = async () => {
+    // Check if there's a stored return URL to include in OAuth callback
+    const returnUrl = sessionStorage.getItem('auth_return_url')
+    const redirectPath = returnUrl || '/dashboard'
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?return_url=${encodeURIComponent(redirectPath)}`,
         // Ensure PKCE is used for better security and compatibility
         queryParams: {
           access_type: 'offline',

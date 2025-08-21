@@ -52,8 +52,13 @@ export async function GET(request) {
       session: !!data.session
     })
 
-    // Successful authentication - redirect to dashboard
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    // Check for stored return URL from ProtectedRoute
+    // This will be set if the user was redirected from a protected page
+    const returnUrl = requestUrl.searchParams.get('return_url') || '/dashboard'
+    console.log('OAuth callback - Return URL:', returnUrl)
+
+    // Successful authentication - redirect to original page or dashboard
+    return NextResponse.redirect(new URL(returnUrl, request.url))
 
   } catch (error) {
     console.error('OAuth callback exception:', error)
