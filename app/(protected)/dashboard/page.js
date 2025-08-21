@@ -41,6 +41,14 @@ export default function BarbershopDashboard() {
     }
   }, [])
   
+  // Auto-clear forceShowOnboarding when onboarding is actually completed
+  useEffect(() => {
+    if (forceShowOnboarding && profile?.onboarding_completed === true) {
+      console.log('Auto-clearing forceShowOnboarding since onboarding is complete')
+      setForceShowOnboarding(false)
+    }
+  }, [forceShowOnboarding, profile?.onboarding_completed])
+  
   // Enhanced event listener for Launch Onboarding button with debugging and fallbacks
   useEffect(() => {
     const handleLaunchOnboarding = (event) => {
@@ -255,15 +263,19 @@ export default function BarbershopDashboard() {
       {/* Show onboarding overlay if profile exists and onboarding is not complete */}
       {/* Or if user clicked Resume Setup, or if profile needs creation */}
       {(() => {
-        const shouldShowOnboarding = ((effectiveProfile && effectiveProfile.onboarding_completed === false) || 
-          forceShowOnboarding || needsProfileCreation);
+        // Fix: Only show onboarding if explicitly incomplete OR forced by user action
+        const isExplicitlyIncomplete = effectiveProfile && effectiveProfile.onboarding_completed === false
+        const isForced = forceShowOnboarding && effectiveProfile?.onboarding_completed !== true
+        const shouldShowOnboarding = isExplicitlyIncomplete || isForced || needsProfileCreation;
         
         console.log('Onboarding render check:', {
           shouldShow: shouldShowOnboarding,
           forceShowOnboarding,
           needsProfileCreation,
           onboarding_completed: effectiveProfile?.onboarding_completed,
-          onboarding_status: effectiveProfile?.onboarding_status
+          onboarding_status: effectiveProfile?.onboarding_status,
+          isExplicitlyIncomplete,
+          isForced
         });
         
         return shouldShowOnboarding;
