@@ -3,6 +3,7 @@
 
 // Core Customer Components
 export { default as CustomerIntelligenceDashboard } from './CustomerIntelligenceDashboard'
+export { default as IntelligenceDashboardEmptyState } from './IntelligenceDashboardEmptyState'
 export { default as CustomerJourneyVisualizer } from './CustomerJourneyVisualizer'
 export { default as SegmentBuilder } from './SegmentBuilder'
 export { default as CustomerProfileEnhanced } from './CustomerProfileEnhanced'

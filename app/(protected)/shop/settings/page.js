@@ -1,29 +1,13 @@
 'use client'
 
-import { 
-  BuildingStorefrontIcon,
-  MapPinIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  ClockIcon,
-  CreditCardIcon,
-  PhotoIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  PencilIcon,
-  CalendarDaysIcon,
-  BellIcon,
-  UserGroupIcon,
-  ExclamationTriangleIcon,
-  CogIcon,
-  BanknotesIcon
-} from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
-import PaymentProcessingSettings from '@/components/settings/PaymentProcessingSettings'
+import SettingsDashboard from '@/components/shop/SettingsDashboard'
 
 export default function ShopSettings() {
+  return <SettingsDashboard />
+}
+
+// Legacy code - keeping for reference during migration
+function LegacyShopSettings() {
   const { user } = useAuth()
   const supabase = createClient()
   

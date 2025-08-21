@@ -593,47 +593,88 @@ export default function CustomersPage() {
         {badgeView === 'overview' && (
           <div className="space-y-6">
             {/* Badge System Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex items-center">
-                  <SparklesIcon className="h-8 w-8 text-blue-600" />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-blue-600">Active Badges</p>
-                    <p className="text-2xl font-semibold text-gray-900">20</p>
+            {customers.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <SparklesIcon className="h-8 w-8 text-blue-600" />
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-blue-600">Active Badges</p>
+                      <p className="text-2xl font-semibold text-gray-900">20</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-green-50 rounded-lg p-4">
-                <div className="flex items-center">
-                  <StarIcon className="h-8 w-8 text-green-600" />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-green-600">Total Earned</p>
-                    <p className="text-2xl font-semibold text-gray-900">157</p>
+                <div className="bg-green-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <StarIcon className="h-8 w-8 text-green-600" />
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-green-600">Total Earned</p>
+                      <p className="text-2xl font-semibold text-gray-900">157</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-purple-50 rounded-lg p-4">
-                <div className="flex items-center">
-                  <UsersIcon className="h-8 w-8 text-purple-600" />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-purple-600">Participating</p>
-                    <p className="text-2xl font-semibold text-gray-900">{customers.length}</p>
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <UsersIcon className="h-8 w-8 text-purple-600" />
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-purple-600">Participating</p>
+                      <p className="text-2xl font-semibold text-gray-900">{customers.length}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-orange-50 rounded-lg p-4">
-                <div className="flex items-center">
-                  <ChartBarIcon className="h-8 w-8 text-orange-600" />
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-orange-600">Avg Progress</p>
-                    <p className="text-2xl font-semibold text-gray-900">72%</p>
+                <div className="bg-orange-50 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <ChartBarIcon className="h-8 w-8 text-orange-600" />
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-orange-600">Avg Progress</p>
+                      <p className="text-2xl font-semibold text-gray-900">72%</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="max-w-lg mx-auto">
+                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full flex items-center justify-center">
+                    <SparklesIcon className="h-12 w-12 text-blue-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    Achievement System Ready!
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    Your badge system is set up and ready to gamify the customer experience. 
+                    Add customers to start tracking achievements and milestones.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                      <div className="text-2xl mb-2">🎯</div>
+                      <div className="text-sm font-medium text-blue-800">First Visit</div>
+                    </div>
+                    <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                      <div className="text-2xl mb-2">⭐</div>
+                      <div className="text-sm font-medium text-green-800">Loyal Client</div>
+                    </div>
+                    <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
+                      <div className="text-2xl mb-2">👑</div>
+                      <div className="text-sm font-medium text-purple-800">VIP Status</div>
+                    </div>
+                    <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
+                      <div className="text-2xl mb-2">💎</div>
+                      <div className="text-sm font-medium text-orange-800">Top Spender</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    Start Gamification Journey
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Customer List with Badge Summary */}
             <div className="bg-white border border-gray-200 rounded-lg">
@@ -737,6 +778,7 @@ export default function CustomersPage() {
           <button
             onClick={() => setShowAddModal(true)}
             className="btn-primary flex items-center space-x-2"
+            data-testid="add-customer-btn"
           >
             <PlusIcon className="h-4 w-4" />
             <span>Add Customer</span>
