@@ -15,7 +15,7 @@ export {
   FormInput as UnifiedFormInput
 } from './UnifiedInput'
 export { default as Textarea } from './Textarea'
-export { default as Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select'
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.jsx'
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs'
 
 export * from './DesignTokens'
