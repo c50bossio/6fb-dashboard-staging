@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import React, { 
+import { 
   Star, 
   Gift, 
   Trophy, 
@@ -17,8 +17,8 @@ import React, {
   Target,
   RefreshCw
 } from 'lucide-react'
-import React, { Badge } from '../ui/badge'
-import React, { AnimatedPointsEffect, PointsCounterAnimation, TierProgressAnimation, PulseEffect } from './AnimatedPointsEffect'
+import { Badge } from '../ui/badge'
+import { AnimatedPointsEffect, PointsCounterAnimation, TierProgressAnimation, PulseEffect } from './AnimatedPointsEffect'
 import PointsExpirationWarning from './PointsExpirationWarning'
 
 /**

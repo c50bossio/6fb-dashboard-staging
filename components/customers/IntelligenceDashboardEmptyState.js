@@ -15,7 +15,7 @@ import {
   PlayIcon,
   UserPlusIcon
 } from '@heroicons/react/24/outline'
-import { Card, CardHeader, CardTitle, CardContent } from '../ui'
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 
 /**
  * Sample data for preview mode

@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import React, { Calendar, MessageSquare, Clock, Send, Check, AlertCircle } from 'lucide-react'
-import React, { Button } from '../ui/Button'
-import React, { toast } from 'sonner'
+import { Calendar, MessageSquare, Clock, Send, Check, AlertCircle } from 'lucide-react'
+import { Button } from '../ui/button'
+import { toast } from 'sonner'
 
 export default function SmartRebookButton({ customer, onRebook }) {
   const [isOpen, setIsOpen] = useState(false)

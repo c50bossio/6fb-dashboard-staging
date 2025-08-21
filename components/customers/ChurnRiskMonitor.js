@@ -20,7 +20,9 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '../ui'
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
 
 // Risk Level Component
 const RiskLevelIndicator = ({ level, score }) => {

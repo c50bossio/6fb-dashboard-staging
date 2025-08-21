@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import React, { 
+import { 
   Star, 
   Plus, 
   Minus, 

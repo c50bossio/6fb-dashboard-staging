@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import React, { 
+import { 
   PlusIcon, 
   CameraIcon, 
   ClockIcon, 
@@ -13,7 +13,7 @@ import React, {
   ChevronRightIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline'
-import React, { format, formatDistanceToNow } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 
 export default function QuickNotesTimeline({ customerId, customerName }) {
   const [notes, setNotes] = useState([])

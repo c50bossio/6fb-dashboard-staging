@@ -1,6 +1,6 @@
 'use client'
 
-import React, { 
+import { 
   PlusIcon,
   XMarkIcon,
   FunnelIcon,
@@ -13,8 +13,10 @@ import React, {
   TrashIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect } from 'react'
-import React, { useAuth } from '../SupabaseAuthProvider'
-import React, { Card, CardHeader, CardTitle, CardContent, Badge, Button } from '../ui'
+import { useAuth } from '../SupabaseAuthProvider'
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
 
 // Condition Component for building rules
 const ConditionRule = ({ condition, onChange, onRemove }) => {

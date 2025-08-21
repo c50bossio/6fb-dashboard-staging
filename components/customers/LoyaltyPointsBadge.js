@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import React, { 
+import { 
   Star, 
   Trophy, 
   Medal, 
@@ -11,7 +11,7 @@ import React, {
   Zap,
   Gift
 } from 'lucide-react'
-import React, { Badge } from '../ui/badge'
+import { Badge } from '../ui/badge'
 
 /**
  * LoyaltyPointsBadge Component
