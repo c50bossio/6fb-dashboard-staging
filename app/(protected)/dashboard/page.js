@@ -19,6 +19,9 @@ export default function BarbershopDashboard() {
   // State for forcing onboarding display
   const [forceShowOnboarding, setForceShowOnboarding] = useState(false)
   
+  // State for setup completion celebration
+  const [showSuccessCelebration, setShowSuccessCelebration] = useState(false)
+  
   // Check URL parameter for forcing onboarding display (for demos/pitches)
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -166,11 +169,69 @@ export default function BarbershopDashboard() {
           forceShow={forceShowOnboarding || needsProfileCreation}
           onComplete={() => {
             setForceShowOnboarding(false)
-            // Refresh the page to update the dashboard after onboarding
-            window.location.reload()
+            // Show success celebration before refreshing
+            setShowSuccessCelebration(true)
+            
+            // Delay the page refresh to show celebration
+            setTimeout(() => {
+              window.location.reload()
+            }, 3000) // Show celebration for 3 seconds
           }}
         />
       )}
+      
+      {/* Success Celebration Overlay */}
+      {showSuccessCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-dark-bg-elevated-1 rounded-2xl p-8 max-w-md mx-4 text-center shadow-2xl border border-gray-200 dark:border-dark-bg-elevated-6">
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <SparklesIcon className="h-16 w-16 text-green-500 animate-bounce" />
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-dark-text-primary mb-3">
+              🎉 Setup Complete!
+            </h2>
+            
+            <p className="text-gray-600 dark:text-dark-text-secondary mb-4">
+              Congratulations! Your account is now fully configured and ready to go.
+            </p>
+            
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">
+                What you've unlocked:
+              </h3>
+              <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+                <li>✨ Full dashboard access</li>
+                <li>📊 Real-time business analytics</li>
+                <li>🤖 AI-powered insights</li>
+                <li>📅 Advanced booking management</li>
+              </ul>
+            </div>
+            
+            <div className="text-sm text-gray-500 dark:text-dark-text-muted">
+              Refreshing your dashboard in a moment...
+            </div>
+            
+            <div className="mt-4 w-full bg-gray-200 dark:bg-dark-bg-elevated-6 rounded-full h-1.5">
+              <div className="bg-green-500 h-1.5 rounded-full animate-pulse" style={{
+                animation: 'loading 3s linear forwards',
+                width: '0%'
+              }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <style jsx>{`
+        @keyframes loading {
+          to { width: 100%; }
+        }
+      `}</style>
     </div>
   )
 }

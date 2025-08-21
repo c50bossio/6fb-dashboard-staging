@@ -155,15 +155,37 @@ export default function UnifiedDashboard({ user, profile }) {
         
         if (isOnboardingIncomplete) {
           // This is a friendly onboarding prompt, not an error
-          const setupMessage = profile?.role === 'BARBER' 
-            ? 'Welcome! Your barber account needs to be connected to a barbershop. Please complete your setup or ask your shop owner to add you to their team.'
+          const roleSpecificMessage = profile?.role === 'BARBER' 
+            ? {
+                title: 'Connect to Your Barbershop',
+                message: 'Your barber profile is ready! To access your dashboard, you need to be connected to a barbershop. Either complete your setup or ask your shop owner to add you to their team.',
+                timeEstimate: '2-3 minutes',
+                nextSteps: ['Verify barbershop association', 'Set your working hours', 'Add your specialties'],
+                buttonText: 'Connect to Barbershop'
+              }
             : profile?.role === 'SHOP_OWNER'
-            ? 'Welcome! Let\'s finish setting up your barbershop account. You\'re just a few steps away from getting started.'
-            : 'Welcome! Let\'s complete your account setup to unlock all dashboard features.'
+            ? {
+                title: 'Finish Your Barbershop Setup',
+                message: 'You\'re almost ready to start managing your barbershop! Just a few more steps to unlock your full business dashboard.',
+                timeEstimate: '3-5 minutes',
+                nextSteps: ['Add barbershop details', 'Set operating hours', 'Configure services & pricing'],
+                buttonText: 'Complete Barbershop Setup'
+              }
+            : {
+                title: 'Complete Your Account Setup',
+                message: 'Welcome to 6FB AI! Let\'s finish setting up your account to unlock all dashboard features and start managing your business.',
+                timeEstimate: '2-4 minutes', 
+                nextSteps: ['Choose your role', 'Add business information', 'Configure preferences'],
+                buttonText: 'Continue Setup'
+              }
           
           setErrorState({
             type: 'onboarding_needed',
-            message: setupMessage,
+            message: roleSpecificMessage.message,
+            title: roleSpecificMessage.title,
+            timeEstimate: roleSpecificMessage.timeEstimate,
+            nextSteps: roleSpecificMessage.nextSteps,
+            buttonText: roleSpecificMessage.buttonText,
             isWelcome: true
           })
         } else {
@@ -493,65 +515,94 @@ export default function UnifiedDashboard({ user, profile }) {
       {/* Welcome Setup Prompt or Error State Display */}
       {errorState && (
         <div className={`
-          rounded-xl p-6 mb-6 border
+          rounded-xl mb-6 border overflow-hidden
           ${errorState.isWelcome 
-            ? 'bg-gradient-to-r from-brand-50 to-purple-50 dark:from-brand-900/20 dark:to-purple-900/20 border-brand-200 dark:border-brand-700' 
+            ? 'bg-gradient-to-br from-brand-50 via-purple-50 to-indigo-50 dark:from-brand-900/20 dark:via-purple-900/20 dark:to-indigo-900/20 border-brand-200 dark:border-brand-700 shadow-lg' 
             : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
           }
         `}>
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              {errorState.isWelcome ? (
-                <SparklesIcon className="h-6 w-6 text-brand-600" />
-              ) : (
-                <XCircleIcon className="h-5 w-5 text-red-400" />
-              )}
+          {errorState.isWelcome ? (
+            <div className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <SparklesIcon className="h-7 w-7 text-brand-600 animate-pulse" />
+                  </div>
+                  <div className="ml-4 flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-xl font-bold text-brand-800 dark:text-brand-200">
+                        {errorState.title || 'Almost There!'}
+                      </h3>
+                      {errorState.timeEstimate && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-100 text-brand-800 dark:bg-brand-800/30 dark:text-brand-200">
+                          {errorState.timeEstimate}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-brand-700 dark:text-brand-300 mb-4 leading-relaxed">
+                      {typeof errorState === 'string' ? errorState : errorState.message}
+                    </p>
+                    
+                    {errorState.nextSteps && (
+                      <div className="mb-5">
+                        <h4 className="text-sm font-semibold text-brand-800 dark:text-brand-200 mb-2">
+                          What's next:
+                        </h4>
+                        <ul className="space-y-1">
+                          {errorState.nextSteps.map((step, index) => (
+                            <li key={index} className="flex items-center text-sm text-brand-700 dark:text-brand-300">
+                              <div className="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-800/30 flex items-center justify-center mr-3 flex-shrink-0">
+                                <span className="text-xs font-semibold text-brand-600 dark:text-brand-400">
+                                  {index + 1}
+                                </span>
+                              </div>
+                              {step}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={() => {
+                          // Dispatch custom event to launch onboarding
+                          window.dispatchEvent(new CustomEvent('launchOnboarding', { 
+                            detail: { from: 'dashboard_welcome_prompt' } 
+                          }))
+                        }}
+                        className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                      >
+                        <SparklesIcon className="h-4 w-4 mr-2" />
+                        {errorState.buttonText || 'Complete Setup'}
+                      </button>
+                      <button
+                        onClick={() => loadDashboardData(true)}
+                        className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-lg text-brand-700 dark:text-brand-300 bg-white/70 dark:bg-brand-900/30 hover:bg-white dark:hover:bg-brand-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 backdrop-blur-sm"
+                      >
+                        <ArrowPathIcon className="h-4 w-4 mr-2" />
+                        Try Again
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="ml-3 flex-1">
-              <h3 className={`
-                text-lg font-semibold mb-2
-                ${errorState.isWelcome 
-                  ? 'text-brand-800 dark:text-brand-200' 
-                  : 'text-red-800 dark:text-red-200'
-                }
-              `}>
-                {errorState.isWelcome ? 'Almost There!' : 'Dashboard Error'}
-              </h3>
-              <p className={`
-                text-sm mb-4
-                ${errorState.isWelcome 
-                  ? 'text-brand-700 dark:text-brand-300' 
-                  : 'text-red-700 dark:text-red-300'
-                }
-              `}>
-                {typeof errorState === 'string' ? errorState : errorState.message}
-              </p>
-              
-              <div className="flex flex-wrap gap-3">
-                {errorState.isWelcome ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        // Dispatch custom event to launch onboarding
-                        window.dispatchEvent(new CustomEvent('launchOnboarding', { 
-                          detail: { from: 'dashboard_welcome_prompt' } 
-                        }))
-                      }}
-                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
-                    >
-                      <SparklesIcon className="h-4 w-4 mr-2" />
-                      Complete Setup
-                    </button>
-                    <button
-                      onClick={() => loadDashboardData(true)}
-                      className="inline-flex items-center px-3 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-lg text-brand-700 dark:text-brand-300 bg-white dark:bg-brand-900/20 hover:bg-brand-50 dark:hover:bg-brand-800/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
-                    >
-                      <ArrowPathIcon className="h-4 w-4 mr-2" />
-                      Try Again
-                    </button>
-                  </>
-                ) : (
-                  <>
+          ) : (
+            <div className="p-6">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <XCircleIcon className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3 flex-1">
+                  <h3 className="text-lg font-semibold mb-2 text-red-800 dark:text-red-200">
+                    Dashboard Error
+                  </h3>
+                  <p className="text-sm mb-4 text-red-700 dark:text-red-300">
+                    {typeof errorState === 'string' ? errorState : errorState.message}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-3">
                     {circuitBreakerOpen && (
                       <button
                         onClick={() => loadDashboardData(true)}
@@ -561,11 +612,11 @@ export default function UnifiedDashboard({ user, profile }) {
                         Retry Dashboard Load
                       </button>
                     )}
-                  </>
-                )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
