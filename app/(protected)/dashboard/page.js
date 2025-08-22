@@ -29,7 +29,8 @@ export default function BarbershopDashboard() {
   useEffect(() => {
     const handleLaunchOnboarding = (event) => {
       console.log('Launch onboarding event received from profile dropdown', event.detail)
-      startOnboarding()
+      // Force show onboarding when launched from dropdown (for demo/testing)
+      startOnboarding(true)
     }
     
     window.addEventListener('launchOnboarding', handleLaunchOnboarding)

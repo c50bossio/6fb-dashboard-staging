@@ -44,13 +44,16 @@ export function useOnboarding() {
     }
   }, [authLoading, user, profile, isOnboardingComplete, needsOnboarding])
   
-  // Start onboarding manually
-  const startOnboarding = useCallback(() => {
-    if (!isOnboardingComplete) {
+  // Start onboarding manually (with optional force parameter for testing/demo)
+  const startOnboarding = useCallback((force = false) => {
+    if (!isOnboardingComplete || force) {
+      console.log('🚀 Starting onboarding', { force, isOnboardingComplete })
       setShowOnboarding(true)
-      setOnboardingStep(profile?.onboarding_step || 0)
+      setOnboardingStep(0) // Always start from beginning when forced
+    } else {
+      console.log('⚠️ Onboarding already complete, not starting', { isOnboardingComplete })
     }
-  }, [isOnboardingComplete, profile])
+  }, [isOnboardingComplete])
   
   // Hide onboarding (minimize/skip)
   const hideOnboarding = useCallback(async (reason = 'minimized') => {
