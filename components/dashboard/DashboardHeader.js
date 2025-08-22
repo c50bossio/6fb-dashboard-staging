@@ -268,6 +268,9 @@ export default function DashboardHeader() {
                           detail: { forced: true }
                         })
                         window.dispatchEvent(event)
+                        // Also set a flag in case the listener isn't ready yet
+                        window.__pendingOnboardingLaunch = true
+                        console.log('📤 Dispatched launchOnboarding event from profile dropdown')
                       }}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                     >

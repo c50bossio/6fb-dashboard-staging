@@ -19,14 +19,34 @@ function ProtectedLayoutContent({ children }) {
   // Listen for launch onboarding event from profile dropdown - available on ALL pages
   useEffect(() => {
     const handleLaunchOnboarding = (event) => {
-      console.log('🚀 Launching onboarding from profile dropdown (global handler)')
+      console.log('🚀 Launching onboarding from profile dropdown (global handler)', {
+        detail: event.detail,
+        currentStep,
+        showOnboarding
+      })
       setShowOnboarding(true)
       setCurrentStep(0) // Always start from beginning
     }
     
+    // Add listener immediately
     window.addEventListener('launchOnboarding', handleLaunchOnboarding)
     
+    // Also check if event was dispatched before component mounted
+    // This handles race conditions where the button is clicked very quickly
+    const checkPendingEvent = () => {
+      if (window.__pendingOnboardingLaunch) {
+        console.log('📌 Found pending onboarding launch event')
+        handleLaunchOnboarding({ detail: { forced: true } })
+        delete window.__pendingOnboardingLaunch
+      }
+    }
+    
+    // Check immediately and after a short delay
+    checkPendingEvent()
+    const timeoutId = setTimeout(checkPendingEvent, 100)
+    
     return () => {
+      clearTimeout(timeoutId)
       window.removeEventListener('launchOnboarding', handleLaunchOnboarding)
     }
   }, [])
