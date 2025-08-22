@@ -101,6 +101,9 @@ export default function UnifiedDashboard({ user, profile }) {
   const [retryCount, setRetryCount] = useState(0)
 
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
+    // Declare barbershopId at function scope to prevent ReferenceError
+    let barbershopId = null
+    
     // Check if onboarding is incomplete
     const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
     
@@ -210,7 +213,7 @@ export default function UnifiedDashboard({ user, profile }) {
       }
 
       // Get barbershop_id using helper function
-      let barbershopId = await getUserBarbershopId(user, profile)
+      barbershopId = await getUserBarbershopId(user, profile)
       
       // For shop owners without a barbershop, create one automatically
       if (!barbershopId && profile?.role === 'SHOP_OWNER') {

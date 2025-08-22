@@ -111,7 +111,7 @@ export default function EnterpriseDashboard() {
     {
       name: 'Average Rating',
       value: enterpriseData?.averageRating || '0.0',
-      icon: TrendingUpIcon,
+      icon: ArrowTrendingUpIcon,
       change: '+0.2',
       changeType: 'positive'
     }

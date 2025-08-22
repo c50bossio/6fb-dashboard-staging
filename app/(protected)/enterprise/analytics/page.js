@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon,
   ChartPieIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   CalendarIcon,
   BuildingStorefrontIcon,
   CurrencyDollarIcon,
@@ -258,7 +258,7 @@ export default function EnterpriseAnalytics() {
               </p>
             </div>
             <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <TrendingUpIcon className="h-6 w-6 text-yellow-600" />
+              <ArrowTrendingUpIcon className="h-6 w-6 text-yellow-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center">
