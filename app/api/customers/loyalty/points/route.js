@@ -563,6 +563,35 @@ async function calculateTierProgress(enrollment, barbershopId) {
  */
 async function calculatePointsSummary(customerId, barbershopId, programId) {
   try {
+    // Create Supabase client for helper function
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            const cookie = cookieStore.get(name);
+            return cookie?.value;
+          },
+          set(name, value, options) {
+            try {
+              cookieStore.set({ name, value, ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+          remove(name, options) {
+            try {
+              cookieStore.set({ name, value: '', ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+        },
+      }
+    );
+
     let query = supabase
       .from('loyalty_points')
       .select('points_amount, transaction_type')
@@ -615,6 +644,35 @@ async function calculatePointsSummary(customerId, barbershopId, programId) {
  */
 async function checkTierUpgrade(customerId, programId, barbershopId, newBalance) {
   try {
+    // Create Supabase client for helper function
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            const cookie = cookieStore.get(name);
+            return cookie?.value;
+          },
+          set(name, value, options) {
+            try {
+              cookieStore.set({ name, value, ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+          remove(name, options) {
+            try {
+              cookieStore.set({ name, value: '', ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+        },
+      }
+    );
+
     // Get customer's current tier
     const { data: enrollment, error: enrollmentError } = await supabase
       .from('loyalty_program_enrollments')
@@ -702,6 +760,35 @@ async function checkTierUpgrade(customerId, programId, barbershopId, newBalance)
  */
 async function createTierUpgradeMilestone(customerId, barbershopId, tierName) {
   try {
+    // Create Supabase client for helper function
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            const cookie = cookieStore.get(name);
+            return cookie?.value;
+          },
+          set(name, value, options) {
+            try {
+              cookieStore.set({ name, value, ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+          remove(name, options) {
+            try {
+              cookieStore.set({ name, value: '', ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+        },
+      }
+    );
+
     const milestoneData = {
       barbershop_id: barbershopId,
       customer_id: customerId,
