@@ -14,6 +14,8 @@
  * - Configurable timing and easing
  */
 
+import React from 'react'
+
 /**
  * Animation configuration constants
  */
