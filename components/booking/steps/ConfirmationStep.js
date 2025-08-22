@@ -197,9 +197,9 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
           />
           <span className="ml-2 text-sm text-gray-600">
             I agree to the{' '}
-            <a href="#" className="text-olive-600 hover:underline">terms and conditions</a>
+            <a href="/legal/terms" target="_blank" className="text-olive-600 hover:underline">terms and conditions</a>
             {' '}and understand the{' '}
-            <a href="#" className="text-olive-600 hover:underline">cancellation policy</a>
+            <a href="/legal/cancellation-policy" target="_blank" className="text-olive-600 hover:underline">cancellation policy</a>
             {' '}(cancellations less than {shopSettings.cancellationWindow} hours before 
             appointment may incur a fee)
           </span>

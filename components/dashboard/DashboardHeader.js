@@ -186,7 +186,13 @@ export default function DashboardHeader() {
                     )}
                   </div>
                   <div className="p-3 border-t border-gray-200">
-                    <button className="text-sm text-olive-600 hover:text-olive-700 font-medium w-full text-center">
+                    <button 
+                      onClick={() => {
+                        setActiveDropdown(null)
+                        router.push('/dashboard/notifications')
+                      }}
+                      className="text-sm text-olive-600 hover:text-olive-700 font-medium w-full text-center"
+                    >
                       View all notifications
                     </button>
                   </div>

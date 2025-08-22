@@ -41,9 +41,7 @@ export default function CalendarViewSelector({
     try {
       setLoading(true)
       const response = await fetch('/api/calendar/user-locations', {
-        headers: {
-          'Authorization': `Bearer ${user.access_token || ''}`
-        }
+        credentials: 'same-origin'
       })
       
       if (response.ok) {

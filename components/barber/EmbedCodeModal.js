@@ -507,7 +507,8 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                 ) : activeTab === 'link' ? (
                   <div className="p-8 text-center">
                     <a 
-                      href="#" 
+                      href={`/book/${bookingLink?.barberId || 'demo'}`}
+                      target="_blank" 
                       style={{ 
                         color: embedOptions.primaryColor,
                         textDecoration: 'none',

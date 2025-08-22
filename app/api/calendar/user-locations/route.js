@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
-export const runtime = 'edge'
+// Temporarily disable edge runtime to debug production issues
+// export const runtime = 'edge'
 
 export async function GET(request) {
   try {

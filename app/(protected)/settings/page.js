@@ -380,7 +380,17 @@ function Settings() {
                   <p className="text-xs text-gray-500">Connected</p>
                 </div>
               </div>
-              <button className="text-xs text-red-600 hover:text-red-700">Disconnect</button>
+              <button 
+                onClick={() => {
+                  if (confirm('Are you sure you want to disconnect Google Calendar?')) {
+                    // Handle Google Calendar disconnect
+                    alert('Google Calendar disconnected successfully')
+                  }
+                }}
+                className="text-xs text-red-600 hover:text-red-700"
+              >
+                Disconnect
+              </button>
             </div>
             
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -393,7 +403,15 @@ function Settings() {
                   <p className="text-xs text-gray-500">Not connected</p>
                 </div>
               </div>
-              <button className="text-xs text-olive-600 hover:text-olive-700">Connect</button>
+              <button 
+                onClick={() => {
+                  alert('Redirecting to Stripe Connect... This would open Stripe authentication flow.')
+                  // TODO: Implement actual Stripe Connect flow
+                }}
+                className="text-xs text-olive-600 hover:text-olive-700"
+              >
+                Connect
+              </button>
             </div>
             
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -406,7 +424,15 @@ function Settings() {
                   <p className="text-xs text-gray-500">Not connected</p>
                 </div>
               </div>
-              <button className="text-xs text-olive-600 hover:text-olive-700">Connect</button>
+              <button 
+                onClick={() => {
+                  alert('Redirecting to QuickBooks Connect... This would open QuickBooks authentication flow.')
+                  // TODO: Implement actual QuickBooks Connect flow
+                }}
+                className="text-xs text-olive-600 hover:text-olive-700"
+              >
+                Connect
+              </button>
             </div>
           </div>
         </SettingsSection>

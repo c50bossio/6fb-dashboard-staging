@@ -602,7 +602,9 @@ export default function CalendarPage() {
   useEffect(() => {
     const loadUserLocations = async () => {
       try {
-        const response = await fetch('/api/calendar/user-locations')
+        const response = await fetch('/api/calendar/user-locations', {
+          credentials: 'same-origin'
+        })
         if (response.ok) {
           const data = await response.json()
           setUserLocations(data.locations || [])

@@ -286,7 +286,10 @@ export default function ActionCenter({ data }) {
           label="Call Queue"
           color="green"
           badge="3"
-          onClick={() => {}}
+          onClick={() => {
+            // Navigate to call queue management
+            window.location.href = '/dashboard/call-queue'
+          }}
         />
         <QuickActionButton
           icon={UserGroupIcon}

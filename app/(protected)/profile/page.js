@@ -313,7 +313,14 @@ export default function ProfilePage() {
                   <ChartBarIcon className="h-5 w-5 text-gray-400" />
                   <span>Analytics</span>
                 </Link>
-                <button className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <button 
+                  onClick={() => {
+                    // Generate public profile URL (would typically use actual user ID)
+                    const publicProfileUrl = `/public/profile/${profile?.id || 'demo'}`
+                    window.open(publicProfileUrl, '_blank')
+                  }}
+                  className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                >
                   <EyeIcon className="h-5 w-5 text-gray-400" />
                   <span>Public Profile</span>
                 </button>

@@ -14,7 +14,7 @@ import {
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 
 export function DataTable({ 
   data = [],
