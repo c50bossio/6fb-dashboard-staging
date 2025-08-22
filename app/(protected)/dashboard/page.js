@@ -25,6 +25,20 @@ export default function BarbershopDashboard() {
   
   const [showSuccessCelebration, setShowSuccessCelebration] = useState(false)
   
+  // Listen for launch onboarding event from profile dropdown
+  useEffect(() => {
+    const handleLaunchOnboarding = (event) => {
+      console.log('Launch onboarding event received from profile dropdown', event.detail)
+      startOnboarding()
+    }
+    
+    window.addEventListener('launchOnboarding', handleLaunchOnboarding)
+    
+    return () => {
+      window.removeEventListener('launchOnboarding', handleLaunchOnboarding)
+    }
+  }, [startOnboarding])
+  
   // Show loading state while auth is initializing
   if (authLoading) {
     return (
