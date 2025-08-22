@@ -1,5 +1,6 @@
 'use client'
 
+// Updated to remove SparklesIcon dependencies
 import { 
   ChartBarIcon,
   CpuChipIcon,
@@ -54,8 +55,8 @@ const modeConfigs = {
   },
   [DASHBOARD_MODES.AI_INSIGHTS]: {
     label: 'AI Insights',
-    icon: SparklesIcon,
-    solidIcon: SparklesSolid,
+    icon: CpuChipIcon,
+    solidIcon: CpuChipSolid,
     color: 'purple',
     description: 'AI-powered recommendations'
   },
@@ -672,7 +673,7 @@ export default function UnifiedDashboard({ user, profile }) {
               <div className="flex items-start justify-between">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <SparklesIcon className="h-7 w-7 text-brand-600 animate-pulse" />
+                    <Squares2X2Icon className="h-7 w-7 text-brand-600 animate-pulse" />
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex items-center gap-3 mb-2">
