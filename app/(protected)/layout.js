@@ -83,12 +83,7 @@ function ProtectedLayoutContent({ children }) {
             setCurrentStep(0)
           }}
           onSkip={() => {
-            console.log('⏭️ Onboarding skipped')
-            setShowOnboarding(false)
-            setCurrentStep(0)
-          }}
-          onMinimize={() => {
-            console.log('➖ Onboarding minimized')
+            console.log('⏭️ Onboarding skipped/closed')
             setShowOnboarding(false)
             setCurrentStep(0)
           }}

@@ -33,6 +33,12 @@ import WelcomeSegmentation from '../onboarding/WelcomeSegmentation'
 import AdaptiveFlowEngine from '../onboarding/AdaptiveFlowEngine'
 import ContextualGuidanceProvider from '../onboarding/ContextualGuidanceProvider'
 
+// Import new data migration and planning components
+import DataImportSetup from '../onboarding/DataImportSetup'
+import DataVerificationSetup from '../onboarding/DataVerificationSetup'
+import BusinessPlanningSetup from '../onboarding/BusinessPlanningSetup'
+import LocationManagementSetup from '../onboarding/LocationManagementSetup'
+
 // Import professional illustrations
 import { WelcomeIllustration, ProgressRing } from '../onboarding/OnboardingIllustrations'
 import RoleSelector from '../onboarding/RoleSelector'
@@ -48,8 +54,7 @@ export default function DashboardOnboarding({
   currentStep: initialStep = 0,
   onStepChange,
   onComplete, 
-  onSkip,
-  onMinimize 
+  onSkip
 }) {
   // Use controlled step from parent
   const currentStep = initialStep
@@ -423,13 +428,79 @@ export default function DashboardOnboarding({
   }, [profile?.onboarding_step, profile?.onboarding_data])
 
   // Simplified visibility logic - single source of truth
-  const shouldShowModal = showOnboarding && !isMinimized
+  const shouldShowModal = showOnboarding
   
   if (!shouldShowModal) {
     return null
   }
 
   const currentStepData = steps[currentStep]
+
+  // Render minimized view when minimized
+  if (isMinimized) {
+    return (
+      <div className="fixed bottom-6 right-6 z-50">
+        <div className="bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-80 animate-in slide-in-from-bottom-5">
+          {/* Minimized Header */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-brand-600 to-brand-700 rounded-lg flex items-center justify-center">
+                <SparklesIcon className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Setup Paused</p>
+                <p className="text-xs text-gray-500">Step {currentStep + 1} of {steps.length}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                console.log('⏹️ Closing minimized onboarding')
+                setShowOnboarding(false)
+                if (onSkip) onSkip()
+              }}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+              title="Close"
+            >
+              <XMarkIcon className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+            <div 
+              className="bg-gradient-to-r from-brand-600 to-brand-700 rounded-full h-1.5 transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
+          {/* Current Step Info */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {currentStepData.icon && <currentStepData.icon className="h-4 w-4 text-gray-500" />}
+              <span className="text-sm text-gray-700">{currentStepData.title}</span>
+            </div>
+            <button
+              onClick={() => {
+                console.log('➕ Expanding onboarding from minimized state')
+                setIsMinimized(false)
+                // Track the expansion
+                if (typeof window !== 'undefined') {
+                  internalAnalytics.track('onboarding_expanded', {
+                    userId: user?.id,
+                    step: currentStep
+                  })
+                }
+              }}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-brand-600 rounded-md hover:bg-brand-700 transition-colors flex items-center gap-1"
+            >
+              <ArrowRightIcon className="h-3 w-3" />
+              Resume
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <ContextualGuidanceProvider>
@@ -466,10 +537,9 @@ export default function DashboardOnboarding({
                       })
                     }
                     
-                    // Call parent's minimize handler
-                    if (onMinimize) {
-                      onMinimize()
-                    }
+                    // Set minimized state to true
+                    console.log('➖ Minimizing onboarding modal')
+                    setIsMinimized(true)
                   }}
                   className="text-white/80 hover:text-white transition-colors"
                   title="Minimize"
@@ -738,21 +808,100 @@ function renderStepContent(stepId, data, updateData, profile) {
         />
       )
     
+    // Data migration steps (for switching_systems path)
+    case 'data_import':
+      return (
+        <DataImportSetup
+          onComplete={handleStepComplete}
+          initialData={data}
+        />
+      )
+    
+    case 'data_verification':
+      return (
+        <DataVerificationSetup
+          onComplete={handleStepComplete}
+          initialData={data}
+          importedData={data.importedData} // Pass data from previous import step
+        />
+      )
+    
+    // Business planning step (for first_barbershop path)
+    case 'business_planning':
+      return (
+        <BusinessPlanningSetup
+          onComplete={handleStepComplete}
+          initialData={data}
+          businessType={data.businessType || 'barbershop'}
+          location={data.location}
+        />
+      )
+    
+    // Location management step (for adding_locations path)
+    case 'location_management':
+      return (
+        <LocationManagementSetup
+          onComplete={handleStepComplete}
+          initialData={data}
+        />
+      )
+    
+    // Analytics and AI training steps (placeholder for now, but properly named)
+    case 'analytics_setup':
+      return (
+        <div className="bg-blue-50 rounded-lg p-8 text-center">
+          <ChartBarIcon className="w-12 h-12 mx-auto text-blue-600 mb-4" />
+          <p className="text-blue-900 font-semibold text-lg">
+            Analytics Dashboard Setup
+          </p>
+          <p className="text-sm text-blue-700 mt-2">
+            Configure your analytics and reporting preferences.
+          </p>
+          <button
+            onClick={() => handleStepComplete({ analyticsEnabled: true })}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Enable Analytics
+          </button>
+        </div>
+      )
+    
+    case 'ai_training':
+      return (
+        <div className="bg-purple-50 rounded-lg p-8 text-center">
+          <SparklesIcon className="w-12 h-12 mx-auto text-purple-600 mb-4" />
+          <p className="text-purple-900 font-semibold text-lg">
+            AI Assistant Training
+          </p>
+          <p className="text-sm text-purple-700 mt-2">
+            Train your AI assistant with your business preferences.
+          </p>
+          <button
+            onClick={() => handleStepComplete({ aiTrainingCompleted: true })}
+            className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            Start Training
+          </button>
+        </div>
+      )
+    
     default:
       // Fallback for any steps not yet implemented
+      // This should rarely be hit now that we've covered all known step IDs
+      console.warn(`Unknown onboarding step: ${stepId}`)
       return (
         <div className="bg-yellow-50 rounded-lg p-8 text-center">
           <p className="text-yellow-800 font-medium">
-            Step "{stepId}" is coming soon!
+            Unknown step: "{stepId}"
           </p>
           <p className="text-sm text-yellow-600 mt-2">
-            This feature is under development.
+            This step ID is not recognized. Please contact support.
           </p>
           <button
             onClick={() => handleStepComplete({})}
             className="mt-4 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700"
           >
-            Skip for now
+            Skip and Continue
           </button>
         </div>
       )
