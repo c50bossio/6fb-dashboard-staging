@@ -194,6 +194,22 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
   
   const handleServiceSelect = (service) => {
     setSelectedService(service.id)
+    
+    // Auto-advance after a brief delay to allow for add-ons selection
+    // If user hasn't selected add-ons, proceed automatically
+    if (!showAddOns && onNext) {
+      const serviceData = {
+        service: service.id,
+        serviceDetails: service,
+        addOns: selectedAddOns,
+        duration: service.duration + selectedAddOns.reduce((sum, addon) => sum + addon.duration, 0),
+        price: service.price + selectedAddOns.reduce((sum, addon) => sum + addon.price, 0)
+      }
+      
+      setTimeout(() => {
+        onNext(serviceData)
+      }, 500) // Brief delay to show selection confirmation
+    }
   }
   
   const handleAddOnToggle = (addOn) => {

@@ -85,7 +85,7 @@ export default function WelcomeSegmentation({
     setIsAnimating(true)
     setSelectedPath(pathId)
     
-    // Add a brief animation delay before proceeding
+    // Add a brief animation delay before proceeding (reduced from 800ms to 400ms for snappier UX)
     setTimeout(() => {
       // Update the onboarding data with the selected segmentation path
       const segmentationData = {
@@ -102,11 +102,11 @@ export default function WelcomeSegmentation({
       
       updateData(segmentationData)
       
-      // Complete this step and proceed to main flow
+      // Complete this step and auto-advance to next step
       if (onComplete) {
-        onComplete(segmentationData)
+        onComplete(segmentationData, { autoAdvance: true })
       }
-    }, 800)
+    }, 400)
   }
 
   const getUserGreeting = () => {
@@ -238,18 +238,18 @@ export default function WelcomeSegmentation({
                   Perfect for: {path.targetAudience}
                 </div>
 
-                {/* Action button */}
+                {/* Visual indicator that entire card is clickable */}
                 <div className={`
-                  flex items-center justify-center gap-2 p-3 rounded-lg transition-all duration-300
+                  flex items-center justify-center gap-2 p-3 rounded-lg transition-all duration-300 pointer-events-none
                   ${isSelected 
                     ? 'bg-brand-600 text-white' 
                     : 'bg-gray-50 text-gray-700 group-hover:bg-brand-50 group-hover:text-brand-700'
                   }
                 `}>
                   <span className="font-medium">
-                    {isSelected ? 'Selected!' : 'Choose This Path'}
+                    {isSelected ? 'Loading...' : 'Click to Select'}
                   </span>
-                  {!isSelected && <ChevronRightIcon className="h-4 w-4" />}
+                  {!isSelected && <ChevronRightIcon className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />}
                 </div>
               </div>
             </div>

@@ -235,7 +235,22 @@ export default function GoalsSelector({ onComplete, initialData = {}, subscripti
             ).map((size) => (
               <button
                 key={size}
-                onClick={() => setBusinessSize(size)}
+                onClick={() => {
+                  setBusinessSize(size)
+                  // Auto-advance when business size is selected (last required field)
+                  const completedData = {
+                    role: subscriptionTier === 'barber' ? 'individual_barber' : 
+                          subscriptionTier === 'shop' ? 'shop_owner' : 'enterprise_owner',
+                    goals: selectedGoals,
+                    businessSize: size
+                  }
+                  
+                  setTimeout(() => {
+                    if (onComplete) {
+                      onComplete(completedData, { autoAdvance: true })
+                    }
+                  }, 300)
+                }}
                 className={`py-3 px-4 rounded-lg border-2 font-medium transition-all ${
                   businessSize === size
                     ? 'border-olive-500 bg-olive-50 text-olive-700'

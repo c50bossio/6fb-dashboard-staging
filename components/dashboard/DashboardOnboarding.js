@@ -639,7 +639,7 @@ export default function DashboardOnboarding({
             </div>
 
             {/* Render appropriate component based on step */}
-            {renderStepContent(currentStepData.id, onboardingData, updateOnboardingData, profile)}
+            {renderStepContent(currentStepData.id, onboardingData, updateOnboardingData, profile, handleNext)}
           </div>
 
           {/* Footer */}
@@ -695,10 +695,21 @@ export default function DashboardOnboarding({
 }
 
 // Helper function to render content based on step
-function renderStepContent(stepId, data, updateData, profile) {
-  // Handle step completion callbacks
-  const handleStepComplete = (stepData) => {
+function renderStepContent(stepId, data, updateData, profile, onNavigateNext) {
+  // Handle step completion callbacks with auto-advance support
+  const handleStepComplete = (stepData, options = {}) => {
     updateData(stepData)
+    
+    // If auto-advance is requested, trigger navigation after data update
+    if (options.autoAdvance) {
+      // Small delay to ensure data update is processed
+      setTimeout(() => {
+        if (onNavigateNext) {
+          console.log('🚀 Auto-advancing to next step after data update')
+          onNavigateNext()
+        }
+      }, 100)
+    }
   }
 
   switch (stepId) {
@@ -754,12 +765,15 @@ function renderStepContent(stepId, data, updateData, profile) {
     
     case 'financial':
     case 'payment':
-      // Use enhanced version with Stripe Connect integration
+      // Use new enhanced payment setup with progressive unlocking and credit earning display
       return (
-        <FinancialSetupEnhanced 
+        <PaymentSetupEnhanced 
           onComplete={handleStepComplete}
-          initialData={data}
-          subscriptionTier={data.role === 'ENTERPRISE_OWNER' ? 'enterprise' : 'shop'}
+          initialData={{
+            ...data,
+            completedSteps: data.completedFinancialSteps || []
+          }}
+          currentStep="payment_setup"
         />
       )
     

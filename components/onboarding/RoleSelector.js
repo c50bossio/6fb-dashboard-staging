@@ -14,6 +14,27 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
+const roleStyles = {
+  individual: {
+    border: 'border-blue-500',
+    bg: 'bg-blue-50',
+    badge: 'bg-blue-500',
+    icon: 'text-blue-600'
+  },
+  shop_owner: {
+    border: 'border-purple-500',
+    bg: 'bg-purple-50',
+    badge: 'bg-purple-500',
+    icon: 'text-purple-600'
+  },
+  enterprise: {
+    border: 'border-green-500',
+    bg: 'bg-green-50',
+    badge: 'bg-green-500',
+    icon: 'text-green-600'
+  }
+}
+
 const roles = [
   {
     id: 'individual',
@@ -25,8 +46,7 @@ const roles = [
       'Custom branding',
       'Service management',
       'Client database'
-    ],
-    color: 'blue'
+    ]
   },
   {
     id: 'shop_owner',
@@ -38,8 +58,7 @@ const roles = [
       'Commission tracking',
       'Staff scheduling',
       'Financial reports'
-    ],
-    color: 'purple'
+    ]
   },
   {
     id: 'enterprise',
@@ -51,8 +70,7 @@ const roles = [
       'Franchise management',
       'Cross-location analytics',
       'Centralized control'
-    ],
-    color: 'green'
+    ]
   }
 ]
 
@@ -129,22 +147,39 @@ export default function RoleSelector({ onComplete, initialData = {} }) {
           {roles.map((role) => {
             const Icon = role.icon
             const isSelected = selectedRole === role.id
+            const styles = roleStyles[role.id]
             return (
               <button
                 key={role.id}
-                onClick={() => setSelectedRole(role.id)}
+                onClick={() => {
+                  setSelectedRole(role.id)
+                  // Auto-advance if goals are already selected (complete selection)
+                  if (selectedGoals.length > 0) {
+                    const completedData = {
+                      role: role.id,
+                      goals: selectedGoals,
+                      businessSize: businessSize || (role.id === 'individual' ? '1' : '')
+                    }
+                    
+                    setTimeout(() => {
+                      if (onComplete) {
+                        onComplete(completedData, { autoAdvance: true })
+                      }
+                    }, 300)
+                  }
+                }}
                 className={`relative p-6 rounded-xl border-2 transition-all text-left ${
                   isSelected
-                    ? `border-${role.color}-500 bg-${role.color}-50`
+                    ? `${styles.border} ${styles.bg}`
                     : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
               >
                 {isSelected && (
-                  <div className={`absolute top-4 right-4 w-6 h-6 bg-${role.color}-500 rounded-full flex items-center justify-center`}>
+                  <div className={`absolute top-4 right-4 w-6 h-6 ${styles.badge} rounded-full flex items-center justify-center`}>
                     <CheckIcon className="w-4 h-4 text-white" />
                   </div>
                 )}
-                <Icon className={`w-8 h-8 mb-3 ${isSelected ? `text-${role.color}-600` : 'text-gray-600'}`} />
+                <Icon className={`w-8 h-8 mb-3 ${isSelected ? styles.icon : 'text-gray-600'}`} />
                 <h4 className="font-semibold text-gray-900 mb-1">{role.title}</h4>
                 <p className="text-sm text-gray-600 mb-3">{role.description}</p>
                 <ul className="space-y-1">
