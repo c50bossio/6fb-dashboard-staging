@@ -17,7 +17,6 @@ import {
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
 
 const SUPPORTED_PLATFORMS = [
   {
@@ -340,7 +339,7 @@ export default function DataImportSetup({ onComplete, initialData = {}, profile 
           })
           
           // Show progress notification
-          toast.success(`${importType.name} imported successfully!`)
+          console.log(`✅ ${importType.name} imported successfully!`)
 
         } catch (importError) {
           console.error(`Import error for ${typeId}:`, importError)
@@ -349,7 +348,7 @@ export default function DataImportSetup({ onComplete, initialData = {}, profile 
             success: false,
             error: importError.message
           })
-          toast.error(`Failed to import ${importType.name}`)
+          console.error(`❌ Failed to import ${importType.name}`)
         }
       }
 
@@ -376,7 +375,7 @@ export default function DataImportSetup({ onComplete, initialData = {}, profile 
     } catch (error) {
       console.error('Import error:', error)
       setErrors([...errors, `Import failed: ${error.message}`])
-      toast.error('Import failed. Please try again.')
+      console.error('❌ Import failed. Please try again.')
       setImportProgress(null)
     } finally {
       setIsProcessing(false)
