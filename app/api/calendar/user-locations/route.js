@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
+// Force dynamic rendering - this route uses cookies and can't be statically generated
+export const dynamic = 'force-dynamic'
+
 // Temporarily disable edge runtime to debug production issues
 // export const runtime = 'edge'
 

@@ -8,6 +8,7 @@ import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
 import { TenantProvider } from '../../contexts/TenantContext'
+import { GlobalDashboardProvider } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
 function ProtectedLayoutContent({ children }) {
@@ -102,7 +103,9 @@ export default function ProtectedLayout({ children }) {
     <TenantProvider>
       <ProtectedRoute>
         <NavigationProvider>
-          <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
+          <GlobalDashboardProvider>
+            <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
+          </GlobalDashboardProvider>
         </NavigationProvider>
       </ProtectedRoute>
     </TenantProvider>

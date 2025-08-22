@@ -33,56 +33,68 @@ export async function POST(request) {
     // Get active barbers for the specified locations
     const { data: staffRecords, error: staffError } = await supabase
       .from('barbershop_staff')
-      .select(`
-        id,
-        user_id,
-        barbershop_id,
-        role,
-        is_active,
-        commission_rate,
-        profiles:user_id (
-          id,
-          email,
-          full_name,
-          avatar_url,
-          phone
-        ),
-        barbershops:barbershop_id (
-          id,
-          name,
-          city,
-          state
-        )
-      `)
+      .select('*')
       .in('barbershop_id', locationIds)
       .eq('is_active', true)
       .in('role', ['barber', 'senior_barber', 'master_barber', 'shop_owner'])
-      .order('profiles(full_name)')
     
     if (staffError) {
       console.error('Error fetching staff:', staffError)
       throw staffError
     }
     
-    // Format barber data for calendar display
-    const barbers = staffRecords?.map(staff => ({
-      id: staff.user_id,
-      staffId: staff.id,
-      name: staff.profiles?.full_name || staff.profiles?.email || 'Unknown Barber',
-      email: staff.profiles?.email,
-      phone: staff.profiles?.phone,
-      avatar: staff.profiles?.avatar_url,
-      location: staff.barbershops?.name,
-      locationId: staff.barbershop_id,
-      locationCity: staff.barbershops?.city,
-      locationState: staff.barbershops?.state,
-      role: staff.role,
-      commissionRate: staff.commission_rate,
-      color: generateBarberColor(staff.user_id),
-      // For FullCalendar resource
-      title: staff.profiles?.full_name || staff.profiles?.email || 'Unknown Barber',
-      eventColor: generateBarberColor(staff.user_id)
-    })) || []
+    // Fetch related data separately
+    let barbers = []
+    if (staffRecords && staffRecords.length > 0) {
+      // Get unique user IDs and barbershop IDs
+      const userIds = [...new Set(staffRecords.map(s => s.user_id))]
+      const barbershopIds = [...new Set(staffRecords.map(s => s.barbershop_id))]
+      
+      // Fetch profiles
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, avatar_url, phone')
+        .in('id', userIds)
+      
+      // Fetch barbershops
+      const { data: barbershopsData } = await supabase
+        .from('barbershops')
+        .select('id, name, city, state')
+        .in('id', barbershopIds)
+      
+      // Create lookup maps
+      const profilesMap = Object.fromEntries(
+        (profilesData || []).map(p => [p.id, p])
+      )
+      const barbershopsMap = Object.fromEntries(
+        (barbershopsData || []).map(b => [b.id, b])
+      )
+      
+      // Format barber data for calendar display
+      barbers = staffRecords.map(staff => {
+        const profile = profilesMap[staff.user_id] || {}
+        const barbershop = barbershopsMap[staff.barbershop_id] || {}
+        
+        return {
+          id: staff.user_id,
+          staffId: staff.id,
+          name: profile.full_name || profile.email || 'Unknown Barber',
+          email: profile.email,
+          phone: profile.phone,
+          avatar: profile.avatar_url,
+          location: barbershop.name,
+          locationId: staff.barbershop_id,
+          locationCity: barbershop.city,
+          locationState: barbershop.state,
+          role: staff.role,
+          commissionRate: staff.commission_rate,
+          color: generateBarberColor(staff.user_id),
+          // For FullCalendar resource
+          title: profile.full_name || profile.email || 'Unknown Barber',
+          eventColor: generateBarberColor(staff.user_id)
+        }
+      })
+    }
     
     // Get availability/schedule data for each barber (optional enhancement)
     for (const barber of barbers) {

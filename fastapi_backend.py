@@ -3,6 +3,10 @@
 FastAPI backend for 6FB AI Agent System with authentication and AI endpoints
 CRITICAL: Production-grade memory management to fix OAuth callback loops and system failures
 """
+# Load environment variables first
+from dotenv import load_dotenv
+load_dotenv('.env.local')  # Load from .env.local file
+
 from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials

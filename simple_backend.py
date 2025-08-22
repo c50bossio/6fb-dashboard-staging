@@ -147,3 +147,9 @@ async def get_current_user():
         "email": "demo@barbershop.com",
         "shop_name": "Demo Barbershop"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    print("🚀 Starting simple FastAPI backend on port 8001...")
+    init_db()
+    uvicorn.run(app, host="0.0.0.0", port=8001)

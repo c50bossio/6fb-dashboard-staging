@@ -64,16 +64,6 @@ export async function POST(request) {
           description,
           category
         ),
-        barbershop_staff!appointments_barber_id_fkey (
-          user_id,
-          role,
-          profiles:user_id (
-            id,
-            full_name,
-            email,
-            avatar_url
-          )
-        ),
         barbershops (
           id,
           name,
@@ -116,8 +106,57 @@ export async function POST(request) {
       throw appointmentsError
     }
     
+    // Fetch barber information separately
+    let enrichedAppointments = appointments || []
+    if (appointments && appointments.length > 0) {
+      // Get unique barber IDs
+      const uniqueBarberIds = [...new Set(appointments.map(a => a.barber_id).filter(Boolean))]
+      
+      if (uniqueBarberIds.length > 0) {
+        // Fetch barbershop_staff records
+        const { data: staffData } = await supabase
+          .from('barbershop_staff')
+          .select('id, user_id, role')
+          .in('id', uniqueBarberIds)
+        
+        // Get unique user IDs from staff
+        const userIds = staffData ? [...new Set(staffData.map(s => s.user_id))] : []
+        
+        // Fetch profiles for those users
+        let profilesMap = {}
+        if (userIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, full_name, email, avatar_url')
+            .in('id', userIds)
+          
+          profilesMap = Object.fromEntries(
+            (profilesData || []).map(p => [p.id, p])
+          )
+        }
+        
+        // Create staff lookup map with profile data
+        const staffMap = Object.fromEntries(
+          (staffData || []).map(s => [
+            s.id,
+            {
+              user_id: s.user_id,
+              role: s.role,
+              profiles: profilesMap[s.user_id] || null
+            }
+          ])
+        )
+        
+        // Enrich appointments with barber data
+        enrichedAppointments = appointments.map(apt => ({
+          ...apt,
+          barbershop_staff: staffMap[apt.barber_id] || null
+        }))
+      }
+    }
+    
     // Format appointments for FullCalendar
-    const events = appointments?.map(apt => ({
+    const events = enrichedAppointments?.map(apt => ({
       // FullCalendar properties
       id: apt.id,
       title: formatEventTitle(apt, viewType),

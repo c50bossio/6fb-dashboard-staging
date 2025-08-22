@@ -31,6 +31,7 @@ import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator
 import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
 import OnboardingRequiredDialog from '../../../../components/onboarding/OnboardingRequiredDialog'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { useGlobalDashboard } from '../../../../contexts/GlobalDashboardContext'
 import { useToast } from '../../../../components/ToastContainer'
 import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
 import { 
@@ -85,6 +86,17 @@ const CancelConfirmationModal = dynamic(
 export default function CalendarPage() {
   // Get auth context
   const { user, profile, loading } = useAuth()
+  
+  // Get global dashboard context
+  const {
+    selectedLocations: globalSelectedLocations,
+    selectedBarbers: globalSelectedBarbers,
+    availableLocations,
+    availableBarbers: globalAvailableBarbers,
+    permissions,
+    isMultiLocation,
+    viewMode
+  } = useGlobalDashboard()
   
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
@@ -246,12 +258,16 @@ export default function CalendarPage() {
     return () => clearInterval(timeInterval)
   }, [user, profile])
   
-  // Load calendar data when barbershopId is available
+  // Load calendar data when barbershopId is available or global selections change
   useEffect(() => {
-    if (barbershopId) {
+    if (globalSelectedLocations.length > 0) {
+      // Use global context selections
+      loadCalendarDataForLocations(globalSelectedLocations)
+    } else if (barbershopId) {
+      // Fallback to barbershopId if no global selections
       loadCalendarData()
     }
-  }, [barbershopId])
+  }, [barbershopId, globalSelectedLocations, globalSelectedBarbers])
   
   const loadCalendarData = async () => {
     if (!barbershopId) {
@@ -313,23 +329,51 @@ export default function CalendarPage() {
     }
     
     try {
-      // Fetch barbers for selected locations
-      const response = await fetch('/api/calendar/location-barbers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token || ''}`
-        },
-        body: JSON.stringify({ locationIds })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setResources(data.barbers || [])
+      // Use barbers from global context if available
+      if (globalAvailableBarbers.length > 0) {
+        // Filter barbers for selected locations
+        let barbersToShow = globalAvailableBarbers.filter(b => 
+          locationIds.includes(b.barbershop_id)
+        )
         
-        // Then fetch events for these locations
-        await loadMultiLocationData()
+        // Further filter by selected barbers if any
+        if (globalSelectedBarbers.length > 0) {
+          barbersToShow = barbersToShow.filter(b => 
+            globalSelectedBarbers.includes(b.id)
+          )
+        }
+        
+        // Transform to calendar resource format
+        const calendarResources = barbersToShow.map(barber => ({
+          id: barber.id,
+          title: barber.name,
+          businessHours: {
+            daysOfWeek: [1, 2, 3, 4, 5, 6],
+            startTime: '09:00',
+            endTime: '18:00'
+          }
+        }))
+        
+        setResources(calendarResources)
+      } else {
+        // Fallback to fetching barbers
+        const response = await fetch('/api/calendar/location-barbers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user?.access_token || ''}`
+          },
+          body: JSON.stringify({ locationIds })
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setResources(data.barbers || [])
+        }
       }
+      
+      // Then fetch events for these locations and barbers
+      await loadMultiLocationData()
     } catch (error) {
       console.error('Error loading location data:', error)
     }

@@ -21,32 +21,79 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 import { useAuth } from './SupabaseAuthProvider'
+import { useGlobalDashboard } from '../contexts/GlobalDashboardContext'
 
-
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Appointments', href: '/appointments', icon: CalendarIcon },
-  { name: 'Customers', href: '/customers', icon: UsersIcon },
-  { name: 'Staff', href: '/staff', icon: UserCircleIcon },
-  { name: 'Reviews', href: '/dashboard/reviews', icon: ChatBubbleLeftRightIcon,
-    subItems: [
-      { name: 'All Reviews', href: '/dashboard/reviews' },
-      { name: 'Location Reviews', href: '/dashboard/locations/reviews' },
-      { name: 'Enterprise Analytics', href: '/dashboard/enterprise/reviews' }
+// Role-based navigation configuration
+const getNavigationItems = (userRole, permissions) => {
+  const baseItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+    { name: 'Calendar', href: '/dashboard/calendar', icon: CalendarIcon },
+  ]
+  
+  // Enterprise Owner navigation
+  if (userRole === 'ENTERPRISE_OWNER' || userRole === 'SUPER_ADMIN') {
+    return [
+      ...baseItems,
+      { name: 'Locations', href: '/enterprise/locations', icon: UsersIcon },
+      { name: 'Analytics', href: '/enterprise/analytics', icon: ChartBarIcon },
+      { name: 'Customers', href: '/dashboard/customers', icon: UsersIcon },
+      { name: 'Reviews', href: '/dashboard/reviews', icon: ChatBubbleLeftRightIcon,
+        subItems: [
+          { name: 'All Reviews', href: '/dashboard/reviews' },
+          { name: 'Location Reviews', href: '/dashboard/locations/reviews' },
+          { name: 'Enterprise Analytics', href: '/dashboard/enterprise/reviews' }
+        ]
+      },
+      { name: 'AI Insights', href: '/dashboard?mode=ai_insights', icon: SparklesIcon },
+      { name: 'Settings', href: '/dashboard/settings', icon: CogIcon },
     ]
-  },
-  { name: 'Payments', href: '/payments', icon: BanknotesIcon },
-  { name: 'Analytics', href: '/dashboard?mode=analytics', icon: ChartBarIcon },
-  { name: 'AI Agents', href: '/ai-agents', icon: SparklesIcon },
-  { name: 'Advanced RAG', href: '/advanced-rag', icon: AcademicCapIcon },
-  { name: 'Admin: AI Knowledge', href: '/admin/knowledge', icon: CogIcon },
-  { name: 'Settings', href: '/dashboard/settings', icon: CogIcon },
-]
+  }
+  
+  // Shop Owner navigation
+  if (userRole === 'SHOP_OWNER') {
+    return [
+      ...baseItems,
+      { name: 'Barbers', href: '/shop/barbers', icon: UserCircleIcon },
+      { name: 'Customers', href: '/dashboard/customers', icon: UsersIcon },
+      { name: 'Analytics', href: '/shop/analytics', icon: ChartBarIcon },
+      { name: 'Financial', href: '/shop/financial', icon: BanknotesIcon },
+      { name: 'AI Coach', href: '/dashboard?mode=ai_insights', icon: SparklesIcon },
+      { name: 'Settings', href: '/shop/settings', icon: CogIcon },
+    ]
+  }
+  
+  // Barber navigation
+  if (userRole === 'BARBER') {
+    return [
+      ...baseItems,
+      { name: 'My Clients', href: '/barber/clients', icon: UsersIcon },
+      { name: 'My Schedule', href: '/barber/schedule', icon: CalendarIcon },
+      { name: 'My Performance', href: '/barber/dashboard', icon: ChartBarIcon },
+      { name: 'Profile', href: '/barber/profile', icon: UserCircleIcon },
+    ]
+  }
+  
+  // Customer navigation
+  if (userRole === 'CLIENT' || userRole === 'CUSTOMER') {
+    return [
+      { name: 'Book Appointment', href: '/bookings', icon: CalendarIcon },
+      { name: 'My Appointments', href: '/appointments', icon: CalendarIcon },
+      { name: 'Profile', href: '/profile', icon: UserCircleIcon },
+    ]
+  }
+  
+  // Default navigation for unknown roles
+  return baseItems
+}
 
 export default function GlobalNavigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, userRole } = useAuth()
+  const { permissions } = useGlobalDashboard()
   const pathname = usePathname()
+  
+  // Get role-specific navigation items
+  const navigation = getNavigationItems(userRole, permissions)
 
   const authPaths = ['/login', '/register', '/', '/login-v2', '/login-simple', '/login-api', '/login-options', '/test-auth']
   if (authPaths.includes(pathname) || pathname.startsWith('/login') || pathname.startsWith('/auth')) {

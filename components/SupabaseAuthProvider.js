@@ -155,89 +155,47 @@ function SupabaseAuthProvider({ children }) {
           sessionIsValid: session ? new Date(session.expires_at * 1000) > new Date() : false
         })
         
-        // 🔧 DEVELOPMENT: Session recovery for c50bossio@gmail.com
+        // 🔧 DEVELOPMENT: Simplified fallback for development - no database queries
         if (!session && process.env.NODE_ENV === 'development') {
-          console.log('🔧 [DEV AUTH] No session found, checking for development user recovery...')
+          console.log('🔧 [DEV AUTH] No session found, using development fallback (no DB query needed)...')
           
-          // Check if this is the admin user in the database
-          try {
-            console.log('🔧 [DEV AUTH] Querying users table for admin user...')
-            const { data: adminUser, error: queryError } = await supabase
-              .from('users')
-              .select('id, email, role, subscription_tier')
-              .eq('email', 'c50bossio@gmail.com')
-              .single()
-            
-            console.log('🔧 [DEV AUTH] Query result:', { adminUser, queryError })
-            
-            if (queryError) {
-              console.error('🔧 [DEV AUTH] Database query error:', queryError)
-              // Fallback: Create a mock user with known details
-              console.log('🔧 [DEV AUTH] Using fallback mock user for development...')
-              const mockUser = {
-                id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5', // Known admin ID from database
-                email: 'c50bossio@gmail.com',
-                user_metadata: {
-                  full_name: 'Christopher Bossio',
-                  email: 'c50bossio@gmail.com'
-                },
-                app_metadata: {
-                  role: 'SUPER_ADMIN',
-                  subscription_tier: 'enterprise'
-                }
-              }
-              
-              console.log('🔧 [DEV AUTH] Setting fallback mock user session for development')
-              
-              // Create a mock profile to avoid database issues
-              const mockProfile = {
-                id: mockUser.id,
-                email: mockUser.email,
-                role: 'SUPER_ADMIN',
-                subscription_tier: 'enterprise',
-                subscription_status: 'active',
-                full_name: 'Christopher Bossio'
-              }
-              
-              console.log('🔧 [DEV AUTH] Setting mock profile:', mockProfile)
-              
-              // Set both user and profile before completing loading
-              setUser(mockUser)
-              setProfile(mockProfile)
-              setLoading(false)
-              
-              console.log('🔧 [DEV AUTH] Development authentication completed successfully!')
-              return
+          // Skip database query entirely - just use hardcoded development user
+          // This avoids RLS policy violations when no user is authenticated
+          console.log('🔧 [DEV AUTH] Using hardcoded development user to avoid RLS issues...')
+          
+          const mockUser = {
+            id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5', // Known admin ID from database
+            email: 'c50bossio@gmail.com',
+            user_metadata: {
+              full_name: 'Christopher Bossio',
+              email: 'c50bossio@gmail.com'
+            },
+            app_metadata: {
+              role: 'SUPER_ADMIN',
+              subscription_tier: 'enterprise'
             }
-            
-            if (adminUser) {
-              console.log('🔧 [DEV AUTH] Found admin user in database, creating mock session...')
-              
-              // Create a mock user object for development
-              const mockUser = {
-                id: adminUser.id,
-                email: adminUser.email,
-                user_metadata: {
-                  full_name: 'Christopher Bossio',
-                  email: adminUser.email
-                },
-                app_metadata: {
-                  role: adminUser.role,
-                  subscription_tier: adminUser.subscription_tier
-                }
-              }
-              
-              console.log('🔧 [DEV AUTH] Setting mock user session for development')
-              setUser(mockUser)
-              
-              // Fetch the full profile
-              await fetchProfile(adminUser.id)
-              setLoading(false)
-              return
-            }
-          } catch (devError) {
-            console.error('🔧 [DEV AUTH] Development session recovery failed:', devError)
           }
+          
+          // Create a mock profile to avoid database issues
+          const mockProfile = {
+            id: mockUser.id,
+            email: mockUser.email,
+            role: 'SUPER_ADMIN',
+            subscription_tier: 'enterprise',
+            subscription_status: 'active',
+            full_name: 'Christopher Bossio',
+            onboarding_completed: true
+          }
+          
+          console.log('🔧 [DEV AUTH] Setting development user and profile (no DB required)')
+          
+          // Set both user and profile before completing loading
+          setUser(mockUser)
+          setProfile(mockProfile)
+          setLoading(false)
+          
+          console.log('🔧 [DEV AUTH] Development authentication completed successfully!')
+          return
         }
         
         setUser(session?.user ?? null)

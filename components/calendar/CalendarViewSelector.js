@@ -15,77 +15,21 @@ import {
   CheckIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../SupabaseAuthProvider'
+import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 
 export default function CalendarViewSelector({
   onViewChange,
-  onLocationChange,
-  onBarberChange,
-  currentView = 'personal',
-  selectedLocations = [],
-  selectedBarbers = []
+  currentView = 'personal'
 }) {
   const { user, profile, isEnterprise, isShopOwner, userRole } = useAuth()
-  const [locations, setLocations] = useState([])
-  const [barbers, setBarbers] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { 
+    selectedLocations,
+    selectedBarbers,
+    availableLocations,
+    availableBarbers,
+    permissions 
+  } = useGlobalDashboard()
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  
-  // Fetch user's accessible locations
-  useEffect(() => {
-    fetchUserLocations()
-  }, [user, userRole])
-  
-  const fetchUserLocations = async () => {
-    if (!user) return
-    
-    try {
-      setLoading(true)
-      const response = await fetch('/api/calendar/user-locations', {
-        credentials: 'same-origin'
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setLocations(data.locations || [])
-        
-        // Auto-select first location if none selected
-        if (data.locations?.length > 0 && selectedLocations.length === 0) {
-          onLocationChange?.([data.locations[0].id])
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching locations:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-  
-  // Fetch barbers for selected locations
-  useEffect(() => {
-    if (selectedLocations.length > 0) {
-      fetchBarbersForLocations()
-    }
-  }, [selectedLocations])
-  
-  const fetchBarbersForLocations = async () => {
-    try {
-      const response = await fetch('/api/calendar/location-barbers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token || ''}`
-        },
-        body: JSON.stringify({ locationIds: selectedLocations })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setBarbers(data.barbers || [])
-      }
-    } catch (error) {
-      console.error('Error fetching barbers:', error)
-    }
-  }
   
   // Get view options based on user role
   const getViewOptions = () => {
@@ -213,169 +157,6 @@ export default function CalendarViewSelector({
           </Menu.Items>
         </Transition>
       </Menu>
-      
-      {/* Location Selector (for multi-location users) */}
-      {locations.length > 1 && (
-        <Menu as="div" className="relative inline-block text-left">
-          <div>
-            <Menu.Button className="inline-flex w-full justify-between items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-              <MapPinIcon className="mr-2 h-5 w-5 text-gray-400" />
-              <span className="flex-1 text-left">
-                {selectedLocations.length === 0
-                  ? 'Select Locations'
-                  : selectedLocations.length === 1
-                  ? locations.find(l => l.id === selectedLocations[0])?.name
-                  : `${selectedLocations.length} locations`}
-              </span>
-              <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-400" />
-            </Menu.Button>
-          </div>
-          
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-100"
-            enterFrom="transform opacity-0 scale-95"
-            enterTo="transform opacity-100 scale-100"
-            leave="transition ease-in duration-75"
-            leaveFrom="transform opacity-100 scale-100"
-            leaveTo="transform opacity-0 scale-95"
-          >
-            <Menu.Items className="absolute left-0 z-10 mt-2 w-64 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              <div className="py-1">
-                <div className="px-4 py-2">
-                  <button
-                    onClick={() => {
-                      const allLocationIds = locations.map(l => l.id)
-                      onLocationChange?.(
-                        selectedLocations.length === locations.length
-                          ? []
-                          : allLocationIds
-                      )
-                    }}
-                    className="text-xs font-medium text-olive-600 hover:text-olive-700"
-                  >
-                    {selectedLocations.length === locations.length
-                      ? 'Deselect All'
-                      : 'Select All'}
-                  </button>
-                </div>
-                <div className="border-t border-gray-100">
-                  {locations.map((location) => (
-                    <Menu.Item key={location.id}>
-                      {({ active }) => (
-                        <button
-                          onClick={() => {
-                            const isSelected = selectedLocations.includes(location.id)
-                            onLocationChange?.(
-                              isSelected
-                                ? selectedLocations.filter(id => id !== location.id)
-                                : [...selectedLocations, location.id]
-                            )
-                          }}
-                          className={`
-                            ${active ? 'bg-gray-100' : ''}
-                            group flex items-center w-full px-4 py-2 text-sm text-gray-700
-                          `}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedLocations.includes(location.id)}
-                            onChange={() => {}}
-                            className="mr-3 h-4 w-4 text-olive-600 rounded focus:ring-olive-500"
-                          />
-                          <div className="flex-1 text-left">
-                            <div className="font-medium">{location.name}</div>
-                            <div className="text-xs text-gray-500">
-                              {location.city}, {location.state}
-                            </div>
-                          </div>
-                        </button>
-                      )}
-                    </Menu.Item>
-                  ))}
-                </div>
-              </div>
-            </Menu.Items>
-          </Transition>
-        </Menu>
-      )}
-      
-      {/* Barber Filter (when applicable) */}
-      {barbers.length > 0 && currentView !== 'personal' && (
-        <Menu as="div" className="relative inline-block text-left">
-          <div>
-            <Menu.Button className="inline-flex w-full justify-between items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-              <UserGroupIcon className="mr-2 h-5 w-5 text-gray-400" />
-              <span className="flex-1 text-left">
-                {selectedBarbers.length === 0
-                  ? 'All Barbers'
-                  : selectedBarbers.length === 1
-                  ? barbers.find(b => b.id === selectedBarbers[0])?.name
-                  : `${selectedBarbers.length} barbers`}
-              </span>
-              <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-400" />
-            </Menu.Button>
-          </div>
-          
-          <Transition
-            as={Fragment}
-            enter="transition ease-out duration-100"
-            enterFrom="transform opacity-0 scale-95"
-            enterTo="transform opacity-100 scale-100"
-            leave="transition ease-in duration-75"
-            leaveFrom="transform opacity-100 scale-100"
-            leaveTo="transform opacity-0 scale-95"
-          >
-            <Menu.Items className="absolute left-0 z-10 mt-2 w-64 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none max-h-96 overflow-y-auto">
-              <div className="py-1">
-                <div className="px-4 py-2">
-                  <button
-                    onClick={() => onBarberChange?.([])}
-                    className="text-xs font-medium text-olive-600 hover:text-olive-700"
-                  >
-                    Show All Barbers
-                  </button>
-                </div>
-                <div className="border-t border-gray-100">
-                  {barbers.map((barber) => (
-                    <Menu.Item key={barber.id}>
-                      {({ active }) => (
-                        <button
-                          onClick={() => {
-                            const isSelected = selectedBarbers.includes(barber.id)
-                            onBarberChange?.(
-                              isSelected
-                                ? selectedBarbers.filter(id => id !== barber.id)
-                                : [...selectedBarbers, barber.id]
-                            )
-                          }}
-                          className={`
-                            ${active ? 'bg-gray-100' : ''}
-                            group flex items-center w-full px-4 py-2 text-sm text-gray-700
-                          `}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedBarbers.includes(barber.id)}
-                            onChange={() => {}}
-                            className="mr-3 h-4 w-4 text-olive-600 rounded focus:ring-olive-500"
-                          />
-                          <div className="flex-1 text-left">
-                            <div className="font-medium">{barber.name}</div>
-                            {barber.location && (
-                              <div className="text-xs text-gray-500">{barber.location}</div>
-                            )}
-                          </div>
-                        </button>
-                      )}
-                    </Menu.Item>
-                  ))}
-                </div>
-              </div>
-            </Menu.Items>
-          </Transition>
-        </Menu>
-      )}
     </div>
   )
 }

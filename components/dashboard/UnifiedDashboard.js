@@ -20,6 +20,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 import { getUserBarbershopId, createBarbershopForOwner } from '@/lib/barbershop-helper'
+import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import ActionCenter from './ActionCenter'
 import AICoachPanel from './AICoachPanel'
 import AnalyticsPanel from './AnalyticsPanel'
@@ -27,6 +28,7 @@ import ExecutiveLoadingState from './ExecutiveLoadingState'
 import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
+import ShareableBookingLink from './ShareableBookingLink'
 
 
 const DASHBOARD_MODES = {
@@ -87,6 +89,7 @@ export default function UnifiedDashboard({ user, profile }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const modeParam = searchParams.get('mode')
+  const { selectedLocations, selectedBarbers, isMultiLocation, permissions, viewMode, availableLocations } = useGlobalDashboard()
   
   const [currentMode, setCurrentMode] = useState(DASHBOARD_MODES.EXECUTIVE)
   const [isLoading, setIsLoading] = useState(false)
@@ -214,8 +217,14 @@ export default function UnifiedDashboard({ user, profile }) {
         return
       }
 
-      // Get barbershop_id using helper function
-      barbershopId = await getUserBarbershopId(user, profile)
+      // Get barbershop_id(s) based on global context selection or user profile
+      if (selectedLocations.length > 0) {
+        // Use selected locations from global context
+        barbershopId = selectedLocations
+      } else {
+        // Fall back to user's default barbershop
+        barbershopId = await getUserBarbershopId(user, profile)
+      }
       
       // For shop owners without a barbershop, create one automatically
       if (!barbershopId && profile?.role === 'SHOP_OWNER') {
@@ -337,8 +346,10 @@ export default function UnifiedDashboard({ user, profile }) {
     setIsLoading(true)
     try {
       if (currentMode === DASHBOARD_MODES.EXECUTIVE) {
-        // Use enhanced analytics endpoint for comprehensive real data
-        const response = await fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json&force_refresh=${forceRefresh}`)
+        // Use enhanced analytics endpoint with support for multiple locations
+        const barbershopIds = Array.isArray(barbershopId) ? barbershopId : [barbershopId]
+        const barberFilter = selectedBarbers.length > 0 ? `&barber_ids=${selectedBarbers.join(',')}` : ''
+        const response = await fetch(`/api/analytics/live-data?barbershop_ids=${barbershopIds.join(',')}&format=json&force_refresh=${forceRefresh}${barberFilter}`)
         const result = await response.json()
         
         if (response.ok && result.success) {
@@ -590,6 +601,127 @@ export default function UnifiedDashboard({ user, profile }) {
 
     switch (currentMode) {
       case DASHBOARD_MODES.EXECUTIVE:
+        // Handle different view modes for multi-location users
+        if (isMultiLocation && selectedLocations.length > 1) {
+          if (viewMode === 'consolidated') {
+            // Consolidated view - aggregate all data
+            return (
+              <div className="space-y-6">
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                        Consolidated View - {selectedLocations.length} Locations
+                      </h3>
+                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                        Viewing aggregated data across all selected locations
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <UnifiedExecutiveSummary data={dashboardData} mode="consolidated" />
+                <SmartAlertsPanel data={dashboardData} />
+              </div>
+            )
+          } else if (viewMode === 'individual') {
+            // Individual view - show each location separately
+            return (
+              <div className="space-y-6">
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                  <div className="flex items-center">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-green-900 dark:text-green-100">
+                        Individual View - {selectedLocations.length} Locations
+                      </h3>
+                      <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                        Viewing each location separately
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {selectedLocations.map(locationId => {
+                    const location = availableLocations.find(l => l.id === locationId)
+                    return (
+                      <div key={locationId} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-4">
+                          {location?.name || 'Location'}
+                        </h4>
+                        <UnifiedExecutiveSummary data={dashboardData} mode="individual" locationId={locationId} />
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          } else if (viewMode === 'comparison') {
+            // Comparison view - side-by-side metrics
+            return (
+              <div className="space-y-6">
+                <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center">
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                        Comparison View - {selectedLocations.length} Locations
+                      </h3>
+                      <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                        Comparing performance metrics side-by-side
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Location
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Today's Revenue
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Appointments
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Active Barbers
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Occupancy
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                      {selectedLocations.map(locationId => {
+                        const location = availableLocations.find(l => l.id === locationId)
+                        return (
+                          <tr key={locationId}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {location?.name || 'Location'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              ${dashboardData?.metrics?.daily_revenue || 0}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {dashboardData?.metrics?.appointments_today || 0}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {dashboardData?.metrics?.active_barbers || 0}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {dashboardData?.metrics?.occupancy_rate || 0}%
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )
+          }
+        }
+        // Default single location view
         return null
         
       case DASHBOARD_MODES.AI_INSIGHTS:
@@ -656,6 +788,10 @@ export default function UnifiedDashboard({ user, profile }) {
           <ModeSelector />
         </div>
         
+        {/* Shareable Booking Link - Only show for shop owners and above */}
+        {(profile?.role === 'SHOP_OWNER' || profile?.role === 'ENTERPRISE_OWNER' || profile?.role === 'SUPER_ADMIN') && (
+          <ShareableBookingLink />
+        )}
       </div>
 
 

@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
+import GlobalContextSelector from './GlobalContextSelector'
 
 export default function DashboardHeader() {
   const { user, profile, signOut } = useAuth()
@@ -150,6 +151,11 @@ export default function DashboardHeader() {
                 })} • {currentTime}
               </p>
             </div>
+          </div>
+
+          {/* Center - Global Context Selector */}
+          <div className="flex-1 flex justify-center">
+            <GlobalContextSelector />
           </div>
 
           {/* Right side - Actions */}

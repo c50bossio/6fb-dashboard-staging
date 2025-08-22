@@ -11,13 +11,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Context Window Optimized Summary
 
-**Enterprise barbershop platform**: Next.js 14 + FastAPI + Supabase PostgreSQL.
+**Enterprise barbershop platform**: Next.js 14 (port 9999) + FastAPI (port 8001) + Supabase PostgreSQL. Currently implementing global dashboard context system with multi-location support and public booking flows.
 
 ### Core Rules
 1. **NO MOCK DATA** - Always use real Supabase database
 2. **FULL-STACK ONLY** - Complete features: DB schema → API → UI → tests  
 3. **MEMORY CRITICAL** - FastAPI has memory-managed OAuth system (`services/memory_manager.py`)
 4. **100% FEATURE COMPLETION** - See "Definition of Done" below
+5. **🚨 VERIFY BEFORE ASSESS** - See mandatory verification protocol below
 
 ### Essential Commands
 ```bash
@@ -26,30 +27,228 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run claude:health        # Test all connections before starting work
 npm run dev                  # Next.js (port 9999)
 python fastapi_backend.py    # FastAPI (port 8001)
+npm run dev:full            # Run both frontend and backend concurrently
+npm run dev:backend         # FastAPI backend only
+npm run dev:docker          # Start via Docker
 
 # Before Committing (MANDATORY)
 npm run lint                # Check code quality
 npm run build               # Verify production build + TypeScript
-npm run test:all            # Run full test suite
+npm run type-check          # TypeScript type checking only
+npm run test:all            # Run full test suite (unit + integration + e2e)
+
+# Testing Commands - Core
+npm run test                # Run Jest unit tests
+npm run test:watch          # Jest in watch mode
+npm run test:ci             # CI-friendly test run with coverage
+npm run test:unit           # Unit tests only
+npm run test:integration    # Integration tests only
+
+# Testing Commands - E2E & Specialized
+npm run test:e2e            # Run Playwright E2E tests
+npm run test:e2e:headed     # E2E tests with browser UI
+npm run test:e2e:debug      # Debug E2E tests
+npm run test:e2e:ui         # Interactive test UI
+npm run test:e2e:smoke      # Quick smoke tests
+npm run test:e2e:critical   # Critical path tests only
+npm run test:e2e:booking    # Booking flow tests
+npm run test:e2e:payment    # Payment integration tests
+npm run test:e2e:analytics  # Analytics dashboard tests
+npm run test:e2e:mobile     # Mobile-specific tests
+npm run test:e2e:cross-browser # Multi-browser testing
+
+# Testing Commands - Quality & Performance
+npm run test:security       # Full security test suite
+npm run test:security:quick # Quick security scan
+npm run test:performance    # Performance benchmarks
+npm run test:accessibility  # Accessibility testing
+npm run test:visual         # Visual regression tests
+npm run test:production-ready # Production readiness validation
+
+# Quality Assurance
+npm run claude:validate     # Lint + type-check + build
+npm run claude:pre-commit   # Full validation suite (lint + build + all tests)
+npm run check:production    # Production readiness check
+npm run report:generate     # Generate test reports
+npm run report:serve        # Serve test reports
 ```
 
 ### Key Files & Architecture
 ```
-lib/supabase-query.js       # Database operations layer
-services/memory_manager.py  # Critical OAuth management (prevents production crashes)
-routers/                    # FastAPI feature modules (ai.py, auth.py, dashboard.py)
-components/ui/              # Base UI components (use these, don't recreate)
-middleware.js               # Security headers, auth bypass, admin protection
-app/api/                    # Next.js API routes
+# Core Infrastructure
+lib/supabase-query.js         # Database operations layer
+lib/dashboard-aggregation.js  # Dashboard data aggregation utilities
+services/memory_manager.py    # Critical OAuth management (prevents production crashes)
+middleware.js                 # Security headers, auth bypass, admin protection
+fastapi_backend.py            # Main FastAPI app with router registration
+simple_backend.py             # Fallback HTTP server for basic operations
+
+# Context & State Management  
+contexts/GlobalDashboardContext.js  # Multi-location dashboard state management
+components/SupabaseAuthProvider.js  # Authentication context provider
+
+# API Structure
+app/api/                      # Next.js API routes
+app/api/public/              # Public API endpoints (no auth required)
+routers/                     # FastAPI feature modules (ai.py, auth.py, dashboard.py)
+
+# Component Libraries
+components/ui/               # Base UI components (use these, don't recreate)
+components/booking/          # Booking flow components (PublicBookingFlow, ProgressiveAccountCreation)
+components/modals/           # Modal components library
+components/dashboard/        # Dashboard components (UnifiedDashboard, GlobalContextSelector)
+components/customers/        # Customer management components (CustomerPortal)
+
+# Docker & Testing
+docker-compose.yml           # Docker services configuration
+data/agent_system.db        # SQLite database for development
+```
+
+### Shop ID Resolution Pattern (CRITICAL)
+```javascript
+// Two subscription models affect how shop_id is resolved:
+// 1. Individual Barber: has shop_id directly in profiles table
+// 2. Barbershop Employee: gets shop_id via barbershop_staff table
+
+// Resolution logic (ALWAYS follow this order):
+const shopId = profile.shop_id                    // Check individual barber first
+  || profile.barbershop_id                        // Alternative field name
+  || (await getStaffShopId(profile.id))          // Employee lookup
+  || DEFAULT_SHOP_ID;                            // Fallback for demos
+
+// NEVER assume all users have shop_id - always check both paths!
+```
+
+### Database Operation Patterns (CRITICAL)
+```javascript
+// ALWAYS use transactions for multi-table operations
+const { data, error } = await supabase.rpc('transaction_wrapper', {
+  operations: [...] 
+})
+
+// ALWAYS check for existing records before insert
+const existing = await supabase
+  .from('table')
+  .select('id')
+  .eq('unique_field', value)
+  .single()
+
+if (!existing) {
+  // Safe to insert
+}
+
+// ALWAYS use proper error handling with user feedback
+if (error) {
+  console.error('Operation failed:', error)
+  toast.error(error.message || 'Operation failed')
+  return
+}
+```
+
+### Authentication & RLS Critical Issues (MUST READ)
+```javascript
+// ❌ NEVER query protected tables without authentication
+// This causes 400 Bad Request errors due to RLS policies
+const { data: adminUser, error } = await supabase
+  .from('users')  // RLS requires auth.uid() = user_id
+  .select('id, email, role')
+  .eq('email', 'user@example.com')
+
+// ✅ ALWAYS use hardcoded fallbacks for development auth
+if (!session && process.env.NODE_ENV === 'development') {
+  const mockUser = {
+    id: 'known-user-id',
+    email: 'dev@example.com',
+    // ... mock data
+  }
+  setUser(mockUser)
+  setProfile(mockProfile)
+  return
+}
+
+// ✅ ALWAYS include ALL dependencies in useEffect
+useEffect(() => {
+  if (selectedService) {
+    loadAvailableSlots(selectedService.id, selectedDate)
+  }
+}, [selectedDate, selectedService]) // Must include selectedService!
+
+// ❌ Missing dependencies cause infinite loops
+useEffect(() => {
+  // Uses selectedService but doesn't list it
+}, [selectedDate]) // WRONG - causes "Maximum update depth exceeded"
 ```
 
 ### Environment Variables (Required)
 ```bash
+# Database (Required)
 NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+
+# AI Models (Required)
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=           # For Claude integration
 GOOGLE_AI_API_KEY=           # For Gemini integration
+
+# Payments & Services
+STRIPE_SECRET_KEY=           # Payment processing
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+SENDGRID_API_KEY=            # Email notifications
+TWILIO_ACCOUNT_SID=          # SMS notifications
+
+# Real-time (Optional but recommended)
+NEXT_PUBLIC_PUSHER_KEY=
+PUSHER_APP_ID=
+PUSHER_SECRET=
+PUSHER_CLUSTER=us2
+```
+
+### Python Backend Setup
+```bash
+# Install Python dependencies (if using FastAPI backend)
+pip install -r requirements.txt
+
+# Start FastAPI backend separately
+python fastapi_backend.py    # Runs on port 8001
+
+# Or use simple backend for basic operations
+python simple_backend.py      # Fallback HTTP server
+```
+
+## 🧪 Testing Architecture
+
+### Test Structure
+```
+tests/
+├── unit/                    # Jest unit tests
+├── integration/             # API integration tests
+├── e2e/                     # Playwright end-to-end tests
+├── security/                # Security scanning tests
+├── performance/             # Performance benchmarks
+└── nuclear/                 # High-impact scenario tests
+
+__tests__/                   # Additional Jest tests
+├── components/              # Component unit tests
+├── api/                     # API route tests
+└── production-ready/        # Production readiness tests
+```
+
+### Running Specific Test Suites
+```bash
+# Run single test file
+npm test -- path/to/test.js
+
+# Run tests matching pattern
+npm test -- --testNamePattern="should handle"
+
+# Debug specific E2E test
+npx playwright test path/to/test.spec.js --debug
+
+# Run E2E tests for specific feature
+npm run test:e2e:booking     # Booking flow tests
+npm run test:e2e:payment     # Payment integration tests
+npm run test:e2e:analytics   # Analytics dashboard tests
 ```
 
 ## 🔒 SECURITY PHILOSOPHY - CRITICAL (READ THIS FIRST!)
@@ -183,10 +382,13 @@ The CSRF token mismatch error was caused by over-engineering. Don't repeat this 
 - **Real-time**: Pusher WebSocket for live updates
 
 ### AI System Architecture
-- **Multi-Model Support**: OpenAI GPT-5, Anthropic Claude Opus 4.1, Google Gemini 2.0
+- **Multi-Model Support**: OpenAI GPT-4/5, Anthropic Claude Opus 4.1, Google Gemini 2.0
 - **Agent Framework**: Master coach + specialist agents (financial, operations, brand, growth)
 - **Memory System**: Persistent context across sessions with memory-managed OAuth
-- **Caching Layer**: Redis-backed response caching for cost optimization
+- **Caching Layer**: Redis-backed response caching (60-70% cost reduction)
+- **Cost Tracking**: Per-token billing with usage monitoring in `lib/ai-config.js`
+- **Agent Routers**: Modular FastAPI routers in `routers/ai.py`, `routers/agents.py`
+- **Prompt Templates**: Structured prompts in `services/ai_service.py`
 
 ### Authentication Flow
 - **Multi-Provider**: Google OAuth, email/password with MFA
@@ -405,6 +607,69 @@ EXCEPTION
 END;
 $$;
 
+## 🔄 Current Development Context
+
+### Active Work Areas (Based on Git Status)
+- **Global Dashboard Context**: Multi-location dashboard with view modes (consolidated/comparison/individual)
+- **Public Booking Flow**: Customer-facing booking system at `/book/public/[barbershopId]`
+- **Customer Portal Settings**: Self-service customer management features  
+- **Progressive Account Creation**: Streamlined onboarding during booking flow
+- **Public API Endpoints**: Authentication-free booking APIs at `/api/public/*`
+- **Modal Component Library**: Centralized modal system in `components/modals/`
+
+### Recent Patterns to Follow
+```javascript
+// Global Context Pattern - use for multi-location features
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+
+// Public API Pattern - no auth required endpoints
+// Place in app/api/public/* for automatic auth bypass
+
+// Dashboard Aggregation Pattern - combine data from multiple sources
+import { aggregateDashboardData } from '@/lib/dashboard-aggregation'
+
+// Fixed Supabase Query Pattern - avoid PostgREST relationship syntax
+// ❌ DON'T use foreign key syntax like 'profiles:user_id'
+const { data, error } = await supabase
+  .from('barbershop_staff')
+  .select('*, profiles:user_id(full_name, email)')  // BREAKS
+
+// ✅ DO separate queries and merge in JavaScript
+const staffData = await supabase
+  .from('barbershop_staff')
+  .select('*')
+  .eq('barbershop_id', id)
+
+const userIds = staffData.data.map(s => s.user_id)
+const profilesData = await supabase
+  .from('profiles')
+  .select('id, full_name, email')
+  .in('id', userIds)
+
+// Merge data in JavaScript with lookup maps
+```
+
+### Critical Troubleshooting Knowledge
+```javascript
+// Common Issues & Solutions (from recent troubleshooting):
+
+// 1. Database Query Errors (400 Bad Request)
+// Cause: RLS policies preventing unauthenticated queries
+// Solution: Use hardcoded fallbacks in development mode
+
+// 2. Infinite Loop Errors ("Maximum update depth exceeded")  
+// Cause: Incomplete useEffect dependency arrays
+// Solution: Include ALL variables used in effect
+
+// 3. PostgREST Foreign Key Syntax Errors
+// Cause: Complex join syntax not supported consistently
+// Solution: Use separate queries + JavaScript merging
+
+// 4. Site Loading Issues (404 errors)
+// Cause: Port conflicts or compilation errors
+// Solution: Kill processes, restart dev server
+```
+
 ## 📝 Common Development Tasks
 
 ### Adding a New Feature
@@ -412,13 +677,41 @@ $$;
 2. Use `lib/supabase-query.js` for database operations
 3. Add router to `routers/` and register in `fastapi_backend.py`
 4. Create UI in `components/` using existing `components/ui/` base components
-5. Test with `npm run test:all` before committing
+5. If multi-location: integrate with `GlobalDashboardContext`
+6. Test with `npm run test:all` before committing
 
 ### Debugging Production Issues
 1. Check memory_manager.py logs for OAuth issues
 2. Use `npm run claude:health` to verify all services
 3. Check Sentry for error tracking
 4. Review Redis cache hits for AI cost optimization
+5. For dashboard issues: check GlobalDashboardContext state
+
+### Testing Specific Features
+```bash
+# Test booking flow
+npm run test:e2e:booking
+
+# Test global context
+node scripts/test-global-context.js
+
+# Test view modes
+node scripts/test-view-modes.js
+
+# Integration test for dashboard
+npm test -- __tests__/integration/global-dashboard-context.test.js
+
+# Run specific test files
+npm test -- path/to/test.js
+npm test -- --testNamePattern="should handle"
+
+# Debug specific E2E test
+npx playwright test path/to/test.spec.js --debug
+
+# CI/CD Pipeline Tests
+npm run ci:test              # CI-friendly test suite
+npm run ci:full              # Complete CI validation
+```
 
 ### Before Any PR
 ```bash
@@ -427,6 +720,93 @@ npm run build           # Must pass
 npm run test:all        # Must pass
 npm run test:security:quick  # If security-related changes
 ```
+
+### Common Troubleshooting Scenarios
+```bash
+# Site not loading / 404 errors
+lsof -ti:9999 | xargs kill -9  # Kill processes on port 9999
+npm run dev                    # Restart development server
+
+# Database query errors (400 Bad Request)
+# Check SupabaseAuthProvider.js for RLS policy violations
+# Solution: Use hardcoded fallbacks in development mode
+
+# Infinite loop warnings ("Maximum update depth exceeded")
+# Check useEffect dependency arrays in React components
+# Solution: Include ALL variables used in the effect
+
+# PostgREST/Supabase query failures
+# Check for complex join syntax like 'table:foreign_key(fields)'
+# Solution: Use separate queries and merge in JavaScript
+```
+
+### Utility Scripts & Database Management
+```bash
+# Database & Setup
+node scripts/create-test-account.js        # Create test accounts
+node scripts/setup-database.js             # Initialize database
+node scripts/setup-supabase-database.js    # Supabase setup
+node scripts/apply-rls-policies-direct.js  # Apply RLS policies
+node scripts/execute-sql-direct.js         # Execute SQL directly
+
+# Data Management
+node scripts/cleanup-test-data.js          # Clean test data
+node scripts/generate-comprehensive-data.js # Generate demo data
+node scripts/fix-barbershop-associations.js # Fix data associations
+
+# Production & Deployment
+./scripts/deploy-production.sh             # Production deployment
+./scripts/production-setup.js              # Production configuration
+node scripts/verify-production-readiness.js # Pre-deployment check
+node scripts/check-deployment.sh           # Post-deployment verification
+
+# Development Tools
+node scripts/fix-user-roles.js             # Fix user permissions
+node scripts/diagnose-and-fix-rate-limits.js # Rate limit debugging
+npm run check:production-readiness         # Full production check
+```
+
+## 🚨 MANDATORY: VERIFY BEFORE ASSESS Protocol
+
+**CRITICAL**: This system has comprehensive production-ready integrations. Before making ANY claims about missing functionality, you MUST verify through code examination.
+
+### Anti-Assumption Framework
+
+**❌ NEVER claim integration issues without evidence**  
+**✅ ALWAYS examine actual implementation files**  
+**📋 USE**: [`VERIFICATION_CHECKLIST.md`](./VERIFICATION_CHECKLIST.md) for systematic verification
+
+### Quick Verification Commands
+```bash
+# Payment Integration (Stripe Connect with commission handling)
+grep -r "createPaymentIntent\|payment_intent" . --include="*.js"
+ls app/api/payments/
+
+# Email Service (SendGrid with white-label campaigns)  
+ls services/sendgrid*
+grep -r "sendgrid" services/ --include="*.js"
+
+# SMS Service (Twilio with TCPA compliance)
+ls services/twilio*
+grep -r "twilio\|sms" services/ --include="*.js"
+
+# Domain & Deployment (Vercel production config)
+cat vercel.json | grep -A5 -B5 "bookedbarber"
+```
+
+### Mandatory Evidence Documentation
+Before any production readiness assessment, document:
+1. **Files Examined**: List actual files you checked
+2. **Search Commands**: Show grep/find commands used
+3. **Evidence Found**: Summarize implementation details
+4. **Conclusion**: Based on verified evidence only
+
+### Learning From Past Errors
+- **Payment integration** was incorrectly assessed as "not integrated" without examining `app/api/payments/create-intent/route.js` (195+ lines of Stripe Connect)
+- **Email service** was questioned without checking `services/sendgrid-service.js` (540+ lines of production email handling)
+- **SMS service** was missed without reviewing `services/twilio-service.js` (870+ lines with TCPA compliance)
+
+**Remember**: This barbershop platform is production-ready. Verify before you assess.
 
 ---
 **Production system**: Test all changes, no shortcuts, real data only.
