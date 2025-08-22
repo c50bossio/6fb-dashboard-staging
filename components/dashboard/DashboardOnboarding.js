@@ -29,6 +29,7 @@ import GoalsSelector from '../onboarding/GoalsSelector'
 import LivePreview from '../onboarding/LivePreview'
 
 // Import new onboarding components
+import WelcomeSegmentation from '../onboarding/WelcomeSegmentation'
 
 // Import professional illustrations
 import { WelcomeIllustration, ProgressRing } from '../onboarding/OnboardingIllustrations'
