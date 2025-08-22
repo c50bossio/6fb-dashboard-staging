@@ -98,7 +98,7 @@ const Logo = ({
           width={config.width}
           height={config.height}
           priority={priority}
-          className="object-contain"
+          className={`object-contain ${className ? 'max-w-full max-h-full' : ''}`}
           onError={() => setImageError(true)}
           onLoad={() => setImageError(false)}
           placeholder="empty" // Prevent blur placeholder
@@ -116,7 +116,7 @@ export const LogoIcon = (props) => (
 );
 
 export const LogoHeader = (props) => (
-  <Logo {...props} size="medium" animated priority />
+  <Logo {...props} size={props.size || "medium"} animated priority />
 );
 
 export const LogoHero = (props) => (

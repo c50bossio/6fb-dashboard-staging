@@ -286,8 +286,10 @@ export default function Navigation() {
   })
 
   const MobileHeader = () => (
-    <div className="lg:hidden bg-card border-b border-border px-4 py-0.5 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md h-12">
-      <LogoHeader size="xsmall" showText={false} />
+    <div className="lg:hidden bg-card border-b border-border px-4 py-2 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md h-14">
+      <div className="flex-shrink-0 max-h-10 flex items-center">
+        <LogoHeader size="xsmall" showText={false} className="max-h-8 w-auto" />
+      </div>
       <button
         onClick={() => setIsMobileMenuOpen(true)}
         className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"
@@ -741,7 +743,9 @@ export default function Navigation() {
           <div className="mobile-navigation absolute inset-y-0 left-0 w-80 max-w-full bg-card shadow-2xl transform transition-transform ease-in-out duration-300 border-r border-border">
             {/* Header */}
             <div className="p-6 border-b border-border flex items-center justify-between bg-background/95 backdrop-blur-sm">
-              <Logo size="medium" showText priority />
+              <div className="flex-shrink-0 max-h-12 flex items-center">
+                <Logo size="medium" showText priority className="max-h-10 w-auto" />
+              </div>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"
@@ -793,8 +797,8 @@ export default function Navigation() {
             {/* Header */}
             <div className="p-6 border-b border-border bg-background/95 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
-                <div className={`flex items-center ${isCollapsed ? 'hidden' : ''}`}>
-                  <Logo size="medium" showText priority />
+                <div className={`flex items-center flex-shrink-0 max-h-12 ${isCollapsed ? 'hidden' : ''}`}>
+                  <Logo size="medium" showText priority className="max-h-10 w-auto" />
                 </div>
                 <button
                   onClick={() => setIsCollapsed(!isCollapsed)}
