@@ -24,6 +24,8 @@ import QRCode from 'qrcode'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import AddBarberGuidanceDialog from '../../../../components/calendar/AddBarberGuidanceDialog'
 import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
+import CalendarViewSelector from '../../../../components/calendar/CalendarViewSelector'
+import CalendarFilters from '../../../../components/calendar/CalendarFilters'
 import EmptyBarberState from '../../../../components/calendar/EmptyBarberState'
 import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
@@ -42,6 +44,7 @@ import {
   exportToCSV 
 } from '../../../../lib/calendar-data'
 import { getOrAssignShopId } from '../../../../lib/ensure-user-shop'
+import { FULLCALENDAR_VIEW_MAP } from '../../../../lib/calendar-permissions'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
@@ -120,6 +123,21 @@ export default function CalendarPage() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterLocation, setFilterLocation] = useState('all')
   
+  // New state for dynamic calendar views
+  const [selectedView, setSelectedView] = useState('personal')
+  const [selectedLocations, setSelectedLocations] = useState([])
+  const [selectedBarbers, setSelectedBarbers] = useState([])
+  const [userLocations, setUserLocations] = useState([])
+  const [availableBarbers, setAvailableBarbers] = useState([])
+  const [advancedFilters, setAdvancedFilters] = useState({
+    status: 'all',
+    serviceCategories: [],
+    priceRange: { min: null, max: null },
+    timeRange: { start: null, end: null },
+    customerType: 'all',
+    recurring: null
+  })
+  
   const [showDiagnostics, setShowDiagnostics] = useState(false)
   
   const [appointmentIds, setAppointmentIds] = useState(() => new Set())
@@ -128,6 +146,7 @@ export default function CalendarPage() {
   const [realtimeError, setRealtimeError] = useState(null)
   const [showOnboardingDialog, setShowOnboardingDialog] = useState(false)
   const [showAddBarberDialog, setShowAddBarberDialog] = useState(false)
+  const [calendarFilters, setCalendarFilters] = useState({})
   
   
   const { 
@@ -156,10 +175,39 @@ export default function CalendarPage() {
 
   const handleViewChange = useCallback((newView) => {
     console.log('📅 View changed to:', newView)
-    setCurrentCalendarView(newView)
+    setSelectedView(newView)
+    
+    // Map the logical view to FullCalendar view
+    const fullCalendarView = FULLCALENDAR_VIEW_MAP[newView] || newView
+    setCurrentCalendarView(fullCalendarView)
+    
     if (typeof window !== 'undefined') {
-      localStorage.setItem('calendarView', newView)
+      localStorage.setItem('calendarView', fullCalendarView)
+      localStorage.setItem('selectedView', newView)
     }
+    
+    // Load data based on view type
+    if (newView === 'all-locations' || newView === 'consolidated') {
+      loadMultiLocationData()
+    }
+  }, [])
+  
+  const handleLocationChange = useCallback((locationIds) => {
+    console.log('📍 Locations changed:', locationIds)
+    setSelectedLocations(locationIds)
+    loadCalendarDataForLocations(locationIds)
+  }, [])
+  
+  const handleBarbersChange = useCallback((barberIds) => {
+    console.log('👥 Barbers changed:', barberIds)
+    setSelectedBarbers(barberIds)
+  }, [])
+  
+  const handleFiltersChange = useCallback((filters) => {
+    console.log('🔍 Filters changed:', filters)
+    setAdvancedFilters(filters)
+    setCalendarFilters(filters) // Keep for backward compatibility
+    applyFiltersToEvents(filters)
   }, [])
 
   useEffect(() => {
@@ -226,6 +274,111 @@ export default function CalendarPage() {
       console.error('Error loading calendar data:', error)
       setResources(EMPTY_BARBER_PLACEHOLDER)
     }
+  }
+  
+  // Load multi-location calendar data
+  const loadMultiLocationData = async () => {
+    try {
+      const response = await fetch('/api/calendar/multi-location-events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.access_token || ''}`
+        },
+        body: JSON.stringify({
+          locationIds: selectedLocations,
+          barberIds: selectedBarbers,
+          viewType: selectedView,
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setEvents(data.events || [])
+        console.log('📍 Loaded multi-location data:', data.events?.length, 'events')
+      }
+    } catch (error) {
+      console.error('Error loading multi-location data:', error)
+    }
+  }
+  
+  // Load calendar data for specific locations
+  const loadCalendarDataForLocations = async (locationIds) => {
+    if (!locationIds || locationIds.length === 0) {
+      setResources([])
+      setEvents([])
+      return
+    }
+    
+    try {
+      // Fetch barbers for selected locations
+      const response = await fetch('/api/calendar/location-barbers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.access_token || ''}`
+        },
+        body: JSON.stringify({ locationIds })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setResources(data.barbers || [])
+        
+        // Then fetch events for these locations
+        await loadMultiLocationData()
+      }
+    } catch (error) {
+      console.error('Error loading location data:', error)
+    }
+  }
+  
+  // Apply filters to calendar events
+  const applyFiltersToEvents = (filters) => {
+    if (!filters || Object.keys(filters).length === 0) {
+      // No filters, show all events
+      return
+    }
+    
+    // Filter events based on criteria
+    const filteredEvents = events.filter(event => {
+      // Service category filter
+      if (filters.serviceCategories?.length > 0) {
+        const category = event.extendedProps?.serviceCategory
+        if (!filters.serviceCategories.includes(category)) return false
+      }
+      
+      // Status filter
+      if (filters.statuses?.length > 0) {
+        const status = event.extendedProps?.status
+        if (!filters.statuses.includes(status)) return false
+      }
+      
+      // Price range filter
+      if (filters.priceRange?.min || filters.priceRange?.max) {
+        const price = event.extendedProps?.servicePrice || 0
+        if (filters.priceRange.min && price < filters.priceRange.min) return false
+        if (filters.priceRange.max && price > filters.priceRange.max) return false
+      }
+      
+      // Recurring filter
+      if (!filters.showRecurring && event.extendedProps?.isRecurring) {
+        return false
+      }
+      
+      // Walk-in filter
+      if (!filters.showWalkIns && !event.extendedProps?.customerId) {
+        return false
+      }
+      
+      return true
+    })
+    
+    console.log('🔍 Applied filters:', events.length, '→', filteredEvents.length, 'events')
+    // Note: We're not updating events state here to preserve the original data
+    // The calendar component should handle the filtering display
   }
   
   const deduplicateAppointments = (appointments) => {
@@ -445,6 +598,30 @@ export default function CalendarPage() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [shareDropdownOpen])
 
+  // Load user locations on mount
+  useEffect(() => {
+    const loadUserLocations = async () => {
+      try {
+        const response = await fetch('/api/calendar/user-locations')
+        if (response.ok) {
+          const data = await response.json()
+          setUserLocations(data.locations || [])
+          
+          // For single location users, auto-select their location
+          if (data.locations?.length === 1) {
+            setSelectedLocations([data.locations[0].id])
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user locations:', error)
+      }
+    }
+    
+    if (profile?.id) {
+      loadUserLocations()
+    }
+  }, [profile?.id])
+
   const organizedLinks = useMemo(() => {
     const locations = quickLinks.filter(link => link.type === 'location')
     const barbers = quickLinks.filter(link => link.type === 'barber')
@@ -468,6 +645,7 @@ export default function CalendarPage() {
     
     let currentEvents = [...uniqueEvents]
     
+    // Apply search term filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase()
       currentEvents = currentEvents.filter(event => 
@@ -478,54 +656,73 @@ export default function CalendarPage() {
       )
     }
     
-    if (filterLocation !== 'all') {
+    // Apply location filter (from multi-select)
+    if (selectedLocations.length > 0) {
+      currentEvents = currentEvents.filter(event => 
+        selectedLocations.includes(event.extendedProps?.barbershopId)
+      )
+    }
+    
+    // Apply barber filter (from multi-select)
+    if (selectedBarbers.length > 0) {
+      currentEvents = currentEvents.filter(event => 
+        selectedBarbers.includes(event.resourceId) || 
+        selectedBarbers.includes(event.extendedProps?.barberId)
+      )
+    }
+    
+    // Apply advanced filters
+    if (advancedFilters.status && advancedFilters.status !== 'all') {
+      currentEvents = currentEvents.filter(event => 
+        event.extendedProps?.status === advancedFilters.status
+      )
+    }
+    
+    if (advancedFilters.serviceCategories?.length > 0) {
+      currentEvents = currentEvents.filter(event => 
+        advancedFilters.serviceCategories.includes(event.extendedProps?.serviceCategory)
+      )
+    }
+    
+    if (advancedFilters.priceRange?.min !== null || advancedFilters.priceRange?.max !== null) {
       currentEvents = currentEvents.filter(event => {
-        const barber = resources.find(r => r.id === event.resourceId)
-        const barberLocation = barber?.extendedProps?.location || 'Unknown'
-        return barberLocation === filterLocation
+        const price = event.extendedProps?.servicePrice || 0
+        const meetsMin = advancedFilters.priceRange.min === null || price >= advancedFilters.priceRange.min
+        const meetsMax = advancedFilters.priceRange.max === null || price <= advancedFilters.priceRange.max
+        return meetsMin && meetsMax
       })
     }
     
-    if (filterBarber !== 'all') {
-      currentEvents = currentEvents.filter(event => event.resourceId === filterBarber)
-    }
-    
-    if (filterService !== 'all') {
-      currentEvents = currentEvents.filter(event => {
-        const eventService = event.extendedProps?.service || 
-                           (event.title && event.title.includes(' - ') ? event.title.split(' - ')[1] : '') || ''
-        return eventService.toLowerCase().trim() === filterService.toLowerCase().trim()
-      })
-    }
-    
-    if (filterStatus !== 'all') {
-      currentEvents = currentEvents.filter(event => {
-        const eventStatus = event.extendedProps?.status || 'confirmed'
-        return eventStatus === filterStatus
-      })
+    if (advancedFilters.recurring !== null) {
+      currentEvents = currentEvents.filter(event => 
+        event.extendedProps?.isRecurring === advancedFilters.recurring
+      )
     }
     
     const filteredResult = currentEvents
     
     return filteredResult
-  }, [events, realtimeAppointments, searchTerm, filterBarber, filterService, filterStatus, filterLocation, resources])
+  }, [events, realtimeAppointments, searchTerm, selectedLocations, selectedBarbers, advancedFilters])
   
   const filteredResources = useMemo(() => {
     let filtered = resources
     
-    if (filterLocation !== 'all') {
-      filtered = filtered.filter(resource => {
-        const resourceLocation = resource.extendedProps?.location
-        return resourceLocation === filterLocation
-      })
+    // Filter by selected locations
+    if (selectedLocations.length > 0) {
+      filtered = filtered.filter(resource => 
+        selectedLocations.includes(resource.extendedProps?.locationId)
+      )
     }
     
-    if (filterBarber !== 'all') {
-      filtered = filtered.filter(resource => resource.id === filterBarber)
+    // Filter by selected barbers
+    if (selectedBarbers.length > 0) {
+      filtered = filtered.filter(resource => 
+        selectedBarbers.includes(resource.id)
+      )
     }
     
     return filtered
-  }, [resources, filterLocation, filterBarber])
+  }, [resources, selectedLocations, selectedBarbers])
   
   useEffect(() => {
     if (filterLocation !== 'all' && filterBarber !== 'all') {
@@ -1274,6 +1471,29 @@ export default function CalendarPage() {
       <div className="bg-gray-50 border-b px-3 sm:px-6 py-3">
         {/* Mobile-First Layout: Stack on small screens, row on larger screens */}
         <div className="flex flex-col space-y-3 lg:flex-row lg:space-y-0 lg:space-x-4 lg:items-center">
+          {/* Calendar View Selector - Dynamic based on permissions */}
+          <div className="flex items-center space-x-3">
+            <CalendarViewSelector
+              currentView={selectedView}
+              onViewChange={handleViewChange}
+              userRole={profile?.role || 'CLIENT'}
+              userLocations={userLocations}
+              selectedLocations={selectedLocations}
+              onLocationChange={handleLocationChange}
+              selectedBarbers={selectedBarbers}
+              onBarbersChange={handleBarbersChange}
+              availableBarbers={availableBarbers}
+            />
+            
+            {/* Advanced Filters */}
+            <CalendarFilters
+              filters={advancedFilters}
+              onFiltersChange={handleFiltersChange}
+              services={uniqueServices}
+              serviceCategories={['Haircuts', 'Beard', 'Treatments', 'Color', 'Other']}
+            />
+          </div>
+          
           {/* Search Input */}
           <div className="flex-1 lg:max-w-md">
             <div className="relative">
@@ -1296,86 +1516,37 @@ export default function CalendarPage() {
             </div>
           </div>
           
-          {/* Filter Dropdowns - Horizontal scroll on mobile */}
-          <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-            <FunnelIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
-            
-            {/* Location Filter */}
-            <select
-              value={filterLocation}
-              onChange={(e) => setFilterLocation(e.target.value)}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-olive-500 focus:border-transparent min-h-[44px]"
-            >
-              <option value="all">All Locations</option>
-              <option value="Downtown">Downtown</option>
-              <option value="Uptown">Uptown</option>
-            </select>
-            
-            {/* Barber Filter */}
-            <select
-              value={filterBarber}
-              onChange={(e) => setFilterBarber(e.target.value)}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-olive-500 focus:border-transparent min-h-[44px]"
-            >
-              <option value="all">All Barbers</option>
-              {filteredResources.map(barber => (
-                <option key={barber.id} value={barber.id}>
-                  {barber.title}
-                </option>
-              ))}
-            </select>
-            
-            {/* Service Filter */}
-            <select
-              value={filterService}
-              onChange={(e) => setFilterService(e.target.value)}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-olive-500 focus:border-transparent min-h-[44px]"
-            >
-              <option value="all">All Services</option>
-              {uniqueServices.map(service => (
-                <option key={service} value={service}>
-                  {service}
-                </option>
-              ))}
-            </select>
-            
-            {/* Status Filter */}
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-olive-500 focus:border-transparent min-h-[44px]"
-            >
-              <option value="all">All Status</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="pending">Pending</option>
-              <option value="recurring">Recurring</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-            
-            
-            {/* Clear Filters Button */}
-            {(searchTerm || filterLocation !== 'all' || filterBarber !== 'all' || filterService !== 'all' || filterStatus !== 'all') && (
+          {/* Quick Actions */}
+          <div className="flex items-center space-x-2">
+            {/* Clear All Filters */}
+            {(searchTerm || selectedLocations.length > 0 || selectedBarbers.length > 0 || 
+              Object.values(advancedFilters).some(v => v && v !== 'all' && (Array.isArray(v) ? v.length > 0 : true))) && (
               <button
                 onClick={() => {
                   setSearchTerm('')
-                  setFilterLocation('all')
-                  setFilterBarber('all')
-                  setFilterService('all')
-                  setFilterStatus('all')
+                  setSelectedLocations([])
+                  setSelectedBarbers([])
+                  setAdvancedFilters({
+                    status: 'all',
+                    serviceCategories: [],
+                    priceRange: { min: null, max: null },
+                    timeRange: { start: null, end: null },
+                    customerType: 'all',
+                    recurring: null
+                  })
                 }}
-                className="flex-shrink-0 px-2 sm:px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm flex items-center space-x-1 min-h-[44px]"
+                className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm flex items-center space-x-1"
               >
                 <XMarkIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Clear</span>
+                <span>Clear All</span>
               </button>
             )}
             
             {/* Export Buttons */}
-            <div className="flex-shrink-0 flex space-x-2">
+            <div className="flex space-x-2">
               <button
                 onClick={handleExportCSV}
-                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center space-x-1 min-h-[44px]"
+                className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center space-x-1"
                 title="Export to CSV"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1386,7 +1557,7 @@ export default function CalendarPage() {
               
               <button
                 onClick={handleExportICS}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center space-x-1 min-h-[44px]"
+                className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center space-x-1"
                 title="Export to iCal"
               >
                 <CalendarIcon className="h-4 w-4" />
@@ -1396,7 +1567,7 @@ export default function CalendarPage() {
           </div>
           
           {/* Results Count */}
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 ml-auto">
             {filteredEvents.length !== events.length ? (
               <span>
                 Showing <span className="font-semibold">{filteredEvents.length}</span> of {events.length} appointments
@@ -1415,10 +1586,10 @@ export default function CalendarPage() {
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
           <ProfessionalCalendar
-            resources={filteredResources} // Use filtered resources
+            resources={selectedView?.includes('resource') ? filteredResources : undefined} // Only use resources for resource views
             events={filteredEvents} // Use filtered events
             currentView={currentCalendarView}
-            onViewChange={handleViewChange}
+            onViewChange={(view) => setCurrentCalendarView(view)}
             onEventClick={handleEventClick}
             onSlotClick={handleDateSelect}
             onEventDrop={(dropInfo) => {
