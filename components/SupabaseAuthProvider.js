@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { createClient } from '../lib/supabase/browser-client'
 
 const AuthContext = createContext({})
@@ -20,6 +20,10 @@ function SupabaseAuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+  
+  // Track if we're currently fetching to prevent duplicate calls
+  const fetchingProfileRef = useRef(false)
+  const lastFetchedUserId = useRef(null)
 
   // Fetch user profile with subscription tier
   const fetchProfile = async (userId) => {
@@ -28,7 +32,15 @@ function SupabaseAuthProvider({ children }) {
       return null
     }
     
+    // Skip if we're already fetching for this user
+    if (fetchingProfileRef.current && lastFetchedUserId.current === userId) {
+      console.log('🔍 [AUTH DEBUG] Already fetching profile for this user, skipping duplicate')
+      return null
+    }
+    
     try {
+      fetchingProfileRef.current = true
+      lastFetchedUserId.current = userId
       console.log('🔍 [AUTH DEBUG] Fetching profile for userId:', userId)
       
       // Get both profile and user data to merge subscription info
@@ -68,6 +80,7 @@ function SupabaseAuthProvider({ children }) {
           subscriptionStatus: mergedProfile.subscription_status
         })
         setProfile(mergedProfile)
+        fetchingProfileRef.current = false
         return mergedProfile
       }
       
@@ -98,6 +111,8 @@ function SupabaseAuthProvider({ children }) {
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
+      fetchingProfileRef.current = false
+      lastFetchedUserId.current = null
     }
     
     return null

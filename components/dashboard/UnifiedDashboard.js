@@ -18,7 +18,7 @@ import {
   PresentationChartLineIcon as PresentationChartSolid
 } from '@heroicons/react/24/solid'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 import { getUserBarbershopId, createBarbershopForOwner } from '@/lib/barbershop-helper'
 import ActionCenter from './ActionCenter'
@@ -100,6 +100,8 @@ export default function UnifiedDashboard({ user, profile }) {
   const [errorState, setErrorState] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
   const [currentBarbershopId, setCurrentBarbershopId] = useState(null)
+  const [hasInitialLoad, setHasInitialLoad] = useState(false)
+  const loadingRef = useRef(false)
 
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
     // Declare barbershopId at function scope to prevent ReferenceError
@@ -399,7 +401,9 @@ export default function UnifiedDashboard({ user, profile }) {
             revenue: apiData.total_revenue,
             appointments: apiData.total_appointments,
             customers: apiData.total_customers,
-            source: result.data_source
+            source: result.data_source || 'api',
+            mode: currentMode,
+            timestamp: new Date().toISOString()
           })
         } else {
           console.warn('Analytics API error:', result)
@@ -484,13 +488,32 @@ export default function UnifiedDashboard({ user, profile }) {
 
 
   useEffect(() => {
-    loadDashboardData()
+    // Prevent duplicate initial loads
+    if (!user || !profile || loadingRef.current) {
+      return
+    }
+    
+    // Only load dashboard data if we haven't done the initial load
+    // or if the mode changes after initial load
+    if (!hasInitialLoad || currentMode !== DASHBOARD_MODES.EXECUTIVE) {
+      console.log(`🔄 Loading dashboard data for mode: ${currentMode}`)
+      loadingRef.current = true
+      loadDashboardData().finally(() => {
+        loadingRef.current = false
+      })
+      setHasInitialLoad(true)
+    }
     
     if (currentMode === DASHBOARD_MODES.OPERATIONS) {
-      const interval = setInterval(loadDashboardData, 30000)
+      const interval = setInterval(() => {
+        if (!loadingRef.current) {
+          console.log('🔄 Auto-refreshing operations dashboard')
+          loadDashboardData()
+        }
+      }, 30000)
       return () => clearInterval(interval)
     }
-  }, [currentMode, loadDashboardData])
+  }, [currentMode, user?.id, profile?.id]) // Only depend on IDs to prevent recreation
 
   const handleModeChange = (mode) => {
     setCurrentMode(mode)
