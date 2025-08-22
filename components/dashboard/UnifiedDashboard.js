@@ -4,7 +4,6 @@ import {
   ChartBarIcon,
   CpuChipIcon,
   ClipboardDocumentListIcon,
-  SparklesIcon,
   ArrowPathIcon,
   Squares2X2Icon,
   PresentationChartLineIcon,
@@ -14,7 +13,6 @@ import {
   ChartBarIcon as ChartBarSolid,
   CpuChipIcon as CpuChipSolid,
   ClipboardDocumentListIcon as ClipboardSolid,
-  SparklesIcon as SparklesSolid,
   PresentationChartLineIcon as PresentationChartSolid
 } from '@heroicons/react/24/solid'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -712,57 +710,6 @@ export default function UnifiedDashboard({ user, profile }) {
                     )}
                     
                     <div className="flex flex-wrap gap-3">
-                      <button
-                        onClick={() => {
-                          try {
-                            // Primary: Dispatch custom event to launch onboarding
-                            console.log('Continue Setup button clicked - dispatching launchOnboarding event')
-                            window.dispatchEvent(new CustomEvent('launchOnboarding', { 
-                              detail: { from: 'dashboard_welcome_prompt', timestamp: Date.now() },
-                              bubbles: true // Ensure event bubbles up
-                            }))
-                            
-                            // Fallback 1: Trigger dashboard modal event after short delay if primary event fails
-                            setTimeout(() => {
-                              const onboardingModal = document.querySelector('[data-onboarding-modal]')
-                              if (!onboardingModal || !onboardingModal.style.display || onboardingModal.style.display === 'none') {
-                                console.log('Onboarding modal not detected - triggering show_onboarding event')
-                                window.dispatchEvent(new CustomEvent('showOnboarding', { 
-                                  detail: { source: 'dashboard_fallback' },
-                                  bubbles: true 
-                                }))
-                              }
-                            }, 1000)
-                            
-                            // Fallback 2: Force dashboard URL parameter approach to show modal
-                            setTimeout(() => {
-                              if (typeof window !== 'undefined') {
-                                const urlParams = new URLSearchParams(window.location.search)
-                                if (!urlParams.get('show_onboarding')) {
-                                  console.log('Using dashboard URL parameter fallback for onboarding modal')
-                                  const currentUrl = new URL(window.location)
-                                  currentUrl.searchParams.set('show_onboarding', 'true')
-                                  window.location.href = currentUrl.toString()
-                                }
-                              }
-                            }, 2000)
-                            
-                          } catch (error) {
-                            console.error('Continue Setup button error:', error)
-                            // Ultimate fallback: force dashboard onboarding modal via URL parameter
-                            if (typeof window !== 'undefined') {
-                              const currentUrl = new URL(window.location)
-                              currentUrl.searchParams.set('show_onboarding', 'true')
-                              currentUrl.searchParams.set('force_show', 'true')
-                              window.location.assign(currentUrl.toString())
-                            }
-                          }
-                        }}
-                        className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-semibold rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
-                      >
-                        <SparklesIcon className="h-4 w-4 mr-2" />
-                        {errorState.buttonText || 'Complete Setup'}
-                      </button>
                       <button
                         onClick={() => loadDashboardData(true)}
                         className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-lg text-brand-700 dark:text-brand-300 bg-white/70 dark:bg-brand-900/30 hover:bg-white dark:hover:bg-brand-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 backdrop-blur-sm"
