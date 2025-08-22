@@ -7,6 +7,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
 /**
  * GET /api/customers/loyalty/points
  * Get customer points balance or transaction history
@@ -464,6 +466,35 @@ export async function POST(request) {
  */
 async function calculateTierProgress(enrollment, barbershopId) {
   try {
+    // Create Supabase client for helper function
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            const cookie = cookieStore.get(name);
+            return cookie?.value;
+          },
+          set(name, value, options) {
+            try {
+              cookieStore.set({ name, value, ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+          remove(name, options) {
+            try {
+              cookieStore.set({ name, value: '', ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+        },
+      }
+    );
+
     const { data: tiers, error } = await supabase
       .from('loyalty_tiers')
       .select('*')
