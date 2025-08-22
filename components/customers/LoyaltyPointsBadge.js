@@ -36,25 +36,13 @@ export default function LoyaltyPointsBadge({
       setLoading(true)
       setError(null)
 
-      // Get user session
-      const userResponse = await fetch('/api/auth/user')
-      const userData = await userResponse.json()
-      
-      if (!userData.authenticated) {
-        return
-      }
-
-      // Fetch points balance
+      // Fetch points balance (cookie-based auth, no header needed)
       const balanceUrl = new URL('/api/customers/loyalty/points', window.location.origin)
       balanceUrl.searchParams.set('customer_id', customerId)
       balanceUrl.searchParams.set('action', 'balance')
       if (programId) balanceUrl.searchParams.set('program_id', programId)
 
-      const balanceResponse = await fetch(balanceUrl, {
-        headers: {
-          'Authorization': `Bearer ${userData.session?.access_token || ''}`
-        }
-      })
+      const balanceResponse = await fetch(balanceUrl)
 
       if (balanceResponse.ok) {
         const balanceData = await balanceResponse.json()

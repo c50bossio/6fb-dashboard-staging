@@ -3,17 +3,9 @@
  * Handles points transactions, balance queries, and point management
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase configuration');
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 /**
  * GET /api/customers/loyalty/points
@@ -21,42 +13,95 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
  */
 export async function GET(request) {
   try {
-    // Get user from authentication
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Missing authorization header' }, { status: 401 });
-    }
+    // Create Supabase client with cookie-based auth
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            const cookie = cookieStore.get(name);
+            return cookie?.value;
+          },
+          set(name, value, options) {
+            try {
+              cookieStore.set({ name, value, ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+          remove(name, options) {
+            try {
+              cookieStore.set({ name, value: '', ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+        },
+      }
+    );
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Get session from cookies
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
+    if (sessionError || !session?.user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Get barbershop for user
-    let { data: barbershops, error: shopError } = await supabase
-      .from('barbershops')
-      .select('id')
-      .eq('owner_id', user.id)
+    const user = session.user;
+
+    // Get user profile for barbershop lookup
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
       .single();
 
-    if (shopError || !barbershops) {
-      // Try to find if user is a barber
-      const { data: barbers, error: barberError } = await supabase
-        .from('barbers')
-        .select('barbershop_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (barberError || !barbers) {
-        return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
-      }
-      
-      barbershops = { id: barbers.barbershop_id };
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 403 });
     }
 
-    const barbershopId = barbershops.id;
+    // Get barbershop ID based on user profile
+    let barbershopId = null;
+    
+    // Check both shop_id and barbershop_id fields (naming inconsistency in database)
+    if (profile.shop_id) {
+      barbershopId = profile.shop_id;
+    } else if (profile.barbershop_id) {
+      barbershopId = profile.barbershop_id;
+    } else {
+      // For employee barbers, fetch from barbershop_staff
+      if (profile.role === 'BARBER') {
+        const { data: staffData } = await supabase
+          .from('barbershop_staff')
+          .select('barbershop_id')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle();
+        
+        if (staffData?.barbershop_id) {
+          barbershopId = staffData.barbershop_id;
+        }
+      } 
+      // For shop owners, check if they have a barbershop created
+      else if (profile.role === 'SHOP_OWNER') {
+        const { data: ownedShops } = await supabase
+          .from('barbershops')
+          .select('id')
+          .eq('owner_id', user.id)
+          .limit(1)
+          .maybeSingle();
+        
+        if (ownedShops?.id) {
+          barbershopId = ownedShops.id;
+        }
+      }
+    }
+    
+    if (!barbershopId) {
+      return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
+    }
     const url = new URL(request.url);
     const customerId = url.searchParams.get('customer_id');
     const programId = url.searchParams.get('program_id');
@@ -168,31 +213,95 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    // Get user from authentication
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Missing authorization header' }, { status: 401 });
-    }
+    // Create Supabase client with cookie-based auth
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            const cookie = cookieStore.get(name);
+            return cookie?.value;
+          },
+          set(name, value, options) {
+            try {
+              cookieStore.set({ name, value, ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+          remove(name, options) {
+            try {
+              cookieStore.set({ name, value: '', ...options });
+            } catch (error) {
+              // Edge runtime cookie limitations
+            }
+          },
+        },
+      }
+    );
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Get session from cookies
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Invalid authentication' }, { status: 401 });
+    if (sessionError || !session?.user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Get barbershop for user
-    const { data: barbershops, error: shopError } = await supabase
-      .from('barbershops')
-      .select('id')
-      .eq('owner_id', user.id)
+    const user = session.user;
+
+    // Get user profile for barbershop lookup
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
       .single();
 
-    if (shopError || !barbershops) {
-      return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 403 });
     }
 
-    const barbershopId = barbershops.id;
+    // Get barbershop ID based on user profile
+    let barbershopId = null;
+    
+    // Check both shop_id and barbershop_id fields (naming inconsistency in database)
+    if (profile.shop_id) {
+      barbershopId = profile.shop_id;
+    } else if (profile.barbershop_id) {
+      barbershopId = profile.barbershop_id;
+    } else {
+      // For employee barbers, fetch from barbershop_staff
+      if (profile.role === 'BARBER') {
+        const { data: staffData } = await supabase
+          .from('barbershop_staff')
+          .select('barbershop_id')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .maybeSingle();
+        
+        if (staffData?.barbershop_id) {
+          barbershopId = staffData.barbershop_id;
+        }
+      } 
+      // For shop owners, check if they have a barbershop created
+      else if (profile.role === 'SHOP_OWNER') {
+        const { data: ownedShops } = await supabase
+          .from('barbershops')
+          .select('id')
+          .eq('owner_id', user.id)
+          .limit(1)
+          .maybeSingle();
+        
+        if (ownedShops?.id) {
+          barbershopId = ownedShops.id;
+        }
+      }
+    }
+    
+    if (!barbershopId) {
+      return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
+    }
     const body = await request.json();
 
     const {
