@@ -99,6 +99,7 @@ export default function UnifiedDashboard({ user, profile }) {
   const [cacheTimestamp, setCacheTimestamp] = useState(null)
   const [errorState, setErrorState] = useState(null)
   const [retryCount, setRetryCount] = useState(0)
+  const [currentBarbershopId, setCurrentBarbershopId] = useState(null)
 
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
     // Declare barbershopId at function scope to prevent ReferenceError
@@ -305,12 +306,27 @@ export default function UnifiedDashboard({ user, profile }) {
       // Reset error state on successful barbershop ID retrieval
       setErrorState(null)
       setRetryCount(0)
+      
+      // Store barbershopId in component state for other functions to use
+      setCurrentBarbershopId(barbershopId)
     } catch (error) {
       console.error('Error in barbershop ID retrieval:', error)
       setRetryCount(prev => prev + 1)
       setErrorState({
         type: 'technical_error',
         message: 'Failed to load barbershop information. Please try again.',
+        isWelcome: false
+      })
+      setIsLoading(false)
+      return
+    }
+    
+    // Guard: Ensure barbershopId is valid before making API calls
+    if (!barbershopId) {
+      console.error('Cannot load dashboard data: barbershopId is null or undefined')
+      setErrorState({
+        type: 'technical_error',
+        message: 'Unable to identify your barbershop. Please contact support if this problem persists.',
         isWelcome: false
       })
       setIsLoading(false)
@@ -396,6 +412,10 @@ export default function UnifiedDashboard({ user, profile }) {
         }
       } else {
         // For other modes, use dashboard metrics API
+        // Double-check barbershopId is still valid (defensive programming)
+        if (!barbershopId) {
+          throw new Error('barbershopId became null during execution')
+        }
         const response = await fetch(`/api/dashboard/metrics?mode=${currentMode}&barbershop_id=${barbershopId}`)
         const processedData = await response.json()
         
@@ -480,8 +500,8 @@ export default function UnifiedDashboard({ user, profile }) {
 
   const handleExecutiveModeHover = useCallback(() => {
     if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
-      // Use shop_id first (profiles table), then fallback to barbershop_id
-      const barbershopId = profile?.shop_id || profile?.barbershop_id || user?.shop_id || user?.barbershop_id
+      // Use currentBarbershopId from component state first, then fallback to profile/user data
+      const barbershopId = currentBarbershopId || profile?.shop_id || profile?.barbershop_id || user?.shop_id || user?.barbershop_id
       if (!barbershopId) return // Don't prefetch without barbershop ID
       fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
         .then(response => response.json())
@@ -491,7 +511,7 @@ export default function UnifiedDashboard({ user, profile }) {
         })
         .catch(() => {}) // Ignore errors for prefetch
     }
-  }, [currentMode, user])
+  }, [currentMode, user, currentBarbershopId])
 
   const ModeSelector = () => (
     <div className="bg-white dark:bg-charcoal-700 rounded-xl shadow-sm border border-gray-200 dark:border-charcoal-600 p-2 flex flex-wrap gap-2">
@@ -594,7 +614,7 @@ export default function UnifiedDashboard({ user, profile }) {
       case DASHBOARD_MODES.OPERATIONS:
         return <ActionCenter data={{
           ...dashboardData,
-          barbershop_id: profile?.barbershop_id || user?.barbershop_id
+          barbershop_id: currentBarbershopId || profile?.barbershop_id || user?.barbershop_id
         }} />
         
       default:
@@ -772,8 +792,8 @@ export default function UnifiedDashboard({ user, profile }) {
           ) : dashboardData ? (
             <>
               <UnifiedExecutiveSummary data={dashboardData} />
-              {(profile?.barbershop_id || user?.barbershop_id) && (
-                <SmartAlertsPanel barbershop_id={profile?.barbershop_id || user?.barbershop_id} />
+              {(currentBarbershopId || profile?.barbershop_id || user?.barbershop_id) && (
+                <SmartAlertsPanel barbershop_id={currentBarbershopId || profile?.barbershop_id || user?.barbershop_id} />
               )}
             </>
           ) : null}
