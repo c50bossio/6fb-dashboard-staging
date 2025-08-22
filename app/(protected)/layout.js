@@ -1,14 +1,35 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import DashboardHeader from '../../components/dashboard/DashboardHeader'
+import DashboardOnboarding from '../../components/dashboard/DashboardOnboarding'
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
 import { TenantProvider } from '../../contexts/TenantContext'
+import { useAuth } from '../../components/SupabaseAuthProvider'
 
 function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()
+  const { user, profile } = useAuth()
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [currentStep, setCurrentStep] = useState(0)
+  
+  // Listen for launch onboarding event from profile dropdown - available on ALL pages
+  useEffect(() => {
+    const handleLaunchOnboarding = (event) => {
+      console.log('🚀 Launching onboarding from profile dropdown (global handler)')
+      setShowOnboarding(true)
+      setCurrentStep(0) // Always start from beginning
+    }
+    
+    window.addEventListener('launchOnboarding', handleLaunchOnboarding)
+    
+    return () => {
+      window.removeEventListener('launchOnboarding', handleLaunchOnboarding)
+    }
+  }, [])
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -27,6 +48,31 @@ function ProtectedLayoutContent({ children }) {
       <div className="hidden lg:block">
         <FloatingAIChat />
       </div>
+      
+      {/* Global Onboarding Modal - Available on all protected pages */}
+      {showOnboarding && (
+        <DashboardOnboarding 
+          user={user}
+          profile={profile}
+          currentStep={currentStep}
+          onStepChange={setCurrentStep}
+          onComplete={() => {
+            console.log('✅ Onboarding completed')
+            setShowOnboarding(false)
+            setCurrentStep(0)
+          }}
+          onSkip={() => {
+            console.log('⏭️ Onboarding skipped')
+            setShowOnboarding(false)
+            setCurrentStep(0)
+          }}
+          onMinimize={() => {
+            console.log('➖ Onboarding minimized')
+            setShowOnboarding(false)
+            setCurrentStep(0)
+          }}
+        />
+      )}
     </div>
   )
 }
