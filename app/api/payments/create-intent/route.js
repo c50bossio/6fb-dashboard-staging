@@ -28,6 +28,20 @@ export async function POST(request) {
       price: amount
     }
 
+    const supabase = createClient()
+    
+    // Get barbershop fee settings
+    let customerPaysProcessingFee = false
+    if (barbershop_id) {
+      const { data: barbershop } = await supabase
+        .from('barbershops')
+        .select('customer_pays_processing_fee')
+        .eq('id', barbershop_id)
+        .single()
+      
+      customerPaysProcessingFee = barbershop?.customer_pays_processing_fee || false
+    }
+
     const stripe = getStripeInstance()
     if (!stripe) {
       return NextResponse.json({
@@ -45,7 +59,6 @@ export async function POST(request) {
     }
 
     // Look up the barbershop's Stripe Connect account
-    const supabase = createClient()
     let stripeConnectAccountId = null
     
     // Try to get Connect account ID based on available information
@@ -117,9 +130,25 @@ export async function POST(request) {
       }
     }
 
+    // Calculate fees based on barbershop settings
+    let finalAmount = amount
+    let processingFee = 0
+    let barbershopReceives = amount
+    
+    if (customerPaysProcessingFee) {
+      // Customer pays the Stripe fee (2.9% + $0.30)
+      processingFee = Math.round((amount * 0.029 + 0.30) * 100) / 100
+      finalAmount = amount + processingFee
+      barbershopReceives = amount // Barbershop gets full service amount
+    } else {
+      // Barbershop absorbs the fee (default)
+      processingFee = Math.round((amount * 0.029 + 0.30) * 100) / 100
+      barbershopReceives = amount - processingFee
+    }
+
     // Create payment intent with proper routing and commission metadata
     const paymentIntentParams = {
-      amount: Math.round(amount * 100), // Convert to cents
+      amount: Math.round(finalAmount * 100), // Convert to cents (with fee if applicable)
       currency: 'usd',
       metadata: {
         booking_id,
@@ -128,6 +157,11 @@ export async function POST(request) {
         barbershop_id: barbershop_id || '',
         service_id,
         payment_type: payment_type || 'full_payment',
+        // Fee information
+        service_amount: amount,
+        processing_fee: processingFee,
+        fee_paid_by: customerPaysProcessingFee ? 'customer' : 'barbershop',
+        barbershop_receives: barbershopReceives,
         // Add arrangement data for commission processing
         arrangement_id: arrangementData?.id || '',
         arrangement_type: arrangementData?.type || '',
@@ -142,8 +176,8 @@ export async function POST(request) {
 
     // If barbershop has a Connect account, route the payment to them
     if (stripeConnectAccountId) {
-      // Zero markup - barbershop gets everything minus Stripe's fee (2.9% + $0.30)
-      paymentIntentParams.application_fee_amount = 0
+      // Simple pass-through model - no platform markup
+      paymentIntentParams.application_fee_amount = 0 // No platform fee
       paymentIntentParams.transfer_data = {
         destination: stripeConnectAccountId
       }
@@ -172,17 +206,24 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       client_secret: paymentIntent.client_secret,
-      amount: amount,
+      amount: finalAmount, // Total amount customer pays
+      service_amount: amount, // Original service amount
+      processing_fee: processingFee, // Fee amount
       payment_intent_id: paymentIntent.id,
       service_info: serviceInfo,
       metadata: paymentIntent.metadata,
+      fee_configuration: {
+        model: customerPaysProcessingFee ? 'customer_pays' : 'barbershop_absorbs',
+        customer_pays_total: finalAmount,
+        barbershop_receives: barbershopReceives,
+        processing_fee: processingFee,
+        stripe_rate: '2.9% + $0.30'
+      },
       routing: {
         destination: stripeConnectAccountId || 'platform',
-        platform_fee: 0,
-        barbershop_receives: stripeConnectAccountId ? 
-          (amount - (amount * 0.029 + 0.30)).toFixed(2) : // Barbershop gets amount minus Stripe fee
-          0,
-        stripe_fee: (amount * 0.029 + 0.30).toFixed(2)
+        barbershop_receives: barbershopReceives.toFixed(2),
+        stripe_fee: processingFee.toFixed(2),
+        fee_paid_by: customerPaysProcessingFee ? 'customer' : 'barbershop'
       }
     })
 
