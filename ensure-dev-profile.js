@@ -20,6 +20,20 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function ensureDevProfile() {
+  // ⚠️  PRODUCTION WARNING CHECK
+  if (process.env.NODE_ENV === 'production' || supabaseUrl.includes('supabase.co')) {
+    console.log('🚨 PRODUCTION DATABASE DETECTED!')
+    console.log('❌ This script creates TEST DATA and should NOT be run against production.')
+    console.log('💡 Use this script only for local development.')
+    console.log('\nTo override (NOT recommended):')
+    console.log('   FORCE_TEST_DATA=true node ensure-dev-profile.js')
+    
+    if (!process.env.FORCE_TEST_DATA) {
+      console.log('\n❌ Aborting to protect production data.')
+      process.exit(1)
+    }
+  }
+
   console.log('🔧 Ensuring dev-enterprise profile exists...')
   
   try {

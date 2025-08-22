@@ -32,13 +32,27 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 async function createEnterpriseAccount() {
+  // ⚠️  PRODUCTION WARNING CHECK
+  if (process.env.NODE_ENV === 'production' || supabaseUrl.includes('supabase.co')) {
+    console.log('🚨 PRODUCTION DATABASE DETECTED!')
+    console.log('❌ This script creates TEST DATA and should NOT be run against production.')
+    console.log('💡 Use this script only for local development with local database.')
+    console.log('\nTo override (NOT recommended for production):')
+    console.log('   FORCE_TEST_DATA=true node add-enterprise-account.dev.js')
+    
+    if (!process.env.FORCE_TEST_DATA) {
+      console.log('\n❌ Aborting to protect production data.')
+      process.exit(1)
+    }
+  }
+
   console.log('🚀 Creating enterprise test account...\n')
 
   const account = {
     email: 'dev-enterprise@test.com',
     password: 'TestPass123!',
     fullName: 'Enterprise Dev User',
-    shopName: 'Enterprise Management HQ',
+    shopName: '[DEV] Enterprise Management HQ', // Clear dev marker
     role: 'ENTERPRISE_OWNER'
   }
 

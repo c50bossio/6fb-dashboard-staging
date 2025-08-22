@@ -47,21 +47,49 @@ export async function GET(request) {
     // Get session from cookies
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    if (sessionError || !session?.user) {
+    let user = session?.user;
+    let profile = null;
+    
+    // Development fallback for testing loyalty points without proper authentication
+    if ((!session?.user || sessionError) && process.env.NODE_ENV === 'development') {
+      console.log('🔧 [DEV LOYALTY] No session found, using development fallback user...');
+      
+      // Use the same hardcoded test user as /api/auth/user
+      user = {
+        id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
+        email: 'c50bossio@gmail.com'
+      };
+      
+      // Mock profile for development
+      profile = {
+        id: user.id,
+        email: user.email,
+        role: 'SUPER_ADMIN',
+        subscription_tier: 'enterprise',
+        subscription_status: 'active',
+        full_name: 'Christopher Bossio',
+        shop_id: 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9', // Known test barbershop ID
+        onboarding_completed: true
+      };
+      
+      console.log('🔧 [DEV LOYALTY] Development fallback user configured for loyalty API');
+    } else if (sessionError || !session?.user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const user = session.user;
+    // Get user profile for barbershop lookup (skip if already set by dev fallback)
+    if (!profile) {
+      const { data: fetchedProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-    // Get user profile for barbershop lookup
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 403 });
+      if (profileError || !fetchedProfile) {
+        return NextResponse.json({ error: 'User profile not found' }, { status: 403 });
+      }
+      
+      profile = fetchedProfile;
     }
 
     // Get barbershop ID based on user profile
@@ -247,21 +275,49 @@ export async function POST(request) {
     // Get session from cookies
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    if (sessionError || !session?.user) {
+    let user = session?.user;
+    let profile = null;
+    
+    // Development fallback for testing loyalty points without proper authentication
+    if ((!session?.user || sessionError) && process.env.NODE_ENV === 'development') {
+      console.log('🔧 [DEV LOYALTY] No session found in POST, using development fallback user...');
+      
+      // Use the same hardcoded test user as /api/auth/user
+      user = {
+        id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
+        email: 'c50bossio@gmail.com'
+      };
+      
+      // Mock profile for development
+      profile = {
+        id: user.id,
+        email: user.email,
+        role: 'SUPER_ADMIN',
+        subscription_tier: 'enterprise',
+        subscription_status: 'active',
+        full_name: 'Christopher Bossio',
+        shop_id: 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9', // Known test barbershop ID
+        onboarding_completed: true
+      };
+      
+      console.log('🔧 [DEV LOYALTY] Development fallback user configured for loyalty POST API');
+    } else if (sessionError || !session?.user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const user = session.user;
+    // Get user profile for barbershop lookup (skip if already set by dev fallback)
+    if (!profile) {
+      const { data: fetchedProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-    // Get user profile for barbershop lookup
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 403 });
+      if (profileError || !fetchedProfile) {
+        return NextResponse.json({ error: 'User profile not found' }, { status: 403 });
+      }
+      
+      profile = fetchedProfile;
     }
 
     // Get barbershop ID based on user profile

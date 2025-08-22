@@ -42,20 +42,43 @@ export default function LoyaltyPointsBadge({
       balanceUrl.searchParams.set('action', 'balance')
       if (programId) balanceUrl.searchParams.set('program_id', programId)
 
+      console.log('🔍 [LOYALTY BADGE] Fetching points for customer:', customerId)
       const balanceResponse = await fetch(balanceUrl)
 
       if (balanceResponse.ok) {
         const balanceData = await balanceResponse.json()
+        console.log('✅ [LOYALTY BADGE] API response success:', balanceData.success)
         
         if (balanceData.success) {
           const data = Array.isArray(balanceData.balances) ? balanceData.balances[0] : balanceData.balances
           setLoyaltyData(data)
+          console.log('✅ [LOYALTY BADGE] Loyalty data loaded for customer:', customerId)
+        } else {
+          console.warn('⚠️  [LOYALTY BADGE] API returned success: false for customer:', customerId)
+          setError('No loyalty data available')
+        }
+      } else {
+        const errorText = await balanceResponse.text()
+        console.error('❌ [LOYALTY BADGE] API Error:', {
+          status: balanceResponse.status,
+          statusText: balanceResponse.statusText,
+          customerId,
+          errorText
+        })
+        
+        // Set a more user-friendly error based on status
+        if (balanceResponse.status === 401) {
+          setError('Authentication required')
+        } else if (balanceResponse.status === 404) {
+          setError('Loyalty service unavailable')
+        } else {
+          setError('Unable to load loyalty points')
         }
       }
 
     } catch (err) {
-      console.error('Error fetching loyalty data:', err)
-      setError(err.message)
+      console.error('💥 [LOYALTY BADGE] Network or parsing error:', err)
+      setError('Connection error')
     } finally {
       setLoading(false)
     }

@@ -30,6 +30,8 @@ import LivePreview from '../onboarding/LivePreview'
 
 // Import new onboarding components
 import WelcomeSegmentation from '../onboarding/WelcomeSegmentation'
+import AdaptiveFlowEngine from '../onboarding/AdaptiveFlowEngine'
+import ContextualGuidanceProvider from '../onboarding/ContextualGuidanceProvider'
 
 // Import professional illustrations
 import { WelcomeIllustration, ProgressRing } from '../onboarding/OnboardingIllustrations'
@@ -104,10 +106,22 @@ export default function DashboardOnboarding({
     }
   }, [])
 
-  // Define steps based on user role
+  // Define steps based on user role with adaptive flow intelligence
   const getStepsForRole = (role) => {
+    // Initialize adaptive flow engine
+    const flowEngine = new AdaptiveFlowEngine(onboardingData, profile)
+    
+    // Common segmentation step for all roles
+    const segmentationStep = { 
+      id: 'segmentation', 
+      title: 'Welcome', 
+      icon: SparklesIcon, 
+      description: 'Choose your personalized setup path' 
+    }
+
     const baseSteps = {
       BARBER: [
+        segmentationStep,
         { id: 'profile', title: 'Personal Profile', icon: UserIcon, description: 'Set up your professional profile' },
         { id: 'services', title: 'Services & Pricing', icon: CurrencyDollarIcon, description: 'Define your services and rates' },
         { id: 'schedule', title: 'Availability', icon: CalendarDaysIcon, description: 'Set your working hours' },
@@ -116,6 +130,7 @@ export default function DashboardOnboarding({
         { id: 'branding', title: 'Booking Page', icon: PaintBrushIcon, description: 'Customize your booking page' }
       ],
       SHOP_OWNER: [
+        segmentationStep,
         { id: 'business', title: 'Business Info', icon: BuildingOfficeIcon, description: 'Basic business details' },
         { id: 'schedule', title: 'Business Hours', icon: CalendarDaysIcon, description: 'Set operating hours' },
         { id: 'services', title: 'Services Catalog', icon: CurrencyDollarIcon, description: 'Define services and pricing' },
@@ -125,6 +140,7 @@ export default function DashboardOnboarding({
         { id: 'branding', title: 'Branding', icon: PaintBrushIcon, description: 'Customize appearance' }
       ],
       ENTERPRISE_OWNER: [
+        segmentationStep,
         { id: 'business', title: 'Organization Setup', icon: BuildingOfficeIcon, description: 'Configure your enterprise' },
         { id: 'schedule', title: 'Operating Hours', icon: CalendarDaysIcon, description: 'Set default hours for locations' },
         { id: 'services', title: 'Master Services', icon: CurrencyDollarIcon, description: 'Define service catalog' },
@@ -135,7 +151,15 @@ export default function DashboardOnboarding({
       ]
     }
 
-    return baseSteps[role] || baseSteps.SHOP_OWNER
+    const selectedSteps = baseSteps[role] || baseSteps.SHOP_OWNER
+    
+    // Apply adaptive flow intelligence if segmentation path is available
+    if (onboardingData.segmentationPath) {
+      const adaptedSteps = flowEngine.adaptStepSequence(selectedSteps)
+      return adaptedSteps
+    }
+    
+    return selectedSteps
   }
 
   const steps = getStepsForRole(profile?.role || 'SHOP_OWNER')
@@ -208,12 +232,22 @@ export default function DashboardOnboarding({
       const lastStepData = steps[steps.length - 1]
       completedSteps.current.add(lastStepData.id)
       
-      // Track completion
+      // Track completion with segmentation context
       internalAnalytics.onboarding.completed(
         steps.length,
         completedSteps.current.size,
-        skippedSteps.current.size
+        skippedSteps.current.size,
+        onboardingData.segmentationPath
       )
+      
+      // Show adaptive completion message
+      if (onboardingData.segmentationPath) {
+        const flowEngine = new AdaptiveFlowEngine(onboardingData, profile)
+        const completionMessage = flowEngine.getCompletionMessage()
+        
+        // You could store this message to show in a success modal or notification
+        console.log('🎉 Adaptive Completion:', completionMessage)
+      }
       
       // Update profile to mark onboarding as complete
       await updateProfile({
@@ -313,10 +347,46 @@ export default function DashboardOnboarding({
   }
 
   const updateOnboardingData = (newData) => {
-    setOnboardingData(prev => ({
-      ...prev,
-      ...newData
-    }))
+    setOnboardingData(prev => {
+      const updatedData = { ...prev, ...newData }
+      
+      // Apply smart defaults when segmentation path is first selected
+      if (newData.segmentationPath && !prev.segmentationPath) {
+        const flowEngine = new AdaptiveFlowEngine(updatedData, profile)
+        
+        // Asynchronously apply smart defaults
+        flowEngine.generateSmartDefaults(
+          updatedData.businessType || 'barbershop',
+          updatedData.businessCity && updatedData.businessState 
+            ? `${updatedData.businessCity}, ${updatedData.businessState}` 
+            : null
+        ).then(smartDefaults => {
+          // Apply defaults in a separate state update to avoid blocking
+          setOnboardingData(currentData => {
+            const enhancedData = { ...currentData }
+            
+            // Merge smart defaults with existing data (don't override user input)
+            Object.keys(smartDefaults).forEach(key => {
+              if (key.startsWith('_')) return // Skip metadata keys like _aiInsights
+              if (enhancedData[key] === undefined || enhancedData[key] === '' || enhancedData[key] === null) {
+                enhancedData[key] = smartDefaults[key]
+              }
+            })
+
+            // Store AI insights for contextual help
+            if (smartDefaults._aiInsights) {
+              enhancedData.aiInsights = smartDefaults._aiInsights
+            }
+            
+            return enhancedData
+          })
+        }).catch(error => {
+          console.warn('Failed to apply smart defaults:', error)
+        })
+      }
+      
+      return updatedData
+    })
   }
 
   // Auto-save temporarily disabled to prevent render loops - manual save only
@@ -362,16 +432,17 @@ export default function DashboardOnboarding({
   const currentStepData = steps[currentStep]
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen p-4">
-        {/* Backdrop */}
-        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
+    <ContextualGuidanceProvider>
+      <div className="fixed inset-0 z-40 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen p-4">
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
 
-        {/* Modal */}
-        <div 
-          data-onboarding-modal="true" 
-          className="relative bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
-        >
+          {/* Modal */}
+          <div 
+            data-onboarding-modal="true" 
+            className="relative bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+          >
           {/* Header */}
           <div className="bg-gradient-to-r from-brand-600 to-brand-700 text-white p-6">
             <div className="flex items-center justify-between mb-4">
@@ -477,11 +548,28 @@ export default function DashboardOnboarding({
                   {currentStepData.title}
                 </h3>
                 <p className="text-gray-600">{currentStepData.description}</p>
+                
+                {/* Adaptive contextual help */}
+                {onboardingData.segmentationPath && (() => {
+                  const flowEngine = new AdaptiveFlowEngine(onboardingData, profile)
+                  const contextualHelp = flowEngine.getContextualHelp(currentStepData.id)
+                  
+                  return contextualHelp ? (
+                    <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-start gap-2">
+                        <SparklesIcon className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-blue-800 font-medium">
+                          {contextualHelp}
+                        </p>
+                      </div>
+                    </div>
+                  ) : null
+                })()}
               </div>
             </div>
 
             {/* Render appropriate component based on step */}
-            {renderStepContent(currentStepData.id, onboardingData, updateOnboardingData)}
+            {renderStepContent(currentStepData.id, onboardingData, updateOnboardingData, profile)}
           </div>
 
           {/* Footer */}
@@ -529,20 +617,31 @@ export default function DashboardOnboarding({
               )}
             </div>
           </div>
+          </div>
         </div>
       </div>
-    </div>
+    </ContextualGuidanceProvider>
   )
 }
 
 // Helper function to render content based on step
-function renderStepContent(stepId, data, updateData) {
+function renderStepContent(stepId, data, updateData, profile) {
   // Handle step completion callbacks
   const handleStepComplete = (stepData) => {
     updateData(stepData)
   }
 
   switch (stepId) {
+    case 'segmentation':
+      return (
+        <WelcomeSegmentation 
+          data={data} 
+          updateData={updateData}
+          onComplete={handleStepComplete}
+          profile={profile}
+        />
+      )
+
     case 'business':
     case 'organization':
       return (

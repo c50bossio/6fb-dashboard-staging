@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Context Window Optimized Summary
 
-**Enterprise barbershop platform**: Next.js 14 (port 9999) + FastAPI (port 8001) + Supabase PostgreSQL. Currently implementing global dashboard context system with multi-location support and public booking flows.
+**Enterprise barbershop platform**: Next.js 14 (port 9999) + FastAPI (port 8001) + Supabase PostgreSQL with AI-powered agents and real-time features. Production-ready with comprehensive onboarding system, multi-location support, and public booking flows.
 
 ### Core Rules
 1. **NO MOCK DATA** - Always use real Supabase database
@@ -90,7 +90,16 @@ components/SupabaseAuthProvider.js  # Authentication context provider
 # API Structure
 app/api/                      # Next.js API routes
 app/api/public/              # Public API endpoints (no auth required)
+app/api/suggestions/         # Smart suggestions API endpoints
 routers/                     # FastAPI feature modules (ai.py, auth.py, dashboard.py)
+
+# Onboarding & User Experience
+components/onboarding/EverboardingSystem.js      # Progressive feature discovery
+components/onboarding/AdaptiveFlowEngine.js      # AI-powered onboarding adaptation
+components/onboarding/ContextualGuidanceProvider.js # Smart contextual help
+components/onboarding/LiveBookingPreview.js      # Real-time onboarding previews
+services/SmartSuggestionsAPI.js                  # AI recommendations service
+test-utils/smart-suggestions-mocks.js            # Testing utilities for suggestions
 
 # Component Libraries
 components/ui/               # Base UI components (use these, don't recreate)
@@ -102,6 +111,7 @@ components/customers/        # Customer management components (CustomerPortal)
 # Docker & Testing
 docker-compose.yml           # Docker services configuration
 data/agent_system.db        # SQLite database for development
+tests/                       # Comprehensive test suites (onboarding, adaptive, orchestrator)
 ```
 
 ### Shop ID Resolution Pattern (CRITICAL)
@@ -249,6 +259,20 @@ npx playwright test path/to/test.spec.js --debug
 npm run test:e2e:booking     # Booking flow tests
 npm run test:e2e:payment     # Payment integration tests
 npm run test:e2e:analytics   # Analytics dashboard tests
+npm run test:e2e:notifications # Notification system tests
+npm run test:e2e:visual      # Visual regression tests
+npm run test:e2e:errors      # Error handling tests
+
+# Advanced test orchestration
+bash scripts/run-e2e-tests.sh --smoke          # Quick smoke tests
+bash scripts/run-e2e-tests.sh --critical-only  # Critical path only
+bash scripts/run-e2e-tests.sh --full          # Complete test suite
+bash scripts/run-e2e-tests.sh --suites booking # Specific test suites
+
+# Test automation for onboarding enhancements
+npm test -- tests/onboarding-enhancement-system.spec.js
+npm test -- tests/adaptive-flow-engine.spec.js
+npm test -- tests/onboarding-test-orchestrator.spec.js
 ```
 
 ## 🔒 SECURITY PHILOSOPHY - CRITICAL (READ THIS FIRST!)
@@ -610,8 +634,10 @@ $$;
 ## 🔄 Current Development Context
 
 ### Active Work Areas (Based on Git Status)
+- **Everboarding System**: Progressive feature discovery and contextual guidance beyond initial onboarding (`components/onboarding/EverboardingSystem.js`)
+- **Adaptive Flow Engine**: AI-powered onboarding adaptation (`components/onboarding/AdaptiveFlowEngine.js`)
+- **Smart Suggestions API**: Contextual recommendations during setup (`services/SmartSuggestionsAPI.js`)
 - **Global Dashboard Context**: Multi-location dashboard with view modes (consolidated/comparison/individual)
-- **Public Booking Flow**: Customer-facing booking system at `/book/public/[barbershopId]`
 - **Customer Portal Settings**: Self-service customer management features  
 - **Progressive Account Creation**: Streamlined onboarding during booking flow
 - **Public API Endpoints**: Authentication-free booking APIs at `/api/public/*`
@@ -619,6 +645,16 @@ $$;
 
 ### Recent Patterns to Follow
 ```javascript
+// Everboarding Pattern - progressive feature discovery
+import EverboardingSystem from '@/components/onboarding/EverboardingSystem'
+import { EverboardingProvider } from '@/components/onboarding/EverboardingProvider'
+
+// Smart Suggestions Pattern - AI-powered recommendations
+import { SmartSuggestionsAPI } from '@/services/SmartSuggestionsAPI'
+
+// Adaptive Flow Pattern - contextual onboarding steps
+import { AdaptiveFlowEngine } from '@/components/onboarding/AdaptiveFlowEngine'
+
 // Global Context Pattern - use for multi-location features
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 
@@ -668,6 +704,16 @@ const profilesData = await supabase
 // 4. Site Loading Issues (404 errors)
 // Cause: Port conflicts or compilation errors
 // Solution: Kill processes, restart dev server
+
+// 5. Loyalty Points API 404 Errors (Current Development Issue)
+// Observed: GET /api/customers/loyalty/points endpoints returning 404
+// Cause: Loyalty system implementation in progress
+// Solution: Check loyalty API endpoints and database tables
+
+// 6. Performance Warnings ("Long task detected")
+// Observed: Tasks >50ms being flagged in development
+// Context: Executive dashboard mode experiencing performance bottlenecks
+// Solution: Review component optimization and data fetching patterns
 ```
 
 ## 📝 Common Development Tasks
