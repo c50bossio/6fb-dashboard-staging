@@ -6,7 +6,7 @@ import {
   BuildingStorefrontIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ClockIcon,
   ChartBarIcon,
   DocumentChartBarIcon

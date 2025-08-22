@@ -202,6 +202,13 @@ export default function UnifiedDashboard({ user, profile }) {
         setRetryCount(0)
       }
 
+      // Guard: Wait for both user and profile to be available
+      if (!user || !profile) {
+        console.log('Waiting for user and profile data to load...')
+        setIsLoading(false)
+        return
+      }
+
       // Get barbershop_id using helper function
       let barbershopId = await getUserBarbershopId(user, profile)
       
