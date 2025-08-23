@@ -85,7 +85,10 @@ export function GlobalDashboardProvider({ children }) {
   
   // Load user's accessible locations
   const loadAvailableLocations = useCallback(async () => {
-    if (!user) return
+    if (!user || !user.id) {
+      console.log('🔍 [DASHBOARD] No authenticated user, skipping location loading')
+      return
+    }
     
     const permissions = getPermissions()
     
@@ -117,27 +120,31 @@ export function GlobalDashboardProvider({ children }) {
           }
         } else {
           // Check barbershop_staff table for employee associations
-          const { data: staffData, error: staffError } = await supabase
-            .from('barbershop_staff')
-            .select('barbershop_id, barbershops(id, name, city, state, address, phone, owner_id)')
-            .eq('user_id', user.id)
-            .eq('is_active', true)
-          
-          if (!staffError && staffData && staffData.length > 0) {
-            locations = staffData.map(s => s.barbershops).filter(Boolean)
+          if (user.id) {
+            const { data: staffData, error: staffError } = await supabase
+              .from('barbershop_staff')
+              .select('barbershop_id, barbershops(id, name, city, state, address, phone, owner_id)')
+              .eq('user_id', user.id)
+              .eq('is_active', true)
+            
+            if (!staffError && staffData && staffData.length > 0) {
+              locations = staffData.map(s => s.barbershops).filter(Boolean)
+            }
           }
         }
       } else if (userRole === 'BARBER') {
         // Individual barbers see their assigned location
-        const { data: staffData, error } = await supabase
-          .from('barbershop_staff')
-          .select('barbershop_id, barbershops(id, name, city, state, address, phone)')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .single()
-        
-        if (!error && staffData?.barbershops) {
-          locations = [staffData.barbershops]
+        if (user.id) {
+          const { data: staffData, error } = await supabase
+            .from('barbershop_staff')
+            .select('barbershop_id, barbershops(id, name, city, state, address, phone)')
+            .eq('user_id', user.id)
+            .eq('is_active', true)
+            .single()
+          
+          if (!error && staffData?.barbershops) {
+            locations = [staffData.barbershops]
+          }
         }
       }
       
@@ -171,20 +178,40 @@ export function GlobalDashboardProvider({ children }) {
       // Fetch related data separately to avoid join syntax issues
       if (!error && data) {
         // Get unique user IDs and barbershop IDs
-        const userIds = [...new Set(data.map(s => s.user_id))]
-        const barbershopIds = [...new Set(data.map(s => s.barbershop_id))]
+        const userIds = [...new Set(data.map(s => s.user_id).filter(Boolean))]
+        const barbershopIds = [...new Set(data.map(s => s.barbershop_id).filter(Boolean))]
         
-        // Fetch profiles
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('id, full_name, email, avatar_url')
-          .in('id', userIds)
+        // Guard: Only make API calls if we have valid IDs
+        let profilesData = []
+        let barbershopsData = []
         
-        // Fetch barbershops
-        const { data: barbershopsData } = await supabase
-          .from('barbershops')
-          .select('id, name')
-          .in('id', barbershopIds)
+        if (userIds.length > 0) {
+          // Fetch profiles
+          const { data: profiles, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, full_name, email, avatar_url')
+            .in('id', userIds)
+          
+          if (profilesError) {
+            console.warn('Error fetching profiles:', profilesError)
+          } else {
+            profilesData = profiles || []
+          }
+        }
+        
+        if (barbershopIds.length > 0) {
+          // Fetch barbershops
+          const { data: barbershops, error: barbershopsError } = await supabase
+            .from('barbershops')
+            .select('id, name')
+            .in('id', barbershopIds)
+          
+          if (barbershopsError) {
+            console.warn('Error fetching barbershops:', barbershopsError)
+          } else {
+            barbershopsData = barbershops || []
+          }
+        }
         
         // Create lookup maps
         const profilesMap = Object.fromEntries(
@@ -267,11 +294,18 @@ export function GlobalDashboardProvider({ children }) {
   
   // Initialize on mount
   useEffect(() => {
-    if (user) {
+    if (user && user.id && profile) {
+      console.log('🔍 [DASHBOARD] User authenticated, loading dashboard context for:', user.email)
       loadContext()
       loadAvailableLocations()
+    } else {
+      console.log('🔍 [DASHBOARD] Waiting for authentication to complete...', {
+        hasUser: !!user,
+        hasUserId: !!user?.id,
+        hasProfile: !!profile
+      })
     }
-  }, [user, loadContext, loadAvailableLocations])
+  }, [user, profile, loadContext, loadAvailableLocations])
   
   // Load barbers when locations change
   useEffect(() => {

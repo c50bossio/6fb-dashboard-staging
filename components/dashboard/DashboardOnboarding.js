@@ -34,7 +34,6 @@ import LivePreview from '../onboarding/LivePreview'
 import WelcomeSegmentation from '../onboarding/WelcomeSegmentation'
 import AdaptiveFlowEngine from '../onboarding/AdaptiveFlowEngine'
 import ContextualGuidanceProvider from '../onboarding/ContextualGuidanceProvider'
-import SimplifiedLaunchStep from '../onboarding/SimplifiedLaunchStep'
 
 // Import new data migration and planning components
 import DataImportSetup from '../onboarding/DataImportSetup'
@@ -49,8 +48,7 @@ import ScheduleSetup from '../onboarding/ScheduleSetup'
 import ServiceSetup from '../onboarding/ServiceSetup'
 import StaffSetup from '../onboarding/StaffSetup'
 
-// Import streamlined onboarding flow
-import QuickOnboardingFlow from '../onboarding/QuickOnboardingFlow'
+// QuickOnboardingFlow component not available - using standard flow
 
 // Import analytics
 
@@ -61,19 +59,16 @@ export default function DashboardOnboarding({
   onSkip,
   useQuickFlow = true // New prop to enable streamlined onboarding
 }) {
-  // DEBUG: Log component mount
-  console.log('🔧 DashboardOnboarding: COMPONENT MOUNTING!', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    hasProfile: !!profile,
-    profileRole: profile?.role,
-    useQuickFlow
-  })
-  
-  // DEBUG: Alert to confirm component is mounting
-  if (typeof window !== 'undefined') {
-    console.log('🚨 DashboardOnboarding mounted in browser!')
-  }
+  // Log component mount for debugging
+  useEffect(() => {
+    console.log('🔧 DashboardOnboarding: Component mounted', {
+      hasUser: !!user,
+      userEmail: user?.email,
+      hasProfile: !!profile,
+      profileRole: profile?.role,
+      useQuickFlow
+    })
+  }, [])
   
   const router = useRouter()
   const { updateProfile } = useAuth()
@@ -500,60 +495,16 @@ export default function DashboardOnboarding({
 
 
   // Simplified visibility logic - single source of truth
-  const shouldShowModal = true // FORCE ALWAYS SHOW FOR DEBUGGING
+  const shouldShowModal = showOnboarding
   
-  // DEBUG: Log the shouldShowModal state
-  console.log('🔍 DashboardOnboarding render check:', {
-    shouldShowModal,
-    showOnboarding,
-    useQuickFlow
-  })
-  
-  // SKIP THE CHECK FOR NOW - ALWAYS SHOW
-  /*
   if (!shouldShowModal) {
-    console.log('❌ DashboardOnboarding returning null (shouldShowModal is false)')
-    return (
-      <div className="fixed top-20 left-4 bg-red-500 text-white p-2 rounded z-[10000]">
-        DEBUG: Onboarding Hidden (showOnboarding={String(showOnboarding)})
-      </div>
-    )
+    return null
   }
-  */
 
-  // Render QuickOnboardingFlow if enabled
+  // QuickOnboardingFlow not available - falling back to standard flow
   if (useQuickFlow) {
-    // Provide fallback profile if user/profile not loaded
-    const fallbackProfile = profile || {
-      role: 'SHOP_OWNER',
-      shop_name: '',
-      email: user?.email || 'demo@barbershop.com',
-      onboarding_completed: false
-    }
-    
-    console.log('🚀 DashboardOnboarding rendering QuickOnboardingFlow:', {
-      hasUser: !!user,
-      hasProfile: !!profile,
-      usingFallback: !profile,
-      fallbackProfile: fallbackProfile
-    })
-    
-    return (
-      <QuickOnboardingFlow
-        onComplete={(data) => {
-          console.log('Quick onboarding completed:', data)
-          if (typeof internalAnalytics?.onboarding?.completed === 'function') {
-            internalAnalytics.onboarding.completed(3, 3, 0, data.segmentationPath)
-          }
-          setShowOnboarding(false)
-          if (onComplete) {
-            onComplete()
-          }
-        }}
-        initialData={onboardingData}
-        profile={fallbackProfile}
-      />
-    )
+    console.log('🚀 DashboardOnboarding: QuickOnboardingFlow not available, using standard flow')
+    // Continue with standard flow below
   }
 
   const currentStepData = steps[currentStep]
@@ -973,12 +924,12 @@ function renderStepContent(stepId, data, updateData, profile, onNavigateNext) {
     
     case 'financial':
     case 'payment':
-      // Use simplified launch step with optional payment setup
+      // Use enhanced financial setup with optional payment configuration
       return (
-        <SimplifiedLaunchStep 
+        <FinancialSetupEnhanced 
           data={data}
           updateData={updateData}
-          onNext={handleStepComplete}
+          onComplete={handleStepComplete}
         />
       )
     

@@ -1,0 +1,11 @@
+Date,Time,Customer Name,Email,Phone,Service,Duration,Price,Staff,Location,Status,Notes
+2024-01-15,09:00 AM,John Smith,john.smith@email.com,555-0101,Haircut,30,35.00,Mike Johnson,Main Street,Completed,Regular customer
+2024-01-15,09:30 AM,Michael Davis,mdavis@email.com,555-0102,Fade Cut,45,40.00,Mike Johnson,Main Street,Completed,First time client
+2024-01-15,10:15 AM,Robert Wilson,rwilson@email.com,555-0103,Beard Trim,20,20.00,Sarah Lee,Main Street,Completed,
+2024-01-15,10:35 AM,James Brown,jbrown@email.com,555-0104,Haircut & Beard,50,55.00,Mike Johnson,Main Street,Completed,Monthly regular
+2024-01-15,11:25 AM,William Jones,wjones@email.com,555-0105,Kids Cut,20,25.00,Sarah Lee,Main Street,Completed,
+2024-01-15,01:00 PM,David Miller,dmiller@email.com,555-0106,Hot Towel Shave,30,30.00,Mike Johnson,Main Street,Completed,Special occasion
+2024-01-15,01:30 PM,Richard Garcia,rgarcia@email.com,555-0107,Haircut,30,35.00,Sarah Lee,Main Street,Completed,
+2024-01-15,02:00 PM,Joseph Martinez,jmart@email.com,555-0108,Fade Cut,45,40.00,Mike Johnson,Main Street,No Show,
+2024-01-15,02:45 PM,Thomas Anderson,tanderson@email.com,555-0109,Beard Trim,20,20.00,Sarah Lee,Main Street,Completed,Walk-in
+2024-01-15,03:05 PM,Charles Rodriguez,crod@email.com,555-0110,Haircut,30,35.00,Mike Johnson,Main Street,Completed,

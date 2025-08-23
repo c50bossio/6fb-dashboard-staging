@@ -24,13 +24,7 @@ export default function SettingsDashboard() {
   const { user } = useAuth()
   const [shopData, setShopData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [completionStatus, setCompletionStatus] = useState({
-    general: false,
-    hours: false,
-    payment: false,
-    staff: false,
-    notifications: false
-  })
+  // Removed completion status tracking - now handled by OnboardingOrchestrator
   const [recentChanges, setRecentChanges] = useState([])
 
   useEffect(() => {
@@ -53,25 +47,7 @@ export default function SettingsDashboard() {
       if (shop) {
         setShopData(shop)
         
-        // Check completion status
-        setCompletionStatus({
-          general: !!(shop.name && shop.email && shop.phone),
-          hours: !!shop.business_hours,
-          payment: !!shop.payment_settings,
-          staff: false, // Will check separately
-          notifications: !!shop.notification_settings
-        })
-
-        // Check for staff
-        const { data: staff } = await supabase
-          .from('barbershop_staff')
-          .select('id')
-          .eq('barbershop_id', shop.id)
-          .limit(1)
-        
-        if (staff && staff.length > 0) {
-          setCompletionStatus(prev => ({ ...prev, staff: true }))
-        }
+        // Shop data loaded - completion tracking now handled by OnboardingOrchestrator
       }
 
       // Mock recent changes (in production, this would come from an audit log)
@@ -95,7 +71,7 @@ export default function SettingsDashboard() {
       description: 'Shop name, contact details, and description',
       icon: BuildingStorefrontIcon,
       path: '/shop/settings/general',
-      status: completionStatus.general ? 'complete' : 'incomplete',
+      status: 'available', // Status now managed by main onboarding system
       color: 'olive'
     },
     {
@@ -104,7 +80,7 @@ export default function SettingsDashboard() {
       description: 'Set your operating hours and holidays',
       icon: ClockIcon,
       path: '/shop/settings/hours',
-      status: completionStatus.hours ? 'complete' : 'incomplete',
+      status: 'available',
       color: 'blue'
     },
     {
@@ -113,7 +89,7 @@ export default function SettingsDashboard() {
       description: 'Configure payment methods and processing',
       icon: CreditCardIcon,
       path: '/shop/settings/payment',
-      status: completionStatus.payment ? 'complete' : 'action-required',
+      status: 'available',
       color: 'green'
     },
     {
@@ -122,7 +98,7 @@ export default function SettingsDashboard() {
       description: 'Manage staff and their permissions',
       icon: UserGroupIcon,
       path: '/shop/settings/staff',
-      status: completionStatus.staff ? 'complete' : 'incomplete',
+      status: 'available',
       color: 'purple'
     },
     {
@@ -131,7 +107,7 @@ export default function SettingsDashboard() {
       description: 'Email and SMS notification preferences',
       icon: BellIcon,
       path: '/shop/settings/notifications',
-      status: completionStatus.notifications ? 'complete' : 'incomplete',
+      status: 'available',
       color: 'amber'
     },
     {
@@ -140,7 +116,7 @@ export default function SettingsDashboard() {
       description: 'View shop performance and insights',
       icon: ChartBarIcon,
       path: '/shop/analytics',
-      status: 'complete',
+      status: 'available',
       color: 'indigo'
     }
   ]
@@ -166,11 +142,7 @@ export default function SettingsDashboard() {
     }
   ]
 
-  const calculateCompletionPercentage = () => {
-    const total = Object.keys(completionStatus).length
-    const completed = Object.values(completionStatus).filter(Boolean).length
-    return Math.round((completed / total) * 100)
-  }
+  // Progress calculation removed - handled by OnboardingOrchestrator
 
   if (loading) {
     return (
@@ -188,33 +160,7 @@ export default function SettingsDashboard() {
         <p className="text-gray-600 mt-2">Manage your barbershop configuration and preferences</p>
       </div>
 
-      {/* Setup Progress */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Setup Progress</h2>
-            <p className="text-sm text-gray-600">Complete your shop configuration</p>
-          </div>
-          <div className="text-right">
-            <span className="text-2xl font-bold text-olive-600">{calculateCompletionPercentage()}%</span>
-            <p className="text-sm text-gray-600">Complete</p>
-          </div>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
-          <div 
-            className="bg-gradient-to-r from-olive-500 to-olive-600 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${calculateCompletionPercentage()}%` }}
-          />
-        </div>
-        {calculateCompletionPercentage() < 100 && (
-          <div className="mt-4 p-3 bg-amber-50 rounded-lg">
-            <p className="text-sm text-amber-800">
-              <ExclamationTriangleIcon className="h-4 w-4 inline mr-1" />
-              Complete your setup to unlock all features and start accepting bookings
-            </p>
-          </div>
-        )}
-      </div>
+      {/* Setup progress tracking removed - now handled by unified OnboardingOrchestrator */}
 
       {/* Quick Settings Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
@@ -229,13 +175,7 @@ export default function SettingsDashboard() {
                 <setting.icon className={`h-7 w-7 text-${setting.color}-600`} />
               </div>
               <div className="flex items-center">
-                {setting.status === 'complete' ? (
-                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                ) : setting.status === 'action-required' ? (
-                  <ExclamationTriangleIcon className="h-5 w-5 text-amber-500" />
-                ) : (
-                  <div className="h-5 w-5 rounded-full border-2 border-gray-300" />
-                )}
+                <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-olive-600 group-hover:translate-x-1 transition-all" />
               </div>
             </div>
             <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-olive-600 transition-colors">

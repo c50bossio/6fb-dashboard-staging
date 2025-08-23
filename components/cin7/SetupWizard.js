@@ -11,11 +11,12 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon,
   EyeIcon,
-  EyeSlashIcon
+  EyeSlashIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function SetupWizard({ onComplete, onClose }) {
   const [currentStep, setCurrentStep] = useState(0)
@@ -36,6 +37,25 @@ export default function SetupWizard({ onComplete, onClose }) {
   const [syncProgress, setSyncProgress] = useState(0)
   const [errors, setErrors] = useState({})
   const [showApiKey, setShowApiKey] = useState(false)
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [onClose])
+
+  // Handle click outside to close modal
+  const handleBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      onClose()
+    }
+  }
 
   const steps = [
     { id: 'welcome', title: 'Welcome', icon: SparklesIcon },
@@ -661,14 +681,27 @@ export default function SetupWizard({ onComplete, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+    <div 
+      className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50"
+      onClick={handleBackdropClick}
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
+        onClick={(e) => e.stopPropagation()}
       >
+        {/* Universal Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+          title="Close setup wizard"
+        >
+          <XMarkIcon className="h-5 w-5" />
+        </button>
+
         {/* Progress Steps */}
-        <div className="border-b border-gray-200 px-6 py-4">
+        <div className="border-b border-gray-200 px-6 py-4 pr-16">
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">

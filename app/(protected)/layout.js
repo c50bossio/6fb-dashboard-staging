@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import DashboardHeader from '../../components/dashboard/DashboardHeader'
-import DashboardOnboarding from '../../components/dashboard/DashboardOnboarding'
-import TestOnboardingModal from '../../components/TestOnboardingModal'
+import OnboardingOrchestrator from '../../components/onboarding/OnboardingOrchestrator'
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
@@ -15,8 +14,9 @@ import { useAuth } from '../../components/SupabaseAuthProvider'
 
 function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false)
   
   // Debug logging
   useEffect(() => {
@@ -82,22 +82,44 @@ function ProtectedLayoutContent({ children }) {
       </div>
       
       
-      {/* Onboarding Modal - Shows when triggered */}
+      {/* Onboarding Modal - Shows when triggered with tier-based routing */}
       {showOnboarding && (
-        <DashboardOnboarding 
-          user={user}
-          profile={profile}
-          useQuickFlow={true}
-          onComplete={() => {
-            console.log('✅ Onboarding completed')
-            setShowOnboarding(false)
-            // Refresh to update profile state
-            window.location.reload()
+        <OnboardingOrchestrator 
+          onComplete={async () => {
+            console.log('✅ Onboarding completed (via orchestrator)')
+            setIsCompletingOnboarding(true)
+            
+            try {
+              // Try seamless profile refresh first
+              console.log('🔄 Attempting seamless profile refresh...')
+              const refreshSuccess = await refreshProfile()
+              
+              if (refreshSuccess) {
+                console.log('✅ Seamless refresh successful - enterprise features activated')
+                setIsCompletingOnboarding(false)
+                setShowOnboarding(false)
+                
+                // Show success notification
+                setTimeout(() => {
+                  console.log('🎉 Enterprise onboarding completed - features now available!')
+                }, 500)
+              } else {
+                console.log('⚠️ Seamless refresh failed - falling back to page reload')
+                // Fallback to page reload if refresh fails
+                window.location.reload()
+              }
+            } catch (error) {
+              console.error('❌ Error during onboarding completion:', error)
+              // Fallback to page reload on error
+              console.log('🔄 Using page reload fallback...')
+              window.location.reload()
+            }
           }}
           onSkip={() => {
-            console.log('⏭️ Onboarding skipped')
+            console.log('⏭️ Onboarding skipped (via orchestrator)')
             setShowOnboarding(false)
           }}
+          isCompleting={isCompletingOnboarding}
         />
       )}
       

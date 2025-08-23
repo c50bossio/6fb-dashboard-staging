@@ -41,6 +41,7 @@ import FilterTags from '../../../../components/customers/FilterTags'
 import SortOptions from '../../../../components/customers/SortOptions'
 import ExportCSV from '../../../../components/customers/ExportCSV'
 import SearchHighlight from '../../../../components/customers/SearchHighlight'
+import DataImportSetup from '../../../../components/onboarding/DataImportSetup'
 import { fuzzySearch } from '../../../../utils/fuzzySearch'
 import { AnimatedContainer, StaggeredList } from '../../../../utils/animations'
 
@@ -51,6 +52,7 @@ export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSegment, setSelectedSegment] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
   const [notification, setNotification] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -186,6 +188,18 @@ export default function CustomersPage() {
   useEffect(() => {
     fetchCustomers()
   }, [])
+
+  // Handle URL parameters for auto-opening import modal
+  useEffect(() => {
+    const action = searchParams.get('action')
+    if (action === 'import') {
+      setShowImportModal(true)
+      // Clean up URL after opening modal
+      const url = new URL(window.location)
+      url.searchParams.delete('action')
+      window.history.replaceState({}, '', url)
+    }
+  }, [searchParams])
 
   // Advanced search and filtering with fuzzy matching
   useEffect(() => {
@@ -945,6 +959,17 @@ export default function CustomersPage() {
                 variant="dropdown"
               />
               
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="btn-secondary flex items-center space-x-2"
+                title="Import customers from CSV file"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+                <span>Import</span>
+              </button>
+              
               <ExportCSV
                 customers={filteredCustomers}
                 onExport={handleExportCustomers}
@@ -1340,6 +1365,49 @@ export default function CustomersPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Import Customer Modal */}
+        {showImportModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-900">Import Company Customers</h2>
+                  <button
+                    onClick={() => setShowImportModal(false)}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  Import customer data for company-wide analytics and management
+                </p>
+              </div>
+              <div className="p-6">
+                <DataImportSetup
+                  onComplete={(importData) => {
+                    console.log('Company-wide import completed:', importData)
+                    if (!importData.skipped) {
+                      setNotification({
+                        type: 'success',
+                        message: `Successfully imported ${importData.imported_count || 0} customers!`
+                      })
+                      setTimeout(() => setNotification(null), 5000)
+                      fetchCustomers() // Reload the customer list
+                    }
+                    setShowImportModal(false)
+                  }}
+                  profile={{
+                    barbershop_id: customers.length > 0 ? customers[0].barbershopId : null
+                  }}
+                  initialData={{}}
+                  context="company-wide"
+                />
+              </div>
             </div>
           </div>
         )}

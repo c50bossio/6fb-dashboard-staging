@@ -6,6 +6,13 @@
  */
 
 import smartSuggestions from '../../services/SmartSuggestionsAPI'
+import { 
+  DocumentArrowUpIcon, 
+  BuildingOfficeIcon, 
+  ChartBarIcon, 
+  MapIcon, 
+  CheckBadgeIcon 
+} from '@heroicons/react/24/outline'
 
 export default class AdaptiveFlowEngine {
   constructor(segmentationData = {}, userProfile = {}) {
@@ -57,7 +64,7 @@ export default class AdaptiveFlowEngine {
       steps.splice(financialIndex, 0, {
         id: 'business_planning',
         title: 'Business Planning',
-        icon: 'ChartBarIcon',
+        icon: ChartBarIcon,
         description: 'Set realistic goals and expectations'
       })
     }
@@ -87,7 +94,7 @@ export default class AdaptiveFlowEngine {
       steps[businessIndex] = {
         id: 'organization',
         title: 'Organization Setup',
-        icon: 'BuildingOfficeIcon',
+        icon: BuildingOfficeIcon,
         description: 'Configure your enterprise structure'
       }
     }
@@ -105,7 +112,7 @@ export default class AdaptiveFlowEngine {
       steps.splice(orgIndex + 1, 0, {
         id: 'location_management',
         title: 'Location Management',
-        icon: 'MapIcon',
+        icon: MapIcon,
         description: 'Set up your location hierarchy'
       })
     }
@@ -114,35 +121,38 @@ export default class AdaptiveFlowEngine {
   }
 
   /**
-   * Add migration-specific steps
+   * Add migration-specific steps for optimal user experience
+   * For "switching systems" users, we add CSV import during onboarding
    */
   addMigrationSteps(steps) {
-    // Add data import step at the beginning
-    steps.unshift({
-      id: 'data_import',
-      title: 'Data Import',
-      icon: 'DocumentArrowUpIcon',
-      description: 'Import your existing customer and appointment data'
-    })
-
+    // Add data import step before final setup for switching systems users
+    // This provides the best UX - users expect to upload their data during onboarding
+    const financialIndex = steps.findIndex(step => step.id === 'financial')
+    if (financialIndex > -1) {
+      steps.splice(financialIndex, 0, {
+        id: 'data_import',
+        title: 'Import Your Data (Optional)',
+        icon: DocumentArrowUpIcon,
+        description: 'Upload customer data from your previous system or skip for now',
+        optional: true, // Clearly optional with skip button
+        skipLabel: 'Skip for now - I\'ll import later',
+        skipTooltip: 'You can always import customers from the Customer Management section',
+        emphasis: true
+      })
+    }
+    
     return steps
   }
 
   /**
    * Prioritize data integrity for migration users
+   * Since import is now post-onboarding, this focuses on core setup validation
    */
   prioritizeDataIntegrity(steps) {
-    // Add data verification step after import
-    const importIndex = steps.findIndex(step => step.id === 'data_import')
-    if (importIndex > -1) {
-      steps.splice(importIndex + 1, 0, {
-        id: 'data_verification',
-        title: 'Data Verification',
-        icon: 'CheckBadgeIcon',
-        description: 'Verify your imported data is correct'
-      })
-    }
-
+    // Data verification is now part of the post-onboarding import flow
+    // For onboarding, we focus on ensuring business setup is complete and valid
+    // No additional steps needed during core onboarding
+    
     return steps
   }
 
@@ -381,9 +391,10 @@ export default class AdaptiveFlowEngine {
         'location_management': 'Define how your locations will operate independently or together.'
       },
       'switching_systems': {
-        'data_import': 'We\'ll help you bring over your existing customers, appointments, and service history.',
-        'business': 'Verify this information matches your current system to ensure a smooth transition.',
-        'data_verification': 'Double-check that all your important data transferred correctly.'
+        'business': 'Set up your core business profile first. Your data import will be available after setup completion.',
+        'services': 'Configure your service catalog. You can import existing services from your dashboard later.',
+        'staff': 'Add your team members. Staff details can also be imported after onboarding.',
+        'financial': 'Set up payments first. Your existing transaction data will be preserved for import.'
       }
     }
 
@@ -391,15 +402,64 @@ export default class AdaptiveFlowEngine {
   }
 
   /**
-   * Get completion celebration message based on segmentation
+   * Get completion celebration message and next steps based on segmentation
    */
   getCompletionMessage() {
-    const messages = {
-      'first_barbershop': '🎉 Congratulations! Your barbershop is now ready for customers. You\'ve built a solid foundation for success!',
-      'adding_locations': '🚀 Excellent! Your new location is configured and ready to scale with your growing business.',
-      'switching_systems': '✅ Migration complete! Your data has been successfully transferred and your new system is ready to use.'
+    const messageData = {
+      'first_barbershop': {
+        title: '🎉 Congratulations! Your barbershop is ready!',
+        message: 'You\'ve built a solid foundation for success. Your online booking system is now live.',
+        nextSteps: [
+          'Start accepting online bookings immediately',
+          'Share your booking link with customers',
+          'Import customers anytime from Customer Management section'
+        ],
+        primaryAction: 'View Dashboard',
+        secondaryAction: 'Go to Customers',
+        secondaryActionHref: '/barber/clients',
+        showImportPrompt: false
+      },
+      'adding_locations': {
+        title: '🚀 New location setup complete!',
+        message: 'Your location is configured and ready to scale with your growing business.',
+        nextSteps: [
+          'Configure location-specific settings',
+          'Set up staff assignments for this location',
+          'Import/export customer data from Customer Management'
+        ],
+        primaryAction: 'Manage Locations',
+        secondaryAction: 'Customer Management',
+        secondaryActionHref: '/barber/clients',
+        showImportPrompt: false
+      },
+      'switching_systems': {
+        title: '🎉 Setup complete!',
+        message: 'Your barbershop is ready! If you imported data during setup, it\'s available now. You can import more anytime.',
+        nextSteps: [
+          'Review your customer list in Customer Management',
+          'Share your new booking link with customers', 
+          'Import additional data anytime from Customer Management'
+        ],
+        primaryAction: 'View Dashboard',
+        secondaryAction: 'View Customers',
+        secondaryActionHref: '/barber/clients',
+        emphasis: 'success',
+        showImportPrompt: false
+      }
     }
-
-    return messages[this.segmentationPath] || '🎉 Setup complete! Your business is ready to accept online bookings.'
+    
+    return messageData[this.segmentationPath] || {
+      title: '🎉 Setup complete!',
+      message: 'Your business is ready to accept online bookings.',
+      nextSteps: [
+        'Start accepting online bookings',
+        'Customize your booking page',
+        'Import/export customers anytime from Customer Management'
+      ],
+      primaryAction: 'View Dashboard',
+      secondaryAction: 'Go to Customers',
+      secondaryActionHref: '/barber/clients',
+      showImportPrompt: false
+    }
   }
 }

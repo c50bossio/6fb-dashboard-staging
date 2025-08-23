@@ -9,6 +9,7 @@ import {
   Squares2X2Icon,
   PresentationChartLineIcon,
   XCircleIcon,
+  PlayIcon,
 } from '@heroicons/react/24/outline'
 import { 
   ChartBarIcon as ChartBarSolid,
@@ -29,6 +30,9 @@ import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 import ShareableBookingLink from './ShareableBookingLink'
+// DataImportWidget removed - replaced with QuickActionsCard for better UX
+import QuickActionsCard from './QuickActionsCard'
+import CampaignCreditWidget from './CampaignCreditWidget'
 
 
 const DASHBOARD_MODES = {
@@ -104,6 +108,14 @@ export default function UnifiedDashboard({ user, profile }) {
   const [currentBarbershopId, setCurrentBarbershopId] = useState(null)
   const [hasInitialLoad, setHasInitialLoad] = useState(false)
   const loadingRef = useRef(false)
+
+  // Function to launch onboarding flow
+  const launchOnboarding = useCallback(() => {
+    console.log('🚀 Launching onboarding from dashboard setup card')
+    window.dispatchEvent(new CustomEvent('launchOnboarding', {
+      detail: { forced: true, source: 'dashboard_setup_card' }
+    }))
+  }, [])
 
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
     // Declare barbershopId at function scope to prevent ReferenceError
@@ -848,11 +860,11 @@ export default function UnifiedDashboard({ user, profile }) {
                     
                     <div className="flex flex-wrap gap-3">
                       <button
-                        onClick={() => loadDashboardData(true)}
-                        className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-lg text-brand-700 dark:text-brand-300 bg-white/70 dark:bg-brand-900/30 hover:bg-white dark:hover:bg-brand-800/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 backdrop-blur-sm"
+                        onClick={launchOnboarding}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 shadow-sm"
                       >
-                        <ArrowPathIcon className="h-4 w-4 mr-2" />
-                        Try Again
+                        <PlayIcon className="h-4 w-4 mr-2" />
+                        Complete Setup
                       </button>
                     </div>
                   </div>
@@ -899,6 +911,17 @@ export default function UnifiedDashboard({ user, profile }) {
           ) : dashboardData ? (
             <>
               <UnifiedExecutiveSummary data={dashboardData} />
+              
+              {/* Quick Actions Card - Always visible for easy access to common tasks */}
+              <QuickActionsCard profile={profile} />
+              
+              {/* Campaign Credit Widget - Shows earned credits from payment processing */}
+              {(currentBarbershopId || profile?.barbershop_id || user?.barbershop_id) && (
+                <CampaignCreditWidget 
+                  barbershopId={currentBarbershopId || profile?.barbershop_id || user?.barbershop_id}
+                />
+              )}
+              
               {(currentBarbershopId || profile?.barbershop_id || user?.barbershop_id) && (
                 <SmartAlertsPanel barbershop_id={currentBarbershopId || profile?.barbershop_id || user?.barbershop_id} />
               )}

@@ -43,50 +43,62 @@ function SupabaseAuthProvider({ children }) {
       lastFetchedUserId.current = userId
       console.log('🔍 [AUTH DEBUG] Fetching profile for userId:', userId)
       
-      // Get both profile and user data to merge subscription info
-      const [profileResult, userResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('users').select('subscription_tier, subscription_status, role').eq('id', userId).single()
-      ])
-      
-      const { data: existingProfile, error: fetchError } = profileResult
-      const { data: userData, error: userError } = userResult
+      // PHASE 2: Single table approach - query only profiles table
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle() // Use maybeSingle to handle no rows or multiple rows gracefully
       
       console.log('🔍 [AUTH DEBUG] Profile query results:', {
         hasProfile: !!existingProfile,
         profileError: fetchError?.message,
-        hasUserData: !!userData,
-        userError: userError?.message,
         profileRole: existingProfile?.role,
-        userRole: userData?.role,
-        subscriptionTier: userData?.subscription_tier || existingProfile?.subscription_tier
+        subscriptionTier: existingProfile?.subscription_tier,
+        subscriptionStatus: existingProfile?.subscription_status
       })
       
       if (existingProfile) {
-        // Merge users table data with profiles table data for complete access info
-        const mergedProfile = {
+        // Use profile data directly (no merging needed)
+        const profileWithDefaults = {
           ...existingProfile,
-          // Use users table subscription_tier if available (more recent)
-          subscription_tier: userData?.subscription_tier || existingProfile.subscription_tier || 'individual',
-          subscription_status: userData?.subscription_status || existingProfile.subscription_status || 'active',
-          // Keep profile role as primary, but fallback to users role if needed
-          role: existingProfile.role || userData?.role || 'CLIENT'
+          // Ensure required fields have defaults
+          subscription_tier: existingProfile.subscription_tier || 'individual',
+          subscription_status: existingProfile.subscription_status || 'active',
+          role: existingProfile.role || 'CLIENT',
+          onboarding_completed: existingProfile.onboarding_completed ?? false
         }
         
-        console.log('🔍 [AUTH DEBUG] Profile fetched and merged:', {
-          email: mergedProfile.email,
-          role: mergedProfile.role,
-          subscriptionTier: mergedProfile.subscription_tier,
-          subscriptionStatus: mergedProfile.subscription_status
+        console.log('🔍 [AUTH DEBUG] Profile fetched successfully:', {
+          email: profileWithDefaults.email,
+          role: profileWithDefaults.role,
+          subscriptionTier: profileWithDefaults.subscription_tier,
+          subscriptionStatus: profileWithDefaults.subscription_status,
+          onboardingCompleted: profileWithDefaults.onboarding_completed
         })
-        setProfile(mergedProfile)
+        setProfile(profileWithDefaults)
         fetchingProfileRef.current = false
-        return mergedProfile
+        return profileWithDefaults
       }
       
       // If no profile exists, create one
-      if (fetchError?.code === 'PGRST116') {
+      if (!existingProfile) {
         console.log('No profile found, creating default profile...')
+        
+        // Get the current user from auth to access email and metadata
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        
+        if (!authUser) {
+          console.error('Cannot create profile: No authenticated user found')
+          fetchingProfileRef.current = false
+          return null
+        }
+        
+        console.log('🔍 [AUTH DEBUG] Creating profile with user data:', {
+          userId: authUser.id,
+          email: authUser.email,
+          fullName: authUser.user_metadata?.full_name || authUser.user_metadata?.name
+        })
         
         // Check if this is truly the first user (no barbershops exist)
         const { data: existingBarbershops } = await supabase
@@ -99,25 +111,37 @@ function SupabaseAuthProvider({ children }) {
         
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
-          .insert({
+          .upsert({
             id: userId,
-            email: user?.email,
-            full_name: user?.user_metadata?.full_name || '',
-            subscription_tier: isFirstUser ? 'professional' : 'individual', // First user gets better tier
+            email: authUser.email, // Use email from authenticated user
+            full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || '',
+            // avatar_url removed - column doesn't exist in profiles table
+            subscription_tier: isFirstUser ? 'shop_owner' : 'individual', // First user gets shop_owner tier to access shop features
             subscription_status: 'active',
             onboarding_completed: false, // Always false for new profiles
+            onboarding_step: 0,
+            onboarding_status: 'active',
             role: isFirstUser ? 'SHOP_OWNER' : 'CLIENT' // First user becomes shop owner
+          }, {
+            onConflict: 'id' // Update if profile with this ID already exists
           })
           .select()
-          .single()
+          .maybeSingle() // Use maybeSingle here too to handle edge cases
         
         if (newProfile) {
           setProfile(newProfile)
+          fetchingProfileRef.current = false
           return newProfile
         }
         
         if (createError) {
-          console.error('Error creating profile:', createError)
+          console.error('Error creating/updating profile:', {
+            code: createError.code,
+            message: createError.message,
+            details: createError.details,
+            hint: createError.hint
+          })
+          fetchingProfileRef.current = false
         }
       }
     } catch (error) {
@@ -126,6 +150,7 @@ function SupabaseAuthProvider({ children }) {
       lastFetchedUserId.current = null
     }
     
+    fetchingProfileRef.current = false
     return null
   }
 
@@ -196,7 +221,7 @@ function SupabaseAuthProvider({ children }) {
                 id: mockUser.id,
                 email: mockUser.email,
                 role: 'SHOP_OWNER',
-                subscription_tier: 'professional',
+                subscription_tier: 'shop_owner', // Use shop_owner tier to access shop features
                 subscription_status: 'active',
                 full_name: 'Fresh Barbershop Owner',
                 onboarding_completed: false // Force onboarding for clean database
@@ -304,7 +329,19 @@ function SupabaseAuthProvider({ children }) {
         if (session?.user) {
           console.log('🔍 [AUTH DEBUG] Session valid, fetching profile...')
           // Don't await profile fetch to prevent blocking
-          fetchProfile(session.user.id).catch(console.error)
+          fetchProfile(session.user.id).then(async (fetchedProfile) => {
+            // Note: avatar_url column doesn't exist in profiles table
+            // If we need avatar functionality, it should be added to the schema first
+            // For now, we can use the avatar from user metadata directly when needed
+            if (fetchedProfile) {
+              // Store the Google picture URL in the profile object for UI use
+              // without trying to save it to the database
+              if (session.user.user_metadata?.picture) {
+                fetchedProfile.avatar_url = session.user.user_metadata.picture
+                setProfile(fetchedProfile)
+              }
+            }
+          }).catch(console.error)
         } else {
           console.log('🔍 [AUTH DEBUG] No session, clearing profile')
           setProfile(null)
@@ -464,16 +501,56 @@ function SupabaseAuthProvider({ children }) {
     return userLevel >= requiredLevel
   }
 
+  // Refresh profile data without page reload
+  const refreshProfile = async () => {
+    if (!user?.id) {
+      console.log('🔄 [REFRESH] No user ID available for refresh')
+      return false
+    }
+    
+    try {
+      console.log('🔄 [REFRESH] Starting profile refresh for user:', user.id)
+      
+      // Temporarily store original profile
+      const originalProfile = profile
+      
+      // Force a fresh profile fetch by resetting fetch guards
+      fetchingProfileRef.current = false
+      lastFetchedUserId.current = null
+      
+      const refreshedProfile = await fetchProfile(user.id)
+      
+      if (refreshedProfile) {
+        console.log('✅ [REFRESH] Profile refreshed successfully:', {
+          onboardingCompleted: refreshedProfile.onboarding_completed,
+          role: refreshedProfile.role,
+          subscriptionTier: refreshedProfile.subscription_tier,
+          shopId: refreshedProfile.shop_id || refreshedProfile.barbershop_id
+        })
+        return true
+      } else {
+        console.log('⚠️ [REFRESH] Profile refresh returned null - keeping original profile')
+        setProfile(originalProfile)
+        return false
+      }
+    } catch (error) {
+      console.error('❌ [REFRESH] Profile refresh failed:', error)
+      return false
+    }
+  }
+
   const value = {
     user,
     profile,
     loading,
+    supabase,  // Add supabase client to context
     signInWithGoogle,
     signIn,
     signUp,
     resetPassword,
     signOut,
     updateProfile,
+    refreshProfile, // Add refresh method to context
     // Tier helpers
     subscriptionTier,
     userRole,

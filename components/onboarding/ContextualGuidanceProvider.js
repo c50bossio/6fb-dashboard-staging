@@ -456,11 +456,14 @@ function CelebrationCard({ celebration, onDismiss }) {
     }
   }
 
+  // Extract the icon component with proper case
+  const IconComponent = celebration.icon
+
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-80 animate-in slide-in-from-right-2 duration-500">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 bg-gradient-to-br ${getBgColor(celebration.type)} rounded-full flex items-center justify-center`}>
-          <celebration.icon className="h-5 w-5 text-white" />
+          {IconComponent && <IconComponent className="h-5 w-5 text-white" />}
         </div>
         <div className="flex-1">
           <h4 className="font-semibold text-gray-900">{celebration.title}</h4>

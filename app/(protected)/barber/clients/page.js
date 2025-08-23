@@ -8,113 +8,112 @@ import {
   MagnifyingGlassIcon,
   StarIcon,
   ClockIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  PlusIcon,
+  DocumentArrowDownIcon,
+  DocumentArrowUpIcon,
+  ChatBubbleLeftRightIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '@supabase/supabase-js'
+import ExportCSV from '../../../../components/customers/ExportCSV'
+import DataImportSetup from '../../../../components/onboarding/DataImportSetup'
+import { useRouter, useSearchParams } from 'next/navigation'
+import toast from 'react-hot-toast'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+)
 
 export default function BarberClients() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [clients, setClients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all') // all, regular, new, vip
   const [loading, setLoading] = useState(true)
   const [selectedClient, setSelectedClient] = useState(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
+
+  // Handle URL parameters for auto-opening modals
+  useEffect(() => {
+    const action = searchParams.get('action')
+    if (action === 'import') {
+      setShowImportModal(true)
+      // Clean up URL after opening modal
+      router.replace('/barber/clients', { shallow: true })
+    } else if (action === 'export') {
+      setShowExportModal(true)
+      // Clean up URL after opening modal
+      router.replace('/barber/clients', { shallow: true })
+    }
+  }, [searchParams, router])
 
   useEffect(() => {
-    loadClients()
-  }, [])
+    if (profile?.barbershop_id || profile?.shop_id) {
+      loadClients()
+    }
+  }, [profile])
 
   const loadClients = async () => {
     try {
       setLoading(true)
       
-      const Clients = [
-        {
-          id: 'client_001',
-          name: 'John Smith',
-          email: 'john.smith@example.com',
-          phone: '(555) 123-4567',
-          type: 'regular',
-          total_appointments: 24,
-          last_appointment: '2024-01-15',
-          next_appointment: '2024-02-01',
-          total_spent: 1080,
-          average_service_value: 45,
-          favorite_service: 'Premium Haircut',
-          loyalty_points: 240,
-          notes: 'Prefers morning appointments',
-          rating: 5
-        },
-        {
-          id: 'client_002',
-          name: 'Michael Johnson',
-          email: 'michael.j@example.com',
-          phone: '(555) 234-5678',
-          type: 'vip',
-          total_appointments: 48,
-          last_appointment: '2024-01-18',
-          next_appointment: '2024-01-25',
-          total_spent: 2880,
-          average_service_value: 60,
-          favorite_service: 'Full Service Package',
-          loyalty_points: 576,
-          notes: 'VIP client - always offer premium services',
-          rating: 5
-        },
-        {
-          id: 'client_003',
-          name: 'David Williams',
-          email: 'david.w@example.com',
-          phone: '(555) 345-6789',
-          type: 'new',
-          total_appointments: 2,
-          last_appointment: '2024-01-10',
-          next_appointment: null,
-          total_spent: 90,
-          average_service_value: 45,
-          favorite_service: 'Basic Haircut',
-          loyalty_points: 18,
-          notes: 'New client - follow up for rebooking',
-          rating: 4
-        },
-        {
-          id: 'client_004',
-          name: 'Robert Brown',
-          email: 'robert.b@example.com',
-          phone: '(555) 456-7890',
-          type: 'regular',
-          total_appointments: 12,
-          last_appointment: '2024-01-12',
-          next_appointment: '2024-01-26',
-          total_spent: 540,
-          average_service_value: 45,
-          favorite_service: 'Fade Cut',
-          loyalty_points: 108,
-          notes: 'Likes to book same time slot',
-          rating: 5
-        },
-        {
-          id: 'client_005',
-          name: 'James Davis',
-          email: 'james.d@example.com',
-          phone: '(555) 567-8901',
-          type: 'regular',
-          total_appointments: 18,
-          last_appointment: '2024-01-14',
-          next_appointment: '2024-01-28',
-          total_spent: 810,
-          average_service_value: 45,
-          favorite_service: 'Beard Trim & Cut',
-          loyalty_points: 162,
-          notes: 'Appreciates appointment reminders',
-          rating: 4
-        }
-      ]
+      // Get barbershop ID from profile
+      const barbershopId = profile?.barbershop_id || profile?.shop_id
       
-      setClients(mockClients)
+      if (!barbershopId) {
+        console.error('No barbershop ID found in profile')
+        toast.error('Unable to load clients - no barbershop associated')
+        return
+      }
+
+      // Fetch real customers from API
+      const response = await fetch(`/api/customers?barbershop_id=${barbershopId}&limit=100`)
+      const data = await response.json()
+      
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      // Transform data to include calculated fields
+      const transformedClients = (data.customers || []).map(customer => {
+        // Calculate client type based on visits and spending
+        let type = 'new'
+        if (customer.total_visits > 20 && customer.total_spent > 1000) {
+          type = 'vip'
+        } else if (customer.total_visits > 5) {
+          type = 'regular'
+        }
+
+        // Calculate average service value
+        const avgValue = customer.total_visits > 0 
+          ? Math.round(customer.total_spent / customer.total_visits) 
+          : 0
+
+        return {
+          ...customer,
+          type,
+          average_service_value: avgValue,
+          rating: customer.rating || 5,
+          loyalty_points: customer.loyalty_points || Math.round(customer.total_spent * 0.1),
+          total_appointments: customer.total_visits || 0,
+          last_appointment: customer.last_visit_at,
+          next_appointment: customer.next_appointment_at,
+          favorite_service: customer.preferred_service || 'Haircut'
+        }
+      })
+      
+      setClients(transformedClients)
     } catch (error) {
       console.error('Failed to load clients:', error)
+      toast.error('Failed to load clients')
     } finally {
       setLoading(false)
     }
@@ -217,13 +216,31 @@ export default function BarberClients() {
             </div>
             
             <div className="flex space-x-3">
-              <button className="flex-1 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
+              <button 
+                onClick={() => {
+                  handleBookAppointment(client)
+                  onClose()
+                }}
+                className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+              >
                 Book Appointment
               </button>
-              <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+              <button 
+                onClick={() => {
+                  handleSendMessage(client)
+                  onClose()
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
                 Send Message
               </button>
-              <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+              <button 
+                onClick={() => {
+                  handleViewHistory(client)
+                  onClose()
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
                 View History
               </button>
             </div>
@@ -241,6 +258,64 @@ export default function BarberClients() {
     )
   }
 
+  // Handle client creation
+  const handleAddClient = async (clientData) => {
+    try {
+      const barbershopId = profile?.barbershop_id || profile?.shop_id
+      
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...clientData,
+          barbershop_id: barbershopId
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.error) {
+        if (response.status === 409) {
+          toast.error('Client already exists with this contact information')
+        } else {
+          toast.error(data.error)
+        }
+        return false
+      }
+
+      toast.success('Client added successfully!')
+      await loadClients() // Reload the list
+      return true
+    } catch (error) {
+      console.error('Failed to add client:', error)
+      toast.error('Failed to add client')
+      return false
+    }
+  }
+
+  // Handle booking appointment
+  const handleBookAppointment = (client) => {
+    // Navigate to booking page with client pre-selected
+    router.push(`/dashboard/appointments/new?client_id=${client.id}`)
+  }
+
+  // Handle sending message
+  const handleSendMessage = (client) => {
+    // For now, open email client. Later can integrate SMS/in-app messaging
+    if (client.email) {
+      window.location.href = `mailto:${client.email}?subject=Message from ${profile?.barbershop_name || 'Your Barber'}`
+    } else if (client.phone) {
+      window.location.href = `sms:${client.phone}`
+    } else {
+      toast.error('No contact method available for this client')
+    }
+  }
+
+  // Handle viewing history
+  const handleViewHistory = (client) => {
+    router.push(`/dashboard/customers/${client.id}/history`)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -248,12 +323,48 @@ export default function BarberClients() {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Clients</h1>
-              <p className="text-sm text-gray-600">Manage your client relationships</p>
+              <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
+              <p className="text-sm text-gray-600">
+                {loading ? 'Loading...' : `${clients.length} customers • Import or export data anytime`}
+              </p>
             </div>
-            <button className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
-              Add New Client
-            </button>
+            <div className="flex items-center space-x-3">
+              {/* Export Button */}
+              <ExportCSV
+                customers={filteredClients}
+                onExport={(data) => {
+                  console.log('Exported:', data)
+                  toast.success(`Exported ${data.customers.length} customers`)
+                }}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center space-x-2"
+                triggerClassName="flex items-center space-x-2"
+                triggerContent={
+                  <>
+                    <DocumentArrowDownIcon className="h-5 w-5" />
+                    <span>Export All</span>
+                  </>
+                }
+              />
+              
+              {/* Import Button */}
+              <button 
+                onClick={() => setShowImportModal(true)}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center space-x-2"
+                title="Import customers from CSV file"
+              >
+                <DocumentArrowUpIcon className="h-5 w-5" />
+                <span>Import More</span>
+              </button>
+              
+              {/* Add New Client Button */}
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 flex items-center space-x-2"
+              >
+                <PlusIcon className="h-5 w-5" />
+                <span>Add New Client</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -402,6 +513,184 @@ export default function BarberClients() {
           onClose={() => setSelectedClient(null)}
         />
       )}
+
+      {/* Add Client Modal */}
+      {showAddModal && (
+        <AddClientModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddClient}
+        />
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Import Clients</h2>
+                <button
+                  onClick={() => setShowImportModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <DataImportSetup
+                onComplete={(importData) => {
+                  console.log('Import completed:', importData)
+                  if (!importData.skipped) {
+                    toast.success('Import completed successfully!')
+                    loadClients() // Reload the client list
+                  }
+                  setShowImportModal(false)
+                }}
+                profile={profile}
+                initialData={{}}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
+// Add Client Modal Component
+function AddClientModal({ onClose, onAdd }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    notes: '',
+    preferred_service: ''
+  })
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!formData.name || (!formData.email && !formData.phone)) {
+      toast.error('Name and at least one contact method required')
+      return
+    }
+
+    setLoading(true)
+    const success = await onAdd(formData)
+    setLoading(false)
+    
+    if (success) {
+      onClose()
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full m-4">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Add New Client</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Name *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone
+            </label>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Preferred Service
+            </label>
+            <input
+              type="text"
+              value={formData.preferred_service}
+              onChange={(e) => setFormData({ ...formData, preferred_service: e.target.value })}
+              placeholder="e.g., Haircut, Beard Trim"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Notes
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              placeholder="Preferences, allergies, special requests..."
+            />
+          </div>
+          
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
+            >
+              {loading ? 'Adding...' : 'Add Client'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// Note: Import functionality now uses the comprehensive DataImportSetup component
+// from the onboarding system which provides:
+// - Platform-specific export instructions
+// - File preview and validation
+// - Progress tracking
+// - Duplicate detection
+// - Support for Square, Booksy, Schedulicity, Acuity, Trafft, and generic CSV

@@ -24,9 +24,15 @@ export default function DashboardHeader() {
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
   const [sessionUser, setSessionUser] = useState(null)
+  const [imageError, setImageError] = useState(false)
   
   const notificationsRef = useRef(null)
   const profileRef = useRef(null)
+
+  // Reset image error when user changes
+  useEffect(() => {
+    setImageError(false)
+  }, [user?.id, profile?.id])
 
   useEffect(() => {
     const hour = new Date().getHours()
@@ -213,15 +219,43 @@ export default function DashboardHeader() {
                 className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center overflow-hidden">
-                  {(sessionUser?.avatar || profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture) ? (
-                    <img 
-                      src={sessionUser?.avatar || profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} 
-                      alt={getUserName()}
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <UserCircleIcon className="h-5 w-5 text-white" />
-                  )}
+                  {(() => {
+                    // Get the avatar URL with proper fallback chain
+                    const avatarUrl = profile?.avatar_url || 
+                                     user?.user_metadata?.picture ||
+                                     user?.user_metadata?.avatar_url ||
+                                     sessionUser?.avatar ||
+                                     null
+                    
+                    // Show image if we have a URL and no error occurred
+                    if (avatarUrl && !imageError) {
+                      return (
+                        <img 
+                          src={avatarUrl}
+                          alt={getUserName()}
+                          className="h-8 w-8 rounded-full object-cover"
+                          crossOrigin="anonymous"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            console.log('Profile image failed to load:', avatarUrl)
+                            setImageError(true)
+                          }}
+                        />
+                      )
+                    } else {
+                      // Show initials or icon as fallback
+                      const userName = getUserName()
+                      const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      
+                      if (initials && initials !== 'U') {
+                        return (
+                          <span className="text-white text-xs font-semibold">{initials}</span>
+                        )
+                      } else {
+                        return <UserCircleIcon className="h-5 w-5 text-white" />
+                      }
+                    }
+                  })()}
                 </div>
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-medium text-gray-700">{getUserName()}</p>

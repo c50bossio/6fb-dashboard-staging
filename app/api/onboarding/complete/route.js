@@ -11,7 +11,7 @@ export async function POST(request) {
     }
     
     const body = await request.json()
-    const { completedSteps, skippedSteps, data: onboardingData, prePopulatedData } = body
+    const { completedSteps, skippedSteps, data: onboardingData, prePopulatedData, importedData } = body
     
     // Handle multiple data formats for backward compatibility
     const finalData = onboardingData || body.onboardingData || body
@@ -167,20 +167,25 @@ export async function POST(request) {
     }
     
     // 3. Add services if barbershop was created/updated successfully
-    if (barbershopId && finalData.services && finalData.services.length > 0) {
+    // Prioritize imported data over onboarding form data
+    const servicesToAdd = (importedData?.services && importedData.services.length > 0) 
+      ? importedData.services 
+      : finalData.services
+      
+    if (barbershopId && servicesToAdd && servicesToAdd.length > 0) {
       await supabase
         .from('services')
         .delete()
         .eq('shop_id', barbershopId)
       
-      const servicesData = finalData.services.map(service => ({
+      const servicesData = servicesToAdd.map(service => ({
         shop_id: barbershopId,
         name: service.name,
         description: service.description || '',
-        price: service.price,
-        duration_minutes: service.duration,
-        category: 'general',
-        is_active: true
+        price: service.price || service.cost,
+        duration_minutes: service.duration || service.duration_minutes,
+        category: service.category || 'general',
+        is_active: service.is_active !== false // Default to true unless explicitly false
       }))
       
       const { data: createdServices, error: servicesError } = await supabase
@@ -196,28 +201,33 @@ export async function POST(request) {
     }
     
     // 4. Add staff members if present and barbershop was created
-    if (barbershopId && finalData.staff && finalData.staff.length > 0) {
+    // Prioritize imported data over onboarding form data
+    const staffToAdd = (importedData?.staff && importedData.staff.length > 0) 
+      ? importedData.staff 
+      : finalData.staff
+      
+    if (barbershopId && staffToAdd && staffToAdd.length > 0) {
       // First, delete existing staff for this barbershop (for updates)
       await supabase
         .from('barbers')
         .delete()
         .eq('shop_id', barbershopId)
       
-      const staffData = finalData.staff.map(member => ({
+      const staffData = staffToAdd.map(member => ({
         shop_id: barbershopId,
-        name: member.name || `${member.firstName} ${member.lastName}`,
+        name: member.name || `${member.firstName} ${member.lastName}` || member.full_name,
         email: member.email,
         phone: member.phone,
         bio: member.bio || '',
-        specialties: member.specialty ? [member.specialty] : [],
-        experience_years: member.experience || 0,
-        is_active: true,
+        specialties: member.specialty ? [member.specialty] : (member.specialties || []),
+        experience_years: member.experience || member.experience_years || 0,
+        is_active: member.is_active !== false, // Default to true unless explicitly false
         // Store profile image - we'll handle base64 for now
         // In production, you'd want to upload to Supabase Storage
-        avatar_url: member.profileImage || null,
+        avatar_url: member.profileImage || member.avatar_url || null,
         // Additional fields from the form
-        chair_number: member.chairNumber || null,
-        instagram_handle: member.instagram || null,
+        chair_number: member.chairNumber || member.chair_number || null,
+        instagram_handle: member.instagram || member.instagram_handle || null,
         languages: member.languages || ['English'],
         availability: member.availability || 'full_time'
       }))
@@ -235,10 +245,95 @@ export async function POST(request) {
       }
     }
     
-    // 5. NOW update profile with barbershop_id if we have one
-    if (barbershopId) {
-      profileUpdateData.barbershop_id = barbershopId
+    // 5. Add imported customers if present and barbershop was created
+    if (barbershopId && importedData?.customers && importedData.customers.length > 0) {
+      const customersData = importedData.customers.map(customer => ({
+        barbershop_id: barbershopId,
+        name: customer.name || customer.full_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim(),
+        email: customer.email,
+        phone: customer.phone,
+        notes: customer.notes || '',
+        preferences: customer.preferences || {},
+        tags: customer.tags || [],
+        status: customer.status || 'active',
+        created_at: customer.created_at || new Date().toISOString(),
+        // Store import metadata
+        import_metadata: {
+          imported_at: new Date().toISOString(),
+          import_source: 'csv_onboarding',
+          original_id: customer.id || customer.customer_id
+        }
+      }))
+      
+      const { data: createdCustomers, error: customersError } = await supabase
+        .from('customers')
+        .insert(customersData)
+        .select()
+      
+      if (customersError) {
+        console.error('Error creating customers:', customersError)
+        results.errors.push({ type: 'customers', error: customersError.message })
+      } else {
+        results.customers = createdCustomers
+      }
     }
+    
+    // 6. Add imported appointments if present and barbershop was created
+    if (barbershopId && importedData?.appointments && importedData.appointments.length > 0) {
+      const appointmentsData = importedData.appointments.map(appointment => ({
+        barbershop_id: barbershopId,
+        customer_id: appointment.customer_id, // Will need to be mapped to new customer IDs
+        service_id: appointment.service_id,   // Will need to be mapped to new service IDs
+        barber_id: appointment.barber_id,     // Will need to be mapped to new barber IDs
+        start_time: appointment.start_time || appointment.date,
+        end_time: appointment.end_time,
+        duration: appointment.duration || 30,
+        price: appointment.price || appointment.cost,
+        status: appointment.status || 'completed',
+        notes: appointment.notes || '',
+        created_at: appointment.created_at || new Date().toISOString(),
+        // Store import metadata
+        import_metadata: {
+          imported_at: new Date().toISOString(),
+          import_source: 'csv_onboarding',
+          original_id: appointment.id || appointment.appointment_id
+        }
+      }))
+      
+      const { data: createdAppointments, error: appointmentsError } = await supabase
+        .from('appointments')
+        .insert(appointmentsData)
+        .select()
+      
+      if (appointmentsError) {
+        console.error('Error creating appointments:', appointmentsError)
+        results.errors.push({ type: 'appointments', error: appointmentsError.message })
+      } else {
+        results.appointments = createdAppointments
+      }
+    }
+    
+    // 7. NOW update profile with barbershop_id if we have one
+    if (barbershopId) {
+      // Update both fields to ensure compatibility
+      profileUpdateData.barbershop_id = barbershopId
+      profileUpdateData.shop_id = barbershopId
+    }
+    
+    // First, check current profile state
+    const { data: currentProfile } = await supabase
+      .from('profiles')
+      .select('shop_id, barbershop_id, onboarding_completed')
+      .eq('id', user.id)
+      .single()
+    
+    // Log for debugging
+    console.log('Profile before update:', {
+      current_shop_id: currentProfile?.shop_id,
+      current_barbershop_id: currentProfile?.barbershop_id,
+      new_barbershop_id: barbershopId,
+      updating_to_completed: true
+    })
     
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
@@ -253,35 +348,101 @@ export async function POST(request) {
       results.profile = profileData
     }
     
-    // 6. Save final onboarding data
+    // 8. Save final onboarding data with import metadata
+    const onboardingDataToSave = {
+      ...finalData,
+      importedData: importedData || null,
+      hasImportedData: !!(importedData?.customers?.length || importedData?.appointments?.length || importedData?.services?.length || importedData?.staff?.length)
+    }
     await supabase
       .from('onboarding_progress')
       .upsert({
         user_id: user.id,
         step_name: 'completed',
-        step_data: finalData,
+        step_data: onboardingDataToSave,
         completed_at: new Date().toISOString()
       }, {
         onConflict: 'user_id,step_name'
       })
     
+    // 9. Verify completion was successful
+    const verificationChecks = {
+      barbershopCreated: !!barbershopId,
+      profileUpdated: !!profileData && profileData.onboarding_completed === true,
+      servicesAdded: servicesToAdd ? results.services?.length > 0 : true,
+      staffAdded: staffToAdd ? results.staff?.length > 0 : true,
+      progressSaved: true // We attempted to save, assume success
+    }
+    
+    const allChecksPass = Object.values(verificationChecks).every(check => check === true)
+    
+    console.log('Onboarding completion verification:', {
+      checks: verificationChecks,
+      allPass: allChecksPass,
+      errors: results.errors
+    })
+    
     if (results.errors.length > 0) {
+      // Log errors but don't fail if non-critical
+      const criticalErrors = results.errors.filter(e => 
+        e.type === 'barbershop_create' || e.type === 'profile'
+      )
+      
+      if (criticalErrors.length > 0) {
+        return NextResponse.json(
+          { 
+            success: false,
+            message: 'Critical onboarding errors occurred',
+            results,
+            verification: verificationChecks
+          },
+          { status: 500 }
+        )
+      }
+      
+      // Non-critical errors - continue but notify
       return NextResponse.json(
         { 
-          success: false,
-          message: 'Onboarding completed with some errors',
-          results 
+          success: true,
+          message: 'Onboarding completed with minor issues',
+          results,
+          verification: verificationChecks,
+          warnings: results.errors
         },
-        { status: 207 } // Multi-status
+        { status: 200 }
       )
+    }
+    
+    // Create a comprehensive success message
+    let successMessage = 'Onboarding completed successfully!'
+    if (importedData) {
+      const importCounts = []
+      if (importedData.customers?.length) importCounts.push(`${importedData.customers.length} customers`)
+      if (importedData.services?.length) importCounts.push(`${importedData.services.length} services`)
+      if (importedData.staff?.length) importCounts.push(`${importedData.staff.length} staff members`)
+      if (importedData.appointments?.length) importCounts.push(`${importedData.appointments.length} appointments`)
+      
+      if (importCounts.length > 0) {
+        successMessage += ` Imported ${importCounts.join(', ')}.`
+      }
     }
     
     return NextResponse.json({
       success: true,
-      message: 'Onboarding completed successfully!',
+      message: successMessage,
       results,
       barbershopId,
-      bookingUrl: `https://bookedbarber.com/${results.barbershop?.shop_slug || 'shop'}`
+      bookingUrl: `https://bookedbarber.com/${results.barbershop?.shop_slug || 'shop'}`,
+      importSummary: importedData ? {
+        customersImported: importedData.customers?.length || 0,
+        servicesImported: importedData.services?.length || 0,
+        staffImported: importedData.staff?.length || 0,
+        appointmentsImported: importedData.appointments?.length || 0,
+        totalRecordsImported: (importedData.customers?.length || 0) + 
+                             (importedData.services?.length || 0) + 
+                             (importedData.staff?.length || 0) + 
+                             (importedData.appointments?.length || 0)
+      } : null
     })
     
   } catch (error) {

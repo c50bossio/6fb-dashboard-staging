@@ -5,7 +5,8 @@ import {
   LockClosedIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  ClockIcon
+  ClockIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import {
   Elements,
@@ -24,7 +25,10 @@ const PaymentFormContent = ({
   serviceName, 
   paymentType, 
   onSuccess, 
-  onError 
+  onError,
+  serviceAmount,
+  processingFee,
+  feeModel
 }) => {
   const stripe = useStripe()
   const elements = useElements()
@@ -62,22 +66,73 @@ const PaymentFormContent = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Payment Summary */}
+      {/* Payment Summary with Fee Breakdown */}
       <div className="bg-gray-50 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-medium text-gray-900">{serviceName}</h3>
-            <p className="text-sm text-gray-600">
-              {paymentType === 'deposit' ? 'Deposit Payment' : 
-               paymentType === 'remaining_balance' ? 'Remaining Balance' : 'Full Payment'}
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-gray-900">
-              ${(amount / 100).toFixed(2)}
+        <div className="space-y-3">
+          {/* Service Amount */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-medium text-gray-900">{serviceName}</h3>
+              <p className="text-sm text-gray-600">
+                {paymentType === 'deposit' ? 'Deposit Payment' : 
+                 paymentType === 'remaining_balance' ? 'Remaining Balance' : 'Service'}
+              </p>
             </div>
-            <div className="text-sm text-gray-600">USD</div>
+            <div className="text-right">
+              <div className="text-lg font-medium text-gray-900">
+                ${((serviceAmount || amount) / 100).toFixed(2)}
+              </div>
+            </div>
           </div>
+
+          {/* Processing Fee if customer pays */}
+          {feeModel === 'customer_pays' && processingFee > 0 && (
+            <>
+              <div className="border-t border-gray-200 pt-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-1">
+                    <span className="text-sm text-gray-600">Processing Fee</span>
+                    <div className="group relative">
+                      <InformationCircleIcon className="h-4 w-4 text-gray-400 cursor-help" />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <div className="max-w-xs">
+                          This fee covers payment processing costs (2.9% + $0.30).
+                          The barbershop receives 100% of the service amount.
+                        </div>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
+                          <div className="border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    +${(processingFee / 100).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="border-t border-gray-300 pt-3">
+                <div className="flex items-center justify-between">
+                  <div className="font-medium text-gray-900">Total Amount</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    ${(amount / 100).toFixed(2)}
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 text-right mt-1">USD</div>
+              </div>
+            </>
+          )}
+
+          {/* Just show total if barbershop absorbs fee */}
+          {feeModel !== 'customer_pays' && (
+            <div className="text-right">
+              <div className="text-2xl font-bold text-gray-900">
+                ${(amount / 100).toFixed(2)}
+              </div>
+              <div className="text-sm text-gray-600">USD</div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -158,7 +213,10 @@ export default function PaymentForm({
   serviceName, 
   paymentType = 'full_payment',
   onSuccess,
-  onError 
+  onError,
+  serviceAmount,
+  processingFee,
+  feeModel
 }) {
   const [mounted, setMounted] = useState(false)
 
@@ -201,6 +259,9 @@ export default function PaymentForm({
         paymentType={paymentType}
         onSuccess={onSuccess}
         onError={onError}
+        serviceAmount={serviceAmount}
+        processingFee={processingFee}
+        feeModel={feeModel}
       />
     </Elements>
   )

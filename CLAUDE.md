@@ -6,12 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **📖 For essential development info**: See [`CLAUDE-CORE.md`](./CLAUDE-CORE.md)  
 **⚡ For development workflows**: See [`CLAUDE-WORKFLOWS.md`](./CLAUDE-WORKFLOWS.md)  
-**🔧 For detailed commands & troubleshooting**: See [`CLAUDE-REFERENCE.md`](./CLAUDE-REFERENCE.md)  
-**📚 For complete documentation index**: See [`docs/INDEX.md`](./docs/INDEX.md)
+**🔧 For detailed commands & troubleshooting**: See [`CLAUDE-REFERENCE.md`](./CLAUDE-REFERENCE.md)
 
 ## Context Window Optimized Summary
 
-**Enterprise barbershop platform**: Next.js 14 (port 9999) + FastAPI (port 8001) + Supabase PostgreSQL with AI-powered agents and real-time features. Production-ready with comprehensive onboarding system, multi-location support, and public booking flows.
+**Enterprise barbershop platform**: Next.js 14 (port 9999) + FastAPI (port 8001) + Supabase PostgreSQL with AI-powered agents, comprehensive onboarding system, and real-time booking features.
+
+**Current Branch**: main (with active modifications)  
+**Production URL**: bookedbarber.com  
+**Development**: localhost:9999 (Next.js), localhost:8001 (Backend)
+
+**Current Server Status** (as of latest startup):
+- ✅ **Next.js Frontend**: Running on localhost:9999 (Ready in ~1200ms)
+- ✅ **Backend**: Simple fallback server on localhost:8001 (FastAPI has dependency conflicts)  
+- ✅ **Redis Cache**: Running on localhost:6379 (AI cost optimization)
+- ⚠️ **FastAPI Full**: Not running (Supabase client TypeError - proxy parameter conflict)
 
 ### Core Rules
 1. **NO MOCK DATA** - Always use real Supabase database
@@ -24,12 +33,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 # Quick Start
 ./docker-dev-start.sh        # Start everything (Redis, FastAPI, Next.js)
-npm run claude:health        # Test all connections before starting work
+npm run claude:health        # Test all connections before starting work (basic placeholder)
 npm run dev                  # Next.js (port 9999)
 python fastapi_backend.py    # FastAPI (port 8001)
 npm run dev:full            # Run both frontend and backend concurrently
 npm run dev:backend         # FastAPI backend only
 npm run dev:docker          # Start via Docker
+python simple_backend.py    # Fallback backend (when FastAPI has dependency issues)
 
 # Before Committing (MANDATORY)
 npm run lint                # Check code quality
@@ -88,9 +98,15 @@ contexts/GlobalDashboardContext.js  # Multi-location dashboard state management
 components/SupabaseAuthProvider.js  # Authentication context provider
 
 # API Structure
-app/api/                      # Next.js API routes
-app/api/public/              # Public API endpoints (no auth required)
-app/api/suggestions/         # Smart suggestions API endpoints
+app/api/                      # Next.js API routes (100+ endpoints)
+app/api/v1/                  # Versioned API endpoints (auth, settings, notifications, billing)
+app/api/auth/                # Authentication endpoints (login, OAuth callbacks)
+app/api/calendar/            # Calendar integration (Google, Outlook sync)
+app/api/bookings/            # Booking management and AI sync
+app/api/payments/            # Stripe payment processing and Connect
+app/api/cin7/                # Cin7 inventory integration
+app/api/shop/                # Shop management (customers, barbers, revenue)
+app/api/admin/               # Admin endpoints (subscriptions, knowledge base)
 routers/                     # FastAPI feature modules (ai.py, auth.py, dashboard.py)
 
 # Onboarding & User Experience
@@ -220,11 +236,22 @@ PUSHER_CLUSTER=us2
 pip install -r requirements.txt
 
 # Start FastAPI backend separately
-python fastapi_backend.py    # Runs on port 8001
+python fastapi_backend.py    # Runs on port 8001 (full AI features)
 
 # Or use simple backend for basic operations
-python simple_backend.py      # Fallback HTTP server
+python simple_backend.py      # Fallback HTTP server (when dependencies fail)
 ```
+
+### Backend Fallback Architecture
+The system includes a **dual backend strategy** for reliability:
+
+1. **Primary**: `fastapi_backend.py` - Full-featured with AI routers, Supabase integration, memory management
+2. **Fallback**: `simple_backend.py` - Basic HTTP server when dependencies conflict or memory issues occur
+
+**When to use fallback**:
+- Supabase client dependency conflicts (TypeError with proxy parameter)  
+- Memory pressure in production (OAuth callback loops)
+- Rapid development when full AI features aren't needed
 
 ## 🧪 Testing Architecture
 
@@ -269,10 +296,15 @@ bash scripts/run-e2e-tests.sh --critical-only  # Critical path only
 bash scripts/run-e2e-tests.sh --full          # Complete test suite
 bash scripts/run-e2e-tests.sh --suites booking # Specific test suites
 
-# Test automation for onboarding enhancements
+# Test automation for onboarding enhancements  
 npm test -- tests/onboarding-enhancement-system.spec.js
 npm test -- tests/adaptive-flow-engine.spec.js
 npm test -- tests/onboarding-test-orchestrator.spec.js
+
+# Additional testing commands from package.json
+npm run claude:health          # Health check for all services
+npm run claude:setup           # Install deps + Playwright
+npm run claude:test-setup      # Health check + smoke tests
 ```
 
 ## 🔒 SECURITY PHILOSOPHY - CRITICAL (READ THIS FIRST!)
@@ -631,29 +663,51 @@ EXCEPTION
 END;
 $$;
 
-## 🔄 Current Development Context
+## 🔄 Current Development Context (January 2025)
 
-### Active Work Areas (Based on Git Status)
-- **Everboarding System**: Progressive feature discovery and contextual guidance beyond initial onboarding (`components/onboarding/EverboardingSystem.js`)
-- **Adaptive Flow Engine**: AI-powered onboarding adaptation (`components/onboarding/AdaptiveFlowEngine.js`)
-- **Smart Suggestions API**: Contextual recommendations during setup (`services/SmartSuggestionsAPI.js`)
-- **Global Dashboard Context**: Multi-location dashboard with view modes (consolidated/comparison/individual)
-- **Customer Portal Settings**: Self-service customer management features  
-- **Progressive Account Creation**: Streamlined onboarding during booking flow
-- **Public API Endpoints**: Authentication-free booking APIs at `/api/public/*`
-- **Modal Component Library**: Centralized modal system in `components/modals/`
+### Recently Completed Features
+- ✅ **Complete Onboarding System**: EverboardingSystem + AdaptiveFlowEngine + ContextualGuidance
+- ✅ **Data Import Infrastructure**: Post-onboarding import via DataImportWidget
+- ✅ **Smart Suggestions API**: AI-powered contextual recommendations
 
-### Recent Patterns to Follow
+### Active Development (git status snapshot)
+**Modified Core Files:**
+- `components/dashboard/UnifiedDashboard.js` - Dashboard enhancements
+- `components/onboarding/AdaptiveFlowEngine.js` - Onboarding flow improvements  
+- `contexts/GlobalDashboardContext.js` - Multi-location state management
+- `app/(protected)/barber/clients/page.js` - Client management updates
+
+**New Untracked Features:**
+- `app/(protected)/dashboard/import/` - Data import page
+- `components/dashboard/DataImportWidget.js` - Post-onboarding import widget
+- `components/onboarding/EverboardingProvider.js` - Progressive feature discovery
+- `lib/integrations/` - New integration libraries
+- Multiple database cleanup scripts for production data management
+
+### Key Onboarding System Components
 ```javascript
-// Everboarding Pattern - progressive feature discovery
+// Everboarding - Progressive feature discovery post-onboarding
 import EverboardingSystem from '@/components/onboarding/EverboardingSystem'
 import { EverboardingProvider } from '@/components/onboarding/EverboardingProvider'
 
+// Adaptive Flow - AI-powered dynamic onboarding steps
+import { AdaptiveFlowEngine } from '@/components/onboarding/AdaptiveFlowEngine'
+
+// Contextual Guidance - Smart help and tooltips
+import ContextualTooltip from '@/components/onboarding/ContextualTooltip'
+import ContextualGuidanceProvider from '@/components/onboarding/ContextualGuidanceProvider'
+
+// Live Preview - Real-time booking preview during setup
+import LiveBookingPreview from '@/components/onboarding/LiveBookingPreview'
+
+// Data Import - Post-onboarding data import widget
+import DataImportWidget from '@/components/dashboard/DataImportWidget'
+```
+
+### Production-Ready Development Patterns
+```javascript
 // Smart Suggestions Pattern - AI-powered recommendations
 import { SmartSuggestionsAPI } from '@/services/SmartSuggestionsAPI'
-
-// Adaptive Flow Pattern - contextual onboarding steps
-import { AdaptiveFlowEngine } from '@/components/onboarding/AdaptiveFlowEngine'
 
 // Global Context Pattern - use for multi-location features
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
@@ -687,7 +741,7 @@ const profilesData = await supabase
 
 ### Critical Troubleshooting Knowledge
 ```javascript
-// Common Issues & Solutions (from recent troubleshooting):
+// Common Issues & Solutions:
 
 // 1. Database Query Errors (400 Bad Request)
 // Cause: RLS policies preventing unauthenticated queries
@@ -703,17 +757,18 @@ const profilesData = await supabase
 
 // 4. Site Loading Issues (404 errors)
 // Cause: Port conflicts or compilation errors
-// Solution: Kill processes, restart dev server
+// Solution: Kill processes on port 9999, restart dev server
+lsof -ti:9999 | xargs kill -9
+npm run dev
 
-// 5. Loyalty Points API 404 Errors (Current Development Issue)
-// Observed: GET /api/customers/loyalty/points endpoints returning 404
-// Cause: Loyalty system implementation in progress
-// Solution: Check loyalty API endpoints and database tables
+// 5. Memory Issues with OAuth Callbacks
+// Cause: Unbounded session storage in FastAPI
+// Solution: Use memory_manager.py for OAuth operations
 
-// 6. Performance Warnings ("Long task detected")
-// Observed: Tasks >50ms being flagged in development
-// Context: Executive dashboard mode experiencing performance bottlenecks
-// Solution: Review component optimization and data fetching patterns
+// 6. Data Import After Onboarding
+// Location: Post-onboarding via DataImportWidget on dashboard
+// Pattern: Complete onboarding first, then import existing data
+// Files: components/dashboard/DataImportWidget.js
 ```
 
 ## 📝 Common Development Tasks
@@ -724,7 +779,16 @@ const profilesData = await supabase
 3. Add router to `routers/` and register in `fastapi_backend.py`
 4. Create UI in `components/` using existing `components/ui/` base components
 5. If multi-location: integrate with `GlobalDashboardContext`
-6. Test with `npm run test:all` before committing
+6. If onboarding-related: follow completed onboarding component patterns
+7. Create database migration in `database/migrations/` if schema changes needed
+8. Test with `npm run test:all` before committing
+
+### Working with the Onboarding System
+1. Onboarding flow is complete with AdaptiveFlowEngine for dynamic steps
+2. EverboardingSystem handles progressive feature discovery post-onboarding
+3. Data import is now a post-onboarding activity via DataImportWidget
+4. Use ContextualGuidanceProvider for smart help throughout the flow
+5. Test with scripts in `scripts/verify-onboarding-complete.js`
 
 ### Debugging Production Issues
 1. Check memory_manager.py logs for OAuth issues
@@ -812,47 +876,53 @@ node scripts/diagnose-and-fix-rate-limits.js # Rate limit debugging
 npm run check:production-readiness         # Full production check
 ```
 
-## 🚨 MANDATORY: VERIFY BEFORE ASSESS Protocol
+## 🚨 CRITICAL KNOWN ISSUES & SOLUTIONS
 
-**CRITICAL**: This system has comprehensive production-ready integrations. Before making ANY claims about missing functionality, you MUST verify through code examination.
+### Common Runtime Errors
+1. **"Maximum update depth exceeded"** → Missing useEffect dependencies
+   - Solution: Include ALL variables used in the effect
+2. **400 Bad Request on DB queries** → RLS policies blocking unauthenticated access
+   - Solution: Use development fallbacks in SupabaseAuthProvider.js
+3. **PostgREST foreign key syntax fails** → Complex joins not supported
+   - Solution: Use separate queries and merge in JavaScript
+4. **Port 9999 blocked** → Previous process still running
+   - Solution: `lsof -ti:9999 | xargs kill -9`
+5. **OAuth memory issues** → Unbounded session storage
+   - Solution: Use memory_manager.py for all OAuth operations
+6. **FastAPI Supabase client TypeError** → Proxy parameter conflict in dependencies
+   - Solution: Use `python simple_backend.py` as fallback backend
+   - Error: `Client.__init__() got an unexpected keyword argument 'proxy'`
 
-### Anti-Assumption Framework
+## 🚨 VERIFY BEFORE ASSESS Protocol
 
-**❌ NEVER claim integration issues without evidence**  
-**✅ ALWAYS examine actual implementation files**  
-**📋 USE**: [`VERIFICATION_CHECKLIST.md`](./VERIFICATION_CHECKLIST.md) for systematic verification
+**CRITICAL**: Before claiming any missing functionality, verify through code examination.
 
 ### Quick Verification Commands
 ```bash
-# Payment Integration (Stripe Connect with commission handling)
-grep -r "createPaymentIntent\|payment_intent" . --include="*.js"
-ls app/api/payments/
+# Check for specific integrations
+grep -r "stripe" . --include="*.js" --include="*.py"
+grep -r "sendgrid\|twilio" services/ --include="*.js"
+ls -la app/api/payments/
+ls -la services/*service*
 
-# Email Service (SendGrid with white-label campaigns)  
-ls services/sendgrid*
-grep -r "sendgrid" services/ --include="*.js"
+# Check onboarding components
+ls -la components/onboarding/
+grep -r "EverboardingSystem\|AdaptiveFlowEngine" components/
 
-# SMS Service (Twilio with TCPA compliance)
-ls services/twilio*
-grep -r "twilio\|sms" services/ --include="*.js"
+# Verify database migrations
+ls -la database/migrations/
+cat database/migrations/004_data_import_schema.sql | head -20
 
-# Domain & Deployment (Vercel production config)
-cat vercel.json | grep -A5 -B5 "bookedbarber"
+# Test service health
+npm run claude:health
+python -c "import fastapi_backend; print('FastAPI OK')"
 ```
 
-### Mandatory Evidence Documentation
-Before any production readiness assessment, document:
-1. **Files Examined**: List actual files you checked
-2. **Search Commands**: Show grep/find commands used
-3. **Evidence Found**: Summarize implementation details
-4. **Conclusion**: Based on verified evidence only
-
-### Learning From Past Errors
-- **Payment integration** was incorrectly assessed as "not integrated" without examining `app/api/payments/create-intent/route.js` (195+ lines of Stripe Connect)
-- **Email service** was questioned without checking `services/sendgrid-service.js` (540+ lines of production email handling)
-- **SMS service** was missed without reviewing `services/twilio-service.js` (870+ lines with TCPA compliance)
-
-**Remember**: This barbershop platform is production-ready. Verify before you assess.
+### Before Reporting Issues
+1. **Check existing code** - Use grep/find to verify implementation
+2. **Review git status** - Understand what's actively being modified
+3. **Test locally** - Run `npm run claude:health` to verify services
+4. **Document findings** - Include file paths and line numbers
 
 ---
 **Production system**: Test all changes, no shortcuts, real data only.

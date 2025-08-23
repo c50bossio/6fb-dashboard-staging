@@ -3,209 +3,101 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import {
   CreditCardIcon,
-  BanknotesIcon,
-  ShieldCheckIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
   ArrowPathIcon,
-  BuildingLibraryIcon,
-  CalendarIcon,
-  CurrencyDollarIcon
+  SparklesIcon,
+  BoltIcon
 } from '@heroicons/react/24/outline'
 
 export default function PaymentSetupPage() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const supabase = createClient()
+  const router = useRouter()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [notification, setNotification] = useState(null)
-  
-  // Payment Methods State
-  const [paymentMethods, setPaymentMethods] = useState([])
-  const [methodsFormData, setMethodsFormData] = useState({
-    accept_cash: true,
-    accept_card: true,
-    accept_digital: false,
-    accept_checks: false,
-    require_deposit: false,
-    deposit_percentage: 25,
-    cancellation_fee: 0,
-    no_show_fee: 50
-  })
-  
-  // Stripe Processing State
+  const [stripeConnected, setStripeConnected] = useState(false)
   const [stripeAccountId, setStripeAccountId] = useState(null)
-  const [accountStatus, setAccountStatus] = useState({
-    onboardingCompleted: false,
-    chargesEnabled: false,
-    payoutsEnabled: false,
-    requirementsCount: 0,
-    verificationStatus: 'pending'
-  })
-  const [bankAccounts, setBankAccounts] = useState([])
-  const [payoutSettings, setPayoutSettings] = useState({
-    schedule: 'daily',
-    delay_days: 2
-  })
+  const [customerPaysProcessingFee, setCustomerPaysProcessingFee] = useState(true) // Default ON
+  const [barbershopId, setBarbershopId] = useState(null)
+  const [setupComplete, setSetupComplete] = useState(false)
 
   useEffect(() => {
-    loadAllPaymentData()
+    // Only check setup once we have user data
+    if (user) {
+      checkExistingSetup()
+    } else {
+      // If no user yet, keep loading
+      setLoading(true)
+    }
+    
+    // Fallback: clear loading after 5 seconds even if auth is problematic
+    const timeoutId = setTimeout(() => {
+      setLoading(false)
+    }, 5000)
+    
+    return () => clearTimeout(timeoutId)
   }, [user])
 
-  const loadAllPaymentData = async () => {
-    if (!user) return
+  const checkExistingSetup = async () => {
+    if (!user) {
+      setLoading(false)
+      return
+    }
     
     try {
       setLoading(true)
       
-      // Load payment methods
-      await loadPaymentMethods()
+      // Check if barbershop exists and get fee settings
+      const { data: barbershopData, error: barbershopError } = await supabase
+        .from('barbershops')
+        .select('id, customer_pays_processing_fee')
+        .eq('owner_id', user.id)
+        .single()
       
-      // Load Stripe Connect data
-      await loadStripeConnectData()
+      if (barbershopError && barbershopError.code !== 'PGRST116') {
+        // PGRST116 is "no rows found" which is okay
+        console.warn('Barbershop query error:', barbershopError)
+      }
+      
+      if (barbershopData) {
+        setBarbershopId(barbershopData.id)
+        setCustomerPaysProcessingFee(barbershopData.customer_pays_processing_fee ?? true)
+      }
+      
+      // Check if Stripe is already connected
+      const { data: connectData, error: connectError } = await supabase
+        .from('stripe_connected_accounts')
+        .select('stripe_account_id, onboarding_completed')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (connectError && connectError.code !== 'PGRST116') {
+        console.warn('Stripe account query error:', connectError)
+      }
+      
+      if (connectData?.onboarding_completed) {
+        setStripeConnected(true)
+        setStripeAccountId(connectData.stripe_account_id)
+        setSetupComplete(true)
+      }
       
     } catch (error) {
-      console.error('Error loading payment data:', error)
-      setNotification({
-        type: 'error',
-        message: 'Failed to load payment data'
-      })
+      console.error('Error checking setup:', error)
     } finally {
+      // Always clear loading state
       setLoading(false)
     }
   }
 
-  const loadPaymentMethods = async () => {
-    const { data: methods, error } = await supabase
-      .from('business_payment_methods')
-      .select('*')
-      .eq('user_id', user.id)
-    
-    if (error && error.code !== 'PGRST116') {
-      throw error
-    }
-    
-    if (methods && methods.length > 0) {
-      setPaymentMethods(methods)
-      
-      const methodTypes = methods.map(m => m.method_type)
-      setMethodsFormData({
-        accept_cash: methodTypes.includes('cash'),
-        accept_card: methodTypes.includes('card'),
-        accept_digital: methodTypes.includes('digital'),
-        accept_checks: methodTypes.includes('check'),
-        require_deposit: methods.some(m => m.require_deposit),
-        deposit_percentage: methods.find(m => m.deposit_percentage)?.deposit_percentage || 25,
-        cancellation_fee: methods.find(m => m.cancellation_fee)?.cancellation_fee || 0,
-        no_show_fee: methods.find(m => m.no_show_fee)?.no_show_fee || 50
-      })
-    }
-  }
-
-  const loadStripeConnectData = async () => {
-    const { data: connectData } = await supabase
-      .from('stripe_connected_accounts')
-      .select('*')
-      .eq('user_id', user.id)
-      .single()
-    
-    if (connectData) {
-      setStripeAccountId(connectData.stripe_account_id)
-      setAccountStatus({
-        onboardingCompleted: connectData.onboarding_completed,
-        chargesEnabled: connectData.charges_enabled,
-        payoutsEnabled: connectData.payouts_enabled,
-        requirementsCount: connectData.requirements?.currently_due?.length || 0,
-        verificationStatus: connectData.verification_status
-      })
-    }
-  }
-
-  const handleSavePaymentMethods = async (e) => {
-    e.preventDefault()
+  const handleStripeConnect = async () => {
     setSaving(true)
     
     try {
-      // Clear existing methods
-      await supabase
-        .from('business_payment_methods')
-        .delete()
-        .eq('user_id', user.id)
-      
-      // Insert new methods
-      const methodsToInsert = []
-      
-      if (methodsFormData.accept_cash) {
-        methodsToInsert.push({
-          user_id: user.id,
-          method_type: 'cash',
-          enabled: true,
-          require_deposit: methodsFormData.require_deposit,
-          deposit_percentage: methodsFormData.deposit_percentage,
-          cancellation_fee: methodsFormData.cancellation_fee,
-          no_show_fee: methodsFormData.no_show_fee
-        })
-      }
-      
-      if (methodsFormData.accept_card) {
-        methodsToInsert.push({
-          user_id: user.id,
-          method_type: 'card',
-          enabled: true,
-          require_deposit: methodsFormData.require_deposit,
-          deposit_percentage: methodsFormData.deposit_percentage
-        })
-      }
-      
-      if (methodsFormData.accept_digital) {
-        methodsToInsert.push({
-          user_id: user.id,
-          method_type: 'digital',
-          enabled: true,
-          require_deposit: methodsFormData.require_deposit
-        })
-      }
-      
-      if (methodsFormData.accept_checks) {
-        methodsToInsert.push({
-          user_id: user.id,
-          method_type: 'check',
-          enabled: true
-        })
-      }
-      
-      if (methodsToInsert.length > 0) {
-        const { error } = await supabase
-          .from('business_payment_methods')
-          .insert(methodsToInsert)
-        
-        if (error) throw error
-      }
-      
-      setNotification({
-        type: 'success',
-        message: 'Payment methods updated successfully'
-      })
-      
-      await loadPaymentMethods()
-    } catch (error) {
-      console.error('Error saving payment methods:', error)
-      setNotification({
-        type: 'error',
-        message: 'Failed to save payment methods'
-      })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const createStripeConnectAccount = async () => {
-    setSaving(true)
-    
-    try {
+      // Create or get existing Stripe Connect account
       const response = await fetch('/api/payments/connect/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -217,349 +109,314 @@ export default function PaymentSetupPage() {
         })
       })
       
-      if (!response.ok) throw new Error('Failed to create account')
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to create Stripe account')
+      }
       
       const data = await response.json()
-      setStripeAccountId(data.account_id)
       
-      await startStripeOnboarding(data.account_id)
+      // Generate onboarding link
+      const onboardingResponse = await fetch('/api/payments/connect/onboarding-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          account_id: data.account_id,
+          refresh_url: `${window.location.origin}/shop/settings/payment-setup`,
+          return_url: `${window.location.origin}/shop/settings/payment-setup?stripe_connected=true`
+        })
+      })
+      
+      if (!onboardingResponse.ok) {
+        throw new Error('Failed to generate onboarding link')
+      }
+      
+      const onboardingData = await onboardingResponse.json()
+      
+      // Redirect to Stripe onboarding
+      window.location.href = onboardingData.url
       
     } catch (err) {
-      setNotification({
-        type: 'error',
-        message: err.message
-      })
+      console.error('Stripe connect error:', err)
+      alert('Failed to connect Stripe. Please try again.')
     } finally {
       setSaving(false)
     }
   }
 
-  const startStripeOnboarding = async (accountId = stripeAccountId) => {
-    if (!accountId) return
+  const handleToggleFees = async (newValue) => {
+    if (!barbershopId) return
+    
+    setSaving(true)
     
     try {
-      const response = await fetch('/api/payments/connect/onboarding-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          account_id: accountId,
-          refresh_url: `${window.location.origin}/shop/settings/payment-setup`,
-          return_url: `${window.location.origin}/shop/settings/payment-setup?success=true`
-        })
-      })
+      const { error } = await supabase
+        .from('barbershops')
+        .update({ customer_pays_processing_fee: newValue })
+        .eq('id', barbershopId)
       
-      if (!response.ok) throw new Error('Failed to generate onboarding link')
+      if (error) throw error
       
-      const data = await response.json()
-      window.open(data.url, '_blank')
-      
-      setNotification({
-        type: 'success',
-        message: 'Complete the setup in the new tab. This page will update automatically.'
-      })
-      
-    } catch (err) {
-      setNotification({
-        type: 'error',
-        message: err.message
-      })
+      setCustomerPaysProcessingFee(newValue)
+    } catch (error) {
+      console.error('Error updating fee setting:', error)
+      alert('Failed to update fee setting')
+    } finally {
+      setSaving(false)
     }
   }
 
+  const handleComplete = async () => {
+    // Check if we came from onboarding
+    const fromOnboarding = new URLSearchParams(window.location.search).get('from_onboarding') === 'true'
+    
+    if (fromOnboarding) {
+      // Clear onboarding session storage
+      sessionStorage.removeItem('onboarding_payment_flow')
+      sessionStorage.removeItem('onboarding_return_step')
+      
+      // Update profile to mark payment setup complete
+      try {
+        await supabase
+          .from('profiles')
+          .update({
+            payment_setup_completed: true,
+            onboarding_completed: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id)
+      } catch (error) {
+        console.warn('Failed to update profile:', error)
+      }
+    }
+    
+    // Mark payment setup as complete and redirect to dashboard
+    router.push('/dashboard?payment_setup_complete=true')
+  }
+
+  // Check for Stripe connection success from URL params
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('stripe_connected') === 'true') {
+      setStripeConnected(true)
+      setSetupComplete(true)
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [])
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <ArrowPathIcon className="h-8 w-8 animate-spin text-olive-600" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <ArrowPathIcon className="h-8 w-8 animate-spin text-olive-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading payment setup...</p>
+          <p className="text-sm text-gray-500 mt-2">This may take a few seconds</p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Payment Setup</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Configure how customers can pay and set up your payment processing
-        </p>
-      </div>
-
-      {notification && (
-        <div className={`mb-6 p-4 rounded-lg flex items-start ${
-          notification.type === 'success' ? 'bg-green-50' : 'bg-red-50'
-        }`}>
-          {notification.type === 'success' ? (
-            <CheckCircleIcon className="h-5 w-5 text-green-400 mt-0.5 mr-2" />
-          ) : (
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mt-0.5 mr-2" />
-          )}
-          <span className={`text-sm ${
-            notification.type === 'success' ? 'text-green-800' : 'text-red-800'
-          }`}>
-            {notification.message}
-          </span>
-        </div>
-      )}
-
-      <div className="space-y-8">
-        {/* Section 1: Payment Methods */}
-        <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
-          <div className="px-4 py-6 sm:p-8">
-            <div className="flex items-center mb-6">
-              <CreditCardIcon className="h-6 w-6 text-gray-400 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-900">Customer Payment Methods</h2>
-            </div>
-            
-            <form onSubmit={handleSavePaymentMethods} className="space-y-6">
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600 mb-4">
-                  Select which payment methods you accept from customers
-                </p>
-                
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={methodsFormData.accept_cash}
-                    onChange={(e) => setMethodsFormData({...methodsFormData, accept_cash: e.target.checked})}
-                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
-                  />
-                  <BanknotesIcon className="h-5 w-5 text-gray-500 ml-3 mr-2" />
-                  <span className="text-sm text-gray-700">Cash payments</span>
-                </label>
-
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={methodsFormData.accept_card}
-                    onChange={(e) => setMethodsFormData({...methodsFormData, accept_card: e.target.checked})}
-                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
-                  />
-                  <CreditCardIcon className="h-5 w-5 text-gray-500 ml-3 mr-2" />
-                  <span className="text-sm text-gray-700">Credit/Debit cards (requires Stripe setup below)</span>
-                </label>
-
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={methodsFormData.accept_digital}
-                    onChange={(e) => setMethodsFormData({...methodsFormData, accept_digital: e.target.checked})}
-                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-8 text-sm text-gray-700">Digital payments (Venmo, PayPal, etc.)</span>
-                </label>
-
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={methodsFormData.accept_checks}
-                    onChange={(e) => setMethodsFormData({...methodsFormData, accept_checks: e.target.checked})}
-                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-8 text-sm text-gray-700">Personal checks</span>
-                </label>
-              </div>
-
-              {/* Deposit & Fees */}
-              <div className="border-t pt-6">
-                <h3 className="text-md font-medium text-gray-900 mb-4">Deposit & Fees</h3>
-                
-                <div className="space-y-4">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={methodsFormData.require_deposit}
-                      onChange={(e) => setMethodsFormData({...methodsFormData, require_deposit: e.target.checked})}
-                      className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">Require deposit for bookings</span>
-                  </label>
-
-                  {methodsFormData.require_deposit && (
-                    <div className="ml-6">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Deposit Percentage (%)
-                      </label>
-                      <input
-                        type="number"
-                        value={methodsFormData.deposit_percentage}
-                        onChange={(e) => setMethodsFormData({...methodsFormData, deposit_percentage: parseInt(e.target.value)})}
-                        className="mt-1 block w-24 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                        min="0"
-                        max="100"
-                      />
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Cancellation Fee (%)
-                      </label>
-                      <input
-                        type="number"
-                        value={methodsFormData.cancellation_fee}
-                        onChange={(e) => setMethodsFormData({...methodsFormData, cancellation_fee: parseInt(e.target.value)})}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                        min="0"
-                        max="100"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        No-Show Fee (%)
-                      </label>
-                      <input
-                        type="number"
-                        value={methodsFormData.no_show_fee}
-                        onChange={(e) => setMethodsFormData({...methodsFormData, no_show_fee: parseInt(e.target.value)})}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                        min="0"
-                        max="100"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                    saving
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-olive-600 hover:bg-olive-700'
-                  }`}
-                >
-                  {saving ? 'Saving...' : 'Save Payment Methods'}
-                </button>
-              </div>
-            </form>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-olive-100 rounded-full mb-4">
+            <CreditCardIcon className="w-10 h-10 text-olive-600" />
           </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {setupComplete ? 'Payment Setup Complete!' : 'Quick Payment Setup'}
+          </h1>
+          <p className="text-gray-600">
+            {setupComplete 
+              ? 'You can now accept online payments from customers'
+              : 'Get ready to accept payments in just 2 minutes'
+            }
+          </p>
         </div>
 
-        {/* Section 2: Stripe Processing */}
-        <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
-          <div className="px-4 py-6 sm:p-8">
-            <div className="flex items-center mb-6">
-              <ShieldCheckIcon className="h-6 w-6 text-gray-400 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-900">Card Payment Processing</h2>
-            </div>
-            
-            {!stripeAccountId ? (
-              <div className="text-center py-8">
-                <ShieldCheckIcon className="h-16 w-16 text-olive-600 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Accept Credit Card Payments
-                </h3>
-                <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  Set up Stripe to accept credit card payments online. 
-                  You only pay Stripe's standard 2.9% + $0.30 per transaction.
-                </p>
-                
-                <button
-                  onClick={createStripeConnectAccount}
-                  disabled={saving}
-                  className="inline-flex items-center px-6 py-3 bg-olive-600 hover:bg-olive-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
-                >
-                  {saving ? (
-                    <>
-                      <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" />
-                      Setting up...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCardIcon className="h-5 w-5 mr-2" />
-                      Set Up Card Processing
-                    </>
-                  )}
-                </button>
-              </div>
-            ) : !accountStatus.onboardingCompleted ? (
-              <div className="border-2 border-yellow-200 bg-yellow-50 rounded-lg p-6">
-                <div className="flex items-start">
-                  <ExclamationTriangleIcon className="h-6 w-6 text-yellow-500 mr-3 flex-shrink-0 mt-0.5" />
+        {!setupComplete ? (
+          <div className="space-y-6">
+            {/* Step 1: Connect Stripe */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                    stripeConnected ? 'bg-green-100' : 'bg-olive-100'
+                  }`}>
+                    {stripeConnected ? (
+                      <CheckCircleIcon className="w-6 h-6 text-green-600" />
+                    ) : (
+                      <span className="text-olive-600 font-semibold">1</span>
+                    )}
+                  </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      Complete Your Payment Setup
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Connect Your Bank Account
                     </h3>
-                    <p className="text-sm text-gray-700 mb-4">
-                      Your Stripe account needs additional information before you can accept payments.
+                    <p className="text-gray-600 mb-4">
+                      Securely connect with Stripe to accept credit cards and get paid next day.
                     </p>
-                    <button
-                      onClick={() => startStripeOnboarding()}
-                      disabled={saving}
-                      className="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium"
-                    >
-                      Continue Setup
-                    </button>
+                    
+                    {!stripeConnected && (
+                      <button
+                        onClick={handleStripeConnect}
+                        disabled={saving}
+                        className="inline-flex items-center px-6 py-3 bg-[#635BFF] hover:bg-[#5147E5] disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+                      >
+                        {saving ? (
+                          <>
+                            <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" />
+                            Connecting...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/>
+                            </svg>
+                            Connect with Stripe
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Processing Status */}
-                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                  <div className="flex items-center">
-                    <CheckCircleIcon className="h-6 w-6 text-green-600 mr-2" />
-                    <div>
-                      <h3 className="font-medium text-green-900">Card Processing Active</h3>
-                      <p className="text-sm text-green-700">Ready to accept credit card payments</p>
-                    </div>
-                  </div>
-                  <div className="text-sm text-green-800">
-                    Processing Fee: 2.9% + $0.30
-                  </div>
-                </div>
+            </div>
 
-                {/* Processing Details */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Charges</span>
-                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+            {/* Step 2: Processing Fee (Only show after Stripe is connected) */}
+            {stripeConnected && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-olive-100 flex items-center justify-center">
+                      <span className="text-olive-600 font-semibold">2</span>
                     </div>
-                    <p className="font-medium text-gray-900">Enabled</p>
-                  </div>
-                  
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Payouts</span>
-                      <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Who Pays Processing Fees?
+                      </h3>
+                      
+                      <div className="space-y-4">
+                        {/* Toggle Option */}
+                        <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                          <input
+                            type="checkbox"
+                            checked={customerPaysProcessingFee}
+                            onChange={(e) => handleToggleFees(e.target.checked)}
+                            className="mt-1 h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              Pass processing fee to customers
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              Customers pay an additional 2.9% + $0.30 per transaction
+                            </div>
+                          </div>
+                        </label>
+
+                        {/* Visual Example */}
+                        <div className={`p-4 rounded-lg ${
+                          customerPaysProcessingFee ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'
+                        }`}>
+                          <div className="text-sm space-y-1">
+                            <div className="font-medium text-gray-900">
+                              Example: $50 haircut
+                            </div>
+                            {customerPaysProcessingFee ? (
+                              <>
+                                <div className="text-gray-600">Customer pays: $51.75</div>
+                                <div className="text-green-600 font-medium">You receive: $50.00</div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="text-gray-600">Customer pays: $50.00</div>
+                                <div className="text-gray-600">You receive: $48.25</div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Industry Insight */}
+                        <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+                          <BoltIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <p className="text-sm text-blue-800">
+                            <strong>68% of barbershops</strong> pass processing fees to customers successfully
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Complete Setup Button */}
+                      <button
+                        onClick={handleComplete}
+                        className="mt-6 w-full inline-flex items-center justify-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        <CheckCircleIcon className="w-5 h-5 mr-2" />
+                        Complete Setup
+                      </button>
                     </div>
-                    <p className="font-medium text-gray-900">Enabled</p>
-                  </div>
-                  
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Platform Fee</span>
-                      <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <p className="font-medium text-gray-900">$0 (0%)</p>
                   </div>
                 </div>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Integration Status */}
-        <div className="bg-olive-50 border border-olive-200 rounded-lg p-6">
-          <div className="flex items-start">
-            <CheckCircleIcon className="h-6 w-6 text-olive-600 mr-3 flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="font-medium text-olive-900 mb-2">Integrated Payment System</h3>
-              <p className="text-sm text-olive-800">
-                Your payment methods and processing are now connected. Customer payments will:
+        ) : (
+          /* Success State */
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-8 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                <CheckCircleIcon className="w-10 h-10 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                You're All Set!
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Your payment system is ready. You can now accept online payments from customers.
               </p>
-              <ul className="mt-2 text-sm text-olive-800 space-y-1">
-                <li>• Respect your accepted payment method settings</li>
-                <li>• Automatically calculate barber commissions</li>
-                <li>• Process through Stripe with your configured settings</li>
-                <li>• Update financial balances in real-time</li>
-              </ul>
+              
+              <div className="space-y-3 max-w-sm mx-auto text-left mb-6">
+                <div className="flex items-center gap-3">
+                  <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-gray-700">Accept credit & debit cards</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-gray-700">Get paid next business day</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-gray-700">Automatic commission tracking</span>
+                </div>
+              </div>
+
+              {/* Bonus Credits Message */}
+              <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 mb-6">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <SparklesIcon className="w-5 h-5 text-yellow-600" />
+                  <span className="font-semibold text-gray-900">You've earned marketing credits!</span>
+                </div>
+                <p className="text-sm text-gray-700">
+                  50 free SMS messages and 100 email campaigns to grow your business
+                </p>
+              </div>
+
+              <button
+                onClick={handleComplete}
+                className="inline-flex items-center px-8 py-3 bg-olive-600 hover:bg-olive-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Continue to Dashboard
+              </button>
             </div>
           </div>
+        )}
+
+        {/* Footer Help Text */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-500">
+            Need help? Contact support at support@bookedbarber.com
+          </p>
         </div>
       </div>
     </div>
