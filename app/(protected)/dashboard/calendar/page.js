@@ -22,14 +22,12 @@ import {
 import dynamic from 'next/dynamic'
 import QRCode from 'qrcode'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import AddBarberGuidanceDialog from '../../../../components/calendar/AddBarberGuidanceDialog'
 import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
 import CalendarViewSelector from '../../../../components/calendar/CalendarViewSelector'
 import CalendarFilters from '../../../../components/calendar/CalendarFilters'
 import EmptyBarberState from '../../../../components/calendar/EmptyBarberState'
 import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
-import OnboardingRequiredDialog from '../../../../components/onboarding/OnboardingRequiredDialog'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { useGlobalDashboard } from '../../../../contexts/GlobalDashboardContext'
 import { useToast } from '../../../../components/ToastContainer'
@@ -156,8 +154,6 @@ export default function CalendarPage() {
   
   const [realtimeConnected, setRealtimeConnected] = useState(false)
   const [realtimeError, setRealtimeError] = useState(null)
-  const [showOnboardingDialog, setShowOnboardingDialog] = useState(false)
-  const [showAddBarberDialog, setShowAddBarberDialog] = useState(false)
   const [calendarFilters, setCalendarFilters] = useState({})
   
   
@@ -1291,34 +1287,25 @@ export default function CalendarPage() {
   const shopName = profile?.shop_name || user?.user_metadata?.shop_name || 'your barbershop'
 
   const handleAddBarber = () => {
-    console.log('🔍 handleAddBarber called - showing modal immediately')
+    console.log('🔍 Complete Setup clicked - launching onboarding')
     
-    // SIMPLIFIED: Always show the guidance modal
-    // This eliminates the complex auth checks that were causing redirects
-    setShowAddBarberDialog(true)
-  }
-  
-  const handleGoToOnboarding = () => {
-    console.log('🔍 Triggering onboarding modal')
-    setShowOnboardingDialog(false)
-    
-    // Dispatch event to show onboarding modal
+    // Use the existing global onboarding system
+    // This will trigger the DashboardOnboarding component in the protected layout
     window.dispatchEvent(new CustomEvent('launchOnboarding', { 
-      detail: { from: 'calendar_onboarding_dialog' },
+      detail: { 
+        from: 'calendar_empty_state',
+        action: 'complete_setup',
+        forced: true // Force show even if previously completed
+      },
       bubbles: true
     }))
     
-    // Fallback: navigate to main dashboard with modal trigger
-    setTimeout(() => {
-      window.location.href = '/dashboard?show_onboarding=true'
-    }, 500)
+    // Set a flag in case the event listener hasn't mounted yet
+    window.__pendingOnboardingLaunch = true
   }
   
-  const handleProceedToAddBarber = () => {
-    console.log('🔍 Going to add barber page')
-    setShowAddBarberDialog(false)
-    window.location.href = '/shop/barbers/add'
-  }
+  // Removed handleGoToOnboarding and handleProceedToAddBarber - no longer needed
+  // The handleAddBarber function now directly triggers the onboarding flow
 
   // Show empty state if no barbers are configured
   if (hasEmptyBarbers && barbershopId) {
@@ -1966,34 +1953,7 @@ export default function CalendarPage() {
         />
       )}
       
-      {/* Onboarding Required Dialog */}
-      <OnboardingRequiredDialog
-        isOpen={showOnboardingDialog}
-        onClose={() => {
-          console.log('🔍 OnboardingRequiredDialog closed')
-          setShowOnboardingDialog(false)
-        }}
-        onGoToOnboarding={handleGoToOnboarding}
-        actionAttempted="add your first barber"
-      />
-      
-      {/* Add Barber Guidance Dialog */}
-      <AddBarberGuidanceDialog
-        isOpen={showAddBarberDialog}
-        onClose={() => {
-          console.log('🔍 AddBarberGuidanceDialog closed')
-          setShowAddBarberDialog(false)
-        }}
-        onProceedToAdd={handleProceedToAddBarber}
-        shopName={shopName}
-      />
-      
-      {/* Debug Modal State */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-4 right-4 bg-black text-white p-2 text-xs z-50 rounded">
-          Modals: Onboarding={showOnboardingDialog.toString()}, AddBarber={showAddBarberDialog.toString()}
-        </div>
-      )}
+      {/* Dialogs removed - using global onboarding system instead */}
       
       {/* Diagnostics Toggle Button */}
       <button

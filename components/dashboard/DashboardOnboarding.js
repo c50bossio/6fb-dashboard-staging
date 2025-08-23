@@ -17,6 +17,8 @@ import {
   DocumentCheckIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '../SupabaseAuthProvider'
 
 // Import existing onboarding components
 import internalAnalytics from '@/lib/internal-analytics'
@@ -32,6 +34,7 @@ import LivePreview from '../onboarding/LivePreview'
 import WelcomeSegmentation from '../onboarding/WelcomeSegmentation'
 import AdaptiveFlowEngine from '../onboarding/AdaptiveFlowEngine'
 import ContextualGuidanceProvider from '../onboarding/ContextualGuidanceProvider'
+import SimplifiedLaunchStep from '../onboarding/SimplifiedLaunchStep'
 
 // Import new data migration and planning components
 import DataImportSetup from '../onboarding/DataImportSetup'
@@ -46,23 +49,37 @@ import ScheduleSetup from '../onboarding/ScheduleSetup'
 import ServiceSetup from '../onboarding/ServiceSetup'
 import StaffSetup from '../onboarding/StaffSetup'
 
+// Import streamlined onboarding flow
+import QuickOnboardingFlow from '../onboarding/QuickOnboardingFlow'
+
 // Import analytics
 
 export default function DashboardOnboarding({ 
   user, 
   profile, 
-  currentStep: initialStep = 0,
-  onStepChange,
   onComplete, 
-  onSkip
+  onSkip,
+  useQuickFlow = true // New prop to enable streamlined onboarding
 }) {
-  // Use controlled step from parent
-  const currentStep = initialStep
-  const setCurrentStep = (step) => {
-    if (onStepChange) {
-      onStepChange(step)
-    }
+  // DEBUG: Log component mount
+  console.log('🔧 DashboardOnboarding: COMPONENT MOUNTING!', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    hasProfile: !!profile,
+    profileRole: profile?.role,
+    useQuickFlow
+  })
+  
+  // DEBUG: Alert to confirm component is mounting
+  if (typeof window !== 'undefined') {
+    console.log('🚨 DashboardOnboarding mounted in browser!')
   }
+  
+  const router = useRouter()
+  const { updateProfile } = useAuth()
+  
+  // Manage step internally - will be loaded from saved progress
+  const [currentStep, setCurrentStep] = useState(0)
   const [isMinimized, setIsMinimized] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -90,6 +107,11 @@ export default function DashboardOnboarding({
     },
     completedSteps: []
   })
+
+  // State for completion modal and imported data
+  const [showCompletionModal, setShowCompletionModal] = useState(false)
+  const [completionData, setCompletionData] = useState(null)
+  const [importedData, setImportedData] = useState(null)
 
   // Component is only rendered when it should be shown,
   // so we can simplify initialization
@@ -250,8 +272,16 @@ export default function DashboardOnboarding({
         const flowEngine = new AdaptiveFlowEngine(onboardingData, profile)
         const completionMessage = flowEngine.getCompletionMessage()
         
-        // You could store this message to show in a success modal or notification
+        // Store completion data for modal display
+        setCompletionData(completionMessage)
+        setShowCompletionModal(true)
         console.log('🎉 Adaptive Completion:', completionMessage)
+      } else {
+        // Fallback completion for users without segmentation
+        const flowEngine = new AdaptiveFlowEngine({}, profile)
+        const completionMessage = flowEngine.getCompletionMessage()
+        setCompletionData(completionMessage)
+        setShowCompletionModal(true)
       }
       
       // Update profile to mark onboarding as complete
@@ -263,14 +293,15 @@ export default function DashboardOnboarding({
         onboarding_status: 'completed'
       })
       
-      // Save to API
+      // Save to API with imported data
       await fetch('/api/onboarding/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           completedSteps: Array.from(completedSteps.current),
           skippedSteps: Array.from(skippedSteps.current),
-          data: onboardingData
+          data: onboardingData,
+          importedData: onboardingData.importedData || null
         })
       })
       
@@ -405,8 +436,48 @@ export default function DashboardOnboarding({
     }
   }, [])
 
-  // Load saved progress from profile only (simplified)
+
+  // Load saved progress from API
+  const loadProgress = async () => {
+    try {
+      const response = await fetch('/api/onboarding/save-progress', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Restore step position
+        if (data.currentStep !== undefined && data.currentStep !== currentStep) {
+          setCurrentStep(data.currentStep)
+        }
+        
+        // Restore form data from completed steps
+        if (data.steps && data.steps.length > 0) {
+          const combinedData = data.steps.reduce((acc, step) => {
+            if (step.step_data) {
+              return { ...acc, ...step.step_data }
+            }
+            return acc
+          }, {})
+          
+          setOnboardingData(prev => ({ ...prev, ...combinedData }))
+        }
+        
+        console.log('✅ Onboarding progress restored')
+      }
+    } catch (error) {
+      console.error('Error loading progress:', error)
+    }
+  }
+
+  // Load saved progress on mount
   useEffect(() => {
+    // Load from API on mount
+    loadProgress()
+    
+    // Also load from profile as fallback
     if (profile?.onboarding_step !== undefined) {
       setCurrentStep(profile.onboarding_step)
     }
@@ -425,13 +496,64 @@ export default function DashboardOnboarding({
         console.warn('Could not parse onboarding data, using defaults')
       }
     }
-  }, [profile?.onboarding_step, profile?.onboarding_data])
+  }, []) // Only run once on mount
+
 
   // Simplified visibility logic - single source of truth
-  const shouldShowModal = showOnboarding
+  const shouldShowModal = true // FORCE ALWAYS SHOW FOR DEBUGGING
   
+  // DEBUG: Log the shouldShowModal state
+  console.log('🔍 DashboardOnboarding render check:', {
+    shouldShowModal,
+    showOnboarding,
+    useQuickFlow
+  })
+  
+  // SKIP THE CHECK FOR NOW - ALWAYS SHOW
+  /*
   if (!shouldShowModal) {
-    return null
+    console.log('❌ DashboardOnboarding returning null (shouldShowModal is false)')
+    return (
+      <div className="fixed top-20 left-4 bg-red-500 text-white p-2 rounded z-[10000]">
+        DEBUG: Onboarding Hidden (showOnboarding={String(showOnboarding)})
+      </div>
+    )
+  }
+  */
+
+  // Render QuickOnboardingFlow if enabled
+  if (useQuickFlow) {
+    // Provide fallback profile if user/profile not loaded
+    const fallbackProfile = profile || {
+      role: 'SHOP_OWNER',
+      shop_name: '',
+      email: user?.email || 'demo@barbershop.com',
+      onboarding_completed: false
+    }
+    
+    console.log('🚀 DashboardOnboarding rendering QuickOnboardingFlow:', {
+      hasUser: !!user,
+      hasProfile: !!profile,
+      usingFallback: !profile,
+      fallbackProfile: fallbackProfile
+    })
+    
+    return (
+      <QuickOnboardingFlow
+        onComplete={(data) => {
+          console.log('Quick onboarding completed:', data)
+          if (typeof internalAnalytics?.onboarding?.completed === 'function') {
+            internalAnalytics.onboarding.completed(3, 3, 0, data.segmentationPath)
+          }
+          setShowOnboarding(false)
+          if (onComplete) {
+            onComplete()
+          }
+        }}
+        initialData={onboardingData}
+        profile={fallbackProfile}
+      />
+    )
   }
 
   const currentStepData = steps[currentStep]
@@ -690,6 +812,92 @@ export default function DashboardOnboarding({
           </div>
         </div>
       </div>
+
+      {/* Completion Success Modal */}
+      {showCompletionModal && completionData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-4">{completionData.emphasis === 'data_import' ? '📊' : '🎉'}</div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  {completionData.title}
+                </h2>
+                <p className="text-gray-600 leading-relaxed">
+                  {completionData.message}
+                </p>
+              </div>
+
+              {/* Next Steps List */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-3">What's next:</h3>
+                <ul className="space-y-2">
+                  {completionData.nextSteps.map((step, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{step}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    if (completionData.primaryAction === 'Import Customer Data') {
+                      router.push('/dashboard/import')
+                    } else {
+                      setShowCompletionModal(false)
+                      setShowOnboarding(false)
+                      if (onComplete) onComplete()
+                    }
+                  }}
+                  className={`flex-1 px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                    completionData.emphasis === 'data_import'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-brand-600 hover:bg-brand-700 text-white'
+                  }`}
+                >
+                  {completionData.primaryAction}
+                  {completionData.primaryAction === 'Import Customer Data' && (
+                    <ArrowRightIcon className="h-4 w-4" />
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    if (completionData.secondaryAction === 'Import Customer Data') {
+                      router.push('/dashboard/import')
+                    } else {
+                      setShowCompletionModal(false)
+                      setShowOnboarding(false)
+                      if (onComplete) onComplete()
+                    }
+                  }}
+                  className="flex-1 px-6 py-3 rounded-lg font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
+                >
+                  {completionData.secondaryAction}
+                </button>
+              </div>
+
+              {/* Data Import Emphasis for Switching Systems */}
+              {completionData.emphasis === 'data_import' && (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <SparklesIcon className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm">
+                      <p className="text-blue-800 font-medium">Ready to import your data?</p>
+                      <p className="text-blue-700">
+                        Our CSV import tool will help you seamlessly transfer your existing customers, appointments, and services.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </ContextualGuidanceProvider>
   )
 }
@@ -765,15 +973,12 @@ function renderStepContent(stepId, data, updateData, profile, onNavigateNext) {
     
     case 'financial':
     case 'payment':
-      // Use new enhanced payment setup with progressive unlocking and credit earning display
+      // Use simplified launch step with optional payment setup
       return (
-        <PaymentSetupEnhanced 
-          onComplete={handleStepComplete}
-          initialData={{
-            ...data,
-            completedSteps: data.completedFinancialSteps || []
-          }}
-          currentStep="payment_setup"
+        <SimplifiedLaunchStep 
+          data={data}
+          updateData={updateData}
+          onNext={handleStepComplete}
         />
       )
     

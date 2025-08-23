@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import DashboardHeader from '../../components/dashboard/DashboardHeader'
 import DashboardOnboarding from '../../components/dashboard/DashboardOnboarding'
+import TestOnboardingModal from '../../components/TestOnboardingModal'
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
@@ -10,23 +11,33 @@ import { NavigationProvider, useNavigation } from '../../contexts/NavigationCont
 import { TenantProvider } from '../../contexts/TenantContext'
 import { GlobalDashboardProvider } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../../components/SupabaseAuthProvider'
+// import { Toaster } from 'react-hot-toast'
 
 function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()
   const { user, profile } = useAuth()
   const [showOnboarding, setShowOnboarding] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('🔧 DEBUG: ProtectedLayoutContent mounted', {
+      showOnboarding,
+      hasUser: !!user,
+      hasProfile: !!profile,
+      userEmail: user?.email,
+      profileRole: profile?.role
+    })
+  }, [showOnboarding, user, profile])
   
   // Listen for launch onboarding event from profile dropdown - available on ALL pages
   useEffect(() => {
     const handleLaunchOnboarding = (event) => {
       console.log('🚀 Launching onboarding from profile dropdown (global handler)', {
         detail: event.detail,
-        currentStep,
         showOnboarding
       })
       setShowOnboarding(true)
-      setCurrentStep(0) // Always start from beginning
+      // Let DashboardOnboarding handle its own progress loading
     }
     
     // Add listener immediately
@@ -70,25 +81,51 @@ function ProtectedLayoutContent({ children }) {
         <FloatingAIChat />
       </div>
       
-      {/* Global Onboarding Modal - Available on all protected pages */}
+      
+      {/* Onboarding Modal - Shows when triggered */}
       {showOnboarding && (
         <DashboardOnboarding 
           user={user}
           profile={profile}
-          currentStep={currentStep}
-          onStepChange={setCurrentStep}
+          useQuickFlow={true}
           onComplete={() => {
             console.log('✅ Onboarding completed')
             setShowOnboarding(false)
-            setCurrentStep(0)
+            // Refresh to update profile state
+            window.location.reload()
           }}
           onSkip={() => {
-            console.log('⏭️ Onboarding skipped/closed')
+            console.log('⏭️ Onboarding skipped')
             setShowOnboarding(false)
-            setCurrentStep(0)
           }}
         />
       )}
+      
+      {/* <TestOnboardingModal /> */}
+      
+      {/* Toast notifications for the entire app */}
+      {/* <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      /> */}
     </div>
   )
 }
