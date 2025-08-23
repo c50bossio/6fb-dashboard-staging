@@ -141,7 +141,7 @@ const shopManagement = [
     name: 'Shop Settings', 
     href: '/shop/settings', 
     icon: Cog6ToothIcon,
-    description: 'Configure shop details and preferences'
+    description: 'Advanced shop configuration and preferences'
   },
   { 
     name: 'Barber Management', 
@@ -157,10 +157,10 @@ const shopManagement = [
     description: 'Commission settings and financial arrangements'
   },
   { 
-    name: 'Product Inventory', 
+    name: 'Product Management', 
     href: '/shop/products', 
     icon: CubeIcon,
-    description: 'Manage product inventory'
+    description: 'Manage retail products and track inventory'
   }
   // - Point of Sale (process sales)
   // - Advanced Reports (detailed analytics)

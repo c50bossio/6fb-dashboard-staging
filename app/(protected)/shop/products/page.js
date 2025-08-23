@@ -21,7 +21,7 @@ import StatusWidget from '@/components/cin7/StatusWidget'
 import StockBadge, { StockIndicator } from '@/components/cin7/StockBadge'
 import Cin7IntegrationManager from '@/components/cin7-integration-manager'
 
-export default function ProductInventory() {
+export default function ProductManagement() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -396,15 +396,32 @@ export default function ProductInventory() {
       <div className="mb-8">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Product Inventory</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Product Management</h1>
             <p className="text-gray-600 mt-2">Manage your shop's retail products and track inventory</p>
           </div>
           {/* Status Widget - shows connection status */}
           <div className="mt-2">
             <StatusWidget
               compact={false}
-              onSync={() => loadProducts()}
-              onSettings={() => setShowCredentialManager(true)}
+              onSync={() => {
+                // Handle sync through StatusWidget
+                if (hasCredentials) {
+                  handleQuickSync()
+                } else {
+                  // If no credentials, guide user to setup
+                  setShowSetupWizard(true)
+                }
+              }}
+              onSettings={() => {
+                // Handle settings based on current state
+                if (!hasCredentials) {
+                  // Initial setup for new connections
+                  setShowSetupWizard(true)
+                } else {
+                  // Credential management for existing connections
+                  setShowCredentialManager(true)
+                }
+              }}
             />
           </div>
         </div>
@@ -483,34 +500,6 @@ export default function ProductInventory() {
             ))}
           </select>
 
-          {/* CIN7 Action Buttons */}
-          {!hasCredentials ? (
-            <button
-              onClick={() => setShowSetupWizard(true)}
-              className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-lg hover:from-amber-600 hover:to-amber-700 shadow-md hover:shadow-lg transition-all flex items-center font-medium"
-            >
-              <LinkIcon className="h-5 w-5 mr-2" />
-              Setup Inventory Sync
-            </button>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleQuickSync}
-                disabled={isQuickSyncing}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center"
-              >
-                <LinkIcon className="h-5 w-5 mr-2" />
-                {isQuickSyncing ? 'Syncing...' : 'Refresh Inventory'}
-              </button>
-              <button
-                onClick={() => setShowCredentialManager(true)}
-                className="px-3 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:border-gray-400 flex items-center"
-                title="Manage Credentials"
-              >
-                <PencilIcon className="h-4 w-4" />
-              </button>
-            </div>
-          )}
 
           {/* Add Product Button */}
           <button
