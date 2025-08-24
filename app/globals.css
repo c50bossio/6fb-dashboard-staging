@@ -79,12 +79,23 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
-  }
-
+  /* MOBILE-FIRST OVERFLOW PROTECTION */
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Prevent horizontal scroll on all containers */
+  #__next {
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 }
 
@@ -641,5 +652,89 @@
   50% {
     opacity: 0.6;
     transform: scale(0.8);
+  }
+}
+
+/* ============================================= */
+/* MOBILE-FIRST RESPONSIVE UTILITIES            */
+/* ============================================= */
+
+@layer utilities {
+  /* Mobile text truncation utilities */
+  .mobile-text-truncate {
+    @apply truncate sm:whitespace-normal;
+  }
+  
+  .mobile-text-break {
+    @apply break-words sm:break-normal;
+  }
+  
+  /* Responsive container constraints */
+  .container-mobile {
+    @apply w-full max-w-screen-sm px-4 mx-auto;
+  }
+  
+  .container-mobile-full {
+    @apply w-full max-w-full px-2 sm:px-4 mx-auto;
+  }
+  
+  /* Mobile-friendly dropdowns */
+  .dropdown-mobile {
+    @apply w-screen max-w-sm sm:w-80;
+  }
+  
+  /* Touch-friendly spacing */
+  .touch-spacing {
+    @apply p-3 sm:p-2;
+  }
+  
+  /* Responsive flexbox fixes */
+  .flex-mobile-safe {
+    @apply flex flex-col sm:flex-row;
+  }
+  
+  .flex-mobile-center {
+    @apply flex flex-col sm:flex-row items-center;
+  }
+  
+  /* Prevent layout shift utilities */
+  .min-w-0-mobile {
+    @apply min-w-0;
+  }
+  
+  .w-safe-mobile {
+    @apply w-full max-w-full;
+  }
+  
+  /* Mobile header utilities */
+  .header-mobile-safe {
+    @apply overflow-x-hidden px-2 sm:px-4;
+  }
+}
+
+/* Mobile-specific media queries for extreme cases */
+@media (max-width: 374px) {
+  /* iPhone SE and smaller screens */
+  .global-context-selector {
+    max-width: 150px;
+  }
+  
+  .header-actions {
+    gap: 0.5rem;
+  }
+  
+  .mobile-header-text {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 320px) {
+  /* Extremely small screens */
+  .global-context-selector {
+    max-width: 120px;
+  }
+  
+  .dropdown-mobile {
+    @apply w-screen;
   }
 }

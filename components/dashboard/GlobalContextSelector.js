@@ -80,15 +80,15 @@ export default function GlobalContextSelector() {
   }
   
   return (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center space-x-2 sm:space-x-3 max-w-full overflow-hidden">
       {/* Location Selector - Show for multi-location users */}
       {(isMultiLocation || permissions.canSeeAllLocations) && (
         <Menu as="div" className="relative inline-block text-left">
           <div>
-            <Menu.Button className="inline-flex items-center justify-between min-w-[200px] rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center">
-                <BuildingOfficeIcon className="mr-2 h-4 w-4 text-gray-400" />
-                <span>{getLocationDisplayText()}</span>
+            <Menu.Button className="inline-flex items-center justify-between w-full xs:w-32 sm:w-40 md:w-48 lg:min-w-[200px] max-w-[200px] rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center min-w-0 flex-1">
+                <BuildingOfficeIcon className="mr-2 h-4 w-4 text-gray-400 flex-shrink-0" />
+                <span className="truncate">{getLocationDisplayText()}</span>
               </div>
               <ChevronDownIcon className="ml-2 h-4 w-4 text-gray-400" />
             </Menu.Button>
@@ -103,7 +103,7 @@ export default function GlobalContextSelector() {
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Menu.Items className="absolute left-0 z-50 mt-2 w-80 origin-top-left rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+            <Menu.Items className="absolute left-0 z-50 mt-2 w-screen max-w-xs sm:w-80 sm:max-w-sm origin-top-left rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
               <div className="py-1">
                 {/* Quick Actions */}
                 <div className="px-3 py-2 border-b border-gray-100">
@@ -161,9 +161,9 @@ export default function GlobalContextSelector() {
                                     <CheckIcon className="h-3 w-3 text-white" />
                                   )}
                                 </div>
-                                <div className="text-left">
-                                  <div className="font-medium text-gray-900">{location.name}</div>
-                                  <div className="text-xs text-gray-500">
+                                <div className="text-left min-w-0 flex-1">
+                                  <div className="font-medium text-gray-900 truncate">{location.name}</div>
+                                  <div className="text-xs text-gray-500 truncate">
                                     {location.city}, {location.state} • {barberCount} barbers
                                   </div>
                                 </div>
@@ -200,10 +200,10 @@ export default function GlobalContextSelector() {
       {selectedLocations.length > 0 && availableBarbers.length > 0 && (
         <Menu as="div" className="relative inline-block text-left">
           <div>
-            <Menu.Button className="inline-flex items-center justify-between min-w-[180px] rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center">
-                <UserGroupIcon className="mr-2 h-4 w-4 text-gray-400" />
-                <span>{getBarberDisplayText()}</span>
+            <Menu.Button className="inline-flex items-center justify-between w-full xs:w-28 sm:w-36 md:w-44 lg:min-w-[180px] max-w-[180px] rounded-lg bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center min-w-0 flex-1">
+                <UserGroupIcon className="mr-2 h-4 w-4 text-gray-400 flex-shrink-0" />
+                <span className="truncate">{getBarberDisplayText()}</span>
               </div>
               <ChevronDownIcon className="ml-2 h-4 w-4 text-gray-400" />
             </Menu.Button>
@@ -218,7 +218,7 @@ export default function GlobalContextSelector() {
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Menu.Items className="absolute left-0 z-50 mt-2 w-72 origin-top-left rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+            <Menu.Items className="absolute left-0 z-50 mt-2 w-screen max-w-sm sm:w-72 sm:max-w-md origin-top-left rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
               <div className="py-1">
                 {/* Quick Actions */}
                 <div className="px-3 py-2 border-b border-gray-100">
@@ -273,10 +273,10 @@ export default function GlobalContextSelector() {
                                     <CheckIcon className="h-3 w-3 text-white" />
                                   )}
                                 </div>
-                                <div className="text-left">
-                                  <div className="font-medium text-gray-900">{barber.name}</div>
+                                <div className="text-left min-w-0 flex-1">
+                                  <div className="font-medium text-gray-900 truncate">{barber.name}</div>
                                   {isMultiLocation && (
-                                    <div className="text-xs text-gray-500">{barber.location}</div>
+                                    <div className="text-xs text-gray-500 truncate">{barber.location}</div>
                                   )}
                                 </div>
                               </div>

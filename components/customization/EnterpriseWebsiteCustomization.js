@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+import AddLocationModal from '@/components/modals/AddLocationModal'
+import EditLocationModal from '@/components/modals/EditLocationModal'
+import ViewLocationModal from '@/components/modals/ViewLocationModal'
 import { 
   GlobeAltIcon,
   BuildingOfficeIcon,
@@ -12,15 +16,20 @@ import {
   XMarkIcon,
   PlusIcon,
   TrashIcon,
-  EyeIcon
+  EyeIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline'
 
 export default function EnterpriseWebsiteCustomization() {
   const { user } = useAuth()
+  const { availableLocations, refreshLocations, permissions } = useGlobalDashboard()
   const [activeTab, setActiveTab] = useState('overview')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
-  const [locations, setLocations] = useState([])
+  const [showAddLocationModal, setShowAddLocationModal] = useState(false)
+  const [showEditLocationModal, setShowEditLocationModal] = useState(false)
+  const [showViewLocationModal, setShowViewLocationModal] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState(null)
   
   const [settings, setSettings] = useState({
     // Organization Info
@@ -65,7 +74,7 @@ export default function EnterpriseWebsiteCustomization() {
 
   useEffect(() => {
     loadEnterpriseSettings()
-    loadLocations()
+    // Locations are now loaded automatically by GlobalDashboardContext
   }, [user])
 
   const loadEnterpriseSettings = async () => {
@@ -106,21 +115,8 @@ export default function EnterpriseWebsiteCustomization() {
     }
   }
 
-  const loadLocations = async () => {
-    if (!user) return
-
-    try {
-      // Get user's owned barbershops
-      const { data: barbershops } = await supabase
-        .from('barbershops')
-        .select('*')
-        .eq('owner_id', user.id)
-
-      setLocations(barbershops || [])
-    } catch (error) {
-      console.error('Error loading locations:', error)
-    }
-  }
+  // Locations are now managed by GlobalDashboardContext
+  // This ensures consistency with the top bar location selector
 
   const handleSave = async () => {
     if (!user) return
@@ -164,11 +160,14 @@ export default function EnterpriseWebsiteCustomization() {
   }
 
   const addLocation = () => {
-    // This would typically open a modal or navigate to add location flow
-    setMessage({ 
-      type: 'info', 
-      text: 'Add Location functionality coming soon!' 
-    })
+    // Open the same modal used by GlobalContextSelector for consistency
+    setShowAddLocationModal(true)
+  }
+  
+  const handleLocationModalClose = () => {
+    setShowAddLocationModal(false)
+    // Refresh locations after modal closes to show any new additions
+    refreshLocations()
   }
 
   return (
@@ -276,13 +275,13 @@ export default function EnterpriseWebsiteCustomization() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-green-600">{locations.length}</div>
+                  <div className="text-2xl font-bold text-green-600">{availableLocations.length}</div>
                   <div className="text-sm text-gray-600">Total Locations</div>
                 </div>
                 
                 <div className="bg-white rounded-lg p-3 text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {locations.reduce((total, loc) => total + (loc.staff_count || 0), 0)}
+                    {availableLocations.reduce((total, loc) => total + (loc.staff_count || 0), 0)}
                   </div>
                   <div className="text-sm text-gray-600">Total Staff</div>
                 </div>
@@ -309,31 +308,43 @@ export default function EnterpriseWebsiteCustomization() {
         {activeTab === 'locations' && (
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h4 className="text-lg font-semibold text-gray-900">Your Locations</h4>
-              <button
-                onClick={addLocation}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 text-sm"
-              >
-                <PlusIcon className="h-4 w-4" />
-                Add Location
-              </button>
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900">Your Locations</h4>
+                <div className="flex items-center gap-2 mt-1">
+                  <LinkIcon className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-gray-600">
+                    Synced with Global Dashboard • {availableLocations.length} location{availableLocations.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+              {permissions?.canAddLocations && (
+                <button
+                  onClick={addLocation}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2 text-sm"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  Add Location
+                </button>
+              )}
             </div>
 
-            {locations.length === 0 ? (
+            {availableLocations.length === 0 ? (
               <div className="text-center py-12 bg-gray-50 rounded-lg">
                 <MapIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                 <h5 className="text-lg font-medium text-gray-900 mb-2">No Locations Yet</h5>
                 <p className="text-gray-600 mb-4">Add your first location to get started with multi-location management.</p>
-                <button
-                  onClick={addLocation}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                >
-                  Add Your First Location
-                </button>
+                {permissions?.canAddLocations && (
+                  <button
+                    onClick={addLocation}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+                  >
+                    Add Your First Location
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {locations.map((location) => (
+                {availableLocations.map((location) => (
                   <div key={location.id} className="bg-white border border-gray-200 rounded-lg p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -351,10 +362,22 @@ export default function EnterpriseWebsiteCustomization() {
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <button className="text-green-600 hover:text-green-800 text-sm font-medium">
+                      <button 
+                        onClick={() => {
+                          setSelectedLocation(location)
+                          setShowEditLocationModal(true)
+                        }}
+                        className="text-green-600 hover:text-green-800 text-sm font-medium"
+                      >
                         Manage
                       </button>
-                      <button className="text-gray-400 hover:text-gray-600">
+                      <button 
+                        onClick={() => {
+                          setSelectedLocation(location)
+                          setShowViewLocationModal(true)
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
                         <EyeIcon className="h-4 w-4" />
                       </button>
                     </div>
@@ -575,6 +598,39 @@ export default function EnterpriseWebsiteCustomization() {
           {saving ? 'Saving...' : 'Save Enterprise Settings'}
         </button>
       </div>
+      
+      {/* Add Location Modal - Same one used by GlobalContextSelector */}
+      {showAddLocationModal && (
+        <AddLocationModal
+          isOpen={showAddLocationModal}
+          onClose={handleLocationModalClose}
+        />
+      )}
+      
+      {/* Edit Location Modal */}
+      {showEditLocationModal && (
+        <EditLocationModal
+          isOpen={showEditLocationModal}
+          onClose={() => {
+            setShowEditLocationModal(false)
+            setSelectedLocation(null)
+            refreshLocations() // Refresh the list after edit
+          }}
+          location={selectedLocation}
+        />
+      )}
+      
+      {/* View Location Modal */}
+      {showViewLocationModal && (
+        <ViewLocationModal
+          isOpen={showViewLocationModal}
+          onClose={() => {
+            setShowViewLocationModal(false)
+            setSelectedLocation(null)
+          }}
+          location={selectedLocation}
+        />
+      )}
     </div>
   )
 }

@@ -141,30 +141,35 @@ export default function DashboardHeader() {
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 min-w-0">
           {/* Left side - Greeting */}
-          <div className="flex-shrink-0">
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">
+          <div className="flex-shrink-0 min-w-0 mr-2">
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">
                 Good {timeOfDay}, {getUserName()}!
               </h1>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 truncate hidden sm:block">
                 {getUserRole()} • {new Date().toLocaleDateString('en-US', { 
                   weekday: 'short', 
                   month: 'short', 
                   day: 'numeric' 
                 })} • {currentTime}
               </p>
+              <p className="text-xs text-gray-500 truncate sm:hidden">
+                {getUserRole()}
+              </p>
             </div>
           </div>
 
           {/* Center - Global Context Selector */}
-          <div className="flex-1 flex justify-center">
-            <GlobalContextSelector />
+          <div className="flex-1 flex justify-center min-w-0 mx-1 sm:mx-2">
+            <div className="max-w-full overflow-hidden">
+              <GlobalContextSelector />
+            </div>
           </div>
 
           {/* Right side - Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             {/* Notifications Dropdown */}
             <div className="relative" ref={notificationsRef}>
               <button 
@@ -178,7 +183,7 @@ export default function DashboardHeader() {
               </button>
               
               {activeDropdown === 'notifications' && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="absolute right-0 mt-2 w-screen max-w-xs sm:w-80 sm:max-w-sm bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="p-4 border-b border-gray-200">
                     <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
                   </div>
@@ -186,7 +191,7 @@ export default function DashboardHeader() {
                     {notifications.length > 0 ? (
                       notifications.map(notif => (
                         <div key={notif.id} className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notif.read ? 'bg-olive-50' : ''}`}>
-                          <p className="text-sm text-gray-900">{notif.message}</p>
+                          <p className="text-sm text-gray-900 truncate">{notif.message}</p>
                           <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
                         </div>
                       ))
@@ -263,10 +268,10 @@ export default function DashboardHeader() {
               </button>
               
               {activeDropdown === 'profile' && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="absolute right-0 mt-2 w-screen max-w-xs sm:w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="px-4 py-3 border-b border-gray-200">
-                    <p className="text-sm font-medium text-gray-900">{getUserName()}</p>
-                    <p className="text-xs text-gray-500">{sessionUser?.email || profile?.email || user?.email || 'dev@localhost.com'}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{getUserName()}</p>
+                    <p className="text-xs text-gray-500 truncate">{sessionUser?.email || profile?.email || user?.email || 'dev@localhost.com'}</p>
                   </div>
                   <div className="py-2">
                     <Link 

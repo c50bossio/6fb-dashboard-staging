@@ -273,9 +273,9 @@ export default function Navigation() {
   })
 
   const MobileHeader = () => (
-    <div className="lg:hidden bg-card border-b border-border px-4 py-2 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md h-14">
-      <div className="flex-shrink-0 max-h-10 flex items-center">
-        <LogoHeader size="xsmall" showText={false} className="max-h-8 w-auto" />
+    <div className="lg:hidden bg-card border-b border-border px-4 py-2 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md h-14 min-w-0 overflow-hidden">
+      <div className="flex-shrink-0 max-h-10 flex items-center min-w-0">
+        <LogoHeader size="xsmall" showText={false} className="max-h-8 w-auto max-w-full" />
       </div>
       <button
         onClick={() => setIsMobileMenuOpen(true)}
@@ -354,7 +354,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 leading-tight truncate">
                           {item.description}
                         </p>
                       )}
@@ -434,7 +434,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 leading-tight truncate">
                           {item.description}
                         </p>
                       )}
@@ -498,7 +498,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 leading-tight truncate">
                           {item.description}
                         </p>
                       )}
@@ -563,7 +563,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 leading-tight truncate">
                           {item.description}
                         </p>
                       )}
@@ -629,7 +629,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 leading-tight truncate">
                           {item.description}
                         </p>
                       )}
@@ -695,7 +695,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 leading-tight truncate">
                           {item.description}
                         </p>
                       )}
@@ -727,7 +727,7 @@ export default function Navigation() {
           />
           
           {/* Slide-out Menu */}
-          <div className="mobile-navigation absolute inset-y-0 left-0 w-80 max-w-full bg-card shadow-2xl transform transition-transform ease-in-out duration-300 border-r border-border">
+          <div className="mobile-navigation absolute inset-y-0 left-0 w-full max-w-sm sm:w-80 bg-card shadow-2xl transform transition-transform ease-in-out duration-300 border-r border-border">
             {/* Header */}
             <div className="p-6 border-b border-border flex items-center justify-between bg-background/95 backdrop-blur-sm">
               <div className="flex-shrink-0 max-h-12 flex items-center">
