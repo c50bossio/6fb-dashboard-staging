@@ -5,7 +5,7 @@ export const runtime = 'edge'
 
 export async function GET(request, { params }) {
   try {
-    const { barbershop, barber } = params
+    const { barbershopId, barber } = params
     
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
         phone,
         email
       `)
-      .or(`slug.eq.${barbershop},custom_domain.eq.${barbershop}`)
+      .or(`slug.eq.${barbershopId},custom_domain.eq.${barbershopId}`)
       .single()
     
     if (shopError || !shopData) {

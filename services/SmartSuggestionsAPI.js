@@ -177,6 +177,76 @@ class SmartSuggestionsAPI {
   }
 
   /**
+   * Get customer risk scoring recommendations
+   * Integrates with existing suggestions infrastructure for AI-powered customer intelligence
+   */
+  async getCustomerRiskRecommendations(barbershopId, customerData = {}) {
+    const cacheKey = `customer_risk_${barbershopId}_${JSON.stringify(customerData).length}`
+    
+    if (this.cache.has(cacheKey)) {
+      const cached = this.cache.get(cacheKey)
+      if (Date.now() - cached.timestamp < this.cacheTimeout) {
+        return cached.data
+      }
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/customer-risk-recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          barbershop_id: barbershopId,
+          customer_data: customerData,
+          timestamp: new Date().toISOString()
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const recommendations = await response.json()
+      
+      // Cache the response
+      this.cache.set(cacheKey, {
+        data: recommendations,
+        timestamp: Date.now()
+      })
+
+      return recommendations
+    } catch (error) {
+      console.warn('Failed to fetch customer risk recommendations, using fallback:', error)
+      return this.getFallbackRiskRecommendations(customerData)
+    }
+  }
+
+
+  /**
+   * Get no-show prevention suggestions for high-risk customers
+   */
+  async getNoShowPreventionSuggestions(customerRiskScore, appointmentData = {}) {
+    try {
+      const response = await fetch(`${this.baseUrl}/no-show-prevention`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          risk_score: customerRiskScore,
+          appointment_data: appointmentData
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.warn('Failed to fetch no-show prevention suggestions, using fallback:', error)
+      return this.getFallbackNoShowPrevention(customerRiskScore)
+    }
+  }
+
+  /**
    * Fallback business defaults when API is unavailable
    */
   getFallbackBusinessDefaults(businessType, segmentationPath) {
@@ -380,6 +450,102 @@ class SmartSuggestionsAPI {
       ],
       confidence: 0.9,
       source: 'fallback'
+    }
+  }
+
+  /**
+   * Fallback customer risk recommendations when API is unavailable
+   */
+  getFallbackRiskRecommendations(customerData) {
+    const riskLevel = this.calculateBasicRiskScore(customerData)
+    
+    return {
+      risk_score: riskLevel,
+      tier: riskLevel >= 70 ? 'red' : riskLevel >= 40 ? 'yellow' : 'green',
+      recommendations: this.getBasicRiskRecommendations(riskLevel),
+      factors: {
+        previousNoShows: { weight: 40, score: riskLevel * 0.4 },
+        lastMinuteCancellations: { weight: 20, score: riskLevel * 0.2 },
+        advanceBookingPattern: { weight: 15, score: riskLevel * 0.15 },
+        paymentHistory: { weight: 15, score: riskLevel * 0.15 },
+        communicationResponsiveness: { weight: 10, score: riskLevel * 0.1 }
+      },
+      confidence: 0.75,
+      source: 'fallback'
+    }
+  }
+
+
+  /**
+   * Fallback no-show prevention suggestions when API is unavailable
+   */
+  getFallbackNoShowPrevention(customerRiskScore) {
+    const suggestions = []
+
+    if (customerRiskScore >= 70) {
+      suggestions.push(
+        { action: 'personal_call', timing: '24h_before', priority: 'high', description: 'Personal call from staff member to confirm' },
+        { action: 'sms_reminder', timing: '4h_before', priority: 'high', description: 'Final SMS confirmation required' },
+        { action: 'incentive_offer', timing: 'booking', priority: 'medium', description: 'Small loyalty point incentive for attendance' }
+      )
+    } else if (customerRiskScore >= 40) {
+      suggestions.push(
+        { action: 'sms_reminder', timing: '24h_before', priority: 'high', description: 'SMS reminder with confirmation request' },
+        { action: 'email_reminder', timing: '48h_before', priority: 'medium', description: 'Email with booking details and policies' }
+      )
+    } else {
+      suggestions.push(
+        { action: 'email_reminder', timing: '24h_before', priority: 'low', description: 'Friendly email reminder' }
+      )
+    }
+
+    return {
+      suggestions,
+      expected_reduction: Math.max(5, Math.min(25, Math.round(customerRiskScore * 0.3))),
+      confidence: 0.8,
+      source: 'fallback'
+    }
+  }
+
+  /**
+   * Calculate basic risk score from customer data
+   */
+  calculateBasicRiskScore(customerData) {
+    // Simplified risk calculation for fallback
+    const noShowRate = (customerData.no_shows || 0) / Math.max(1, customerData.total_bookings || 1)
+    const cancellationRate = (customerData.late_cancellations || 0) / Math.max(1, customerData.total_bookings || 1)
+    
+    const baseRisk = (noShowRate * 40) + (cancellationRate * 20)
+    const newCustomerPenalty = (customerData.total_bookings || 0) < 3 ? 15 : 0
+    
+    return Math.min(100, Math.max(0, baseRisk + newCustomerPenalty))
+  }
+
+  /**
+   * Get basic recommendations based on risk level
+   */
+  getBasicRiskRecommendations(riskLevel) {
+    if (riskLevel >= 70) {
+      return [
+        'Implement phone confirmation calls',
+        'Require deposit or card authorization',
+        'Assign dedicated staff for personal outreach',
+        'Offer loyalty incentives for attendance'
+      ]
+    } else if (riskLevel >= 40) {
+      return [
+        'Send multiple reminder notifications',
+        'Request confirmation responses',
+        'Explain cancellation policies clearly',
+        'Monitor booking patterns'
+      ]
+    } else {
+      return [
+        'Continue current booking process',
+        'Send standard email reminders',
+        'Maintain excellent service quality',
+        'Track satisfaction metrics'
+      ]
     }
   }
 

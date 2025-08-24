@@ -77,6 +77,13 @@ const coreOperations = [
     href: '/dashboard/customers', 
     icon: UserGroupIcon,
     description: 'Client profiles, history, and relationship management'
+  },
+  { 
+    name: 'Customize Experience', 
+    href: '/customize', 
+    icon: PaintBrushIcon,
+    description: 'Personalize your profile, website, and branding',
+    badge: 'All-in-One'
   }
 ]
 
@@ -86,12 +93,6 @@ const barberOperations = [
     href: '/barber/dashboard', 
     icon: HomeIcon,
     description: 'Your earnings, stats, and daily overview'
-  },
-  { 
-    name: 'Profile & Branding', 
-    href: '/barber/profile', 
-    icon: PaintBrushIcon,
-    description: 'Customize your landing page and personal brand'
   },
   { 
     name: 'My Schedule', 
@@ -129,13 +130,6 @@ const shopManagement = [
     href: '/shop/dashboard', 
     icon: BuildingStorefrontIcon,
     description: 'Multi-barber overview and shop analytics'
-  },
-  { 
-    name: 'Website Customization', 
-    href: '/shop/website', 
-    icon: GlobeAltIcon,
-    description: 'Customize your shop website and barber pages',
-    badge: 'NEW'
   },
   { 
     name: 'Shop Settings', 
@@ -201,13 +195,6 @@ const enterpriseOperations = [
     icon: ChartPieIcon,
     description: 'Multi-location overview and analytics',
     badge: 'Overview'
-  },
-  { 
-    name: 'Enterprise Portal', 
-    href: '/enterprise/website', 
-    icon: BuildingOffice2Icon,
-    description: 'Manage multi-location website and portal',
-    badge: 'NEW'
   },
   { 
     name: 'Location Management', 

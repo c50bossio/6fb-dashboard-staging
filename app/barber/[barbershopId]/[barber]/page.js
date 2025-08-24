@@ -4,9 +4,9 @@ import BarberProfile from './BarberProfile'
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
   try {
-    const { barbershop, barber } = params
+    const { barbershopId, barber } = params
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/public/barber/${barbershop}/${barber}`,
+      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/public/barber/${barbershopId}/${barber}`,
       { cache: 'no-store' }
     )
 
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }) {
         description: `Book with ${barberData.name} at ${shop_info.name}`
       },
       alternates: {
-        canonical: `${process.env.NEXT_PUBLIC_APP_URL}/barber/${barbershop}/${barber}`
+        canonical: `${process.env.NEXT_PUBLIC_APP_URL}/barber/${barbershopId}/${barber}`
       }
     }
   } catch (error) {
@@ -50,9 +50,9 @@ export async function generateMetadata({ params }) {
 
 export default async function BarberProfilePage({ params }) {
   try {
-    const { barbershop, barber } = params
+    const { barbershopId, barber } = params
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/public/barber/${barbershop}/${barber}`,
+      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/public/barber/${barbershopId}/${barber}`,
       { 
         cache: 'no-store',
         headers: {

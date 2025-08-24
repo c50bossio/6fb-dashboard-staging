@@ -25,6 +25,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import ServiceTemplateSelector from '@/components/shop/ServiceTemplateSelector'
+import ServiceImageUpload from '@/components/ui/ServiceImageUpload'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 
@@ -45,7 +46,11 @@ export default function ShopServicesAndPricing() {
     category: 'haircut',
     price: '',
     duration_minutes: '30',
-    is_active: true
+    is_active: true,
+    is_featured: false,
+    online_booking_enabled: true,
+    requires_consultation: false,
+    image_url: ''
   })
   const [saving, setSaving] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
@@ -235,7 +240,11 @@ export default function ShopServicesAndPricing() {
         category: formData.category,
         price: parseFloat(formData.price),
         duration_minutes: parseInt(formData.duration_minutes),
-        is_active: formData.is_active
+        is_active: formData.is_active,
+        is_featured: formData.is_featured,
+        online_booking_enabled: formData.online_booking_enabled,
+        requires_consultation: formData.requires_consultation,
+        image_url: formData.image_url || null
       }
 
       if (editingService) {
@@ -269,7 +278,11 @@ export default function ShopServicesAndPricing() {
         category: 'haircut',
         price: '',
         duration_minutes: '30',
-        is_active: true
+        is_active: true,
+        is_featured: false,
+        online_booking_enabled: true,
+        requires_consultation: false,
+        image_url: ''
       })
     } catch (error) {
       console.error('Error saving service:', error)
@@ -313,7 +326,11 @@ export default function ShopServicesAndPricing() {
         category: templateData.category || 'general',
         price: parseFloat(templateData.price),
         duration_minutes: parseInt(templateData.duration_minutes),
-        is_active: templateData.is_active !== false
+        is_active: templateData.is_active !== false,
+        is_featured: templateData.is_featured || false,
+        online_booking_enabled: templateData.online_booking_enabled !== false,
+        requires_consultation: templateData.requires_consultation || false,
+        image_url: templateData.image_url || null
       }
 
       const { error } = await supabase
@@ -347,7 +364,11 @@ export default function ShopServicesAndPricing() {
       category: service.category || 'haircut',
       price: service.price?.toString() || '',
       duration_minutes: service.duration_minutes?.toString() || '30',
-      is_active: service.is_active ?? true
+      is_active: service.is_active ?? true,
+      is_featured: service.is_featured ?? false,
+      online_booking_enabled: service.online_booking_enabled ?? true,
+      requires_consultation: service.requires_consultation ?? false,
+      image_url: service.image_url || ''
     })
     setShowServiceModal(true)
   }
@@ -837,7 +858,11 @@ export default function ShopServicesAndPricing() {
                       category: 'haircut',
                       price: '',
                       duration_minutes: '30',
-                      is_active: true
+                      is_active: true,
+                      is_featured: false,
+                      online_booking_enabled: true,
+                      requires_consultation: false,
+                      image_url: ''
                     })
                   }}
                   className="p-2 hover:bg-gray-100 rounded-lg"
@@ -980,17 +1005,15 @@ export default function ShopServicesAndPricing() {
                 </div>
               </div>
 
-              {/* Image URL */}
+              {/* Service Image */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Image URL (optional)
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Service Image (optional)
                 </label>
-                <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
-                  placeholder="https://example.com/image.jpg"
+                <ServiceImageUpload
+                  currentImageUrl={formData.image_url}
+                  onImageChange={(url) => setFormData({...formData, image_url: url})}
+                  serviceId={editingService?.id}
                 />
               </div>
             </div>
@@ -1000,6 +1023,18 @@ export default function ShopServicesAndPricing() {
                 onClick={() => {
                   setShowServiceModal(false)
                   setEditingService(null)
+                  setFormData({
+                    name: '',
+                    description: '',
+                    category: 'haircut',
+                    price: '',
+                    duration_minutes: '30',
+                    is_active: true,
+                    is_featured: false,
+                    online_booking_enabled: true,
+                    requires_consultation: false,
+                    image_url: ''
+                  })
                 }}
                 className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
                 disabled={saving}

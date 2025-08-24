@@ -11,11 +11,25 @@ import {
   ArrowRightIcon,
   ShieldCheckIcon,
   StarIcon,
-  BoltIcon
+  BoltIcon,
+  PhotoIcon
 } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import Cookies from 'js-cookie'
 import ProgressiveAccountCreation from './ProgressiveAccountCreation'
+
+// Professional placeholder images for different service categories
+const getDefaultServiceImage = (category) => {
+  const imageMap = {
+    haircut: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=400&q=80',
+    beard: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=400&q=80', 
+    shave: 'https://images.unsplash.com/photo-1503951458645-643d53bfd90f?auto=format&fit=crop&w=400&q=80',
+    styling: 'https://images.unsplash.com/photo-1560975286-5c67d0b3e3fe?auto=format&fit=crop&w=400&q=80',
+    combo: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=400&q=80',
+    treatment: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&w=400&q=80'
+  }
+  return imageMap[category] || imageMap.haircut
+}
 
 export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
   // Simplified state - just 3 steps
@@ -217,20 +231,42 @@ export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
           <button
             key={service.id}
             onClick={() => handleServiceSelect(service)}
-            className="relative group p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all text-left"
+            className="relative group bg-white border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all text-left overflow-hidden"
           >
-            {service.popular && (
-              <div className="absolute -top-3 -right-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold py-1 px-3 rounded-full flex items-center">
+            {(service.popular || service.is_featured) && (
+              <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold py-1 px-3 rounded-full flex items-center shadow-lg">
                 <StarIcon className="h-3 w-3 mr-1" />
-                Popular
+                {service.is_featured ? 'Featured' : 'Popular'}
               </div>
             )}
             
-            <div className="space-y-3">
+            {/* Service Image */}
+            <div className="relative h-48 bg-gray-100 overflow-hidden">
+              <img 
+                src={service.image_url || getDefaultServiceImage(service.category)}
+                alt={service.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  // Fallback to default image if custom image fails
+                  if (e.target.src !== getDefaultServiceImage(service.category)) {
+                    e.target.src = getDefaultServiceImage(service.category)
+                  }
+                }}
+              />
+              
+              {/* Gradient overlay for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            </div>
+            
+            <div className="p-6 space-y-3">
               <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
                 {service.name}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 overflow-hidden" style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical'
+              }}>
                 {service.description}
               </p>
               

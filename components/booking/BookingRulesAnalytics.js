@@ -40,6 +40,7 @@ import {
   WifiOff
 } from 'lucide-react'
 import { useBookingRules } from '@/hooks/useBookingRules'
+import CustomerBehaviorScoring from './CustomerBehaviorScoring'
 import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d']
@@ -245,11 +246,12 @@ export default function BookingRulesAnalytics({ barbershopId }) {
 
       {/* Analytics Tabs */}
       <Tabs value={selectedMetric} onValueChange={setSelectedMetric}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="summary">Overview</TabsTrigger>
           <TabsTrigger value="violations">Violations</TabsTrigger>
           <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="effectiveness">Effectiveness</TabsTrigger>
+          <TabsTrigger value="customer-intelligence">Customer AI</TabsTrigger>
         </TabsList>
 
         {/* Summary Tab */}
@@ -432,6 +434,11 @@ export default function BookingRulesAnalytics({ barbershopId }) {
               <Recommendations data={analyticsData} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Customer Intelligence Tab */}
+        <TabsContent value="customer-intelligence" className="space-y-4">
+          <CustomerBehaviorScoring barbershopId={barbershopId} />
         </TabsContent>
       </Tabs>
     </div>

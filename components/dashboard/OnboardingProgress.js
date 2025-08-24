@@ -19,7 +19,11 @@ import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/sol
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 
-const ONBOARDING_STEPS = [
+// Unified customization URL for all user roles
+const getCustomizationUrl = () => '/customize'
+
+// Dynamic onboarding steps based on user role
+const getOnboardingSteps = (userRole) => [
   {
     id: 'business',
     title: 'Business Information',
@@ -65,9 +69,13 @@ const ONBOARDING_STEPS = [
   {
     id: 'branding',
     title: 'Branding',
-    description: 'Customize your booking page',
+    description: userRole === 'BARBER' 
+      ? 'Personalize your booking profile' 
+      : userRole === 'ENTERPRISE_OWNER' || userRole === 'SUPER_ADMIN'
+        ? 'Customize your enterprise website'
+        : 'Customize your booking page',
     icon: PaintBrushIcon,
-    path: '/shop/website'
+    path: getCustomizationUrl()
   }
 ]
 
@@ -82,6 +90,13 @@ export default function OnboardingProgress({ user, profile }) {
   // Celebration system states
   const [isCompleting, setIsCompleting] = useState(false)
   const [completionData, setCompletionData] = useState(null)
+
+  // Determine user context for role-aware routing
+  const userRole = profile?.role || 'SHOP_OWNER'
+  const barbershopId = profile?.shop_id || profile?.barbershop_id || 'default'
+  
+  // Get dynamic steps based on user role and context
+  const ONBOARDING_STEPS = getOnboardingSteps(userRole)
 
   // Load status from simplified API
   useEffect(() => {
@@ -230,18 +245,9 @@ export default function OnboardingProgress({ user, profile }) {
   const nextStep = ONBOARDING_STEPS.find(step => !getStepStatus(step.id))
 
   const handleStepClick = (step) => {
-    // Add onboarding context to URL for banner detection
-    const routes = {
-      'business': '/shop/settings/general',
-      'schedule': '/shop/settings/hours',
-      'services': '/shop/services',
-      'staff': '/shop/settings/staff',
-      'financial': '/shop/settings/payment-setup',
-      'booking': '/shop/settings/booking',
-      'branding': '/shop/website'
-    }
+    // Use the role-aware path from the dynamic steps
+    const route = step.path
     
-    const route = routes[step.id]
     if (route) {
       // Store onboarding context in session storage as backup
       const onboardingContext = {
@@ -249,7 +255,9 @@ export default function OnboardingProgress({ user, profile }) {
         route,
         timestamp: Date.now(),
         from: 'dashboard',
-        stepTitle: step.title
+        stepTitle: step.title,
+        userRole,
+        barbershopId
       }
       
       try {
@@ -261,6 +269,7 @@ export default function OnboardingProgress({ user, profile }) {
       
       // Add onboarding context parameters
       const url = `${route}?onboarding=true&step=${step.id}&from=dashboard`
+      console.log(`OnboardingProgress: Navigating to role-aware URL for ${userRole}:`, url)
       router.push(url)
     }
   }

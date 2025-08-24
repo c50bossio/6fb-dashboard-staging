@@ -50,8 +50,13 @@ export async function GET(request) {
       .eq('id', barbershopId)
       .single()
 
-    // Sort services manually if display_order exists, otherwise by name
+    // Sort services with featured services first, then by display_order/name
     const sortedServices = services.sort((a, b) => {
+      // Featured services always come first
+      if (a.is_featured && !b.is_featured) return -1
+      if (!a.is_featured && b.is_featured) return 1
+      
+      // Among featured or non-featured services, use existing sort logic
       if (a.display_order !== undefined && b.display_order !== undefined) {
         return a.display_order - b.display_order
       }
@@ -66,7 +71,9 @@ export async function GET(request) {
       duration: service.duration_minutes || service.duration || 30,
       price: service.price || 0,
       category: service.category,
-      popular: service.category === 'Popular' || index < 2, // Mark first 2 as popular
+      image_url: service.image_url,
+      is_featured: service.is_featured || false,
+      popular: service.is_featured || service.category === 'Popular' || index < 2, // Featured services are popular
       available: true
     }))
 

@@ -16,14 +16,28 @@ const {
   PlusIcon,
   ArrowRightIcon,
   LightBulbIcon,
-  RocketLaunchIcon
+  RocketLaunchIcon,
+  PaintBrushIcon,
+  GlobeAltIcon
 } = HeroIcons
+
+// Unified customization URL for all user roles
+const getCustomizationUrl = () => '/customize'
+
+// Unified customization content with progressive disclosure
+const getCustomizationContent = () => ({
+  title: 'Customize Experience',
+  description: 'Personalize your profile, website, and branding'
+})
 
 const FallbackIcon = ({ className }) => (
   <div className={`${className} bg-gray-300 rounded-full`} />
 )
 
 export default function QuickActions({ profile }) {
+  // Get unified customization content
+  const customizationContent = getCustomizationContent()
+  const customizationUrl = getCustomizationUrl()
   const primaryActions = [
     {
       title: 'AI Command Center',
@@ -56,6 +70,13 @@ export default function QuickActions({ profile }) {
 
   const secondaryActions = [
     {
+      title: customizationContent.title,
+      description: customizationContent.description,
+      href: customizationUrl,
+      icon: PaintBrushIcon,
+      color: 'indigo'
+    },
+    {
       title: 'Customer Management',
       description: 'View and manage your customer database',
       href: '/dashboard/customers',
@@ -74,7 +95,7 @@ export default function QuickActions({ profile }) {
       description: 'Train and customize your AI agents',
       href: '/dashboard/ai-training',
       icon: SparklesIcon,
-      color: 'indigo'
+      color: 'emerald'
     }
   ]
 

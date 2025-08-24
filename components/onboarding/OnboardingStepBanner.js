@@ -12,7 +12,7 @@ const ONBOARDING_STEPS = {
   'staff': { title: 'Staff Setup', path: '/shop/settings/staff' },
   'financial': { title: 'Payment Setup', path: '/shop/settings/payment-setup' },
   'booking': { title: 'Booking Policies', path: '/shop/settings/booking' },
-  'branding': { title: 'Branding', path: '/shop/website' }
+  'branding': { title: 'Branding', path: '/customize' }
 }
 
 export default function OnboardingStepBanner({ 
