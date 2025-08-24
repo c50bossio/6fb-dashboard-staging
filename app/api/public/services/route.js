@@ -71,7 +71,7 @@ export async function GET(request) {
       duration: service.duration_minutes || service.duration || 30,
       price: service.price || 0,
       category: service.category,
-      image_url: service.image_url,
+      image_url: service.image_url || null, // Handle missing image_url gracefully
       is_featured: service.is_featured || false,
       popular: service.is_featured || service.category === 'Popular' || index < 2, // Featured services are popular
       available: true
