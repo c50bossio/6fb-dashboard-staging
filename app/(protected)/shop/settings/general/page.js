@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import OnboardingReturnBanner from '@/components/dashboard/OnboardingReturnBanner'
 import {
   BuildingStorefrontIcon,
   EnvelopeIcon,
@@ -35,18 +36,26 @@ export default function GeneralSettingsPage() {
   })
 
   const [originalData, setOriginalData] = useState(null)
+  const initialValues = useRef(null)
 
   useEffect(() => {
     loadShopData()
   }, [user])
 
+  // Capture initial state on first render
   useEffect(() => {
-    // Check if data has changed
-    if (originalData) {
-      const changed = JSON.stringify(formData) !== JSON.stringify(originalData)
+    if (!initialValues.current) {
+      initialValues.current = JSON.parse(JSON.stringify(formData))
+    }
+  }, [])
+
+  useEffect(() => {
+    // Always check if data has changed against initial values
+    if (initialValues.current) {
+      const changed = JSON.stringify(formData) !== JSON.stringify(initialValues.current)
       setHasChanges(changed)
     }
-  }, [formData, originalData])
+  }, [formData])
 
   const loadShopData = async () => {
     if (!user) return
@@ -54,11 +63,32 @@ export default function GeneralSettingsPage() {
     try {
       setLoading(true)
       
-      const { data: shop, error } = await supabase
+      // First try to get shop by owner_id
+      let { data: shop, error } = await supabase
         .from('barbershops')
         .select('*')
         .eq('owner_id', user.id)
         .single()
+      
+      // If no shop found by owner_id, check profile for shop_id
+      if (!shop || error) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('shop_id, barbershop_id')
+          .eq('id', user.id)
+          .single()
+        
+        const shopId = profile?.shop_id || profile?.barbershop_id
+        if (shopId) {
+          const { data: shopByProfile } = await supabase
+            .from('barbershops')
+            .select('*')
+            .eq('id', shopId)
+            .single()
+          
+          shop = shopByProfile
+        }
+      }
       
       if (shop) {
         const shopData = {
@@ -75,10 +105,23 @@ export default function GeneralSettingsPage() {
         }
         setFormData(shopData)
         setOriginalData(shopData)
+        // Update initial values to the loaded data
+        initialValues.current = JSON.parse(JSON.stringify(shopData))
+      } else {
+        // No barbershop exists yet - this is expected during onboarding
+        console.log('No barbershop found - ready for initial setup')
+        // Pre-fill with user's email if available
+        setFormData(prev => ({
+          ...prev,
+          email: user.email || prev.email
+        }))
       }
     } catch (error) {
       console.error('Error loading shop data:', error)
-      showNotification('error', 'Failed to load shop information')
+      // Don't show error during onboarding when no shop exists
+      if (!error.message?.includes('No rows') && !error.message?.includes('multiple')) {
+        showNotification('error', 'Failed to load shop information')
+      }
     } finally {
       setLoading(false)
     }
@@ -89,28 +132,76 @@ export default function GeneralSettingsPage() {
     setNotification(null)
     
     try {
-      const { error } = await supabase
+      // Check if barbershop exists
+      const { data: existingShop } = await supabase
         .from('barbershops')
-        .update({
-          name: formData.name,
-          description: formData.description,
-          email: formData.email,
-          phone: formData.phone,
-          website: formData.website,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zip_code,
-          country: formData.country,
-          updated_at: new Date().toISOString()
-        })
+        .select('id')
         .eq('owner_id', user?.id)
+        .single()
       
-      if (error) {
-        throw error
+      if (existingShop) {
+        // Update existing barbershop
+        const { error } = await supabase
+          .from('barbershops')
+          .update({
+            name: formData.name,
+            description: formData.description,
+            email: formData.email,
+            phone: formData.phone,
+            website: formData.website,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zip_code: formData.zip_code,
+            country: formData.country,
+            updated_at: new Date().toISOString()
+          })
+          .eq('owner_id', user?.id)
+        
+        if (error) throw error
+      } else {
+        // Create new barbershop (during onboarding)
+        const { data: newShop, error } = await supabase
+          .from('barbershops')
+          .insert({
+            owner_id: user?.id,
+            name: formData.name,
+            description: formData.description,
+            email: formData.email,
+            phone: formData.phone,
+            website: formData.website,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zip_code: formData.zip_code,
+            country: formData.country,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+        
+        if (error) throw error
+        
+        // Update profile with shop_id
+        if (newShop) {
+          await supabase
+            .from('profiles')
+            .update({ 
+              shop_id: newShop.id,
+              barbershop_id: newShop.id 
+            })
+            .eq('id', user?.id)
+        }
       }
       
+      // No complex onboarding progress tracking needed!
+      // The new /api/onboarding/status endpoint automatically detects completion
+      // based on actual data existence - much simpler and more reliable
+      
       setOriginalData(formData)
+      // Update initial values to the newly saved data
+      initialValues.current = JSON.parse(JSON.stringify(formData))
       setHasChanges(false)
       showNotification('success', 'Settings saved successfully!')
     } catch (error) {
@@ -122,7 +213,12 @@ export default function GeneralSettingsPage() {
   }
 
   const handleDiscard = () => {
-    setFormData(originalData)
+    // Reset to initial values
+    if (initialValues.current) {
+      setFormData(initialValues.current)
+    } else if (originalData) {
+      setFormData(originalData)
+    }
     setHasChanges(false)
     showNotification('info', 'Changes discarded')
   }
@@ -142,6 +238,12 @@ export default function GeneralSettingsPage() {
 
   return (
     <div className="max-w-4xl">
+      {/* Onboarding Return Banner */}
+      <OnboardingReturnBanner 
+        currentStep="business"
+        onComplete={handleSave}
+      />
+      
       {/* Header with Save Button */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
@@ -155,32 +257,36 @@ export default function GeneralSettingsPage() {
             </div>
             <div className="flex items-center space-x-3">
               {hasChanges && (
-                <>
-                  <button
-                    onClick={handleDiscard}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    Discard
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors"
-                  >
-                    {saving ? (
-                      <>
-                        <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Saving...
-                      </>
-                    ) : (
-                      'Save Changes'
-                    )}
-                  </button>
-                </>
+                <button
+                  onClick={handleDiscard}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Discard
+                </button>
               )}
+              <button
+                onClick={handleSave}
+                disabled={!hasChanges || saving}
+                className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                  !hasChanges || saving
+                    ? 'bg-gray-400 text-gray-500 cursor-not-allowed'
+                    : 'bg-olive-600 text-white hover:bg-olive-700'
+                }`}
+              >
+                {saving ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Saving...
+                  </>
+                ) : originalData === null ? (
+                  'Save Settings'
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -213,6 +319,24 @@ export default function GeneralSettingsPage() {
 
         {/* Form Content */}
         <div className="p-6">
+          {/* Helper text for first-time users */}
+          {!originalData && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    <strong>Welcome to your barbershop setup!</strong> Fill in the fields below and click "Save Settings" to create your barbershop profile.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
