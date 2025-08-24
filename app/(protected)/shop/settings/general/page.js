@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
-import OnboardingReturnBanner from '@/components/dashboard/OnboardingReturnBanner'
 import {
   BuildingStorefrontIcon,
   EnvelopeIcon,
@@ -238,11 +237,6 @@ export default function GeneralSettingsPage() {
 
   return (
     <div className="max-w-4xl">
-      {/* Onboarding Return Banner */}
-      <OnboardingReturnBanner 
-        currentStep="business"
-        onComplete={handleSave}
-      />
       
       {/* Header with Save Button */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
