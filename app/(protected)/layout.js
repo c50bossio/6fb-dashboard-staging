@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import DashboardHeader from '../../components/dashboard/DashboardHeader'
-import OnboardingOrchestrator from '../../components/onboarding/OnboardingOrchestrator'
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
@@ -15,51 +14,20 @@ import { useAuth } from '../../components/SupabaseAuthProvider'
 function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()
   const { user, profile, refreshProfile } = useAuth()
-  const [showOnboarding, setShowOnboarding] = useState(false)
-  const [isCompletingOnboarding, setIsCompletingOnboarding] = useState(false)
   
-  // Debug logging
+  // Check for Stripe success parameter and show simple notification
   useEffect(() => {
-    console.log('🔧 DEBUG: ProtectedLayoutContent mounted', {
-      showOnboarding,
-      hasUser: !!user,
-      hasProfile: !!profile,
-      userEmail: user?.email,
-      profileRole: profile?.role
-    })
-  }, [showOnboarding, user, profile])
-  
-  // Listen for launch onboarding event from profile dropdown - available on ALL pages
-  useEffect(() => {
-    const handleLaunchOnboarding = (event) => {
-      console.log('🚀 Launching onboarding from profile dropdown (global handler)', {
-        detail: event.detail,
-        showOnboarding
-      })
-      setShowOnboarding(true)
-      // Let DashboardOnboarding handle its own progress loading
-    }
+    const urlParams = new URLSearchParams(window.location.search)
+    const stripeSuccess = urlParams.get('stripe_success') === 'true'
     
-    // Add listener immediately
-    window.addEventListener('launchOnboarding', handleLaunchOnboarding)
-    
-    // Also check if event was dispatched before component mounted
-    // This handles race conditions where the button is clicked very quickly
-    const checkPendingEvent = () => {
-      if (window.__pendingOnboardingLaunch) {
-        console.log('📌 Found pending onboarding launch event')
-        handleLaunchOnboarding({ detail: { forced: true } })
-        delete window.__pendingOnboardingLaunch
-      }
-    }
-    
-    // Check immediately and after a short delay
-    checkPendingEvent()
-    const timeoutId = setTimeout(checkPendingEvent, 100)
-    
-    return () => {
-      clearTimeout(timeoutId)
-      window.removeEventListener('launchOnboarding', handleLaunchOnboarding)
+    if (stripeSuccess) {
+      // Show success notification (could add a toast here)
+      console.log('✅ Payment setup completed successfully!')
+      
+      // Clean up URL params
+      const newUrl = new URL(window.location)
+      newUrl.searchParams.delete('stripe_success')
+      window.history.replaceState({}, document.title, newUrl.pathname)
     }
   }, [])
   
@@ -80,50 +48,6 @@ function ProtectedLayoutContent({ children }) {
       <div className="hidden lg:block">
         <FloatingAIChat />
       </div>
-      
-      
-      {/* Onboarding Modal - Shows when triggered with tier-based routing */}
-      {showOnboarding && (
-        <OnboardingOrchestrator 
-          onComplete={async () => {
-            console.log('✅ Onboarding completed (via orchestrator)')
-            setIsCompletingOnboarding(true)
-            
-            try {
-              // Try seamless profile refresh first
-              console.log('🔄 Attempting seamless profile refresh...')
-              const refreshSuccess = await refreshProfile()
-              
-              if (refreshSuccess) {
-                console.log('✅ Seamless refresh successful - enterprise features activated')
-                setIsCompletingOnboarding(false)
-                setShowOnboarding(false)
-                
-                // Show success notification
-                setTimeout(() => {
-                  console.log('🎉 Enterprise onboarding completed - features now available!')
-                }, 500)
-              } else {
-                console.log('⚠️ Seamless refresh failed - falling back to page reload')
-                // Fallback to page reload if refresh fails
-                window.location.reload()
-              }
-            } catch (error) {
-              console.error('❌ Error during onboarding completion:', error)
-              // Fallback to page reload on error
-              console.log('🔄 Using page reload fallback...')
-              window.location.reload()
-            }
-          }}
-          onSkip={() => {
-            console.log('⏭️ Onboarding skipped (via orchestrator)')
-            setShowOnboarding(false)
-          }}
-          isCompleting={isCompletingOnboarding}
-        />
-      )}
-      
-      {/* <TestOnboardingModal /> */}
       
       {/* Toast notifications for the entire app */}
       {/* <Toaster 

@@ -1,16 +1,17 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import {
-  DocumentTextIcon,
   CalculatorIcon,
   BuildingLibraryIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  ArrowTopRightOnSquareIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 
 export default function TaxSettingsPage() {
@@ -24,55 +25,48 @@ export default function TaxSettingsPage() {
   const [barbershopId, setBarbershopId] = useState(null)
   
   const [formData, setFormData] = useState({
-    // Tax Information
+    // Stripe Tax Integration
+    stripe_tax_enabled: false,
+    stripe_tax_settings_id: '',
+    
+    // Display Settings
+    show_tax_in_receipts: true,
+    tax_label: 'Sales Tax',
+    
+    // Business Information (for compliance)
     tax_id: '',
-    tax_type: 'ein', // ein, ssn, other
-    tax_rate: 0,
-    tax_included_in_price: false,
-    
-    // State & Local Taxes
-    state_tax_rate: 0,
-    local_tax_rate: 0,
-    special_tax_district: '',
-    
-    // Business Registration
+    tax_id_type: 'ein', // ein, ssn
     business_license_number: '',
-    business_license_expiry: '',
-    cosmetology_license_number: '',
-    cosmetology_license_expiry: '',
     
-    // Compliance
-    collect_sales_tax: true,
-    tax_exempt: false,
-    tax_exempt_reason: '',
-    quarterly_filing: true,
-    tax_filing_frequency: 'quarterly', // monthly, quarterly, annually
+    // Simple override for cash transactions
+    manual_tax_rate: 0, // For cash/non-Stripe transactions only
     
-    // Additional Compliance
-    health_permit_number: '',
-    health_permit_expiry: '',
-    insurance_policy_number: '',
-    insurance_expiry: '',
-    workers_comp_policy: '',
-    
-    // Record Keeping
-    retain_records_years: 7,
-    digital_receipts_enabled: true,
-    paper_receipts_required: false
+    // Customer experience
+    tax_inclusive_pricing: false, // Show prices with tax included
+    show_tax_breakdown: true // Show tax breakdown in checkout
   })
 
   const [originalData, setOriginalData] = useState(null)
+  const initialValues = useRef(null)
 
   useEffect(() => {
     loadTaxData()
   }, [user])
 
+  // Capture initial state on first render
   useEffect(() => {
-    if (originalData) {
-      const changed = JSON.stringify(formData) !== JSON.stringify(originalData)
+    if (!initialValues.current) {
+      initialValues.current = JSON.parse(JSON.stringify(formData))
+    }
+  }, [])
+
+  useEffect(() => {
+    // Always check if data has changed against initial values
+    if (initialValues.current) {
+      const changed = JSON.stringify(formData) !== JSON.stringify(initialValues.current)
       setHasChanges(changed)
     }
-  }, [formData, originalData])
+  }, [formData])
 
   const loadTaxData = async () => {
     if (!user) return
@@ -98,49 +92,32 @@ export default function TaxSettingsPage() {
       
       setBarbershopId(profile.barbershop_id)
       
-      // Load tax settings from barbershops table or business_settings
-      const { data: barbershop, error } = await supabase
-        .from('barbershops')
-        .select('*')
-        .eq('id', profile.barbershop_id)
+      // Load tax settings from business_settings
+      const { data: settings, error } = await supabase
+        .from('business_settings')
+        .select('tax_settings')
+        .eq('user_id', user.id)
         .single()
       
-      if (error) throw error
-      
-      if (barbershop) {
-        // Map database fields to form fields
+      if (settings?.tax_settings) {
         const taxData = {
-          tax_id: barbershop.tax_id || '',
-          tax_type: barbershop.tax_type || 'ein',
-          tax_rate: barbershop.tax_rate || 0,
-          tax_included_in_price: barbershop.tax_included_in_price || false,
-          state_tax_rate: barbershop.state_tax_rate || 0,
-          local_tax_rate: barbershop.local_tax_rate || 0,
-          special_tax_district: barbershop.special_tax_district || '',
-          business_license_number: barbershop.business_license_number || '',
-          business_license_expiry: barbershop.business_license_expiry || '',
-          cosmetology_license_number: barbershop.cosmetology_license_number || '',
-          cosmetology_license_expiry: barbershop.cosmetology_license_expiry || '',
-          collect_sales_tax: barbershop.collect_sales_tax !== false,
-          tax_exempt: barbershop.tax_exempt || false,
-          tax_exempt_reason: barbershop.tax_exempt_reason || '',
-          quarterly_filing: barbershop.quarterly_filing !== false,
-          tax_filing_frequency: barbershop.tax_filing_frequency || 'quarterly',
-          health_permit_number: barbershop.health_permit_number || '',
-          health_permit_expiry: barbershop.health_permit_expiry || '',
-          insurance_policy_number: barbershop.insurance_policy_number || '',
-          insurance_expiry: barbershop.insurance_expiry || '',
-          workers_comp_policy: barbershop.workers_comp_policy || '',
-          retain_records_years: barbershop.retain_records_years || 7,
-          digital_receipts_enabled: barbershop.digital_receipts_enabled !== false,
-          paper_receipts_required: barbershop.paper_receipts_required || false
+          stripe_tax_enabled: settings.tax_settings.stripe_tax_enabled || false,
+          stripe_tax_settings_id: settings.tax_settings.stripe_tax_settings_id || '',
+          show_tax_in_receipts: settings.tax_settings.show_tax_in_receipts !== false,
+          tax_label: settings.tax_settings.tax_label || 'Sales Tax',
+          tax_id: settings.tax_settings.tax_id || '',
+          tax_id_type: settings.tax_settings.tax_id_type || 'ein',
+          business_license_number: settings.tax_settings.business_license_number || '',
+          manual_tax_rate: settings.tax_settings.manual_tax_rate || 0,
+          tax_inclusive_pricing: settings.tax_settings.tax_inclusive_pricing || false,
+          show_tax_breakdown: settings.tax_settings.show_tax_breakdown !== false
         }
         
         setFormData(taxData)
         setOriginalData(taxData)
       }
     } catch (error) {
-      console.error('Error loading tax data:', error)
+      console.error('Error loading tax settings:', error)
       setNotification({
         type: 'error',
         message: 'Failed to load tax settings'
@@ -150,37 +127,42 @@ export default function TaxSettingsPage() {
     }
   }
 
-  const calculateTotalTaxRate = () => {
-    const total = parseFloat(formData.tax_rate || 0) + 
-                  parseFloat(formData.state_tax_rate || 0) + 
-                  parseFloat(formData.local_tax_rate || 0)
-    return total.toFixed(2)
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    if (!barbershopId) {
-      setNotification({
-        type: 'error',
-        message: 'No barbershop ID found'
-      })
-      return
-    }
-    
     setSaving(true)
     setNotification(null)
     
     try {
-      const { error } = await supabase
-        .from('barbershops')
-        .update({
-          ...formData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', barbershopId)
+      // Check if business_settings exists
+      const { data: existing } = await supabase
+        .from('business_settings')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
       
-      if (error) throw error
+      const taxSettings = {
+        ...formData,
+        updated_at: new Date().toISOString()
+      }
+      
+      if (existing) {
+        // Update existing settings
+        await supabase
+          .from('business_settings')
+          .update({
+            tax_settings: taxSettings,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+      } else {
+        // Create new settings
+        await supabase
+          .from('business_settings')
+          .insert({
+            user_id: user.id,
+            tax_settings: taxSettings
+          })
+      }
       
       setOriginalData(formData)
       setHasChanges(false)
@@ -199,10 +181,9 @@ export default function TaxSettingsPage() {
     }
   }
 
-  const handleReset = () => {
-    setFormData(originalData)
-    setHasChanges(false)
-    setNotification(null)
+  const openStripeSettings = () => {
+    // Open Stripe Dashboard in new tab
+    window.open('https://dashboard.stripe.com/settings/tax', '_blank')
   }
 
   if (loading) {
@@ -216,9 +197,9 @@ export default function TaxSettingsPage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Tax & Compliance Settings</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Tax & Compliance</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Manage tax rates, business licenses, and compliance requirements
+          Manage tax calculation and compliance with Stripe Tax
         </p>
       </div>
 
@@ -246,12 +227,73 @@ export default function TaxSettingsPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Tax Information Section */}
+        {/* Stripe Tax Integration */}
         <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
           <div className="px-4 py-6 sm:p-8">
             <div className="flex items-center mb-6">
-              <CalculatorIcon className="h-6 w-6 text-gray-400 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-900">Tax Information</h2>
+              <ShieldCheckIcon className="h-6 w-6 text-gray-400 mr-2" />
+              <h2 className="text-lg font-semibold text-gray-900">Stripe Tax (Recommended)</h2>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex">
+                <InformationCircleIcon className="h-5 w-5 text-blue-400 mt-0.5 mr-2 flex-shrink-0" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium mb-2">Why use Stripe Tax?</p>
+                  <ul className="list-disc ml-5 space-y-1">
+                    <li>Automatic tax calculation for all US jurisdictions</li>
+                    <li>Always up-to-date with changing tax laws</li>
+                    <li>Handles state, county, city, and special district taxes</li>
+                    <li>Optional tax filing and remittance service</li>
+                    <li>Reduces compliance risk and penalties</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.stripe_tax_enabled}
+                    onChange={(e) => setFormData({...formData, stripe_tax_enabled: e.target.checked})}
+                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm font-medium text-gray-700">
+                    Enable Stripe Tax for automatic tax calculation
+                  </span>
+                </label>
+                <p className="mt-1 ml-6 text-xs text-gray-500">
+                  Stripe will automatically calculate and collect the correct tax amount
+                </p>
+              </div>
+
+              {formData.stripe_tax_enabled && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={openStripeSettings}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
+                  >
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-2" />
+                    Configure in Stripe Dashboard
+                  </button>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Complete tax registration and settings in your Stripe account
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Business Information */}
+        <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+          <div className="px-4 py-6 sm:p-8">
+            <div className="flex items-center mb-6">
+              <BuildingLibraryIcon className="h-6 w-6 text-gray-400 mr-2" />
+              <h2 className="text-lg font-semibold text-gray-900">Business Information</h2>
             </div>
             
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -260,13 +302,12 @@ export default function TaxSettingsPage() {
                   Tax ID Type
                 </label>
                 <select
-                  value={formData.tax_type}
-                  onChange={(e) => setFormData({...formData, tax_type: e.target.value})}
+                  value={formData.tax_id_type}
+                  onChange={(e) => setFormData({...formData, tax_id_type: e.target.value})}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
                 >
                   <option value="ein">EIN (Employer Identification Number)</option>
                   <option value="ssn">SSN (Social Security Number)</option>
-                  <option value="other">Other</option>
                 </select>
               </div>
 
@@ -278,108 +319,14 @@ export default function TaxSettingsPage() {
                   type="text"
                   value={formData.tax_id}
                   onChange={(e) => setFormData({...formData, tax_id: e.target.value})}
+                  placeholder={formData.tax_id_type === 'ein' ? 'XX-XXXXXXX' : 'XXX-XX-XXXX'}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                  placeholder="XX-XXXXXXX"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Default Tax Rate (%)
-                </label>
-                <input
-                  type="number"
-                  value={formData.tax_rate}
-                  onChange={(e) => setFormData({...formData, tax_rate: parseFloat(e.target.value) || 0})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  State Tax Rate (%)
-                </label>
-                <input
-                  type="number"
-                  value={formData.state_tax_rate}
-                  onChange={(e) => setFormData({...formData, state_tax_rate: parseFloat(e.target.value) || 0})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Local Tax Rate (%)
-                </label>
-                <input
-                  type="number"
-                  value={formData.local_tax_rate}
-                  onChange={(e) => setFormData({...formData, local_tax_rate: parseFloat(e.target.value) || 0})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                  step="0.01"
-                  min="0"
-                  max="100"
-                />
-              </div>
-
-              <div className="flex items-center">
-                <div className="text-sm">
-                  <span className="font-medium text-gray-700">Total Tax Rate: </span>
-                  <span className="text-lg font-semibold text-olive-600">
-                    {calculateTotalTaxRate()}%
-                  </span>
-                </div>
               </div>
 
               <div className="col-span-2">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.tax_included_in_price}
-                    onChange={(e) => setFormData({...formData, tax_included_in_price: e.target.checked})}
-                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">
-                    Tax is included in displayed prices
-                  </span>
-                </label>
-              </div>
-
-              <div className="col-span-2">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.collect_sales_tax}
-                    onChange={(e) => setFormData({...formData, collect_sales_tax: e.target.checked})}
-                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">
-                    Collect sales tax on transactions
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Business Licenses Section */}
-        <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
-          <div className="px-4 py-6 sm:p-8">
-            <div className="flex items-center mb-6">
-              <DocumentTextIcon className="h-6 w-6 text-gray-400 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-900">Business Licenses</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Business License Number
+                  Business License Number (Optional)
                 </label>
                 <input
                   type="text"
@@ -388,176 +335,94 @@ export default function TaxSettingsPage() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Business License Expiry
-                </label>
-                <input
-                  type="date"
-                  value={formData.business_license_expiry}
-                  onChange={(e) => setFormData({...formData, business_license_expiry: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Cosmetology License Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.cosmetology_license_number}
-                  onChange={(e) => setFormData({...formData, cosmetology_license_number: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Cosmetology License Expiry
-                </label>
-                <input
-                  type="date"
-                  value={formData.cosmetology_license_expiry}
-                  onChange={(e) => setFormData({...formData, cosmetology_license_expiry: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Health Permit Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.health_permit_number}
-                  onChange={(e) => setFormData({...formData, health_permit_number: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Health Permit Expiry
-                </label>
-                <input
-                  type="date"
-                  value={formData.health_permit_expiry}
-                  onChange={(e) => setFormData({...formData, health_permit_expiry: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Insurance & Compliance Section */}
+        {/* Manual Tax Settings (for cash transactions) */}
         <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
           <div className="px-4 py-6 sm:p-8">
             <div className="flex items-center mb-6">
-              <BuildingLibraryIcon className="h-6 w-6 text-gray-400 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-900">Insurance & Compliance</h2>
+              <CalculatorIcon className="h-6 w-6 text-gray-400 mr-2" />
+              <h2 className="text-lg font-semibold text-gray-900">Cash Transaction Settings</h2>
             </div>
             
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Insurance Policy Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.insurance_policy_number}
-                  onChange={(e) => setFormData({...formData, insurance_policy_number: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Insurance Expiry
-                </label>
-                <input
-                  type="date"
-                  value={formData.insurance_expiry}
-                  onChange={(e) => setFormData({...formData, insurance_expiry: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Workers Compensation Policy Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.workers_comp_policy}
-                  onChange={(e) => setFormData({...formData, workers_comp_policy: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Tax Filing Frequency
-                </label>
-                <select
-                  value={formData.tax_filing_frequency}
-                  onChange={(e) => setFormData({...formData, tax_filing_frequency: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                >
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="annually">Annually</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Record Retention (Years)
+                  Manual Tax Rate (%)
                 </label>
                 <input
                   type="number"
-                  value={formData.retain_records_years}
-                  onChange={(e) => setFormData({...formData, retain_records_years: parseInt(e.target.value) || 7})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                  min="1"
-                  max="10"
+                  value={formData.manual_tax_rate}
+                  onChange={(e) => setFormData({...formData, manual_tax_rate: parseFloat(e.target.value) || 0})}
+                  step="0.01"
+                  min="0"
+                  max="20"
+                  className="mt-1 block w-32 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Used only for cash or manual transactions when Stripe Tax is not available
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Receipt Settings */}
+        {/* Display Settings */}
         <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
           <div className="px-4 py-6 sm:p-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Receipt Settings</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-6">Display Settings</h2>
             
             <div className="space-y-4">
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={formData.digital_receipts_enabled}
-                  onChange={(e) => setFormData({...formData, digital_receipts_enabled: e.target.checked})}
+                  checked={formData.show_tax_in_receipts}
+                  onChange={(e) => setFormData({...formData, show_tax_in_receipts: e.target.checked})}
                   className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">
-                  Enable digital receipts
+                  Show tax line item in receipts
                 </span>
               </label>
 
               <label className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={formData.paper_receipts_required}
-                  onChange={(e) => setFormData({...formData, paper_receipts_required: e.target.checked})}
+                  checked={formData.tax_inclusive_pricing}
+                  onChange={(e) => setFormData({...formData, tax_inclusive_pricing: e.target.checked})}
                   className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">
-                  Paper receipts required by law
+                  Display prices with tax included
                 </span>
               </label>
+
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.show_tax_breakdown}
+                  onChange={(e) => setFormData({...formData, show_tax_breakdown: e.target.checked})}
+                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-700">
+                  Show detailed tax breakdown at checkout
+                </span>
+              </label>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Tax Label on Receipts
+                </label>
+                <input
+                  type="text"
+                  value={formData.tax_label}
+                  onChange={(e) => setFormData({...formData, tax_label: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
+                  placeholder="e.g., Sales Tax, VAT, GST"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -567,7 +432,10 @@ export default function TaxSettingsPage() {
           {hasChanges && (
             <button
               type="button"
-              onClick={handleReset}
+              onClick={() => {
+                setFormData(originalData)
+                setHasChanges(false)
+              }}
               className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
             >
               Cancel
@@ -576,10 +444,10 @@ export default function TaxSettingsPage() {
           <button
             type="submit"
             disabled={!hasChanges || saving}
-            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+            className={`px-4 py-2 rounded-lg transition-colors ${
               !hasChanges || saving
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500'
+                ? 'bg-gray-400 text-gray-500 cursor-not-allowed'
+                : 'bg-olive-600 text-white hover:bg-olive-700'
             }`}
           >
             {saving ? 'Saving...' : 'Save Changes'}

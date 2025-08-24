@@ -16,7 +16,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert } from '../ui/Alert';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
+import { Card } from "../ui/card"';
 
 const EmailCampaignDashboard = ({ userId }) => {
     const [campaigns, setCampaigns] = useState([]);

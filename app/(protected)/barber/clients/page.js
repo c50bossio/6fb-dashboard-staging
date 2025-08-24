@@ -19,7 +19,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { createClient } from '@supabase/supabase-js'
 import ExportCSV from '../../../../components/customers/ExportCSV'
-import DataImportSetup from '../../../../components/onboarding/DataImportSetup'
+import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
 import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 
@@ -538,7 +538,7 @@ export default function BarberClients() {
               </div>
             </div>
             <div className="p-6">
-              <DataImportSetup
+              <PlatformTailoredImport
                 onComplete={(importData) => {
                   console.log('Import completed:', importData)
                   if (!importData.skipped) {
@@ -687,7 +687,7 @@ function AddClientModal({ onClose, onAdd }) {
   )
 }
 
-// Note: Import functionality now uses the comprehensive DataImportSetup component
+// Note: Import functionality now uses the comprehensive PlatformTailoredImport component
 // from the onboarding system which provides:
 // - Platform-specific export instructions
 // - File preview and validation

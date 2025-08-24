@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import {
   BuildingStorefrontIcon,
   EnvelopeIcon,
@@ -235,8 +236,42 @@ export default function GeneralSettingsPage() {
     )
   }
 
+  // Validation function for onboarding completion
+  const validateBusinessCompletion = async () => {
+    try {
+      const response = await fetch('/api/onboarding/status', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const businessComplete = data.steps?.business?.complete || false
+        return {
+          valid: businessComplete,
+          message: businessComplete 
+            ? 'Business information completed successfully!' 
+            : 'Please fill in business name, address, and phone number'
+        }
+      }
+    } catch (error) {
+      console.error('Error validating business completion:', error)
+    }
+    
+    return {
+      valid: false,
+      message: 'Unable to validate business information. Please ensure all required fields are completed.'
+    }
+  }
+
   return (
     <div className="max-w-4xl">
+      {/* Onboarding Step Banner */}
+      <OnboardingStepBanner 
+        stepId="business"
+        validateCompletion={validateBusinessCompletion}
+        completionMessage="Business information is complete!"
+      />
       
       {/* Header with Save Button */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">

@@ -109,7 +109,7 @@ export async function POST(request) {
       )
     }
     
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.toLowerCase().trim(),

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
+import { Card } from "../ui/card"';
 
 const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
     const [analytics, setAnalytics] = useState(null);

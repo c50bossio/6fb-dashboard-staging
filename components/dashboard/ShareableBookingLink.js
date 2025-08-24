@@ -170,6 +170,12 @@ export default function ShareableBookingLink() {
   }
 
   if (error) {
+    // During onboarding, don't show errors about missing barbershop
+    // The OnboardingProgress widget will guide the user
+    if (error.includes('No barbershop') && profile?.onboarding_completed === false) {
+      return null // Don't render anything during onboarding
+    }
+    
     return (
       <div className="bg-white rounded-lg shadow-sm border border-red-200 p-6">
         <div className="flex items-center text-red-600">

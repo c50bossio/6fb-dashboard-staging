@@ -5,7 +5,7 @@ export const runtime = 'edge'
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { error } = await supabase.auth.signOut()
 

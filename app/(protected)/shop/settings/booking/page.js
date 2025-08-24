@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import BookingRulesSetup from '@/components/onboarding/BookingRulesSetup'
+import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import {
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -137,6 +138,34 @@ export default function BookingRulesPage() {
 
   const hasChanges = JSON.stringify(bookingRules) !== JSON.stringify(originalRules)
 
+  // Validation function for onboarding completion
+  const validateBookingCompletion = async () => {
+    try {
+      const response = await fetch('/api/onboarding/status', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const bookingComplete = data.steps?.booking?.complete || false
+        return {
+          valid: bookingComplete,
+          message: bookingComplete 
+            ? 'Booking policies configured successfully! Your cancellation and booking rules are set up.'
+            : 'Please configure at least one booking or cancellation policy'
+        }
+      }
+    } catch (error) {
+      console.error('Error validating booking completion:', error)
+    }
+    
+    return {
+      valid: false,
+      message: 'Unable to validate booking policies. Please ensure you have configured cancellation and booking rules.'
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -147,6 +176,13 @@ export default function BookingRulesPage() {
 
   return (
     <div className="max-w-4xl">
+      {/* Onboarding Step Banner */}
+      <OnboardingStepBanner 
+        stepId="booking"
+        validateCompletion={validateBookingCompletion}
+        completionMessage="Booking policies configured successfully!"
+      />
+
       <div className="mb-8">
         <div className="flex items-center">
           <CalendarDaysIcon className="h-8 w-8 text-olive-600 mr-3" />
@@ -206,10 +242,10 @@ export default function BookingRulesPage() {
         <button
           onClick={handleSave}
           disabled={!hasChanges || saving}
-          className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+          className={`px-4 py-2 rounded-lg transition-colors ${
             !hasChanges || saving
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500'
+              ? 'bg-gray-400 text-gray-500 cursor-not-allowed'
+              : 'bg-olive-600 text-white hover:bg-olive-700'
           }`}
         >
           {saving ? 'Saving...' : 'Save Changes'}

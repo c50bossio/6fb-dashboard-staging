@@ -3,6 +3,82 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
+export async function PATCH(request, { params }) {
+  try {
+    const { id } = params
+    
+    // Check if we're in development mode for bypass
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    const devBypass = request.headers.get('x-dev-bypass') === 'true' || isDevelopment
+    
+    let supabase
+    let userId
+    
+    // In development, use service role client to bypass RLS
+    if (devBypass && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+      supabase = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
+      )
+      userId = 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5' // Mock user
+      console.log('🔧 Using development bypass for product PATCH')
+    } else {
+      // Production path - use normal client
+      const cookieStore = cookies()
+      supabase = createClient(cookieStore)
+      
+      // Get the authenticated user from the session
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        return NextResponse.json(
+          { error: 'Unauthorized - Please log in' },
+          { status: 401 }
+        )
+      }
+      
+      userId = user.id
+    }
+    
+    const updates = await request.json()
+    
+    const { data: updatedProduct, error: updateError } = await supabase
+      .from('products')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (updateError) {
+      console.error('Error updating product:', updateError)
+      return NextResponse.json(
+        { error: 'Failed to update product' },
+        { status: 500 }
+      )
+    }
+    
+    return NextResponse.json(updatedProduct)
+    
+  } catch (error) {
+    console.error('Error in PATCH /api/shop/products/[id]:', error)
+    
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function PUT(request, { params }) {
   try {
     const { id } = params

@@ -1,11 +1,21 @@
 'use client'
 
+// This component now uses the StreamlinedPlatformImport for better UX
+import StreamlinedPlatformImport from './StreamlinedPlatformImport'
+
+export default function SimplifiedDataImport(props) {
+  // Simply pass through to the new streamlined component
+  return <StreamlinedPlatformImport {...props} />
+}
+
+// Legacy implementation preserved below for reference
+/*
 import { useState, useCallback } from 'react'
 import { DocumentArrowUpIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { platformImportConfigs } from '@/lib/platform-import-configs'
 import { parseCSV, analyzeCSV, generateImportSummary } from '@/lib/csv-auto-detector'
 
-export default function SimplifiedDataImport({ data, updateData, errors, onNext }) {
+function LegacySimplifiedDataImport({ data, updateData, errors, onNext }) {
   const [selectedPlatform, setSelectedPlatform] = useState(data.selectedPlatform || null)
   const [importStatus, setImportStatus] = useState('idle') // idle, analyzing, complete, error
   const [analysisResults, setAnalysisResults] = useState(null)
@@ -289,3 +299,4 @@ export default function SimplifiedDataImport({ data, updateData, errors, onNext 
     </div>
   )
 }
+*/

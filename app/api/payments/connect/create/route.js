@@ -189,12 +189,121 @@ export async function POST(request) {
   }
 }
 
+export async function GET(request) {
+  // Add CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  try {
+    const supabase = createClient()
+    
+    // Get current user
+    let currentUser = null
+    
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (user && !error) {
+        currentUser = user
+      }
+    } catch (error) {
+      // Ignore auth errors for GET
+    }
+    
+    // For development, allow demo user
+    if (!currentUser && process.env.NODE_ENV === 'development') {
+      currentUser = {
+        id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
+        email: 'demo@bookedbarber.com'
+      }
+    }
+    
+    if (!currentUser) {
+      return NextResponse.json({ 
+        error: 'Not authenticated',
+        account_id: null
+      }, { status: 401, headers })
+    }
+    
+    // Check if user has a connected account
+    const { data: account } = await supabase
+      .from('stripe_connected_accounts')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .single()
+    
+    if (!account) {
+      return NextResponse.json({
+        success: true,
+        account_id: null,
+        onboarding_completed: false,
+        charges_enabled: false,
+        payouts_enabled: false
+      }, { headers })
+    }
+    
+    // Get fresh status from Stripe if account exists
+    if (account.stripe_account_id && process.env.STRIPE_SECRET_KEY) {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+          apiVersion: '2023-10-16'
+        })
+        
+        const stripeAccount = await stripe.accounts.retrieve(account.stripe_account_id)
+        
+        // Update database with latest status
+        const updatedData = {
+          onboarding_completed: stripeAccount.charges_enabled && stripeAccount.payouts_enabled,
+          details_submitted: stripeAccount.details_submitted || false,
+          charges_enabled: stripeAccount.charges_enabled || false,
+          payouts_enabled: stripeAccount.payouts_enabled || false,
+          verification_status: stripeAccount.individual?.verification?.status || 'unverified'
+        }
+        
+        await supabase
+          .from('stripe_connected_accounts')
+          .update(updatedData)
+          .eq('id', account.id)
+        
+        return NextResponse.json({
+          success: true,
+          account_id: account.stripe_account_id,
+          ...updatedData
+        }, { headers })
+        
+      } catch (stripeError) {
+        console.error('Error fetching Stripe account:', stripeError)
+        // Return cached data if Stripe call fails
+      }
+    }
+    
+    // Return cached data from database
+    return NextResponse.json({
+      success: true,
+      account_id: account.stripe_account_id,
+      onboarding_completed: account.onboarding_completed,
+      charges_enabled: account.charges_enabled,
+      payouts_enabled: account.payouts_enabled,
+      verification_status: account.verification_status
+    }, { headers })
+    
+  } catch (error) {
+    console.error('Error checking Stripe account:', error)
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error.message 
+    }, { status: 500, headers })
+  }
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   })

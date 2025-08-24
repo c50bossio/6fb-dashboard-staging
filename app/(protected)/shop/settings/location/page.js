@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -56,17 +56,26 @@ export default function LocationSettingsPage() {
 
   const [originalData, setOriginalData] = useState(null)
   const [mapPreview, setMapPreview] = useState(null)
+  const initialValues = useRef(null)
 
   useEffect(() => {
     loadLocationData()
   }, [user])
 
+  // Capture initial state on first render
   useEffect(() => {
-    if (originalData) {
-      const changed = JSON.stringify(formData) !== JSON.stringify(originalData)
+    if (!initialValues.current) {
+      initialValues.current = JSON.parse(JSON.stringify(formData))
+    }
+  }, [])
+
+  useEffect(() => {
+    // Always check if data has changed against initial values
+    if (initialValues.current) {
+      const changed = JSON.stringify(formData) !== JSON.stringify(initialValues.current)
       setHasChanges(changed)
     }
-  }, [formData, originalData])
+  }, [formData])
 
   const loadLocationData = async () => {
     if (!user) return
@@ -103,24 +112,27 @@ export default function LocationSettingsPage() {
       
       if (barbershop) {
         const locationData = {
+          // Fields that exist in database
           address: barbershop.address || '',
-          address_line_2: barbershop.address_line_2 || '',
           city: barbershop.city || '',
           state: barbershop.state || '',
           zip_code: barbershop.zip_code || '',
           country: barbershop.country || 'USA',
           latitude: barbershop.latitude || null,
           longitude: barbershop.longitude || null,
-          service_radius: barbershop.service_radius || 0,
-          mobile_services: barbershop.mobile_services || false,
-          service_areas: barbershop.service_areas || [],
-          parking_available: barbershop.parking_available || false,
-          wheelchair_accessible: barbershop.wheelchair_accessible || false,
-          public_transit_nearby: barbershop.public_transit_nearby || false,
-          landmark_description: barbershop.landmark_description || '',
           timezone: barbershop.timezone || 'America/New_York',
-          location_name: barbershop.location_name || 'Main Location',
-          location_type: barbershop.location_type || 'primary'
+          
+          // Fields not in database yet - default values for UI
+          address_line_2: '', // Not in DB
+          service_radius: 0, // Not in DB
+          mobile_services: false, // Not in DB
+          service_areas: [], // Not in DB
+          parking_available: false, // Not in DB
+          wheelchair_accessible: false, // Not in DB
+          public_transit_nearby: false, // Not in DB
+          landmark_description: '', // Not in DB
+          location_name: 'Main Location', // Not in DB
+          location_type: 'primary' // Not in DB
         }
         
         setFormData(locationData)
@@ -201,27 +213,23 @@ export default function LocationSettingsPage() {
     setNotification(null)
     
     try {
+      // Only update fields that exist in the database
       const { error } = await supabase
         .from('barbershops')
         .update({
           address: formData.address,
-          address_line_2: formData.address_line_2,
+          // address_line_2 doesn't exist in DB - keeping in UI but not saving
           city: formData.city,
           state: formData.state,
           zip_code: formData.zip_code,
           country: formData.country,
           latitude: formData.latitude,
           longitude: formData.longitude,
-          service_radius: formData.service_radius,
-          mobile_services: formData.mobile_services,
-          service_areas: formData.service_areas,
-          parking_available: formData.parking_available,
-          wheelchair_accessible: formData.wheelchair_accessible,
-          public_transit_nearby: formData.public_transit_nearby,
-          landmark_description: formData.landmark_description,
           timezone: formData.timezone,
-          location_name: formData.location_name,
-          location_type: formData.location_type,
+          // These fields don't exist in the database yet:
+          // service_radius, mobile_services, service_areas,
+          // parking_available, wheelchair_accessible, public_transit_nearby,
+          // landmark_description, location_name, location_type
           updated_at: new Date().toISOString()
         })
         .eq('id', barbershopId)
@@ -559,10 +567,10 @@ export default function LocationSettingsPage() {
           <button
             type="submit"
             disabled={!hasChanges || saving}
-            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+            className={`px-4 py-2 rounded-lg transition-colors ${
               !hasChanges || saving
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500'
+                ? 'bg-gray-400 text-gray-500 cursor-not-allowed'
+                : 'bg-olive-600 text-white hover:bg-olive-700'
             }`}
           >
             {saving ? 'Saving...' : 'Save Changes'}

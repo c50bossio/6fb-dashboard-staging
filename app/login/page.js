@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const router = useRouter()
-  const { signInWithGoogle, signIn, signUp, resetPassword } = useAuth()
+  const { signIn, signUp, resetPassword } = useAuth()
   
   // Check for OAuth errors on page load - let Supabase handle session detection automatically
   useEffect(() => {
@@ -53,15 +53,16 @@ export default function LoginPage() {
     try {
       const supabase = createClient()
       
-      // OAuth flow with forced account selection
+      // OAuth flow with PKCE - cookie parsing issue has been fixed
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
           queryParams: {
             access_type: 'offline',
             prompt: 'select_account'  // Always show account selection
-          }
+          },
+          skipBrowserRedirect: false
         }
       })
       

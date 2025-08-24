@@ -10,6 +10,7 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon,
   ArrowTopRightOnSquareIcon,
+  ArrowRightIcon,
   ShieldCheckIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
@@ -91,6 +92,61 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
     { id: 'business', label: 'Business Details', icon: BuildingLibraryIcon }
   ]
 
+  // Load existing Stripe account on mount
+  useEffect(() => {
+    const loadExistingAccount = async () => {
+      try {
+        const response = await fetch('/api/payments/connect/create', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          
+          if (data.account_id) {
+            setStripeAccountId(data.account_id)
+            setAccountStatus({
+              onboardingCompleted: data.onboarding_completed,
+              chargesEnabled: data.charges_enabled,
+              payoutsEnabled: data.payouts_enabled,
+              requirementsCount: 0,
+              verificationStatus: data.verification_status || 'pending'
+            })
+            
+            // If account is fully set up and we're resuming from Stripe
+            if (data.onboarding_completed && data.charges_enabled && data.payouts_enabled) {
+              // Check if we're resuming from Stripe redirect
+              const urlParams = new URLSearchParams(window.location.search)
+              const paymentComplete = urlParams.get('payment_setup_complete') === 'true'
+              
+              if (paymentComplete) {
+                setSuccess('Payment setup successfully completed!')
+                // Auto-advance to next step after showing success
+                setTimeout(() => {
+                  if (onComplete) {
+                    onComplete({
+                      ...formData,
+                      stripeConnected: true,
+                      stripeAccountId: data.account_id
+                    })
+                  }
+                }, 2000)
+              } else {
+                // Just show the connected state
+                setSuccess('Payment account already connected!')
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading existing account:', err)
+      }
+    }
+    
+    loadExistingAccount()
+  }, [])
+  
   // Load existing Stripe Connect account status
   useEffect(() => {
     const loadAccountStatus = async () => {
@@ -239,6 +295,11 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
     setError('')
     
     try {
+      // Store session data for return handling
+      sessionStorage.setItem('stripe_onboarding_flow', 'true')
+      sessionStorage.setItem('stripe_return_path', window.location.pathname + window.location.search)
+      sessionStorage.setItem('onboarding_step', currentSection)
+      
       const response = await fetch('/api/payments/connect/onboarding-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -253,19 +314,11 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       
       const data = await response.json()
       
-      // Open Stripe onboarding in new tab
-      window.open(data.url, '_blank')
-      
-      // Note about redirect for development with live keys
-      const redirectNote = window.location.hostname === 'localhost' 
-        ? ' Note: After completing Stripe setup, you\'ll be redirected to bookedbarber.com. Please return here manually to continue.'
-        : ''
-      
-      setSuccess(`Complete the setup in the new tab. This page will update automatically.${redirectNote}`)
+      // Redirect in same window for smoother experience
+      window.location.href = data.url
       
     } catch (err) {
       setError(err.message)
-    } finally {
       setLoading(false)
     }
   }
@@ -533,171 +586,134 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
         </div>
       )}
 
-      {/* Banking Setup Section - NEW */}
+      {/* Banking Setup Section - SIMPLIFIED */}
       {currentSection === 'banking' && (
         <div className="space-y-6 animate-fadeIn">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Bank Account Setup</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Accept Online Payments</h3>
             <p className="text-sm text-gray-600 mb-6">
-              Connect your bank account to receive payouts from customer payments. This is required to accept online payments.
+              Connect with Stripe to accept credit cards and get paid automatically. Takes about 2 minutes.
             </p>
-            
-            {/* Error and Success Messages */}
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div className="flex items-start">
-                  <ExclamationCircleIcon className="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-red-800">Error</p>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {success && (
-              <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-start">
-                  <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-green-800">Success</p>
-                    <p className="text-sm text-green-700 mt-1">{success}</p>
-                  </div>
-                </div>
-              </div>
-            )}
             
             {!stripeAccountId ? (
               // No account yet - create one
-              <div className="bg-gray-50 rounded-lg p-6 text-center">
-                <ShieldCheckIcon className="h-12 w-12 text-olive-600 mx-auto mb-4" />
-                <h4 className="font-semibold text-gray-900 mb-2">Set Up Payment Processing</h4>
-                <p className="text-sm text-gray-600 mb-4">
-                  We use Stripe to securely process payments and deposits. You'll need to provide some business information and verify your identity.
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-6 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-olive-100 rounded-full mb-4">
+                  <CreditCardIcon className="h-10 w-10 text-olive-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">Quick 2-Minute Setup</h4>
+                <p className="text-sm text-gray-600 mb-6">
+                  Connect your bank account to start accepting payments
                 </p>
-                <button
-                  onClick={createStripeConnectAccount}
-                  disabled={loading}
-                  className="inline-flex items-center px-6 py-3 bg-olive-600 hover:bg-olive-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
-                >
-                  {loading ? (
-                    <>
-                      <ClockIcon className="h-5 w-5 mr-2 animate-spin" />
-                      Setting up...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCardIcon className="h-5 w-5 mr-2" />
-                      Start Setup
-                    </>
-                  )}
-                </button>
+                
+                <div className="space-y-3">
+                  <button
+                    onClick={createStripeConnectAccount}
+                    disabled={loading}
+                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-olive-600 hover:bg-olive-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+                  >
+                    {loading ? (
+                      <>
+                        <ClockIcon className="h-5 w-5 mr-2 animate-spin" />
+                        Setting up...
+                      </>
+                    ) : (
+                      <>
+                        <BanknotesIcon className="h-5 w-5 mr-2" />
+                        Connect Bank Account
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      // Skip payment setup for now
+                      setCurrentSection('payout')
+                    }}
+                    className="w-full text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    I'll set this up later
+                  </button>
+                </div>
+                
+                <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-xs text-blue-800">
+                    <strong>Why Stripe?</strong> Industry standard, next-day deposits, fraud protection included
+                  </p>
+                </div>
               </div>
             ) : !accountStatus.onboardingCompleted ? (
               // Account created but onboarding not complete
-              <div className="bg-yellow-50 rounded-lg p-6">
-                <div className="flex items-start">
-                  <ExclamationCircleIcon className="h-6 w-6 text-yellow-500 mr-3 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 mb-2">Complete Your Setup</h4>
-                    <p className="text-sm text-gray-600 mb-4">
-                      You need to complete your Stripe account setup to start accepting payments.
-                      {accountStatus.requirementsCount > 0 && (
-                        <span className="block mt-1 text-yellow-700 font-medium">
-                          {accountStatus.requirementsCount} items need your attention
-                        </span>
-                      )}
-                    </p>
-                    <button
-                      onClick={() => startStripeOnboarding()}
-                      disabled={loading}
-                      className="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
-                    >
-                      {loading ? (
-                        <>
-                          <ClockIcon className="h-4 w-4 mr-2 animate-spin" />
-                          Loading...
-                        </>
-                      ) : (
-                        <>
-                          <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-2" />
-                          Continue Setup
-                        </>
-                      )}
-                    </button>
+              <div className="bg-white border-2 border-yellow-200 rounded-lg p-6">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-4">
+                    <ExclamationCircleIcon className="h-10 w-10 text-yellow-600" />
                   </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Almost Done!</h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Just a few more details needed to activate payments
+                  </p>
+                  <button
+                    onClick={() => startStripeOnboarding()}
+                    disabled={loading}
+                    className="inline-flex items-center px-6 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+                  >
+                    {loading ? (
+                      <>
+                        <ClockIcon className="h-5 w-5 mr-2 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        Continue Setup
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             ) : (
-              // Onboarding complete - show status
-              <div className="space-y-4">
-                <div className="bg-green-50 rounded-lg p-6">
-                  <div className="flex items-start">
-                    <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-2">Payment Processing Active</h4>
-                      <p className="text-sm text-gray-600">
-                        Your account is verified and ready to accept payments.
-                      </p>
-                      <div className="mt-4 grid grid-cols-2 gap-4">
-                        <div className="flex items-center">
-                          {accountStatus.chargesEnabled ? (
-                            <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
-                          ) : (
-                            <ClockIcon className="h-5 w-5 text-yellow-500 mr-2" />
-                          )}
-                          <span className="text-sm">Charges {accountStatus.chargesEnabled ? 'Enabled' : 'Pending'}</span>
-                        </div>
-                        <div className="flex items-center">
-                          {accountStatus.payoutsEnabled ? (
-                            <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
-                          ) : (
-                            <ClockIcon className="h-5 w-5 text-yellow-500 mr-2" />
-                          )}
-                          <span className="text-sm">Payouts {accountStatus.payoutsEnabled ? 'Enabled' : 'Pending'}</span>
-                        </div>
-                      </div>
-                    </div>
+              // Onboarding complete - show simple success
+              <div className="bg-white border-2 border-green-200 rounded-lg p-6">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                    <CheckCircleIcon className="h-10 w-10 text-green-600" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Bank Account Connected!</h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    You're all set to accept credit card payments and receive automatic deposits
+                  </p>
+                  
+                  <div className="inline-flex items-center gap-6 text-sm text-gray-600 mb-6">
+                    <span className="flex items-center">
+                      <CheckCircleIcon className="h-4 w-4 text-green-500 mr-1" />
+                      Instant payments
+                    </span>
+                    <span className="flex items-center">
+                      <CheckCircleIcon className="h-4 w-4 text-green-500 mr-1" />
+                      Next-day deposits
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => setCurrentSection('payout')}
+                      className="w-full inline-flex items-center justify-center px-6 py-3 bg-olive-600 hover:bg-olive-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Continue to Next Step
+                      <ArrowRightIcon className="h-4 w-4 ml-2" />
+                    </button>
+                    
+                    <a
+                      href="https://dashboard.stripe.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+                    >
+                      <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-1" />
+                      Manage payment settings in Stripe
+                    </a>
                   </div>
                 </div>
-
-                {/* Bank Accounts List */}
-                {bankAccounts.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Connected Bank Accounts</h4>
-                    <div className="space-y-2">
-                      {bankAccounts.map((account) => (
-                        <div key={account.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                          <div className="flex items-center">
-                            <BanknotesIcon className="h-5 w-5 text-gray-400 mr-3" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">
-                                {account.bank_name || 'Bank Account'} ••••{account.last4}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {account.is_default && 'Default for payouts'}
-                              </p>
-                            </div>
-                          </div>
-                          {account.status === 'verified' ? (
-                            <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                          ) : (
-                            <ClockIcon className="h-5 w-5 text-yellow-500" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={addBankAccount}
-                  disabled={loading}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-                >
-                  <BanknotesIcon className="h-4 w-4 mr-2" />
-                  Manage Bank Accounts
-                </button>
               </div>
             )}
           </div>

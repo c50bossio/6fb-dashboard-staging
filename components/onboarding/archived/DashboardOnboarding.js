@@ -25,7 +25,6 @@ import internalAnalytics from '@/lib/internal-analytics'
 import BookingRulesSetup from '../onboarding/BookingRulesSetup'
 import BusinessInfoSetup from '../onboarding/BusinessInfoSetup'
 import DomainSelector from '../onboarding/DomainSelector'
-import FinancialSetup from '../onboarding/FinancialSetup'
 import FinancialSetupEnhanced from '../onboarding/FinancialSetupEnhanced'
 import GoalsSelector from '../onboarding/GoalsSelector'
 import LivePreview from '../onboarding/LivePreview'
@@ -36,7 +35,7 @@ import AdaptiveFlowEngine from '../onboarding/AdaptiveFlowEngine'
 import ContextualGuidanceProvider from '../onboarding/ContextualGuidanceProvider'
 
 // Import new data migration and planning components
-import DataImportSetup from '../onboarding/DataImportSetup'
+import PlatformTailoredImport from '../onboarding/PlatformTailoredImport'
 import DataVerificationSetup from '../onboarding/DataVerificationSetup'
 import BusinessPlanningSetup from '../onboarding/BusinessPlanningSetup'
 import LocationManagementSetup from '../onboarding/LocationManagementSetup'
@@ -79,6 +78,7 @@ export default function DashboardOnboarding({
   const [showOnboarding, setShowOnboarding] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState(null)
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
   const autoSaveInterval = useRef(null)
   const completedSteps = useRef(new Set())
   const skippedSteps = useRef(new Set())
@@ -435,6 +435,30 @@ export default function DashboardOnboarding({
   // Load saved progress from API
   const loadProgress = async () => {
     try {
+      // First check if user has Stripe account set up
+      const stripeResponse = await fetch('/api/payments/connect/create', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (stripeResponse.ok) {
+        const stripeData = await stripeResponse.json()
+        
+        // If Stripe is fully set up, mark financial step as complete
+        if (stripeData.account_id && stripeData.onboarding_completed) {
+          console.log('💳 Stripe account already connected - marking financial step complete')
+          completedSteps.current.add('financial')
+          
+          // Update onboarding data with Stripe info
+          setOnboardingData(prev => ({
+            ...prev,
+            stripeConnected: true,
+            stripeAccountId: stripeData.account_id
+          }))
+        }
+      }
+      
+      // Then load regular progress
       const response = await fetch('/api/onboarding/save-progress', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
@@ -467,28 +491,62 @@ export default function DashboardOnboarding({
     }
   }
 
-  // Load saved progress on mount
+  // Load saved progress on mount and check for Stripe completion
   useEffect(() => {
-    // Load from API on mount
-    loadProgress()
+    // Check URL parameters for payment completion FIRST
+    const urlParams = new URLSearchParams(window.location.search)
+    const paymentComplete = urlParams.get('payment_setup_complete') === 'true'
     
-    // Also load from profile as fallback
-    if (profile?.onboarding_step !== undefined) {
-      setCurrentStep(profile.onboarding_step)
-    }
-    if (profile?.onboarding_data) {
-      try {
-        // Check if it's already an object or needs parsing
-        const savedData = typeof profile.onboarding_data === 'string' 
-          ? JSON.parse(profile.onboarding_data)
-          : profile.onboarding_data
+    if (paymentComplete) {
+      console.log('💳 Payment setup completed - advancing onboarding')
+      
+      // Mark financial step as complete
+      const financialStepIndex = steps.findIndex(s => s.id === 'financial')
+      if (financialStepIndex !== -1) {
+        completedSteps.current.add('financial')
         
-        // Only set if it's a valid object
-        if (savedData && typeof savedData === 'object' && !Array.isArray(savedData)) {
-          setOnboardingData(prev => ({ ...prev, ...savedData }))
+        // Set to next step after financial
+        const nextStepIndex = financialStepIndex + 1
+        if (nextStepIndex < steps.length) {
+          setCurrentStep(nextStepIndex)
+          console.log(`📍 Advanced to step ${nextStepIndex}: ${steps[nextStepIndex].id}`)
+          
+          // Show success message
+          setShowPaymentSuccess(true)
+          setTimeout(() => setShowPaymentSuccess(false), 5000)
+          
+          // Clean up URL params
+          const newUrl = new URL(window.location)
+          newUrl.searchParams.delete('payment_setup_complete')
+          newUrl.searchParams.delete('resume_onboarding')
+          window.history.replaceState({}, document.title, newUrl.pathname)
+          
+          // Save the progress
+          saveProgress()
         }
-      } catch (error) {
-        console.warn('Could not parse onboarding data, using defaults')
+      }
+    } else {
+      // Normal progress loading if not returning from payment
+      loadProgress()
+      
+      // Also load from profile as fallback
+      if (profile?.onboarding_step !== undefined) {
+        setCurrentStep(profile.onboarding_step)
+      }
+      if (profile?.onboarding_data) {
+        try {
+          // Check if it's already an object or needs parsing
+          const savedData = typeof profile.onboarding_data === 'string' 
+            ? JSON.parse(profile.onboarding_data)
+            : profile.onboarding_data
+          
+          // Only set if it's a valid object
+          if (savedData && typeof savedData === 'object' && !Array.isArray(savedData)) {
+            setOnboardingData(prev => ({ ...prev, ...savedData }))
+          }
+        } catch (error) {
+          console.warn('Could not parse onboarding data, using defaults')
+        }
       }
     }
   }, []) // Only run once on mount
@@ -508,6 +566,45 @@ export default function DashboardOnboarding({
   }
 
   const currentStepData = steps[currentStep]
+
+  // Payment Success Notification
+  const PaymentSuccessNotification = () => {
+    if (!showPaymentSuccess) return null
+    
+    return (
+      <div className="fixed top-4 right-4 z-[60] animate-in slide-in-from-top-2 duration-300">
+        <div className="bg-green-50 border-2 border-green-200 rounded-xl shadow-xl p-4 max-w-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircleIcon className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-green-900">
+                Payment Setup Complete!
+              </h3>
+              <p className="text-sm text-green-700 mt-1">
+                Your Stripe account is connected. You can now accept online payments.
+              </p>
+              <div className="flex items-center gap-2 mt-3">
+                <div className="flex-1 bg-green-200 rounded-full h-1.5">
+                  <div className="bg-green-600 rounded-full h-1.5 animate-pulse" style={{ width: '100%' }} />
+                </div>
+                <span className="text-xs text-green-600 font-medium">Ready</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPaymentSuccess(false)}
+              className="text-green-400 hover:text-green-600 transition-colors"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Render minimized view when minimized
   if (isMinimized) {
@@ -579,6 +676,9 @@ export default function DashboardOnboarding({
     <ContextualGuidanceProvider>
       <div className="fixed inset-0 z-40 overflow-y-auto">
         <div className="flex items-center justify-center min-h-screen p-4">
+          {/* Payment Success Notification */}
+          <PaymentSuccessNotification />
+          
           {/* Backdrop */}
           <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
 
@@ -927,8 +1027,7 @@ function renderStepContent(stepId, data, updateData, profile, onNavigateNext) {
       // Use enhanced financial setup with optional payment configuration
       return (
         <FinancialSetupEnhanced 
-          data={data}
-          updateData={updateData}
+          initialData={data}
           onComplete={handleStepComplete}
         />
       )
@@ -981,9 +1080,10 @@ function renderStepContent(stepId, data, updateData, profile, onNavigateNext) {
     // Data migration steps (for switching_systems path)
     case 'data_import':
       return (
-        <DataImportSetup
+        <PlatformTailoredImport
           onComplete={handleStepComplete}
           initialData={data}
+          profile={profile}
         />
       )
     

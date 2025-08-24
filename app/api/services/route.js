@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 
 const serviceSchema = z.object({
-  barbershop_id: z.string().uuid(),
+  shop_id: z.string().uuid(),  // services table uses 'shop_id' not 'barbershop_id'
   name: z.string().min(1).max(255),
   description: z.string().max(500).optional(),
   duration_minutes: z.number().min(15).max(480),
@@ -29,15 +29,13 @@ export async function GET(request) {
 
     let query = supabase
       .from('services')
-      .select(`
-        *,
-        barbershop:barbershops(id, name)
-      `)
+      .select('*')  // Simplified - avoid complex joins that may fail
       .order('category', { ascending: true })
       .order('name', { ascending: true })
 
     if (barbershop_id) {
-      query = query.eq('barbershop_id', barbershop_id)
+      // Note: services table uses 'shop_id' not 'barbershop_id'
+      query = query.eq('shop_id', barbershop_id)
     }
     
     if (category) {
@@ -109,10 +107,7 @@ export async function POST(request) {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .select(`
-        *,
-        barbershop:barbershops(id, name)
-      `)
+      .select('*')  // Simplified - avoid complex joins that may fail
       .single()
 
     if (error) {

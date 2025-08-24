@@ -1,0 +1,7 @@
+name,description,category,price,duration_minutes,is_active,is_featured,online_booking_enabled,requires_consultation,display_order
+Classic Haircut,Traditional scissor cut with styling,haircut,35,45,true,false,true,false,1
+Fade Cut,Modern fade with precise blending,haircut,40,50,true,true,true,false,2
+Beard Trim & Shape,Professional beard trimming and shaping,beard,25,30,true,false,true,false,3
+Hot Towel Shave,Traditional straight razor shave with hot towel,shave,45,60,true,false,false,true,4
+Hair Wash & Style,Shampoo conditioning and professional styling,styling,20,25,true,false,true,false,5
+Full Service Package,Haircut beard trim shampoo and styling,combo,75,90,true,true,true,false,6

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   try {
     const startTime = Date.now()
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const authHealth = {
       timestamp: new Date().toISOString(),

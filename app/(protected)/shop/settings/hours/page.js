@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import {
   ClockIcon,
   CheckCircleIcon,
@@ -37,10 +38,14 @@ export default function BusinessHoursPage() {
   }, [user])
 
   useEffect(() => {
-    if (originalHours) {
-      const changed = JSON.stringify(hours) !== JSON.stringify(originalHours)
-      setHasChanges(changed)
-    }
+    const changed = originalHours === null 
+      ? Object.keys(hours).some(day => 
+          hours[day].open !== '09:00' || 
+          hours[day].close !== (day === 'friday' ? '19:00' : day === 'saturday' ? '17:00' : '18:00') ||
+          hours[day].closed !== (day === 'sunday')
+        )
+      : JSON.stringify(hours) !== JSON.stringify(originalHours)
+    setHasChanges(changed)
   }, [hours, originalHours])
 
   const loadBusinessHours = async () => {
@@ -158,8 +163,51 @@ export default function BusinessHoursPage() {
     { key: 'sunday', label: 'Sunday' }
   ]
 
+  // Validation function for onboarding completion
+  const validateHoursCompletion = async () => {
+    try {
+      const response = await fetch('/api/onboarding/status', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const hoursComplete = data.steps?.hours?.complete || false
+        return {
+          valid: hoursComplete,
+          message: hoursComplete 
+            ? 'Business hours have been set successfully!' 
+            : 'Please set operating hours for at least one day'
+        }
+      }
+    } catch (error) {
+      console.error('Error validating hours completion:', error)
+    }
+    
+    // Fallback: Check local state if API fails
+    // This ensures users aren't blocked by API issues
+    const hasLocalHours = Object.values(hours).some(dayHours => 
+      dayHours && !dayHours.closed && dayHours.open && dayHours.close
+    )
+    
+    return {
+      valid: hasLocalHours,
+      message: hasLocalHours 
+        ? 'Business hours have been set successfully!' 
+        : 'Please set operating hours for at least one day.'
+    }
+  }
+
   return (
     <div className="max-w-4xl">
+      {/* Onboarding Step Banner */}
+      <OnboardingStepBanner 
+        stepId="schedule"
+        validateCompletion={validateHoursCompletion}
+        completionMessage="Business hours configured successfully!"
+      />
+      
       {/* Header */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
@@ -173,22 +221,24 @@ export default function BusinessHoursPage() {
             </div>
             <div className="flex items-center space-x-3">
               {hasChanges && (
-                <>
-                  <button
-                    onClick={handleDiscard}
-                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-                  >
-                    Discard
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 disabled:opacity-50"
-                  >
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </>
+                <button
+                  onClick={handleDiscard}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                >
+                  Discard
+                </button>
               )}
+              <button
+                onClick={handleSave}
+                disabled={!hasChanges || saving}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  !hasChanges || saving
+                    ? 'bg-gray-400 text-gray-500 cursor-not-allowed'
+                    : 'bg-olive-600 text-white hover:bg-olive-700'
+                }`}
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
           </div>
         </div>

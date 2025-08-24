@@ -14,58 +14,62 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import { FieldNormalizer } from '@/lib/booking-rules-engine/FieldNormalizer'
 
 export default function BookingRulesSetup({ data = {}, updateData, onComplete }) {
+  // Normalize incoming data from snake_case to camelCase for internal use
+  const normalizedData = FieldNormalizer.normalizeObject(data, false) // false = toCamelCase
+  
   const [rules, setRules] = useState({
     // Booking window
-    minAdvanceBooking: data.minAdvanceBooking || 60, // minutes
-    maxAdvanceBooking: data.maxAdvanceBooking || 30, // days
-    allowSameDayBooking: data.allowSameDayBooking !== undefined ? data.allowSameDayBooking : true,
+    minAdvanceBooking: normalizedData.minAdvanceBooking || 60, // minutes
+    maxAdvanceBooking: normalizedData.maxAdvanceBooking || 30, // days
+    allowSameDayBooking: normalizedData.allowSameDayBooking !== undefined ? normalizedData.allowSameDayBooking : true,
     
     // Cancellation policy
-    cancellationWindow: data.cancellationWindow || 24, // hours
-    cancellationFee: data.cancellationFee || 0, // percentage or fixed
-    cancellationFeeType: data.cancellationFeeType || 'percentage',
-    requireCancellationReason: data.requireCancellationReason || false,
+    cancellationWindow: normalizedData.cancellationWindow || 24, // hours
+    cancellationFee: normalizedData.cancellationFee || 0, // percentage or fixed
+    cancellationFeeType: normalizedData.cancellationFeeType || 'percentage',
+    requireCancellationReason: normalizedData.requireCancellationReason || false,
     
     // No-show policy  
-    noShowFee: data.noShowFee || 25, // percentage or fixed
-    noShowFeeType: data.noShowFeeType || 'percentage',
-    noShowStrikeLimit: data.noShowStrikeLimit || 3,
-    noShowStrikePeriod: data.noShowStrikePeriod || 90, // days
-    blockAfterNoShows: data.blockAfterNoShows || false,
+    noShowFee: normalizedData.noShowFee || 25, // percentage or fixed
+    noShowFeeType: normalizedData.noShowFeeType || 'percentage',
+    noShowStrikeLimit: normalizedData.noShowStrikeLimit || 3,
+    noShowStrikePeriod: normalizedData.noShowStrikePeriod || 90, // days
+    blockAfterNoShows: normalizedData.blockAfterNoShows || false,
     
     // Payment requirements
-    requireDeposit: data.requireDeposit || false,
-    depositAmount: data.depositAmount || 20, // percentage or fixed
-    depositType: data.depositType || 'percentage',
-    requireFullPayment: data.requireFullPayment || false,
+    requireDeposit: normalizedData.requireDeposit || false,
+    depositAmount: normalizedData.depositAmount || 20, // percentage or fixed
+    depositType: normalizedData.depositType || 'percentage',
+    requireFullPayment: normalizedData.requireFullPayment || false,
     
     // Booking limits
-    maxBookingsPerDay: data.maxBookingsPerDay || 0, // 0 = unlimited
-    maxBookingsPerWeek: data.maxBookingsPerWeek || 0,
-    maxActiveBookings: data.maxActiveBookings || 5,
-    allowDoubleBooking: data.allowDoubleBooking || false,
+    maxBookingsPerDay: normalizedData.maxBookingsPerDay || 0, // 0 = unlimited
+    maxBookingsPerWeek: normalizedData.maxBookingsPerWeek || 0,
+    maxActiveBookings: normalizedData.maxActiveBookings || 5,
+    allowDoubleBooking: normalizedData.allowDoubleBooking || false,
     
     // Client requirements
-    requirePhoneVerification: data.requirePhoneVerification || false,
-    requireEmailConfirmation: data.requireEmailConfirmation || true,
-    collectClientInfo: data.collectClientInfo || ['name', 'phone', 'email'],
-    requireTermsAcceptance: data.requireTermsAcceptance || true,
+    requirePhoneVerification: normalizedData.requirePhoneVerification || false,
+    requireEmailConfirmation: normalizedData.requireEmailConfirmation || true,
+    collectClientInfo: normalizedData.collectClientInfo || ['name', 'phone', 'email'],
+    requireTermsAcceptance: normalizedData.requireTermsAcceptance || true,
     
     // Notifications
-    sendConfirmationEmail: data.sendConfirmationEmail !== undefined ? data.sendConfirmationEmail : true,
-    sendConfirmationSMS: data.sendConfirmationSMS || false,
-    sendReminderEmail: data.sendReminderEmail !== undefined ? data.sendReminderEmail : true,
-    sendReminderSMS: data.sendReminderSMS || false,
-    reminderTiming: data.reminderTiming || 24, // hours before appointment
+    sendConfirmationEmail: normalizedData.sendConfirmationEmail !== undefined ? normalizedData.sendConfirmationEmail : true,
+    sendConfirmationSMS: normalizedData.sendConfirmationSMS || false,
+    sendReminderEmail: normalizedData.sendReminderEmail !== undefined ? normalizedData.sendReminderEmail : true,
+    sendReminderSMS: normalizedData.sendReminderSMS || false,
+    reminderTiming: normalizedData.reminderTiming || 24, // hours before appointment
     
     // Special rules
-    allowWaitlist: data.allowWaitlist || true,
-    allowRescheduling: data.allowRescheduling !== undefined ? data.allowRescheduling : true,
-    rescheduleWindow: data.rescheduleWindow || 12, // hours
-    priorityBooking: data.priorityBooking || false,
-    membershipRequired: data.membershipRequired || false
+    allowWaitlist: normalizedData.allowWaitlist || true,
+    allowRescheduling: normalizedData.allowRescheduling !== undefined ? normalizedData.allowRescheduling : true,
+    rescheduleWindow: normalizedData.rescheduleWindow || 12, // hours
+    priorityBooking: normalizedData.priorityBooking || false,
+    membershipRequired: normalizedData.membershipRequired || false
   })
 
   const [selectedPolicy, setSelectedPolicy] = useState(null)
@@ -137,9 +141,11 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
     setRules(prev => ({ ...prev, [field]: value }))
   }
 
-  // Apply template
+  // Apply template - normalize template rules to camelCase for internal state
   const applyTemplate = (template) => {
-    setRules(prev => ({ ...prev, ...template.rules }))
+    // Template rules are already in camelCase, but normalize for consistency
+    const normalizedTemplateRules = FieldNormalizer.normalizeObject(template.rules, false) // false = toCamelCase
+    setRules(prev => ({ ...prev, ...normalizedTemplateRules }))
     setSelectedPolicy(template.id)
   }
 
@@ -185,17 +191,19 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
   const policyScore = calculatePolicyScore()
   const policyType = policyScore >= 5 ? 'Flexible' : policyScore >= 0 ? 'Balanced' : 'Strict'
 
-  // Update parent data
+  // Update parent data - convert to snake_case for consistency
   useEffect(() => {
     if (updateData) {
-      updateData({ bookingRules: rules })
+      const snakeCaseRules = FieldNormalizer.normalizeObject(rules, true) // true = toSnakeCase
+      updateData({ booking_rules: snakeCaseRules })
     }
   }, [rules])
 
-  // Handle completion
+  // Handle completion - convert to snake_case for consistency  
   const handleComplete = () => {
     if (onComplete) {
-      onComplete({ bookingRules: rules })
+      const snakeCaseRules = FieldNormalizer.normalizeObject(rules, true) // true = toSnakeCase
+      onComplete({ booking_rules: snakeCaseRules })
     }
   }
 

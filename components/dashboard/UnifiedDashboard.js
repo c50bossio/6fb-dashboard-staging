@@ -33,6 +33,7 @@ import ShareableBookingLink from './ShareableBookingLink'
 // DataImportWidget removed - replaced with QuickActionsCard for better UX
 import QuickActionsCard from './QuickActionsCard'
 import CampaignCreditWidget from './CampaignCreditWidget'
+import OnboardingProgress from './OnboardingProgress'
 
 
 const DASHBOARD_MODES = {
@@ -121,97 +122,18 @@ export default function UnifiedDashboard({ user, profile }) {
     // Declare barbershopId at function scope to prevent ReferenceError
     let barbershopId = null
     
-    // Check if onboarding is incomplete
-    const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
-    
-    if (isOnboardingIncomplete && !errorState?.isWelcome) {
-        // Show welcome message instead of blocking
-        const roleSpecificMessage = profile?.role === 'BARBER' 
-          ? {
-              title: 'Connect to Your Barbershop',
-              message: 'Your barber profile is ready! To access your dashboard, you need to be connected to a barbershop. Either complete your setup or ask your shop owner to add you to their team.',
-              timeEstimate: '2-3 minutes',
-              nextSteps: ['Verify barbershop association', 'Set your working hours', 'Add your specialties'],
-              buttonText: 'Connect to Barbershop'
-            }
-          : profile?.role === 'SHOP_OWNER'
-          ? {
-              title: 'Finish Your Barbershop Setup',
-              message: 'You\'re almost ready to start managing your barbershop! Just a few more steps to unlock your full business dashboard.',
-              timeEstimate: '3-5 minutes',
-              nextSteps: ['Add barbershop details', 'Set operating hours', 'Configure services & pricing'],
-              buttonText: 'Complete Barbershop Setup'
-            }
-          : {
-              title: 'Complete Your Account Setup',
-              message: 'Welcome to 6FB AI! Let\'s finish setting up your account to unlock all dashboard features and start managing your business.',
-              timeEstimate: '2-4 minutes', 
-              nextSteps: ['Choose your role', 'Add business information', 'Configure preferences'],
-              buttonText: 'Continue Setup'
-            }
-        
-        setErrorState({
-          type: 'onboarding_needed',
-          message: roleSpecificMessage.message,
-          title: roleSpecificMessage.title,
-          timeEstimate: roleSpecificMessage.timeEstimate,
-          nextSteps: roleSpecificMessage.nextSteps,
-          buttonText: roleSpecificMessage.buttonText,
-          isWelcome: true
-        })
-      return
-    }
+    // Let dashboard load normally during onboarding - OnboardingProgress widget handles guidance
 
     // Rate limiting: prevent excessive retries
     if (retryCount >= 3 && !forceRefresh) {
       console.warn('Max retry attempts reached - stopping dashboard data load')
       
-      // Check if this is an onboarding issue vs technical issue before setting error
-      const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
-      
-      if (isOnboardingIncomplete) {
-        // This is still an onboarding issue, show welcome message
-        const roleSpecificMessage = profile?.role === 'BARBER' 
-          ? {
-              title: 'Connect to Your Barbershop',
-              message: 'Your barber profile is ready! To access your dashboard, you need to be connected to a barbershop. Either complete your setup or ask your shop owner to add you to their team.',
-              timeEstimate: '2-3 minutes',
-              nextSteps: ['Verify barbershop association', 'Set your working hours', 'Add your specialties'],
-              buttonText: 'Connect to Barbershop'
-            }
-          : profile?.role === 'SHOP_OWNER'
-          ? {
-              title: 'Finish Your Barbershop Setup',
-              message: 'You\'re almost ready to start managing your barbershop! Just a few more steps to unlock your full business dashboard.',
-              timeEstimate: '3-5 minutes',
-              nextSteps: ['Add barbershop details', 'Set operating hours', 'Configure services & pricing'],
-              buttonText: 'Complete Barbershop Setup'
-            }
-          : {
-              title: 'Complete Your Account Setup',
-              message: 'Welcome to 6FB AI! Let\'s finish setting up your account to unlock all dashboard features and start managing your business.',
-              timeEstimate: '2-4 minutes', 
-              nextSteps: ['Choose your role', 'Add business information', 'Configure preferences'],
-              buttonText: 'Continue Setup'
-            }
-        
-        setErrorState({
-          type: 'onboarding_needed',
-          message: roleSpecificMessage.message,
-          title: roleSpecificMessage.title,
-          timeEstimate: roleSpecificMessage.timeEstimate,
-          nextSteps: roleSpecificMessage.nextSteps,
-          buttonText: roleSpecificMessage.buttonText,
-          isWelcome: true
-        })
-      } else {
-        // This is a technical error after onboarding should be complete
-        setErrorState({
-          type: 'technical_error',
-          message: 'Max retry attempts reached. Please refresh the page.',
-          isWelcome: false
-        })
-      }
+      // Show technical error only (not onboarding prompts - handled by OnboardingProgress widget)
+      setErrorState({
+        type: 'technical_error',
+        message: 'Max retry attempts reached. Please refresh the page.',
+        isWelcome: false
+      })
       return
     }
 
@@ -254,53 +176,16 @@ export default function UnifiedDashboard({ user, profile }) {
       }
       
       if (!barbershopId) {
-        // Check if this is an onboarding issue vs technical issue
+        // During onboarding, it's normal to not have a barbershop ID yet
+        // Let the dashboard load with limited data and OnboardingProgress will guide the user
         const isOnboardingIncomplete = profile?.onboarding_completed === false || !profile?.onboarding_completed
         
-        // Only log as error if it's a technical issue, not onboarding
-        if (!isOnboardingIncomplete) {
-          console.error('No barbershop ID found for user who completed onboarding')
-        } else {
-          console.info('User needs to complete onboarding to get barbershop ID')
-        }
+        console.info(isOnboardingIncomplete 
+          ? 'No barbershop ID yet - user is in onboarding' 
+          : 'No barbershop ID found for user who completed onboarding')
         
-        if (isOnboardingIncomplete) {
-          // This is a friendly onboarding prompt, not an error
-          const roleSpecificMessage = profile?.role === 'BARBER' 
-            ? {
-                title: 'Connect to Your Barbershop',
-                message: 'Your barber profile is ready! To access your dashboard, you need to be connected to a barbershop. Either complete your setup or ask your shop owner to add you to their team.',
-                timeEstimate: '2-3 minutes',
-                nextSteps: ['Verify barbershop association', 'Set your working hours', 'Add your specialties'],
-                buttonText: 'Connect to Barbershop'
-              }
-            : profile?.role === 'SHOP_OWNER'
-            ? {
-                title: 'Finish Your Barbershop Setup',
-                message: 'You\'re almost ready to start managing your barbershop! Just a few more steps to unlock your full business dashboard.',
-                timeEstimate: '3-5 minutes',
-                nextSteps: ['Add barbershop details', 'Set operating hours', 'Configure services & pricing'],
-                buttonText: 'Complete Barbershop Setup'
-              }
-            : {
-                title: 'Complete Your Account Setup',
-                message: 'Welcome to 6FB AI! Let\'s finish setting up your account to unlock all dashboard features and start managing your business.',
-                timeEstimate: '2-4 minutes', 
-                nextSteps: ['Choose your role', 'Add business information', 'Configure preferences'],
-                buttonText: 'Continue Setup'
-              }
-          
-          setErrorState({
-            type: 'onboarding_needed',
-            message: roleSpecificMessage.message,
-            title: roleSpecificMessage.title,
-            timeEstimate: roleSpecificMessage.timeEstimate,
-            nextSteps: roleSpecificMessage.nextSteps,
-            buttonText: roleSpecificMessage.buttonText,
-            isWelcome: true
-          })
-        } else {
-          // This is a technical error after onboarding should be complete
+        // Only show error if user claims to have completed onboarding but has no shop
+        if (!isOnboardingIncomplete) {
           const errorMessage = profile?.role === 'BARBER' 
             ? 'Your barber account is not properly associated with a barbershop. Please contact your shop owner or support for assistance.'
             : 'Technical issue: Unable to load your barbershop data. Please contact support if this problem persists.'
@@ -311,6 +196,7 @@ export default function UnifiedDashboard({ user, profile }) {
             isWelcome: false
           })
         }
+        // If still in onboarding, don't show error - let OnboardingProgress guide them
         
         setDashboardData({
           error: 'barbershop_id_missing',
@@ -790,6 +676,11 @@ export default function UnifiedDashboard({ user, profile }) {
 
   return (
     <div className="space-y-6">
+      {/* Onboarding Progress - PRIORITY: Always show until ALL steps complete, not just profile flag */}
+      {profile && (
+        <OnboardingProgress user={user} profile={profile} />
+      )}
+      
       {/* Header with Mode Selector and Performance Indicator */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -800,8 +691,9 @@ export default function UnifiedDashboard({ user, profile }) {
           <ModeSelector />
         </div>
         
-        {/* Shareable Booking Link - Only show for shop owners and above */}
-        {(profile?.role === 'SHOP_OWNER' || profile?.role === 'ENTERPRISE_OWNER' || profile?.role === 'SUPER_ADMIN') && (
+        {/* Shareable Booking Link - Only show for shop owners and above, after onboarding */}
+        {(profile?.role === 'SHOP_OWNER' || profile?.role === 'ENTERPRISE_OWNER' || profile?.role === 'SUPER_ADMIN') && 
+         profile?.onboarding_completed && (
           <ShareableBookingLink />
         )}
       </div>

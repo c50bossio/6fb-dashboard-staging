@@ -41,8 +41,12 @@ export default function ProductManagement() {
   const [metrics, setMetrics] = useState({
     totalProducts: 0,
     totalValue: 0,
+    totalCost: 0,
+    potentialProfit: 0,
+    averageMargin: 0,
     lowStock: 0,
-    outOfStock: 0
+    outOfStock: 0,
+    needsReorder: 0
   })
 
   useEffect(() => {
@@ -52,23 +56,30 @@ export default function ProductManagement() {
 
   const checkCin7Connection = async () => {
     try {
-      const credResponse = await fetch('/api/cin7/credentials')
-      if (credResponse.ok) {
-        const credData = await credResponse.json()
-        const hasValidCredentials = credData.hasCredentials && credData.credentials
+      // Use simplified connect endpoint to check status
+      const statusResponse = await fetch('/api/cin7/connect')
+      
+      if (statusResponse.ok) {
+        const statusData = await statusResponse.json()
         
-        setHasCredentials(hasValidCredentials)
-        setCin7Connected(hasValidCredentials)
-        setCredentialInfo(hasValidCredentials ? credData.credentials : null)
-        
-        if (hasValidCredentials) {
+        if (statusData.connected) {
+          setHasCredentials(true)
+          setCin7Connected(true)
+          setCredentialInfo({
+            account_name: statusData.accountName,
+            last_sync: statusData.lastSync,
+            last_sync_status: statusData.syncStatus
+          })
           setCin7Status('connected')
         } else {
+          setHasCredentials(false)
+          setCin7Connected(false)
+          setCredentialInfo(null)
           setCin7Status(null)
         }
-      } else if (credResponse.status === 401) {
-        // Don't retry on authentication failures to prevent infinite loops
-        console.log('Authentication required for Cin7 credentials')
+      } else if (statusResponse.status === 401) {
+        // Authentication required
+        console.log('Authentication required for Cin7')
         setHasCredentials(false)
         setCin7Connected(false)
         setCredentialInfo(null)
@@ -97,8 +108,12 @@ export default function ProductManagement() {
         setMetrics(data.metrics || {
           totalProducts: 0,
           totalValue: 0,
+          totalCost: 0,
+          potentialProfit: 0,
+          averageMargin: 0,
           lowStock: 0,
-          outOfStock: 0
+          outOfStock: 0,
+          needsReorder: 0
         })
       } else {
         console.error('Error loading products - using fallback')
@@ -147,6 +162,78 @@ export default function ProductManagement() {
     }
   }
 
+  const handleQuickSale = async (product) => {
+    const quantity = prompt(`Quick Sale: ${product.name}\n\nHow many units to sell?`, '1')
+    
+    if (!quantity || isNaN(quantity) || quantity <= 0) return
+    
+    const saleQty = parseInt(quantity)
+    if (saleQty > product.current_stock) {
+      alert(`Not enough stock! Only ${product.current_stock} units available.`)
+      return
+    }
+    
+    try {
+      // Update stock level
+      const newStock = product.current_stock - saleQty
+      const response = await fetch(`/api/shop/products/${product.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_stock: newStock })
+      })
+      
+      if (response.ok) {
+        const saleAmount = (saleQty * product.retail_price).toFixed(2)
+        const profit = product.cost_price 
+          ? (saleQty * (product.retail_price - product.cost_price)).toFixed(2)
+          : (saleQty * product.retail_price * 0.4).toFixed(2) // Assume 40% margin
+        
+        alert(`✅ Sale Completed!\n\n${product.name}\nQuantity: ${saleQty}\nTotal: $${saleAmount}\nProfit: $${profit}\n\nStock updated: ${product.current_stock} → ${newStock}`)
+        loadProducts() // Refresh the list
+      } else {
+        alert('Failed to process sale. Please try again.')
+      }
+    } catch (error) {
+      console.error('Quick sale error:', error)
+      alert('Error processing sale')
+    }
+  }
+  
+  const handleQuickRestock = async (product) => {
+    const suggestedQty = product.max_stock_level - product.current_stock
+    const quantity = prompt(
+      `Quick Restock: ${product.name}\n\nCurrent Stock: ${product.current_stock}\nMax Stock: ${product.max_stock_level}\nSuggested Order: ${suggestedQty}\n\nHow many units to order?`,
+      suggestedQty.toString()
+    )
+    
+    if (!quantity || isNaN(quantity) || quantity <= 0) return
+    
+    const restockQty = parseInt(quantity)
+    const newStock = product.current_stock + restockQty
+    
+    try {
+      const response = await fetch(`/api/shop/products/${product.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_stock: newStock })
+      })
+      
+      if (response.ok) {
+        const orderCost = product.cost_price 
+          ? (restockQty * product.cost_price).toFixed(2)
+          : (restockQty * product.retail_price * 0.6).toFixed(2) // Assume 60% cost
+        
+        alert(`✅ Restock Order Placed!\n\n${product.name}\nQuantity Ordered: ${restockQty}\nOrder Cost: $${orderCost}\n\nStock will be updated: ${product.current_stock} → ${newStock}`)
+        loadProducts() // Refresh the list
+      } else {
+        alert('Failed to place restock order. Please try again.')
+      }
+    } catch (error) {
+      console.error('Quick restock error:', error)
+      alert('Error placing restock order')
+    }
+  }
+
   const handleDeleteProduct = async (productId) => {
     if (!confirm('Are you sure you want to delete this product?')) return
     
@@ -179,9 +266,9 @@ export default function ProductManagement() {
 
   const handleCin7Connect = async (credentials) => {
     try {
-      // First, save the credentials
-      const credentialResponse = await fetch('/api/cin7/credentials', {
-        method: 'PUT',
+      // Use the new simplified connect endpoint
+      const credentialResponse = await fetch('/api/cin7/connect', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           apiKey: credentials.apiKey,
@@ -191,7 +278,7 @@ export default function ProductManagement() {
       
       if (!credentialResponse.ok) {
         const credError = await credentialResponse.json()
-        throw new Error(credError.message || 'Failed to save credentials')
+        throw new Error(credError.error || 'Failed to save credentials')
       }
       
       const credData = await credentialResponse.json()
@@ -427,48 +514,90 @@ export default function ProductManagement() {
         </div>
       </div>
 
-      {/* Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div className="p-2 bg-olive-100 rounded-lg">
-              <ArchiveBoxIcon className="h-6 w-6 text-olive-600" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">{metrics.totalProducts}</span>
+      {/* Enhanced POS Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+        {/* Total Products */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-1">
+            <ArchiveBoxIcon className="h-5 w-5 text-olive-600" />
+            <span className="text-xl font-bold text-gray-900">{metrics.totalProducts}</span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Total Products</p>
+          <p className="text-xs text-gray-600">Total Products</p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">
-              ${metrics.totalValue.toLocaleString()}
+        {/* Inventory Value */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-1">
+            <CurrencyDollarIcon className="h-5 w-5 text-green-600" />
+            <span className="text-xl font-bold text-gray-900">
+              ${(metrics.totalValue / 1000).toFixed(1)}K
             </span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Inventory Value</p>
+          <p className="text-xs text-gray-600">Retail Value</p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <ExclamationTriangleIcon className="h-6 w-6 text-amber-800" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">{metrics.lowStock}</span>
+        {/* Total Cost */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-1">
+            <CurrencyDollarIcon className="h-5 w-5 text-blue-600" />
+            <span className="text-xl font-bold text-gray-900">
+              ${(metrics.totalCost / 1000).toFixed(1)}K
+            </span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Low Stock Items</p>
+          <p className="text-xs text-gray-600">Total Cost</p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">{metrics.outOfStock}</span>
+        {/* Potential Profit */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-1">
+            <CurrencyDollarIcon className="h-5 w-5 text-emerald-600" />
+            <span className="text-xl font-bold text-emerald-600">
+              ${(metrics.potentialProfit / 1000).toFixed(1)}K
+            </span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Out of Stock</p>
+          <p className="text-xs text-gray-600">Potential Profit</p>
+        </div>
+
+        {/* Average Margin */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-1">
+            <svg className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="text-xl font-bold text-purple-600">
+              {metrics.averageMargin}%
+            </span>
+          </div>
+          <p className="text-xs text-gray-600">Avg Margin</p>
+        </div>
+
+        {/* Low Stock */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-1">
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
+            <span className="text-xl font-bold text-yellow-600">{metrics.lowStock}</span>
+          </div>
+          <p className="text-xs text-gray-600">Low Stock</p>
+        </div>
+
+        {/* Out of Stock */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-1">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+            <span className="text-xl font-bold text-red-600">{metrics.outOfStock}</span>
+          </div>
+          <p className="text-xs text-gray-600">Out of Stock</p>
+        </div>
+
+        {/* Needs Reorder */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
+          <div className="flex items-center justify-between mb-1">
+            <svg className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span className="text-xl font-bold text-orange-600">{metrics.needsReorder}</span>
+          </div>
+          <p className="text-xs text-gray-600">Reorder Now</p>
         </div>
       </div>
 
@@ -568,7 +697,12 @@ export default function ProductManagement() {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div>
                     <div className="text-sm font-medium text-gray-900">${product.retail_price}</div>
-                    <div className="text-xs text-gray-500">Cost: ${product.cost_price}</div>
+                    <div className="text-xs text-gray-500">Cost: ${product.cost_price || 'N/A'}</div>
+                    {product.cost_price && (
+                      <div className="text-xs font-semibold text-green-600">
+                        Margin: {((1 - product.cost_price / product.retail_price) * 100).toFixed(1)}%
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -581,21 +715,54 @@ export default function ProductManagement() {
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => {
-                      setEditingProduct(product)
-                      setShowAddModal(true)
-                    }}
-                    className="text-olive-600 hover:text-indigo-900 mr-3"
-                  >
-                    <PencilIcon className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteProduct(product.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
+                  <div className="flex items-center justify-end space-x-2">
+                    {/* Quick Sale Button */}
+                    <button
+                      onClick={() => handleQuickSale(product)}
+                      className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 flex items-center"
+                      title="Quick Sale"
+                    >
+                      <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Sell
+                    </button>
+                    
+                    {/* Quick Restock Button */}
+                    {product.current_stock <= product.reorder_point && (
+                      <button
+                        onClick={() => handleQuickRestock(product)}
+                        className="px-2 py-1 bg-orange-600 text-white rounded text-xs hover:bg-orange-700 flex items-center"
+                        title="Quick Restock"
+                      >
+                        <svg className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Restock
+                      </button>
+                    )}
+                    
+                    {/* Edit Button */}
+                    <button
+                      onClick={() => {
+                        setEditingProduct(product)
+                        setShowAddModal(true)
+                      }}
+                      className="text-olive-600 hover:text-indigo-900"
+                      title="Edit Product"
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </button>
+                    
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => handleDeleteProduct(product.id)}
+                      className="text-red-600 hover:text-red-900"
+                      title="Delete Product"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

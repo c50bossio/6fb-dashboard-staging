@@ -64,32 +64,39 @@ export async function GET(request) {
       status.services.missing.push('Add at least one service')
     }
 
-    // Check operating hours
-    const { data: hours } = await supabase
-      .from('barbershop_hours')
-      .select('*')
-      .eq('barbershop_id', shopId)
+    // Check operating hours - stored in barbershops.business_hours JSON field
+    const businessHours = barbershop.business_hours
     
-    const hasValidHours = hours && hours.length > 0 && 
-      hours.some(h => h.is_open && h.open_time && h.close_time)
+    // Check if hours are configured (at least one day with valid open/close times that's not closed)
+    let hasValidHours = false
+    if (businessHours && typeof businessHours === 'object') {
+      // Check if at least one day is open with valid times
+      hasValidHours = Object.values(businessHours).some(dayHours => {
+        return dayHours && 
+               !dayHours.closed && 
+               dayHours.open && 
+               dayHours.close &&
+               dayHours.open !== '00:00' // Avoid considering default/empty times as valid
+      })
+    }
     
     status.hours.complete = hasValidHours
-    status.hours.data = hours
+    status.hours.data = businessHours
     if (!status.hours.complete) {
       status.hours.missing.push('Set operating hours for at least one day')
     }
 
-    // Check staff/barbers
-    const { data: barbers } = await supabase
-      .from('barbers')
-      .select('id, name, email')
-      .eq('shop_id', shopId)
+    // Check staff/barbers - stored in barbershop_staff table
+    const { data: staff } = await supabase
+      .from('barbershop_staff')
+      .select('id, user_id, role, is_active')
+      .eq('barbershop_id', shopId)
       .eq('is_active', true)
     
-    status.staff.count = barbers?.length || 0
+    status.staff.count = staff?.length || 0
     status.staff.complete = status.staff.count > 0
     if (!status.staff.complete) {
-      status.staff.missing.push('Add at least one barber')
+      status.staff.missing.push('Add at least one staff member')
     }
 
     // Check Stripe connection

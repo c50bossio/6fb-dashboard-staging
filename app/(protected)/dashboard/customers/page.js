@@ -41,7 +41,7 @@ import FilterTags from '../../../../components/customers/FilterTags'
 import SortOptions from '../../../../components/customers/SortOptions'
 import ExportCSV from '../../../../components/customers/ExportCSV'
 import SearchHighlight from '../../../../components/customers/SearchHighlight'
-import DataImportSetup from '../../../../components/onboarding/DataImportSetup'
+import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
 import { fuzzySearch } from '../../../../utils/fuzzySearch'
 import { AnimatedContainer, StaggeredList } from '../../../../utils/animations'
 
@@ -1388,7 +1388,7 @@ export default function CustomersPage() {
                 </p>
               </div>
               <div className="p-6">
-                <DataImportSetup
+                <PlatformTailoredImport
                   onComplete={(importData) => {
                     console.log('Company-wide import completed:', importData)
                     if (!importData.skipped) {

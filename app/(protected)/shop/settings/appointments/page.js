@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -34,16 +34,26 @@ export default function AppointmentSettingsPage() {
   })
 
   const [originalData, setOriginalData] = useState(null)
+  const initialValues = useRef(null)
 
   useEffect(() => {
     loadSettings()
   }, [user])
 
+  // Capture initial state on first render
   useEffect(() => {
-    if (originalData) {
-      setHasChanges(JSON.stringify(formData) !== JSON.stringify(originalData))
+    if (!initialValues.current) {
+      initialValues.current = JSON.parse(JSON.stringify(formData))
     }
-  }, [formData, originalData])
+  }, [])
+
+  useEffect(() => {
+    // Always check if data has changed against initial values
+    if (initialValues.current) {
+      const changed = JSON.stringify(formData) !== JSON.stringify(initialValues.current)
+      setHasChanges(changed)
+    }
+  }, [formData])
 
   const loadSettings = async () => {
     if (!user) return
@@ -298,10 +308,10 @@ export default function AppointmentSettingsPage() {
           <button
             type="submit"
             disabled={!hasChanges || saving}
-            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+            className={`px-4 py-2 rounded-lg transition-colors ${
               !hasChanges || saving
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-olive-600 hover:bg-olive-700'
+                ? 'bg-gray-400 text-gray-500 cursor-not-allowed'
+                : 'bg-olive-600 text-white hover:bg-olive-700'
             }`}
           >
             {saving ? 'Saving...' : 'Save Changes'}

@@ -13,7 +13,7 @@ export async function POST(request) {
     
     // Try using the server-side Supabase client
     try {
-      const supabase = createClient()
+      const supabase = await createClient()
       
       // Use the server client to exchange the code
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)

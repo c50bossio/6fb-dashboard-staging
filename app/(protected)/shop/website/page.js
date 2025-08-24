@@ -22,6 +22,7 @@ import {
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 
 export default function ShopWebsiteCustomization() {
   const { user } = useAuth()
@@ -301,6 +302,44 @@ export default function ShopWebsiteCustomization() {
     }
   }
 
+  // Validation function for onboarding completion
+  const validateBrandingCompletion = async () => {
+    try {
+      const response = await fetch('/api/onboarding/status', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const brandingComplete = data.steps?.branding?.complete || false
+        
+        // Check if user has configured basic branding elements
+        const hasLogo = settings.logo_url && settings.logo_url.length > 0
+        const hasColors = settings.primary_color && settings.secondary_color
+        const hasContent = (settings.hero_title && settings.hero_title.length > 0) || 
+                          (settings.about_content && settings.about_content.length > 0) ||
+                          (settings.name && settings.name.length > 0)
+        
+        const hasBasicBranding = hasLogo || hasColors || hasContent
+        
+        return {
+          valid: brandingComplete || hasBasicBranding,
+          message: brandingComplete || hasBasicBranding
+            ? 'Website branding configured successfully! Your shop now has a professional online presence.'
+            : 'Complete your branding by adding a logo, customizing colors, or updating your shop information'
+        }
+      }
+    } catch (error) {
+      console.error('Error validating branding completion:', error)
+    }
+    
+    return {
+      valid: false,
+      message: 'Unable to validate website branding setup. Please ensure you have configured your branding elements.'
+    }
+  }
+
 
   const updateBusinessHours = (day, field, value) => {
     setSettings({
@@ -370,6 +409,15 @@ export default function ShopWebsiteCustomization() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Onboarding Step Banner */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <OnboardingStepBanner 
+          stepId="branding"
+          validateCompletion={validateBrandingCompletion}
+          completionMessage="Website branding configured successfully!"
+        />
       </div>
 
       {/* Alert Message */}

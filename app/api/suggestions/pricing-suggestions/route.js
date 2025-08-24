@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+import { callBestAIProvider } from '@/lib/ai-providers'
 
-// Market pricing data (would typically come from a pricing intelligence service)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+
+// Market pricing data (enhanced with real data when available)
 const marketPricingData = {
   barbershop: {
     'Haircut': {
@@ -64,7 +71,7 @@ const locationPricingMultipliers = {
 
 export async function POST(request) {
   try {
-    const { businessType, location, services } = await request.json()
+    const { businessType, location, services, includeAIAnalysis = true } = await request.json()
     
     // Get base pricing data
     const pricingData = marketPricingData[businessType] || marketPricingData.barbershop
@@ -127,12 +134,32 @@ export async function POST(request) {
       locationMultiplier
     )
     
+    // Get real market data from our database
+    let realMarketData = null
+    if (location && location.lat && location.lng) {
+      realMarketData = await getRealMarketData(location, businessType)
+    }
+    
+    // AI-powered analysis if requested
+    let aiAnalysis = null
+    if (includeAIAnalysis && process.env.OPENAI_API_KEY) {
+      aiAnalysis = await getAIPricingAnalysis({
+        pricingRecommendations,
+        competitiveAnalysis,
+        realMarketData,
+        location,
+        businessType
+      })
+    }
+    
     const response = {
       success: true,
       pricing: pricingRecommendations,
       insights: pricingInsights,
       competitive_analysis: competitiveAnalysis,
       revenue_projections: revenueProjections,
+      real_market_data: realMarketData,
+      ai_analysis: aiAnalysis,
       market_context: {
         location: location,
         location_multiplier: locationMultiplier,
@@ -380,4 +407,141 @@ function getMarketTier(locationMultiplier) {
   if (locationMultiplier >= 1.2) return 'premium'
   if (locationMultiplier >= 0.9) return 'mainstream'
   return 'value'
+}
+
+/**
+ * Get real market data from our database
+ */
+async function getRealMarketData(location, businessType) {
+  try {
+    // Get nearby barbershops from our database
+    const { data: nearbyShops, error: shopsError } = await supabase
+      .from('barbershops')
+      .select('id, name, latitude, longitude')
+      .not('latitude', 'is', null)
+      .not('longitude', 'is', null)
+    
+    if (shopsError) throw shopsError
+    
+    // Filter shops within 25km radius
+    const radiusKm = 25
+    const nearbyShopIds = nearbyShops
+      .filter(shop => {
+        const distance = calculateDistance(
+          location.lat,
+          location.lng,
+          shop.latitude,
+          shop.longitude
+        )
+        return distance <= radiusKm
+      })
+      .map(shop => shop.id)
+    
+    if (nearbyShopIds.length === 0) return null
+    
+    // Get actual service prices from these shops
+    const { data: services, error: servicesError } = await supabase
+      .from('services')
+      .select('name, price, shop_id')
+      .in('shop_id', nearbyShopIds)
+    
+    if (servicesError) throw servicesError
+    
+    // Aggregate pricing data
+    const servicePricing = {}
+    services.forEach(service => {
+      if (!servicePricing[service.name]) {
+        servicePricing[service.name] = []
+      }
+      servicePricing[service.name].push(service.price)
+    })
+    
+    // Calculate averages
+    const marketAverages = {}
+    Object.entries(servicePricing).forEach(([name, prices]) => {
+      marketAverages[name] = {
+        average: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+        min: Math.min(...prices),
+        max: Math.max(...prices),
+        sampleSize: prices.length
+      }
+    })
+    
+    return {
+      shopCount: nearbyShopIds.length,
+      searchRadius: radiusKm,
+      servicePricing: marketAverages,
+      dataQuality: nearbyShopIds.length >= 3 ? 'good' : 'limited'
+    }
+    
+  } catch (error) {
+    console.error('Failed to fetch real market data:', error)
+    return null
+  }
+}
+
+/**
+ * Calculate distance between two coordinates
+ */
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371 // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c
+}
+
+/**
+ * Get AI-powered pricing analysis
+ */
+async function getAIPricingAnalysis({ pricingRecommendations, competitiveAnalysis, realMarketData, location, businessType }) {
+  try {
+    const prompt = `
+    As a barbershop business expert, analyze this pricing data and provide strategic recommendations:
+    
+    Location: ${location.city || 'Unknown'}, ${location.state || 'Unknown'}
+    Business Type: ${businessType}
+    
+    Recommended Prices:
+    ${Object.entries(pricingRecommendations).map(([service, data]) => 
+      `- ${service}: $${data.recommended} (range: $${data.range.min}-$${data.range.max})`
+    ).join('\n')}
+    
+    ${realMarketData ? `
+    Real Market Data (${realMarketData.shopCount} nearby shops):
+    ${Object.entries(realMarketData.servicePricing).map(([service, data]) =>
+      `- ${service}: Average $${data.average} (${data.sampleSize} samples)`
+    ).join('\n')}
+    ` : 'No local market data available'}
+    
+    Provide:
+    1. A competitive positioning strategy
+    2. Service bundling recommendations
+    3. Dynamic pricing opportunities
+    4. Customer acquisition tactics
+    
+    Keep response concise and actionable.
+    `
+    
+    const aiResponse = await callBestAIProvider(prompt, 'financial_advisor', {
+      shop_name: businessType,
+      location: `${location.city}, ${location.state}`,
+      staff_count: 'new business'
+    })
+    
+    return {
+      analysis: aiResponse.response,
+      provider: aiResponse.provider,
+      confidence: aiResponse.confidence,
+      timestamp: new Date().toISOString()
+    }
+    
+  } catch (error) {
+    console.error('AI analysis failed:', error)
+    return null
+  }
 }

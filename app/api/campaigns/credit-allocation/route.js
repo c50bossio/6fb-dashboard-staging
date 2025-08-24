@@ -143,21 +143,63 @@ export async function GET(request) {
       .eq('barbershop_id', barbershop_id)
       .single()
 
-    if (error && error.code !== 'PGRST116') { // Not found error
-      throw error
+    if (error) {
+      // Check if table doesn't exist (feature not set up yet)
+      if (error.message?.includes('does not exist')) {
+        // Return graceful empty response when tables aren't created yet
+        return NextResponse.json({
+          success: true,
+          balance: {
+            sms_credits: 0,
+            email_credits: 0,
+            tier: 'starter',
+            total_earned: 0
+          },
+          usage: {
+            sms_sent_this_month: 0,
+            emails_sent_this_month: 0,
+            campaigns_run: 0
+          },
+          projections: {
+            estimated_monthly_credits: 0,
+            estimated_value: '$0.00/month',
+            processing_volume: 0
+          },
+          tier_benefits: getTierBenefits('starter'),
+          feature_enabled: false // Indicate feature is not set up
+        })
+      }
+      // Only throw for real errors, not "not found" errors
+      if (error.code !== 'PGRST116') {
+        throw error
+      }
     }
 
-    // Get monthly usage stats
-    const { data: usageStats } = await supabase.rpc(
-      'get_campaign_usage_stats',
-      { shop_id: barbershop_id }
-    )
+    // Get monthly usage stats (with fallback for missing RPC functions)
+    let usageStats = null
+    try {
+      const { data } = await supabase.rpc(
+        'get_campaign_usage_stats',
+        { shop_id: barbershop_id }
+      )
+      usageStats = data
+    } catch (rpcError) {
+      // RPC function doesn't exist yet
+      console.log('Campaign usage stats RPC not available yet')
+    }
 
     // Calculate estimated monthly credits based on payment volume
-    const { data: monthlyVolume } = await supabase.rpc(
-      'get_monthly_payment_volume',
-      { shop_id: barbershop_id }
-    )
+    let monthlyVolume = 0
+    try {
+      const { data } = await supabase.rpc(
+        'get_monthly_payment_volume',
+        { shop_id: barbershop_id }
+      )
+      monthlyVolume = data || 0
+    } catch (rpcError) {
+      // RPC function doesn't exist yet
+      console.log('Monthly payment volume RPC not available yet')
+    }
 
     const estimatedMonthlyCredits = Math.floor((monthlyVolume * 0.006 * 0.5) / 0.025)
 

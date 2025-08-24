@@ -12,7 +12,7 @@ export async function GET(request) {
     const redirectTo = `${requestUrl.origin}/api/auth/callback`
     
     
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',

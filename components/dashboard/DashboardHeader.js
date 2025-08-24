@@ -7,8 +7,7 @@ import {
   ArrowRightOnRectangleIcon,
   UserIcon,
   MoonIcon,
-  SunIcon,
-  SparklesIcon
+  SunIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -300,23 +299,6 @@ export default function DashboardHeader() {
                       </svg>
                       Payment Setup
                     </Link>
-                    <button 
-                      onClick={() => {
-                        setActiveDropdown(null)
-                        // Dispatch a custom event to trigger onboarding
-                        const event = new CustomEvent('launchOnboarding', { 
-                          detail: { forced: true }
-                        })
-                        window.dispatchEvent(event)
-                        // Also set a flag in case the listener isn't ready yet
-                        window.__pendingOnboardingLaunch = true
-                        console.log('📤 Dispatched launchOnboarding event from profile dropdown')
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    >
-                      <SparklesIcon className="h-4 w-4 mr-2" />
-                      Launch Onboarding
-                    </button>
                     <Link 
                       href="/dashboard/settings"
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"

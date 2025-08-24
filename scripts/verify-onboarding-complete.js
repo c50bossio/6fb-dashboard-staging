@@ -12,7 +12,7 @@ console.log('🔍 Verifying Onboarding System Completeness...\n')
 
 // Components that should exist
 const requiredComponents = [
-  'components/onboarding/DataImportSetup.js',
+  'components/onboarding/PlatformTailoredImport.js',
   'components/onboarding/DataVerificationSetup.js',
   'components/onboarding/BusinessPlanningSetup.js',
   'components/onboarding/LocationManagementSetup.js',
@@ -44,7 +44,7 @@ const dashboardPath = path.join(process.cwd(), 'components/dashboard/DashboardOn
 const dashboardContent = fs.readFileSync(dashboardPath, 'utf8')
 
 const requiredImports = [
-  'DataImportSetup',
+  'PlatformTailoredImport',
   'DataVerificationSetup', 
   'BusinessPlanningSetup',
   'LocationManagementSetup'

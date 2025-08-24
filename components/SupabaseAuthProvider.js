@@ -191,103 +191,31 @@ function SupabaseAuthProvider({ children }) {
           sessionIsValid: session ? new Date(session.expires_at * 1000) > new Date() : false
         })
         
-        // 🔧 DEVELOPMENT: Enhanced fallback with fresh user detection
-        if (!session && process.env.NODE_ENV === 'development') {
-          console.log('🔧 [DEV AUTH] No session found, using development fallback...')
+        // 🔧 DEVELOPMENT: Enhanced fallback - DISABLED FOR REAL AUTH TESTING
+        // Only activate if explicitly needed for backend development
+        if (!session && process.env.NODE_ENV === 'development' && process.env.ENABLE_DEV_AUTH === 'true') {
+          console.log('🔧 [DEV AUTH] Development authentication enabled via ENABLE_DEV_AUTH flag')
           
-          try {
-            // Check if database is completely clean (fresh production state)
-            const { data: existingBarbershops } = await supabase
-              .from('barbershops')
-              .select('id')
-              .limit(1)
-            
-            const isCleanDatabase = !existingBarbershops || existingBarbershops.length === 0
-            console.log('🔍 [DEV AUTH] Is database clean?', isCleanDatabase)
-            
-            if (isCleanDatabase) {
-              // Database is clean - user would be first legitimate user
-              console.log('🚀 [DEV AUTH] Clean database detected - simulating fresh user experience')
-              const mockUser = {
-                id: 'fresh-user-simulation',
-                email: 'fresh@barbershop.com',
-                user_metadata: {
-                  full_name: 'Fresh Barbershop Owner',
-                  email: 'fresh@barbershop.com'
-                }
-              }
-              
-              const mockProfile = {
-                id: mockUser.id,
-                email: mockUser.email,
-                role: 'SHOP_OWNER',
-                subscription_tier: 'shop_owner', // Use shop_owner tier to access shop features
-                subscription_status: 'active',
-                full_name: 'Fresh Barbershop Owner',
-                onboarding_completed: false // Force onboarding for clean database
-              }
-              
-              setUser(mockUser)
-              setProfile(mockProfile)
-              setLoading(false)
-              
-              console.log('🚀 [DEV AUTH] Fresh user simulation ready - onboarding will trigger!')
-              return
-            } else {
-              // Database has content - use regular admin user
-              console.log('🔧 [DEV AUTH] Database has content - using admin user')
-              const mockUser = {
-                id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
-                email: 'c50bossio@gmail.com',
-                user_metadata: {
-                  full_name: 'Christopher Bossio',
-                  email: 'c50bossio@gmail.com'
-                },
-                app_metadata: {
-                  role: 'SUPER_ADMIN',
-                  subscription_tier: 'enterprise'
-                }
-              }
-              
-              const mockProfile = {
-                id: mockUser.id,
-                email: mockUser.email,
-                role: 'SUPER_ADMIN',
-                subscription_tier: 'enterprise',
-                subscription_status: 'active',
-                full_name: 'Christopher Bossio',
-                onboarding_completed: true
-              }
-              
-              setUser(mockUser)
-              setProfile(mockProfile)
-              setLoading(false)
-              
-              console.log('🔧 [DEV AUTH] Admin user authentication completed!')
-              return
-            }
-          } catch (error) {
-            console.error('🔧 [DEV AUTH] Error checking database state:', error)
-            // Fallback to admin user if check fails
-            const mockUser = {
-              id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
-              email: 'c50bossio@gmail.com',
-              user_metadata: { full_name: 'Christopher Bossio' }
-            }
-            const mockProfile = {
-              id: mockUser.id,
-              email: mockUser.email,
-              role: 'SUPER_ADMIN',
-              subscription_tier: 'enterprise',
-              subscription_status: 'active',
-              full_name: 'Christopher Bossio',
-              onboarding_completed: true
-            }
-            setUser(mockUser)
-            setProfile(mockProfile)
-            setLoading(false)
-            return
+          // Simple fallback for backend development when ENABLE_DEV_AUTH=true
+          const mockUser = {
+            id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
+            email: 'c50bossio@gmail.com',
+            user_metadata: { full_name: 'Christopher Bossio' }
           }
+          const mockProfile = {
+            id: mockUser.id,
+            email: mockUser.email,
+            role: 'SUPER_ADMIN',
+            subscription_tier: 'enterprise',
+            subscription_status: 'active',
+            full_name: 'Christopher Bossio',
+            onboarding_completed: true
+          }
+          setUser(mockUser)
+          setProfile(mockProfile)
+          setLoading(false)
+          console.log('🔧 [DEV AUTH] Simple admin authentication completed!')
+          return
         }
         
         setUser(session?.user ?? null)
@@ -353,6 +281,16 @@ function SupabaseAuthProvider({ children }) {
         const currentPath = typeof window !== 'undefined' ? window.location.pathname : 'unknown'
         console.log('🔍 [AUTH DEBUG] Current path before redirect logic:', currentPath)
         
+        // CRITICAL: Check if user is in onboarding flow
+        const isOnboarding = sessionStorage.getItem('onboarding_active') === 'true'
+        const onboardingStep = sessionStorage.getItem('onboarding_current_step')
+        
+        if (isOnboarding) {
+          console.log('🎯 [AUTH DEBUG] User is onboarding on step:', onboardingStep, '- NO REDIRECT')
+          // Don't redirect during onboarding, regardless of auth events
+          return
+        }
+        
         // CRITICAL FIX: Never redirect on initial page load
         // Only redirect when user explicitly signs in AFTER the page has loaded
         if (isInitialLoad) {
@@ -409,9 +347,14 @@ function SupabaseAuthProvider({ children }) {
   }, [router, supabase])
 
   const signInWithGoogle = async () => {
+    console.log('🔐 [OAUTH] Starting Google OAuth sign in...')
+    
     // Check if there's a stored return URL to include in OAuth callback
     const returnUrl = sessionStorage.getItem('auth_return_url')
     const redirectPath = returnUrl || '/dashboard'
+    
+    console.log('🔐 [OAUTH] Redirect path after auth:', redirectPath)
+    console.log('🔐 [OAUTH] Callback URL:', `${window.location.origin}/auth/callback?return_url=${encodeURIComponent(redirectPath)}`)
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -426,9 +369,19 @@ function SupabaseAuthProvider({ children }) {
     })
     
     if (error) {
-      console.error('OAuth initiation failed:', error)
+      console.error('🔐 [OAUTH] OAuth initiation failed:', error)
       throw error
     }
+    
+    console.log('🔐 [OAUTH] OAuth data:', data)
+    console.log('🔐 [OAUTH] OAuth URL:', data?.url)
+    
+    // The browser should automatically redirect to the OAuth URL
+    // If it doesn't, we might need to manually redirect
+    if (data?.url && !window.location.href.includes('supabase.co')) {
+      console.log('🔐 [OAUTH] Browser should redirect to:', data.url)
+    }
+    
     return data
   }
 

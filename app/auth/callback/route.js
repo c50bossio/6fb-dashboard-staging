@@ -28,10 +28,17 @@ export async function GET(request) {
   }
 
   try {
+    console.log('Attempting to exchange code for session...')
+    console.log('OAuth callback - Authorization code:', code?.substring(0, 20) + '...')
+    
+    // The fix is now in server-client.js - it will handle unquoting PKCE cookies
+    // Just create the client normally and let it handle the cookie fixing
+    console.log('Creating Supabase client with automatic PKCE fix...')
     const supabase = await createClient()
     
-    console.log('Attempting to exchange code for session...')
+    console.log('Calling exchangeCodeForSession...')
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+    console.log('exchangeCodeForSession result:', exchangeError ? 'FAILED' : 'SUCCESS')
     
     if (exchangeError) {
       console.error('Code exchange failed:', exchangeError)
@@ -54,7 +61,9 @@ export async function GET(request) {
 
     // Check for stored return URL from ProtectedRoute
     // This will be set if the user was redirected from a protected page
-    const returnUrl = requestUrl.searchParams.get('return_url') || '/dashboard'
+    const returnUrl = requestUrl.searchParams.get('return_url') || 
+                     requestUrl.searchParams.get('next') || 
+                     '/dashboard'
     console.log('OAuth callback - Return URL:', returnUrl)
 
     // Successful authentication - redirect to original page or dashboard

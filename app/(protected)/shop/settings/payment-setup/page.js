@@ -4,12 +4,14 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import {
   CreditCardIcon,
   CheckCircleIcon,
   ArrowPathIcon,
   SparklesIcon,
-  BoltIcon
+  BoltIcon,
+  ArrowRightIcon
 } from '@heroicons/react/24/outline'
 
 export default function PaymentSetupPage() {
@@ -97,6 +99,10 @@ export default function PaymentSetupPage() {
     setSaving(true)
     
     try {
+      // Store session data for return handling
+      sessionStorage.setItem('stripe_onboarding_flow', 'false') // Not from onboarding
+      sessionStorage.setItem('stripe_return_path', window.location.pathname)
+      
       // Create or get existing Stripe Connect account
       const response = await fetch('/api/payments/connect/create', {
         method: 'POST',
@@ -116,14 +122,14 @@ export default function PaymentSetupPage() {
       
       const data = await response.json()
       
-      // Generate onboarding link
+      // Generate onboarding link with proper return URLs
       const onboardingResponse = await fetch('/api/payments/connect/onboarding-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           account_id: data.account_id,
-          refresh_url: `${window.location.origin}/shop/settings/payment-setup`,
-          return_url: `${window.location.origin}/shop/settings/payment-setup?stripe_connected=true`
+          refresh_url: `${window.location.origin}/stripe-redirect?refresh=true`,
+          return_url: `${window.location.origin}/stripe-redirect?success=true`
         })
       })
       
@@ -166,6 +172,37 @@ export default function PaymentSetupPage() {
     }
   }
 
+  // Validation function for onboarding completion
+  const validatePaymentCompletion = async () => {
+    try {
+      const response = await fetch('/api/onboarding/status', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const paymentComplete = data.steps?.financial?.complete || false
+        const stripeConnected = data.steps?.financial?.stripe_connected || false
+        return {
+          valid: paymentComplete,
+          message: paymentComplete 
+            ? 'Payment setup completed! Your Stripe account is connected and ready to process payments.'
+            : stripeConnected 
+              ? 'Stripe connected! Please complete the setup by configuring processing fees.'
+              : 'Please connect your Stripe account to accept online payments'
+        }
+      }
+    } catch (error) {
+      console.error('Error validating payment completion:', error)
+    }
+    
+    return {
+      valid: false,
+      message: 'Unable to validate payment setup. Please ensure your Stripe account is connected.'
+    }
+  }
+
   const handleComplete = async () => {
     // Check if we came from onboarding
     const fromOnboarding = new URLSearchParams(window.location.search).get('from_onboarding') === 'true'
@@ -176,12 +213,13 @@ export default function PaymentSetupPage() {
       sessionStorage.removeItem('onboarding_return_step')
       
       // Update profile to mark payment setup complete
+      // Don't set onboarding_completed to true - let user complete all steps
       try {
         await supabase
           .from('profiles')
           .update({
             payment_setup_completed: true,
-            onboarding_completed: true,
+            // Don't set onboarding_completed here - user may have more steps
             updated_at: new Date().toISOString()
           })
           .eq('id', user.id)
@@ -197,11 +235,23 @@ export default function PaymentSetupPage() {
   // Check for Stripe connection success from URL params
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.get('stripe_connected') === 'true') {
+    const stripeSuccess = urlParams.get('stripe_success') === 'true' || 
+                          urlParams.get('stripe_connected') === 'true' ||
+                          urlParams.get('completed') === 'true'
+    
+    if (stripeSuccess) {
       setStripeConnected(true)
       setSetupComplete(true)
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname)
+      
+      // Check Stripe account status for more details
+      checkExistingSetup()
+      
+      // Keep the success parameters in URL for visual confirmation
+      // We'll clean it up when user navigates away
+      
+      // Clear any session storage
+      sessionStorage.removeItem('stripe_onboarding_flow')
+      sessionStorage.removeItem('stripe_return_path')
     }
   }, [])
 
@@ -220,6 +270,13 @@ export default function PaymentSetupPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
+        {/* Onboarding Step Banner */}
+        <OnboardingStepBanner 
+          stepId="financial"
+          validateCompletion={validatePaymentCompletion}
+          completionMessage="Payment setup configured successfully!"
+        />
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-olive-100 rounded-full mb-4">
@@ -364,32 +421,40 @@ export default function PaymentSetupPage() {
           </div>
         ) : (
           /* Success State */
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-8 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                <CheckCircleIcon className="w-10 h-10 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                You're All Set!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Your payment system is ready. You can now accept online payments from customers.
-              </p>
-              
-              <div className="space-y-3 max-w-sm mx-auto text-left mb-6">
+          <div className="space-y-6">
+            {/* Success Confirmation Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-green-200 overflow-hidden">
+              <div className="bg-green-50 p-4 border-b border-green-200">
                 <div className="flex items-center gap-3">
-                  <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-gray-700">Accept credit & debit cards</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-gray-700">Get paid next business day</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-gray-700">Automatic commission tracking</span>
+                  <CheckCircleIcon className="w-6 h-6 text-green-600" />
+                  <h3 className="font-semibold text-green-900">Stripe Connected Successfully!</h3>
                 </div>
               </div>
+              <div className="p-8 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                  <CheckCircleIcon className="w-10 h-10 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  You're All Set to Accept Payments!
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Your Stripe account is connected and ready to process payments securely.
+                </p>
+                
+                <div className="space-y-3 max-w-sm mx-auto text-left mb-6">
+                  <div className="flex items-center gap-3">
+                    <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">Accept credit & debit cards</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">Get paid next business day</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CheckCircleIcon className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <span className="text-gray-700">Automatic commission tracking</span>
+                  </div>
+                </div>
 
               {/* Bonus Credits Message */}
               <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 mb-6">
@@ -402,12 +467,27 @@ export default function PaymentSetupPage() {
                 </p>
               </div>
 
-              <button
-                onClick={handleComplete}
-                className="inline-flex items-center px-8 py-3 bg-olive-600 hover:bg-olive-700 text-white rounded-lg font-medium transition-colors"
-              >
-                Continue to Dashboard
-              </button>
+              {/* Navigation Options */}
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={() => {
+                    // Navigate to dashboard where OnboardingProgress will guide next steps
+                    router.push('/dashboard?continue_onboarding=true')
+                  }}
+                  className="inline-flex items-center px-6 py-3 bg-olive-600 hover:bg-olive-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  <ArrowRightIcon className="w-5 h-5 mr-2" />
+                  Continue Setup
+                </button>
+                
+                <button
+                  onClick={handleComplete}
+                  className="inline-flex items-center px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg font-medium transition-colors"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+              </div>
             </div>
           </div>
         )}

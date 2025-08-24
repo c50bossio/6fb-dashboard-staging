@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 
 import { Alert } from '../ui/Alert';
 import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
+import { Card } from "../ui/card"';
 
 const CancellationModal = ({ 
     isOpen, 

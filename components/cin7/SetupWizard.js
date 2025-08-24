@@ -35,6 +35,7 @@ export default function SetupWizard({ onComplete, onClose }) {
   const [isLoading, setIsLoading] = useState(false)
   const [testStatus, setTestStatus] = useState(null)
   const [syncProgress, setSyncProgress] = useState(0)
+  const [syncCompleted, setSyncCompleted] = useState(false)
   const [errors, setErrors] = useState({})
   const [showApiKey, setShowApiKey] = useState(false)
 
@@ -139,11 +140,27 @@ export default function SetupWizard({ onComplete, onClose }) {
       // First save credentials
       const headers = { 'Content-Type': 'application/json' }
       
-      // Add dev bypass header if in development mode
-      const isDevMode = typeof window !== 'undefined' && localStorage.getItem('dev_bypass') === 'true'
+      // Detect development mode and add dev bypass header
+      const isDevelopment = process.env.NODE_ENV === 'development' || 
+                           (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+      const devBypassSet = typeof window !== 'undefined' && localStorage.getItem('dev_bypass') === 'true'
+      const isDevMode = isDevelopment || devBypassSet
+      
       if (isDevMode) {
         headers['x-dev-bypass'] = 'true'
+        
+        // Ensure dev_bypass is set in localStorage for consistency
+        if (typeof window !== 'undefined' && !localStorage.getItem('dev_bypass')) {
+          localStorage.setItem('dev_bypass', 'true')
+          console.log('✅ Development mode detected - dev bypass enabled')
+        }
       }
+      
+      console.log('🔧 Setup request config:', {
+        devMode: isDevMode,
+        headers: { ...headers, 'x-dev-bypass': headers['x-dev-bypass'] || 'false' },
+        environment: process.env.NODE_ENV
+      })
       
       const setupResponse = await fetch('/api/cin7/setup', {
         method: 'POST',
@@ -155,10 +172,121 @@ export default function SetupWizard({ onComplete, onClose }) {
       })
 
       if (!setupResponse.ok) {
-        throw new Error('Failed to save settings')
+        // Extract detailed error message from API response
+        let errorMessage = 'Failed to save settings'
+        let errorDetails = null
+        
+        try {
+          const errorData = await setupResponse.json()
+          errorMessage = errorData.error || errorData.message || errorMessage
+          errorDetails = errorData.details || errorData.debug || null
+          
+          // Set detailed error for user display
+          setErrors({
+            setup: errorMessage,
+            details: errorDetails
+          })
+          
+          console.error('❌ Setup failed:', {
+            status: setupResponse.status,
+            statusText: setupResponse.statusText,
+            error: errorMessage,
+            details: errorDetails
+          })
+          
+        } catch (parseError) {
+          // If JSON parsing fails, use status text
+          const errorText = await setupResponse.text()
+          errorMessage = errorText || `Setup failed: ${setupResponse.status} ${setupResponse.statusText}`
+          setErrors({ setup: errorMessage })
+          
+          console.error('❌ Setup failed (parse error):', {
+            status: setupResponse.status,
+            statusText: setupResponse.statusText,
+            rawResponse: errorText
+          })
+        }
+        
+        throw new Error(errorMessage)
       }
 
       const setupData = await setupResponse.json()
+      
+      // Check if setup was successful and show appropriate feedback
+      if (!setupData.success) {
+        const errorMessage = setupData.error || setupData.message || 'Setup completed but with issues'
+        setErrors({
+          setup: errorMessage,
+          setupWarning: setupData.warning || null,
+          connectionTested: setupData.connectionTested || false
+        })
+        
+        // Don't throw error if credentials were saved, just show warning
+        if (setupData.credentialsSaved) {
+          console.warn('⚠️ Setup partially successful:', setupData)
+        } else {
+          throw new Error(errorMessage)
+        }
+      } else {
+        // Clear any previous setup errors on success
+        setErrors(prev => ({
+          ...prev,
+          setup: null,
+          setupWarning: null
+        }))
+        console.log('✅ Setup successful:', setupData)
+      }
+
+      // Setup is complete! Store setup result and show completion/sync choice
+      const setupResult = {
+        credentialsSaved: setupData.credentialsSaved || false,
+        connectionTested: setupData.connectionTested || false,
+        accountName: setupData.accountName || formData.accountName,
+        webhooksRegistered: setupData.webhooksRegistered || false,
+        nextSteps: setupData.nextSteps || [],
+        readyForSync: setupData.success && setupData.connectionTested
+      }
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        setupResult,
+        // Store sync credentials for manual sync later
+        syncCredentials: {
+          accountId: formData.accountId,
+          apiKey: formData.apiKey,
+          accountName: formData.accountName
+        }
+      }))
+
+      // Move to setup completion screen (not auto-sync)
+      setTimeout(() => {
+        setCurrentStep(4) // Go to completion screen
+        setSyncProgress(0) // Reset sync progress
+        
+        // Show setup completion message
+        console.log('🎉 Setup completed successfully:', setupResult)
+      }, 500)
+    } catch (error) {
+      setErrors({ setup: error.message })
+      setSyncProgress(0)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleManualSync = async () => {
+    setIsLoading(true)
+    setSyncProgress(0)
+    setErrors(prev => ({ ...prev, sync: null })) // Clear previous sync errors
+
+    try {
+      // Use stored sync credentials
+      const { syncCredentials } = formData
+      if (!syncCredentials || !syncCredentials.accountId || !syncCredentials.apiKey) {
+        throw new Error('No sync credentials available. Please complete setup first.')
+      }
+
+      console.log('🔄 Starting manual sync with stored credentials')
 
       // Simulate progress updates
       const progressInterval = setInterval(() => {
@@ -171,13 +299,28 @@ export default function SetupWizard({ onComplete, onClose }) {
         })
       }, 500)
 
-      // Start sync - always pass credentials since setup doesn't guarantee they're in DB yet
+      // Setup headers with dev bypass
+      const headers = { 'Content-Type': 'application/json' }
+      const isDevelopment = process.env.NODE_ENV === 'development' || 
+                           (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+      const devBypassSet = typeof window !== 'undefined' && localStorage.getItem('dev_bypass') === 'true'
+      const isDevMode = isDevelopment || devBypassSet
+      
+      if (isDevMode) {
+        headers['x-dev-bypass'] = 'true'
+      }
+
       const syncBody = {
-        accountId: formData.accountId,
-        apiKey: formData.apiKey,
-        accountName: formData.accountName
+        accountId: syncCredentials.accountId,
+        apiKey: syncCredentials.apiKey,
+        accountName: syncCredentials.accountName
       }
       
+      console.log('🔄 Manual sync request config:', {
+        devMode: isDevMode,
+        headers: { ...headers, 'x-dev-bypass': headers['x-dev-bypass'] || 'false' },
+        syncBody: { ...syncBody, apiKey: syncBody.apiKey ? '[REDACTED]' : 'missing' }
+      })
       
       const syncResponse = await fetch('/api/cin7/sync', {
         method: 'POST',
@@ -185,14 +328,39 @@ export default function SetupWizard({ onComplete, onClose }) {
         body: JSON.stringify(syncBody)
       })
 
-
       clearInterval(progressInterval)
       setSyncProgress(100)
 
       if (!syncResponse.ok) {
-        const errorText = await syncResponse.text()
-        console.error('❌ Sync failed with status:', syncResponse.status, 'Response:', errorText)
-        throw new Error(`Sync request failed: ${syncResponse.status} ${syncResponse.statusText}`)
+        // Extract detailed error message from sync API response
+        let errorMessage = `Sync request failed: ${syncResponse.status} ${syncResponse.statusText}`
+        let errorDetails = null
+        
+        try {
+          const errorData = await syncResponse.json()
+          errorMessage = errorData.error || errorData.message || errorMessage
+          errorDetails = errorData.details || errorData.debug || null
+          
+          console.error('❌ Manual sync failed:', {
+            status: syncResponse.status,
+            statusText: syncResponse.statusText,
+            error: errorMessage,
+            details: errorDetails
+          })
+          
+        } catch (parseError) {
+          // If JSON parsing fails, use text response
+          const errorText = await syncResponse.text()
+          errorMessage = errorText || errorMessage
+          
+          console.error('❌ Manual sync failed (parse error):', {
+            status: syncResponse.status,
+            statusText: syncResponse.statusText,
+            rawResponse: errorText
+          })
+        }
+        
+        throw new Error(errorMessage)
       }
 
       const syncData = await syncResponse.json()
@@ -201,30 +369,29 @@ export default function SetupWizard({ onComplete, onClose }) {
       const syncResult = {
         itemsSynced: syncData.count || syncData.itemsSynced || 0,
         lowStockCount: syncData.lowStockCount || 0,
-        outOfStockCount: syncData.outOfStockCount || 0
+        outOfStockCount: syncData.outOfStockCount || 0,
+        totalFetched: syncData.totalFetched || syncData.count || 0
       }
       
       setFormData(prev => ({ ...prev, syncResult }))
 
-      // Even if no products, consider it successful
+      // Check if sync was successful
       if (syncData.success || syncData.count >= 0) {
+        console.log('✅ Manual sync completed successfully:', syncResult)
+        
+        // Set sync completed to show completion UI
         setTimeout(() => {
-          onComplete({
-            ...formData,
-            syncedProducts: syncResult.itemsSynced,
-            lowStock: syncResult.lowStockCount,
-            outOfStock: syncResult.outOfStockCount,
-            message: syncResult.itemsSynced === 0 
-              ? 'Setup complete! You can add products to CIN7 at any time.'
-              : `Successfully synced ${syncResult.itemsSynced} products!`
-          })
-        }, 1000)
+          setSyncCompleted(true)
+        }, 1000) // Small delay to show 100% progress
       } else {
-        throw new Error(syncData.error || 'Sync failed')
+        throw new Error(syncData.error || 'Sync completed but with no results')
       }
+      
     } catch (error) {
-      setErrors({ sync: error.message })
+      setErrors(prev => ({ ...prev, sync: error.message }))
       setSyncProgress(0)
+      setSyncCompleted(false) // Ensure sync completion is reset on error
+      console.error('❌ Manual sync error:', error)
     } finally {
       setIsLoading(false)
     }
@@ -547,100 +714,236 @@ export default function SetupWizard({ onComplete, onClose }) {
           </motion.div>
         )
 
-      case 4: // Initial Sync
+      case 4: // Setup Completion & Manual Sync
         return (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <h2 className="text-2xl font-bold text-gray-900 text-center">
-              {syncProgress === 100 ? 'Sync Complete!' : 'Syncing Your Inventory'}
-            </h2>
+            {/* Setup Results Display */}
+            {formData.setupResult && !formData.syncResult && (
+              <>
+                <div className="text-center">
+                  <CheckCircleSolidIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Setup Complete!
+                  </h2>
+                  <p className="text-gray-600 mt-2">
+                    Your CIN7 credentials have been {formData.setupResult.credentialsSaved ? 'saved' : 'processed'} successfully.
+                  </p>
+                </div>
 
-            {syncProgress < 100 ? (
-              <div className="space-y-4">
-                <div className="relative pt-1">
-                  <div className="flex mb-2 items-center justify-between">
-                    <div>
-                      <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-amber-600 bg-amber-200">
-                        Progress
-                      </span>
+                {/* Setup Status Details */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">Setup Status</h3>
+                  <dl className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <dt className="text-gray-700">Credentials Saved:</dt>
+                      <dd className={`font-medium ${formData.setupResult.credentialsSaved ? 'text-green-600' : 'text-red-600'}`}>
+                        {formData.setupResult.credentialsSaved ? '✅ Yes' : '❌ No'}
+                      </dd>
                     </div>
-                    <div className="text-right">
-                      <span className="text-xs font-semibold inline-block text-amber-600">
-                        {syncProgress}%
-                      </span>
+                    <div className="flex justify-between items-center">
+                      <dt className="text-gray-700">Connection Test:</dt>
+                      <dd className={`font-medium ${formData.setupResult.connectionTested ? 'text-green-600' : 'text-yellow-600'}`}>
+                        {formData.setupResult.connectionTested ? '✅ Passed' : '⚠️ Failed'}
+                      </dd>
                     </div>
+                    <div className="flex justify-between items-center">
+                      <dt className="text-gray-700">Account:</dt>
+                      <dd className="font-medium text-gray-900">
+                        {formData.setupResult.accountName || 'Not detected'}
+                      </dd>
+                    </div>
+                    {formData.setupResult.webhooksRegistered && (
+                      <div className="flex justify-between items-center">
+                        <dt className="text-gray-700">Webhooks:</dt>
+                        <dd className="font-medium text-green-600">✅ Registered</dd>
+                      </div>
+                    )}
+                  </dl>
+                </div>
+
+                {/* Next Steps */}
+                {formData.setupResult.nextSteps && formData.setupResult.nextSteps.length > 0 && (
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="text-sm font-medium text-blue-900 mb-2">Next Steps:</h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      {formData.setupResult.nextSteps.map((step, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="mr-2">•</span>
+                          {step}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-amber-200">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${syncProgress}%` }}
-                      transition={{ duration: 0.5 }}
-                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-amber-500"
-                    />
+                )}
+
+                {/* Sync Action Buttons */}
+                <div className="space-y-4">
+                  {formData.setupResult.readyForSync ? (
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <div className="flex items-start">
+                        <CheckCircleIcon className="h-5 w-5 text-green-400 mt-0.5 mr-3 flex-shrink-0" />
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-green-800">Ready to Sync!</h4>
+                          <p className="mt-1 text-sm text-green-700">
+                            Your connection test passed. You can now sync your inventory from CIN7.
+                          </p>
+                          <button
+                            onClick={handleManualSync}
+                            disabled={isLoading}
+                            className="mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium disabled:opacity-50 flex items-center"
+                          >
+                            {isLoading ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Syncing...
+                              </>
+                            ) : (
+                              <>
+                                <CloudArrowUpIcon className="h-4 w-4 mr-2" />
+                                Start Sync Now
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <div className="flex items-start">
+                        <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0" />
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-yellow-800">Connection Issue</h4>
+                          <p className="mt-1 text-sm text-yellow-700">
+                            Your credentials were saved but the connection test failed. 
+                            You can still try to sync, but you may need to verify your credentials first.
+                          </p>
+                          <div className="mt-3 space-x-3">
+                            <button
+                              onClick={() => setCurrentStep(2)} // Go back to credentials step
+                              className="text-yellow-700 hover:text-yellow-900 font-medium text-sm"
+                            >
+                              Check Credentials
+                            </button>
+                            <button
+                              onClick={handleManualSync}
+                              disabled={isLoading}
+                              className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 transition-colors font-medium disabled:opacity-50 text-sm"
+                            >
+                              {isLoading ? 'Syncing...' : 'Try Sync Anyway'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Skip Sync Option */}
+                  <div className="text-center">
+                    <button
+                      onClick={() => {
+                        onComplete({
+                          ...formData,
+                          message: 'CIN7 setup completed successfully. You can sync your inventory anytime from the Product Management page.'
+                        })
+                      }}
+                      className="text-gray-600 hover:text-gray-800 font-medium text-sm"
+                    >
+                      Skip Sync for Now
+                    </button>
                   </div>
                 </div>
-                
-                <div className="text-center space-y-2">
-                  <p className="text-gray-600 font-medium">
-                    {syncProgress < 30 && 'Connecting to CIN7...'}
-                    {syncProgress >= 30 && syncProgress < 60 && 'Fetching products...'}
-                    {syncProgress >= 60 && syncProgress < 90 && 'Updating inventory levels...'}
-                    {syncProgress >= 90 && syncProgress < 100 && 'Finalizing sync...'}
+              </>
+            )}
+
+            {/* Sync in Progress Display */}
+            {isLoading && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Syncing Your Inventory
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Please wait while we sync your products from CIN7
                   </p>
-                  {syncProgress > 0 && syncProgress < 100 && (
+                </div>
+
+                <div className="bg-white p-6 rounded-lg border shadow-sm">
+                  <div className="relative pt-1">
+                    <div className="flex mb-2 items-center justify-between">
+                      <div>
+                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                          Progress
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xs font-semibold inline-block text-blue-600">
+                          {syncProgress}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-blue-200">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${syncProgress}%` }}
+                        transition={{ duration: 0.5 }}
+                        className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="text-center space-y-2">
+                    <p className="text-gray-700 font-medium">
+                      {syncProgress < 30 && 'Connecting to CIN7...'}
+                      {syncProgress >= 30 && syncProgress < 60 && 'Fetching products...'}
+                      {syncProgress >= 60 && syncProgress < 90 && 'Processing inventory data...'}
+                      {syncProgress >= 90 && 'Finalizing sync...'}
+                    </p>
                     <p className="text-xs text-gray-500 animate-pulse">
                       This may take a few moments depending on your inventory size
                     </p>
-                  )}
-                </div>
-
-                {!isLoading && syncProgress === 0 && (
-                  <div className="space-y-4">
-                    <div className="bg-blue-50 p-4 rounded-lg max-w-md mx-auto">
-                      <p className="text-blue-800 text-sm">
-                        {formData.accountName && formData.accountName !== 'Connected' 
-                          ? `Ready to sync with ${formData.accountName}`
-                          : 'Ready to sync your inventory'}
-                      </p>
-                    </div>
-                    <button
-                      onClick={handleInitialSync}
-                      className="mx-auto px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors font-medium flex items-center"
-                    >
-                      Start Syncing
-                      <CloudArrowUpIcon className="w-5 h-5 ml-2" />
-                    </button>
-                    <button
-                      onClick={() => onComplete({
-                        ...formData,
-                        syncedProducts: 0,
-                        lowStock: 0,
-                        outOfStock: 0
-                      })}
-                      className="mx-auto px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
-                    >
-                      Skip for now
-                    </button>
                   </div>
-                )}
+                </div>
               </div>
-            ) : (
+            )}
+
+            {/* Sync Complete Display */}
+            {syncCompleted && (
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 200 }}
-                className="text-center space-y-4"
+                className="text-center space-y-6"
               >
-                <CheckCircleSolidIcon className="w-20 h-20 text-green-500 mx-auto" />
-                <h3 className="text-xl font-semibold text-green-900">
-                  All Set! Your inventory is now synced.
-                </h3>
-                <p className="text-gray-600">
-                  CIN7 will automatically keep your inventory up to date.
-                </p>
+                <div>
+                  <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-green-900 mb-2">
+                    Sync Complete!
+                  </h3>
+                  <p className="text-gray-600">
+                    Your inventory has been successfully synced with CIN7
+                  </p>
+                </div>
+
+                {/* Sync Results Summary */}
+                {formData.syncResult && (
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200 max-w-md mx-auto">
+                    <h4 className="text-sm font-medium text-green-800 mb-2">Sync Summary</h4>
+                    <div className="space-y-1 text-sm text-green-700">
+                      <p>✅ Products synced: {formData.syncResult.itemsSynced || 0}</p>
+                      {formData.syncResult.lowStockCount > 0 && (
+                        <p>⚠️ Low stock items: {formData.syncResult.lowStockCount}</p>
+                      )}
+                      {formData.syncResult.outOfStockCount > 0 && (
+                        <p>❌ Out of stock items: {formData.syncResult.outOfStockCount}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <button
                   onClick={() => onComplete({
                     ...formData,
@@ -648,28 +951,146 @@ export default function SetupWizard({ onComplete, onClose }) {
                     lowStock: formData.syncResult?.lowStockCount || 0,
                     outOfStock: formData.syncResult?.outOfStockCount || 0,
                     message: formData.syncResult?.itemsSynced === 0 
-                      ? 'Setup complete! You can add products to CIN7 at any time.'
-                      : `Successfully synced ${formData.syncResult?.itemsSynced || 0} products!`
+                      ? 'CIN7 setup complete! You can add products to CIN7 at any time.'
+                      : `Successfully synced ${formData.syncResult?.itemsSynced || 0} products from CIN7!`
                   })}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                 >
-                  Finish Setup
+                  Complete Setup
                 </button>
               </motion.div>
             )}
 
+            {/* Sync Error Display */}
             {errors.sync && (
-              <div className="bg-red-50 p-4 rounded-lg">
-                <p className="text-red-800">{errors.sync}</p>
-                <button
-                  onClick={() => {
-                    setErrors({})
-                    setSyncProgress(0)
-                  }}
-                  className="mt-2 text-red-700 hover:text-red-900 font-medium"
-                >
-                  Try Again
-                </button>
+              <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                <div className="flex items-start">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-red-800">
+                      Sync Failed
+                    </h3>
+                    <p className="mt-1 text-sm text-red-700">{errors.sync}</p>
+                    
+                    <div className="mt-3 space-x-3">
+                      <button
+                        onClick={handleManualSync}
+                        disabled={isLoading}
+                        className="text-red-700 hover:text-red-900 font-medium text-sm disabled:opacity-50"
+                      >
+                        {isLoading ? 'Retrying...' : 'Try Again'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          onComplete({
+                            ...formData,
+                            syncedProducts: 0,
+                            message: 'CIN7 setup completed. Sync can be done later from the Product Management page.'
+                          })
+                        }}
+                        className="text-red-700 hover:text-red-900 font-medium text-sm"
+                      >
+                        Skip Sync
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Setup Error Display */}
+            {errors.setup && (
+              <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                <div className="flex items-start">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-red-800">
+                      Setup Error
+                    </h3>
+                    <p className="mt-1 text-sm text-red-700">{errors.setup}</p>
+                    
+                    {errors.details && (
+                      <details className="mt-2">
+                        <summary className="text-sm text-red-600 cursor-pointer hover:text-red-800">
+                          View Details
+                        </summary>
+                        <pre className="mt-2 text-xs text-red-600 bg-red-25 p-2 rounded overflow-x-auto">
+                          {typeof errors.details === 'object' 
+                            ? JSON.stringify(errors.details, null, 2) 
+                            : errors.details
+                          }
+                        </pre>
+                      </details>
+                    )}
+                    
+                    <button
+                      onClick={() => {
+                        setErrors(prev => ({ ...prev, setup: null, details: null }))
+                        setSyncProgress(0)
+                      }}
+                      className="mt-3 text-red-700 hover:text-red-900 font-medium text-sm"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Setup Warning Display (when credentials saved but connection failed) */}
+            {errors.setupWarning && (
+              <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                <div className="flex items-start">
+                  <InformationCircleIcon className="h-5 w-5 text-yellow-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-yellow-800">
+                      Credentials Saved with Warning
+                    </h3>
+                    <p className="mt-1 text-sm text-yellow-700">{errors.setupWarning}</p>
+                    <p className="mt-1 text-xs text-yellow-600">
+                      Your credentials have been saved but the connection test failed. 
+                      You can still try to sync, or verify your credentials first.
+                    </p>
+                    
+                    <div className="mt-3 flex space-x-3">
+                      <button
+                        onClick={() => setCurrentStep(2)} // Go back to credentials step
+                        className="text-yellow-700 hover:text-yellow-900 font-medium text-sm"
+                      >
+                        Check Credentials
+                      </button>
+                      <button
+                        onClick={() => setErrors(prev => ({ ...prev, setupWarning: null }))}
+                        className="text-yellow-700 hover:text-yellow-900 font-medium text-sm"
+                      >
+                        Continue Anyway
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {errors.sync && (
+              <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                <div className="flex items-start">
+                  <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-red-800">
+                      Sync Error
+                    </h3>
+                    <p className="mt-1 text-sm text-red-700">{errors.sync}</p>
+                    <button
+                      onClick={() => {
+                        setErrors(prev => ({ ...prev, sync: null }))
+                        setSyncProgress(0)
+                      }}
+                      className="mt-3 text-red-700 hover:text-red-900 font-medium text-sm"
+                    >
+                      Try Sync Again
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </motion.div>

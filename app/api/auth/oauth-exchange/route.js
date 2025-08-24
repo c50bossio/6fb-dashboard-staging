@@ -9,7 +9,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No code provided' }, { status: 400 })
     }
     
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Try to exchange the code directly
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
