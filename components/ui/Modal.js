@@ -63,7 +63,7 @@ export function Modal({
         {(title || showCloseButton) && (
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             {title && (
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 truncate pr-4">{title}</h3>
             )}
             {showCloseButton && (
               <button
@@ -185,9 +185,9 @@ export function ConfirmModal({
       closeOnBackdrop={false}
     >
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 truncate">{title}</h3>
         {message && (
-          <p className="text-gray-600 mb-6">{message}</p>
+          <p className="text-gray-600 mb-6 break-words">{message}</p>
         )}
         
         <div className="flex justify-center space-x-3">

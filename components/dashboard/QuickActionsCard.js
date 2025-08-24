@@ -83,8 +83,8 @@ export default function QuickActionsCard({ profile }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-        <p className="text-sm text-gray-600 mt-1">
+        <h3 className="text-lg font-semibold text-gray-900 truncate">Quick Actions</h3>
+        <p className="text-sm text-gray-600 mt-1 truncate">
           Common tasks and operations
         </p>
       </div>
@@ -100,10 +100,10 @@ export default function QuickActionsCard({ profile }) {
             `}
           >
             <action.icon className={`h-8 w-8 mb-2 ${iconColors[action.color]}`} />
-            <span className="text-sm font-medium text-center">
+            <span className="text-sm font-medium text-center truncate px-1">
               {action.title}
             </span>
-            <span className="text-xs text-gray-600 text-center mt-1 hidden lg:block">
+            <span className="text-xs text-gray-600 text-center mt-1 hidden lg:block truncate px-1">
               {action.description}
             </span>
             <ArrowRightIcon className="h-3 w-3 absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" />

@@ -66,7 +66,7 @@ export default function ReviewCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium text-gray-900">{review.reviewerName}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{review.reviewerName}</p>
                 {renderStars(review.starRating)}
               </div>
               <span className="text-xs text-gray-500">
@@ -78,7 +78,7 @@ export default function ReviewCard({
             
             {showAttribution && review.attribution?.barber && (
               <div className="mt-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-olive-100 text-olive-800 max-w-[120px] truncate">
                   {review.attribution.barber.name}
                 </span>
               </div>
@@ -149,7 +149,7 @@ export default function ReviewCard({
               {review.attribution?.barber ? (
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-500">Attributed to:</span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-olive-100 text-olive-800 max-w-[150px] truncate">
                     {review.attribution.barber.name}
                   </span>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConfidenceColor(review.attribution.confidence)}`}>

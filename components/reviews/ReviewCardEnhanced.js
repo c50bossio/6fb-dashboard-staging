@@ -112,7 +112,7 @@ export default function ReviewCardEnhanced({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium text-gray-900">{review.reviewerName}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{review.reviewerName}</p>
                 {renderStars(review.starRating)}
                 <span className="text-sm text-gray-500">
                   {new Date(review.reviewDate).toLocaleDateString()}
@@ -143,7 +143,7 @@ export default function ReviewCardEnhanced({
               )}
             </div>
             
-            <p className="text-gray-700 mb-3">{review.reviewText}</p>
+            <p className="text-gray-700 mb-3 line-clamp-3">{review.reviewText}</p>
             
             {showAttribution && (
               <div className="flex flex-wrap items-center gap-3">
@@ -154,7 +154,7 @@ export default function ReviewCardEnhanced({
                       onClick={handleBarberClick}
                       className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-olive-100 text-olive-800 hover:bg-olive-200 transition-colors cursor-pointer"
                     >
-                      {review.attribution.barber.name}
+                      <span className="truncate max-w-[120px]">{review.attribution.barber.name}</span>
                       {showBookingCTA && (
                         <CalendarDaysIcon className="h-3 w-3 ml-1" />
                       )}
@@ -184,7 +184,7 @@ export default function ReviewCardEnhanced({
             <div>
               <h4 className="font-medium text-gray-900 flex items-center">
                 <ScissorsIcon className="h-4 w-4 mr-2 text-olive-600" />
-                Services by {review.attribution.barber.name}
+                Services by <span className="truncate max-w-[150px] inline-block">{review.attribution.barber.name}</span>
               </h4>
               <p className="text-sm text-gray-600 mt-1">
                 Book the same great service mentioned in this review
@@ -209,8 +209,8 @@ export default function ReviewCardEnhanced({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               {barberServices.slice(0, 3).map(service => (
                 <div key={service.id} className="bg-white rounded-lg p-4 border border-gray-200">
-                  <h5 className="font-medium text-gray-900">{service.name}</h5>
-                  <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                  <h5 className="font-medium text-gray-900 truncate">{service.name}</h5>
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">{service.description}</p>
                   <div className="flex justify-between items-center mt-3">
                     <span className="text-sm text-gray-500">{service.duration} min</span>
                     <span className="font-bold text-olive-600">${service.price}</span>
@@ -238,7 +238,7 @@ export default function ReviewCardEnhanced({
               className="flex-1 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors font-medium flex items-center justify-center"
             >
               <CalendarDaysIcon className="h-5 w-5 mr-2" />
-              Book Appointment with {review.attribution.barber.name.split(' ')[0]}
+              <span className="truncate">Book Appointment with {review.attribution.barber.name.split(' ')[0]}</span>
             </button>
             <button
               onClick={() => window.location.href = `/book`}
@@ -251,7 +251,7 @@ export default function ReviewCardEnhanced({
           {/* Trust Indicator */}
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-xs text-yellow-800">
-              <strong>Why book with {review.attribution.barber.name.split(' ')[0]}?</strong> This verified review 
+              <strong>Why book with <span className="inline-block max-w-[100px] truncate">{review.attribution.barber.name.split(' ')[0]}</span>?</strong> This verified review 
               shows they deliver excellent service with a {review.starRating}-star experience.
             </p>
           </div>

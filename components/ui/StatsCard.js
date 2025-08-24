@@ -49,9 +49,9 @@ export function StatsCard({ title, value, description, icon: Icon, change, trend
     <Card>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-sm font-medium text-gray-600 truncate">{title}</p>
           <div className="flex items-baseline">
-            <p className="text-3xl font-bold text-gray-900">{value}</p>
+            <p className="text-3xl font-bold text-gray-900 truncate">{value}</p>
             {change && (
               <span className={`ml-2 text-sm ${trendColors[trend] || 'text-gray-600'}`}>
                 {change}
@@ -59,7 +59,7 @@ export function StatsCard({ title, value, description, icon: Icon, change, trend
             )}
           </div>
           {description && (
-            <p className="text-sm text-gray-500 mt-1">{description}</p>
+            <p className="text-sm text-gray-500 mt-1 truncate">{description}</p>
           )}
         </div>
         {Icon && (
@@ -80,9 +80,9 @@ export function CardWithHeader({ title, description, action, children, className
     <Card className={className}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 truncate">{title}</h3>
           {description && (
-            <p className="text-sm text-gray-600 mt-1">{description}</p>
+            <p className="text-sm text-gray-600 mt-1 truncate">{description}</p>
           )}
         </div>
         {action}

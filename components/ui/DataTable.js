@@ -158,7 +158,7 @@ export function DataTable({
                     onClick={() => handleSort(column)}
                   >
                     <div className="flex items-center space-x-1">
-                      <span>{column.header}</span>
+                      <span className="truncate">{column.header}</span>
                       {getSortIcon(column)}
                     </div>
                   </th>
@@ -180,9 +180,9 @@ export function DataTable({
                   {columns.map((column, colIndex) => (
                     <td
                       key={column.accessor || colIndex}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                      className="px-6 py-4 text-sm text-gray-900 max-w-0">
                     >
-                      {renderCell(row, column)}
+                      <div className="truncate max-w-[200px]">{renderCell(row, column)}</div>
                     </td>
                   ))}
                   {actions.length > 0 && (
@@ -309,9 +309,9 @@ export function SimpleTable({
               {columns.map((column, colIndex) => (
                 <td
                   key={column.accessor || colIndex}
-                  className="px-4 py-3 text-sm text-gray-900"
+                  className="px-4 py-3 text-sm text-gray-900 max-w-0">
                 >
-                  {column.render ? column.render(row[column.accessor], row) : row[column.accessor]}
+                  <div className="truncate max-w-[200px]">{column.render ? column.render(row[column.accessor], row) : row[column.accessor]}</div>
                 </td>
               ))}
             </tr>
