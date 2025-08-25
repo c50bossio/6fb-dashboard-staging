@@ -6,14 +6,213 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
+// Commission calculation function
+async function calculateAndRecordCommission({ barber_id, barbershop_id, payment_amount, transaction_id, payment_intent_id }) {
+  try {
+    // Get barber's financial arrangement
+    const { data: arrangement, error: arrangementError } = await supabase
+      .from('financial_arrangements')
+      .select('*')
+      .eq('barber_id', barber_id)
+      .eq('barbershop_id', barbershop_id)
+      .eq('status', 'active')
+      .single()
+
+    if (arrangementError) {
+      console.log('❌ No active financial arrangement found for barber, using default commission')
+      // Use default 40% commission if no arrangement found
+      await recordCommission({
+        barber_id,
+        barbershop_id,
+        payment_amount,
+        commission_percentage: 40.0,
+        commission_amount: payment_amount * 0.40,
+        shop_amount: payment_amount * 0.60,
+        arrangement_type: 'commission',
+        payment_intent_id,
+        arrangement_id: null
+      })
+      return
+    }
+
+    let commission_amount = 0
+    let shop_amount = 0
+    let commission_percentage = 0
+
+    // Calculate commission based on arrangement type
+    switch (arrangement.arrangement_type) {
+      case 'commission':
+        commission_percentage = arrangement.commission_percentage || 40.0
+        commission_amount = payment_amount * (commission_percentage / 100)
+        shop_amount = payment_amount - commission_amount
+        break
+
+      case 'booth_rent':
+        // For booth rent, barber gets everything minus the rent (rent is handled separately)
+        commission_percentage = 100.0
+        commission_amount = payment_amount
+        shop_amount = 0
+        break
+
+      case 'hybrid':
+        // Hybrid: Base rent + commission on revenue over threshold
+        const monthly_revenue = await getBarberMonthlyRevenue(barber_id, barbershop_id)
+        if (monthly_revenue > (arrangement.hybrid_revenue_threshold || 3000)) {
+          commission_percentage = arrangement.hybrid_commission_rate || 20.0
+          commission_amount = payment_amount * (commission_percentage / 100)
+          shop_amount = payment_amount - commission_amount
+        } else {
+          // Below threshold, barber gets everything (rent covers shop portion)
+          commission_percentage = 100.0
+          commission_amount = payment_amount
+          shop_amount = 0
+        }
+        break
+
+      default:
+        // Default to commission split
+        commission_percentage = 40.0
+        commission_amount = payment_amount * 0.40
+        shop_amount = payment_amount * 0.60
+    }
+
+    // Record the commission transaction
+    await recordCommission({
+      barber_id,
+      barbershop_id,
+      payment_amount,
+      commission_percentage,
+      commission_amount,
+      shop_amount,
+      arrangement_type: arrangement.arrangement_type,
+      payment_intent_id,
+      arrangement_id: arrangement.id
+    })
+
+  } catch (error) {
+    console.error('❌ Error calculating commission:', error)
+  }
+}
+
+// Helper function to record commission transaction
+async function recordCommission({ barber_id, barbershop_id, payment_amount, commission_percentage, commission_amount, shop_amount, arrangement_type, payment_intent_id, arrangement_id }) {
+  try {
+    // Insert commission transaction
+    const { error: commissionError } = await supabase
+      .from('commission_transactions')
+      .insert({
+        payment_intent_id,
+        arrangement_id,
+        barber_id,
+        barbershop_id,
+        payment_amount,
+        commission_amount,
+        shop_amount,
+        commission_percentage,
+        arrangement_type,
+        status: 'pending_payout',
+        created_at: new Date().toISOString()
+      })
+
+    if (commissionError) {
+      console.error('❌ Error recording commission transaction:', commissionError)
+      return
+    }
+
+    // Update barber's commission balance
+    const { data: existingBalance } = await supabase
+      .from('barber_commission_balances')
+      .select('*')
+      .eq('barber_id', barber_id)
+      .eq('barbershop_id', barbershop_id)
+      .single()
+
+    if (existingBalance) {
+      // Update existing balance
+      const { error: balanceError } = await supabase
+        .from('barber_commission_balances')
+        .update({
+          pending_amount: parseFloat(existingBalance.pending_amount) + commission_amount,
+          total_earned: parseFloat(existingBalance.total_earned) + commission_amount,
+          last_transaction_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingBalance.id)
+
+      if (balanceError) {
+        console.error('❌ Error updating commission balance:', balanceError)
+      }
+    } else {
+      // Create new balance record
+      const { error: newBalanceError } = await supabase
+        .from('barber_commission_balances')
+        .insert({
+          barber_id,
+          barbershop_id,
+          pending_amount: commission_amount,
+          paid_amount: 0,
+          total_earned: commission_amount,
+          last_transaction_at: new Date().toISOString()
+        })
+
+      if (newBalanceError) {
+        console.error('❌ Error creating commission balance:', newBalanceError)
+      }
+    }
+
+    console.log(`✅ Commission calculated: $${commission_amount} (${commission_percentage}%) for barber ${barber_id}`)
+  } catch (error) {
+    console.error('❌ Error in recordCommission:', error)
+  }
+}
+
+// Helper function to get barber's monthly revenue
+async function getBarberMonthlyRevenue(barber_id, barbershop_id) {
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+
+  const { data: transactions } = await supabase
+    .from('commission_transactions')
+    .select('payment_amount')
+    .eq('barber_id', barber_id)
+    .eq('barbershop_id', barbershop_id)
+    .gte('created_at', startOfMonth.toISOString())
+
+  return transactions?.reduce((total, t) => total + parseFloat(t.payment_amount), 0) || 0
+}
+
 export async function POST(request) {
   try {
-    const { items, appointment_id, payment_total, payment_method } = await request.json()
+    const { items, appointment_id, payment_total, payment_method, barber_id } = await request.json()
     
     
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: 'Items array is required' },
+        { status: 400 }
+      )
+    }
+
+    // Validate barber_id is provided for commission tracking
+    if (!barber_id) {
+      return NextResponse.json(
+        { error: 'Barber ID is required for commission tracking' },
+        { status: 400 }
+      )
+    }
+
+    // Validate barber exists and is active staff
+    const { data: barber, error: barberError } = await supabase
+      .from('barbershop_staff')
+      .select('user_id, role, is_active')
+      .eq('user_id', barber_id)
+      .eq('is_active', true)
+      .single()
+
+    if (barberError || !barber) {
+      return NextResponse.json(
+        { error: 'Invalid barber ID - barber not found or inactive' },
         { status: 400 }
       )
     }
@@ -117,6 +316,7 @@ export async function POST(request) {
       .insert({
         barbershop_id: barbershopId,
         appointment_id: appointment_id || null,
+        barber_id: barber_id,
         transaction_type: 'sale',
         amount: payment_total || totalSaleValue,
         payment_method: payment_method || 'cash',
@@ -129,6 +329,17 @@ export async function POST(request) {
     
     if (saleError) {
       console.error('❌ Error recording sale transaction:', saleError)
+    }
+
+    // Calculate and record commission if transaction was successful
+    if (transaction && !saleError) {
+      await calculateAndRecordCommission({
+        barber_id,
+        barbershop_id: barbershopId,
+        payment_amount: payment_total || totalSaleValue,
+        transaction_id: transaction.id,
+        payment_intent_id: transaction.id // Using transaction ID as payment intent for now
+      })
     }
     
     // Get updated inventory summary
