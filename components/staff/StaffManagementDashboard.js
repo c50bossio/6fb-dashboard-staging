@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/card.jsx"
 import Button from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils'
 import StaffScheduleView from './StaffScheduleView'
