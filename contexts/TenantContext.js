@@ -49,39 +49,8 @@ const TenantProvider = ({ children }) => {
         }
 
         if (!storedTenant) {
-          const Tenant = {
-            id: 'barbershop_demo_001',
-            name: 'Demo Barbershop',
-            owner_id: user.id,
-            subscription_tier: 'starter',
-            onboarding_completed: true, // Set to true so users can access dashboard immediately
-            settings: {
-              business_name: 'Demo Barbershop',
-              address: '123 Main St, Demo City, DC 12345',
-              phone: '(555) 123-4567',
-              email: 'hello@demobarbershop.com',
-              timezone: 'America/New_York',
-              currency: 'USD'
-            },
-            features: {
-            ai_chat: true,
-            analytics: true,
-            booking_system: true,
-            payment_processing: true,
-            email_marketing: false,
-            sms_notifications: true
-          },
-            integrations: {
-              stripe: { connected: false, account_id: null },
-              google_calendar: { connected: false },
-              mailchimp: { connected: false },
-              twilio: { connected: false }
-            },
-            created_at: '2025-01-01T00:00:00Z',
-            updated_at: new Date().toISOString()
-          }
-
-          setTenant(Tenant)
+          // No demo tenant - user must complete onboarding or have real barbershop data
+          setTenant(null)
         }
 
       } catch (err) {

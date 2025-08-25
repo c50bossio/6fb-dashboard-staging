@@ -26,9 +26,7 @@ export function DashboardProvider({ children }) {
       common_topics: ['scheduling', 'customer service', 'pricing'],
       avg_satisfaction: 4.7,
       learning_progress: 85,
-      shop_profiles: [
-        { name: 'Demo Shop', last_updated: new Date().toISOString() }
-      ]
+      shop_profiles: [] // No demo shops - populated from real database
     },
     database_insights: [
       { insight: 'Peak hours analysis complete', confidence: 0.95 },
@@ -83,7 +81,7 @@ export function DashboardProvider({ children }) {
           message,
           sessionId: currentSession,
           businessContext: shopContext || {
-            shop_name: 'Demo Barbershop',
+            shop_name: barbershop?.name || 'Your Barbershop',
             location: 'Local Area',
             staff_count: 3
           }
@@ -232,9 +230,7 @@ export function DashboardProvider({ children }) {
           common_topics: ['scheduling', 'customer service', 'pricing'],
           avg_satisfaction: metricsData.business_insights?.user_satisfaction_score || 4.7,
           learning_progress: 85,
-          shop_profiles: [
-            { name: 'Demo Shop', last_updated: metricsData.timestamp }
-          ]
+          shop_profiles: [] // Populated from real database
         },
         database_insights: [
           { insight: 'Peak hours analysis complete', confidence: 0.95 },

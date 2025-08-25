@@ -172,19 +172,21 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
     const avgServicePrice = services?.reduce((sum, s) => sum + (s.price || 0), 0) / Math.max(1, services?.length || 1) || 0
     
     return {
-      active_barbershops: 1, // Single shop in demo
-      total_ai_recommendations: Math.round(totalCustomers * 0.3), // 30% of customers get recommendations
-      avg_session_duration_minutes: 8.5,
-      user_satisfaction_score: 4.7,
-      cost_savings_generated: Math.round(totalRevenue * 0.1), // 10% cost savings
-      time_saved_hours: Math.round(totalAppointments * 0.25), // 15 min saved per appointment
-      efficiency_improvement_percent: Math.min(50, Math.round((totalAppointments / Math.max(1, totalCustomers)) * 10)),
+      active_barbershops: totalCustomers > 0 ? 1 : 0, // Real active status based on data
+      total_ai_recommendations: 0, // Real AI recommendations would come from AI tables
+      avg_session_duration_minutes: 0, // Would need real session tracking
+      user_satisfaction_score: 0, // Would need real review aggregation
+      cost_savings_generated: 0, // Would need real cost tracking
+      time_saved_hours: 0, // Would need real time tracking
+      efficiency_improvement_percent: 0, // Would need real efficiency metrics
       raw_metrics: {
         total_customers: totalCustomers,
         total_revenue: totalRevenue,
         total_appointments: totalAppointments,
         avg_service_price: Math.round(avgServicePrice)
-      }
+      },
+      dataAvailable: totalCustomers > 0 || totalRevenue > 0,
+      message: totalCustomers > 0 ? 'Showing real metrics' : 'Metrics will appear once you have customers and bookings'
     }
   } catch (error) {
     console.error('Business insights metrics error:', error)
