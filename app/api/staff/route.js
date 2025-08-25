@@ -1,17 +1,13 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request) {
   try {
-    // Get user session for barbershop context
-    const session = await getServerSession()
-    if (!session?.user?.email) {
+    const supabase = createClient()
+    
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -19,7 +15,7 @@ export async function GET(request) {
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('email', session.user.email)
+      .eq('email', user.email)
       .single()
 
     if (profileError || !profile) {
