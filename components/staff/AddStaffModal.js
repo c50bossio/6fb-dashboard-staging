@@ -53,14 +53,15 @@ export default function AddStaffModal({ onClose, onSuccess }) {
     max_daily_appointments: 10,
     break_duration: 30, // minutes
     
-    // Financial Setup (6 fields)
+    // Financial Setup (7 fields)
     financial_model: 'commission',
     commission_rate: 0.50,
     hourly_rate: 0,
     booth_rent_amount: 0,
     payment_method: 'direct_deposit',
     bank_account_last4: '',
-    routing_number_last4: ''
+    routing_number_last4: '',
+    enable_stripe_connect: true // Default to enabled for automatic payment processing
   })
 
   const handleInputChange = (field, value) => {
@@ -212,7 +213,8 @@ export default function AddStaffModal({ onClose, onSuccess }) {
             max_daily_appointments: formData.max_daily_appointments,
             break_duration: formData.break_duration,
             specialties: formData.specialties,
-            certifications: formData.certifications
+            certifications: formData.certifications,
+            enableStripeConnect: formData.enable_stripe_connect
           }
         })
       })
@@ -712,40 +714,77 @@ export default function AddStaffModal({ onClose, onSuccess }) {
             isOpen={activeSection === 'financial'}
             onToggle={toggleSection}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Financial Model *
-                </label>
-                <select
-                  value={formData.financial_model}
-                  onChange={(e) => handleInputChange('financial_model', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                  required
-                >
-                  <option value="commission">Commission</option>
-                  <option value="booth_rent">Booth Rent</option>
-                  <option value="hourly">Hourly</option>
-                  <option value="hybrid">Hybrid</option>
-                </select>
+            <div className="space-y-4">
+              {/* Stripe Connect Setup */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h4 className="text-sm font-medium text-blue-900">Automatic Payment Processing</h4>
+                    <p className="mt-1 text-sm text-blue-700">
+                      Each barber will get their own Stripe account for automatic commission splits. 
+                      When customers pay, the barber's portion is automatically transferred to their account.
+                    </p>
+                    <div className="mt-3">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.enable_stripe_connect}
+                          onChange={(e) => handleInputChange('enable_stripe_connect', e.target.checked)}
+                          className="h-4 w-4 text-olive-600 border-gray-300 rounded focus:ring-olive-500"
+                        />
+                        <span className="ml-2 text-sm text-blue-700">
+                          Enable automatic payment processing for this barber
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
-              
-              {formData.financial_model === 'commission' && (
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Commission Rate (%)
+                    Financial Model *
                   </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={formData.commission_rate * 100}
-                    onChange={(e) => handleInputChange('commission_rate', e.target.value / 100)}
+                  <select
+                    value={formData.financial_model}
+                    onChange={(e) => handleInputChange('financial_model', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                  />
+                    required
+                  >
+                    <option value="commission">Commission</option>
+                    <option value="booth_rent">Booth Rent</option>
+                    <option value="hourly">Hourly</option>
+                    <option value="hybrid">Hybrid</option>
+                  </select>
                 </div>
-              )}
+                
+                {formData.financial_model === 'commission' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Commission Rate (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={formData.commission_rate * 100}
+                      onChange={(e) => handleInputChange('commission_rate', e.target.value / 100)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                    />
+                    {formData.enable_stripe_connect && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Barber will receive {formData.commission_rate * 100}% of each payment automatically
+                      </p>
+                    )}
+                  </div>
+                )}
               
               {formData.financial_model === 'booth_rent' && (
                 <div>
@@ -778,6 +817,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
                   />
                 </div>
               )}
+              </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

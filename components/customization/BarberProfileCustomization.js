@@ -174,14 +174,19 @@ export default function BarberProfileCustomization() {
 
       const shopId = profile?.shop_id || profile?.barbershop_id
       if (shopId) {
+        // Query only columns that exist, handle brand_color if missing
         const { data: shop } = await supabase
           .from('barbershops')
-          .select('name, description, logo_url, brand_color')
+          .select('name, description, logo_url')
           .eq('id', shopId)
           .single()
 
         if (shop) {
-          setBarbershopData(shop)
+          // Add brand_color with a default if needed
+          setBarbershopData({
+            ...shop,
+            brand_color: shop.brand_color || '#000000'
+          })
         }
       }
     } catch (error) {

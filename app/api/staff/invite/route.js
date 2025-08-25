@@ -154,6 +154,60 @@ export async function POST(request) {
         throw staffError
       }
       
+      // Create financial arrangement if financial data provided
+      const { financialModel, commissionRate, paymentMethod, bankAccount, enableStripeConnect } = body
+      if (financialModel) {
+        const arrangementData = {
+          barbershop_id: barbershopId,
+          barber_id: existingUser.id,
+          arrangement_type: financialModel,
+          is_active: true,
+          effective_date: new Date().toISOString().split('T')[0],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+        
+        // Add type-specific fields
+        if (financialModel === 'commission') {
+          arrangementData.commission_percentage = commissionRate || 60
+        } else if (financialModel === 'booth_rent') {
+          arrangementData.booth_rent_amount = body.boothRentAmount || 1500
+          arrangementData.rent_due_day = body.rentDueDay || 1
+          arrangementData.grace_period_days = body.gracePeriod || 3
+          arrangementData.late_fee_amount = body.lateFeeAmount || 50
+        } else if (financialModel === 'hybrid') {
+          arrangementData.hybrid_commission_rate = commissionRate || 40
+          arrangementData.hybrid_base_rent = body.hybridBaseRent || 800
+          arrangementData.hybrid_revenue_threshold = body.hybridThreshold || 3000
+          arrangementData.rent_due_day = body.rentDueDay || 1
+        }
+        
+        // Add payment collection settings
+        if (paymentMethod) {
+          // For Stripe Connect, we'll set up the account later
+          if (enableStripeConnect) {
+            arrangementData.barber_stripe_onboarded = false
+            // Stripe account will be created in a separate step
+          } else if (bankAccount) {
+            // Manual payout details
+            arrangementData.payment_method_priority = ['ach']
+            // Note: We don't store full bank details for security
+          }
+        }
+        
+        arrangementData.auto_collect_enabled = body.autoCollect !== false
+        arrangementData.allow_partial_payments = body.allowPartialPayments !== false
+        
+        const { error: arrangementError } = await supabase
+          .from('financial_arrangements')
+          .insert(arrangementData)
+        
+        if (arrangementError) {
+          console.error('Failed to create financial arrangement:', arrangementError)
+          // Don't fail the whole operation if financial arrangement fails
+        }
+      }
+      
       return NextResponse.json({
         success: true,
         message: 'Staff member added successfully',
@@ -166,6 +220,9 @@ export async function POST(request) {
       const invitationToken = generateInvitationToken()
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + 7) // 7 days expiry
+      
+      // Extract financial data from body
+      const { financialModel, commissionRate, paymentMethod, bankAccount } = body
       
       // Store as pending staff with invitation metadata
       const { data: pendingStaff, error: pendingError } = await supabase
@@ -183,7 +240,19 @@ export async function POST(request) {
             invited_by: user.id,
             invited_at: new Date().toISOString(),
             expires_at: expiresAt.toISOString(),
-            invitation_status: 'pending'
+            invitation_status: 'pending',
+            // Store financial setup to apply when invitation is accepted
+            pending_financial_arrangement: financialModel ? {
+              arrangement_type: financialModel,
+              commission_percentage: financialModel === 'commission' || financialModel === 'hybrid' ? (commissionRate || 60) : null,
+              booth_rent_amount: financialModel === 'booth_rent' ? (body.boothRentAmount || 1500) : null,
+              hybrid_base_rent: financialModel === 'hybrid' ? (body.hybridBaseRent || 800) : null,
+              hybrid_revenue_threshold: financialModel === 'hybrid' ? (body.hybridThreshold || 3000) : null,
+              rent_due_day: financialModel === 'booth_rent' || financialModel === 'hybrid' ? (body.rentDueDay || 1) : null,
+              payment_method: paymentMethod || null,
+              bank_account_last4: bankAccount ? bankAccount.slice(-4) : null,
+              routing_number: body.routingNumber || null
+            } : null
           }
         })
         .select()

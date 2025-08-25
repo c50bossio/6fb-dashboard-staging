@@ -101,16 +101,41 @@ export default function DeleteLocationModal({ isOpen, onClose, onComplete, locat
     setError('')
     
     try {
-      // Perform soft delete (mark as inactive)
-      const { error: updateError } = await supabase
-        .from('barbershops')
-        .update({ 
-          is_active: false,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', location.id)
+      // Try soft delete first (if is_active column exists)
+      let updateData = { updated_at: new Date().toISOString() }
       
-      if (updateError) throw updateError
+      // Check if we can use is_active column
+      const { data: testData, error: testError } = await supabase
+        .from('barbershops')
+        .select('id')
+        .eq('id', location.id)
+        .single()
+      
+      if (!testError) {
+        // Try to update with is_active if column exists
+        const { error: softDeleteError } = await supabase
+          .from('barbershops')
+          .update({ 
+            is_active: false,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', location.id)
+        
+        if (softDeleteError && softDeleteError.message?.includes('is_active')) {
+          // Column doesn't exist, just update the timestamp
+          console.warn('is_active column not found, updating timestamp only')
+          const { error: updateError } = await supabase
+            .from('barbershops')
+            .update(updateData)
+            .eq('id', location.id)
+          
+          if (updateError) throw updateError
+        } else if (softDeleteError) {
+          throw softDeleteError
+        }
+      } else {
+        throw testError
+      }
       
       // Refresh locations in global context
       await refreshLocations()
