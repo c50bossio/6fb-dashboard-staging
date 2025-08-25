@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-import { createClient } from '../../../../../lib/supabase'
-import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
+import { createClient } from '@/lib/supabase/client'
+import { withAdminAuth, logAdminAction } from '@/middleware/adminAuth'
 
 /**
  * GET /api/admin/subscriptions/list
