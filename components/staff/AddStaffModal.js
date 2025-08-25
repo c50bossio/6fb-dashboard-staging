@@ -1,11 +1,34 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
 import { XMarkIcon, ChevronDownIcon, ChevronRightIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { toast } from 'react-hot-toast'
+
+// Extract FormSection component outside of render to prevent recreation
+const FormSection = memo(({ id, title, isOpen, onToggle, children }) => (
+  <div className="border border-gray-200 rounded-lg">
+    <button
+      type="button"
+      onClick={() => onToggle(id)}
+      className="w-full px-4 py-3 text-left bg-gray-50 hover:bg-gray-100 flex items-center justify-between rounded-t-lg"
+    >
+      <h3 className="font-medium text-gray-900">{title}</h3>
+      {isOpen ? (
+        <ChevronDownIcon className="h-5 w-5 text-gray-500" />
+      ) : (
+        <ChevronRightIcon className="h-5 w-5 text-gray-500" />
+      )}
+    </button>
+    {isOpen && (
+      <div className="p-4 space-y-4 border-t border-gray-200">
+        {children}
+      </div>
+    )}
+  </div>
+))
 
 export default function AddStaffModal({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(false)
@@ -64,7 +87,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
     enable_stripe_connect: true // Default to enabled for automatic payment processing
   })
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = useCallback((field, value) => {
     if (field.includes('.')) {
       // Handle nested object updates (e.g., working_days.monday)
       const [parent, child] = field.split('.')
@@ -81,9 +104,9 @@ export default function AddStaffModal({ onClose, onSuccess }) {
         [field]: value
       }))
     }
-  }
+  }, [])
 
-  const handleSpecialtyAdd = () => {
+  const handleSpecialtyAdd = useCallback(() => {
     const specialty = prompt('Enter specialty (e.g., "Fade Cuts", "Beard Styling"):')
     if (specialty && specialty.trim()) {
       setFormData(prev => ({
@@ -91,16 +114,16 @@ export default function AddStaffModal({ onClose, onSuccess }) {
         specialties: [...prev.specialties, specialty.trim()]
       }))
     }
-  }
+  }, [])
 
-  const handleSpecialtyRemove = (index) => {
+  const handleSpecialtyRemove = useCallback((index) => {
     setFormData(prev => ({
       ...prev,
       specialties: prev.specialties.filter((_, i) => i !== index)
     }))
-  }
+  }, [])
 
-  const handleCertificationAdd = () => {
+  const handleCertificationAdd = useCallback(() => {
     const name = prompt('Certification name:')
     if (name && name.trim()) {
       setFormData(prev => ({
@@ -112,14 +135,14 @@ export default function AddStaffModal({ onClose, onSuccess }) {
         }]
       }))
     }
-  }
+  }, [])
 
-  const handleCertificationRemove = (index) => {
+  const handleCertificationRemove = useCallback((index) => {
     setFormData(prev => ({
       ...prev,
       certifications: prev.certifications.filter((_, i) => i !== index)
     }))
-  }
+  }, [])
 
   const validateForm = () => {
     const required = ['email', 'full_name', 'role']
@@ -297,32 +320,72 @@ export default function AddStaffModal({ onClose, onSuccess }) {
     await handleSubmit(fakeEvent)
   }
 
-  // Section component for collapsible sections
-  const FormSection = ({ id, title, isOpen, onToggle, children }) => (
-    <div className="border border-gray-200 rounded-lg">
-      <button
-        type="button"
-        onClick={() => onToggle(id)}
-        className="w-full px-4 py-3 text-left bg-gray-50 hover:bg-gray-100 flex items-center justify-between rounded-t-lg"
-      >
-        <h3 className="font-medium text-gray-900">{title}</h3>
-        {isOpen ? (
-          <ChevronDownIcon className="h-5 w-5 text-gray-500" />
-        ) : (
-          <ChevronRightIcon className="h-5 w-5 text-gray-500" />
-        )}
-      </button>
-      {isOpen && (
-        <div className="p-4 space-y-4 border-t border-gray-200">
-          {children}
-        </div>
-      )}
-    </div>
-  )
-
-  const toggleSection = (sectionId) => {
+  const toggleSection = useCallback((sectionId) => {
     setActiveSection(activeSection === sectionId ? null : sectionId)
-  }
+  }, [activeSection])
+
+  const handleCloseClick = useCallback(() => {
+    onClose()
+  }, [onClose])
+
+  const handleCopyToClipboard = useCallback((text) => {
+    navigator.clipboard.writeText(text)
+    toast.success('Link copied to clipboard!')
+  }, [])
+
+  const handleResetForm = useCallback(() => {
+    setInvitationDetails(null)
+    setFormData({
+      // Basic Information (4 fields)
+      email: '',
+      full_name: '',
+      role: 'barber',
+      phone: '',
+      
+      // Legal & Compliance (9 fields)
+      license_number: '',
+      license_expiry: '',
+      emergency_contact_name: '',
+      emergency_contact_phone: '',
+      emergency_contact_relationship: '',
+      has_insurance: false,
+      insurance_provider: '',
+      background_check_consent: false,
+      
+      // Professional Experience (6 fields) 
+      years_experience: 0,
+      previous_workplace: '',
+      specialties: [], // Array of specialty names
+      certifications: [], // Array of certification objects
+      portfolio_url: '',
+      instagram_handle: '',
+      
+      // Availability & Schedule (6 fields)
+      working_days: {
+        monday: true,
+        tuesday: true, 
+        wednesday: true,
+        thursday: true,
+        friday: true,
+        saturday: true,
+        sunday: false
+      },
+      preferred_start_time: '09:00',
+      preferred_end_time: '17:00',
+      max_daily_appointments: 10,
+      break_duration: 30, // minutes
+      
+      // Financial Setup (7 fields)
+      financial_model: 'commission',
+      commission_rate: 0.50,
+      hourly_rate: 0,
+      booth_rent_amount: 0,
+      payment_method: 'direct_deposit',
+      bank_account_last4: '',
+      routing_number_last4: '',
+      enable_stripe_connect: true // Default to enabled for automatic payment processing
+    })
+  }, [])
 
   return (
     <Modal 
@@ -335,7 +398,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">Add Staff Member</h2>
           <button
-            onClick={onClose}
+            onClick={handleCloseClick}
             className="text-gray-400 hover:text-gray-600"
           >
             <XMarkIcon className="h-6 w-6" />
@@ -692,7 +755,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
                       {specialty}
                       <button
                         type="button"
-                        onClick={() => handleSpecialtyRemove(index)}
+                        onClick={useCallback(() => handleSpecialtyRemove(index), [index])}
                         className="ml-2 text-olive-600 hover:text-olive-800"
                       >
                         ×
@@ -1024,10 +1087,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
                       className="flex-1 text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300"
                     />
                     <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/accept-invitation?token=${invitationDetails.invitation_token}`)
-                        toast.success('Link copied to clipboard!')
-                      }}
+                      onClick={() => handleCopyToClipboard(`${window.location.origin}/accept-invitation?token=${invitationDetails.invitation_token}`)}
                       className="ml-2 px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
                     >
                       Copy
@@ -1041,49 +1101,12 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
-              onClick={() => {
-                setInvitationDetails(null)
-                setFormData({
-                  full_name: '',
-                  email: '',
-                  phone: '',
-                  role: 'barber',
-                  license_number: '',
-                  license_state: '',
-                  license_expiry: '',
-                  background_check_date: '',
-                  emergency_contact_name: '',
-                  emergency_contact_phone: '',
-                  w9_on_file: false,
-                  liability_insurance: false,
-                  professional_insurance: false,
-                  booth_rental_agreement: false,
-                  commission_percentage: '',
-                  booth_rent_amount: '',
-                  financial_model: 'commission',
-                  payment_method: 'direct_deposit',
-                  years_experience: '',
-                  specialties: [],
-                  certifications: '',
-                  instagram_handle: '',
-                  portfolio_url: '',
-                  bio: '',
-                  availability: {
-                    monday: { available: false, start: '09:00', end: '17:00' },
-                    tuesday: { available: false, start: '09:00', end: '17:00' },
-                    wednesday: { available: false, start: '09:00', end: '17:00' },
-                    thursday: { available: false, start: '09:00', end: '17:00' },
-                    friday: { available: false, start: '09:00', end: '17:00' },
-                    saturday: { available: false, start: '09:00', end: '17:00' },
-                    sunday: { available: false, start: '09:00', end: '17:00' }
-                  }
-                })
-              }}
+              onClick={handleResetForm}
             >
               Add Another Staff Member
             </Button>
             <Button
-              onClick={onClose}
+              onClick={handleCloseClick}
             >
               Done
             </Button>
