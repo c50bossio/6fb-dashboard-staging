@@ -1407,13 +1407,30 @@ function AppointmentCheckoutModal({
   const [selectedBarber, setSelectedBarber] = useState(null)
   const [availableBarbers, setAvailableBarbers] = useState([])
   const [barbersLoading, setBarbersLoading] = useState(true)
+  const [currentUserProfile, setCurrentUserProfile] = useState(null)
+  const [autoSelectionReason, setAutoSelectionReason] = useState(null)
 
-  // Load barbers when modal opens
+  // Load barbers and user profile when modal opens
   useEffect(() => {
     if (isOpen) {
       loadBarbers()
+      loadCurrentUserProfile()
     }
   }, [isOpen])
+
+  const loadCurrentUserProfile = async () => {
+    try {
+      const response = await fetch('/api/profile/current')
+      if (response.ok) {
+        const data = await response.json()
+        setCurrentUserProfile(data.profile)
+      } else {
+        console.error('Failed to load current user profile')
+      }
+    } catch (error) {
+      console.error('Error loading current user profile:', error)
+    }
+  }
 
   const loadBarbers = async () => {
     try {
@@ -1424,13 +1441,8 @@ function AppointmentCheckoutModal({
         const data = await response.json()
         setAvailableBarbers(data.staff || [])
         
-        // Auto-select barber if appointment has barber assigned
-        if (checkoutData.barberId && data.staff) {
-          const assignedBarber = data.staff.find(barber => barber.user_id === checkoutData.barberId)
-          if (assignedBarber) {
-            setSelectedBarber(assignedBarber)
-          }
-        }
+        // Implement priority-based barber selection
+        await applyIntelligentBarberSelection(data.staff || [])
       } else {
         console.error('Failed to load barbers')
       }
@@ -1440,6 +1452,49 @@ function AppointmentCheckoutModal({
       setBarbersLoading(false)
     }
   }
+
+  const applyIntelligentBarberSelection = async (staffList) => {
+    if (!staffList || staffList.length === 0) return
+
+    let selectedBarber = null
+    let reason = null
+
+    // Priority 1: If appointment has assigned barber (existing logic)
+    if (checkoutData.barberId) {
+      const assignedBarber = staffList.find(barber => barber.user_id === checkoutData.barberId)
+      if (assignedBarber) {
+        selectedBarber = assignedBarber
+        reason = 'appointment'
+        console.log('✅ Auto-selected barber from appointment:', assignedBarber.display_name || assignedBarber.full_name)
+      }
+    }
+
+    // Priority 2: If logged-in user is an active barber (new logic)
+    if (!selectedBarber && currentUserProfile && currentUserProfile.role === 'BARBER' && currentUserProfile.is_active_barber) {
+      const loggedInBarber = staffList.find(barber => barber.user_id === currentUserProfile.id)
+      if (loggedInBarber) {
+        selectedBarber = loggedInBarber
+        reason = 'logged_in_barber'
+        console.log('✅ Auto-selected logged-in barber:', loggedInBarber.display_name || loggedInBarber.full_name)
+      }
+    }
+
+    // Priority 3: Manual selection (no auto-selection)
+    if (!selectedBarber) {
+      reason = 'manual'
+      console.log('ℹ️  No auto-selection criteria met - user must select manually')
+    }
+
+    setSelectedBarber(selectedBarber)
+    setAutoSelectionReason(reason)
+  }
+
+  // Re-run selection logic when currentUserProfile is loaded
+  useEffect(() => {
+    if (currentUserProfile && availableBarbers.length > 0) {
+      applyIntelligentBarberSelection(availableBarbers)
+    }
+  }, [currentUserProfile, availableBarbers, checkoutData.barberId])
 
   if (!isOpen || !checkoutData) return null
 
@@ -1515,7 +1570,7 @@ function AppointmentCheckoutModal({
             </div>
           </div>
 
-          {/* Barber Selection */}
+          {/* Barber Selection with Auto-Selection Feedback */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Performing Barber *
@@ -1530,36 +1585,83 @@ function AppointmentCheckoutModal({
                 No active barbers found
               </div>
             ) : (
-              <div className="space-y-2">
-                {availableBarbers.map((barber) => (
-                  <div
-                    key={barber.user_id}
-                    onClick={() => setSelectedBarber(barber)}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedBarber?.user_id === barber.user_id
-                        ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">
-                          {barber.full_name || barber.email || 'Unnamed Barber'}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {barber.role === 'OWNER' ? 'Owner' : 'Barber'}
-                        </div>
+              <div>
+                {/* Auto-Selection Feedback */}
+                {selectedBarber && autoSelectionReason && autoSelectionReason !== 'manual' && (
+                  <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-emerald-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                       </div>
-                      {selectedBarber?.user_id === barber.user_id && (
-                        <div className="text-emerald-600">
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
+                      <div className="ml-3 flex-1">
+                        <div className="text-sm font-medium text-emerald-800">
+                          Auto-selected: {selectedBarber.display_name || selectedBarber.full_name || selectedBarber.email}
                         </div>
-                      )}
+                        <div className="text-sm text-emerald-700 mt-1">
+                          {autoSelectionReason === 'appointment' 
+                            ? 'From appointment booking'
+                            : 'You are logged in as this barber'
+                          }
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedBarber(null)
+                            setAutoSelectionReason('manual')
+                          }}
+                          className="text-sm text-emerald-700 hover:text-emerald-800 font-medium mt-2 flex items-center"
+                        >
+                          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m0-4l4-4" />
+                          </svg>
+                          Change Barber
+                        </button>
+                      </div>
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* Barber Selection List - Show only when no auto-selection or user clicked "Change Barber" */}
+                {(!selectedBarber || autoSelectionReason === 'manual') && (
+                  <div className="space-y-2">
+                    {availableBarbers.map((barber) => (
+                      <div
+                        key={barber.user_id}
+                        onClick={() => {
+                          setSelectedBarber(barber)
+                          setAutoSelectionReason('manual')
+                        }}
+                        className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                          selectedBarber?.user_id === barber.user_id
+                            ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900">
+                              {barber.display_name || barber.full_name || barber.email || 'Unnamed Barber'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {barber.role === 'OWNER' ? 'Owner' : 'Barber'}
+                              {currentUserProfile && barber.user_id === currentUserProfile.id && (
+                                <span className="ml-2 text-emerald-600 font-medium">(You)</span>
+                              )}
+                            </div>
+                          </div>
+                          {selectedBarber?.user_id === barber.user_id && (
+                            <div className="text-emerald-600">
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {!selectedBarber && !barbersLoading && availableBarbers.length > 0 && (
