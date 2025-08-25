@@ -167,8 +167,17 @@ export default function StaffManagementDashboard() {
   
   // Debounced Add Staff button handler to prevent rapid clicks
   const handleAddStaffClick = useCallback(() => {
+    console.log('🔍 [STAFF] Add Staff button clicked', { 
+      addButtonLoading, 
+      showAddModal,
+      hasTimeoutRef: !!addStaffTimeoutRef.current 
+    })
+    
     // Prevent multiple rapid clicks
-    if (addButtonLoading || showAddModal) return
+    if (addButtonLoading || showAddModal) {
+      console.log('🔍 [STAFF] Button click prevented - already loading or modal open')
+      return
+    }
     
     // Clear any existing timeout
     if (addStaffTimeoutRef.current) {
@@ -176,9 +185,11 @@ export default function StaffManagementDashboard() {
     }
     
     setAddButtonLoading(true)
+    console.log('🔍 [STAFF] Setting loading state to true')
     
     // Add slight delay to show loading state and prevent race conditions
     addStaffTimeoutRef.current = setTimeout(() => {
+      console.log('🔍 [STAFF] Timeout triggered - opening modal')
       setShowAddModal(true)
       setAddButtonLoading(false)
     }, 300)
@@ -653,8 +664,10 @@ export default function StaffManagementDashboard() {
 
       {/* Add Staff Modal */}
       {showAddModal && (
+        (console.log('🔍 [STAFF] Rendering AddStaffModal'), true) && (
         <AddStaffModal
           onClose={() => {
+            console.log('🔍 [STAFF] Modal close triggered')
             setShowAddModal(false)
             setAddButtonLoading(false)
             if (addStaffTimeoutRef.current) {
@@ -670,7 +683,7 @@ export default function StaffManagementDashboard() {
             loadStaffData()
           }}
         />
-      )}
+      ))}
     </div>
   )
 }

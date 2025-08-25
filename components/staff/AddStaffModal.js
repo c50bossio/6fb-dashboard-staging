@@ -324,6 +324,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
 
   return (
     <Modal 
+      isOpen={true}
       size="large" 
       onClose={onClose}
       className="max-w-4xl"
@@ -384,12 +385,12 @@ export default function AddStaffModal({ onClose, onSuccess }) {
                 {/* Show email status indicator */}
                 {emailStatus && (
                   <div className="text-xs text-gray-600 mb-2">
-                    {emailStatus === 'sending' && '📧 Sending invitation email...'}
-                    {emailStatus === 'timeout' && '⏱️ Request timed out'}
-                    {emailStatus === 'network_error' && '🔌 Network connection issue'}
-                    {emailStatus === 'auth_error' && '🔐 Authentication problem'}
-                    {emailStatus === 'error' && '❌ Invitation processing failed'}
-                    {emailStatus === 'failed' && '📧 Email delivery failed'}
+                    {emailStatus === 'sending' && 'Sending invitation email...'}
+                    {emailStatus === 'timeout' && 'Request timed out. Please try again.'}
+                    {emailStatus === 'network_error' && 'Network connection issue detected.'}
+                    {emailStatus === 'auth_error' && 'Authentication error. Please refresh and try again.'}
+                    {emailStatus === 'error' && 'Invitation processing failed.'}
+                    {emailStatus === 'failed' && 'Email delivery failed. Please verify the email address.'}
                   </div>
                 )}
                 {/* Show retry button for retryable errors */}
@@ -417,7 +418,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           {/* Basic Information - Always Open */}
           <FormSection
             id="basic"
-            title="📋 Basic Information"
+            title="Basic Information"
             isOpen={true}
             onToggle={() => {}}
           >
@@ -486,7 +487,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           {/* Legal & Compliance */}
           <FormSection
             id="legal"
-            title="⚖️ Legal & Compliance"
+            title="Legal & Compliance"
             isOpen={activeSection === 'legal'}
             onToggle={toggleSection}
           >
@@ -605,7 +606,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           {/* Professional Experience */}
           <FormSection
             id="experience"
-            title="💼 Professional Experience"
+            title="Professional Experience"
             isOpen={activeSection === 'experience'}
             onToggle={toggleSection}
           >
@@ -707,7 +708,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           {/* Financial Setup */}
           <FormSection
             id="financial"
-            title="💰 Financial Setup"
+            title="Financial Setup"
             isOpen={activeSection === 'financial'}
             onToggle={toggleSection}
           >

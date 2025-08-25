@@ -1520,7 +1520,9 @@ function AppointmentCheckoutModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      {/* Enhanced responsive width for tablets: md:max-w-xl lg:max-w-2xl for better iPad utilization */}
+      <div className="bg-white rounded-xl w-full max-h-[90vh] overflow-y-auto
+        max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -1588,21 +1590,23 @@ function AppointmentCheckoutModal({
               <div>
                 {/* Auto-Selection Feedback */}
                 {selectedBarber && autoSelectionReason && autoSelectionReason !== 'manual' && (
-                  <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                    <div className="flex items-start">
+                  <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <div className="flex items-start gap-3">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-emerald-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="ml-3 flex-1">
-                        <div className="text-sm font-medium text-emerald-800">
-                          Auto-selected: {selectedBarber.display_name || selectedBarber.full_name || selectedBarber.email}
+                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
                         </div>
-                        <div className="text-sm text-emerald-700 mt-1">
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-base font-semibold text-emerald-800">
+                          ✓ {selectedBarber.display_name || selectedBarber.full_name || selectedBarber.email}
+                        </div>
+                        <div className="text-sm text-emerald-700 mt-1 mb-3">
                           {autoSelectionReason === 'appointment' 
-                            ? 'From appointment booking'
-                            : 'You are logged in as this barber'
+                            ? 'Selected from your appointment booking'
+                            : 'You are currently logged in as this barber'
                           }
                         </div>
                         <button
@@ -1610,9 +1614,11 @@ function AppointmentCheckoutModal({
                             setSelectedBarber(null)
                             setAutoSelectionReason('manual')
                           }}
-                          className="text-sm text-emerald-700 hover:text-emerald-800 font-medium mt-2 flex items-center"
+                          className="inline-flex items-center gap-2 px-4 py-2 mt-2 bg-white border border-emerald-300 
+                            rounded-md text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400 
+                            font-medium min-h-[44px] touch-manipulation transition-colors"
                         >
-                          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m0-4l4-4" />
                           </svg>
                           Change Barber
@@ -1632,10 +1638,10 @@ function AppointmentCheckoutModal({
                           setSelectedBarber(barber)
                           setAutoSelectionReason('manual')
                         }}
-                        className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                        className={`p-4 rounded-lg border cursor-pointer transition-colors min-h-[48px] touch-manipulation ${
                           selectedBarber?.user_id === barber.user_id
-                            ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
-                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                            ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 active:bg-gray-100'
                         }`}
                       >
                         <div className="flex items-center">
@@ -1691,35 +1697,41 @@ function AppointmentCheckoutModal({
               Payment Method
             </label>
             <div className="space-y-2">
-              <label className="flex items-center">
+              <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg 
+                hover:bg-gray-50 min-h-[48px] touch-manipulation border border-gray-200 
+                hover:border-gray-300 transition-colors">
                 <input
                   type="radio"
                   value="cash"
                   checked={paymentMethod === 'cash'}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                  className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300"
                 />
-                <span className="ml-2 text-sm">Cash</span>
+                <span className="text-base">Cash Payment</span>
               </label>
-              <label className="flex items-center">
+              <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg 
+                hover:bg-gray-50 min-h-[48px] touch-manipulation border border-gray-200 
+                hover:border-gray-300 transition-colors">
                 <input
                   type="radio"
                   value="card"
                   checked={paymentMethod === 'card'}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                  className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300"
                 />
-                <span className="ml-2 text-sm">Card</span>
+                <span className="text-base">Card Payment</span>
               </label>
               {checkoutData.customerId && (
-                <label className="flex items-center">
+                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg 
+                  hover:bg-gray-50 min-h-[48px] touch-manipulation border border-gray-200 
+                  hover:border-gray-300 transition-colors">
                   <input
                     type="checkbox"
                     checked={useHouseAccount}
                     onChange={(e) => setUseHouseAccount(e.target.checked)}
-                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                    className="h-5 w-5 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
                   />
-                  <span className="ml-2 text-sm">Charge to House Account</span>
+                  <span className="text-base">Charge to House Account</span>
                 </label>
               )}
             </div>
@@ -1738,23 +1750,27 @@ function AppointmentCheckoutModal({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex space-x-3">
+          {/* Action Buttons - Enhanced for touch */}
+          <div className="flex gap-3 mt-6">
             <button
               onClick={onClose}
               disabled={loading}
-              className="flex-1 px-4 py-2 text-gray-700 hover:text-gray-900 disabled:opacity-50"
+              className="flex-1 min-h-[48px] px-6 py-3 text-gray-700 bg-gray-100 
+                hover:bg-gray-200 rounded-lg font-medium touch-manipulation 
+                disabled:opacity-50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleProcessPayment}
               disabled={loading}
-              className="flex-1 px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center"
+              className="flex-1 min-h-[48px] px-6 py-3 bg-emerald-600 text-white rounded-lg 
+                hover:bg-emerald-700 font-medium touch-manipulation disabled:opacity-50 
+                flex items-center justify-center transition-colors"
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   Processing...
                 </>
               ) : (
