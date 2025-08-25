@@ -42,6 +42,7 @@ class NotificationService {
         barbershopName: barbershop.name,
         barbershopPhone: barbershop.phone,
         barbershopAddress: barbershop.address,
+        barbershopBranding: barbershop.brand_colors || null,
         barberName: barber.first_name + ' ' + barber.last_name,
         appointmentDate: new Date(booking.appointment_date).toLocaleDateString(),
         appointmentTime: booking.appointment_time,
@@ -112,6 +113,7 @@ class NotificationService {
         barbershopName: barbershop.name,
         barbershopPhone: barbershop.phone,
         barbershopAddress: barbershop.address,
+        barbershopBranding: barbershop.brand_colors || null,
         barberName: barber.first_name + ' ' + barber.last_name,
         appointmentDate: new Date(booking.appointment_date).toLocaleDateString(),
         appointmentTime: booking.appointment_time,
@@ -257,6 +259,9 @@ class NotificationService {
    * Build confirmation email HTML
    */
   buildConfirmationEmailHTML(data) {
+    // Get barbershop colors or use defaults
+    const colors = this.getBrandColors(data.barbershopBranding)
+    
     return `
     <!DOCTYPE html>
     <html>
@@ -265,17 +270,17 @@ class NotificationService {
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Appointment Confirmed</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: ${colors.text}; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: #f8f9fa; padding: 30px; border-radius: 10px;">
             <!-- Header -->
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #2c3e50; margin: 0;">${data.barbershopName}</h1>
+                <h1 style="color: ${colors.primary}; margin: 0;">${data.barbershopName}</h1>
                 <p style="color: #666; margin: 5px 0;">Your appointment is confirmed!</p>
             </div>
             
             <!-- Appointment Details -->
             <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h2 style="color: #2c3e50; margin-top: 0;">Appointment Details</h2>
+                <h2 style="color: ${colors.primary}; margin-top: 0;">Appointment Details</h2>
                 
                 <div style="margin: 20px 0;">
                     <table style="width: 100%; border-collapse: collapse;">
@@ -297,14 +302,14 @@ class NotificationService {
                         </tr>
                         <tr>
                             <td style="padding: 10px 0;"><strong>Total:</strong></td>
-                            <td style="padding: 10px 0; font-size: 18px; font-weight: bold; color: #27ae60;">$${data.totalAmount}</td>
+                            <td style="padding: 10px 0; font-size: 18px; font-weight: bold; color: ${colors.accent || colors.primary};">$${data.totalAmount}</td>
                         </tr>
                     </table>
                 </div>
                 
                 <!-- Location -->
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-                    <h3 style="margin-top: 0; color: #2c3e50;">Location</h3>
+                    <h3 style="margin-top: 0; color: ${colors.primary};">Location</h3>
                     <p style="margin: 5px 0;"><strong>${data.barbershopName}</strong></p>
                     <p style="margin: 5px 0;">${data.barbershopAddress}</p>
                     <p style="margin: 5px 0;">Phone: ${data.barbershopPhone}</p>
@@ -314,7 +319,7 @@ class NotificationService {
                 <div style="text-align: center; margin: 30px 0;">
                     <p style="color: #666; margin-bottom: 20px;">Need to make changes to your appointment?</p>
                     <a href="tel:${data.barbershopPhone}" 
-                       style="background: #007cba; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin-right: 10px;">
+                       style="background: ${colors.secondary || colors.primary}; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin-right: 10px;">
                         Call ${data.barbershopName}
                     </a>
                 </div>
@@ -339,6 +344,9 @@ class NotificationService {
     const timeframe = data.reminderType === '24h' ? 'tomorrow' : 
                      data.reminderType === '2h' ? 'in 2 hours' : 'soon'
 
+    // Get barbershop colors or use defaults
+    const colors = this.getBrandColors(data.barbershopBranding)
+
     return `
     <!DOCTYPE html>
     <html>
@@ -347,17 +355,17 @@ class NotificationService {
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Appointment Reminder</title>
     </head>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: #fff3cd; padding: 30px; border-radius: 10px; border-left: 5px solid #ffc107;">
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: ${colors.text}; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: #fff3cd; padding: 30px; border-radius: 10px; border-left: 5px solid ${colors.accent || '#ffc107'};">
             <!-- Header -->
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #856404; margin: 0;">Appointment Reminder</h1>
-                <p style="color: #856404; margin: 5px 0; font-size: 18px;">Your appointment is ${timeframe}!</p>
+                <h1 style="color: ${colors.primary}; margin: 0;">Appointment Reminder</h1>
+                <p style="color: ${colors.primary}; margin: 5px 0; font-size: 18px;">Your appointment is ${timeframe}!</p>
             </div>
             
             <!-- Appointment Details -->
             <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <h2 style="color: #2c3e50; margin-top: 0;">Appointment Details</h2>
+                <h2 style="color: ${colors.primary}; margin-top: 0;">Appointment Details</h2>
                 
                 <div style="margin: 20px 0;">
                     <table style="width: 100%; border-collapse: collapse;">
@@ -382,7 +390,7 @@ class NotificationService {
                 
                 <!-- Location -->
                 <div style="background: #e8f4f8; padding: 20px; border-radius: 5px; margin: 20px 0;">
-                    <h3 style="margin-top: 0; color: #2c3e50;">Location</h3>
+                    <h3 style="margin-top: 0; color: ${colors.primary};">Location</h3>
                     <p style="margin: 5px 0;"><strong>${data.barbershopName}</strong></p>
                     <p style="margin: 5px 0;">${data.barbershopAddress}</p>
                     <p style="margin: 5px 0;">Phone: ${data.barbershopPhone}</p>
@@ -392,7 +400,7 @@ class NotificationService {
                 <div style="text-align: center; margin: 30px 0;">
                     <p style="color: #666; margin-bottom: 20px;">Need to reschedule or cancel?</p>
                     <a href="tel:${data.barbershopPhone}" 
-                       style="background: #007cba; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                       style="background: ${colors.secondary || colors.primary}; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
                         Call ${data.barbershopName}
                     </a>
                 </div>
@@ -502,6 +510,31 @@ class NotificationService {
     } catch (error) {
       console.error('Error processing scheduled notifications:', error)
       throw error
+    }
+  }
+
+  /**
+   * Get brand colors from barbershop branding or use defaults
+   */
+  getBrandColors(barbershopBranding) {
+    // If barbershop branding provided, use it
+    if (barbershopBranding && barbershopBranding.primary) {
+      return {
+        primary: barbershopBranding.primary || '#3B82F6',
+        secondary: barbershopBranding.secondary || '#1E40AF',
+        accent: barbershopBranding.accent || '#10B981',
+        text: barbershopBranding.text || '#1F2937',
+        background: barbershopBranding.background || '#FFFFFF'
+      }
+    }
+    
+    // Default to generic colors for barbershop emails (not BookedBarber brand)
+    return {
+      primary: '#3B82F6',      // Default blue
+      secondary: '#1E40AF',    // Darker blue
+      accent: '#10B981',       // Green for success/pricing
+      text: '#1F2937',         // Dark gray text
+      background: '#FFFFFF'    // White background
     }
   }
 

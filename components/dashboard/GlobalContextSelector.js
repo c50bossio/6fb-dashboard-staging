@@ -13,7 +13,7 @@ import {
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../SupabaseAuthProvider'
 import AddLocationModal from '../modals/AddLocationModal'
-import AddBarberModal from '../modals/AddBarberModal'
+import AddStaffModal from '../staff/AddStaffModal'
 
 export default function GlobalContextSelector() {
   const { userRole } = useAuth()
@@ -40,7 +40,7 @@ export default function GlobalContextSelector() {
   } = useGlobalDashboard()
   
   const [showAddLocationModal, setShowAddLocationModal] = useState(false)
-  const [showAddBarberModal, setShowAddBarberModal] = useState(false)
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false)
   
   // Don't show selectors for individual barbers or customers
   if (userRole === 'BARBER' || userRole === 'CLIENT' || userRole === 'CUSTOMER') {
@@ -293,7 +293,7 @@ export default function GlobalContextSelector() {
                   <div className="border-t border-gray-100 p-2">
                     <button
                       onClick={() => {
-                        setShowAddBarberModal(true)
+                        setShowAddStaffModal(true)
                       }}
                       className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-olive-600 hover:bg-olive-50 rounded-md transition-colors"
                     >
@@ -366,10 +366,13 @@ export default function GlobalContextSelector() {
         />
       )}
       
-      {showAddBarberModal && (
-        <AddBarberModal
-          isOpen={showAddBarberModal}
-          onClose={() => setShowAddBarberModal(false)}
+      {showAddStaffModal && (
+        <AddStaffModal
+          onClose={() => setShowAddStaffModal(false)}
+          onSuccess={() => {
+            setShowAddStaffModal(false)
+            // Refresh barbers list through GlobalDashboard context
+          }}
         />
       )}
     </div>

@@ -829,6 +829,47 @@ export default function AppointmentBookingModal({
     }
   }
 
+  const handleCompleteAndCheckout = async () => {
+    if (!editingAppointment || !editingAppointment.id) {
+      console.error('No appointment to checkout', editingAppointment)
+      setError('No appointment ID found for checkout.')
+      return
+    }
+
+    try {
+      // Close this modal first
+      onClose()
+
+      // Navigate to POS with pre-filled appointment data
+      const checkoutData = {
+        appointmentId: editingAppointment.id,
+        customerId: editingAppointment.customer_id,
+        customerName: editingAppointment.client_name || editingAppointment.client?.name,
+        customerPhone: editingAppointment.client_phone || editingAppointment.client?.phone,
+        customerEmail: editingAppointment.client_email || editingAppointment.client?.email,
+        services: [{
+          id: editingAppointment.service_id,
+          name: editingAppointment.service_name || 'Service',
+          price: editingAppointment.service_price || 0,
+          duration_minutes: editingAppointment.duration_minutes || 60
+        }],
+        barberId: editingAppointment.barber_id,
+        scheduledAt: editingAppointment.scheduled_at,
+        tipAmount: editingAppointment.tip_amount || 0
+      }
+
+      // Store checkout data in sessionStorage for POS to pick up
+      sessionStorage.setItem('pendingCheckout', JSON.stringify(checkoutData))
+
+      // Navigate to POS page with checkout mode
+      window.location.href = '/shop/products?checkout=appointment&id=' + editingAppointment.id
+      
+    } catch (error) {
+      console.error('Error preparing checkout:', error)
+      setError('Failed to prepare checkout: ' + error.message)
+    }
+  }
+
   const handleTimeSlotSelect = (slot) => {
     if (!slot.available) return
     
@@ -1907,6 +1948,17 @@ export default function AppointmentBookingModal({
                         
                         {/* Right side buttons */}
                         <div className="flex flex-col sm:flex-row gap-2">
+                          {/* Complete & Checkout button - only show for confirmed appointments */}
+                          {isEditing && editingAppointment?.extendedProps?.status === 'confirmed' && (
+                            <button
+                              type="button"
+                              onClick={handleCompleteAndCheckout}
+                              className="inline-flex items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                            >
+                              💰 Complete & Checkout
+                            </button>
+                          )}
+                          
                           {/* Show Block Time button when not in block mode and not editing */}
                           {!isBlockMode && !isEditing && (
                             <button

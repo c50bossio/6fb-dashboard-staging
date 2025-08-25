@@ -106,6 +106,38 @@ const nextConfig = {
     ];
   },
 
+  async redirects() {
+    return [
+      // Redirect old payment setup pages to unified settings
+      {
+        source: '/shop/settings/payment-setup',
+        destination: '/dashboard/settings?tab=integrations',
+        permanent: true,
+      },
+      {
+        source: '/shop/settings/payment',
+        destination: '/dashboard/settings?tab=integrations',
+        permanent: true,
+      },
+      {
+        source: '/shop/settings/processing',
+        destination: '/dashboard/settings?tab=integrations',
+        permanent: true,
+      },
+      // Redirect old generic payments page to billing dashboard
+      {
+        source: '/payments',
+        destination: '/dashboard/billing',
+        permanent: true,
+      },
+      {
+        source: '/billing-demo',
+        destination: '/dashboard/billing',
+        permanent: true,
+      },
+    ];
+  },
+
   async rewrites() {
     const isDev = process.env.NODE_ENV === 'development';
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || (isDev 

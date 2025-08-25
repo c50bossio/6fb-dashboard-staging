@@ -30,14 +30,26 @@ export default function FinancialManagement() {
     totalCommissions: 0,
     totalBoothRent: 0,
     pendingPayouts: 0,
-    completedPayouts: 0
+    completedPayouts: 0,
+    totalRevenue: 0,
+    platformFees: 0,
+    netRevenue: 0
   })
   const [commissionBalances, setCommissionBalances] = useState([])
   const [recentTransactions, setRecentTransactions] = useState([])
+  const [rentLedger, setRentLedger] = useState([])
+  const [paymentFlows, setPaymentFlows] = useState({
+    customer_payments: { count: 0, total: 0 },
+    commission_splits: { count: 0, total: 0 },
+    booth_rent: { count: 0, total: 0 },
+    platform_fees: { count: 0, total: 0 }
+  })
   const [paymentIntegrationStatus, setPaymentIntegrationStatus] = useState({
     connected: false,
     processing_enabled: false,
-    commissions_automated: false
+    commissions_automated: false,
+    multi_tenant_enabled: false,
+    rent_collection_enabled: false
   })
   const [processingPayout, setProcessingPayout] = useState(null)
   const [payoutStatus, setPayoutStatus] = useState(null)
@@ -66,17 +78,37 @@ export default function FinancialManagement() {
 
   const loadFinancialData = async () => {
     try {
-      // Load arrangements and metrics
-      const arrangementsResponse = await fetch('/api/shop/financial/arrangements')
-      if (arrangementsResponse.ok) {
-        const data = await arrangementsResponse.json()
+      // Load compensation arrangements from new API
+      const compensationResponse = await fetch('/api/payments/compensation')
+      if (compensationResponse.ok) {
+        const data = await compensationResponse.json()
         setArrangements(data.arrangements || [])
-        setMetrics(data.metrics || {
-          totalCommissions: 0,
-          totalBoothRent: 0,
-          pendingPayouts: 0,
-          completedPayouts: 0
-        })
+        
+        // Calculate metrics from arrangements
+        const commissionTotal = data.arrangements
+          .filter(a => a.arrangement_type === 'commission' && a.is_active)
+          .reduce((sum, a) => sum + (a.commission_percentage || 0), 0)
+        
+        const boothRentTotal = data.arrangements
+          .filter(a => (a.arrangement_type === 'booth_rent' || a.arrangement_type === 'hybrid') && a.is_active)
+          .reduce((sum, a) => sum + (a.booth_rent_amount || a.hybrid_base_rent || 0), 0)
+        
+        setMetrics(prev => ({
+          ...prev,
+          totalCommissions: commissionTotal,
+          totalBoothRent: boothRentTotal
+        }))
+      }
+
+      // Load pending booth rent from rent ledger
+      const rentResponse = await fetch('/api/payments/booth-rent/collect?status=pending')
+      if (rentResponse.ok) {
+        const data = await rentResponse.json()
+        setRentLedger(data.entries || [])
+        setMetrics(prev => ({
+          ...prev,
+          pendingPayouts: data.summary?.total_pending || 0
+        }))
       }
 
       // Load barbers
@@ -98,13 +130,43 @@ export default function FinancialManagement() {
       if (transactionsResponse.ok) {
         const { transactions } = await transactionsResponse.json()
         setRecentTransactions(transactions || [])
+        
+        // Calculate payment flows from transactions
+        const flows = {
+          customer_payments: { count: 0, total: 0 },
+          commission_splits: { count: 0, total: 0 },
+          booth_rent: { count: 0, total: 0 },
+          platform_fees: { count: 0, total: 0 }
+        }
+        
+        transactions?.forEach(tx => {
+          if (tx.type === 'customer_payment') {
+            flows.customer_payments.count++
+            flows.customer_payments.total += tx.amount
+          } else if (tx.type === 'commission') {
+            flows.commission_splits.count++
+            flows.commission_splits.total += tx.amount
+          } else if (tx.type === 'booth_rent') {
+            flows.booth_rent.count++
+            flows.booth_rent.total += tx.amount
+          } else if (tx.type === 'platform_fee') {
+            flows.platform_fees.count++
+            flows.platform_fees.total += tx.amount
+          }
+        })
+        
+        setPaymentFlows(flows)
       }
 
       // Check payment integration status
       const integrationResponse = await fetch('/api/shop/financial/integration-status')
       if (integrationResponse.ok) {
         const status = await integrationResponse.json()
-        setPaymentIntegrationStatus(status)
+        setPaymentIntegrationStatus({
+          ...status,
+          multi_tenant_enabled: status.allow_individual_accounts || false,
+          rent_collection_enabled: status.enable_automated_rent || false
+        })
       }
 
     } catch (error) {
@@ -451,6 +513,44 @@ export default function FinancialManagement() {
         </div>
       </div>
 
+      {/* Payment Flows Visualization */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <ChartBarIcon className="h-5 w-5 mr-2 text-indigo-600" />
+          Payment Flows (30 Days)
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="border-l-4 border-green-500 pl-4">
+            <p className="text-2xl font-bold text-gray-900">
+              ${paymentFlows.customer_payments.total.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600">Customer Payments</p>
+            <p className="text-xs text-gray-500 mt-1">{paymentFlows.customer_payments.count} transactions</p>
+          </div>
+          <div className="border-l-4 border-blue-500 pl-4">
+            <p className="text-2xl font-bold text-gray-900">
+              ${paymentFlows.commission_splits.total.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600">Commission Splits</p>
+            <p className="text-xs text-gray-500 mt-1">{paymentFlows.commission_splits.count} allocations</p>
+          </div>
+          <div className="border-l-4 border-purple-500 pl-4">
+            <p className="text-2xl font-bold text-gray-900">
+              ${paymentFlows.booth_rent.total.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600">Booth Rent Collected</p>
+            <p className="text-xs text-gray-500 mt-1">{paymentFlows.booth_rent.count} payments</p>
+          </div>
+          <div className="border-l-4 border-orange-500 pl-4">
+            <p className="text-2xl font-bold text-gray-900">
+              ${paymentFlows.platform_fees.total.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600">Platform Fees</p>
+            <p className="text-xs text-gray-500 mt-1">{paymentFlows.platform_fees.count} charges</p>
+          </div>
+        </div>
+      </div>
+
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -652,17 +752,220 @@ export default function FinancialManagement() {
         </div>
       )}
 
+      {/* Booth Rent Collection Panel */}
+      {rentLedger.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+          <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                <BanknotesIcon className="h-5 w-5 mr-2 text-purple-600" />
+                Booth Rent Collection
+              </h2>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-purple-600 font-medium">
+                  Waterfall Payment System Active
+                </span>
+                <button
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center text-sm font-medium"
+                  onClick={() => {
+                    // Trigger bulk rent collection
+                    const overdue = rentLedger.filter(e => new Date(e.due_date) < new Date())
+                    if (overdue.length > 0) {
+                      alert(`Collecting rent from ${overdue.length} barbers...`)
+                    }
+                  }}
+                >
+                  <ArrowPathIcon className="h-4 w-4 mr-2" />
+                  Collect All Due
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Payment Method Priority Indicator */}
+          <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-600">Payment Priority (Lowest Fees First):</p>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <span className="h-2 w-2 bg-green-500 rounded-full mr-2"></span>
+                  <span className="text-xs text-gray-700">Balance ($0)</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="h-2 w-2 bg-blue-500 rounded-full mr-2"></span>
+                  <span className="text-xs text-gray-700">ACH ($1.00)</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="h-2 w-2 bg-orange-500 rounded-full mr-2"></span>
+                  <span className="text-xs text-gray-700">Card (2.9% + $0.30)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Barber
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rent Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Due Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Payment Method
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {rentLedger.map((entry) => {
+                  const isOverdue = new Date(entry.due_date) < new Date()
+                  const barberInfo = entry.financial_arrangements?.barbershop_staff
+                  
+                  return (
+                    <tr key={entry.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {barberInfo?.full_name || 'Unknown Barber'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {barberInfo?.email}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-semibold text-gray-900">
+                          ${entry.rent_amount?.toFixed(2) || '0.00'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className={`text-sm ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
+                          {new Date(entry.due_date).toLocaleDateString()}
+                        </div>
+                        {isOverdue && (
+                          <div className="text-xs text-red-500">Overdue</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {entry.payment_method || 'Auto'}
+                        </div>
+                        {entry.last_attempt_at && (
+                          <div className="text-xs text-gray-500">
+                            Last: {new Date(entry.last_attempt_at).toLocaleDateString()}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          entry.status === 'paid' 
+                            ? 'bg-green-100 text-green-800'
+                            : entry.status === 'failed'
+                            ? 'bg-red-100 text-red-800'
+                            : isOverdue
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {entry.status === 'paid' ? 'Paid' :
+                           entry.status === 'failed' ? 'Failed' :
+                           isOverdue ? 'Overdue' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {entry.status === 'pending' && (
+                          <button 
+                            className="text-purple-600 hover:text-purple-900 font-medium"
+                            onClick={async () => {
+                              const response = await fetch('/api/payments/booth-rent/collect', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                  ledger_id: entry.id,
+                                  barbershop_id: entry.barbershop_id,
+                                  barber_id: entry.barber_id
+                                })
+                              })
+                              const result = await response.json()
+                              if (result.success) {
+                                addNotification({
+                                  type: 'success',
+                                  title: 'Rent Collected',
+                                  message: `Successfully collected $${entry.rent_amount} via ${result.payment_method}`,
+                                  details: `Processing fee: $${result.processing_fee}`
+                                })
+                                loadFinancialData()
+                              } else {
+                                addNotification({
+                                  type: 'error',
+                                  title: 'Collection Failed',
+                                  message: result.error || 'Failed to collect rent'
+                                })
+                              }
+                            }}
+                          >
+                            Collect Now
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Rent Summary Footer */}
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center space-x-4">
+                <span className="text-gray-600">
+                  Total Due: <span className="font-medium text-gray-900">
+                    ${rentLedger.filter(e => e.status === 'pending').reduce((sum, e) => sum + e.rent_amount, 0).toFixed(2)}
+                  </span>
+                </span>
+                <span className="text-gray-600">
+                  Overdue: <span className="font-medium text-red-600">
+                    {rentLedger.filter(e => e.status === 'pending' && new Date(e.due_date) < new Date()).length}
+                  </span>
+                </span>
+              </div>
+              <div className="text-xs text-gray-500">
+                Waterfall payment minimizes processing fees
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Actions Bar */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-gray-900">Commission Arrangements</h2>
-          <button
-            onClick={() => setShowArrangementModal(true)}
-            className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 flex items-center"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            New Arrangement
-          </button>
+          <div className="flex space-x-3">
+            <a
+              href="/dashboard/settings?tab=compensation"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 flex items-center"
+            >
+              <CalculatorIcon className="h-5 w-5 mr-2" />
+              Configure Models
+            </a>
+            <button
+              onClick={() => setShowArrangementModal(true)}
+              className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 flex items-center"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              New Arrangement
+            </button>
+          </div>
         </div>
       </div>
 

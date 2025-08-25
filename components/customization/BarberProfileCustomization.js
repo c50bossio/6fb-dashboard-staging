@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { 
@@ -10,14 +11,19 @@ import {
   PaintBrushIcon,
   CheckCircleIcon,
   XMarkIcon,
-  StarIcon
+  StarIcon,
+  ClockIcon,
+  ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline'
 
 export default function BarberProfileCustomization() {
   const { user } = useAuth()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('profile')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+  const [businessHours, setBusinessHours] = useState(null)
+  const [barbershopData, setBarbershopData] = useState(null)
   
   const [settings, setSettings] = useState({
     full_name: '',
@@ -54,6 +60,8 @@ export default function BarberProfileCustomization() {
 
   useEffect(() => {
     loadBarberSettings()
+    loadBusinessHours()
+    loadBarbershopData()
   }, [user])
 
   const loadBarberSettings = async () => {
@@ -121,8 +129,68 @@ export default function BarberProfileCustomization() {
     }
   }
 
+  const loadBusinessHours = async () => {
+    if (!user) return
+
+    try {
+      // Get user's barbershop to load business hours
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('shop_id, barbershop_id')
+        .eq('id', user.id)
+        .single()
+
+      const shopId = profile?.shop_id || profile?.barbershop_id
+      if (shopId) {
+        const { data: shop } = await supabase
+          .from('barbershops')
+          .select('business_hours')
+          .eq('id', shopId)
+          .single()
+
+        if (shop?.business_hours) {
+          setBusinessHours(shop.business_hours)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading business hours:', error)
+    }
+  }
+
   const updateSetting = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }))
+  }
+
+  const loadBarbershopData = async () => {
+    if (!user) return
+
+    try {
+      // Get user's barbershop for branding info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('shop_id, barbershop_id')
+        .eq('id', user.id)
+        .single()
+
+      const shopId = profile?.shop_id || profile?.barbershop_id
+      if (shopId) {
+        const { data: shop } = await supabase
+          .from('barbershops')
+          .select('name, description, logo_url, brand_color')
+          .eq('id', shopId)
+          .single()
+
+        if (shop) {
+          setBarbershopData(shop)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading barbershop data:', error)
+    }
+  }
+
+  const navigateToSettings = (path) => {
+    router.push(`/shop/settings/${path}`)
   }
 
   return (
@@ -261,11 +329,95 @@ export default function BarberProfileCustomization() {
             </div>
           )}
 
-          {/* Other tabs would be implemented similarly */}
-          {(activeTab === 'availability' || activeTab === 'branding') && (
-            <div className="text-center py-8 text-gray-500">
-              <CalendarDaysIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-              <p>This section is coming soon!</p>
+          {/* Availability Tab */}
+          {activeTab === 'availability' && (
+            <div className="space-y-6">
+              <div className="text-center border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+                <ClockIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Manage Your Availability</h4>
+                <p className="text-gray-600 mb-4">
+                  Set your business hours and availability preferences in the dedicated settings page.
+                </p>
+                <button
+                  onClick={() => navigateToSettings('hours')}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <ClockIcon className="h-4 w-4 mr-2" />
+                  Open Business Hours Settings
+                  <ArrowTopRightOnSquareIcon className="h-4 w-4 ml-2" />
+                </button>
+              </div>
+
+              {businessHours && (
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <h5 className="text-sm font-medium text-gray-900 mb-3">Current Business Hours Preview</h5>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {Object.entries(businessHours).map(([day, hours]) => (
+                      <div key={day} className="flex justify-between py-1">
+                        <span className="capitalize text-gray-600">{day}:</span>
+                        <span className="text-gray-900">
+                          {hours.closed ? 'Closed' : `${hours.open} - ${hours.close}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Branding Tab */}
+          {activeTab === 'branding' && (
+            <div className="space-y-6">
+              <div className="text-center border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+                <PaintBrushIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Customize Your Branding</h4>
+                <p className="text-gray-600 mb-4">
+                  Manage your barbershop's logo, colors, and visual identity in the general settings.
+                </p>
+                <button
+                  onClick={() => navigateToSettings('general')}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <PaintBrushIcon className="h-4 w-4 mr-2" />
+                  Open General Settings
+                  <ArrowTopRightOnSquareIcon className="h-4 w-4 ml-2" />
+                </button>
+              </div>
+
+              {barbershopData && (
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <h5 className="text-sm font-medium text-gray-900 mb-3">Current Branding Preview</h5>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Business Name:</span>
+                      <span className="text-gray-900 font-medium">{barbershopData.name || 'Not set'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Brand Color:</span>
+                      <div className="flex items-center">
+                        {barbershopData.brand_color && (
+                          <div 
+                            className="w-4 h-4 rounded mr-2 border"
+                            style={{ backgroundColor: barbershopData.brand_color }}
+                          ></div>
+                        )}
+                        <span className="text-gray-900">{barbershopData.brand_color || 'Default'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Logo:</span>
+                      <span className="text-gray-900">{barbershopData.logo_url ? 'Uploaded' : 'Not set'}</span>
+                    </div>
+                    {barbershopData.description && (
+                      <div>
+                        <span className="text-gray-600">Description:</span>
+                        <p className="text-gray-900 text-sm mt-1">{barbershopData.description}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

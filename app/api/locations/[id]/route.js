@@ -62,7 +62,7 @@ export async function GET(request, { params }) {
       supabase
         .from('services')
         .select('*')
-        .or(`barbershop_id.eq.${id},shop_id.eq.${id}`)
+        .eq('shop_id', id)
         .eq('is_active', true),
       
       supabase
@@ -249,7 +249,7 @@ export async function DELETE(request, { params }) {
       // First, clean up related data
       await Promise.all([
         supabase.from('barbershop_staff').delete().eq('barbershop_id', id),
-        supabase.from('services').delete().or(`barbershop_id.eq.${id},shop_id.eq.${id}`),
+        supabase.from('services').delete().eq('shop_id', id),
         supabase.from('appointments').delete().eq('barbershop_id', id),
         supabase.from('customers').delete().eq('barbershop_id', id)
       ])
@@ -300,7 +300,7 @@ export async function DELETE(request, { params }) {
         supabase
           .from('services')
           .update({ is_active: false })
-          .or(`barbershop_id.eq.${id},shop_id.eq.${id}`)
+          .eq('shop_id', id)
       ])
       
       return NextResponse.json({ 

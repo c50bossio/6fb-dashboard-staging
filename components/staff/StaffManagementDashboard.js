@@ -15,7 +15,7 @@ import {
   XCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from "@/components/ui/card.jsx"
 import Button from '@/components/ui/Button'
@@ -32,12 +32,16 @@ export default function StaffManagementDashboard() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState(null)
+  const [addButtonLoading, setAddButtonLoading] = useState(false)
   const [metrics, setMetrics] = useState({
     totalStaff: 0,
     activeToday: 0,
     pendingPayroll: 0,
     avgRating: 0
   })
+  
+  // Ref to prevent multiple rapid clicks
+  const addStaffTimeoutRef = useRef(null)
 
   // Load staff data
   const loadStaffData = useCallback(async () => {
@@ -115,17 +119,17 @@ export default function StaffManagementDashboard() {
 
       const { data: appointments } = await supabase
         .from('appointments')
-        .select('barber_id, status, rating, price')
+        .select('barber_id, status, price')
         .eq('barbershop_id', barbershopId)
-        .gte('appointment_date', thirtyDaysAgo.toISOString())
+        .gte('start_time', thirtyDaysAgo.toISOString())
 
       // Process staff data with metrics
       const staffWithMetrics = (staffData || []).map(member => {
         const memberAppointments = appointments?.filter(a => a.barber_id === member.user_id) || []
         const completedAppointments = memberAppointments.filter(a => a.status === 'completed')
         const revenue = completedAppointments.reduce((sum, a) => sum + (a.price || 0), 0)
-        const ratings = completedAppointments.filter(a => a.rating).map(a => a.rating)
-        const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0
+        // Note: Rating system not yet implemented in database
+        const avgRating = 0 // Placeholder for future rating implementation
 
         return {
           ...member,
@@ -158,6 +162,34 @@ export default function StaffManagementDashboard() {
       console.error('Error in loadStaffData:', error)
     } finally {
       setLoading(false)
+    }
+  }, [])
+  
+  // Debounced Add Staff button handler to prevent rapid clicks
+  const handleAddStaffClick = useCallback(() => {
+    // Prevent multiple rapid clicks
+    if (addButtonLoading || showAddModal) return
+    
+    // Clear any existing timeout
+    if (addStaffTimeoutRef.current) {
+      clearTimeout(addStaffTimeoutRef.current)
+    }
+    
+    setAddButtonLoading(true)
+    
+    // Add slight delay to show loading state and prevent race conditions
+    addStaffTimeoutRef.current = setTimeout(() => {
+      setShowAddModal(true)
+      setAddButtonLoading(false)
+    }, 300)
+  }, [addButtonLoading, showAddModal])
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (addStaffTimeoutRef.current) {
+        clearTimeout(addStaffTimeoutRef.current)
+      }
     }
   }, [])
 
@@ -231,6 +263,27 @@ export default function StaffManagementDashboard() {
             </div>
           </div>
 
+          {/* Compensation Model Badge */}
+          {member.financial_model && (
+            <div className="ml-auto mr-2">
+              {member.financial_model === 'commission' && (
+                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                  {(member.commission_rate * 100).toFixed(0)}% Commission
+                </span>
+              )}
+              {member.financial_model === 'booth_rent' && (
+                <span className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                  Booth Rent
+                </span>
+              )}
+              {member.financial_model === 'hybrid' && (
+                <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full">
+                  Hybrid
+                </span>
+              )}
+            </div>
+          )}
+          
           {/* Quick Actions */}
           <ChevronRightIcon className="h-5 w-5 text-gray-400" />
         </div>
@@ -375,11 +428,21 @@ export default function StaffManagementDashboard() {
 
             {/* Add Staff Button */}
             <Button
-              onClick={() => setShowAddModal(true)}
+              onClick={handleAddStaffClick}
+              disabled={addButtonLoading}
               className="flex items-center"
             >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Add Staff
+              {addButtonLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Opening...
+                </>
+              ) : (
+                <>
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Add Staff
+                </>
+              )}
             </Button>
           </div>
 
@@ -392,8 +455,18 @@ export default function StaffManagementDashboard() {
                 {searchQuery ? 'No staff members match your search.' : 'Start by adding your first team member.'}
               </p>
               {!searchQuery && (
-                <Button onClick={() => setShowAddModal(true)}>
-                  Add Your First Staff Member
+                <Button 
+                  onClick={handleAddStaffClick}
+                  disabled={addButtonLoading}
+                >
+                  {addButtonLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Opening...
+                    </>
+                  ) : (
+                    'Add Your First Staff Member'
+                  )}
                 </Button>
               )}
             </Card>
@@ -416,18 +489,184 @@ export default function StaffManagementDashboard() {
       )}
 
       {activeView === 'payroll' && (
-        <div className="bg-white rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Payroll & Commissions</h2>
-          <p className="text-gray-600">Commission tracking and payroll export coming soon...</p>
+        <div className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Total Pending Commissions</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {formatCurrency(metrics.pendingPayroll)}
+                  </p>
+                </div>
+                <CurrencyDollarIcon className="h-8 w-8 text-green-500" />
+              </div>
+            </Card>
+            
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Booth Rent Due</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">
+                    {formatCurrency(
+                      staff.filter(s => s.financial_model === 'booth_rent' || s.financial_model === 'hybrid')
+                        .reduce((sum, s) => sum + (s.booth_rent_amount || 0), 0)
+                    )}
+                  </p>
+                </div>
+                <ClockIcon className="h-8 w-8 text-purple-500" />
+              </div>
+            </Card>
+            
+            <Card className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Staff Count</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{staff.length}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {staff.filter(s => s.financial_model === 'commission').length} Commission | 
+                    {' '}{staff.filter(s => s.financial_model === 'booth_rent').length} Booth | 
+                    {' '}{staff.filter(s => s.financial_model === 'hybrid').length} Hybrid
+                  </p>
+                </div>
+                <UserGroupIcon className="h-8 w-8 text-blue-500" />
+              </div>
+            </Card>
+          </div>
+
+          {/* Compensation Details Table */}
+          <Card className="p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Staff Compensation Details</h3>
+              <button 
+                onClick={() => window.location.href = '/dashboard/settings?tab=compensation'}
+                className="text-sm text-olive-600 hover:text-olive-700 font-medium"
+              >
+                Configure Compensation →
+              </button>
+            </div>
+            
+            {staff.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No staff members configured</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Staff Member
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Model
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Revenue (30d)
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Commission/Rent
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {staff.map((member) => (
+                      <tr key={member.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {member.user?.full_name || member.user?.email || 'Unnamed'}
+                          </div>
+                          <div className="text-sm text-gray-500">{member.role}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {member.financial_model === 'commission' && (
+                            <span className="text-sm text-blue-600">
+                              {((member.commission_rate || 0.4) * 100).toFixed(0)}% Commission
+                            </span>
+                          )}
+                          {member.financial_model === 'booth_rent' && (
+                            <span className="text-sm text-purple-600">
+                              Booth Rent
+                            </span>
+                          )}
+                          {member.financial_model === 'hybrid' && (
+                            <span className="text-sm text-green-600">
+                              Hybrid Model
+                            </span>
+                          )}
+                          {!member.financial_model && (
+                            <span className="text-sm text-gray-400">Not configured</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatCurrency(member.metrics.revenue)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          {member.financial_model === 'commission' && (
+                            <span className="text-green-600">
+                              +{formatCurrency(member.metrics.pendingCommission)}
+                            </span>
+                          )}
+                          {member.financial_model === 'booth_rent' && (
+                            <span className="text-orange-600">
+                              -{formatCurrency(member.booth_rent_amount || 1500)}/mo
+                            </span>
+                          )}
+                          {member.financial_model === 'hybrid' && (
+                            <span className="text-blue-600">
+                              -{formatCurrency(member.hybrid_base_rent || 800)}/mo
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {member.metrics.pendingCommission > 0 ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              Pending
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Current
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+          
+          {/* Quick Actions */}
+          <div className="flex justify-end space-x-4">
+            <Button variant="outline" onClick={() => alert('Export feature coming soon')}>
+              Export Payroll Report
+            </Button>
+            <Button onClick={() => alert('Payout processing coming soon')}>
+              Process Payouts
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Add Staff Modal */}
       {showAddModal && (
         <AddStaffModal
-          onClose={() => setShowAddModal(false)}
+          onClose={() => {
+            setShowAddModal(false)
+            setAddButtonLoading(false)
+            if (addStaffTimeoutRef.current) {
+              clearTimeout(addStaffTimeoutRef.current)
+            }
+          }}
           onSuccess={() => {
             setShowAddModal(false)
+            setAddButtonLoading(false)
+            if (addStaffTimeoutRef.current) {
+              clearTimeout(addStaffTimeoutRef.current)
+            }
             loadStaffData()
           }}
         />

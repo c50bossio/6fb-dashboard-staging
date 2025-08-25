@@ -1,7 +1,7 @@
 'use client'
 
-import BarberManagementDashboard from '@/components/shop/BarberManagementDashboard'
+import StaffManagementDashboard from '@/components/staff/StaffManagementDashboard'
 
 export default function BarbersPage() {
-  return <BarberManagementDashboard />
+  return <StaffManagementDashboard />
 }

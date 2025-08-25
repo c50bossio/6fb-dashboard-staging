@@ -74,7 +74,7 @@ export async function POST(request) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, barbershop_id, shop_id, email')
-      .or(`id.eq.${user.id},email.eq.${user.email}`)
+      .or(`(id.eq.${user.id}),(email.eq.${user.email})`)
       .single()
     
     if (!profile) {
@@ -171,7 +171,7 @@ export async function GET(request) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, barbershop_id, shop_id, email')
-      .or(`id.eq.${user.id},email.eq.${user.email}`)
+      .or(`(id.eq.${user.id}),(email.eq.${user.email})`)
       .single()
     
     if (!profile) {

@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Modal } from '@/components/ui/Modal'
 import Button from '@/components/ui/Button'
-import { XMarkIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, ChevronDownIcon, ChevronRightIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { toast } from 'react-hot-toast'
 
 export default function AddStaffModal({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
+  const [emailStatus, setEmailStatus] = useState(null) // Track email sending status
   const [activeSection, setActiveSection] = useState('basic') // Track which section is open
+  const [invitationDetails, setInvitationDetails] = useState(null) // Track invitation details after sending
   const [formData, setFormData] = useState({
     // Basic Information (4 fields)
     email: '',
@@ -136,113 +139,160 @@ export default function AddStaffModal({ onClose, onSuccess }) {
     return true
   }
 
+  const [errors, setErrors] = useState({})
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
     if (!validateForm()) return
     
     setLoading(true)
-
+    setErrors({})
+    setInvitationDetails(null)
+    setEmailStatus('sending')
+    
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 25000) // 25 second timeout
+    
     try {
       const supabase = createClient()
       
-      // Get current user's barbershop
+      // Get current user's barbershop with timeout
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-
+      if (!user) throw new Error('Authentication required. Please log in and try again.')
+      
       const { data: profile } = await supabase
         .from('profiles')
         .select('shop_id, barbershop_id')
         .eq('id', user.id)
         .single()
-
+      
       const barbershopId = profile?.shop_id || profile?.barbershop_id
-      if (!barbershopId) throw new Error('No barbershop found')
-
-      // Check if user already exists in profiles
-      let userId = null
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', formData.email)
-        .single()
-
-      if (existingProfile) {
-        userId = existingProfile.id
-      } else {
-        // Create new profile
-        const { data: newProfile, error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            email: formData.email,
-            full_name: formData.full_name,
-            role: 'BARBER'
-          })
-          .select()
-          .single()
-
-        if (profileError) throw profileError
-        userId = newProfile.id
+      if (!barbershopId) throw new Error('No barbershop found. Please contact support if this continues.')
+      
+      // Call the invitation API with timeout
+      const response = await fetch('/api/staff/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          email: formData.email,
+          full_name: formData.full_name,
+          role: formData.role.toUpperCase(),
+          barbershopId: barbershopId,
+          sendEmail: true,
+          
+          // Include all the enhanced data for storage
+          metadata: {
+            phone: formData.phone,
+            license_number: formData.license_number,
+            license_expiry: formData.license_expiry,
+            years_experience: parseInt(formData.years_experience) || 0,
+            financial_model: formData.financial_model,
+            commission_rate: parseFloat(formData.commission_rate),
+            hourly_rate: parseFloat(formData.hourly_rate) || null,
+            booth_rent_amount: parseFloat(formData.booth_rent_amount) || null,
+            payment_method: formData.payment_method,
+            bank_account_last4: formData.bank_account_last4,
+            routing_number_last4: formData.routing_number_last4,
+            emergency_contact_name: formData.emergency_contact_name,
+            emergency_contact_phone: formData.emergency_contact_phone,
+            emergency_contact_relationship: formData.emergency_contact_relationship,
+            has_insurance: formData.has_insurance,
+            insurance_provider: formData.insurance_provider,
+            background_check_consent: formData.background_check_consent,
+            previous_workplace: formData.previous_workplace,
+            portfolio_url: formData.portfolio_url,
+            instagram_handle: formData.instagram_handle,
+            working_days: formData.working_days,
+            preferred_start_time: formData.preferred_start_time,
+            preferred_end_time: formData.preferred_end_time,
+            max_daily_appointments: formData.max_daily_appointments,
+            break_duration: formData.break_duration,
+            specialties: formData.specialties,
+            certifications: formData.certifications
+          }
+        })
+      })
+      
+      clearTimeout(timeoutId)
+      
+      const result = await response.json()
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to process invitation')
       }
-
-      // Create staff record with enhanced data
-      const staffData = {
-        barbershop_id: barbershopId,
-        user_id: userId,
-        email: formData.email,
-        full_name: formData.full_name,
-        role: formData.role,
-        phone: formData.phone,
-        is_active: true,
-        
-        // Enhanced fields
-        license_number: formData.license_number,
-        license_expiry: formData.license_expiry || null,
-        years_experience: parseInt(formData.years_experience) || 0,
-        financial_model: formData.financial_model,
-        commission_rate: parseFloat(formData.commission_rate),
-        hourly_rate: parseFloat(formData.hourly_rate) || null,
-        booth_rent_amount: parseFloat(formData.booth_rent_amount) || null,
-        payment_method: formData.payment_method,
-        bank_account_last4: formData.bank_account_last4,
-        routing_number_last4: formData.routing_number_last4,
-        emergency_contact_name: formData.emergency_contact_name,
-        emergency_contact_phone: formData.emergency_contact_phone,
-        emergency_contact_relationship: formData.emergency_contact_relationship,
-        
-        // Store complex data in metadata JSONB field
-        metadata: {
-          has_insurance: formData.has_insurance,
-          insurance_provider: formData.insurance_provider,
-          background_check_consent: formData.background_check_consent,
-          previous_workplace: formData.previous_workplace,
-          portfolio_url: formData.portfolio_url,
-          instagram_handle: formData.instagram_handle,
-          working_days: formData.working_days,
-          preferred_start_time: formData.preferred_start_time,
-          preferred_end_time: formData.preferred_end_time,
-          max_daily_appointments: formData.max_daily_appointments,
-          break_duration: formData.break_duration,
-          specialties: formData.specialties,
-          certifications: formData.certifications
+      
+      if (result.success) {
+        if (result.existingUser) {
+          // User already had an account and was added directly
+          setEmailStatus('success')
+          toast.success('Staff member added successfully!')
+          onSuccess()
+          onClose()
+        } else {
+          // Invitation was created - check email status
+          if (result.data.email_sent) {
+            setEmailStatus('success')
+            toast.success('Invitation sent successfully!')
+          } else {
+            setEmailStatus('failed')
+            toast.warn('Invitation created but email delivery failed. Share the link manually.')
+          }
+          setInvitationDetails(result.data || result)
         }
+      } else {
+        throw new Error(result.error || 'Failed to process invitation')
       }
-
-      const { error: staffError } = await supabase
-        .from('barbershop_staff')
-        .insert([staffData])
-
-      if (staffError) throw staffError
-
-      toast.success('Staff member added successfully!')
-      onSuccess()
       
     } catch (error) {
-      console.error('Error adding staff member:', error)
-      toast.error(error.message || 'Failed to add staff member')
+      clearTimeout(timeoutId)
+      console.error('Error inviting staff member:', error)
+      
+      let errorMessage = 'Failed to invite staff member'
+      let shouldAllowRetry = true
+      
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out. Please check your connection and try again.'
+        setEmailStatus('timeout')
+      } else if (error.message?.includes('fetch failed') || error.message?.includes('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.'
+        setEmailStatus('network_error')
+      } else if (error.message?.includes('Authentication required')) {
+        errorMessage = 'Please log in and try again.'
+        shouldAllowRetry = false
+        setEmailStatus('auth_error')
+      } else {
+        errorMessage = error.message || 'Unknown error occurred'
+        setEmailStatus('error')
+      }
+      
+      setErrors({
+        submit: errorMessage,
+        canRetry: shouldAllowRetry && retryCount < 2
+      })
+      
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
+  }
+
+  // Retry function for failed submissions
+  const handleRetry = async () => {
+    if (retryCount >= 2) {
+      toast.error('Maximum retry attempts reached. Please try again later.')
+      return
+    }
+    
+    setRetryCount(prev => prev + 1)
+    setErrors({})
+    setEmailStatus(null)
+    
+    // Simulate event object for handleSubmit
+    const fakeEvent = { preventDefault: () => {} }
+    await handleSubmit(fakeEvent)
   }
 
   // Section component for collapsible sections
@@ -278,18 +328,91 @@ export default function AddStaffModal({ onClose, onSuccess }) {
       onClose={onClose}
       className="max-w-4xl"
     >
-      <div className="flex items-center justify-between p-6 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900">Add Staff Member</h2>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-gray-900">Add Staff Member</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
+        
+        {/* Show invitation details if invitation was sent */}
+        {invitationDetails && invitationDetails.instructions && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-green-800">
+                  {invitationDetails.message || 'Invitation Process Started'}
+                </h3>
+                <div className="mt-2 text-sm text-green-700">
+                  <ul className="list-disc pl-5 space-y-1">
+                    {invitationDetails.instructions.map((instruction, index) => (
+                      <li key={index}>{instruction}</li>
+                    ))}
+                  </ul>
+                </div>
+                {invitationDetails.data?.invitation_token && (
+                  <div className="mt-3 p-2 bg-white rounded border border-green-300">
+                    <p className="text-xs text-gray-600 mb-1">Invitation Link:</p>
+                    <p className="text-xs font-mono break-all text-gray-800">
+                      {`${process.env.NEXT_PUBLIC_APP_URL || 'https://bookedbarber.com'}/accept-invitation?token=${invitationDetails.data.invitation_token}`}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Show error if there is one */}
+        {errors.submit && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="text-sm text-red-800 mb-2">
+                  {errors.submit}
+                </div>
+                {/* Show email status indicator */}
+                {emailStatus && (
+                  <div className="text-xs text-gray-600 mb-2">
+                    {emailStatus === 'sending' && '📧 Sending invitation email...'}
+                    {emailStatus === 'timeout' && '⏱️ Request timed out'}
+                    {emailStatus === 'network_error' && '🔌 Network connection issue'}
+                    {emailStatus === 'auth_error' && '🔐 Authentication problem'}
+                    {emailStatus === 'error' && '❌ Invitation processing failed'}
+                    {emailStatus === 'failed' && '📧 Email delivery failed'}
+                  </div>
+                )}
+                {/* Show retry button for retryable errors */}
+                {errors.canRetry && (
+                  <button
+                    type="button"
+                    onClick={handleRetry}
+                    disabled={loading}
+                    className="inline-flex items-center px-3 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-300 rounded hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Retrying...' : `Try Again ${retryCount > 0 ? `(${retryCount}/2)` : ''}`}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6">
+      {/* Show form only if invitation hasn't been sent yet */}
+      {!invitationDetails ? (
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6">
           
           {/* Basic Information - Always Open */}
           <FormSection
@@ -813,6 +936,119 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           </Button>
         </div>
       </form>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+            <div className="flex items-center mb-4">
+              <CheckCircleIcon className="h-8 w-8 text-green-500 mr-3" />
+              <h3 className="text-lg font-semibold text-green-900">Invitation Sent Successfully!</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Invitation sent to:</p>
+                <p className="font-medium text-gray-900">{invitationDetails.email}</p>
+                {invitationDetails.full_name && (
+                  <p className="text-gray-700">{invitationDetails.full_name}</p>
+                )}
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Role:</p>
+                <p className="font-medium text-gray-900 capitalize">{invitationDetails.role.toLowerCase()}</p>
+              </div>
+              
+              {invitationDetails.requiresSignup && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm font-medium text-blue-900 mb-2">Next Steps:</p>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    {invitationDetails.instructions?.map((instruction, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-blue-500 mr-2">•</span>
+                        <span>{instruction}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {invitationDetails.invitation_token && (
+                <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+                  <p className="text-xs text-gray-600 mb-1">Invitation Link:</p>
+                  <div className="flex items-center">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${window.location.origin}/accept-invitation?token=${invitationDetails.invitation_token}`}
+                      className="flex-1 text-xs font-mono bg-white px-2 py-1 rounded border border-gray-300"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/accept-invitation?token=${invitationDetails.invitation_token}`)
+                        toast.success('Link copied to clipboard!')
+                      }}
+                      className="ml-2 px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setInvitationDetails(null)
+                setFormData({
+                  full_name: '',
+                  email: '',
+                  phone: '',
+                  role: 'barber',
+                  license_number: '',
+                  license_state: '',
+                  license_expiry: '',
+                  background_check_date: '',
+                  emergency_contact_name: '',
+                  emergency_contact_phone: '',
+                  w9_on_file: false,
+                  liability_insurance: false,
+                  professional_insurance: false,
+                  booth_rental_agreement: false,
+                  commission_percentage: '',
+                  booth_rent_amount: '',
+                  financial_model: 'commission',
+                  payment_method: 'direct_deposit',
+                  years_experience: '',
+                  specialties: [],
+                  certifications: '',
+                  instagram_handle: '',
+                  portfolio_url: '',
+                  bio: '',
+                  availability: {
+                    monday: { available: false, start: '09:00', end: '17:00' },
+                    tuesday: { available: false, start: '09:00', end: '17:00' },
+                    wednesday: { available: false, start: '09:00', end: '17:00' },
+                    thursday: { available: false, start: '09:00', end: '17:00' },
+                    friday: { available: false, start: '09:00', end: '17:00' },
+                    saturday: { available: false, start: '09:00', end: '17:00' },
+                    sunday: { available: false, start: '09:00', end: '17:00' }
+                  }
+                })
+              }}
+            >
+              Add Another Staff Member
+            </Button>
+            <Button
+              onClick={onClose}
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      )}
     </Modal>
   )
 }

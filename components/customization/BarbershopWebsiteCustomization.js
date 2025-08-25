@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { 
@@ -11,11 +12,15 @@ import {
   CheckCircleIcon,
   XMarkIcon,
   PhotoIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  ClockIcon,
+  ArrowTopRightOnSquareIcon,
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 
 export default function BarbershopWebsiteCustomization() {
   const { user } = useAuth()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('general')
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
@@ -196,6 +201,10 @@ export default function BarbershopWebsiteCustomization() {
 
   const updateSetting = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }))
+  }
+
+  const navigateToSettings = (path) => {
+    router.push(`/shop/settings/${path}`)
   }
 
   return (
@@ -399,11 +408,100 @@ export default function BarbershopWebsiteCustomization() {
             </div>
           )}
 
-          {/* Other tabs would be implemented similarly */}
-          {(activeTab === 'hours' || activeTab === 'seo') && (
-            <div className="text-center py-8 text-gray-500">
-              <CalendarDaysIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-              <p>This section is coming soon!</p>
+          {/* Hours & Booking Tab */}
+          {activeTab === 'hours' && (
+            <div className="space-y-6">
+              <div className="text-center border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+                <ClockIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">Business Hours & Booking Settings</h4>
+                <p className="text-gray-600 mb-4">
+                  Configure your operating hours and booking preferences in the dedicated settings pages.
+                </p>
+                <div className="flex justify-center gap-3">
+                  <button
+                    onClick={() => navigateToSettings('hours')}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <ClockIcon className="h-4 w-4 mr-2" />
+                    Business Hours
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4 ml-2" />
+                  </button>
+                  <button
+                    onClick={() => navigateToSettings('booking')}
+                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <CalendarDaysIcon className="h-4 w-4 mr-2" />
+                    Booking Settings
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4 ml-2" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview of current business hours if available */}
+              {settings.business_hours && (
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <h5 className="text-sm font-medium text-gray-900 mb-3">Current Business Hours Preview</h5>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {Object.entries(settings.business_hours).map(([day, hours]) => (
+                      <div key={day} className="flex justify-between py-1">
+                        <span className="capitalize text-gray-600">{day}:</span>
+                        <span className="text-gray-900">
+                          {!hours.is_open ? 'Closed' : `${hours.open} - ${hours.close}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SEO & Marketing Tab */}
+          {activeTab === 'seo' && (
+            <div className="space-y-6">
+              <div className="text-center border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+                <MagnifyingGlassIcon className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">SEO & Marketing Settings</h4>
+                <p className="text-gray-600 mb-4">
+                  Basic SEO settings for your website. More advanced marketing tools coming soon!
+                </p>
+              </div>
+
+              {/* Basic SEO Form */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Meta Description
+                  </label>
+                  <textarea
+                    value={settings.meta_description}
+                    onChange={(e) => updateSetting('meta_description', e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Brief description of your barbershop for search engines..."
+                    maxLength={160}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {settings.meta_description.length}/160 characters
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Keywords (comma separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={settings.keywords.join(', ')}
+                    onChange={(e) => updateSetting('keywords', e.target.value.split(',').map(k => k.trim()))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="barbershop, haircuts, beard trim, your city"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Keywords help search engines understand your business
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -15,6 +15,7 @@ import { useState, useEffect } from 'react'
 
 import PaymentForm from '../payment/PaymentForm'
 import { useAuth } from '../SupabaseAuthProvider'
+import TipSelectionWidget from '../checkout/TipSelectionWidget'
 
 export default function BookingPaymentModal({
   isOpen,
@@ -33,12 +34,28 @@ export default function BookingPaymentModal({
   const [serviceAmount, setServiceAmount] = useState(0)
   const [processingFee, setProcessingFee] = useState(0)
   const [feeModel, setFeeModel] = useState('barbershop_absorbs')
+  const [tipAmount, setTipAmount] = useState(0)
+  const [totalAmount, setTotalAmount] = useState(0)
 
   useEffect(() => {
     if (isOpen && booking) {
       initializePayment()
     }
   }, [isOpen, booking, paymentType])
+
+  // Update total amount when tip changes
+  useEffect(() => {
+    const subtotal = serviceAmount / 100 // Convert from cents
+    const tip = tipAmount
+    const fee = processingFee / 100 // Convert from cents
+    
+    let total = subtotal + tip
+    if (feeModel === 'customer_pays') {
+      total += fee
+    }
+    
+    setTotalAmount(total)
+  }, [serviceAmount, tipAmount, processingFee, feeModel])
 
   const initializePayment = async () => {
     try {
@@ -73,7 +90,8 @@ export default function BookingPaymentModal({
           service_id: booking.service_id,
           payment_type: paymentType,
           barbershop_id: shopId,
-          amount: booking.price || booking.service_price
+          amount: booking.price || booking.service_price,
+          tip_amount: tipAmount
         })
       })
 
@@ -199,6 +217,47 @@ export default function BookingPaymentModal({
               </div>
             )}
 
+            {/* Tip Selection Widget */}
+            {!loading && booking && (
+              <TipSelectionWidget
+                barbershopId={booking.shop_id || booking.barbershop_id}
+                barberId={booking.barber_id}
+                serviceId={booking.service_id}
+                serviceAmount={serviceAmount / 100} // Convert from cents
+                onTipChange={setTipAmount}
+                className="mb-6"
+              />
+            )}
+
+            {/* Total Amount Summary */}
+            {!loading && totalAmount > 0 && (
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">Payment Summary</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Service</span>
+                    <span className="text-gray-900">${(serviceAmount / 100).toFixed(2)}</span>
+                  </div>
+                  {tipAmount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Tip</span>
+                      <span className="text-gray-900">${tipAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {feeModel === 'customer_pays' && processingFee > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Processing Fee</span>
+                      <span className="text-gray-900">${(processingFee / 100).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between pt-2 border-t border-blue-200 font-semibold">
+                    <span className="text-gray-900">Total</span>
+                    <span className="text-gray-900">${totalAmount.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Error State */}
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -227,6 +286,8 @@ export default function BookingPaymentModal({
                 serviceAmount={serviceAmount}
                 processingFee={processingFee}
                 feeModel={feeModel}
+                tipAmount={tipAmount * 100} // Convert to cents
+                totalAmount={totalAmount * 100} // Convert to cents
               />
             ) : (
               <div className="text-center py-8">

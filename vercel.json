@@ -22,8 +22,20 @@
     },
     "app/api/admin/**/*.js": {
       "maxDuration": 30
+    },
+    "app/api/payments/autopay/process/route.js": {
+      "maxDuration": 60
+    },
+    "app/api/payments/booth-rent/collect/route.js": {
+      "maxDuration": 30
     }
   },
+  "crons": [
+    {
+      "path": "/api/payments/autopay/process",
+      "schedule": "0 9 * * *"
+    }
+  ],
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",

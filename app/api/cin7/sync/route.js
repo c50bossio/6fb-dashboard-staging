@@ -365,7 +365,7 @@ export async function POST(request) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, shop_id, barbershop_id, email')
-      .or(`id.eq.${user.id},email.eq.${user.email}`)
+      .or(`(id.eq.${user.id}),(email.eq.${user.email})`)
       .single()
     
     if (profile && (profile.shop_id || profile.barbershop_id)) {

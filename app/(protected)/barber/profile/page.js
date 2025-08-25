@@ -12,14 +12,19 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import ReviewsList from '@/components/reviews/ReviewsList'
 import ReviewStats from '@/components/reviews/ReviewStats'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import useReviews from '@/hooks/useReviews'
+import BarberTipSettings from '@/components/barber/BarberTipSettings'
+import { createClient } from '@/lib/supabase/client'
 
 export default function BarberProfilePage() {
   const { user, profile: userProfile } = useAuth()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('basic')
+  const [barbershopId, setBarbershopId] = useState(null)
   
   // Get reviews for this barber
   const { 
@@ -75,7 +80,18 @@ export default function BarberProfilePage() {
   useEffect(() => {
     loadProfile()
     loadServices()
-  }, [])
+    if (user?.id) {
+      loadBarbershopId()
+    }
+  }, [user?.id])
+
+  // Handle tab from URL params
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['basic', 'branding', 'services', 'tips', 'availability', 'portfolio', 'reviews', 'social'].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   const loadProfile = async () => {
     try {
@@ -103,6 +119,35 @@ export default function BarberProfilePage() {
       }
     } catch (error) {
       console.error('Failed to load services:', error)
+    }
+  }
+
+  const loadBarbershopId = async () => {
+    try {
+      // First try from user profile
+      if (userProfile?.shop_id) {
+        setBarbershopId(userProfile.shop_id)
+        return
+      }
+      if (userProfile?.barbershop_id) {
+        setBarbershopId(userProfile.barbershop_id)
+        return
+      }
+      
+      // Then try from staff association
+      const supabase = createClient()
+      const { data: staffRecord } = await supabase
+        .from('barbershop_staff')
+        .select('barbershop_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single()
+
+      if (staffRecord?.barbershop_id) {
+        setBarbershopId(staffRecord.barbershop_id)
+      }
+    } catch (error) {
+      console.error('Failed to load barbershop ID:', error)
     }
   }
 
@@ -143,6 +188,7 @@ export default function BarberProfilePage() {
     { id: 'basic', label: 'Basic Info', icon: UserCircleIcon },
     { id: 'branding', label: 'Branding', icon: PaintBrushIcon },
     { id: 'services', label: 'Services', icon: CurrencyDollarIcon },
+    { id: 'tips', label: 'Tip Settings', icon: CurrencyDollarIcon },
     { id: 'availability', label: 'Availability', icon: CalendarDaysIcon },
     { id: 'portfolio', label: 'Portfolio', icon: PhotoIcon },
     { id: 'reviews', label: 'My Reviews', icon: ChatBubbleLeftRightIcon },
@@ -615,6 +661,25 @@ export default function BarberProfilePage() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Tip Settings Tab */}
+            {activeTab === 'tips' && (
+              <div className="space-y-6">
+                {barbershopId ? (
+                  <BarberTipSettings 
+                    barberId={user?.id}
+                    barbershopId={barbershopId}
+                  />
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                    <h4 className="text-yellow-900 font-medium mb-2">Loading Tip Settings</h4>
+                    <p className="text-yellow-700 text-sm">
+                      Loading your barbershop association to configure tip settings...
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

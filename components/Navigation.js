@@ -73,6 +73,13 @@ const coreOperations = [
     badge: 'Core'
   },
   { 
+    name: 'Point of Sale', 
+    href: '/shop/products?pos=true', 
+    icon: BanknotesIcon,
+    description: 'Process sales, checkout appointments, and manage transactions',
+    badge: 'Daily'
+  },
+  { 
     name: 'Customer Management', 
     href: '/dashboard/customers', 
     icon: UserGroupIcon,

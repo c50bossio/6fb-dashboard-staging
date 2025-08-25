@@ -286,10 +286,10 @@ async function getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric
     const currentMonthNewCustomers = customers.filter(c => new Date(c.created_at) >= thisMonth).length;
     const lastMonthNewCustomers = lastMonthCustomers.length;
     
-    // Calculate satisfaction from actual ratings if available
-    const ratingsData = appointments.filter(a => a.rating && a.rating > 0);
-    const currentSatisfaction = ratingsData.length > 0 
-      ? ratingsData.reduce((sum, a) => sum + a.rating, 0) / ratingsData.length 
+    // Rating system not yet implemented in database
+    // Placeholder satisfaction metric based on completion rate
+    const currentSatisfaction = appointmentsByStatus.completed && totalAppointments > 0
+      ? (appointmentsByStatus.completed / totalAppointments) * 5.0  // Convert completion rate to 1-5 scale
       : 0;
     
     const analyticsMetrics = {

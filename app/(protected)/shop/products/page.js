@@ -16,12 +16,16 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import SetupWizard from '@/components/cin7/SetupWizard'
 import StatusWidget from '@/components/cin7/StatusWidget'
 import StockBadge, { StockIndicator } from '@/components/cin7/StockBadge'
 import Cin7IntegrationManager from '@/components/cin7-integration-manager'
 
 export default function ProductManagement() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -38,6 +42,11 @@ export default function ProductManagement() {
   const [showEditCredentials, setShowEditCredentials] = useState(false)
   const [showSetupWizard, setShowSetupWizard] = useState(false)
   const [isFirstTime, setIsFirstTime] = useState(false)
+  
+  // Checkout mode states
+  const [isCheckoutMode, setIsCheckoutMode] = useState(false)
+  const [checkoutData, setCheckoutData] = useState(null)
+  const [showCheckoutInterface, setShowCheckoutInterface] = useState(false)
   const [metrics, setMetrics] = useState({
     totalProducts: 0,
     totalValue: 0,
@@ -52,7 +61,37 @@ export default function ProductManagement() {
   useEffect(() => {
     loadProducts()
     checkCin7Connection()
-  }, [])
+    
+    // Check for checkout mode
+    const checkoutMode = searchParams.get('checkout')
+    const appointmentId = searchParams.get('id')
+    
+    if (checkoutMode === 'appointment' && appointmentId) {
+      setIsCheckoutMode(true)
+      
+      // Get checkout data from sessionStorage
+      const pendingCheckout = sessionStorage.getItem('pendingCheckout')
+      if (pendingCheckout) {
+        try {
+          const parsedData = JSON.parse(pendingCheckout)
+          setCheckoutData(parsedData)
+          setShowCheckoutInterface(true)
+          
+          // Clear the sessionStorage data to prevent reuse
+          sessionStorage.removeItem('pendingCheckout')
+        } catch (error) {
+          console.error('Error parsing checkout data:', error)
+        }
+      }
+    }
+    
+    // Check for direct POS mode access
+    const posMode = searchParams.get('pos')
+    if (posMode === 'true') {
+      setIsCheckoutMode(true)
+      // Focus on POS functionality - could add additional POS-specific states here
+    }
+  }, [searchParams])
 
   const checkCin7Connection = async () => {
     try {
@@ -159,6 +198,99 @@ export default function ProductManagement() {
       }
     } catch (error) {
       console.error('Error saving product:', error)
+    }
+  }
+
+  const handleAppointmentCheckout = async (paymentMethod, tipAmount = 0, useHouseAccount = false, barberId = null) => {
+    if (!checkoutData) return
+
+    try {
+      setLoading(true)
+
+      if (useHouseAccount && checkoutData.customerId) {
+        // Process as house account charge
+        const response = await fetch('/api/customers/accounts/charge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_id: checkoutData.customerId,
+            amount: checkoutData.services[0].price,
+            tip_amount: tipAmount,
+            description: `Service: ${checkoutData.services[0].name}`,
+            appointment_id: checkoutData.appointmentId,
+            barber_id: barberId
+          })
+        })
+
+        const data = await response.json()
+        if (data.success) {
+          // Mark appointment as completed
+          await completeAppointment(checkoutData.appointmentId, tipAmount)
+          alert(`✅ Charged to House Account!\n\nService: ${checkoutData.services[0].name}\nAmount: $${checkoutData.services[0].price}\nTip: $${tipAmount}\n\nNew Balance: $${data.new_balance}`)
+        } else {
+          alert(`❌ House Account Error: ${data.error}`)
+        }
+      } else {
+        // Process with regular POS sale API
+        const items = checkoutData.services.map(service => ({
+          product_id: service.id,
+          quantity: 1,
+          sale_price: service.price
+        }))
+
+        const response = await fetch('/api/inventory/pos-sale', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items,
+            appointment_id: checkoutData.appointmentId,
+            payment_total: checkoutData.services[0].price + tipAmount,
+            payment_method: paymentMethod,
+            barber_id: barberId
+          })
+        })
+
+        const data = await response.json()
+        if (data.success) {
+          // Mark appointment as completed
+          await completeAppointment(checkoutData.appointmentId, tipAmount)
+          alert(`✅ Payment Completed!\n\nService: ${checkoutData.services[0].name}\nAmount: $${checkoutData.services[0].price}\nTip: $${tipAmount}\nMethod: ${paymentMethod}`)
+        } else {
+          alert(`❌ Payment Error: ${data.error}`)
+        }
+      }
+
+      // Close checkout interface and return to normal mode
+      setShowCheckoutInterface(false)
+      setIsCheckoutMode(false)
+      setCheckoutData(null)
+
+      // Redirect back to calendar
+      router.push('/dashboard/calendar')
+
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Error processing checkout')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const completeAppointment = async (appointmentId, tipAmount) => {
+    try {
+      const response = await fetch(`/api/calendar/appointments/${appointmentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'completed',
+          tip_amount: tipAmount,
+          completed_at: new Date().toISOString()
+        })
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Error completing appointment:', error)
+      return false
     }
   }
 
@@ -476,6 +608,20 @@ export default function ProductManagement() {
         <SetupWizard
           onComplete={handleSetupComplete}
           onClose={() => setShowSetupWizard(false)}
+        />
+      )}
+
+      {/* Appointment Checkout Interface */}
+      {showCheckoutInterface && checkoutData && (
+        <AppointmentCheckoutModal
+          checkoutData={checkoutData}
+          onCheckout={handleAppointmentCheckout}
+          onCancel={() => {
+            setShowCheckoutInterface(false)
+            setIsCheckoutMode(false)
+            setCheckoutData(null)
+            router.push('/dashboard/calendar')
+          }}
         />
       )}
 
@@ -860,6 +1006,16 @@ export default function ProductManagement() {
           </div>
         </div>
       )}
+
+      {/* Appointment Checkout Modal */}
+      {showCheckoutInterface && (
+        <AppointmentCheckoutModal
+          isOpen={showCheckoutInterface}
+          onClose={() => setShowCheckoutInterface(false)}
+          checkoutData={checkoutData}
+          onProcessPayment={handleAppointmentCheckout}
+        />
+      )}
     </div>
   )
 }
@@ -1231,6 +1387,279 @@ function Cin7ConnectionModal({ onConnect, onClose, isEditing = false, title = "S
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Appointment Checkout Modal Component
+function AppointmentCheckoutModal({ 
+  isOpen, 
+  onClose, 
+  checkoutData, 
+  onProcessPayment 
+}) {
+  const [paymentMethod, setPaymentMethod] = useState('cash')
+  const [tipAmount, setTipAmount] = useState(0)
+  const [useHouseAccount, setUseHouseAccount] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [selectedBarber, setSelectedBarber] = useState(null)
+  const [availableBarbers, setAvailableBarbers] = useState([])
+  const [barbersLoading, setBarbersLoading] = useState(true)
+
+  // Load barbers when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadBarbers()
+    }
+  }, [isOpen])
+
+  const loadBarbers = async () => {
+    try {
+      setBarbersLoading(true)
+      const response = await fetch('/api/staff')
+      
+      if (response.ok) {
+        const data = await response.json()
+        setAvailableBarbers(data.staff || [])
+        
+        // Auto-select barber if appointment has barber assigned
+        if (checkoutData.barberId && data.staff) {
+          const assignedBarber = data.staff.find(barber => barber.user_id === checkoutData.barberId)
+          if (assignedBarber) {
+            setSelectedBarber(assignedBarber)
+          }
+        }
+      } else {
+        console.error('Failed to load barbers')
+      }
+    } catch (error) {
+      console.error('Error loading barbers:', error)
+    } finally {
+      setBarbersLoading(false)
+    }
+  }
+
+  if (!isOpen || !checkoutData) return null
+
+  const serviceTotal = checkoutData.services?.reduce((sum, service) => sum + (service.price || 0), 0) || 0
+  const totalAmount = serviceTotal + tipAmount
+
+  const handleProcessPayment = async () => {
+    if (!selectedBarber) {
+      alert('Please select which barber performed this service before completing the transaction.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      await onProcessPayment(paymentMethod, tipAmount, useHouseAccount, selectedBarber.user_id)
+      onClose()
+    } catch (error) {
+      console.error('Payment processing error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-emerald-100 rounded-lg mr-3">
+                <svg className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Complete Appointment</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Customer & Appointment Info */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-gray-900 mb-2">Appointment Details</h3>
+            <div className="text-sm text-gray-600 space-y-1">
+              <div>Customer: {checkoutData.customerName}</div>
+              {checkoutData.customerPhone && (
+                <div>Phone: {checkoutData.customerPhone}</div>
+              )}
+              <div>Appointment ID: {checkoutData.appointmentId}</div>
+            </div>
+          </div>
+
+          {/* Services */}
+          <div className="mb-6">
+            <h3 className="font-semibold text-gray-900 mb-3">Services</h3>
+            <div className="space-y-2">
+              {checkoutData.services?.map((service, index) => (
+                <div key={index} className="flex justify-between items-center bg-white p-3 rounded border">
+                  <div>
+                    <div className="font-medium">{service.name}</div>
+                    <div className="text-sm text-gray-500">{service.duration_minutes} min</div>
+                  </div>
+                  <div className="font-semibold">${service.price?.toFixed(2) || '0.00'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Barber Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Performing Barber *
+            </label>
+            {barbersLoading ? (
+              <div className="flex items-center justify-center py-3 text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600 mr-2"></div>
+                Loading barbers...
+              </div>
+            ) : availableBarbers.length === 0 ? (
+              <div className="text-center py-3 text-gray-500 bg-gray-50 rounded-lg">
+                No active barbers found
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {availableBarbers.map((barber) => (
+                  <div
+                    key={barber.user_id}
+                    onClick={() => setSelectedBarber(barber)}
+                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedBarber?.user_id === barber.user_id
+                        ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">
+                          {barber.full_name || barber.email || 'Unnamed Barber'}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {barber.role === 'OWNER' ? 'Owner' : 'Barber'}
+                        </div>
+                      </div>
+                      {selectedBarber?.user_id === barber.user_id && (
+                        <div className="text-emerald-600">
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!selectedBarber && !barbersLoading && availableBarbers.length > 0 && (
+              <p className="text-sm text-red-600 mt-2">Please select the barber who performed this service</p>
+            )}
+          </div>
+
+          {/* Tip Amount */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tip Amount
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={tipAmount}
+              onChange={(e) => setTipAmount(parseFloat(e.target.value) || 0)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="0.00"
+            />
+          </div>
+
+          {/* Payment Method */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Payment Method
+            </label>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="cash"
+                  checked={paymentMethod === 'cash'}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                />
+                <span className="ml-2 text-sm">Cash</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  value="card"
+                  checked={paymentMethod === 'card'}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                />
+                <span className="ml-2 text-sm">Card</span>
+              </label>
+              {checkoutData.customerId && (
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={useHouseAccount}
+                    onChange={(e) => setUseHouseAccount(e.target.checked)}
+                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm">Charge to House Account</span>
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Total */}
+          <div className="border-t pt-4 mb-6">
+            <div className="flex justify-between items-center">
+              <div className="text-lg font-semibold">Total Amount</div>
+              <div className="text-xl font-bold text-emerald-600">
+                ${totalAmount.toFixed(2)}
+              </div>
+            </div>
+            <div className="text-sm text-gray-500 mt-1">
+              Service: ${serviceTotal.toFixed(2)} + Tip: ${tipAmount.toFixed(2)}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex space-x-3">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 px-4 py-2 text-gray-700 hover:text-gray-900 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleProcessPayment}
+              disabled={loading}
+              className="flex-1 px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Processing...
+                </>
+              ) : (
+                'Complete Checkout'
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

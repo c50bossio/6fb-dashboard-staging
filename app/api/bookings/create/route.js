@@ -284,7 +284,7 @@ export async function POST(request) {
         *,
         barber:profiles!bookings_barber_id_fkey(id, name, email),
         service:services(id, name, description, duration_minutes, price, category),
-        barbershop:barbershops(id, name, address, phone)
+        barbershop:barbershops(id, name, address, phone, brand_colors)
       `)
       .single()
 

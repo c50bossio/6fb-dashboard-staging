@@ -125,7 +125,7 @@ export async function POST(request) {
       .eq('is_active', true)
 
     if (phone && email) {
-      query = query.or(`phone.eq.${phone},email.eq.${email}`)
+      query = query.or(`(phone.eq.${phone}),(email.eq.${email})`)
     } else if (phone) {
       query = query.eq('phone', phone)
     } else {

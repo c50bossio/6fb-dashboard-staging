@@ -7,7 +7,8 @@ import {
   CalendarDaysIcon,
   ChartBarIcon,
   CurrencyDollarIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
@@ -54,11 +55,18 @@ export default function QuickActionsCard({ profile }) {
       color: 'indigo'
     },
     {
-      title: 'Payments',
-      description: 'Transaction history',
+      title: 'Payroll & Finance',
+      description: 'Staff payments & commissions',
+      icon: BanknotesIcon,
+      href: '/shop/financial',
+      color: 'emerald'
+    },
+    {
+      title: 'Transaction History',
+      description: 'Payment records',
       icon: CurrencyDollarIcon,
       href: '/payments',
-      color: 'emerald'
+      color: 'teal'
     }
   ]
 
@@ -68,7 +76,8 @@ export default function QuickActionsCard({ profile }) {
     purple: 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200',
     orange: 'bg-orange-50 hover:bg-orange-100 text-orange-700 border-orange-200',
     indigo: 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200',
-    emerald: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+    emerald: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200',
+    teal: 'bg-teal-50 hover:bg-teal-100 text-teal-700 border-teal-200'
   }
 
   const iconColors = {
@@ -77,7 +86,8 @@ export default function QuickActionsCard({ profile }) {
     purple: 'text-purple-500',
     orange: 'text-orange-500',
     indigo: 'text-indigo-500',
-    emerald: 'text-emerald-500'
+    emerald: 'text-emerald-500',
+    teal: 'text-teal-500'
   }
 
   return (
@@ -89,7 +99,7 @@ export default function QuickActionsCard({ profile }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {quickActions.map((action) => (
           <Link
             key={action.href}

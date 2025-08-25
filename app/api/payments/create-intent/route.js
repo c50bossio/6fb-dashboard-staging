@@ -13,7 +13,7 @@ const getStripeInstance = () => {
 
 export async function POST(request) {
   try {
-    const { booking_id, customer_id, barber_id, service_id, payment_type, amount, barbershop_id } = await request.json()
+    const { booking_id, customer_id, barber_id, service_id, payment_type, amount, barbershop_id, tip_amount = 0 } = await request.json()
 
     if (!booking_id || !service_id || !amount) {
       return NextResponse.json({
@@ -131,19 +131,23 @@ export async function POST(request) {
     }
 
     // Calculate fees based on barbershop settings
-    let finalAmount = amount
+    let serviceAndTip = amount + tip_amount
+    let finalAmount = serviceAndTip
     let processingFee = 0
-    let barbershopReceives = amount
+    let barbershopReceives = amount  // Service amount goes to barbershop
+    let barberReceivesTip = tip_amount  // Tip goes directly to barber (FLSA compliance)
     
     if (customerPaysProcessingFee) {
-      // Customer pays the Stripe fee (2.9% + $0.30)
-      processingFee = Math.round((amount * 0.029 + 0.30) * 100) / 100
-      finalAmount = amount + processingFee
+      // Customer pays the Stripe fee (2.9% + $0.30) on the total
+      processingFee = Math.round((serviceAndTip * 0.029 + 0.30) * 100) / 100
+      finalAmount = serviceAndTip + processingFee
       barbershopReceives = amount // Barbershop gets full service amount
+      barberReceivesTip = tip_amount // Barber gets full tip amount
     } else {
-      // Barbershop absorbs the fee (default)
+      // Barbershop absorbs the fee on service amount only (tips are protected)
       processingFee = Math.round((amount * 0.029 + 0.30) * 100) / 100
       barbershopReceives = amount - processingFee
+      barberReceivesTip = tip_amount // Tips always go 100% to barber
     }
 
     // Create payment intent with proper routing and commission metadata
@@ -159,9 +163,11 @@ export async function POST(request) {
         payment_type: payment_type || 'full_payment',
         // Fee information
         service_amount: amount,
+        tip_amount: tip_amount,
         processing_fee: processingFee,
         fee_paid_by: customerPaysProcessingFee ? 'customer' : 'barbershop',
         barbershop_receives: barbershopReceives,
+        barber_receives_tip: barberReceivesTip,
         // Add arrangement data for commission processing
         arrangement_id: arrangementData?.id || '',
         arrangement_type: arrangementData?.type || '',
@@ -171,6 +177,16 @@ export async function POST(request) {
       description: `Payment for ${serviceInfo.name}`,
       automatic_payment_methods: {
         enabled: true
+      }
+    }
+
+    // Add Stripe's native tip handling for FLSA compliance
+    // This ensures tips are properly tracked and reported
+    if (tip_amount > 0) {
+      paymentIntentParams.amount_details = {
+        tip: {
+          amount: Math.round(tip_amount * 100) // Convert to cents
+        }
       }
     }
 
@@ -208,6 +224,7 @@ export async function POST(request) {
       client_secret: paymentIntent.client_secret,
       amount: finalAmount, // Total amount customer pays
       service_amount: amount, // Original service amount
+      tip_amount: tip_amount, // Tip amount
       processing_fee: processingFee, // Fee amount
       payment_intent_id: paymentIntent.id,
       service_info: serviceInfo,
@@ -216,12 +233,14 @@ export async function POST(request) {
         model: customerPaysProcessingFee ? 'customer_pays' : 'barbershop_absorbs',
         customer_pays_total: finalAmount,
         barbershop_receives: barbershopReceives,
+        barber_receives_tip: barberReceivesTip,
         processing_fee: processingFee,
         stripe_rate: '2.9% + $0.30'
       },
       routing: {
         destination: stripeConnectAccountId || 'platform',
         barbershop_receives: barbershopReceives.toFixed(2),
+        barber_tip: barberReceivesTip.toFixed(2),
         stripe_fee: processingFee.toFixed(2),
         fee_paid_by: customerPaysProcessingFee ? 'customer' : 'barbershop'
       }

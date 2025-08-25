@@ -48,7 +48,7 @@ export default function ViewLocationModal({ isOpen, onClose, location }) {
         supabase
           .from('services')
           .select('*')
-          .or(`barbershop_id.eq.${location.id},shop_id.eq.${location.id}`)
+          .or(`(barbershop_id.eq.${location.id}),(shop_id.eq.${location.id})`)
           .eq('is_active', true)
           .limit(5),
         

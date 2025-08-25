@@ -76,7 +76,7 @@ export default function DeleteLocationModal({ isOpen, onClose, onComplete, locat
       const { count: serviceCount } = await supabase
         .from('services')
         .select('*', { count: 'exact', head: true })
-        .or(`barbershop_id.eq.${location.id},shop_id.eq.${location.id}`)
+        .or(`(barbershop_id.eq.${location.id}),(shop_id.eq.${location.id})`)
         .eq('is_active', true)
       
       // Count customers

@@ -3,13 +3,19 @@ import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 // Using SendGrid directly for edge runtime compatibility
 
-// SendGrid email service for edge runtime
-async function sendInvitationEmail({ to, subject, html }) {
+// SendGrid email service with retry logic for edge runtime
+async function sendInvitationEmail({ to, subject, html }, retryCount = 0) {
+  const MAX_RETRIES = 3
+  const RETRY_DELAY = [1000, 2000, 4000] // Exponential backoff: 1s, 2s, 4s
+  
   if (!process.env.SENDGRID_API_KEY) {
     return { success: false, error: 'SendGrid not configured' }
   }
   
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    
     const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
@@ -24,16 +30,38 @@ async function sendInvitationEmail({ to, subject, html }) {
         },
         subject,
         content: [{ type: 'text/html', value: html }]
-      })
+      }),
+      signal: controller.signal
     })
     
+    clearTimeout(timeoutId)
+    
     if (!response.ok) {
-      throw new Error(`SendGrid API error: ${response.status}`)
+      const errorText = await response.text()
+      throw new Error(`SendGrid API error: ${response.status} - ${errorText}`)
     }
     
     return { success: true }
   } catch (error) {
-    return { success: false, error: error.message }
+    console.error(`SendGrid attempt ${retryCount + 1} failed:`, error.message)
+    
+    // Retry on network errors, timeouts, or 5xx server errors
+    const shouldRetry = retryCount < MAX_RETRIES && (
+      error.name === 'AbortError' || // Timeout
+      error.message.includes('fetch failed') || // Network error
+      error.message.includes('5') // 5xx server error
+    )
+    
+    if (shouldRetry) {
+      console.log(`Retrying SendGrid email in ${RETRY_DELAY[retryCount]}ms...`)
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY[retryCount]))
+      return sendInvitationEmail({ to, subject, html }, retryCount + 1)
+    }
+    
+    return { 
+      success: false, 
+      error: `Email delivery failed after ${retryCount + 1} attempts: ${error.message}`
+    }
   }
 }
 
@@ -173,42 +201,52 @@ export async function POST(request) {
       }
       
       // Send invitation email if enabled
+      let emailResult = { success: false }
       if (sendEmail && process.env.SENDGRID_API_KEY) {
         const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://bookedbarber.com'}/accept-invitation?token=${invitationToken}`
         
-        try {
-          await sendInvitationEmail({
-            to: email,
-            subject: `You're invited to join ${barbershop.name} on Booked Barber`,
-            html: generateInvitationEmailHTML({
-              recipientName: full_name || 'there',
-              barbershopName: barbershop.name,
-              inviterName: user.email,
-              invitationUrl,
-              role
-            })
+        emailResult = await sendInvitationEmail({
+          to: email,
+          subject: `You're invited to join ${barbershop.name} on Booked Barber`,
+          html: generateInvitationEmailHTML({
+            recipientName: full_name || 'there',
+            barbershopName: barbershop.name,
+            inviterName: user.email,
+            invitationUrl,
+            role
           })
-        } catch (emailError) {
-          console.error('Failed to send invitation email:', emailError)
-          // Don't fail the whole operation if email fails
+        })
+        
+        if (!emailResult.success) {
+          console.error('Failed to send invitation email:', emailResult.error)
         }
       }
       
       return NextResponse.json({
         success: true,
-        message: `Invitation sent to ${email}`,
+        message: emailResult.success 
+          ? `Invitation sent to ${email}` 
+          : `Invitation created for ${email}${!process.env.SENDGRID_API_KEY ? ' (email not configured)' : ' (email delivery failed)'}`,
         data: {
           id: pendingStaff.id,
           email,
           full_name,
           role,
           invitation_token: invitationToken,
-          expires_at: expiresAt.toISOString()
+          expires_at: expiresAt.toISOString(),
+          email_sent: emailResult.success,
+          email_error: emailResult.success ? null : emailResult.error
         },
         requiresSignup: true,
-        instructions: sendEmail ? [
-          `An invitation email has been sent to ${email}`,
+        instructions: (sendEmail && emailResult.success) ? [
+          `✅ Invitation email delivered to ${email}`,
           'They will receive a link to join your barbershop',
+          'The invitation expires in 7 days',
+          'Once they accept, they will appear in your staff list'
+        ] : (sendEmail && !emailResult.success) ? [
+          `⚠️ Email delivery failed, but invitation was created`,
+          `Share this invitation link manually with ${full_name || 'the staff member'}:`,
+          `${process.env.NEXT_PUBLIC_APP_URL || 'https://bookedbarber.com'}/accept-invitation?token=${invitationToken}`,
           'The invitation expires in 7 days',
           'Once they accept, they will appear in your staff list'
         ] : [

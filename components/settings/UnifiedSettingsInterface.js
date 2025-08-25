@@ -6,6 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import { Card } from '../ui/card'
 import InheritanceIndicator from './InheritanceIndicator'
 import SettingsSection from './SettingsSection'
+import PaymentProcessingSettings from './PaymentProcessingSettings'
+import CompensationConfiguration from './CompensationConfiguration'
+import TipSettings from './TipSettings'
 import {
   BuildingStorefrontIcon,
   EnvelopeIcon,
@@ -14,7 +17,9 @@ import {
   ClockIcon,
   CreditCardIcon,
   BellIcon,
-  PaintBrushIcon
+  PaintBrushIcon,
+  UserGroupIcon,
+  CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
 
 export default function UnifiedSettingsInterface() {
@@ -32,6 +37,8 @@ export default function UnifiedSettingsInterface() {
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'booking_preferences', name: 'Booking', icon: ClockIcon },
     { id: 'integrations', name: 'Integrations', icon: CreditCardIcon },
+    { id: 'compensation', name: 'Staff Compensation', icon: UserGroupIcon },
+    { id: 'tips', name: 'Tip Settings', icon: CurrencyDollarIcon },
     { id: 'appearance', name: 'Appearance', icon: PaintBrushIcon }
   ]
 
@@ -300,6 +307,123 @@ export default function UnifiedSettingsInterface() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                   placeholder="Tell customers about your barbershop..."
                 />
+              </div>
+            </SettingsSection>
+          )}
+
+          {activeCategory === 'integrations' && (
+            <div className="space-y-6">
+              <PaymentProcessingSettings />
+            </div>
+          )}
+
+          {activeCategory === 'compensation' && (
+            <div className="space-y-6">
+              <CompensationConfiguration />
+            </div>
+          )}
+
+          {activeCategory === 'tips' && (
+            <div className="space-y-6">
+              <TipSettings barbershopId={profile?.shop_id || profile?.barbershop_id} />
+            </div>
+          )}
+
+          {activeCategory === 'notifications' && (
+            <SettingsSection 
+              title="Notification Preferences"
+              description="Manage your notification settings"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Email Reminders
+                    </label>
+                    <p className="text-sm text-gray-500">Send email reminders to customers</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.notifications?.email_reminders || false}
+                    onChange={(e) => handleSettingChange('notifications', 'email_reminders', e.target.checked)}
+                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      SMS Reminders
+                    </label>
+                    <p className="text-sm text-gray-500">Send SMS reminders to customers</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.notifications?.sms_reminders || false}
+                    onChange={(e) => handleSettingChange('notifications', 'sms_reminders', e.target.checked)}
+                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Booking Notifications
+                    </label>
+                    <p className="text-sm text-gray-500">Get notified of new bookings</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.notifications?.booking_notifications || false}
+                    onChange={(e) => handleSettingChange('notifications', 'booking_notifications', e.target.checked)}
+                    className="rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                  />
+                </div>
+              </div>
+            </SettingsSection>
+          )}
+
+          {activeCategory === 'booking_preferences' && (
+            <SettingsSection 
+              title="Booking Preferences"
+              description="Configure your booking settings"
+            >
+              <div className="text-center py-8 text-gray-500">
+                <p>Booking preferences configuration will be available soon.</p>
+              </div>
+            </SettingsSection>
+          )}
+
+          {activeCategory === 'appearance' && (
+            <SettingsSection 
+              title="Appearance Settings"
+              description="Customize your barbershop's branding"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Brand Color
+                  </label>
+                  <input
+                    type="color"
+                    value={settings.appearance?.brand_color || '#3C4A3E'}
+                    onChange={(e) => handleSettingChange('appearance', 'brand_color', e.target.value)}
+                    className="w-full h-12 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Logo URL
+                  </label>
+                  <input
+                    type="url"
+                    value={settings.appearance?.logo_url || ''}
+                    onChange={(e) => handleSettingChange('appearance', 'logo_url', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                    placeholder="https://example.com/logo.png"
+                  />
+                </div>
               </div>
             </SettingsSection>
           )}
