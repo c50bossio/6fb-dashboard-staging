@@ -8,16 +8,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Production**: bookedbarber.com | **Development**: localhost:9999
 
 ```bash
-# Start everything
-./docker-dev-start.sh        # Recommended: starts all services
+# Start everything (RECOMMENDED)
+./docker-dev-start.sh        # Starts all services with Docker
 # OR manually:
 npm run dev                  # Frontend only (port 9999)
 python simple_backend.py     # Backend (port 8001) - use when FastAPI has issues
 
 # Before ANY commit - MANDATORY
 npm run lint                 # Must pass
-npm run build               # Must pass  
+npm run build               # Must pass (generates 300+ static pages)
 npm run test:all            # Must pass
+
+# Quick validation
+npm run claude:validate      # Runs lint + type-check + build
 ```
 
 ## ⚠️ Critical Rules - READ FIRST
@@ -33,29 +36,39 @@ npm run test:all            # Must pass
 ```
 app/
 ├── api/                     # Next.js API routes (100+ endpoints)
-├── (protected)/            # Authenticated pages
-└── (public)/              # Public pages
+│   ├── auth/               # Authentication endpoints
+│   ├── services/           # Service management
+│   └── cin7/              # CIN7 inventory integration
+├── (protected)/            # Authenticated pages (requires login)
+│   ├── dashboard/         # Main dashboard with sub-pages
+│   ├── shop/             # Shop management (products, services)
+│   └── onboarding/       # Step-by-step onboarding flow
+└── (public)/              # Public pages (no auth required)
 
 components/
-├── ui/                    # ⚠️ BASE COMPONENTS - USE THESE
+├── ui/                    # ⚠️ BASE COMPONENTS - USE THESE FIRST
 ├── dashboard/             # Dashboard features  
 ├── onboarding/           # Complete onboarding system
-└── booking/              # Booking flow components
+├── booking/              # Booking flow components
+└── settings/             # Settings management (UnifiedSettingsInterface)
 
 lib/
 ├── supabase-query.js     # ⚠️ CRITICAL - All DB operations
 ├── dashboard-aggregation.js # Dashboard data utilities
-└── ai-config.js          # AI model configuration
+├── ai-config.js          # AI model configuration
+└── utils.js              # Common utilities (cn, formatters)
 
 services/
 ├── memory_manager.py     # ⚠️ CRITICAL - OAuth memory management
 ├── ai_service.py        # AI agent orchestration
-└── SmartSuggestionsAPI.js # AI recommendations
+├── SmartSuggestionsAPI.js # AI recommendations
+└── shop_service.py       # Shop management backend
 
 routers/                  # FastAPI modules
 ├── ai.py                # AI endpoints
 ├── auth.py              # Authentication
-└── dashboard.py         # Dashboard APIs
+├── dashboard.py         # Dashboard APIs
+└── shop_management.py   # Shop operations
 ```
 
 ## 🔧 Common Tasks & Solutions
@@ -100,27 +113,41 @@ useEffect(() => {
 | Issue | Solution |
 |-------|----------|
 | **"Maximum update depth exceeded"** | Add ALL useEffect dependencies |
-| **400 Bad Request on queries** | RLS blocking - use dev fallbacks |
+| **400 Bad Request on queries** | RLS blocking - use service role key in dev |
 | **PostgREST syntax errors** | Use separate queries + JS merge |
 | **Port 9999 blocked** | `lsof -ti:9999 \| xargs kill -9` |
-| **FastAPI TypeError with proxy** | Use `python simple_backend.py` |
+| **FastAPI TypeError with proxy** | Use `python simple_backend.py` instead |
 | **OAuth memory issues** | Check `services/memory_manager.py` |
+| **Build fails with missing component** | Check imports match actual file paths |
+| **Settings duplication** | Use UnifiedSettingsInterface.js |
 
 ## 📋 Environment Variables
 
 ```bash
 # Required - Database
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...  # ⚠️ Critical for dev
 
 # Required - AI
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
 
-# Required - Services  
-STRIPE_SECRET_KEY=
-SENDGRID_API_KEY=
+# Required - Payments (production)
+STRIPE_SECRET_KEY=sk_live_... or sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_... or pk_test_...
+STRIPE_CONNECT_CLIENT_ID=ca_...
+
+# Required - Notifications  
+SENDGRID_API_KEY=SG...
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+
+# Optional - Features
+PUSHER_APP_ID=
+PUSHER_KEY=
+PUSHER_SECRET=
+PUSHER_CLUSTER=us2
 ```
 
 ## 🧪 Testing Commands
@@ -151,20 +178,47 @@ npm run claude:validate    # Lint + build
 
 **DO NOT ADD**: CSRF tokens, complex headers, custom sessions - they break auth.
 
-## 📂 Current Work Context
+## 📂 Recent Work & Patterns
 
-### Active Modifications (from git status)
-- Dashboard improvements (`components/dashboard/UnifiedDashboard.js`)
-- Onboarding enhancements (multiple files removed/archived)
-- Service management updates (`app/api/services/route.js`)
-- Product management (`app/(protected)/shop/products/page.js`)
-- Customer management (`app/(protected)/dashboard/customers/page.js`)
+### Production Deployment Focus (Latest)
+- Settings deduplication with UnifiedSettingsInterface
+- Mobile UI optimization and text overflow fixes
+- Removed all mock/demo data for production
+- Enterprise location management
+- Service management with image support
 
-### Recently Completed
-- ✅ Complete onboarding system with AdaptiveFlowEngine
-- ✅ Data import infrastructure (post-onboarding)
-- ✅ Smart suggestions API
-- ✅ CIN7 inventory integration
+### Critical Patterns to Follow
+```javascript
+// ✅ ALWAYS: Check user barbershop association
+const barbershopId = await getUserBarbershop(userId);
+if (!barbershopId) return { error: 'No barbershop found' };
+
+// ✅ ALWAYS: Handle loading states properly
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState(null);
+
+// ✅ ALWAYS: Clean up subscriptions
+useEffect(() => {
+  const subscription = supabase.from('table').on('*', callback).subscribe();
+  return () => subscription.unsubscribe();
+}, []);
+
+// ✅ ALWAYS: Use try-catch in API routes
+export async function POST(request) {
+  try {
+    const session = await getServerSession();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
+    const body = await request.json();
+    // ... process request
+    
+    return NextResponse.json({ success: true, data });
+  } catch (error) {
+    console.error('API Error:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+```
 
 ### Key Components to Use
 ```javascript
@@ -180,6 +234,42 @@ import { aggregateDashboardData } from '@/lib/dashboard-aggregation'
 import { SmartSuggestionsAPI } from '@/services/SmartSuggestionsAPI'
 ```
 
+## 📊 Database Schema (Key Tables)
+
+```sql
+-- Core user/shop relationship
+profiles (id, email, shop_id, barbershop_id, role, subscription_tier)
+barbershops (id, owner_id, name, address, business_hours)
+barbershop_staff (barbershop_id, user_id, role, is_active)
+
+-- Business operations
+services (id, shop_id, name, price, duration_minutes)
+appointments (id, barbershop_id, customer_id, service_id, date, status)
+customers (id, barbershop_id, name, email, phone)
+
+-- Settings & config
+settings_hierarchy (id, context_type, context_id, category, settings)
+stripe_accounts (barbershop_id, account_id, onboarding_completed)
+```
+
+## 🧪 Testing Patterns
+
+```bash
+# Run specific test suites
+npm run test:e2e:booking    # Booking flow
+npm run test:e2e:payment    # Payment processing
+npm run test:e2e:mobile     # Mobile responsiveness
+
+# Debug failing tests
+npm run test:e2e:debug      # Interactive debugging
+npm run test:e2e:headed     # See browser execution
+
+# Production readiness check
+npm run check:production    # Validates all systems
+npm run stripe:validate     # Verify Stripe config
+npm run deploy:checklist    # Pre-deploy validation
+```
+
 ## 🔍 Verification Protocol
 
 Before claiming missing functionality:
@@ -192,6 +282,8 @@ ls -la components/feature/
 # Verify services running
 npm run claude:health
 python -c "import fastapi_backend; print('OK')"
+lsof -i :9999  # Check if port is in use
+lsof -i :8001  # Check backend port
 
 # Check recent work
 git status
