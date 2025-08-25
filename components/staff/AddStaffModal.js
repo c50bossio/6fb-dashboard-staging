@@ -40,16 +40,28 @@ export default function AddStaffModal({ onClose, onSuccess }) {
       const barbershopId = profile?.shop_id || profile?.barbershop_id
       if (!barbershopId) throw new Error('No barbershop found')
 
-      // Check if user already exists
+      // Check if user already exists in profiles
       let userId = null
-      const { data: existingUser } = await supabase
-        .from('users')
+      const { data: existingProfile } = await supabase
+        .from('profiles')
         .select('id')
         .eq('email', formData.email)
         .single()
 
-      if (existingUser) {
-        userId = existingUser.id
+      if (existingProfile) {
+        userId = existingProfile.id
+        
+        // Check if they're already staff at this barbershop
+        const { data: existingStaffRecord } = await supabase
+          .from('barbershop_staff')
+          .select('id')
+          .eq('barbershop_id', barbershopId)
+          .eq('user_id', userId)
+          .single()
+        
+        if (existingStaffRecord) {
+          throw new Error('This person is already a staff member at your barbershop')
+        }
       } else {
         // Create user account (they'll set password on first login)
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -63,8 +75,44 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           }
         })
 
-        if (authError) throw authError
-        userId = authData.user?.id
+        if (authError) {
+          // Check if it's because user already exists in auth
+          if (authError.message?.includes('already registered')) {
+            // Try to find their profile
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('email', formData.email)
+              .single()
+            
+            if (profile) {
+              userId = profile.id
+            } else {
+              throw new Error('User exists but profile not found. Please contact support.')
+            }
+          } else {
+            throw authError
+          }
+        } else {
+          userId = authData.user?.id
+          
+          // Ensure profile is created
+          if (userId) {
+            const { error: profileError } = await supabase
+              .from('profiles')
+              .upsert({
+                id: userId,
+                email: formData.email,
+                full_name: formData.full_name,
+                role: 'BARBER',
+                created_at: new Date().toISOString()
+              })
+            
+            if (profileError) {
+              console.error('Failed to create profile:', profileError)
+            }
+          }
+        }
       }
 
       if (!userId) throw new Error('Failed to create user account')

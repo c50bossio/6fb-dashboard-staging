@@ -59,28 +59,55 @@ export default function StaffManagementDashboard() {
       const barbershopId = profile?.shop_id || profile?.barbershop_id
       if (!barbershopId) return
 
-      // Fetch staff with their latest metrics
+      // Fetch staff data first (following CLAUDE.md - no PostgREST joins)
       const { data: staffData, error } = await supabase
         .from('barbershop_staff')
-        .select(`
-          *,
-          user:users!barbershop_staff_user_id_fkey(
-            id,
-            email,
-            full_name
-          ),
-          commission_balance:barber_commission_balances(
-            pending_amount,
-            total_earned
-          )
-        `)
+        .select('*')
         .eq('barbershop_id', barbershopId)
         .eq('is_active', true)
 
       if (error) {
         console.error('Error loading staff:', error)
+        toast.error('Failed to load staff members')
         return
       }
+
+      // Get user IDs from staff data
+      const userIds = staffData?.map(s => s.user_id).filter(Boolean) || []
+      
+      // Fetch profiles separately (using profiles table, not users)
+      let profiles = []
+      if (userIds.length > 0) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
+          .in('id', userIds)
+        
+        profiles = profileData || []
+      }
+
+      // Fetch commission balances separately
+      let commissionBalances = []
+      if (userIds.length > 0) {
+        const { data: balanceData } = await supabase
+          .from('barber_commission_balances')
+          .select('barber_id, pending_amount, total_earned')
+          .in('barber_id', userIds)
+        
+        commissionBalances = balanceData || []
+      }
+
+      // Merge the data in JavaScript
+      const mergedStaffData = (staffData || []).map(staff => {
+        const profile = profiles.find(p => p.id === staff.user_id) || {}
+        const balance = commissionBalances.find(b => b.barber_id === staff.user_id) || {}
+        
+        return {
+          ...staff,
+          user: profile,
+          commission_balance: balance.pending_amount ? [balance] : []
+        }
+      })
 
       // Calculate metrics from appointments (last 30 days)
       const thirtyDaysAgo = new Date()

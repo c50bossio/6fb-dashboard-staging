@@ -7,6 +7,7 @@ import ServiceWorkerProvider from './ServiceWorkerProvider'
 import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
+import StripeModeBanner from './StripeModeBanner'
 
 export default function ClientWrapper({ children }) {
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function ClientWrapper({ children }) {
   return (
     <>
       <SkipToContent />
+      <StripeModeBanner />
       <AppErrorBoundary>
         <ServiceWorkerProvider>
           <AccessibilityProvider>

@@ -28,17 +28,10 @@ export async function GET() {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    // Fetch staff members with their user details
+    // Fetch staff members first
     const { data: staffData, error: staffError } = await supabase
       .from('barbershop_staff')
-      .select(`
-        *,
-        users!barbershop_staff_user_id_fkey (
-          id,
-          email,
-          full_name
-        )
-      `)
+      .select('*')
       .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
 
@@ -47,7 +40,29 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch staff' }, { status: 500 })
     }
 
-    return NextResponse.json(staffData || [])
+    // Get user IDs and fetch profiles separately
+    const userIds = staffData?.map(s => s.user_id).filter(Boolean) || []
+    let profiles = []
+    
+    if (userIds.length > 0) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', userIds)
+      
+      profiles = profileData || []
+    }
+
+    // Merge staff data with profiles
+    const staffWithProfiles = (staffData || []).map(staff => {
+      const profile = profiles.find(p => p.id === staff.user_id)
+      return {
+        ...staff,
+        user: profile || null
+      }
+    })
+
+    return NextResponse.json(staffWithProfiles)
 
   } catch (error) {
     console.error('Error in GET /api/shop/staff:', error)
@@ -85,14 +100,26 @@ export async function POST(request) {
 
     // Create/find user account
     let userId = null
-    const { data: existingUser } = await supabase
-      .from('users')
+    const { data: existingProfile } = await supabase
+      .from('profiles')
       .select('id')
       .eq('email', staffData.email)
       .single()
 
-    if (existingUser) {
-      userId = existingUser.id
+    if (existingProfile) {
+      userId = existingProfile.id
+      
+      // Check if already staff at this barbershop
+      const { data: existingStaffRecord } = await supabase
+        .from('barbershop_staff')
+        .select('id')
+        .eq('barbershop_id', barbershopId)
+        .eq('user_id', userId)
+        .single()
+      
+      if (existingStaffRecord) {
+        return NextResponse.json({ error: 'This person is already a staff member' }, { status: 400 })
+      }
     } else {
       // Create new user (they'll set password on first login)
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -107,10 +134,40 @@ export async function POST(request) {
       })
 
       if (authError) {
-        console.error('Auth creation error:', authError)
-        return NextResponse.json({ error: 'Failed to create user account' }, { status: 400 })
+        // Check if user already exists in auth
+        if (authError.message?.includes('already registered')) {
+          // Try to find their profile
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', staffData.email)
+            .single()
+          
+          if (profile) {
+            userId = profile.id
+          } else {
+            return NextResponse.json({ error: 'User exists but profile not found' }, { status: 400 })
+          }
+        } else {
+          console.error('Auth creation error:', authError)
+          return NextResponse.json({ error: 'Failed to create user account' }, { status: 400 })
+        }
+      } else {
+        userId = authData.user?.id
+        
+        // Ensure profile is created
+        if (userId) {
+          await supabase
+            .from('profiles')
+            .upsert({
+              id: userId,
+              email: staffData.email,
+              full_name: staffData.full_name,
+              role: 'BARBER',
+              created_at: new Date().toISOString()
+            })
+        }
       }
-      userId = authData.user?.id
     }
 
     if (!userId) {
@@ -131,7 +188,7 @@ export async function POST(request) {
         schedule_type: staffData.schedule_type || 'full_time',
         permissions: getDefaultPermissions(staffData.role || 'barber')
       })
-      .select('*, users!barbershop_staff_user_id_fkey(id, email, full_name)')
+      .select('*')
       .single()
 
     if (staffError) {
@@ -139,7 +196,19 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to create staff member' }, { status: 400 })
     }
 
-    return NextResponse.json(newStaff)
+    // Fetch the user profile to include in response
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('id, email, full_name')
+      .eq('id', userId)
+      .single()
+
+    const staffWithProfile = {
+      ...newStaff,
+      user: userProfile || null
+    }
+
+    return NextResponse.json(staffWithProfile)
 
   } catch (error) {
     console.error('Error in POST /api/shop/staff:', error)

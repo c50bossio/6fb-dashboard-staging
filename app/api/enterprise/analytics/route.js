@@ -29,113 +29,34 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    // Mock analytics data
-    const mockAnalyticsData = {
+    // Initialize empty analytics data structure
+    const analyticsData = {
       summary: {
-        totalRevenue: 145780,
-        revenueChange: 12.5,
-        totalBookings: 3247,
-        bookingsChange: 8.3,
-        activeCustomers: 892,
-        customersChange: 5.2,
-        averageRating: 4.8,
-        ratingChange: 0.2
+        totalRevenue: 0,
+        revenueChange: 0,
+        totalBookings: 0,
+        bookingsChange: 0,
+        activeCustomers: 0,
+        customersChange: 0,
+        averageRating: 0,
+        ratingChange: 0
       },
-      revenueByLocation: [
-        { location: 'Downtown', revenue: 75420, percentage: 51.7 },
-        { location: 'Uptown', revenue: 42360, percentage: 29.1 },
-        { location: 'Brooklyn', revenue: 28000, percentage: 19.2 }
-      ],
-      bookingsByLocation: [
-        { location: 'Downtown', bookings: 1823, percentage: 56.1 },
-        { location: 'Uptown', bookings: 924, percentage: 28.5 },
-        { location: 'Brooklyn', bookings: 500, percentage: 15.4 }
-      ],
-      topPerformers: [
-        { 
-          name: 'Mike Johnson',
-          location: 'Downtown',
-          revenue: 18500,
-          bookings: 423,
-          rating: 4.9,
-          trend: 'up'
-        },
-        { 
-          name: 'Sarah Williams',
-          location: 'Downtown',
-          revenue: 15200,
-          bookings: 367,
-          rating: 4.8,
-          trend: 'up'
-        },
-        { 
-          name: 'David Lee',
-          location: 'Uptown',
-          revenue: 13800,
-          bookings: 298,
-          rating: 4.8,
-          trend: 'stable'
-        }
-      ],
-      revenueTrend: generateTrendData(timeRange, 'revenue'),
-      bookingsTrend: generateTrendData(timeRange, 'bookings'),
+      revenueByLocation: [],
+      bookingsByLocation: [],
+      topPerformers: [],
+      revenueTrend: [],
+      bookingsTrend: [],
       customerGrowth: {
-        newCustomers: 145,
-        returningCustomers: 747,
-        churnRate: 8.2,
-        retentionRate: 91.8
+        newCustomers: 0,
+        returningCustomers: 0,
+        churnRate: 0,
+        retentionRate: 0
       },
-      servicePopularity: [
-        { service: 'Haircut', bookings: 1542, revenue: 53970 },
-        { service: 'Beard Trim', bookings: 892, revenue: 22300 },
-        { service: 'Full Service', bookings: 456, revenue: 34200 },
-        { service: 'Hair Color', bookings: 234, revenue: 18600 },
-        { service: 'Kids Cut', bookings: 123, revenue: 3075 }
-      ],
-      peakHours: [
-        { hour: '10 AM', bookings: 245 },
-        { hour: '11 AM', bookings: 312 },
-        { hour: '12 PM', bookings: 289 },
-        { hour: '1 PM', bookings: 267 },
-        { hour: '2 PM', bookings: 298 },
-        { hour: '3 PM', bookings: 334 },
-        { hour: '4 PM', bookings: 367 },
-        { hour: '5 PM', bookings: 412 },
-        { hour: '6 PM', bookings: 389 },
-        { hour: '7 PM', bookings: 234 }
-      ],
-      locationComparison: [
-        {
-          location: 'Downtown',
-          metrics: {
-            revenue: 75420,
-            bookings: 1823,
-            customers: 456,
-            rating: 4.9,
-            utilization: 85
-          }
-        },
-        {
-          location: 'Uptown',
-          metrics: {
-            revenue: 42360,
-            bookings: 924,
-            customers: 312,
-            rating: 4.7,
-            utilization: 78
-          }
-        },
-        {
-          location: 'Brooklyn',
-          metrics: {
-            revenue: 28000,
-            bookings: 500,
-            customers: 124,
-            rating: 4.8,
-            utilization: 72
-          }
-        }
-      ]
+      servicePopularity: [],
+      peakHours: [],
+      locationComparison: [],
+      dataAvailable: false,
+      message: 'No analytics data available yet. Data will appear once bookings are made.'
     }
 
     // If organization exists, try to get real data
@@ -179,20 +100,45 @@ export async function GET(request) {
           percentage: totalBookings > 0 ? (loc.bookings / totalBookings * 100).toFixed(1) : 0
         }))
 
-        // Merge real data with mock data
-        return NextResponse.json({
-          ...mockAnalyticsData,
-          summary: {
-            ...mockAnalyticsData.summary,
-            totalBookings
-          },
-          bookingsByLocation: locationData.length > 0 ? locationData : mockAnalyticsData.bookingsByLocation
-        })
+        // Update analytics data with real information
+        analyticsData.summary.totalBookings = totalBookings
+        analyticsData.bookingsByLocation = locationData
+        analyticsData.dataAvailable = totalBookings > 0
+        
+        if (totalBookings > 0) {
+          analyticsData.message = 'Showing real-time analytics data'
+          
+          // Calculate real revenue if transactions exist
+          let totalRevenue = 0
+          for (const shop of barbershops) {
+            const { data: transactions } = await supabase
+              .from('transactions')
+              .select('amount')
+              .eq('barbershop_id', shop.id)
+              .eq('status', 'completed')
+            
+            if (transactions) {
+              const shopRevenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0)
+              totalRevenue += shopRevenue
+            }
+          }
+          analyticsData.summary.totalRevenue = totalRevenue
+          
+          // Get real customer count
+          const { count: customerCount } = await supabase
+            .from('customers')
+            .select('*', { count: 'exact', head: true })
+            .in('barbershop_id', barbershops.map(s => s.id))
+          
+          analyticsData.summary.activeCustomers = customerCount || 0
+        }
+        
+        return NextResponse.json(analyticsData)
       }
     }
 
-    // Return mock data for development
-    return NextResponse.json(mockAnalyticsData)
+    // Return empty analytics structure when no organization
+    return NextResponse.json(analyticsData)
 
   } catch (error) {
     console.error('Error in enterprise analytics API:', error)

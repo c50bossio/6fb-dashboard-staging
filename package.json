@@ -53,7 +53,11 @@
     "ci:full": "npm run claude:pre-commit && npm run test:e2e:full",
     "dev:backend": "python fastapi_backend.py",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:backend\"",
-    "dev:docker": "bash docker-dev-start.sh"
+    "dev:docker": "bash docker-dev-start.sh",
+    "stripe:validate": "node scripts/validate-stripe-live-mode.js",
+    "stripe:validate:prod": "node scripts/validate-stripe-live-mode.js --production",
+    "deploy:checklist": "bash scripts/pre-deploy-checklist.sh",
+    "deploy:production": "npm run deploy:checklist && git push origin main"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.4",

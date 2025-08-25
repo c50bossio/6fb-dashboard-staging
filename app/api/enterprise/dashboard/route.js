@@ -27,73 +27,22 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    // Mock enterprise dashboard data
-    const mockDashboardData = {
-      totalRevenue: 145780,
-      totalBookings: 3247,
-      activeCustomers: 892,
-      averageRating: 4.8,
-      locations: [
-        {
-          id: 1,
-          name: 'Downtown Location',
-          city: 'New York',
-          revenue: 75420,
-          bookings: 1823,
-          rating: 4.9,
-          staff: 12,
-          trending: 'up'
-        },
-        {
-          id: 2,
-          name: 'Uptown Location',
-          city: 'New York',
-          revenue: 42360,
-          bookings: 924,
-          rating: 4.7,
-          staff: 8,
-          trending: 'up'
-        },
-        {
-          id: 3,
-          name: 'Brooklyn Shop',
-          city: 'Brooklyn',
-          revenue: 28000,
-          bookings: 500,
-          rating: 4.8,
-          staff: 6,
-          trending: 'stable'
-        }
-      ],
-      recentActivity: [
-        {
-          id: 1,
-          type: 'booking',
-          message: 'New booking at Downtown Location',
-          time: '5 minutes ago',
-          location: 'Downtown Location'
-        },
-        {
-          id: 2,
-          type: 'review',
-          message: '5-star review received at Brooklyn Shop',
-          time: '1 hour ago',
-          location: 'Brooklyn Shop'
-        },
-        {
-          id: 3,
-          type: 'staff',
-          message: 'New barber onboarded at Uptown Location',
-          time: '3 hours ago',
-          location: 'Uptown Location'
-        }
-      ],
+    // Initialize empty dashboard data structure
+    const dashboardData = {
+      totalRevenue: 0,
+      totalBookings: 0,
+      activeCustomers: 0,
+      averageRating: 0,
+      locations: [],
+      recentActivity: [],
       performanceMetrics: {
-        revenueGrowth: 12.5,
-        bookingGrowth: 8.3,
-        customerRetention: 78,
-        staffUtilization: 82
-      }
+        revenueGrowth: 0,
+        bookingGrowth: 0,
+        customerRetention: 0,
+        staffUtilization: 0
+      },
+      dataAvailable: false,
+      message: 'No dashboard data available yet. Data will appear once your barbershops have activity.'
     }
 
     // If organization exists, try to get real data
@@ -132,33 +81,67 @@ export async function GET(request) {
           const shopBookings = (bookingCount || 0) + (appointmentCount || 0)
           totalBookings += shopBookings
 
+          // Get staff count for this shop
+          const { count: staffCount } = await supabase
+            .from('barbershop_staff')
+            .select('*', { count: 'exact', head: true })
+            .eq('barbershop_id', shop.id)
+            .eq('is_active', true)
+          
+          // Get reviews for rating
+          const { data: reviews } = await supabase
+            .from('reviews')
+            .select('rating')
+            .eq('barbershop_id', shop.id)
+          
+          const avgRating = reviews && reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+            : 0
+          
           return {
             id: shop.id,
             name: shop.name,
-            city: shop.city,
-            revenue: 0, // Would calculate from actual payment data
+            city: shop.city || 'Unknown',
+            revenue: 0, // TODO: Calculate from transactions table
             bookings: shopBookings,
-            rating: shop.rating || 4.5,
-            staff: 0, // Would count from staff table
+            rating: avgRating,
+            staff: staffCount || 0,
             trending: 'stable'
           }
         }))
 
+        // Update dashboard data with real values
+        dashboardData.totalBookings = totalBookings
+        dashboardData.locations = locationData
+        dashboardData.dataAvailable = totalBookings > 0 || locationData.length > 0
+        
+        // Get total customer count
+        const { count: customerCount } = await supabase
+          .from('customers')
+          .select('*', { count: 'exact', head: true })
+          .in('barbershop_id', barbershops.map(s => s.id))
+        
+        dashboardData.activeCustomers = customerCount || 0
+        
+        // Calculate average rating
+        const totalRating = locationData.reduce((sum, loc) => sum + loc.rating, 0)
+        dashboardData.averageRating = locationData.length > 0 
+          ? parseFloat((totalRating / locationData.length).toFixed(1))
+          : 0
+        
+        if (dashboardData.dataAvailable) {
+          dashboardData.message = 'Showing real-time dashboard data'
+        }
+        
         return NextResponse.json({
-          totalRevenue: totalRevenue || mockDashboardData.totalRevenue,
-          totalBookings,
-          activeCustomers: mockDashboardData.activeCustomers,
-          averageRating: mockDashboardData.averageRating,
-          locations: locationData.length > 0 ? locationData : mockDashboardData.locations,
-          recentActivity: mockDashboardData.recentActivity,
-          performanceMetrics: mockDashboardData.performanceMetrics,
+          ...dashboardData,
           organization
         })
       }
     }
 
-    // Return mock data for development
-    return NextResponse.json(mockDashboardData)
+    // Return empty dashboard structure when no organization
+    return NextResponse.json(dashboardData)
 
   } catch (error) {
     console.error('Error in enterprise dashboard API:', error)
