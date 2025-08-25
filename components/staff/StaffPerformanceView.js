@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/card.jsx"
 import { 
   ChartBarIcon,
   TrendingUpIcon,

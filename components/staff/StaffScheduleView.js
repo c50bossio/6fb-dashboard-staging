@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import EnhancedProfessionalCalendar from '@/components/calendar/EnhancedProfessionalCalendar'
-import { Card } from "@/components/ui/card"
+import { Card } from "@/components/ui/card.jsx"
 import Button from '@/components/ui/Button'
 import { 
   CalendarIcon,
