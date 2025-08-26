@@ -13,12 +13,29 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { FieldNormalizer } from '@/lib/booking-rules-engine/FieldNormalizer'
+import { useOnboardingSession } from '@/contexts/OnboardingContext'
 
 export default function BookingRulesSetup({ data = {}, updateData, onComplete }) {
+  // Use Supabase-backed onboarding session
+  const {
+    sessionData,
+    progress,
+    saveStep,
+    markStepComplete,
+    isStepCompleted,
+    saveStatus,
+    hasUnsavedChanges,
+    hasLocalChanges
+  } = useOnboardingSession('booking_rules')
+  
   // Normalize incoming data from snake_case to camelCase for internal use
-  const normalizedData = FieldNormalizer.normalizeObject(data, false) // false = toCamelCase
+  // Try session data first, then fallback to prop data
+  const normalizedData = FieldNormalizer.normalizeObject(
+    sessionData?.stepData || data, 
+    false
+  ) // false = toCamelCase
   
   const [rules, setRules] = useState({
     // Booking window
@@ -191,19 +208,67 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
   const policyScore = calculatePolicyScore()
   const policyType = policyScore >= 5 ? 'Flexible' : policyScore >= 0 ? 'Balanced' : 'Strict'
 
-  // Update parent data - convert to snake_case for consistency
-  useEffect(() => {
+  // Auto-save to Supabase when rules change - properly memoized to prevent recreation
+  const debouncedSave = useMemo(
+    () => debounce((rulesData) => {
+      const snakeCaseRules = FieldNormalizer.normalizeObject(rulesData, true) // true = toSnakeCase
+      saveStep('booking_policies', { booking_rules: snakeCaseRules })
+    }, 1500),
+    [saveStep]
+  )
+
+  // Memoize update function to prevent useEffect dependency changes
+  const handleUpdateData = useCallback((rulesData) => {
     if (updateData) {
-      const snakeCaseRules = FieldNormalizer.normalizeObject(rules, true) // true = toSnakeCase
+      const snakeCaseRules = FieldNormalizer.normalizeObject(rulesData, true) // true = toSnakeCase
       updateData({ booking_rules: snakeCaseRules })
     }
-  }, [rules])
+  }, [updateData])
 
-  // Handle completion - convert to snake_case for consistency  
-  const handleComplete = () => {
-    if (onComplete) {
+  // Update parent data and auto-save - using JSON.stringify to detect actual changes
+  const rulesString = JSON.stringify(rules)
+  useEffect(() => {
+    handleUpdateData(rules)
+    
+    // Auto-save to Supabase database
+    if (Object.keys(rules).length > 0) {
+      debouncedSave(rules)
+    }
+  }, [rulesString, handleUpdateData, debouncedSave]) // Use rulesString instead of rules object
+  
+  // Restore rules data when session data changes (cross-tab sync)
+  useEffect(() => {
+    if (sessionData?.stepData?.booking_rules && !hasLocalChanges) {
+      const normalizedSessionRules = FieldNormalizer.normalizeObject(
+        sessionData.stepData.booking_rules, 
+        false // false = toCamelCase
+      )
+      setRules(prev => ({ ...prev, ...normalizedSessionRules }))
+    }
+  }, [sessionData?.stepData?.booking_rules, hasLocalChanges])
+
+  // Handle completion with Supabase persistence - convert to snake_case for consistency
+  const handleComplete = async () => {
+    try {
       const snakeCaseRules = FieldNormalizer.normalizeObject(rules, true) // true = toSnakeCase
-      onComplete({ booking_rules: snakeCaseRules })
+      
+      // Save final data
+      await saveStep('booking_policies', { booking_rules: snakeCaseRules, completed: true })
+      
+      // Mark step as completed in progress tracking
+      await markStepComplete('booking_policies')
+      
+      // Call parent completion handler
+      if (onComplete) {
+        onComplete({ booking_rules: snakeCaseRules })
+      }
+    } catch (error) {
+      console.error('Error completing booking rules setup:', error)
+      // Still call parent handler even if save fails
+      if (onComplete) {
+        const snakeCaseRules = FieldNormalizer.normalizeObject(rules, true)
+        onComplete({ booking_rules: snakeCaseRules })
+      }
     }
   }
 
@@ -244,6 +309,37 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
           ))}
         </div>
       </div>
+
+      {/* Save Status Indicator */}
+      {saveStatus === 'saving' && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center">
+            <svg className="animate-spin h-4 w-4 mr-2 text-yellow-600" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span className="text-sm text-yellow-800">Saving policy changes...</span>
+          </div>
+        </div>
+      )}
+      
+      {saveStatus === 'offline' && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-4 w-4 mr-2 text-orange-600" />
+            <span className="text-sm text-orange-800">Changes saved offline - will sync when reconnected</span>
+          </div>
+        </div>
+      )}
+      
+      {saveStatus === 'saved' && hasUnsavedChanges === false && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center">
+            <CheckCircleIcon className="h-4 w-4 mr-2 text-green-600" />
+            <span className="text-sm text-green-800">All policy changes saved automatically</span>
+          </div>
+        </div>
+      )}
 
       {/* Policy Score Indicator */}
       <div className="bg-gray-50 rounded-lg p-4">
@@ -784,12 +880,28 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
         </div>
       </div>
 
-      {/* Status Display */}
-      <div className="flex justify-center items-center pt-4">
+      {/* Status Display with Progress */}
+      <div className="flex justify-between items-center pt-4">
         <div className="text-sm text-gray-500">
           Policy type: <span className="font-medium">{policyType}</span>
+        </div>
+        <div className="text-sm text-gray-500">
+          Step progress: {progress.percentage}% complete
         </div>
       </div>
     </div>
   )
+}
+
+// Utility debounce function (same as in OnboardingContext)
+function debounce(func, wait) {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      func(...args)
+    }
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
 }

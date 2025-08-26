@@ -161,7 +161,7 @@ export function useBookingRules(barbershopId) {
       const slotIntervals = rules.slot_intervals || rules.slotIntervals || [30]
       const bufferTime = rules.buffer_between_appointments || rules.bufferBetweenAppointments || 0
 
-      const dayOfWeek = new Date(date).toLocaleLowerCase('en-US', { weekday: 'long' }).toLowerCase()
+      const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
       const dayHours = businessHours[dayOfWeek]
 
       if (!dayHours || dayHours.closed) {
