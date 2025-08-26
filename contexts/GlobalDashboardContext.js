@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../components/SupabaseAuthProvider'
 import { createBrowserClient } from '@supabase/ssr'
+import { getDisplayName, normalizeNameData } from '../lib/name-utils'
 
 const GlobalDashboardContext = createContext({})
 
@@ -186,10 +187,10 @@ export function GlobalDashboardProvider({ children }) {
         let barbershopsData = []
         
         if (userIds.length > 0) {
-          // Fetch profiles
+          // Fetch profiles with enhanced name support
           const { data: profiles, error: profilesError } = await supabase
             .from('profiles')
-            .select('id, full_name, email, avatar_url')
+            .select('id, full_name, first_name, last_name, email, avatar_url')
             .in('id', userIds)
           
           if (profilesError) {
@@ -221,14 +222,30 @@ export function GlobalDashboardProvider({ children }) {
           (barbershopsData || []).map(b => [b.id, b])
         )
         
-        // Map the data with related info
+        // Map the data with related info and normalized names
         const barbers = data.map(staff => {
           const profile = profilesMap[staff.user_id] || {}
           const barbershop = barbershopsMap[staff.barbershop_id] || {}
           
+          // Normalize name data for consistent handling
+          const normalizedNames = normalizeNameData({
+            firstName: profile.first_name,
+            lastName: profile.last_name,
+            fullName: profile.full_name
+          })
+          
           return {
             id: staff.user_id,
-            name: profile.full_name || profile.email?.split('@')[0] || 'Unknown',
+            name: getDisplayName({
+              firstName: normalizedNames.firstName,
+              lastName: normalizedNames.lastName,
+              fullName: normalizedNames.fullName,
+              email: profile.email,
+              defaultName: 'Unknown Staff'
+            }),
+            firstName: normalizedNames.firstName,
+            lastName: normalizedNames.lastName,
+            fullName: normalizedNames.fullName,
             email: profile.email,
             avatar_url: profile.avatar_url,
             role: staff.role,
