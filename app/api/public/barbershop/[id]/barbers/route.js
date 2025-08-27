@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { createServiceClient } from '@/lib/supabase/service'
 
 export async function GET(request, { params }) {
   try {
@@ -11,31 +11,39 @@ export async function GET(request, { params }) {
         error: 'Barbershop ID is required'
       }, { status: 400 })
     }
-
-    // Use simple client for public API - no auth needed
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
-    if (!supabaseUrl || !supabaseKey) {
+
+    // Use service client to bypass RLS for public API
+    const supabase = createServiceClient()
+    
+    if (!supabase) {
+      console.error('❌ Public barbers API: Failed to create service client')
       return NextResponse.json({
         success: false,
         error: 'Service configuration error'
       }, { status: 500 })
     }
     
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    console.log('🔑 Using service client for public API')
+    
+    // Use the barbershop ID directly - no mock handling
+    const actualBarbershopId = barbershopId
     
     // First check if barbershop exists and allows public booking
     const { data: barbershop, error: barbershopError } = await supabase
       .from('barbershops')
       .select('id, name, booking_settings')
-      .eq('id', barbershopId)
+      .eq('id', actualBarbershopId)
       .single()
 
     if (barbershopError || !barbershop) {
+      console.error('❌ Public barbers API: Barbershop not found')
+      console.error('   Barbershop ID:', barbershopId)
+      console.error('   Error:', barbershopError)
+      
       return NextResponse.json({
         success: false,
-        error: 'Barbershop not found'
+        error: 'Barbershop not found or not available for public booking'
       }, { status: 404 })
     }
 
@@ -51,6 +59,7 @@ export async function GET(request, { params }) {
     }
 
     // Get active staff for this barbershop
+    console.log('🔍 Querying staff for barbershop:', actualBarbershopId)
     const { data: staff, error: staffError } = await supabase
       .from('barbershop_staff')
       .select(`
@@ -59,54 +68,97 @@ export async function GET(request, { params }) {
         barbershop_id,
         role,
         is_active,
-        created_at
+        created_at,
+        metadata
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barbershop_id', actualBarbershopId)  // Use actualBarbershopId instead of barbershopId
       .eq('is_active', true)
       .order('created_at', { ascending: true })
+    
+    console.log('📊 Staff query result:', { 
+      count: staff?.length || 0, 
+      staff: staff,
+      error: staffError 
+    })
 
     if (staffError) {
-      console.error('Error fetching staff:', staffError)
+      console.error('❌ Public barbers API: Error fetching staff')
+      console.error('   Error details:', staffError)
+      console.error('   Barbershop ID:', barbershopId)
+      console.error('   Actual ID used:', actualBarbershopId)
       return NextResponse.json({ 
         success: false, 
         error: 'Failed to fetch staff' 
       }, { status: 500 })
     }
 
-    // If no staff, return empty array
+    // If no staff found, return empty array
     if (!staff || staff.length === 0) {
+      console.log('📍 No staff found for barbershop:', barbershopId)
       return NextResponse.json({
         success: true,
         staff: [],
         count: 0,
+        barbershop_id: barbershopId,
+        barbershop_name: barbershop?.name || 'Unknown',
         message: 'No active staff found for this barbershop'
       })
     }
 
     // Get public profile details for each staff member (only public info)
-    const userIds = staff.map(s => s.user_id)
+    const userIds = staff.map(s => s.user_id).filter(Boolean)
+    
+    // Skip profile fetch if no user IDs
+    if (userIds.length === 0) {
+      return NextResponse.json({
+        success: true,
+        staff: [],
+        count: 0,
+        barbershop_id: barbershopId,
+        barbershop_name: barbershop.name,
+        message: 'No active staff found for this barbershop'
+      })
+    }
+    
     const { data: profiles, error: profilesError } = await supabase
-      .from('users')
-      .select('id, full_name, avatar_url')
+      .from('profiles')
+      .select('id, first_name, last_name, full_name, avatar_url')
       .in('id', userIds)
 
     if (profilesError) {
-      console.error('Error fetching staff profiles:', profilesError)
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Failed to fetch staff details' 
-      }, { status: 500 })
+      console.error('Warning: Could not fetch profiles, using staff metadata:', profilesError)
+      // Don't fail - we can use metadata from barbershop_staff table as fallback
     }
 
     // Combine staff data with public profile information
     const staffWithProfiles = staff.map(staffMember => {
       const profile = profiles?.find(p => p.id === staffMember.user_id) || {}
+      const metadata = staffMember.metadata || {}
       
-      // Get display name from full_name or provide default
-      let displayName = profile.full_name || 'Staff Member'
+      // Use profile first, then metadata, then empty string
+      const firstName = profile.first_name || metadata.first_name || ''
+      const lastName = profile.last_name || metadata.last_name || ''
+      let fullName = profile.full_name || metadata.full_name || ''
       
-      // If full_name exists, use it directly; otherwise create a fallback
-      if (!displayName || displayName.trim() === '') {
+      // If we don't have full_name but have first/last names, combine them
+      if (!fullName && (firstName || lastName)) {
+        fullName = `${firstName} ${lastName}`.trim()
+      }
+      
+      // If we still don't have a name but have full_name, split it
+      let finalFirstName = firstName
+      let finalLastName = lastName
+      if ((!firstName || !lastName) && fullName && fullName.trim()) {
+        const parts = fullName.trim().split(' ')
+        if (!finalFirstName) finalFirstName = parts[0] || ''
+        if (!finalLastName) finalLastName = parts.slice(1).join(' ') || ''
+      }
+      
+      // Get display name with proper fallbacks
+      let displayName = fullName || `${finalFirstName} ${finalLastName}`.trim() || 'Staff Member'
+      
+      // Final fallback based on role
+      if (!displayName || displayName.trim() === '' || displayName === 'Staff Member') {
         displayName = `${staffMember.role === 'OWNER' ? 'Owner' : 'Barber'}`
       }
       
@@ -119,7 +171,9 @@ export async function GET(request, { params }) {
         role: staffMember.role,
         is_active: staffMember.is_active,
         created_at: staffMember.created_at,
-        full_name: profile.full_name || '',
+        first_name: finalFirstName,
+        last_name: finalLastName,
+        full_name: fullName,
         display_name: displayName,
         avatar_url: profile.avatar_url || null,
         // Public-safe defaults for booking UI
@@ -133,6 +187,7 @@ export async function GET(request, { params }) {
       }
     })
 
+    // Return the actual staff from database
     return NextResponse.json({
       success: true,
       staff: staffWithProfiles,

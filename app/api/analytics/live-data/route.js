@@ -39,6 +39,7 @@ export async function GET(request) {
     const barbershopId = searchParams.get('barbershop_id');
     const barbershopIds = searchParams.get('barbershop_ids')?.split(',').filter(Boolean) || (barbershopId ? [barbershopId] : []);
     const barberIds = searchParams.get('barber_ids')?.split(',').filter(Boolean) || [];
+    const viewUserId = searchParams.get('view_user_id'); // For viewing as a specific staff member
     const forceRefresh = searchParams.get('force_refresh') === 'true';
     const format = searchParams.get('format') || 'json'; // json, formatted, specific
     const metric = searchParams.get('metric'); // for specific metric queries
@@ -323,7 +324,7 @@ async function getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric
       // Business insights
       peak_booking_hours: peakHours,
       most_popular_services: mostPopularServices,
-      busiest_days: ['Friday', 'Saturday'], // Would need more complex analysis
+      busiest_days: calculateBusiestDays(appointments),
       occupancy_rate: Math.min(100, (totalAppointments / Math.max(1, 30 * 8)) * 100), // Assuming 8 hour days
       
       // System metrics
@@ -444,5 +445,38 @@ export async function POST(request) {
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       timestamp: new Date().toISOString(),
     }, { status: 500 });
+  }
+}
+
+/**
+ * Calculate the busiest days based on appointment data
+ */
+function calculateBusiestDays(appointments) {
+  if (!appointments || appointments.length === 0) {
+    return []
+  }
+
+  try {
+    // Count appointments by day of week
+    const dayCounts = {}
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    
+    appointments.forEach(apt => {
+      if (apt.appointment_date) {
+        const date = new Date(apt.appointment_date)
+        const dayOfWeek = dayNames[date.getDay()]
+        dayCounts[dayOfWeek] = (dayCounts[dayOfWeek] || 0) + 1
+      }
+    })
+    
+    // Sort days by appointment count and return top 3
+    return Object.entries(dayCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([day, count]) => day)
+      
+  } catch (error) {
+    console.error('Failed to calculate busiest days:', error)
+    return []
   }
 }
