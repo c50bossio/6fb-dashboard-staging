@@ -2,7 +2,6 @@
 
 import { 
   UserGroupIcon,
-  CalendarDaysIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
   ClockIcon,
@@ -16,14 +15,17 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Card } from "@/components/ui/card.jsx"
+import { toast } from 'react-hot-toast'
 import Button from '@/components/ui/Button'
+import { Card } from "@/components/ui/card.jsx"
+import { getDisplayName, nameMatches } from '@/lib/name-utils'
+import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
-import StaffScheduleView from './StaffScheduleView'
-import StaffPerformanceView from './StaffPerformanceView'
-import AddStaffModal from './AddStaffModal'
 import PayrollDashboard from '../payroll/PayrollDashboard'
+import AddStaffModal from './AddStaffModal'
+import StaffAvailabilityEditor from './StaffAvailabilityEditor'
+import StaffDetailModal from './StaffDetailModal'
+import StaffPerformanceView from './StaffPerformanceView'
 
 export default function StaffManagementDashboard() {
   const [activeView, setActiveView] = useState('overview') // overview, schedule, performance, payroll
@@ -34,6 +36,7 @@ export default function StaffManagementDashboard() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState(null)
   const [addButtonLoading, setAddButtonLoading] = useState(false)
+  const [editingAvailability, setEditingAvailability] = useState(null)
   const [metrics, setMetrics] = useState({
     totalStaff: 0,
     activeToday: 0,
@@ -54,14 +57,15 @@ export default function StaffManagementDashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Get barbershop ID
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('shop_id, barbershop_id')
-        .eq('id', user.id)
+      // Get barbershop ID from barbershop_staff table (users table doesn't have shop_id/barbershop_id)
+      const { data: staffRecord } = await supabase
+        .from('barbershop_staff')
+        .select('barbershop_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
         .single()
 
-      const barbershopId = profile?.shop_id || profile?.barbershop_id
+      const barbershopId = staffRecord?.barbershop_id
       if (!barbershopId) return
 
       // Fetch staff data first (following CLAUDE.md - no PostgREST joins)
@@ -72,45 +76,83 @@ export default function StaffManagementDashboard() {
         .eq('is_active', true)
 
       if (error) {
-        console.error('Error loading staff:', error)
+        console.error('🚨 [STAFF] Error loading staff:', error)
         toast.error('Failed to load staff members')
         return
       }
-
+      
       // Get user IDs from staff data
       const userIds = staffData?.map(s => s.user_id).filter(Boolean) || []
       
-      // Fetch profiles separately (using profiles table, not users)
+      // Fetch user profiles separately (using users table)
+      // CRITICAL: Include name field and map to expected format for proper name display
       let profiles = []
       if (userIds.length > 0) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('id, email, full_name')
+        const { data: profileData, error: profileError } = await supabase
+          .from('users')
+          .select('id, email, full_name, phone, avatar_url')
           .in('id', userIds)
         
+        if (profileError) {
+          console.error('🚨 [STAFF] Profile query error:', profileError)
+        }
+        
+        // Map users table structure - keep original data without splitting
         profiles = profileData || []
       }
 
       // Fetch commission balances separately
       let commissionBalances = []
       if (userIds.length > 0) {
-        const { data: balanceData } = await supabase
+        const { data: balanceData, error: balanceError } = await supabase
           .from('barber_commission_balances')
           .select('barber_id, pending_amount, total_earned')
           .in('barber_id', userIds)
         
+        if (balanceError) {
+          console.error('🚨 [STAFF] Commission balance query error:', balanceError)
+          // Don't fail completely, but log for production monitoring
+        }
+        
         commissionBalances = balanceData || []
       }
 
-      // Merge the data in JavaScript
+      // Merge the data in JavaScript with production logging
       const mergedStaffData = (staffData || []).map(staff => {
+        // Production logging for data debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[STAFF DATA]', {
+            staffId: staff.id,
+            userId: staff.user_id,
+            hasMetadata: !!staff.metadata,
+            metadataKeys: staff.metadata ? Object.keys(staff.metadata) : []
+          })
+        }
+        
         const profile = profiles.find(p => p.id === staff.user_id) || {}
         const balance = commissionBalances.find(b => b.barber_id === staff.user_id) || {}
+        
+        // Check if this is a pending invitation
+        const isPendingInvitation = staff.metadata?.pending_invitation === true
+        const invitedName = staff.metadata?.invited_name
+        const invitedEmail = staff.metadata?.invited_email
+        
+        if (process.env.NODE_ENV === 'development' && !profile.id) {
+          console.warn('[STAFF PROFILE MISSING]', {
+            staffUserId: staff.user_id,
+            searchedIn: userIds,
+            foundProfiles: profiles.map(p => p.id)
+          })
+        }
         
         return {
           ...staff,
           user: profile,
-          commission_balance: balance.pending_amount ? [balance] : []
+          commission_balance: balance.pending_amount ? [balance] : [],
+          // Add invitation data for easier access
+          isPendingInvitation,
+          invitedName,
+          invitedEmail
         }
       })
 
@@ -124,39 +166,95 @@ export default function StaffManagementDashboard() {
         .eq('barbershop_id', barbershopId)
         .gte('start_time', thirtyDaysAgo.toISOString())
 
-      // Process staff data with metrics
-      const staffWithMetrics = (staffData || []).map(member => {
+      // Process staff data with metrics - use merged data with user profiles
+      const staffWithMetrics = mergedStaffData.map(member => {
         const memberAppointments = appointments?.filter(a => a.barber_id === member.user_id) || []
         const completedAppointments = memberAppointments.filter(a => a.status === 'completed')
+        const cancelledAppointments = memberAppointments.filter(a => a.status === 'cancelled')
+        const noShowAppointments = memberAppointments.filter(a => a.status === 'no_show')
         const revenue = completedAppointments.reduce((sum, a) => sum + (a.price || 0), 0)
-        // Note: Rating system not yet implemented in database
-        const avgRating = 0 // Placeholder for future rating implementation
+        
+        // Calculate performance rating based on completion rate and other factors
+        const totalScheduledAppointments = memberAppointments.length
+        const completionRate = totalScheduledAppointments > 0 ? (completedAppointments.length / totalScheduledAppointments) : 0
+        const noShowRate = totalScheduledAppointments > 0 ? (noShowAppointments.length / totalScheduledAppointments) : 0
+        
+        // Rating scale: 0-5 stars based on performance metrics
+        let performanceRating = 0
+        if (totalScheduledAppointments >= 5) { // Only rate if they have sufficient data
+          performanceRating = Math.min(5, Math.max(1, 
+            (completionRate * 4) + // Up to 4 stars for completion rate
+            (noShowRate < 0.05 ? 1 : 0) // Bonus star for low no-show rate
+          ))
+        }
+
+        // Validate financial calculations
+        const pendingCommission = member.commission_balance?.[0]?.pending_amount || 0
+        
+        // Production validation: ensure financial numbers are valid
+        const validatedRevenue = isNaN(revenue) ? 0 : Math.max(0, revenue)
+        const validatedPendingCommission = isNaN(pendingCommission) ? 0 : Math.max(0, pendingCommission)
+        
+        // Log any suspicious financial data for production monitoring
+        if (revenue < 0 || pendingCommission < 0) {
+          console.warn('🚨 [STAFF] Negative financial values detected:', {
+            userId: member.user_id,
+            revenue,
+            pendingCommission
+          })
+        }
 
         return {
           ...member,
           metrics: {
             totalBookings: completedAppointments.length,
-            revenue: revenue,
-            rating: avgRating,
-            pendingCommission: member.commission_balance?.[0]?.pending_amount || 0
+            revenue: parseFloat(validatedRevenue.toFixed(2)), // Always 2 decimal places for currency
+            rating: parseFloat(performanceRating.toFixed(1)),
+            pendingCommission: parseFloat(validatedPendingCommission.toFixed(2)), // Always 2 decimal places for currency
+            completionRate: parseFloat((completionRate * 100).toFixed(1)),
+            noShowRate: parseFloat((noShowRate * 100).toFixed(1))
           }
         }
       })
 
       setStaff(staffWithMetrics)
 
-      // Calculate dashboard metrics
-      const totalPendingPayroll = staffWithMetrics.reduce((sum, s) => 
-        sum + (s.metrics.pendingCommission || 0), 0
-      )
+      // Calculate dashboard metrics with validation
+      const totalPendingPayroll = staffWithMetrics.reduce((sum, s) => {
+        const commission = s.metrics.pendingCommission || 0
+        return sum + commission
+      }, 0)
+      
+      // Production validation for total payroll
+      if (totalPendingPayroll < 0 || isNaN(totalPendingPayroll)) {
+        console.error('🚨 [STAFF] Invalid total payroll calculation:', totalPendingPayroll)
+      }
       const avgStaffRating = staffWithMetrics.filter(s => s.metrics.rating > 0)
         .reduce((sum, s, _, arr) => sum + s.metrics.rating / arr.length, 0)
 
+      // Calculate who should be active today based on their working schedule
+      const today = new Date()
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+      const todayName = dayNames[today.getDay()]
+      
+      const activeToday = staffWithMetrics.filter(s => {
+        if (!s.is_active) return false // Must be generally active
+        
+        // Check if they work today based on their schedule
+        const workingDays = s.metadata?.working_days
+        if (workingDays && typeof workingDays === 'object') {
+          return workingDays[todayName] === true
+        }
+        
+        // Fallback: assume they work Monday-Saturday if no schedule data
+        return todayName !== 'sunday'
+      }).length
+
       setMetrics({
         totalStaff: staffWithMetrics.length,
-        activeToday: staffWithMetrics.filter(s => s.is_active).length, // TODO: Check actual schedule
+        activeToday: activeToday,
         pendingPayroll: totalPendingPayroll,
-        avgRating: avgStaffRating
+        avgRating: parseFloat(avgStaffRating.toFixed(1))
       })
 
     } catch (error) {
@@ -213,8 +311,16 @@ export default function StaffManagementDashboard() {
   const filteredStaff = useMemo(() => {
     return staff.filter(member => {
       const matchesSearch = !searchQuery || 
-        member.user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
+        nameMatches({
+          firstName: member.user?.firstName || member.user?.first_name,
+          lastName: member.user?.lastName || member.user?.last_name,
+          fullName: member.user?.fullName || member.user?.full_name,
+          email: member.user?.email
+        }, searchQuery) ||
+        (member.invitedName && member.invitedName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (member.invitedEmail && member.invitedEmail.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (member.metadata?.invited_name && member.metadata.invited_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (member.metadata?.invited_email && member.metadata.invited_email.toLowerCase().includes(searchQuery.toLowerCase()))
       
       const matchesFilter = filterStatus === 'all' || 
         (filterStatus === 'active' && member.is_active) ||
@@ -257,15 +363,44 @@ export default function StaffManagementDashboard() {
             {/* Info */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                {member.user?.full_name || member.user?.email || 'Unnamed Staff'}
+                {(() => {
+                  // Use name utilities for consistent display
+                  const displayName = getDisplayName({
+                    firstName: member.user?.firstName || member.user?.first_name,
+                    lastName: member.user?.lastName || member.user?.last_name,
+                    fullName: member.user?.fullName || member.user?.full_name,
+                    email: member.user?.email,
+                    defaultName: null
+                  })
+                  
+                  // If we got a name from the user data, return it
+                  if (displayName && displayName !== 'Unknown User') {
+                    return displayName
+                  }
+                  
+                  // Fall back to invitation data
+                  if (member.invitedName) return `${member.invitedName} (Invited)`
+                  if (member.invitedEmail) return `${member.invitedEmail} (Invited)`
+                  if (member.metadata?.invited_name) return `${member.metadata.invited_name} (Invited)`
+                  if (member.metadata?.invited_email) return `${member.metadata.invited_email} (Invited)`
+                  return 'Unnamed Staff'
+                })()}
               </h3>
-              <p className="text-sm text-gray-600">{member.role || 'Barber'}</p>
+              <p className="text-sm text-gray-600">
+                {member.role ? member.role.charAt(0).toUpperCase() + member.role.slice(1).toLowerCase() : 'Barber'}
+              </p>
               
               {/* Status badges */}
               <div className="flex items-center space-x-2 mt-2">
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
-                  {member.is_active ? 'Active' : 'Inactive'}
-                </span>
+                {member.isPendingInvitation ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    Pending Invitation
+                  </span>
+                ) : (
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-${statusColor}-100 text-${statusColor}-800`}>
+                    {member.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                )}
                 {member.financial_model && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {member.financial_model === 'commission' ? `${(member.commission_rate * 100).toFixed(0)}% Commission` : member.financial_model}
@@ -329,10 +464,72 @@ export default function StaffManagementDashboard() {
 
         {/* Quick Schedule Preview */}
         <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-gray-600">Today's Schedule:</span>
-            <span className="text-gray-900 font-medium">9:00 AM - 6:00 PM</span>
+            <span className="text-gray-900 font-medium">
+              {(() => {
+                // For pending invitations, show as not set
+                if (member.isPendingInvitation) {
+                  return <span className="text-gray-500 italic">Pending Setup</span>
+                }
+                
+                // Check if they have availability configuration
+                const availability = member.metadata?.availability || member.availability
+                const today = new Date()
+                const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+                const todayName = dayNames[today.getDay()]
+                
+                // If we have proper availability data
+                if (availability?.regularHours?.[todayName]) {
+                  const todaySchedule = availability.regularHours[todayName]
+                  if (!todaySchedule.isWorking) {
+                    return <span className="text-gray-500">Day Off</span>
+                  }
+                  
+                  const formatTime = (time) => {
+                    const [hour, minute] = time.split(':')
+                    const hourNum = parseInt(hour)
+                    const ampm = hourNum >= 12 ? 'PM' : 'AM'
+                    const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum
+                    return `${displayHour}:${minute} ${ampm}`
+                  }
+                  
+                  return `${formatTime(todaySchedule.start)} - ${formatTime(todaySchedule.end)}`
+                }
+                
+                // Fallback to simple schedule data if exists
+                const startTime = member.metadata?.preferred_start_time
+                const endTime = member.metadata?.preferred_end_time
+                
+                if (startTime && endTime) {
+                  const formatTime = (time) => {
+                    const [hour, minute] = time.split(':')
+                    const hourNum = parseInt(hour)
+                    const ampm = hourNum >= 12 ? 'PM' : 'AM'
+                    const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum
+                    return `${displayHour}:${minute} ${ampm}`
+                  }
+                  return `${formatTime(startTime)} - ${formatTime(endTime)}`
+                }
+                
+                // No schedule data available
+                return <span className="text-gray-500 italic">Schedule not set</span>
+              })()}
+            </span>
           </div>
+          
+          {/* Edit Schedule Button */}
+          {!member.isPendingInvitation && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation() // Prevent card click event
+                setEditingAvailability(member)
+              }}
+              className="w-full mt-2 px-3 py-1.5 text-sm text-olive-700 bg-olive-50 hover:bg-olive-100 rounded-lg transition-colors duration-200"
+            >
+              Edit Availability
+            </button>
+          )}
         </div>
       </Card>
     )
@@ -359,7 +556,6 @@ export default function StaffManagementDashboard() {
         <nav className="-mb-px flex space-x-8">
           {[
             { id: 'overview', label: 'Overview', icon: UserGroupIcon },
-            { id: 'schedule', label: 'Schedule', icon: CalendarDaysIcon },
             { id: 'performance', label: 'Performance', icon: ChartBarIcon },
             { id: 'payroll', label: 'Payroll', icon: CurrencyDollarIcon }
           ].map((tab) => (
@@ -492,10 +688,6 @@ export default function StaffManagementDashboard() {
         </>
       )}
 
-      {activeView === 'schedule' && (
-        <StaffScheduleView staff={filteredStaff} onRefresh={loadStaffData} />
-      )}
-
       {activeView === 'performance' && (
         <StaffPerformanceView staff={filteredStaff} />
       )}
@@ -506,10 +698,8 @@ export default function StaffManagementDashboard() {
 
       {/* Add Staff Modal */}
       {showAddModal && (
-        (console.log('🔍 [STAFF] Rendering AddStaffModal'), true) && (
         <AddStaffModal
           onClose={() => {
-            console.log('🔍 [STAFF] Modal close triggered')
             setShowAddModal(false)
             setAddButtonLoading(false)
             if (addStaffTimeoutRef.current) {
@@ -525,7 +715,81 @@ export default function StaffManagementDashboard() {
             loadStaffData()
           }}
         />
-      ))}
+      )}
+      
+      {/* Edit Availability Modal */}
+      {editingAvailability && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-lg">
+            <StaffAvailabilityEditor
+              staffMember={editingAvailability}
+              currentAvailability={editingAvailability.metadata?.availability || editingAvailability.availability}
+              onSave={() => {
+                setEditingAvailability(null)
+                loadStaffData()
+              }}
+              onCancel={() => setEditingAvailability(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Staff Detail Modal */}
+      {selectedStaff && (
+        <StaffDetailModal
+          staff={selectedStaff}
+          onClose={() => setSelectedStaff(null)}
+          onUpdate={(updatedStaff) => {
+            console.log('📝 [DASHBOARD] onUpdate received:', updatedStaff)
+            
+            // Validate updatedStaff data to prevent crashes
+            if (!updatedStaff || typeof updatedStaff !== 'object') {
+              console.error('❌ [DASHBOARD] Invalid updatedStaff data received:', updatedStaff)
+              toast.error('Invalid staff data received from server')
+              return
+            }
+            
+            // Ensure required fields exist
+            if (!updatedStaff.id && !updatedStaff.user_id) {
+              console.error('❌ [DASHBOARD] Missing required ID fields:', updatedStaff)
+              toast.error('Staff update failed - missing ID')
+              return
+            }
+            
+            // Use user_id as fallback if id is missing
+            const staffId = updatedStaff.id || updatedStaff.user_id
+            
+            // Update the staff member in the list
+            setStaff(prevStaff => 
+              prevStaff.map(member => {
+                const currentId = member.id || member.user_id
+                return currentId === staffId 
+                  ? { ...member, ...updatedStaff, id: currentId } // Preserve the ID
+                  : member
+              })
+            )
+            
+            console.log('✅ [DASHBOARD] Staff list updated successfully')
+            
+            // Note: Removed loadStaffData() call to prevent race condition
+            // The local state update above is sufficient since we have fresh API data
+            // Close modal if staff was deactivated
+            if (!updatedStaff.is_active) {
+              setSelectedStaff(null)
+            } else {
+              // Update selected staff with new data - with validation
+              setSelectedStaff(current => {
+                if (!current) return current
+                return {
+                  ...current,
+                  ...updatedStaff,
+                  id: current.id || current.user_id // Preserve original ID
+                }
+              })
+            }
+          }}
+        />
+      )}
     </div>
   )
 }
