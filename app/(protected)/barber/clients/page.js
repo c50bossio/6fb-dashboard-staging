@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import toast from 'react-hot-toast'
 import ExportCSV from '../../../../components/customers/ExportCSV'
 import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
@@ -28,10 +28,26 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
 
-export default function BarberClients() {
+// Component to handle search params
+function BarberClientsContent({ onAction }) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  
+  useEffect(() => {
+    const action = searchParams.get('action')
+    if (action === 'import') {
+      onAction('import')
+      // Clean up URL after opening modal
+      router.replace('/barber/clients', { shallow: true })
+    }
+  }, [searchParams, onAction, router])
+  
+  return null
+}
+
+function BarberClientsPageContent({ onAction }) {
   const { user, profile } = useAuth()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [clients, setClients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all') // all, regular, new, vip
@@ -41,19 +57,14 @@ export default function BarberClients() {
   const [showImportModal, setShowImportModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
 
-  // Handle URL parameters for auto-opening modals
+  // Handle action from URL params
   useEffect(() => {
-    const action = searchParams.get('action')
-    if (action === 'import') {
+    if (onAction === 'import') {
       setShowImportModal(true)
-      // Clean up URL after opening modal
-      router.replace('/barber/clients', { shallow: true })
-    } else if (action === 'export') {
+    } else if (onAction === 'export') {
       setShowExportModal(true)
-      // Clean up URL after opening modal
-      router.replace('/barber/clients', { shallow: true })
     }
-  }, [searchParams, router])
+  }, [onAction])
 
   useEffect(() => {
     if (profile?.barbershop_id || profile?.shop_id) {
@@ -684,6 +695,17 @@ function AddClientModal({ onClose, onAdd }) {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function BarberClients() {
+  const [action, setAction] = useState(null)
+  
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <BarberClientsContent onAction={setAction} />
+      <BarberClientsPageContent onAction={action} />
+    </Suspense>
   )
 }
 

@@ -14,6 +14,7 @@ import { Fragment } from 'react'
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import unifiedStaffService from '@/lib/unified-staff-service'
 
 const daysOfWeek = [
   { value: 0, label: 'Sunday', short: 'Sun' },
@@ -32,6 +33,7 @@ export default function BarberAvailabilityManager({
   barberName,
   barbershopId
 }) {
+  console.log('🗓️ BarberAvailabilityManager props:', { barberId, barberName, barbershopId })
   const { user } = useAuth()
   const supabase = createClient()
   
@@ -51,10 +53,27 @@ export default function BarberAvailabilityManager({
   })
 
   const fetchAvailability = useCallback(async () => {
-    if (!barberId || !barbershopId) return
+    if (!barberId || !barbershopId) {
+      console.warn('⚠️ BarberAvailabilityManager: Missing barberId or barbershopId')
+      return
+    }
     
     try {
       setLoading(true)
+      console.log(`📅 Fetching availability for barber ${barberId} at barbershop ${barbershopId}`)
+      
+      // First, verify the barber exists using unified staff service
+      const barberData = await unifiedStaffService.getBarberById(barberId, barbershopId)
+      if (!barberData) {
+        console.error(`❌ Barber ${barberId} not found in barbershop ${barbershopId}`)
+        setAvailability([])
+        setLoading(false)
+        return
+      }
+      
+      console.log(`✅ Verified barber: ${barberData.display_name || barberData.name}`)
+      
+      // Fetch availability data
       const { data, error } = await supabase
         .from('barber_availability')
         .select('*')
@@ -65,9 +84,10 @@ export default function BarberAvailabilityManager({
 
       if (error) throw error
 
+      console.log(`📊 Found ${data?.length || 0} availability slots`)
       setAvailability(data || [])
     } catch (error) {
-      console.error('Error fetching availability:', error)
+      console.error('❌ Error fetching availability:', error)
     } finally {
       setLoading(false)
     }

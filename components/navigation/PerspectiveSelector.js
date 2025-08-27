@@ -12,6 +12,7 @@ import {
 import { useState, useEffect, Fragment } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
 import AddBarberModal from './AddBarberModal'
+import unifiedStaffService from '@/lib/unified-staff-service'
 
 export default function PerspectiveSelector({ selectedLocation, selectedPerspective, onPerspectiveSelect }) {
   const { user, profile } = useAuth()
@@ -31,21 +32,31 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
     try {
       setLoading(true)
       
-      // Helper function to setup mock staff data
-      const setupMockStaff = () => {
-        const mockStaff = [
-          {
-            id: 'dev-barber-1',
-            name: 'John Barber',
-            role: 'BARBER',
-            location_id: locationId
-          }
-        ]
+      console.log('🔄 PerspectiveSelector: Loading staff for location', locationId)
+      
+      // Use unified staff service with location ID as barbershop ID
+      const staffData = await unifiedStaffService.getStaff(locationId, {
+        useCache: true,
+        includeAvailability: false,
+        includeServices: false
+      })
+      
+      if (staffData.staff && staffData.staff.length > 0) {
+        console.log(`✅ PerspectiveSelector: Found ${staffData.staff.length} staff members via ${staffData.source} endpoint`)
         
-        setStaff(mockStaff)
+        // Transform staff data for perspective selector format
+        const perspectiveStaff = staffData.staff.map(member => ({
+          id: member.user_id || member.id,
+          name: member.display_name || member.name || member.full_name,
+          role: member.role || 'BARBER',
+          location_id: locationId,
+          user_id: member.user_id || member.id
+        }))
         
-        // Auto-select "My Dashboard" perspective if no staff perspective selected
-        if (!selectedPerspective && mockStaff.length > 0) {
+        setStaff(perspectiveStaff)
+        
+        // Auto-select "My Dashboard" perspective if no perspective selected
+        if (!selectedPerspective && perspectiveStaff.length > 0) {
           onPerspectiveSelect({
             type: 'owner',
             label: 'My Dashboard'
@@ -53,60 +64,35 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
         }
         
         setLoading(false)
-        return true
-      }
-      
-      // Dev environment - provide mock staff data
-      if (typeof window !== 'undefined' && 
-          (localStorage.getItem('dev_session') === 'true' || 
-           document.cookie.includes('dev_auth=true'))) {
-        setupMockStaff()
         return
       }
       
-      // Production API calls
-      let response
-      let apiCallFailed = false
-      
-      try {
-        response = await fetch('/api/calendar/location-barbers/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            locationIds: [locationId]
-          })
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          const staffList = data.barbers || []
-          setStaff(staffList)
-          
-          // Auto-select "My Dashboard" perspective if no staff perspective selected
-          if (!selectedPerspective && staffList.length > 0) {
-            onPerspectiveSelect({
-              type: 'owner',
-              label: 'My Dashboard'
-            })
-          }
-        } else {
-          // Silent fallback - no console spam
-          apiCallFailed = true
+      // Fallback to dev mock data if no real staff found
+      console.log('⚠️ PerspectiveSelector: No staff found, using fallback mock data')
+      const mockStaff = [
+        {
+          id: 'dev-barber-1',
+          name: 'John Barber',
+          role: 'BARBER',
+          location_id: locationId
         }
-      } catch (error) {
-        // Silent fallback - no console spam
-        apiCallFailed = true
+      ]
+      
+      setStaff(mockStaff)
+      
+      // Auto-select "My Dashboard" perspective
+      if (!selectedPerspective) {
+        onPerspectiveSelect({
+          type: 'owner',
+          label: 'My Dashboard'
+        })
       }
       
-      // Fallback to mock data if API calls fail
-      if (apiCallFailed) {
-        setupMockStaff()
-        return
-      }
+      setLoading(false)
       
     } catch (error) {
+      console.error('❌ PerspectiveSelector: Error loading staff:', error)
+      
       // Final fallback to mock data on any error
       const mockStaff = [
         {
@@ -125,7 +111,7 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
           label: 'My Dashboard'
         })
       }
-    } finally {
+      
       setLoading(false)
     }
   }
@@ -137,6 +123,11 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
   const handleBarberAdded = (newBarber) => {
     setStaff(prev => [...prev, newBarber])
     setShowAddBarberModal(false)
+    
+    // Invalidate staff cache to ensure fresh data on next load
+    if (selectedLocation?.id) {
+      unifiedStaffService.invalidateCache(selectedLocation.id)
+    }
   }
 
   const getPerspectiveOptions = () => {

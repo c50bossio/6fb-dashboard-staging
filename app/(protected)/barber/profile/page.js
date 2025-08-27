@@ -12,7 +12,7 @@ import {
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import { useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import BarberTipSettings from '@/components/barber/BarberTipSettings'
 import ReviewsList from '@/components/reviews/ReviewsList'
 import ReviewStats from '@/components/reviews/ReviewStats'
@@ -20,10 +20,29 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import useReviews from '@/hooks/useReviews'
 import { createClient } from '@/lib/supabase/client'
 
-export default function BarberProfilePage() {
-  const { user, profile: userProfile } = useAuth()
+// Component to handle search params
+function BarberProfileContent({ onTabChange }) {
   const searchParams = useSearchParams()
-  const [activeTab, setActiveTab] = useState('basic')
+  
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['basic', 'branding', 'services', 'tips', 'availability', 'portfolio', 'reviews', 'social'].includes(tab)) {
+      onTabChange(tab)
+    }
+  }, [searchParams, onTabChange])
+  
+  return null
+}
+
+function BarberProfilePageContent({ activeTab }) {
+  const { user, profile: userProfile } = useAuth()
+  const [currentTab, setCurrentTab] = useState(activeTab || 'basic')
+  
+  useEffect(() => {
+    if (activeTab) {
+      setCurrentTab(activeTab)
+    }
+  }, [activeTab])
   const [barbershopId, setBarbershopId] = useState(null)
   
   // Get reviews for this barber
@@ -85,13 +104,6 @@ export default function BarberProfilePage() {
     }
   }, [user?.id])
 
-  // Handle tab from URL params
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if (tab && ['basic', 'branding', 'services', 'tips', 'availability', 'portfolio', 'reviews', 'social'].includes(tab)) {
-      setActiveTab(tab)
-    }
-  }, [searchParams])
 
   const loadProfile = async () => {
     try {
@@ -240,10 +252,10 @@ export default function BarberProfilePage() {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setCurrentTab(tab.id)}
                   className={`
                     flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm
-                    ${activeTab === tab.id
+                    ${currentTab === tab.id
                       ? 'border-amber-500 text-amber-700'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }
@@ -259,7 +271,7 @@ export default function BarberProfilePage() {
           {/* Tab Content */}
           <div className="p-6">
             {/* Basic Info Tab */}
-            {activeTab === 'basic' && (
+            {currentTab === 'basic' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -344,7 +356,7 @@ export default function BarberProfilePage() {
             )}
 
             {/* Branding Tab */}
-            {activeTab === 'branding' && (
+            {currentTab === 'branding' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
@@ -470,7 +482,7 @@ export default function BarberProfilePage() {
             )}
 
             {/* Services Tab */}
-            {activeTab === 'services' && (
+            {currentTab === 'services' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Your Services</h3>
@@ -515,7 +527,7 @@ export default function BarberProfilePage() {
             )}
 
             {/* Availability Tab */}
-            {activeTab === 'availability' && (
+            {currentTab === 'availability' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -602,7 +614,7 @@ export default function BarberProfilePage() {
             )}
 
             {/* Portfolio Tab */}
-            {activeTab === 'portfolio' && (
+            {currentTab === 'portfolio' && (
               <div className="space-y-6">
                 <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                   <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -620,7 +632,7 @@ export default function BarberProfilePage() {
             )}
 
             {/* Reviews Tab */}
-            {activeTab === 'reviews' && (
+            {currentTab === 'reviews' && (
               <div className="space-y-6">
                 {/* Review Stats */}
                 <ReviewStats 
@@ -665,7 +677,7 @@ export default function BarberProfilePage() {
             )}
 
             {/* Tip Settings Tab */}
-            {activeTab === 'tips' && (
+            {currentTab === 'tips' && (
               <div className="space-y-6">
                 {barbershopId ? (
                   <BarberTipSettings 
@@ -684,7 +696,7 @@ export default function BarberProfilePage() {
             )}
 
             {/* Social Links Tab */}
-            {activeTab === 'social' && (
+            {currentTab === 'social' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -794,5 +806,16 @@ export default function BarberProfilePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function BarberProfilePage() {
+  const [activeTab, setActiveTab] = useState('basic')
+  
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <BarberProfileContent onTabChange={setActiveTab} />
+      <BarberProfilePageContent activeTab={activeTab} />
+    </Suspense>
   )
 }

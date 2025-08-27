@@ -21,6 +21,7 @@ import { Card } from "@/components/ui/card.jsx"
 import { getDisplayName, nameMatches } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
+import unifiedStaffService from '@/lib/unified-staff-service'
 import PayrollDashboard from '../payroll/PayrollDashboard'
 import AddStaffModal from './AddStaffModal'
 import StaffAvailabilityEditor from './StaffAvailabilityEditor'
@@ -51,259 +52,64 @@ export default function StaffManagementDashboard() {
   const loadStaffData = useCallback(async () => {
     try {
       setLoading(true)
-      const supabase = createClient()
+      console.log('📋 StaffManagementDashboard: Loading staff data...')
       
-      // Get user's barbershop
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      // Get barbershop ID from barbershop_staff table (users table doesn't have shop_id/barbershop_id)
-      const { data: staffRecord } = await supabase
-        .from('barbershop_staff')
-        .select('barbershop_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .single()
-
-      const barbershopId = staffRecord?.barbershop_id
-      if (!barbershopId) return
-
-      // Fetch staff data first (following CLAUDE.md - no PostgREST joins)
-      const { data: staffData, error } = await supabase
-        .from('barbershop_staff')
-        .select('*')
-        .eq('barbershop_id', barbershopId)
-        .eq('is_active', true)
-
-      if (error) {
-        console.error('🚨 [STAFF] Error loading staff:', error)
-        toast.error('Failed to load staff members')
-        return
-      }
-      
-      // Get user IDs from staff data
-      const userIds = staffData?.map(s => s.user_id).filter(Boolean) || []
-      
-      // Fetch user profiles separately (using users table)
-      // CRITICAL: Include name field and map to expected format for proper name display
-      let profiles = []
-      if (userIds.length > 0) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('users')
-          .select('id, email, full_name, phone, avatar_url')
-          .in('id', userIds)
-        
-        if (profileError) {
-          console.error('🚨 [STAFF] Profile query error:', profileError)
-        }
-        
-        // Map users table structure - keep original data without splitting
-        profiles = profileData || []
-      }
-
-      // Fetch commission balances separately
-      let commissionBalances = []
-      if (userIds.length > 0) {
-        const { data: balanceData, error: balanceError } = await supabase
-          .from('barber_commission_balances')
-          .select('barber_id, pending_amount, total_earned')
-          .in('barber_id', userIds)
-        
-        if (balanceError) {
-          console.error('🚨 [STAFF] Commission balance query error:', balanceError)
-          // Don't fail completely, but log for production monitoring
-        }
-        
-        commissionBalances = balanceData || []
-      }
-
-      // Merge the data in JavaScript with production logging
-      const mergedStaffData = (staffData || []).map(staff => {
-        // Production logging for data debugging
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[STAFF DATA]', {
-            staffId: staff.id,
-            userId: staff.user_id,
-            hasMetadata: !!staff.metadata,
-            metadataKeys: staff.metadata ? Object.keys(staff.metadata) : []
-          })
-        }
-        
-        const profile = profiles.find(p => p.id === staff.user_id) || {}
-        const balance = commissionBalances.find(b => b.barber_id === staff.user_id) || {}
-        
-        // Check if this is a pending invitation
-        const isPendingInvitation = staff.metadata?.pending_invitation === true
-        const invitedName = staff.metadata?.invited_name
-        const invitedEmail = staff.metadata?.invited_email
-        
-        if (process.env.NODE_ENV === 'development' && !profile.id) {
-          console.warn('[STAFF PROFILE MISSING]', {
-            staffUserId: staff.user_id,
-            searchedIn: userIds,
-            foundProfiles: profiles.map(p => p.id)
-          })
-        }
-        
-        return {
-          ...staff,
-          user: profile,
-          commission_balance: balance.pending_amount ? [balance] : [],
-          // Add invitation data for easier access
-          isPendingInvitation,
-          invitedName,
-          invitedEmail
-        }
+      // Use unified staff service to get comprehensive staff data
+      const staffData = await unifiedStaffService.getStaff(null, {
+        useCache: true,
+        includeAvailability: true,
+        includeServices: true,
+        forceRefresh: false
       })
-
-      // Calculate metrics from appointments (last 30 days)
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
-      const { data: appointments } = await supabase
-        .from('appointments')
-        .select('barber_id, status, price')
-        .eq('barbershop_id', barbershopId)
-        .gte('start_time', thirtyDaysAgo.toISOString())
-
-      // Process staff data with metrics - use merged data with user profiles
-      const staffWithMetrics = mergedStaffData.map(member => {
-        const memberAppointments = appointments?.filter(a => a.barber_id === member.user_id) || []
-        const completedAppointments = memberAppointments.filter(a => a.status === 'completed')
-        const cancelledAppointments = memberAppointments.filter(a => a.status === 'cancelled')
-        const noShowAppointments = memberAppointments.filter(a => a.status === 'no_show')
-        const revenue = completedAppointments.reduce((sum, a) => sum + (a.price || 0), 0)
-        
-        // Calculate performance rating based on completion rate and other factors
-        const totalScheduledAppointments = memberAppointments.length
-        const completionRate = totalScheduledAppointments > 0 ? (completedAppointments.length / totalScheduledAppointments) : 0
-        const noShowRate = totalScheduledAppointments > 0 ? (noShowAppointments.length / totalScheduledAppointments) : 0
-        
-        // Rating scale: 0-5 stars based on performance metrics
-        let performanceRating = 0
-        if (totalScheduledAppointments >= 5) { // Only rate if they have sufficient data
-          performanceRating = Math.min(5, Math.max(1, 
-            (completionRate * 4) + // Up to 4 stars for completion rate
-            (noShowRate < 0.05 ? 1 : 0) // Bonus star for low no-show rate
-          ))
-        }
-
-        // Validate financial calculations
-        const pendingCommission = member.commission_balance?.[0]?.pending_amount || 0
-        
-        // Production validation: ensure financial numbers are valid
-        const validatedRevenue = isNaN(revenue) ? 0 : Math.max(0, revenue)
-        const validatedPendingCommission = isNaN(pendingCommission) ? 0 : Math.max(0, pendingCommission)
-        
-        // Log any suspicious financial data for production monitoring
-        if (revenue < 0 || pendingCommission < 0) {
-          console.warn('🚨 [STAFF] Negative financial values detected:', {
-            userId: member.user_id,
-            revenue,
-            pendingCommission
-          })
-        }
-
-        return {
-          ...member,
-          metrics: {
-            totalBookings: completedAppointments.length,
-            revenue: parseFloat(validatedRevenue.toFixed(2)), // Always 2 decimal places for currency
-            rating: parseFloat(performanceRating.toFixed(1)),
-            pendingCommission: parseFloat(validatedPendingCommission.toFixed(2)), // Always 2 decimal places for currency
-            completionRate: parseFloat((completionRate * 100).toFixed(1)),
-            noShowRate: parseFloat((noShowRate * 100).toFixed(1))
-          }
-        }
-      })
-
-      setStaff(staffWithMetrics)
-
-      // Calculate dashboard metrics with validation
-      const totalPendingPayroll = staffWithMetrics.reduce((sum, s) => {
-        const commission = s.metrics.pendingCommission || 0
-        return sum + commission
-      }, 0)
       
-      // Production validation for total payroll
-      if (totalPendingPayroll < 0 || isNaN(totalPendingPayroll)) {
-        console.error('🚨 [STAFF] Invalid total payroll calculation:', totalPendingPayroll)
+      if (staffData.staff && staffData.staff.length > 0) {
+        console.log(`✅ StaffManagementDashboard: Loaded ${staffData.staff.length} staff members via ${staffData.source} endpoint`)
+        
+        // The unified staff service already provides enhanced staff data
+        setStaff(staffData.staff)
+        
+        // Calculate metrics from the enhanced staff data
+        const totalStaff = staffData.staff.length
+        const activeToday = staffData.staff.filter(s => s.is_active).length
+        const pendingPayroll = staffData.staff.reduce((sum, s) => sum + (s.metrics?.pendingCommission || 0), 0)
+        const avgRating = staffData.staff.reduce((sum, s) => sum + (s.metrics?.averageRating || 0), 0) / totalStaff || 0
+        
+        setMetrics({
+          totalStaff,
+          activeToday,
+          pendingPayroll,
+          avgRating
+        })
+        
+        console.log(`📊 Staff metrics: ${totalStaff} total, ${activeToday} active, $${pendingPayroll.toFixed(2)} pending payroll`)
+      } else {
+        console.log('⚠️ StaffManagementDashboard: No staff data found')
+        setStaff([])
+        setMetrics({
+          totalStaff: 0,
+          activeToday: 0,
+          pendingPayroll: 0,
+          avgRating: 0
+        })
       }
-      const avgStaffRating = staffWithMetrics.filter(s => s.metrics.rating > 0)
-        .reduce((sum, s, _, arr) => sum + s.metrics.rating / arr.length, 0)
-
-      // Calculate who should be active today based on their working schedule
-      const today = new Date()
-      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
-      const todayName = dayNames[today.getDay()]
       
-      const activeToday = staffWithMetrics.filter(s => {
-        if (!s.is_active) return false // Must be generally active
-        
-        // Check if they work today based on their schedule
-        const workingDays = s.metadata?.working_days
-        if (workingDays && typeof workingDays === 'object') {
-          return workingDays[todayName] === true
-        }
-        
-        // Fallback: assume they work Monday-Saturday if no schedule data
-        return todayName !== 'sunday'
-      }).length
-
-      setMetrics({
-        totalStaff: staffWithMetrics.length,
-        activeToday: activeToday,
-        pendingPayroll: totalPendingPayroll,
-        avgRating: parseFloat(avgStaffRating.toFixed(1))
-      })
-
     } catch (error) {
-      console.error('Error in loadStaffData:', error)
+      console.error('❌ StaffManagementDashboard: Error loading staff:', error)
+      toast.error('Failed to load staff members')
+      setStaff([])
     } finally {
       setLoading(false)
     }
   }, [])
-  
-  // Debounced Add Staff button handler to prevent rapid clicks
-  const handleAddStaffClick = useCallback(() => {
-    console.log('🔍 [STAFF] Add Staff button clicked', { 
-      addButtonLoading, 
-      showAddModal,
-      hasTimeoutRef: !!addStaffTimeoutRef.current 
-    })
-    
-    // Prevent multiple rapid clicks
-    if (addButtonLoading || showAddModal) {
-      console.log('🔍 [STAFF] Button click prevented - already loading or modal open')
-      return
-    }
-    
-    // Clear any existing timeout
-    if (addStaffTimeoutRef.current) {
-      clearTimeout(addStaffTimeoutRef.current)
-    }
-    
-    setAddButtonLoading(true)
-    console.log('🔍 [STAFF] Setting loading state to true')
-    
-    // Add slight delay to show loading state and prevent race conditions
-    addStaffTimeoutRef.current = setTimeout(() => {
-      console.log('🔍 [STAFF] Timeout triggered - opening modal')
-      setShowAddModal(true)
-      setAddButtonLoading(false)
-    }, 300)
-  }, [addButtonLoading, showAddModal])
-  
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (addStaffTimeoutRef.current) {
-        clearTimeout(addStaffTimeoutRef.current)
-      }
-    }
-  }, [])
 
   useEffect(() => {
+    loadStaffData()
+  }, [loadStaffData])
+
+  // Handle staff added - refresh data and invalidate cache
+  const handleStaffAdded = useCallback(() => {
+    console.log('🎉 Staff member added, refreshing data...')
+    unifiedStaffService.invalidateCache()
     loadStaffData()
   }, [loadStaffData])
 
@@ -712,7 +518,7 @@ export default function StaffManagementDashboard() {
             if (addStaffTimeoutRef.current) {
               clearTimeout(addStaffTimeoutRef.current)
             }
-            loadStaffData()
+            handleStaffAdded()
           }}
         />
       )}

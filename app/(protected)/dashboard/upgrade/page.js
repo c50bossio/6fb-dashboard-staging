@@ -2,7 +2,7 @@
 
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 const plans = {
@@ -60,14 +60,24 @@ const plans = {
   }
 }
 
-export default function UpgradePage() {
-  const { profile, subscriptionTier } = useAuth()
+// Component to handle search params
+function UpgradeSearchHandler({ onRequiredTier, onFeatureName }) {
   const searchParams = useSearchParams()
+  
+  useEffect(() => {
+    const requiredTier = searchParams.get('required')
+    const featureName = searchParams.get('feature')
+    onRequiredTier(requiredTier)
+    onFeatureName(featureName)
+  }, [searchParams, onRequiredTier, onFeatureName])
+  
+  return null
+}
+
+function UpgradePageContent({ requiredTier, featureName }) {
+  const { profile, subscriptionTier } = useAuth()
   const router = useRouter()
   const [billingPeriod, setBillingPeriod] = useState('monthly')
-  
-  const requiredTier = searchParams.get('required')
-  const featureName = searchParams.get('feature')
   
   const handleUpgrade = async (tier) => {
     // TODO: Integrate with Stripe for payment processing
@@ -228,5 +238,17 @@ export default function UpgradePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function UpgradePage() {
+  const [requiredTier, setRequiredTier] = useState(null)
+  const [featureName, setFeatureName] = useState(null)
+  
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <UpgradeSearchHandler onRequiredTier={setRequiredTier} onFeatureName={setFeatureName} />
+      <UpgradePageContent requiredTier={requiredTier} featureName={featureName} />
+    </Suspense>
   )
 }
