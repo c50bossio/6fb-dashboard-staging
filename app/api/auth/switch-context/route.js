@@ -220,8 +220,8 @@ async function logContextSwitch(userId, contextType, contextId, supabase) {
   } catch (error) {
     console.error('Error logging context switch:', error)
     // Fallback to console logging
-    // // Debug log removed for production
-.toISOString(),
+    console.log('Context switch fallback log:', {
+      timestamp: new Date().toISOString(),
       action: 'context_switch'
     })
   }

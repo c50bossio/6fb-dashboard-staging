@@ -581,10 +581,9 @@ return events
     // FullCalendar.io event sources handle data fetching automatically
     // No manual API calls needed - event sources will refresh when dependencies change
     if (createEventSources.length === 0 && barbershopId) {
-      // // Debug log removed for production
-} else if (createEventSources.length > 0) {
-      // // Debug log removed for production
-`)
+      console.log('No event sources created yet, barbershopId:', barbershopId)
+    } else if (createEventSources.length > 0) {
+      console.log(`Event sources created: ${createEventSources.length}`)
     }
   }, [createEventSources, barbershopId])
   
@@ -596,13 +595,11 @@ return events
 
   // Auto-refresh handler for FullCalendar.io event sources
   const handleAutoRefresh = useCallback(() => {
-    // // Debug log removed for production
-// FullCalendar.io will automatically refetch when event sources change
+    // FullCalendar.io will automatically refetch when event sources change
     // We can trigger a refetch by updating the dependency that eventSources depends on
     const timestamp = new Date().getTime()
     setLastUpdate(timestamp)
-    // // Debug log removed for production
-.toLocaleTimeString())
+    console.log('Calendar refresh triggered:', new Date().toLocaleTimeString())
   }, [])
 
   const fetchServices = async () => {

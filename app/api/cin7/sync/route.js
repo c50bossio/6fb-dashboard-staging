@@ -120,16 +120,13 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
 
     // Check for nested inventory data
     if (cin7Product.Inventory) {
-      // // Debug log removed for production
-.substring(0, 200))
+      console.log('Product has Inventory field:', JSON.stringify(cin7Product.Inventory).substring(0, 200))
     }
     if (cin7Product.StockLevels) {
-      // // Debug log removed for production
-.substring(0, 200))
+      console.log('Product has StockLevels field:', JSON.stringify(cin7Product.StockLevels).substring(0, 200))
     }
     if (cin7Product.Locations) {
-      // // Debug log removed for production
-.substring(0, 200))
+      console.log('Product has Locations field:', JSON.stringify(cin7Product.Locations).substring(0, 200))
     }
     
     // Check any numeric fields

@@ -4,10 +4,8 @@ export async function POST(request) {
   try {
     const { accountId, apiKey } = await request.json()
 
-    // // Debug log removed for production
-+ '...' : 'not provided')
-    // // Debug log removed for production
-+ '...' : 'not provided')
+    console.log('CIN7 Testing connection with accountId:', accountId ? accountId.substring(0, 10) + '...' : 'not provided')
+    console.log('API Key provided:', apiKey ? apiKey.substring(0, 10) + '...' : 'not provided')
     
     if (!accountId || !apiKey) {
       return NextResponse.json(
