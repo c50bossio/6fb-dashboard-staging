@@ -4,9 +4,9 @@
  * Provides fallback UI and error recovery mechanisms
  */
 
+import * as Sentry from '@sentry/nextjs'
 import React from 'react'
 import { logger } from '@/lib/logger'
-import * as Sentry from '@sentry/nextjs'
 
 const errorLogger = logger.child('error-boundary')
 

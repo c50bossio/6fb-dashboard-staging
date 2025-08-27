@@ -6,9 +6,9 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '../SupabaseAuthProvider'
-import DashboardOnboarding from '../dashboard/DashboardOnboarding'
 import { isTier } from '@/lib/subscription-tiers'
+import DashboardOnboarding from '../dashboard/DashboardOnboarding'
+import { useAuth } from '../SupabaseAuthProvider'
 
 // Tier detection and flow routing
 const determineOnboardingFlow = (profile) => {

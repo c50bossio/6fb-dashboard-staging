@@ -5,7 +5,6 @@
  * Intelligently modifies onboarding flow based on user segmentation and behavior
  */
 
-import smartSuggestions from '../../services/SmartSuggestionsAPI'
 import { 
   DocumentArrowUpIcon, 
   BuildingOfficeIcon, 
@@ -13,6 +12,7 @@ import {
   MapIcon, 
   CheckBadgeIcon 
 } from '@heroicons/react/24/outline'
+import smartSuggestions from '../../services/SmartSuggestionsAPI'
 
 export default class AdaptiveFlowEngine {
   constructor(segmentationData = {}, userProfile = {}) {

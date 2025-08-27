@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { logGMBAPIRequest } from '@/lib/gmb-audit-logger'
 import { checkGMBRateLimit, logGMBApiUsage } from '@/lib/gmb-rate-limiter'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

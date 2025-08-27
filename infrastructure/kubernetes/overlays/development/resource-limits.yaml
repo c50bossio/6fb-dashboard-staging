@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-resource-patch
+spec:
+  template:
+    spec:
+      containers:
+      - name: frontend
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+            ephemeral-storage: 1Gi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+            ephemeral-storage: 2Gi
+        env:
+        - name: NODE_OPTIONS
+          value: "--max_old_space_size=256"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-resource-patch
+spec:
+  template:
+    spec:
+      containers:
+      - name: backend
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+            ephemeral-storage: 1Gi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+            ephemeral-storage: 2Gi
+        env:
+        - name: UVICORN_WORKERS
+          value: "1"
+        - name: UVICORN_MAX_WORKERS
+          value: "2"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-resource-patch
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+            ephemeral-storage: 500Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+            ephemeral-storage: 1Gi
+        args:
+        - redis-server
+        - --appendonly
+        - "yes"
+        - --maxmemory
+        - "128mb"
+        - --maxmemory-policy
+        - allkeys-lru
+        - --loglevel
+        - debug

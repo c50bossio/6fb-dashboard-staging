@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { detectAgentFromCommand, formatForSpeech, getVoiceProfile } from '../../../../lib/voice-personalities'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 /**
  * Voice Assistant API Endpoint

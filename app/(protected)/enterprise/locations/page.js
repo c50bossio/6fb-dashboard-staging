@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   BuildingStorefrontIcon,
   MapPinIcon,
@@ -15,6 +14,7 @@ import {
   ExclamationCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function EnterpriseLocations() {

@@ -12,12 +12,12 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
+import Script from 'next/script'
 import { useState, useEffect } from 'react'
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
-import Script from 'next/script'
 
 export default function BillingPage() {
   const [billingData, setBillingData] = useState(null)

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const updateAppointmentSchema = z.object({
   scheduled_at: z.string().datetime().optional(),
@@ -19,7 +19,7 @@ const updateAppointmentSchema = z.object({
 
 export async function GET(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { id } = params
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -57,7 +57,7 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { id } = params
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -166,7 +166,7 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { id } = params
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()

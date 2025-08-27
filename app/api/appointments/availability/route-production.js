@@ -7,7 +7,7 @@ import { DateTime } from 'luxon'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { withAuth, withRateLimit, createAuthenticatedClient } from '@/middleware/auth'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const availabilityQuerySchema = z.object({
   barber_id: z.string().uuid('Invalid barber ID format'),

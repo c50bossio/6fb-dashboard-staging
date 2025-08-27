@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   ChartBarIcon,
   CurrencyDollarIcon,
@@ -15,6 +14,7 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 const businessModels = [
   {

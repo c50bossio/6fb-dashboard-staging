@@ -105,6 +105,20 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
     );
   }
   
+  // Extract image URLs from CIN7 product data
+  const imageUrl = cin7Product.ImageURL || 
+                   cin7Product.ImageUrl || 
+                   cin7Product.Image || 
+                   cin7Product.PrimaryImage ||
+                   cin7Product.Images?.[0]?.URL ||
+                   cin7Product.Images?.[0]?.Url ||
+                   null
+  
+  // Create thumbnail URL (if main image exists)
+  const thumbnailUrl = imageUrl ? 
+    (cin7Product.ThumbnailURL || cin7Product.ThumbnailUrl || imageUrl) : 
+    null
+  
   // Debug logging for first few products to understand structure
   if (cin7Product.SKU === '_1_' || cin7Product.SKU === 'T4512PP' || cin7Product.SKU === 'FXT45C') {
     console.log(`\n📊 Analyzing Product: ${cin7Product.Name}`)
@@ -158,6 +172,10 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
     category: mapCategoryForBarbershop(cin7Product.Category),
     brand: cin7Product.Brand || '',
     sku: cin7Product.SKU || '',
+    barcode: cin7Product.Barcode || cin7Product.EAN || cin7Product.UPC || '',
+    supplier: cin7Product.Supplier || cin7Product.SupplierName || cin7Product.DefaultSupplier || '',
+    image_url: imageUrl,
+    thumbnail_url: thumbnailUrl,
     
     // Pricing
     cost_price: parseFloat(
@@ -239,12 +257,24 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
       cin7Product.MaximumStockLevel ||
       100
     ),
+    reorder_point: parseInt(
+      cin7Product.ReorderPoint ||
+      cin7Product.MinimumBeforeReorder ||
+      10
+    ),
     
     // Status and metadata
     is_active: cin7Product.Status === 'Active' || cin7Product.IsActive === true,
     track_inventory: cin7Product.IsInventoried !== false,
     sync_enabled: true,
     last_cin7_update: new Date().toISOString(),
+    
+    // POS settings - auto-enable products that seem professional/retail-ready
+    show_in_pos: cin7Product.ShowInPOS || 
+                 cin7Product.IsRetail || 
+                 detectProfessionalUse(cin7Product) ||
+                 (cin7Product.PriceTier1 > 0 && cin7Product.Status === 'Active'),
+    pos_display_order: cin7Product.DisplayOrder || cin7Product.SortOrder || 0,
     
     // Timestamps
     created_at: cin7Product.CreatedDate || new Date().toISOString(),
@@ -595,7 +625,7 @@ export async function POST(request) {
       
       // First, delete existing products for this barbershop to avoid conflicts
       const { error: deleteError } = await supabase
-        .from('products')
+        .from('master_products')
         .delete()
         .eq('barbershop_id', barbershop.id)
         .eq('sync_enabled', true)  // Only delete synced products
@@ -606,7 +636,7 @@ export async function POST(request) {
       
       // Insert new products from Cin7
       const { data: syncedProducts, error: syncError } = await supabase
-        .from('products')
+        .from('master_products')
         .insert(localProducts)
         .select()
       

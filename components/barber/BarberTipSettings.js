@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { FaPercent, FaDollarSign, FaToggleOn, FaToggleOff } from 'react-icons/fa'
+import { createClient } from '@/lib/supabase/client'
 
 export default function BarberTipSettings({ barberId, barbershopId }) {
   const supabase = createClient()

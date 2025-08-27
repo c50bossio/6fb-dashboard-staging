@@ -23,7 +23,7 @@ export async function GET(request) {
   }
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data, error } = await supabase.from('profiles').select('count').limit(1)
     health.services.supabase = {
       status: error ? 'error' : 'healthy',
@@ -96,65 +96,12 @@ export async function GET(request) {
     health.services.anthropic = { status: 'error', message: error.message }
   }
 
-  try {
-    const hasConfig = process.env.PUSHER_APP_ID && 
-                     process.env.NEXT_PUBLIC_PUSHER_KEY && 
-                     process.env.PUSHER_SECRET && 
-                     process.env.NEXT_PUBLIC_PUSHER_CLUSTER
-    
-    health.services.pusher = {
-      status: hasConfig ? 'configured' : 'not_configured',
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || undefined
-    }
-  } catch (error) {
-    health.services.pusher = { status: 'error', message: error.message }
-  }
-
-  try {
-    health.services.posthog = {
-      status: process.env.NEXT_PUBLIC_POSTHOG_KEY ? 'configured' : 'not_configured',
-      host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com'
-    }
-  } catch (error) {
-    health.services.posthog = { status: 'error', message: error.message }
-  }
-
-  try {
-    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
-      const validDSN = process.env.NEXT_PUBLIC_SENTRY_DSN.includes('sentry.io')
-      health.services.sentry = {
-        status: validDSN ? 'configured' : 'error',
-        message: validDSN ? undefined : 'Invalid DSN format'
-      }
-    } else {
-      health.services.sentry = { status: 'not_configured' }
-    }
-  } catch (error) {
-    health.services.sentry = { status: 'error', message: error.message }
-  }
-
-  try {
-    const hasConfig = process.env.NOVU_API_KEY && process.env.NEXT_PUBLIC_NOVU_APP_IDENTIFIER
-    health.services.novu = {
-      status: hasConfig ? 'configured' : 'not_configured'
-    }
-  } catch (error) {
-    health.services.novu = { status: 'error', message: error.message }
-  }
-
-  try {
-    health.services.edgeConfig = {
-      status: process.env.EDGE_CONFIG ? 'configured' : 'not_configured'
-    }
-  } catch (error) {
-    health.services.edgeConfig = { status: 'error', message: error.message }
-  }
 
   const errors = Object.values(health.services).filter(s => s.status === 'error')
   const unconfigured = Object.values(health.services).filter(s => s.status === 'not_configured')
   const healthy = Object.values(health.services).filter(s => s.status === 'healthy' || s.status === 'configured')
 
-  const criticalServices = ['supabase', 'stripe']
+  const criticalServices = ['supabase', 'stripe', 'openai', 'anthropic']
   const criticalErrors = criticalServices.filter(service => 
     health.services[service]?.status === 'error'
   )

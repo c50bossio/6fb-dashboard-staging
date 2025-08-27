@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(request) {
   try {
     const { barbershop_id, payment_amount, payment_intent_id } = await request.json()
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Calculate credits earned from this payment
     // ADJUSTED FORMULA: To give ~600 credits at $25k volume (~555 transactions)
@@ -134,7 +134,7 @@ export async function GET(request) {
       }, { status: 400 })
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current credit balance
     const { data: credits, error } = await supabase

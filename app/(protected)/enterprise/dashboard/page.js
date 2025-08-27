@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   ChartPieIcon,
   BuildingStorefrontIcon,
@@ -11,6 +10,7 @@ import {
   ChartBarIcon,
   DocumentChartBarIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function EnterpriseDashboard() {

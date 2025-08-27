@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
+import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -52,12 +53,34 @@ export async function GET(request) {
       isActiveBarber = !!staffRecord
     }
 
+    // Normalize name data for consistent handling
+    const nameData = normalizeNameData({
+      firstName: profile.first_name,
+      lastName: profile.last_name,
+      fullName: profile.full_name
+    })
+    
+    const displayName = getDisplayName({
+      firstName: nameData.firstName,
+      lastName: nameData.lastName,
+      fullName: nameData.fullName,
+      email: profile.email,
+      defaultName: 'User'
+    })
+
     return NextResponse.json({
       success: true,
       profile: {
         id: profile.id,
         email: profile.email,
-        full_name: profile.full_name,
+        // Provide both name formats for backward compatibility
+        first_name: nameData.firstName,
+        last_name: nameData.lastName,
+        full_name: nameData.fullName,
+        firstName: nameData.firstName,  // camelCase version
+        lastName: nameData.lastName,    // camelCase version
+        fullName: nameData.fullName,    // camelCase version
+        display_name: displayName,
         role: profile.role,
         shop_id: profile.shop_id,
         barbershop_id: profile.barbershop_id,

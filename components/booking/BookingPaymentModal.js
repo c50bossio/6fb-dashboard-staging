@@ -13,9 +13,9 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
+import TipSelectionWidget from '../checkout/TipSelectionWidget'
 import PaymentForm from '../payment/PaymentForm'
 import { useAuth } from '../SupabaseAuthProvider'
-import TipSelectionWidget from '../checkout/TipSelectionWidget'
 
 export default function BookingPaymentModal({
   isOpen,

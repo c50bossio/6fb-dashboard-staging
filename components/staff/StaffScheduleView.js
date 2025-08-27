@@ -1,10 +1,5 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import EnhancedProfessionalCalendar from '@/components/calendar/EnhancedProfessionalCalendar'
-import { Card } from "@/components/ui/card.jsx"
-import Button from '@/components/ui/Button'
 import { 
   CalendarIcon,
   PlusIcon,
@@ -13,6 +8,11 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import EnhancedProfessionalCalendar from '@/components/calendar/EnhancedProfessionalCalendar'
+import Button from '@/components/ui/Button'
+import { Card } from "@/components/ui/card.jsx"
+import { createClient } from '@/lib/supabase/client'
 import { formatTime } from '@/lib/utils'
 
 export default function StaffScheduleView({ staff, onRefresh }) {

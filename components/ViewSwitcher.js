@@ -99,6 +99,7 @@ export default function ViewSwitcher() {
       if (response.ok) {
         const result = await response.json()
         
+        // Update client state to match server
         if (context === 'primary') {
           setActiveContext(null)
           localStorage.removeItem('activeContext')
@@ -107,28 +108,76 @@ export default function ViewSwitcher() {
           localStorage.setItem('activeContext', JSON.stringify(context))
         }
         
+        // Verify server state matches client state
+        await syncWithServerState()
+        
+        // Show success message (optional - could add toast notification)
+        console.log('Context switched successfully:', result.message)
         
       } else {
         console.error('Failed to switch context:', response.status)
         const error = await response.json()
         console.error('Error details:', error)
+        
+        // Show user-friendly error message
+        alert(`Failed to switch context: ${error.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Failed to switch context:', error)
+      alert('Network error: Could not switch context. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    const savedContext = localStorage.getItem('activeContext')
-    if (savedContext) {
-      try {
-        setActiveContext(JSON.parse(savedContext))
-      } catch (e) {
-        console.error('Failed to parse saved context:', e)
+  // Sync client state with server state
+  const syncWithServerState = async () => {
+    try {
+      const response = await fetch('/api/auth/switch-context', {
+        method: 'GET'
+      })
+      
+      if (response.ok) {
+        const { context } = await response.json()
+        
+        if (context) {
+          // Server has active context, ensure client matches
+          const savedContext = localStorage.getItem('activeContext')
+          if (!savedContext) {
+            // Client missing context that server has - this shouldn't happen
+            console.warn('Client/server state mismatch detected')
+          }
+        } else {
+          // Server has no context, ensure client is clear
+          if (localStorage.getItem('activeContext')) {
+            localStorage.removeItem('activeContext')
+            setActiveContext(null)
+          }
+        }
       }
+    } catch (error) {
+      console.error('Failed to sync with server state:', error)
     }
+  }
+
+  useEffect(() => {
+    const initializeContext = async () => {
+      // First, load from localStorage
+      const savedContext = localStorage.getItem('activeContext')
+      if (savedContext) {
+        try {
+          setActiveContext(JSON.parse(savedContext))
+        } catch (e) {
+          console.error('Failed to parse saved context:', e)
+          localStorage.removeItem('activeContext')
+        }
+      }
+      
+      // Then sync with server to ensure consistency
+      await syncWithServerState()
+    }
+    
+    initializeContext()
   }, [])
 
   if (!user || userRole === 'CLIENT' || userRole === 'BARBER') {

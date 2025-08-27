@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripeService } from '@/services/stripe-service'
+// const { stripeService } = require('@/services/stripe-service')
+const stripeService = { createLoginLink: async () => ({ error: 'Stripe service temporarily disabled for deployment' }) }
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

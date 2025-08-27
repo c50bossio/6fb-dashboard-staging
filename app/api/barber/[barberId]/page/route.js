@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // GET - Retrieve barber page settings
 export async function GET(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { barberId } = params
 
     // Get current user - allow public access for viewing
@@ -120,7 +120,7 @@ export async function GET(request, { params }) {
 // POST/PUT - Save barber page settings
 export async function POST(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { barberId } = params
     const body = await request.json()
 
@@ -312,7 +312,7 @@ export async function PUT(request, params) {
 // PATCH - Approve/reject barber page (shop owners only)
 export async function PATCH(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { barberId } = params
     const { action, notes } = await request.json()
 

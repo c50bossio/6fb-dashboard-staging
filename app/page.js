@@ -13,13 +13,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import AIAgentsShowcase from '../components/landing/AIAgentsShowcase'
-import AnalyticsPreview from '../components/landing/AnalyticsPreview'
 import BarberSuccessStories from '../components/landing/BarberSuccessStories'
-import BrandOwnershipSection from '../components/landing/BrandOwnershipSection'
-import FeaturesSection from '../components/landing/FeaturesSection'
-import PricingCalculator from '../components/landing/PricingCalculator'
+import PlatformPreview from '../components/landing/PlatformPreview'
 import PricingSection from '../components/landing/PricingSection'
+import ProblemSection from '../components/landing/ProblemSection'
+import SolutionOverview from '../components/landing/SolutionOverview'
 import Logo, { LogoHeader } from '../components/ui/Logo'
 
 export default function HomePage() {
@@ -188,62 +186,52 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Features Section - What you get */}
+        {/* Problem Section - Establish marketplace pain points */}
+        <ProblemSection />
+
+        {/* Solution Overview - Why 6FB is different */}
         <section id="features">
-          <FeaturesSection />
+          <SolutionOverview />
         </section>
 
-        {/* How It Works Section */}
-        <section id="how-it-works">
-          <BrandOwnershipSection />
+        {/* Success Stories / Testimonials - Build early trust */}
+        <section id="testimonials">
+          <BarberSuccessStories />
         </section>
 
-        {/* AI Agents Showcase */}
-        <AIAgentsShowcase />
-
-        {/* Analytics Preview */}
-        <AnalyticsPreview />
+        {/* Platform Preview - Combined AI & Analytics */}
+        <PlatformPreview />
 
         {/* Pricing Section - Clear pricing tiers */}
         <section id="pricing">
           <PricingSection />
         </section>
 
-        {/* Success Stories / Testimonials */}
-        <section id="testimonials">
-          <BarberSuccessStories />
-        </section>
-
-        {/* Pricing Calculator - ROI Calculator */}
-        <PricingCalculator />
-
-        {/* Final CTA Section */}
-        <section className="py-24 bg-gradient-to-br from-gray-900 to-black text-white">
+        {/* Final CTA Section - Simplified */}
+        <section className="py-16 bg-gradient-to-r from-brand-600 to-brand-500 text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl font-bold mb-6">
-              Ready to Take Control of Your Business?
+            <h2 className="text-3xl font-bold mb-4">
+              Ready to Own Your Success?
             </h2>
-            <p className="text-xl text-gray-300 mb-12 leading-relaxed">
-              Join 500+ barbers who've stopped renting space in marketplaces 
-              and started building their own empires.
+            <p className="text-lg text-brand-100 mb-8">
+              Join 500+ barbers building their empires, not renting space in marketplaces.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/subscribe"
-                className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
+                className="bg-white text-brand-600 px-8 py-3 rounded-lg text-lg font-bold hover:shadow-lg transition-all duration-300 inline-flex items-center justify-center"
               >
-                Get Started Today
+                Start Free Trial
                 <ArrowRightIcon className="h-5 w-5 ml-2" />
               </Link>
               
-              <button className="bg-white text-gray-900 px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300">
-                Schedule a Demo
-              </button>
-            </div>
-            
-            <div className="text-sm text-gray-400">
-              No credit card required • Cancel anytime • Full support included
+              <Link
+                href="/pricing-calculator"
+                className="bg-transparent border-2 border-white hover:bg-white hover:text-brand-600 text-white px-8 py-3 rounded-lg text-lg font-bold transition-all duration-300"
+              >
+                Calculate Savings
+              </Link>
             </div>
           </div>
         </section>

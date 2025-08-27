@@ -71,7 +71,7 @@ async function registerCin7Webhooks(accountId, apiKey, webhookUrl) {
 export async function GET(request) {
   try {
     const isDevelopment = process.env.NODE_ENV === 'development'
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Check for bypass header (for testing production deployments)
     const bypassHeader = request.headers.get('x-cin7-bypass')
@@ -263,7 +263,7 @@ export async function GET(request) {
 
 export async function DELETE() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

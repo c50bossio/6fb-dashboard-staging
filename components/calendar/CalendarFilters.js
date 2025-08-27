@@ -1,6 +1,5 @@
 'use client'
 
-import { Fragment, useState } from 'react'
 import { Dialog, Disclosure, Transition } from '@headlessui/react'
 import {
   XMarkIcon,
@@ -14,6 +13,7 @@ import {
   XCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline'
+import { Fragment, useState } from 'react'
 
 const SERVICE_CATEGORIES = [
   { id: 'haircut', label: 'Haircut', color: 'bg-blue-100 text-blue-800' },

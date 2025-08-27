@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { withProfileValidation } from '@/middleware/profile-validation'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -25,7 +26,56 @@ export async function GET() {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ profile })
+    // Check for barbershop association - multiple ways a user can be associated
+    let barbershopId = null;
+    let barbershopData = null;
+
+    // 1. Direct shop_id in profile (individual barber subscription)
+    if (profile.shop_id) {
+      barbershopId = profile.shop_id;
+      const { data: shopData } = await supabase
+        .from('barbershops')
+        .select('*')
+        .eq('id', profile.shop_id)
+        .single();
+      barbershopData = shopData;
+    }
+    // 2. Barbershop_id field (alternative field name)
+    else if (profile.barbershop_id) {
+      barbershopId = profile.barbershop_id;
+      const { data: shopData } = await supabase
+        .from('barbershops')
+        .select('*')
+        .eq('id', profile.barbershop_id)
+        .single();
+      barbershopData = shopData;
+    }
+    // 3. Employee of a barbershop (via barbershop_staff table)
+    else {
+      const { data: staffRecord } = await supabase
+        .from('barbershop_staff')
+        .select('barbershop_id, role')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single();
+
+      if (staffRecord) {
+        barbershopId = staffRecord.barbershop_id;
+        const { data: shopData } = await supabase
+          .from('barbershops')
+          .select('*')
+          .eq('id', staffRecord.barbershop_id)
+          .single();
+        barbershopData = shopData;
+        profile.staff_role = staffRecord.role; // Add staff role to profile
+      }
+    }
+
+    // Add barbershop info to profile response
+    profile.barbershop_id = barbershopId;
+    profile.barbershop = barbershopData;
+
+    return NextResponse.json(profile)
 
   } catch (error) {
     console.error('Error in GET /api/profile:', error)
@@ -35,3 +85,52 @@ export async function GET() {
     )
   }
 }
+
+// Wrap PUT/PATCH requests with profile validation middleware
+export const PUT = withProfileValidation(async function PUT(request) {
+  try {
+    const supabase = await createClient()
+    
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    
+    // Validate user can update this profile
+    if (body.id && body.id !== user.id) {
+      return NextResponse.json({ error: 'Unauthorized profile update' }, { status: 403 })
+    }
+
+    // Update profile with validated data
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        ...body,
+        id: user.id, // Ensure we're updating the correct profile
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', user.id)
+      .select()
+      .single()
+
+    if (updateError) {
+      console.error('Error updating profile:', updateError)
+      return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
+    }
+
+    return NextResponse.json(updatedProfile)
+
+  } catch (error) {
+    console.error('Error in PUT /api/profile:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+})
+
+// Alias PATCH to PUT for flexibility
+export const PATCH = PUT

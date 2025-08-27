@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const metrics = {
   http_requests_total: new Map(),

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getTierLimits, normalizeTierName, SUBSCRIPTION_TIERS } from '@/lib/subscription-tiers'
 import { createClient } from '@/lib/supabase/server-client'
-import { getTierLimits } from '@/lib/subscription-tiers'
 
 export async function GET(request) {
   try {
@@ -45,6 +45,10 @@ export async function GET(request) {
     // Skip subscription history for now
     const history = []
     
+    // Normalize the subscription tier for consistent display
+    const normalizedTier = normalizeTierName(userData.subscription_tier || 'free')
+    const tierDisplayInfo = getTierDisplayInfo(normalizedTier)
+    
     const response = {
       user: {
         id: userData.id,
@@ -53,19 +57,19 @@ export async function GET(request) {
         memberSince: userData.created_at
       },
       subscription: {
-        tier: userData.subscription_tier || 'free',
-        status: userData.subscription_status || 'inactive',
+        tier: tierDisplayInfo.name, // Use display-friendly tier name
+        status: userData.subscription_status || 'active',
         isActive: userData.subscription_status === 'active',
-        plan_name: getFeaturesByTier(userData.subscription_tier || 'free').name,
+        plan_name: tierDisplayInfo.name,
         currentPeriodStart: null, // TODO: Add these fields to profiles if needed
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
         daysRemaining: 0
       },
       usage: {
-        sms: { used: 0, included: 100, remaining: 100, percentage: 0 },
-        email: { used: 0, included: 500, remaining: 500, percentage: 0 },
-        ai: { used: 0, included: 1000, remaining: 1000, percentage: 0 },
+        sms: { used: 0, included: getTierLimits(userData.subscription_tier).smsCredits, remaining: getTierLimits(userData.subscription_tier).smsCredits, percentage: 0 },
+        email: { used: 0, included: getTierLimits(userData.subscription_tier).emailCredits, remaining: getTierLimits(userData.subscription_tier).emailCredits, percentage: 0 },
+        ai: { used: 0, included: getTierLimits(userData.subscription_tier).aiTokens, remaining: getTierLimits(userData.subscription_tier).aiTokens, percentage: 0 },
         staff: { limit: getTierLimits(userData.subscription_tier).staff }
       },
       billing: {
@@ -78,7 +82,7 @@ export async function GET(request) {
         shop_id: userData.shop_id,
         barbershop_id: userData.barbershop_id
       },
-      features: getFeaturesByTier(userData.subscription_tier || 'free')
+      features: getFeaturesByTier(normalizedTier)
     }
     
     return NextResponse.json(response)
@@ -92,10 +96,37 @@ export async function GET(request) {
   }
 }
 
+function getTierDisplayInfo(tier) {
+  const displayNames = {
+    [SUBSCRIPTION_TIERS.FREE]: 'Free',
+    [SUBSCRIPTION_TIERS.INDIVIDUAL]: 'Individual Barber',
+    [SUBSCRIPTION_TIERS.PROFESSIONAL]: 'Shop Owner',
+    [SUBSCRIPTION_TIERS.ENTERPRISE]: 'Enterprise'
+  }
+  
+  return {
+    name: displayNames[tier] || 'Free',
+    tier: tier
+  }
+}
+
 function getFeaturesByTier(tier) {
   const features = {
-    barber: {
-      name: 'Barber Plan',
+    [SUBSCRIPTION_TIERS.FREE]: {
+      name: 'Free',
+      features: [
+        'Full barbershop management',
+        'Up to 15 staff members',
+        '500 SMS credits/month',
+        '1,000 email credits/month', 
+        '5,000 AI tokens/month',
+        'Complete booking system',
+        'Basic analytics',
+        'Single location'
+      ]
+    },
+    [SUBSCRIPTION_TIERS.INDIVIDUAL]: {
+      name: 'Individual Barber',
       features: [
         'Personal booking page',
         '1 staff member',
@@ -106,7 +137,7 @@ function getFeaturesByTier(tier) {
         'Standard support'
       ]
     },
-    shop: {
+    [SUBSCRIPTION_TIERS.PROFESSIONAL]: {
       name: 'Shop Owner',
       features: [
         'Custom shop domain',
@@ -120,7 +151,7 @@ function getFeaturesByTier(tier) {
         'Inventory tracking'
       ]
     },
-    enterprise: {
+    [SUBSCRIPTION_TIERS.ENTERPRISE]: {
       name: 'Enterprise',
       features: [
         'Multiple shop locations',

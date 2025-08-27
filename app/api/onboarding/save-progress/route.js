@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Create service client for bypassing RLS - check if key exists
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -212,7 +212,7 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     console.log('🔍 API GET: Starting progress retrieval...')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Create service client for bypassing RLS - check if key exists
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

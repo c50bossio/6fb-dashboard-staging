@@ -16,36 +16,36 @@ import {
   CalendarDaysIcon,
   DocumentCheckIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../SupabaseAuthProvider'
+import { useState, useEffect, useRef } from 'react'
 
 // Import existing onboarding components
 import internalAnalytics from '@/lib/internal-analytics'
+
+// Import new onboarding components
+import AdaptiveFlowEngine from '../onboarding/AdaptiveFlowEngine'
 import BookingRulesSetup from '../onboarding/BookingRulesSetup'
 import BusinessInfoSetup from '../onboarding/BusinessInfoSetup'
+import BusinessPlanningSetup from '../onboarding/BusinessPlanningSetup'
+import ContextualGuidanceProvider from '../onboarding/ContextualGuidanceProvider'
+
+// Import new data migration and planning components
+import DataVerificationSetup from '../onboarding/DataVerificationSetup'
 import DomainSelector from '../onboarding/DomainSelector'
 import FinancialSetupEnhanced from '../onboarding/FinancialSetupEnhanced'
 import GoalsSelector from '../onboarding/GoalsSelector'
 import LivePreview from '../onboarding/LivePreview'
-
-// Import new onboarding components
-import WelcomeSegmentation from '../onboarding/WelcomeSegmentation'
-import AdaptiveFlowEngine from '../onboarding/AdaptiveFlowEngine'
-import ContextualGuidanceProvider from '../onboarding/ContextualGuidanceProvider'
-
-// Import new data migration and planning components
-import PlatformTailoredImport from '../onboarding/PlatformTailoredImport'
-import DataVerificationSetup from '../onboarding/DataVerificationSetup'
-import BusinessPlanningSetup from '../onboarding/BusinessPlanningSetup'
 import LocationManagementSetup from '../onboarding/LocationManagementSetup'
 
 // Import professional illustrations
 import { WelcomeIllustration, ProgressRing } from '../onboarding/OnboardingIllustrations'
+import PlatformTailoredImport from '../onboarding/PlatformTailoredImport'
 import RoleSelector from '../onboarding/RoleSelector'
 import ScheduleSetup from '../onboarding/ScheduleSetup'
 import ServiceSetup from '../onboarding/ServiceSetup'
 import StaffSetup from '../onboarding/StaffSetup'
+import WelcomeSegmentation from '../onboarding/WelcomeSegmentation'
+import { useAuth } from '../SupabaseAuthProvider'
 
 // QuickOnboardingFlow component not available - using standard flow
 

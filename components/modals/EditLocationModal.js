@@ -1,11 +1,11 @@
 'use client'
 
-import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, BuildingOfficeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { createBrowserClient } from '@supabase/ssr'
-import { useAuth } from '../SupabaseAuthProvider'
+import { Fragment, useState, useEffect } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
+import { useAuth } from '../SupabaseAuthProvider'
 import DeleteLocationModal from './DeleteLocationModal'
 
 export default function EditLocationModal({ isOpen, onClose, location }) {

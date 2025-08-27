@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { MapPin, Phone, Clock, Star, Calendar, Instagram, Facebook, Twitter } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/Separator'
-import { MapPin, Phone, Clock, Star, Calendar, Instagram, Facebook, Twitter } from 'lucide-react'
 
 export default function PublicShopWebsite({ initialData }) {
   const [shopData, setShopData] = useState(initialData)

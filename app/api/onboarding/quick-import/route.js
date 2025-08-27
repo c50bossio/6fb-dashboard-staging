@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 import Papa from 'papaparse'
-import { parsePlatformData } from '@/lib/integrations/platform-parsers'
 import { DataTransformer } from '@/lib/integrations/data-transformer'
 import { DuplicateDetector } from '@/lib/integrations/duplicate-detector'
+import { parsePlatformData } from '@/lib/integrations/platform-parsers'
 import { platformImportConfigs, detectPlatform, mapPlatformData } from '@/lib/platform-import-configs'
 
 // Create Supabase client with service role for batch operations

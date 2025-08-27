@@ -1,0 +1,37 @@
+{
+  "timestamp": "2025-08-25T23:05:21.765Z",
+  "testSuite": "Standalone Barber Auto-Selection Test",
+  "totalTests": 1,
+  "passed": 0,
+  "failed": 1,
+  "warnings": 0,
+  "tests": [
+    {
+      "test": "TEST_SUITE",
+      "status": "FAIL",
+      "message": "Test suite failed: this.page.waitForTimeout is not a function",
+      "details": null,
+      "timestamp": "2025-08-25T23:05:22.926Z"
+    }
+  ],
+  "screenshots": [
+    "/Users/bossio/6FB AI Agent System/test-screenshots/99-error-test-suite-failed.png"
+  ],
+  "summary": {
+    "successRate": "0.0%",
+    "totalTests": 1,
+    "passed": 0,
+    "failed": 1,
+    "warnings": 0,
+    "overallStatus": "FAIL"
+  },
+  "testEnvironment": {
+    "baseUrl": "http://localhost:9999",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "timestamp": "2025-08-25T23:05:22.926Z",
+    "testType": "Standalone Mock Interface"
+  }
+}

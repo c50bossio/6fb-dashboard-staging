@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
+import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -44,7 +45,9 @@ export async function GET(request) {
     const { data: staff, error: staffError } = await supabase
       .from('barbershop_staff')
       .select(`
+        id,
         user_id,
+        barbershop_id,
         role,
         is_active,
         created_at
@@ -68,7 +71,7 @@ export async function GET(request) {
     // Get profile details for each staff member
     const userIds = staff.map(s => s.user_id)
     const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id, full_name, email, avatar_url')
       .in('id', userIds)
 
@@ -80,14 +83,40 @@ export async function GET(request) {
     // Combine staff data with profile information
     const staffWithProfiles = staff.map(staffMember => {
       const profile = profiles.find(p => p.id === staffMember.user_id)
+      
+      // Normalize name data for consistent handling  
+      // Note: users table only has full_name field, split it for compatibility
+      const nameData = normalizeNameData({
+        fullName: profile?.full_name
+      })
+      
+      const displayName = getDisplayName({
+        firstName: nameData.firstName,
+        lastName: nameData.lastName,
+        fullName: nameData.fullName,
+        email: profile?.email,
+        defaultName: 'Staff Member'
+      })
+      
       return {
-        user_id: staffMember.user_id,
+        // STANDARDIZED: Use user_id as primary identifier
+        id: staffMember.user_id,       // PRIMARY ID for all API calls
+        user_id: staffMember.user_id,  // Explicit user ID field
+        staff_id: staffMember.id,       // barbershop_staff.id for reference only
+        barbershop_id: staffMember.barbershop_id,
         role: staffMember.role,
         is_active: staffMember.is_active,
-        full_name: profile?.full_name || 'Unknown',
+        created_at: staffMember.created_at,
+        // Provide both name formats for backward compatibility
+        first_name: nameData.firstName,
+        last_name: nameData.lastName,
+        full_name: nameData.fullName,
+        firstName: nameData.firstName, // camelCase version
+        lastName: nameData.lastName,   // camelCase version
+        fullName: nameData.fullName,   // camelCase version
         email: profile?.email || '',
         avatar_url: profile?.avatar_url || null,
-        display_name: profile?.full_name || profile?.email?.split('@')[0] || 'Staff Member'
+        display_name: displayName
       }
     })
 

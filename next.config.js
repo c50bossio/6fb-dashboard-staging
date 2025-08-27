@@ -1,3 +1,9 @@
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
 const nextConfig = {
   reactStrictMode: true,
   eslint: {
@@ -20,6 +26,9 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_BUILD_ID: Date.now().toString(),
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+    // Explicitly expose Supabase environment variables
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
   
   // Experimental features for optimizing bundle
@@ -153,4 +162,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

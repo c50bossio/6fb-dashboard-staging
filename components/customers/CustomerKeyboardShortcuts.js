@@ -7,7 +7,6 @@
 
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   MagnifyingGlassIcon,
   CommandLineIcon,
@@ -23,6 +22,7 @@ import {
   StarIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 
 /**
  * Keyboard shortcut hook

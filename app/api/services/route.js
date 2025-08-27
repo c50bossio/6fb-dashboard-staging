@@ -15,7 +15,7 @@ const serviceSchema = z.object({
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -81,7 +81,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {

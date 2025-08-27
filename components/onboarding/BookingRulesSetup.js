@@ -14,8 +14,8 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { FieldNormalizer } from '@/lib/booking-rules-engine/FieldNormalizer'
 import { useOnboardingSession } from '@/contexts/OnboardingContext'
+import { FieldNormalizer } from '@/lib/booking-rules-engine/FieldNormalizer'
 
 export default function BookingRulesSetup({ data = {}, updateData, onComplete }) {
   // Use Supabase-backed onboarding session

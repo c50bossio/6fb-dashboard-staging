@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   UserIcon,
   CheckCircleIcon,
@@ -13,6 +12,7 @@ import {
   ArrowRightIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ProgressiveAccountCreation({ 

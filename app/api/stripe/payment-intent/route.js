@@ -18,7 +18,7 @@ export async function POST(request) {
       )
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Get shop's Stripe Connect account
     const { data: shop } = await supabase

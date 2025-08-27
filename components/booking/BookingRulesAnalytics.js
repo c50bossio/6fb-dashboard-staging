@@ -1,12 +1,22 @@
 'use client'
 
+import { format, subDays, startOfDay, endOfDay } from 'date-fns'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  AlertTriangle, 
+  CheckCircle, 
+  Clock, 
+  Users, 
+  Calendar,
+  Activity,
+  Download,
+  RefreshCw,
+  Info,
+  Wifi,
+  WifiOff
+} from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
 import { 
   BarChart, 
   Bar, 
@@ -24,24 +34,14 @@ import {
   Area,
   AreaChart
 } from 'recharts'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  Users, 
-  Calendar,
-  Activity,
-  Download,
-  RefreshCw,
-  Info,
-  Wifi,
-  WifiOff
-} from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useBookingRules } from '@/hooks/useBookingRules'
 import CustomerBehaviorScoring from './CustomerBehaviorScoring'
-import { format, subDays, startOfDay, endOfDay } from 'date-fns'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d']
 
@@ -608,7 +608,7 @@ function renderCustomizedLabel({ cx, cy, midAngle, innerRadius, outerRadius, per
 }
 
 function calculateEffectivenessScore(summary) {
-  if (!summary) return 0
+  if (!summary || summary.total_evaluations === 0) return 0
   
   const successRate = (summary.allowed_bookings / summary.total_evaluations) * 100
   const responseTimeScore = Math.max(0, 100 - (summary.avg_evaluation_time / 10))
@@ -620,7 +620,7 @@ function calculateEffectivenessScore(summary) {
 function generateRecommendations(data) {
   const recommendations = []
   
-  if (!data?.summary) return recommendations
+  if (!data?.summary || data.summary.total_evaluations === 0) return recommendations
   
   const violationRate = (data.summary.total_violations / data.summary.total_evaluations) * 100
   

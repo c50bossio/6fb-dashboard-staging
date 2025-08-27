@@ -57,7 +57,7 @@ function SuccessPageContent() {
   const initializeUser = async () => {
     try {
       const sessionId = searchParams.get('session_id')
-      const plan = searchParams.get('plan') || 'unknown'
+      const plan = searchParams.get('plan') || 'shop'
       const billing = searchParams.get('billing') || 'monthly'
       
       console.log('✅ Payment successful, initializing user...')
@@ -76,11 +76,17 @@ function SuccessPageContent() {
       
       if (response.ok && result.success) {
         console.log('✅ User profile created successfully:', result.profile?.email)
+        if (result.barbershop) {
+          console.log('✅ Barbershop created:', result.barbershop.name)
+        }
+        if (result.role) {
+          console.log('✅ User role set to:', result.role)
+        }
         setLoading(false)
         
         setTimeout(() => {
-          console.log('🔄 Redirecting to welcome page for account setup...')
-          router.push(`/dashboard?plan=${plan}&billing=${billing}`)
+          console.log('🔄 Redirecting to dashboard...')
+          router.push(`/dashboard?plan=${plan}&billing=${billing}&setup=complete`)
         }, 2000)
         
       } else {

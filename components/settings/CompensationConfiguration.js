@@ -1,10 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { Card } from '../ui/card'
-import Button from '../ui/Button'
 import { 
   CurrencyDollarIcon,
   UserGroupIcon,
@@ -17,8 +12,13 @@ import {
   ScaleIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
-import { formatCurrency } from '@/lib/utils'
+import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
+import { formatCurrency } from '@/lib/utils'
+import Button from '../ui/Button'
+import { Card } from '../ui/card'
 
 export default function CompensationConfiguration() {
   const { user, profile } = useAuth()

@@ -37,8 +37,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useNavigation } from '../contexts/NavigationContext'
-import Logo, { LogoHeader } from './ui/Logo'
 import { useAuth } from './SupabaseAuthProvider'
+import Logo, { LogoHeader } from './ui/Logo'
 
 const navigation = [
   { 
@@ -162,6 +162,13 @@ const shopManagement = [
     href: '/shop/products', 
     icon: CubeIcon,
     description: 'Manage retail products and track inventory'
+  },
+  { 
+    name: 'Inventory Management', 
+    href: '/inventory', 
+    icon: ShoppingBagIcon,
+    description: 'Manage inventory and browse wholesale marketplace',
+    badge: 'Wholesale'
   }
   // - Point of Sale (process sales)
   // - Advanced Reports (detailed analytics)

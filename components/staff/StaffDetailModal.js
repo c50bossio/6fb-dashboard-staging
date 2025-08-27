@@ -360,25 +360,11 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
           </div>
         </div>
 
-        {/* Debug Panel (Development Only) */}
-        {process.env.NODE_ENV === 'development' && isEditing && (
-          {/* Debug components removed for production
+        {/* Debug Panel (Development Only) - Disabled for production */}
+        {false && (
           <div className="space-y-4">
-            <StaffSaveDebugger 
-              staff={staff}
-              onSaveAttempt={(success, result) => {
-                if (success) {
-                  console.log('Debug save succeeded:', result)
-                  toast.success('Debug test passed!')
-                } else {
-                  console.error('Debug save failed:', result)
-                }
-              }}
-            />
-            <ProfileUpdateTest userId={staff?.user_id} />
+            {/* StaffSaveDebugger and ProfileUpdateTest removed for production */}
           </div>
-          */}
-          <div></div>
         )}
 
         {/* Content Grid */}

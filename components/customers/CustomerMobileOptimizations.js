@@ -7,7 +7,6 @@
 
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
 import {
   ChevronRightIcon,
   ChevronDownIcon,
@@ -18,6 +17,7 @@ import {
   CalendarIcon,
   UserIcon
 } from '@heroicons/react/24/outline'
+import React, { useState, useRef, useEffect } from 'react'
 import { customerDesignTokens } from './CustomerDesignSystem'
 
 /**

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  labels:
+    app.kubernetes.io/name: 6fb-ai-agent-system
+    app.kubernetes.io/managed-by: kustomize
+data:
+  # API Configuration
+  api-url: "http://backend:8000"
+  redis-url: "redis://redis:6379"
+  
+  # Logging Configuration
+  log-level: "info"
+  
+  # Feature Flags
+  enable-rag: "true"
+  enable-mock-fallback: "false"
+  
+  # Application Settings
+  cors-origins: "http://localhost:3000,http://localhost:9999"
+  
+  # Database Configuration (non-sensitive)
+  use-fastapi: "true"
+  use-supabase: "true"
+  docker-environment: "true"
+  
+  # Resource Configuration
+  workers: "2"
+  
+  # Redis Configuration
+  redis-maxmemory: "256mb"
+  redis-maxmemory-policy: "allkeys-lru"

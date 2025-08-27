@@ -17,7 +17,7 @@ export async function POST(request) {
       )
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Get the payment intent from Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)

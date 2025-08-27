@@ -1,0 +1,353 @@
+# Consolidated Prometheus Configuration for 6FB AI Agent System
+# Production-ready monitoring with comprehensive service discovery and alerting
+# Version: 2.0 - Consolidated Configuration
+
+global:
+  # Scrape interval for all jobs (optimized for production)
+  scrape_interval: 15s
+  
+  # Evaluation interval for alerting rules
+  evaluation_interval: 15s
+  
+  # External labels for federation and long-term storage
+  external_labels:
+    cluster: '6fb-ai-agent-system'
+    environment: '${ENVIRONMENT:-production}'
+    datacenter: '${DATACENTER:-primary}'
+    version: '${APP_VERSION:-latest}'
+
+# Rule files for alerting and recording rules
+rule_files:
+  - "alerts.yml"
+  - "recording-rules.yml"
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      timeout: 10s
+      api_version: v2
+      path_prefix: /
+
+# =============================================================================
+# SCRAPE CONFIGURATIONS
+# =============================================================================
+
+scrape_configs:
+  # ---------------------------------------------------------------------------
+  # CORE INFRASTRUCTURE MONITORING
+  # ---------------------------------------------------------------------------
+  
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+    
+  # System metrics via Node Exporter
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.+):.*'
+        replacement: '${1}'
+        
+  # Container metrics via cAdvisor
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    honor_labels: true
+
+  # ---------------------------------------------------------------------------
+  # APPLICATION SERVICES
+  # ---------------------------------------------------------------------------
+  
+  # FastAPI Backend Application (Primary)
+  - job_name: 'fastapi-backend'
+    static_configs:
+      - targets: ['backend:8000']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    honor_labels: true
+    metric_relabel_configs:
+      # Add service label for better organization
+      - target_label: service
+        replacement: 'backend'
+    
+  # Next.js Frontend Application
+  - job_name: 'nextjs-frontend'
+    static_configs:
+      - targets: ['frontend:3000']
+    scrape_interval: 30s
+    metrics_path: /api/metrics
+    scrape_timeout: 10s
+    metric_relabel_configs:
+      - target_label: service
+        replacement: 'frontend'
+    
+  # Nginx Reverse Proxy
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:8080'] # nginx-prometheus-exporter port
+    scrape_interval: 30s
+    metrics_path: /metrics
+    metric_relabel_configs:
+      - target_label: service
+        replacement: 'nginx'
+
+  # ---------------------------------------------------------------------------
+  # DATABASE & CACHING SERVICES
+  # ---------------------------------------------------------------------------
+  
+  # PostgreSQL Database
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: postgres-exporter:9187
+    
+  # Redis Cache
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # ---------------------------------------------------------------------------
+  # AI SERVICES & BUSINESS LOGIC
+  # ---------------------------------------------------------------------------
+  
+  # AI Services (Custom Metrics)
+  - job_name: 'ai-services'
+    static_configs:
+      - targets: ['backend:8000']
+    scrape_interval: 60s
+    metrics_path: /metrics/ai
+    scrape_timeout: 30s
+    params:
+      format: ['prometheus']
+    metric_relabel_configs:
+      - target_label: component
+        replacement: 'ai-services'
+    
+  # Business Metrics
+  - job_name: 'business-metrics'
+    static_configs:
+      - targets: ['backend:8000']
+    scrape_interval: 60s
+    metrics_path: /metrics/business
+    scrape_timeout: 15s
+    metric_relabel_configs:
+      - target_label: component
+        replacement: 'business'
+    
+  # Commission & Payout System
+  - job_name: 'commission-system'
+    static_configs:
+      - targets: ['backend:8000']
+    scrape_interval: 120s  # Less frequent for cost tracking
+    metrics_path: /metrics/commissions
+    scrape_timeout: 20s
+
+  # ---------------------------------------------------------------------------
+  # EXTERNAL MONITORING & HEALTH CHECKS
+  # ---------------------------------------------------------------------------
+  
+  # Blackbox Exporter (Endpoint Health)
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          # Production endpoints
+          - https://agent.6fb.ai/health
+          - https://agent.6fb.ai/api/health
+          - https://agent.6fb.ai/api/v1/health
+          # Staging endpoints
+          - https://staging-agent.6fb.ai/health
+          - https://staging-agent.6fb.ai/api/health
+          # Internal services
+          - http://backend:8000/health
+          - http://frontend:3000/api/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    
+  # SSL Certificate Monitoring
+  - job_name: 'ssl-certificates'
+    metrics_path: /probe
+    params:
+      module: [ssl_expiry]
+    static_configs:
+      - targets:
+          - https://agent.6fb.ai:443
+          - https://staging-agent.6fb.ai:443
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+    scrape_interval: 300s  # Check every 5 minutes
+    scrape_timeout: 30s
+
+  # ---------------------------------------------------------------------------
+  # SECURITY & COMPLIANCE MONITORING
+  # ---------------------------------------------------------------------------
+  
+  # Security Metrics
+  - job_name: 'security-monitoring'
+    static_configs:
+      - targets: ['backend:8000']
+    scrape_interval: 30s
+    metrics_path: /metrics/security
+    metric_relabel_configs:
+      - target_label: component
+        replacement: 'security'
+    
+  # Audit Trail Metrics
+  - job_name: 'audit-metrics'
+    static_configs:
+      - targets: ['backend:8000']
+    scrape_interval: 120s
+    metrics_path: /metrics/audit
+
+  # ---------------------------------------------------------------------------
+  # DEVELOPMENT & TESTING (Environment-specific)
+  # ---------------------------------------------------------------------------
+  
+  # Development services (only in dev environment)
+  - job_name: 'dev-services'
+    static_configs:
+      - targets: ['dev-backend:8001', 'dev-frontend:3001']
+    scrape_interval: 60s
+    metrics_path: /metrics
+    # Only scrape in development
+    relabel_configs:
+      - source_labels: [__name__]
+        target_label: environment
+        replacement: 'development'
+
+# =============================================================================
+# STORAGE CONFIGURATION
+# =============================================================================
+
+storage:
+  tsdb:
+    # Data retention (adjust based on storage capacity)
+    retention.time: 30d
+    retention.size: 50GB
+    
+    # Performance optimizations
+    wal-compression: true
+    
+    # Block configuration for optimal query performance
+    min-block-duration: 2h
+    max-block-duration: 25h
+
+# =============================================================================
+# QUERY CONFIGURATION
+# =============================================================================
+
+query:
+  # Concurrent query limits
+  max-concurrency: 20
+  
+  # Query timeout
+  timeout: 5m
+  
+  # Maximum samples per query (prevent OOM)
+  max-samples: 50000000
+  
+  # Lookback delta for queries
+  lookback-delta: 5m
+
+# =============================================================================
+# WEB & API CONFIGURATION
+# =============================================================================
+
+web:
+  # Enable admin APIs (for automation)
+  enable-admin-api: true
+  
+  # Enable lifecycle management (for graceful shutdowns)
+  enable-lifecycle: true
+  
+  # Console configuration
+  console.templates: /etc/prometheus/consoles
+  console.libraries: /etc/prometheus/console_libraries
+  
+  # External URL for proper link generation
+  external-url: "${PROMETHEUS_EXTERNAL_URL:-http://prometheus:9090}"
+  
+  # CORS configuration for Grafana
+  web.cors.origin: "${GRAFANA_URL:-http://grafana:3000}"
+
+# =============================================================================
+# FEATURE FLAGS
+# =============================================================================
+
+feature_flags:
+  - promql-at-modifier      # Enable @ modifier in PromQL
+  - promql-negative-offset  # Enable negative offset in PromQL
+  - remote-write-receiver   # Enable remote write receiver
+
+# =============================================================================
+# REMOTE WRITE (Long-term Storage) - Optional
+# =============================================================================
+
+# Uncomment and configure for long-term storage solutions
+# remote_write:
+#   - url: "${REMOTE_WRITE_URL}"
+#     basic_auth:
+#       username: "${REMOTE_WRITE_USERNAME}"
+#       password: "${REMOTE_WRITE_PASSWORD}"
+#     queue_config:
+#       capacity: 10000
+#       max_samples_per_send: 1000
+#       batch_send_deadline: 5s
+#       min_shards: 1
+#       max_shards: 200
+#       min_backoff: 30ms
+#       max_backoff: 100ms
+#     write_relabel_configs:
+#       # Only send important metrics to reduce costs
+#       - source_labels: [__name__]
+#         regex: 'prometheus_.*|go_.*|process_.*'
+#         action: drop
+
+# =============================================================================
+# TRACING CONFIGURATION (Distributed Tracing) - Optional
+# =============================================================================
+
+# Uncomment for distributed tracing integration
+# tracing:
+#   endpoint: "${JAEGER_ENDPOINT:-jaeger:14268/api/traces}"
+#   sampling_fraction: 0.1
+#   insecure: true

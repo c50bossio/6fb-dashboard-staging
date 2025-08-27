@@ -1,14 +1,14 @@
 'use client'
 
+import { Trophy, Star, Award, Gift, Calendar, Loader2, RefreshCw } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
+import { getBadgeRarityStyle, getBadgeCategoryInfo, BADGE_CATEGORIES } from '../../utils/badgeSystem'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Progress } from '../ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-import { getBadgeRarityStyle, getBadgeCategoryInfo, BADGE_CATEGORIES } from '../../utils/badgeSystem'
 import BadgeUnlockAnimation from './BadgeUnlockAnimation'
-import { Trophy, Star, Award, Gift, Calendar, Loader2, RefreshCw } from 'lucide-react'
 
 const categoryIcons = {
   loyalty: Trophy,

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
-import cacheManager from '@/lib/cacheManager'
+import { useState } from 'react'
 import { toast } from '@/hooks/use-toast'
+import cacheManager from '@/lib/cacheManager'
 
 export default function CacheManagementPage() {
   const [isClearing, setIsClearing] = useState(false)

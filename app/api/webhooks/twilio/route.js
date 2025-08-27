@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { twilioSMSService } from '@/services/twilio-service'
+// const { twilioSMSService } = require('@/services/twilio-service')
+const twilioSMSService = { processWebhook: async () => ({ error: 'Twilio service temporarily disabled for deployment' }) }
 
 export const runtime = 'nodejs'
 

@@ -7,7 +7,7 @@ export const maxDuration = 10 // Reduced from 30 seconds - database operations a
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -61,7 +61,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -127,7 +127,7 @@ async function getDatabaseInsights(barbershopId, options = {}) {
 }
 
 async function generateInsightsToDatabase(barbershopId, businessContext = {}, forceRefresh = false) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   try {
     if (forceRefresh) {
@@ -156,7 +156,7 @@ async function generateInsightsToDatabase(barbershopId, businessContext = {}, fo
 }
 
 async function generateContextualInsights(barbershopId, businessContext) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   try {
     const { data: metrics } = await supabase

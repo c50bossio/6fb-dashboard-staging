@@ -20,9 +20,9 @@ import {
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
-import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 
 export default function ShopWebsiteCustomization() {
   const { user } = useAuth()

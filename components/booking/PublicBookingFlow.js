@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   CalendarDaysIcon,
   ClockIcon,
@@ -16,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import Cookies from 'js-cookie'
+import { useState, useEffect } from 'react'
 import ProgressiveAccountCreation from './ProgressiveAccountCreation'
 
 // Professional placeholder images for different service categories

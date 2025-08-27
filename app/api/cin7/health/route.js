@@ -12,7 +12,7 @@ export const revalidate = 0
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

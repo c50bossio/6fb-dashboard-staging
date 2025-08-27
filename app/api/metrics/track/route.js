@@ -55,7 +55,7 @@ export async function POST(request) {
     let supabaseResult = null
     if (consent.analytics) {
       try {
-        const supabase = createClient()
+        const supabase = await createClient()
         supabaseResult = await supabase
           .from('metrics_events')
           .insert([{
@@ -118,7 +118,7 @@ async function trackProductionSpecificEvents(event, properties, consent) {
   if (!consent.analytics) return
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     if (event === 'pricing_page_viewed') {
       await supabase.from('conversion_funnel').upsert({

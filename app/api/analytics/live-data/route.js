@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/analytics-cache.js';
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
@@ -147,7 +147,7 @@ export async function GET(request) {
 async function getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric) {
   try {
     const { createClient } = await import('../../../../lib/supabase/server');
-    const supabase = createClient();
+    const supabase = await createClient();
     
     if (!barbershopIds || barbershopIds.length === 0) {
       return NextResponse.json({

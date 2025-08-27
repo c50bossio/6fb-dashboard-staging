@@ -4,10 +4,10 @@ import { useEffect } from 'react'
 import errorTracker from '../lib/error-tracker'
 import { AppErrorBoundary } from './error-boundary'
 import ServiceWorkerProvider from './ServiceWorkerProvider'
+import StripeModeBanner from './StripeModeBanner'
 import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
-import StripeModeBanner from './StripeModeBanner'
 
 export default function ClientWrapper({ children }) {
   useEffect(() => {

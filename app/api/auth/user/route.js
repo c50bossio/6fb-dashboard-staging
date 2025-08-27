@@ -2,10 +2,10 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { getUserBarbershopId } from '@/lib/barbershop-helper'
-import { hasPermission } from '@/lib/permissions'
 import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
+import { hasPermission } from '@/lib/permissions'
 import { isTier } from '@/lib/subscription-tiers'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET(request) {
   const cookieStore = cookies()

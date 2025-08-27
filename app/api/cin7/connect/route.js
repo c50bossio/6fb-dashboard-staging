@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { encrypt, decrypt } from '@/lib/cin7-client.js'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * Simplified Cin7 Connection Endpoint
@@ -51,7 +51,7 @@ async function testCin7Connection(accountId, apiKey) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { accountId, apiKey } = await request.json()
 
     if (!accountId || !apiKey) {
@@ -156,7 +156,7 @@ export async function POST(request) {
 // GET - Check connection status
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

@@ -11,13 +11,13 @@ import {
   ExclamationCircleIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import BarberTipSettings from '@/components/barber/BarberTipSettings'
 import ReviewsList from '@/components/reviews/ReviewsList'
 import ReviewStats from '@/components/reviews/ReviewStats'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import useReviews from '@/hooks/useReviews'
-import BarberTipSettings from '@/components/barber/BarberTipSettings'
 import { createClient } from '@/lib/supabase/client'
 
 export default function BarberProfilePage() {

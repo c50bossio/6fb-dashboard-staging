@@ -1,10 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
 import { 
   CreditCardIcon, 
   BuildingLibraryIcon,
@@ -14,8 +9,13 @@ import {
   BellIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
-import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/client'
+import { formatCurrency } from '@/lib/utils'
 
 /**
  * Autopay Configuration Page

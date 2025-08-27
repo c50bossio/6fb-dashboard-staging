@@ -68,7 +68,7 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
         
         if (slotEnd <= endTime) {
           if (!isToday || currentSlot > now) {
-            const Booked = Math.random() > 0.7 // 30% chance of being booked
+            const mockBooked = Math.random() > 0.7 // 30% chance of being booked for demo
             
             slots.push({
               time: currentSlot.toTimeString().slice(0, 5),
@@ -227,11 +227,11 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
                 key={index}
                 onClick={() => dayStatus.isOpen && handleDateSelect(date)}
                 disabled={!dayStatus.isOpen}
-                className={`relative p-3 rounded-lg text-center transition-all ${
+                className={`relative p-4 min-h-[60px] rounded-lg text-center transition-all touch-manipulation ${
                   isSelected
                     ? 'bg-olive-600 text-white ring-2 ring-olive-200'
                     : dayStatus.isOpen
-                    ? 'bg-white border border-gray-200 hover:border-olive-300 hover:shadow-md cursor-pointer'
+                    ? 'bg-white border border-gray-200 hover:border-olive-300 hover:shadow-md cursor-pointer active:bg-olive-50'
                     : 'bg-gray-50 text-gray-400 cursor-not-allowed'
                 }`}
               >
@@ -304,11 +304,11 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
                           key={index}
                           onClick={() => handleTimeSelect(slot)}
                           disabled={!slot.available}
-                          className={`relative px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          className={`relative px-4 py-3 min-h-[48px] rounded-lg text-sm font-medium transition-all touch-manipulation ${
                             selectedTime?.dateTime === slot.dateTime
                               ? 'bg-olive-600 text-white ring-2 ring-olive-200'
                               : slot.available
-                              ? 'bg-white border border-gray-200 hover:border-olive-300 hover:shadow-md cursor-pointer'
+                              ? 'bg-white border border-gray-200 hover:border-olive-300 hover:shadow-md cursor-pointer active:bg-olive-50'
                               : 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
                           }`}
                         >

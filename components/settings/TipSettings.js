@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { FaDollarSign, FaPercent, FaCreditCard, FaStore, FaToggleOn, FaToggleOff, FaInfoCircle } from 'react-icons/fa'
 import { MdSecurity } from 'react-icons/md'
+import { createClient } from '@/lib/supabase/client'
 
 /**
  * Tip Settings Component - Stripe Native Integration

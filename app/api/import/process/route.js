@@ -3,17 +3,17 @@
  * Processes validated import data and inserts into database
  */
 
-import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { readFile } from 'fs/promises'
+import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
+import { AcuityAdapter } from '@/lib/integrations/adapters/acuity-adapter'
+import { BooksyAdapter } from '@/lib/integrations/adapters/booksy-adapter'
+import { SchedulicityAdapter } from '@/lib/integrations/adapters/schedulicity-adapter'
+import { SquareAdapter } from '@/lib/integrations/adapters/square-adapter'
+import { TrafftAdapter } from '@/lib/integrations/adapters/trafft-adapter'
 import { CSVProcessor } from '@/lib/integrations/csv-processor'
 import { DataTransformer } from '@/lib/integrations/data-transformer'
 import { DuplicateDetector } from '@/lib/integrations/duplicate-detector'
-import { SquareAdapter } from '@/lib/integrations/adapters/square-adapter'
-import { TrafftAdapter } from '@/lib/integrations/adapters/trafft-adapter'
-import { BooksyAdapter } from '@/lib/integrations/adapters/booksy-adapter'
-import { SchedulicityAdapter } from '@/lib/integrations/adapters/schedulicity-adapter'
-import { AcuityAdapter } from '@/lib/integrations/adapters/acuity-adapter'
 
 // Initialize Supabase
 const supabase = createClient(

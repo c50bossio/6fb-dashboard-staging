@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
+import { getDisplayName, splitFullName, combineNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -74,6 +75,14 @@ export async function POST(request) {
     }
     
     // 1. Update profile with onboarding completion (but wait for barbershop_id)
+    // Normalize name data from various sources
+    const userDisplayName = prePopulatedData?.displayName || user.user_metadata?.full_name || null
+    const nameData = normalizeNameData({
+      fullName: userDisplayName,
+      firstName: prePopulatedData?.firstName || user.user_metadata?.first_name,
+      lastName: prePopulatedData?.lastName || user.user_metadata?.last_name
+    })
+    
     const profileUpdateData = {
       shop_name: finalData.businessName,
       onboarding_completed: true,
@@ -83,8 +92,8 @@ export async function POST(request) {
       user_goals: finalData.goals || [],
       business_size: finalData.businessSize || null,
       role: mapRole(finalData.role || 'SHOP_OWNER'), // Default to shop owner if no role specified
-      // Add extracted user metadata for profile enrichment
-      full_name: prePopulatedData?.displayName || user.user_metadata?.full_name || null,
+      // Add extracted user metadata for profile enrichment with proper name structure
+      ...createNameUpdateObject(nameData),
       phone: prePopulatedData?.phone || user.user_metadata?.phone || null,
       avatar_url: prePopulatedData?.avatar || user.user_metadata?.avatar_url || null,
       updated_at: new Date().toISOString()

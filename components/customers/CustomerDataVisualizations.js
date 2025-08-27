@@ -7,7 +7,6 @@
 
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
 import {
   ChartBarIcon,
   ChartPieIcon,
@@ -20,8 +19,9 @@ import {
   ClockIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
-import { customerDesignTokens } from './CustomerDesignSystem'
+import React, { useState, useEffect, useRef } from 'react'
 import { AnimatedContainer, CountUp, useInViewAnimation } from '../../utils/animations'
+import { customerDesignTokens } from './CustomerDesignSystem'
 import { HoverCard, Tooltip } from './CustomerMicroInteractions'
 
 /**

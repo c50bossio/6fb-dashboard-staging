@@ -1,6 +1,6 @@
-import { createClient } from '../../../../../lib/supabase'
+import { createClient } from '../../../../../lib/supabase/server'
 import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -22,7 +22,7 @@ async function getSupportTickets(request) {
   const offset = (page - 1) * limit
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     let query = supabase
       .from('support_tickets')
@@ -130,7 +130,7 @@ async function createSupportTicket(request) {
       response
     } = body
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     if (action === 'create') {
       if (!userId || !subject || !description) {

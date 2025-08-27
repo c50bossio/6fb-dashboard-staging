@@ -7,7 +7,6 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import {
   XMarkIcon,
   ArrowsUpDownIcon,
@@ -27,8 +26,9 @@ import {
   EyeIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
-import { customerDesignTokens } from './CustomerDesignSystem'
+import React, { useState, useEffect } from 'react'
 import { AnimatedContainer, CountUp, AnimatedProgressBar } from '../../utils/animations'
+import { customerDesignTokens } from './CustomerDesignSystem'
 import { HoverCard, Tooltip } from './CustomerMicroInteractions'
 
 /**

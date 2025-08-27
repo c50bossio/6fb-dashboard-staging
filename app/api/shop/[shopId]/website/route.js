@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // GET - Retrieve shop website settings
 export async function GET(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { shopId } = params
 
     // Get current user
@@ -104,7 +104,7 @@ export async function GET(request, { params }) {
 // POST/PUT - Save shop website settings
 export async function POST(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { shopId } = params
     const body = await request.json()
 

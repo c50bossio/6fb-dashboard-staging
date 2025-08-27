@@ -12,8 +12,12 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
+import { useSubscription } from '../../hooks/useSubscription'
+import { useSubscriptionAccess } from '../../hooks/useSubscriptionAccess'
+import { getDisplayName, getInitials } from '../../lib/name-utils'
+// Use the new hierarchical ViewSwitcher system
+import ViewSwitcher from '../navigation/ViewSwitcher'
 import { useAuth } from '../SupabaseAuthProvider'
-import GlobalContextSelector from './GlobalContextSelector'
 
 export default function DashboardHeader() {
   const { user, profile, signOut } = useAuth()
@@ -24,6 +28,8 @@ export default function DashboardHeader() {
   const [darkMode, setDarkMode] = useState(false)
   const [sessionUser, setSessionUser] = useState(null)
   const [imageError, setImageError] = useState(false)
+  const { subscriptionData, loading: subscriptionLoading, openBillingPortal } = useSubscription()
+  const { hasBusinessAccess, canAccessPayments, isBusinessOwner } = useSubscriptionAccess()
   
   const notificationsRef = useRef(null)
   const profileRef = useRef(null)
@@ -86,10 +92,15 @@ export default function DashboardHeader() {
   const getUserName = () => {
     // Check session user first (from Google OAuth)
     if (sessionUser?.name) return sessionUser.name
-    if (sessionUser?.email) return sessionUser.email.split('@')[0]
     
-    // Fallback to auth provider data
-    return profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'
+    // Use name utilities with comprehensive fallback chain
+    return getDisplayName({
+      firstName: profile?.firstName || profile?.first_name,
+      lastName: profile?.lastName || profile?.last_name,
+      fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || sessionUser?.name,
+      email: sessionUser?.email || user?.email,
+      defaultName: 'User'
+    })
   }
 
   const getUserRole = () => {
@@ -161,10 +172,10 @@ export default function DashboardHeader() {
             </div>
           </div>
 
-          {/* Center - Global Context Selector */}
-          <div className="flex-1 flex justify-center min-w-0 mx-1 sm:mx-2">
-            <div className="max-w-full overflow-hidden">
-              <GlobalContextSelector />
+          {/* Center - ViewSwitcher */}
+          <div className="flex-1 flex justify-center min-w-0 mx-1 sm:mx-2 px-2">
+            <div className="w-full sm:w-auto max-w-full">
+              <ViewSwitcher />
             </div>
           </div>
 
@@ -247,11 +258,14 @@ export default function DashboardHeader() {
                         />
                       )
                     } else {
-                      // Show initials or icon as fallback
-                      const userName = getUserName()
-                      const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      // Show initials or icon as fallback using name utilities
+                      const initials = getInitials({
+                        firstName: profile?.firstName || profile?.first_name,
+                        lastName: profile?.lastName || profile?.last_name,
+                        fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || sessionUser?.name
+                      })
                       
-                      if (initials && initials !== 'U') {
+                      if (initials && initials !== '?') {
                         return (
                           <span className="text-white text-xs font-semibold">{initials}</span>
                         )
@@ -282,6 +296,34 @@ export default function DashboardHeader() {
                       <UserIcon className="h-4 w-4 mr-2" />
                       View Profile
                     </Link>
+                    
+                    {/* Subscription Status */}
+                    {!subscriptionLoading && subscriptionData && (
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${
+                              subscriptionData.subscription?.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'
+                            }`} />
+                            <span className="text-xs font-medium text-gray-900">
+                              {subscriptionData.subscription?.plan_name || 'No Plan'}
+                            </span>
+                          </div>
+                          {subscriptionData.subscription?.status === 'active' && (
+                            <span className="text-xs text-green-600">Active</span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => {
+                            setActiveDropdown(null)
+                            openBillingPortal()
+                          }}
+                          className="w-full mt-2 px-3 py-1.5 text-xs bg-olive-600 text-white rounded-md hover:bg-olive-700 transition-colors"
+                        >
+                          Manage Subscription
+                        </button>
+                      </div>
+                    )}
                     <button 
                       onClick={handleDarkModeToggle}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
@@ -294,23 +336,40 @@ export default function DashboardHeader() {
                     </button>
                   </div>
                   <div className="border-t border-gray-200 py-2">
-                    <Link 
-                      href="/dashboard/settings#payments"
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                      onClick={() => setActiveDropdown(null)}
-                    >
-                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                      </svg>
-                      Payment Setup
-                    </Link>
+                    {/* Business Settings - Show for business owners and subscribed barbers */}
+                    {hasBusinessAccess() && (
+                      <Link 
+                        href="/shop/settings"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                        onClick={() => setActiveDropdown(null)}
+                      >
+                        <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                        Business Settings
+                      </Link>
+                    )}
+                    
+                    {/* Payment Setup - Show for users who can access payments */}
+                    {canAccessPayments() && (
+                      <Link 
+                        href="/dashboard/settings#payments"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                        onClick={() => setActiveDropdown(null)}
+                      >
+                        <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                        </svg>
+                        Payment Setup
+                      </Link>
+                    )}
+                    
+                    {/* Personal Settings - Always available */}
                     <Link 
                       href="/dashboard/settings"
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                       onClick={() => setActiveDropdown(null)}
                     >
                       <Cog6ToothIcon className="h-4 w-4 mr-2" />
-                      Settings
+                      Personal Settings
                     </Link>
                   </div>
                   <div className="border-t border-gray-200">

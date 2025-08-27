@@ -1,6 +1,5 @@
 'use client'
 
-import { Fragment, useState, useEffect } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -10,10 +9,11 @@ import {
   CheckIcon,
   MapPinIcon
 } from '@heroicons/react/24/outline'
+import { Fragment, useState, useEffect } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
-import { useAuth } from '../SupabaseAuthProvider'
 import AddLocationModal from '../modals/AddLocationModal'
 import AddStaffModal from '../staff/AddStaffModal'
+import { useAuth } from '../SupabaseAuthProvider'
 
 export default function GlobalContextSelector() {
   const { userRole } = useAuth()

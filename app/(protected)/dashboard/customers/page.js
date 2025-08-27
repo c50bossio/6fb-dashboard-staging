@@ -19,9 +19,10 @@ import {
   AdjustmentsHorizontalIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
-import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import React, { useState, useEffect, Suspense } from 'react'
 
+import { isTier } from '@/lib/subscription-tiers'
 import { 
   CustomerIntelligenceDashboard,
   CustomerIntelligenceDashboardOptimized,
@@ -33,20 +34,19 @@ import {
   BadgeProgress,
   BadgeLeaderboard
 } from '../../../../components/customers'
-import SmartRebookButton from '../../../../components/customers/SmartRebookButton'
-import LoyaltyPointsBadge, { QuickRedeemButton } from '../../../../components/customers/LoyaltyPointsBadge'
 import AdvancedSearchFilter from '../../../../components/customers/AdvancedSearchFilter'
-import SearchSuggestions from '../../../../components/customers/SearchSuggestions'
-import FilterTags from '../../../../components/customers/FilterTags'
-import SortOptions from '../../../../components/customers/SortOptions'
 import ExportCSV from '../../../../components/customers/ExportCSV'
+import FilterTags from '../../../../components/customers/FilterTags'
+import LoyaltyPointsBadge, { QuickRedeemButton } from '../../../../components/customers/LoyaltyPointsBadge'
 import SearchHighlight from '../../../../components/customers/SearchHighlight'
+import SearchSuggestions from '../../../../components/customers/SearchSuggestions'
+import SmartRebookButton from '../../../../components/customers/SmartRebookButton'
+import SortOptions from '../../../../components/customers/SortOptions'
 import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
-import { fuzzySearch } from '../../../../utils/fuzzySearch'
 import { AnimatedContainer, StaggeredList } from '../../../../utils/animations'
-import { isTier } from '@/lib/subscription-tiers'
+import { fuzzySearch } from '../../../../utils/fuzzySearch'
 
-export default function CustomersPage() {
+function CustomersPageContent() {
   const searchParams = useSearchParams()
   const [customers, setCustomers] = useState([])
   const [filteredCustomers, setFilteredCustomers] = useState([])
@@ -1414,5 +1414,17 @@ export default function CustomersPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function CustomersPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <CustomersPageContent />
+    </Suspense>
   )
 }

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import {
   BuildingOfficeIcon,
   MapPinIcon,
@@ -21,6 +20,7 @@ import {
   CurrencyDollarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 const locationTemplates = [
   {

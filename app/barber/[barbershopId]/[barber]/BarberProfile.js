@@ -1,12 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/Separator'
 import { 
   Calendar,
   Clock,
@@ -25,6 +18,13 @@ import {
   Award,
   Users
 } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { Separator } from '@/components/ui/Separator'
 
 export default function BarberProfile({ initialData }) {
   const [barberData, setBarberData] = useState(initialData)

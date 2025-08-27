@@ -1,7 +1,7 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
 import EverboardingSystem, { useEverboardingTracking } from './EverboardingSystem'
 

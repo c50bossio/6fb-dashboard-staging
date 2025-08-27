@@ -20,6 +20,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/client'
 
 export default function AddBarber() {
@@ -33,7 +34,8 @@ export default function AddBarber() {
   const [validationErrors, setValidationErrors] = useState({})
   const [barberData, setBarberData] = useState({
     email: '',
-    fullName: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     bio: '',
     specialty: '',
@@ -88,7 +90,8 @@ export default function AddBarber() {
     
     if (stepNumber === 1) {
       if (!barberData.email) newErrors.email = 'Email is required'
-      if (!barberData.fullName) newErrors.fullName = 'Full name is required'
+      if (!barberData.firstName) newErrors.firstName = 'First name is required'
+      if (!barberData.lastName) newErrors.lastName = 'Last name is required'
       if (!barberData.phone) newErrors.phone = 'Phone number is required'
       if (barberData.yearsExperience < 0) newErrors.yearsExperience = 'Experience cannot be negative'
     }
@@ -116,13 +119,25 @@ export default function AddBarber() {
     setErrors({})
     
     try {
+      // Prepare name data using utility functions
+      const nameData = normalizeNameData({
+        firstName: barberData.firstName.trim(),
+        lastName: barberData.lastName.trim()
+      })
+      
+      // Merge normalized name data with barber data
+      const submissionData = {
+        ...barberData,
+        ...createNameUpdateObject(nameData)
+      }
+      
       // Use enhanced API endpoint
       const response = await fetch('/api/shop/barbers/enhanced', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(barberData)
+        body: JSON.stringify(submissionData)
       })
       
       const result = await response.json()
@@ -230,21 +245,41 @@ export default function AddBarber() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name <span className="text-red-500">*</span>
+                      First Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      value={barberData.fullName}
-                      onChange={(e) => setBarberData({...barberData, fullName: e.target.value})}
+                      value={barberData.firstName}
+                      onChange={(e) => setBarberData({...barberData, firstName: e.target.value})}
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                        validationErrors.fullName 
+                        validationErrors.firstName 
                           ? 'border-red-300 focus:ring-red-500' 
                           : 'border-gray-300 focus:ring-olive-500'
                       }`}
-                      placeholder="Enter barber's full name"
+                      placeholder="Enter first name"
                     />
-                    {validationErrors.fullName && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.fullName}</p>
+                    {validationErrors.firstName && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.firstName}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={barberData.lastName}
+                      onChange={(e) => setBarberData({...barberData, lastName: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        validationErrors.lastName 
+                          ? 'border-red-300 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-olive-500'
+                      }`}
+                      placeholder="Enter last name"
+                    />
+                    {validationErrors.lastName && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.lastName}</p>
                     )}
                   </div>
                   
@@ -680,7 +715,7 @@ export default function AddBarber() {
                 <div>
                   <h3 className="text-md font-medium text-gray-900 mb-3">Basic Information</h3>
                   <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                    <p className="text-sm"><span className="font-medium">Name:</span> {barberData.fullName}</p>
+                    <p className="text-sm"><span className="font-medium">Name:</span> {combineNames(barberData.firstName, barberData.lastName)}</p>
                     <p className="text-sm"><span className="font-medium">Email:</span> {barberData.email}</p>
                     <p className="text-sm"><span className="font-medium">Phone:</span> {barberData.phone || 'Not provided'}</p>
                     <p className="text-sm"><span className="font-medium">Specialty:</span> {barberData.specialty || 'Not specified'}</p>

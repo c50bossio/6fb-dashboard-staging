@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { feature, preferences } = await request.json()
     
     // Get authenticated user
@@ -85,7 +85,7 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

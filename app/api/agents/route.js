@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: agents, error } = await supabase
       .from('agents')
@@ -38,7 +38,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { name, type, description, capabilities } = await request.json()
     
     if (!name || !type) {

@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import Papa from 'papaparse'
-import { platformImportConfigs, mapPlatformData } from '@/lib/platform-import-configs'
 import { analyzeCSV } from '@/lib/csv-auto-detector'
+import { platformImportConfigs, mapPlatformData } from '@/lib/platform-import-configs'
+import { createClient } from '@/lib/supabase/server'
 
 // Create service role client for batch operations
 const supabaseService = createServiceClient(
@@ -25,7 +25,7 @@ const supabaseService = createServiceClient(
 export async function POST(request) {
   try {
     // Get user session using Supabase auth
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     // During onboarding, allow import without full authentication

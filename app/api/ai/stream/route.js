@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
  * Provides real-time streaming with optimal performance
  */
 export async function POST(request) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {

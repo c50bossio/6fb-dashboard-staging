@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { ArrowPathIcon, Cog6ToothIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 
 export default function SystemSettingsPage() {
   return (

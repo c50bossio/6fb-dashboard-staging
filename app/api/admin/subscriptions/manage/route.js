@@ -23,7 +23,7 @@ async function handleManageSubscription(request) {
       )
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data: user, error: userError } = await supabase
       .from('users')

@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { 
   UserPlusIcon,
   MagnifyingGlassIcon,
@@ -10,10 +9,11 @@ import {
   InformationCircleIcon,
   RocketLaunchIcon
 } from '@heroicons/react/24/outline'
-import { Button } from '../ui'
+import React from 'react'
 import { AnimatedContainer } from '../../utils/animations'
-import { StaggeredFadeIn } from './CustomerMicroInteractions'
+import { Button } from '../ui'
 import { customerDesignTokens } from './CustomerDesignSystem'
+import { StaggeredFadeIn } from './CustomerMicroInteractions'
 
 /**
  * SVG Illustrations for better visual appeal

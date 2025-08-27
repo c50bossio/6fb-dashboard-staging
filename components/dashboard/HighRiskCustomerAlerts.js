@@ -1,11 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarInitials } from '@/components/ui/avatar'
+import { format, formatDistanceToNow, isPast, isToday, isTomorrow } from 'date-fns'
 import { 
   AlertTriangle, 
   Phone, 
@@ -24,8 +19,13 @@ import {
   Eye,
   UserX
 } from 'lucide-react'
-import { format, formatDistanceToNow, isPast, isToday, isTomorrow } from 'date-fns'
+import { useState, useEffect, useCallback } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRiskBasedNotifications } from '@/hooks/useRiskBasedNotifications'
+import { Avatar, AvatarFallback, AvatarInitials } from '@/components/ui/avatar'
 
 const RISK_TIER_CONFIG = {
   red: {

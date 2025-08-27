@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { getDisplayName, splitFullName, combineNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
 // Using SendGrid directly for edge runtime compatibility
 
@@ -87,7 +88,7 @@ export async function POST(request) {
     }
     
     const body = await request.json()
-    const { email, full_name, role = 'BARBER', barbershopId, sendEmail = true } = body
+    const { email, full_name, firstName, lastName, first_name, last_name, role = 'BARBER', barbershopId, sendEmail = true } = body
     
     if (!email || !barbershopId) {
       return NextResponse.json(
@@ -113,7 +114,7 @@ export async function POST(request) {
     // Check if user already exists
     const { data: existingUser } = await supabase
       .from('profiles')
-      .select('id, full_name')
+      .select('id, full_name, first_name, last_name')
       .eq('email', email)
       .single()
     
@@ -144,7 +145,15 @@ export async function POST(request) {
           metadata: {
             invited_by: user.id,
             invited_at: new Date().toISOString(),
-            full_name: full_name || existingUser.full_name
+            ...normalizeNameData({ 
+              fullName: full_name, 
+              firstName: firstName || first_name,
+              lastName: lastName || last_name 
+            }) || normalizeNameData({
+              fullName: existingUser.full_name,
+              firstName: existingUser.first_name,
+              lastName: existingUser.last_name
+            })
           }
         })
         .select()
@@ -236,7 +245,7 @@ export async function POST(request) {
             pending_invitation: true,
             invitation_token: invitationToken,
             invited_email: email,
-            invited_name: full_name,
+            invited_name: full_name || combineNames(firstName || first_name, lastName || last_name),
             invited_by: user.id,
             invited_at: new Date().toISOString(),
             expires_at: expiresAt.toISOString(),
@@ -278,7 +287,12 @@ export async function POST(request) {
           to: email,
           subject: `You're invited to join ${barbershop.name} on Booked Barber`,
           html: generateInvitationEmailHTML({
-            recipientName: full_name || 'there',
+            recipientName: getDisplayName({
+              fullName: full_name,
+              firstName: firstName || first_name,
+              lastName: lastName || last_name,
+              defaultName: 'there'
+            }),
             barbershopName: barbershop.name,
             inviterName: user.email,
             invitationUrl,
@@ -299,7 +313,9 @@ export async function POST(request) {
         data: {
           id: pendingStaff.id,
           email,
-          full_name,
+          full_name: full_name || combineNames(firstName || first_name, lastName || last_name),
+          firstName: firstName || first_name,
+          lastName: lastName || last_name,
           role,
           invitation_token: invitationToken,
           expires_at: expiresAt.toISOString(),

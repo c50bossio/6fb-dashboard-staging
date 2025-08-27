@@ -40,7 +40,7 @@ const QUICK_ACTIONS = [
     icon: UserGroupIcon, 
     color: 'bg-olive-500 hover:bg-olive-600',
     description: 'Mark staff attendance',
-    href: '/dashboard/staff'
+    href: '/shop/settings/staff'
   },
   { 
     name: 'Capacity Planning', 

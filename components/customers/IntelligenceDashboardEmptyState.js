@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState } from 'react'
 import { 
   ChartBarIcon,
   HeartIcon,
@@ -15,6 +14,7 @@ import {
   PlayIcon,
   UserPlusIcon
 } from '@heroicons/react/24/outline'
+import React, { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 
 /**

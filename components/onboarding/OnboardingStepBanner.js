@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeftIcon, CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState, useCallback } from 'react'
 
 const ONBOARDING_STEPS = {
   'business': { title: 'Business Information', path: '/shop/settings/general' },
@@ -69,9 +69,9 @@ export default function OnboardingStepBanner({
       // If no validation function provided, assume it's completable
       setCanComplete(true)
     }
-  }, [stepId, searchParams, validateCompletion])
+  }, [stepId, searchParams, checkCompletion])
 
-  const checkCompletion = async () => {
+  const checkCompletion = useCallback(async () => {
     if (!validateCompletion) return
     
     try {
@@ -88,7 +88,7 @@ export default function OnboardingStepBanner({
     } finally {
       setIsValidating(false)
     }
-  }
+  }, [validateCompletion])
 
   const handleReturn = () => {
     // Clear session storage context when user manually returns

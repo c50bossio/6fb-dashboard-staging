@@ -16,8 +16,8 @@
  * - POST /api/v2/settings/batch - Batch update multiple categories
  */
 
-import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { NextResponse } from 'next/server'
 import settingsCompatibility from '@/lib/settings-compatibility'
 
 /**

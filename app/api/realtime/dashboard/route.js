@@ -1,4 +1,4 @@
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 /**
  * Real-time Dashboard Updates using Server-Sent Events (SSE)

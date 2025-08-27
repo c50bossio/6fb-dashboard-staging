@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prod-config
+  labels:
+    app.kubernetes.io/name: 6fb-ai-agent-system
+    app.kubernetes.io/managed-by: kustomize
+    environment: production
+data:
+  # Production API Configuration
+  api-url: "https://api.6fb-ai-agent-system.com"
+  domain-name: "6fb-ai-agent-system.com"
+  
+  # Production Logging Configuration
+  log-level: "warning"
+  enable-debug: "false"
+  
+  # Production Feature Flags
+  enable-rag: "true"
+  enable-mock-fallback: "false"
+  enable-hot-reload: "false"
+  prometheus-metrics-enabled: "true"
+  
+  # Production CORS Configuration
+  cors-origins: "https://6fb-ai-agent-system.com,https://www.6fb-ai-agent-system.com,https://api.6fb-ai-agent-system.com"
+  
+  # Production Database Configuration
+  use-fastapi: "true"
+  use-supabase: "true"
+  docker-environment: "true"
+  
+  # Production Worker Configuration
+  workers: "4"
+  max-workers: "8"
+  worker-class: "uvicorn.workers.UvicornWorker"
+  
+  # Production Redis Configuration
+  redis-maxmemory: "512mb"
+  redis-maxmemory-policy: "allkeys-lru"
+  redis-debug: "false"
+  
+  # Production Security Configuration
+  ssl-redirect: "true"
+  force-https: "true"
+  hsts-max-age: "31536000"
+  
+  # Production Monitoring Configuration
+  metrics-enabled: "true"
+  metrics-port: "9090"
+  health-check-interval: "30"
+  
+  # Production Performance Configuration
+  connection-pool-size: "20"
+  connection-pool-max-overflow: "30"
+  request-timeout: "30"
+  
+  # Production Caching Configuration
+  cache-ttl: "3600"
+  cache-max-entries: "10000"
+  
+  # Production Rate Limiting
+  rate-limit-requests: "1000"
+  rate-limit-window: "3600"
+  
+  # Production Notification Configuration
+  novu-app-id: "6fb-ai-agent-system"
+  notification-queue-size: "1000"
+  
+  # Production Backup Configuration
+  backup-enabled: "true"
+  backup-interval: "6h"
+  backup-retention: "7d"

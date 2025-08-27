@@ -18,12 +18,15 @@ import {
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
+import { getDisplayName, splitFullName, combineNames, normalizeNameData, createNameUpdateObject } from '../../../lib/name-utils'
 
 export default function ProfilePage() {
   const { user, profile, updateProfile } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
     full_name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     bio: '',
@@ -33,8 +36,25 @@ export default function ProfilePage() {
   const [saveStatus, setSaveStatus] = useState(null) // null, 'saving', 'saved', 'error'
 
   useEffect(() => {
+    // Normalize name data for consistent handling
+    const nameData = normalizeNameData({
+      firstName: profile?.firstName || profile?.first_name,
+      lastName: profile?.lastName || profile?.last_name,
+      fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name
+    })
+    
+    const displayName = getDisplayName({
+      firstName: nameData.firstName,
+      lastName: nameData.lastName,
+      fullName: nameData.fullName,
+      email: user?.email,
+      defaultName: 'Dev User'
+    })
+    
     setProfileData({
-      full_name: profile?.full_name || user?.user_metadata?.full_name || 'Dev User',
+      full_name: displayName,
+      first_name: nameData.firstName || '',
+      last_name: nameData.lastName || '',
       email: user?.email || 'dev@localhost.com',
       phone: profile?.phone || '+1 (555) 123-4567',
       bio: profile?.bio || 'Passionate about delivering exceptional barbershop experiences.',
@@ -46,20 +66,54 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       setSaveStatus('saving')
-      setTimeout(() => {
-        setSaveStatus('saved')
-        setIsEditing(false)
-        setTimeout(() => setSaveStatus(null), 3000)
-      }, 1000)
+      
+      // Prepare name update with both formats
+      const nameUpdate = createNameUpdateObject({
+        firstName: profileData.first_name,
+        lastName: profileData.last_name
+      })
+      
+      const updateData = {
+        ...nameUpdate,
+        phone: profileData.phone,
+        bio: profileData.bio,
+        location: profileData.location
+      }
+      
+      if (updateProfile) {
+        await updateProfile(updateData)
+      }
+      
+      setSaveStatus('saved')
+      setIsEditing(false)
+      setTimeout(() => setSaveStatus(null), 3000)
     } catch (error) {
+      console.error('Error saving profile:', error)
       setSaveStatus('error')
       setTimeout(() => setSaveStatus(null), 3000)
     }
   }
 
   const handleCancel = () => {
+    // Reset to original data using normalized name handling
+    const nameData = normalizeNameData({
+      firstName: profile?.firstName || profile?.first_name,
+      lastName: profile?.lastName || profile?.last_name,
+      fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name
+    })
+    
+    const displayName = getDisplayName({
+      firstName: nameData.firstName,
+      lastName: nameData.lastName,
+      fullName: nameData.fullName,
+      email: user?.email,
+      defaultName: 'Dev User'
+    })
+    
     setProfileData({
-      full_name: profile?.full_name || user?.user_metadata?.full_name || 'Dev User',
+      full_name: displayName,
+      first_name: nameData.firstName || '',
+      last_name: nameData.lastName || '',
       email: user?.email || 'dev@localhost.com',
       phone: profile?.phone || '+1 (555) 123-4567',
       bio: profile?.bio || 'Passionate about delivering exceptional barbershop experiences.',
@@ -170,24 +224,76 @@ export default function ProfilePage() {
 
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={profileData.full_name}
-                      onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
-                    />
-                  ) : (
+                {isEditing ? (
+                  // Editing mode: show separate first/last name fields
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        First Name
+                        <span className="text-red-500 ml-1">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={profileData.first_name}
+                        onChange={(e) => {
+                          const newFirstName = e.target.value
+                          setProfileData({
+                            ...profileData, 
+                            first_name: newFirstName,
+                            full_name: combineNames(newFirstName, profileData.last_name)
+                          })
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                        placeholder="Enter your first name"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                      <input
+                        type="text"
+                        value={profileData.last_name}
+                        onChange={(e) => {
+                          const newLastName = e.target.value
+                          setProfileData({
+                            ...profileData, 
+                            last_name: newLastName,
+                            full_name: combineNames(profileData.first_name, newLastName)
+                          })
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                        placeholder="Enter your last name (optional)"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  // Display mode: show full name
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                     <div className="flex items-center space-x-2 py-2">
                       <UserIcon className="h-4 w-4 text-gray-400" />
                       <span className="text-gray-900">{profileData.full_name}</span>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+                
+                {isEditing && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
+                    <input
+                      type="text"
+                      value={profileData.full_name}
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                      placeholder="Generated from first and last name"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      This is how your name will appear to clients
+                    </p>
+                  </div>
+                )}
 
-                <div>
+                <div className={isEditing ? "" : "md:col-start-2"}>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <div className="flex items-center space-x-2 py-2">
                     <EnvelopeIcon className="h-4 w-4 text-gray-400" />
@@ -238,6 +344,7 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                      placeholder="Tell clients about your experience, specialties, and what makes you unique..."
                     />
                   ) : (
                     <p className="text-gray-900 py-2">{profileData.bio}</p>

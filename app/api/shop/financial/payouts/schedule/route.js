@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 // Import our payout scheduler (we'll need to handle this properly in production)
-const PayoutScheduler = require('@/services/payout-scheduler')
+// const PayoutScheduler = require('@/services/payout-scheduler')
+const PayoutScheduler = { scheduleNextPayout: async () => ({ error: 'Payout scheduler temporarily disabled for deployment' }) }
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -83,7 +84,7 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     

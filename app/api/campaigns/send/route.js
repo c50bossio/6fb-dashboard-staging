@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import twilio from 'twilio'
 import sgMail from '@sendgrid/mail'
+import { NextResponse } from 'next/server'
+import twilio from 'twilio'
+import { createClient } from '@/lib/supabase/server'
 
 // Initialize services with markup-funded approach
 const twilioClient = process.env.TWILIO_ACCOUNT_SID ? 
@@ -23,7 +23,7 @@ export async function POST(request) {
       template_id // optional, use pre-built template
     } = await request.json()
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Step 1: Check available credits
     const { data: credits } = await supabase
@@ -206,7 +206,7 @@ export async function GET(request) {
     const recipient_count = parseInt(searchParams.get('recipient_count') || '0')
     const channel = searchParams.get('channel') || 'sms'
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Get current credits
     const { data: credits } = await supabase

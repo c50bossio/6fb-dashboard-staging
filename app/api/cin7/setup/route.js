@@ -3,11 +3,11 @@
  * Single endpoint to handle complete setup flow
  */
 
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { Cin7Client, encrypt } from '@/lib/cin7-client.js'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createServiceClient } from '@supabase/supabase-js'
 
 export async function POST(request) {
   try {
@@ -376,7 +376,7 @@ export async function POST(request) {
 // GET endpoint to check setup status
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {

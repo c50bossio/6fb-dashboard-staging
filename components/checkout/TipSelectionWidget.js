@@ -1,8 +1,8 @@
 'use client'
 
+import { CurrencyDollarIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { getTipSettingsForCheckout, calculateTipAmount } from '@/lib/tip-settings-resolver'
-import { CurrencyDollarIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 
 /**
  * Tip Selection Widget for Checkout

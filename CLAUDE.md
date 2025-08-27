@@ -33,12 +33,23 @@ npm run claude:validate      # Runs lint + type-check + build
 
 ## 🏗️ Architecture Overview
 
+### Stack: Next.js 14 (9999) + FastAPI (8001) + Supabase + Multi-AI
+- **Frontend**: Next.js 14 App Router, SSR, TypeScript, path aliases
+- **Backend**: FastAPI modular routers, memory management, WebSocket support
+- **Database**: Supabase PostgreSQL + Auth + RLS + Real-time
+- **AI**: Multi-provider (OpenAI, Anthropic, Google) with Redis caching (-60% costs)
+- **Integrations**: Stripe Connect, Google Calendar, CIN7, SendGrid, Pusher
+- **Production**: CloudFlare CDN → AWS ALB → Kubernetes (10K+ users)
+
+### File Structure
 ```
 app/
 ├── api/                     # Next.js API routes (100+ endpoints)
 │   ├── auth/               # Authentication endpoints
 │   ├── services/           # Service management
-│   └── cin7/              # CIN7 inventory integration
+│   ├── cin7/              # CIN7 inventory integration
+│   ├── stripe/            # Payment processing
+│   └── ai/                # AI agent endpoints
 ├── (protected)/            # Authenticated pages (requires login)
 │   ├── dashboard/         # Main dashboard with sub-pages
 │   ├── shop/             # Shop management (products, services)
@@ -50,26 +61,31 @@ components/
 ├── dashboard/             # Dashboard features  
 ├── onboarding/           # Complete onboarding system
 ├── booking/              # Booking flow components
-└── settings/             # Settings management (UnifiedSettingsInterface)
+├── settings/             # Settings management (UnifiedSettingsInterface)
+└── navigation/           # Multi-location navigation system
 
 lib/
 ├── supabase-query.js     # ⚠️ CRITICAL - All DB operations
 ├── dashboard-aggregation.js # Dashboard data utilities
 ├── ai-config.js          # AI model configuration
+├── financial-service.js  # Financial arrangements & Stripe Connect
 └── utils.js              # Common utilities (cn, formatters)
 
 services/
 ├── memory_manager.py     # ⚠️ CRITICAL - OAuth memory management
 ├── ai_service.py        # AI agent orchestration
 ├── SmartSuggestionsAPI.js # AI recommendations
-└── shop_service.py       # Shop management backend
+├── shop_service.py       # Shop management backend
+└── staff-service.js     # Staff management & payroll
 
 routers/                  # FastAPI modules
 ├── ai.py                # AI endpoints
 ├── auth.py              # Authentication
 ├── dashboard.py         # Dashboard APIs
-└── shop_management.py   # Shop operations
+├── shop_management.py   # Shop operations
+└── franchise.py         # Multi-location management
 ```
+
 
 ## 🔧 Common Tasks & Solutions
 
@@ -150,22 +166,70 @@ PUSHER_SECRET=
 PUSHER_CLUSTER=us2
 ```
 
-## 🧪 Testing Commands
+## 🧪 Commands & Testing
 
 ```bash
-# Core testing
-npm run test                # Unit tests
-npm run test:e2e           # E2E tests
-npm run test:all           # Everything
+# Core development
+npm run dev                    # Next.js dev server (port 9999)
+./docker-dev-start.sh          # Start all services
+npm run lint && npm run build  # Pre-commit validation
 
-# Specific features
-npm run test:e2e:booking   # Booking flow
-npm run test:e2e:payment   # Payments
-npm run test:e2e:mobile    # Mobile tests
+# Testing (Jest + Playwright)
+npm run test:all               # Full test suite
+npm run test:e2e:booking       # Booking flow
+npm run test:e2e:payment       # Payment processing
+npm run test:nuclear           # High-impact scenarios
 
-# Quick checks
-npm run claude:health      # Service health
-npm run claude:validate    # Lint + build
+# Database & setup
+npm run setup-db              # Initialize schema
+npm run cleanup-test-data     # Clean test data
+npm run claude:health         # System health check
+
+# Production & deployment
+npm run deploy:production     # Full deployment
+npm run performance:analyze  # Bundle analysis
+```
+
+## 🛠️ Troubleshooting & Debug Guide
+
+### Port Conflicts & Service Issues
+```bash
+# Kill processes on default ports
+sudo lsof -ti:9999 | xargs kill -9  # Frontend port
+sudo lsof -ti:8001 | xargs kill -9  # Backend port
+
+# Check service status
+curl http://localhost:9999/api/health  # Frontend health
+curl http://localhost:8001/health      # Backend health
+
+# Docker troubleshooting
+docker compose down && docker compose up --build
+docker compose logs -f frontend        # View frontend logs
+docker compose logs -f backend         # View backend logs
+```
+
+### Memory & Performance Issues
+```bash
+# Complete environment reset
+rm -rf .next/ node_modules/ && npm install
+
+# Memory issues (OAuth failures)
+# Check memory_manager.py logs in FastAPI backend
+
+# Performance profiling
+npm run performance:analyze     # Bundle analysis
+npm run performance:lighthouse  # Core Web Vitals
+```
+
+### Database & Authentication Debug
+```bash
+# Row Level Security debugging
+# Use SUPABASE_SERVICE_ROLE_KEY in development
+# Check RLS policies if getting 400 errors
+
+# Supabase connection test
+npx supabase status            # Check local Supabase
+npx supabase db reset          # Reset local database
 ```
 
 ## 🛡️ Security Approach
@@ -236,6 +300,7 @@ import { SmartSuggestionsAPI } from '@/services/SmartSuggestionsAPI'
 
 ## 📊 Database Schema (Key Tables)
 
+### Core Architecture Tables
 ```sql
 -- Core user/shop relationship
 profiles (id, email, shop_id, barbershop_id, role, subscription_tier)
@@ -243,32 +308,33 @@ barbershops (id, owner_id, name, address, business_hours)
 barbershop_staff (barbershop_id, user_id, role, is_active)
 
 -- Business operations
-services (id, shop_id, name, price, duration_minutes)
-appointments (id, barbershop_id, customer_id, service_id, date, status)
-customers (id, barbershop_id, name, email, phone)
+services (id, shop_id, name, price, duration_minutes, image_url)
+appointments (id, barbershop_id, customer_id, service_id, date, status, barber_id)
+customers (id, barbershop_id, name, email, phone, loyalty_points)
 
--- Settings & config
+-- Enterprise features
+organizations (id, name, tier, created_at) -- Multi-location management
+organization_members (org_id, user_id, role, permissions)
+financial_arrangements (barbershop_id, barber_id, arrangement_type, commission_rate)
+
+-- Integration systems
 settings_hierarchy (id, context_type, context_id, category, settings)
 stripe_accounts (barbershop_id, account_id, onboarding_completed)
+staff_invitations (id, barbershop_id, email, status, invitation_token)
 ```
 
-## 🧪 Testing Patterns
+### Key Patterns
+- **Multi-Location**: Organizations manage multiple barbershops via `organization_id`
+- **RBAC**: CLIENT → BARBER → SHOP_OWNER → ENTERPRISE_OWNER → SUPER_ADMIN hierarchy
+- **AI Fallback**: OpenAI → Anthropic → Google with automatic provider switching
 
-```bash
-# Run specific test suites
-npm run test:e2e:booking    # Booking flow
-npm run test:e2e:payment    # Payment processing
-npm run test:e2e:mobile     # Mobile responsiveness
+## 🏗️ Testing & Architecture
 
-# Debug failing tests
-npm run test:e2e:debug      # Interactive debugging
-npm run test:e2e:headed     # See browser execution
-
-# Production readiness check
-npm run check:production    # Validates all systems
-npm run stripe:validate     # Verify Stripe config
-npm run deploy:checklist    # Pre-deploy validation
-```
+### Core Dependencies
+- **AI**: OpenAI, Anthropic, Google (multi-provider with Redis caching -60% costs)
+- **Infrastructure**: Supabase (DB/Auth), Sentry (monitoring), Pusher (real-time)
+- **Business**: Stripe (payments), PostHog (analytics), FullCalendar (scheduling)
+- **Testing**: Jest (unit), Playwright (E2E), 80%+ coverage requirement
 
 ## 🔍 Verification Protocol
 
@@ -290,11 +356,113 @@ git status
 git log --oneline -10
 ```
 
-## 📚 Additional Documentation
+## 📋 Development Workflows
 
-- **Core concepts**: See [`CLAUDE-CORE.md`](./CLAUDE-CORE.md)
-- **Workflows**: See [`CLAUDE-WORKFLOWS.md`](./CLAUDE-WORKFLOWS.md)  
-- **Detailed reference**: See [`CLAUDE-REFERENCE.md`](./CLAUDE-REFERENCE.md)
+### Before Making Changes
+1. Start dev environment: `./docker-dev-start.sh`
+2. Check system health: `npm run claude:health`
+3. Verify no lint/type errors: `npm run lint && npm run build`
+
+### After Making Changes
+1. Fix any linting issues: `npm run lint:fix`
+2. Run full test suite: `npm run test:all`
+3. Verify production build: `npm run build`
+4. Check security if needed: `npm run test:security:quick`
+
+### Feature Development Checklist
+- [ ] Database schema with RLS policies
+- [ ] Backend API endpoint (FastAPI router)
+- [ ] Frontend UI with error handling
+- [ ] Tests written and passing
+- [ ] Real data integration (no mocks)
+- [ ] Authentication/authorization implemented
+
+## 🏗️ Core Subscription Model
+
+### Two Subscription Types:
+1. **Individual Barber Subscription**
+   - Barber subscribes directly (solo practitioner)
+   - Has `shop_id` directly in their `profiles` record
+   - They ARE the barbershop
+
+2. **Barbershop Subscription**  
+   - Barbershop owner has the subscription
+   - Owner has `shop_id` in their profile
+   - Employee barbers linked via `barbershop_staff` table
+   - Employees get shop access through `barbershop_staff` lookup
+
+### Shop ID Resolution Logic:
+1. Check `profiles.shop_id` first (individual barbers)
+2. If null, check `barbershop_staff` table (employees)
+3. Fallback to default shop for demos/testing
+
+**CRITICAL**: Never assume all users have `shop_id` - always check both paths!
+
+## 🚀 Production Architecture
+
+### Scale Targets
+- **Users**: 10,000+ concurrent with auto-scaling
+- **Performance**: <3s load times, 99.9% uptime
+- **Multi-region**: AWS (primary), GCP (AI), Azure (enterprise)
+- **Security**: AES-256 at rest, TLS 1.3 in transit
+
+### Infrastructure Stack
+- **Containers**: Kubernetes with 50-200 auto-scaling nodes
+- **Database**: PostgreSQL Multi-AZ + Redis cluster + Elasticsearch
+- **CDN**: CloudFlare global edge network
+- **Storage**: S3 multi-region with versioned backups
+
+## 🗄️ Database Patterns
+
+### Multi-Tenant Strategy
+- **Sharding**: By `franchise_id` for 10,000+ locations
+- **RLS**: Row Level Security for tenant isolation
+- **Extensions**: pgvector, pg_partman, timescaledb
+
+### Critical Pattern
+```javascript
+// ❌ WRONG - Breaks RLS and performance
+const { data } = await supabase
+  .from('appointments')
+  .select('*, customers(*), services(*)')
+
+// ✅ CORRECT - Separate queries + JS merge
+const appointments = await supabase.from('appointments').select('*')
+const customerIds = appointments.map(apt => apt.customer_id)
+const customers = await supabase.from('customers').select('*').in('id', customerIds)
+```
+
+## 📊 Monitoring & Compliance
+
+### Production Stack
+- **Errors**: Sentry for aggregation & alerting
+- **Analytics**: PostHog (self-hosted, GDPR-compliant)
+- **Health**: Prometheus + Grafana + `/api/health`
+- **Performance**: Web Vitals + Core Performance Metrics
+
+### Security & Compliance
+- **Encryption**: AES-256 at rest, TLS 1.3 in transit
+- **GDPR**: Automated deletion, data portability, consent management
+- **Auth**: Supabase Auth (JWT), MFA via TOTP, OAuth with PKCE
+- **Retention**: 7 years (business), 30 days (logs)
+
+### SLA Targets
+- Page Load: <3s (95th percentile)
+- API Response: <500ms (99th percentile) 
+- Uptime: 99.9%
+- DB Queries: <100ms (95th percentile)
+
+## 🎯 Business Model Context
+
+### Freemium Strategy: "Insights Free, Agents Paid"
+- **Free**: Business insights, analytics, basic booking, reminders
+- **Paid**: AI agents ($0.04/1K tokens), SMS ($0.01/msg), Email ($0.001/msg)
+- **Strategy**: Just-in-time billing modals, strategic upgrade CTAs
+
+### Implementation Approach
+- Remove billing from onboarding → focus on value delivery
+- "Launch Agent" buttons throughout dashboard trigger billing setup
+- Value-first messaging shows ROI before payment requests
 
 ---
 **Remember**: Complete features only. No mocks. Test everything. Real data only.

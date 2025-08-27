@@ -7,7 +7,7 @@ import {
   BADGE_CATEGORIES 
 } from '@/utils/badgeSystem'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

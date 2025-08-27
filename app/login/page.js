@@ -11,12 +11,14 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { LogoHeader } from '@/components/ui/Logo'
+import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/browser-client'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -95,20 +97,28 @@ export default function LoginPage() {
       return
     }
     
-    if (isSignUp && !fullName.trim()) {
-      setError('Please enter your full name')
+    if (isSignUp && (!firstName.trim() || !lastName.trim())) {
+      setError('Please enter your first and last name')
       setIsLoading(false)
       return
     }
     
     try {
       if (isSignUp) {
+        // Prepare name data using utility functions
+        const nameData = normalizeNameData({
+          firstName: firstName.trim(),
+          lastName: lastName.trim()
+        })
+        
         // Sign up new user with metadata using centralized auth
         const data = await signUp({
           email,
           password,
           metadata: {
-            full_name: fullName.trim(),
+            first_name: nameData.first_name,
+            last_name: nameData.last_name,
+            full_name: nameData.full_name,
             role: 'CLIENT'
           }
         })
@@ -220,17 +230,30 @@ export default function LoginPage() {
           {/* Email/Password Form */}
           <form onSubmit={handleEmailAuth} className="space-y-4">
             {isSignUp && (
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <UserIcon className="h-5 w-5 text-olive-400" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <UserIcon className="h-5 w-5 text-olive-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
+                    required
+                  />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full pl-4 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
+                    required
+                  />
+                </div>
               </div>
             )}
             

@@ -63,7 +63,7 @@ export async function GET(request) {
     const billing = searchParams.get('billing') || 'monthly'
     
     
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {

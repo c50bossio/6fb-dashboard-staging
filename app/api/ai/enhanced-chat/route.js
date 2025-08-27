@@ -5,7 +5,7 @@ import { agentLearning } from '../../../../services/agent-learning-service'
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {

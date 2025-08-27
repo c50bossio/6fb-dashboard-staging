@@ -1,16 +1,16 @@
 'use client'
 
+import { 
+  Trophy, Crown, Star, Award, Users, TrendingUp, 
+  Calendar, Filter, RefreshCw, Share2, Medal
+} from 'lucide-react'
 import React, { useState, useEffect } from 'react'
+import { getBadgeRarityStyle, BADGE_CATEGORIES } from '../../utils/badgeSystem'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select.jsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-import { getBadgeRarityStyle, BADGE_CATEGORIES } from '../../utils/badgeSystem'
-import { 
-  Trophy, Crown, Star, Award, Users, TrendingUp, 
-  Calendar, Filter, RefreshCw, Share2, Medal
-} from 'lucide-react'
 // Using simple alert instead of toast
 
 const timeframeOptions = [

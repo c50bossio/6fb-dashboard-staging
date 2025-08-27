@@ -28,7 +28,7 @@ export async function POST(request) {
       price: amount
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get barbershop fee settings
     let customerPaysProcessingFee = false
@@ -131,7 +131,7 @@ export async function POST(request) {
     }
 
     // Calculate fees based on barbershop settings
-    let serviceAndTip = amount + tip_amount
+    const serviceAndTip = amount + tip_amount
     let finalAmount = serviceAndTip
     let processingFee = 0
     let barbershopReceives = amount  // Service amount goes to barbershop

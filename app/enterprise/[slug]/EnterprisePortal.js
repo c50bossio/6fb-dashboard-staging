@@ -1,12 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/Separator'
 import { 
   MapPin, 
   Phone, 
@@ -24,6 +17,13 @@ import {
   Globe,
   Award
 } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/card'
+import { Separator } from '@/components/ui/Separator'
 
 export default function EnterprisePortal({ initialData }) {
   const [enterpriseData, setEnterpriseData] = useState(initialData)

@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // FastAPI base URL
 const FASTAPI_BASE_URL = process.env.FASTAPI_URL || 'http://localhost:8001'
 
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()

@@ -15,13 +15,13 @@ import {
   ChatBubbleLeftRightIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { createClient } from '@supabase/supabase-js'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import ExportCSV from '../../../../components/customers/ExportCSV'
 import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
-import { useRouter, useSearchParams } from 'next/navigation'
-import toast from 'react-hot-toast'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

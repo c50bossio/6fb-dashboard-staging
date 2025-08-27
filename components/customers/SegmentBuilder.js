@@ -14,9 +14,9 @@ import {
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 
 // Condition Component for building rules
 const ConditionRule = ({ condition, onChange, onRemove }) => {

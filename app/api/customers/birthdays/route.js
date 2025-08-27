@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -134,7 +134,7 @@ export async function GET(request) {
     }
 
     // Format and filter customers based on days ahead
-    let formattedCustomers = customers
+    const formattedCustomers = customers
       .map(customer => formatCustomerData(customer, eventType))
       .filter(customer => {
         if (includeAll) return true;

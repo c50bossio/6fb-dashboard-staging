@@ -18,7 +18,7 @@ export const maxDuration = 30
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     const isDemoMode = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEV_MODE === 'true'
@@ -326,7 +326,7 @@ async function getBusinessMetrics(context, testMode) {
   const startTime = Date.now()
   
   // Never use test mode - always check real data and provide honest responses
-  const supabase = createClient()
+  const supabase = await createClient()
   const shopId = context.shopId || 'default-shop'
 
   try {
@@ -510,7 +510,7 @@ async function checkAppointmentAvailability(context, testMode) {
   }
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const targetDate = context.date || 'tomorrow'
     
     // Get existing appointments for the date
@@ -569,7 +569,7 @@ async function bookAppointment(context, testMode) {
   }
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const appointmentData = {
       shop_id: context.shopId,
@@ -634,7 +634,7 @@ async function getCustomerInformation(context, testMode) {
   }
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const query = context.customerQuery || context.customerName || 'recent customer'
     
     // Search for customers by name, email, or phone

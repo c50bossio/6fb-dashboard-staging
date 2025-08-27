@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { 
   MagnifyingGlassIcon,
   ClockIcon,
@@ -13,8 +12,9 @@ import {
   SparklesIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
-import SearchHighlight from './SearchHighlight'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { generateSearchSuggestions, fuzzyMatch } from '../../utils/fuzzySearch'
+import SearchHighlight from './SearchHighlight'
 
 /**
  * SearchSuggestions Component

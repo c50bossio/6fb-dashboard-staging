@@ -1,11 +1,11 @@
 'use client'
 
-import { Fragment, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 import { createBrowserClient } from '@supabase/ssr'
-import { useAuth } from '../SupabaseAuthProvider'
+import { Fragment, useState } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
+import { useAuth } from '../SupabaseAuthProvider'
 
 export default function AddLocationModal({ isOpen, onClose }) {
   const { user } = useAuth()

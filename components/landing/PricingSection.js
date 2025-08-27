@@ -15,7 +15,7 @@ const PricingSection = () => {
       yearlyPrice: 470,
       features: [
         { name: 'Personal booking page', included: true },
-        { name: 'Up to 100 bookings/month', included: true },
+        { name: 'Unlimited bookings', included: true },
         { name: 'Basic analytics', included: true },
         { name: 'SMS reminders', included: true },
         { name: 'Payment processing', included: true },
@@ -35,7 +35,7 @@ const PricingSection = () => {
       yearlyPrice: 950,
       features: [
         { name: 'Unlimited bookings', included: true },
-        { name: 'Up to 5 barber accounts', included: true },
+        { name: 'Up to 10 barber accounts (+$10/extra)', included: true },
         { name: 'Advanced analytics', included: true },
         { name: 'SMS & email marketing', included: true },
         { name: 'Payment & tips management', included: true },

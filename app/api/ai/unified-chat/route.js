@@ -10,7 +10,7 @@ import { openaiClient, anthropicClient, geminiClient, DEFAULT_CLAUDE_MODEL } fro
 
 const aiBusinessContext = new AIBusinessContextService()
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function POST(request) {
   try {

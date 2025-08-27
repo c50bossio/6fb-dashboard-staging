@@ -59,11 +59,23 @@ export async function GET(request) {
       session: !!data.session
     })
 
+    // Get plan and billing parameters from OAuth flow (passed from pricing page)
+    const plan = requestUrl.searchParams.get('plan')
+    const billing = requestUrl.searchParams.get('billing')
+    console.log('OAuth callback - Plan:', plan, 'Billing:', billing)
+
     // Check for stored return URL from ProtectedRoute
     // This will be set if the user was redirected from a protected page
-    const returnUrl = requestUrl.searchParams.get('return_url') || 
-                     requestUrl.searchParams.get('next') || 
-                     '/dashboard'
+    let returnUrl = requestUrl.searchParams.get('return_url') || 
+                    requestUrl.searchParams.get('next') || 
+                    '/dashboard'
+    
+    // If we have plan info, this is a new signup - redirect to success page
+    if (plan) {
+      returnUrl = `/success?plan=${plan}&billing=${billing || 'monthly'}`
+      console.log('OAuth callback - New signup detected, redirecting to success page')
+    }
+    
     console.log('OAuth callback - Return URL:', returnUrl)
 
     // Successful authentication - redirect to original page or dashboard

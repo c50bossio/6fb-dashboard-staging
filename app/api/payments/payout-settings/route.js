@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Handle authentication with fallback for SSR cookie issues
     let user = null
@@ -63,7 +63,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Handle authentication with fallback for SSR cookie issues
     let user = null

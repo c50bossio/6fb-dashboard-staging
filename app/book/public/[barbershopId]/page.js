@@ -1,8 +1,8 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import PublicBookingFlow from '@/components/booking/PublicBookingFlow'
 import { useEffect, useState } from 'react'
+import PublicBookingFlow from '@/components/booking/PublicBookingFlow'
 
 export default function PublicBookingPage() {
   const params = useParams()

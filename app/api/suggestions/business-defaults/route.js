@@ -171,7 +171,7 @@ function generateSmartBusinessHours(businessType, locationCategory, segmentation
     }
   }
   
-  let hours = baseHours[businessType] || baseHours.barbershop
+  const hours = baseHours[businessType] || baseHours.barbershop
   
   // Adjust for location and segmentation
   if (locationCategory === 'urban') {
@@ -277,7 +277,7 @@ function generateAmenityRecommendations(businessType, locationCategory) {
     spa: ['wifi', 'parking', 'wheelchair_access', 'music', 'relaxation_area', 'herbal_tea']
   }
   
-  let recommended = amenities[businessType] || amenities.barbershop
+  const recommended = amenities[businessType] || amenities.barbershop
   
   // High-end locations get premium amenities
   if (locationCategory === 'high-end') {

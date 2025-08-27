@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
 import { 
   Cog6ToothIcon, 
   ExclamationTriangleIcon 
 } from '@heroicons/react/24/outline'
+import React from 'react'
 
 export default function SettingsPage() {
   const pageName = window.location.pathname.split('/').pop()

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   CalendarDaysIcon,
   ClockIcon,
@@ -17,6 +16,7 @@ import {
   BellIcon,
   CogIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function CustomerPortal({ customerId }) {

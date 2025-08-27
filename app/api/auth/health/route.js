@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 
+import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export const dynamic = 'force-dynamic'
 
@@ -126,12 +127,21 @@ export async function GET() {
         }
         
         if (profile) {
+          // Normalize name data for consistent health checking
+          const nameData = normalizeNameData({
+            firstName: profile.first_name,
+            lastName: profile.last_name,
+            fullName: profile.full_name
+          })
+          
           authHealth.components.user_profile.profile_completeness = {
-            has_full_name: !!profile.full_name,
+            has_full_name: !!nameData.fullName,
+            has_first_name: !!nameData.firstName,
+            has_last_name: !!nameData.lastName,
             has_shop_name: !!profile.shop_name,
             has_role: !!profile.role,
             subscription_status: profile.subscription_status || 'unknown',
-            completion_score: calculateProfileCompleteness(profile)
+            completion_score: calculateProfileCompleteness(profile, nameData)
           }
           
           if (authHealth.components.user_profile.profile_completeness.completion_score < 80) {
@@ -253,18 +263,23 @@ export async function GET() {
   }
 }
 
-function calculateProfileCompleteness(profile) {
+function calculateProfileCompleteness(profile, nameData = null) {
+  // Use normalized name data if provided, otherwise check raw fields
+  const hasName = nameData ? 
+    (nameData.firstName && nameData.lastName) || nameData.fullName :
+    profile.full_name || (profile.first_name && profile.last_name)
+    
   const fields = [
-    'full_name',
-    'shop_name', 
-    'email',
-    'role',
-    'subscription_status'
+    hasName,
+    profile.shop_name, 
+    profile.email,
+    profile.role,
+    profile.subscription_status
   ]
   
   const completedFields = fields.filter(field => {
-    const value = profile[field]
-    return value && value.toString().trim().length > 0
+    if (typeof field === 'boolean') return field
+    return field && field.toString().trim().length > 0
   }).length
   
   return Math.round((completedFields / fields.length) * 100)

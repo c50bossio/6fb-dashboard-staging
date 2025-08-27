@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Handle authentication with fallback for demo user
     let currentUser = null

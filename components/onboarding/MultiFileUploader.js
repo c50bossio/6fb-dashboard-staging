@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
 import {
   ArrowUpTrayIcon,
   CheckCircleIcon,
@@ -12,6 +11,7 @@ import {
   UserGroupIcon,
   CalendarDaysIcon
 } from '@heroicons/react/24/outline'
+import { useState, useCallback, useRef } from 'react'
 
 export default function MultiFileUploader({
   platform,

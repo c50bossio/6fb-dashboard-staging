@@ -1,5 +1,6 @@
 'use client'
 
+import { Menu, Transition } from '@headlessui/react'
 import { 
   Bars3Icon, 
   XMarkIcon,
@@ -14,14 +15,18 @@ import {
   AcademicCapIcon,
   SparklesIcon,
   BanknotesIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  CreditCardIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 
-import { useAuth } from './SupabaseAuthProvider'
 import { useGlobalDashboard } from '../contexts/GlobalDashboardContext'
+import { useSubscription } from '../hooks/useSubscription'
+import { getDisplayName, getInitials } from '../lib/name-utils'
+import { useAuth } from './SupabaseAuthProvider'
 
 // Role-based navigation configuration
 const getNavigationItems = (userRole, permissions) => {
@@ -90,6 +95,7 @@ export default function GlobalNavigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { user, profile, signOut, userRole } = useAuth()
   const { permissions } = useGlobalDashboard()
+  const { subscription, loading: subscriptionLoading, openBillingPortal } = useSubscription()
   const pathname = usePathname()
   
   // Get role-specific navigation items
@@ -159,30 +165,162 @@ export default function GlobalNavigation() {
 
             {/* User menu */}
             {user && (
-              <div className="hidden md:flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
+              <Menu as="div" className="relative hidden md:block">
+                <Menu.Button className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition-colors">
                   <div className="h-8 w-8 bg-gradient-to-br from-olive-600 to-gold-600 rounded-full flex items-center justify-center">
                     <span className="text-sm font-semibold text-white">
-                      {(profile?.full_name || user?.user_metadata?.full_name || 'U')[0].toUpperCase()}
+                      {getInitials({
+                        firstName: profile?.firstName || profile?.first_name,
+                        lastName: profile?.lastName || profile?.last_name,
+                        fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name
+                      })}
                     </span>
                   </div>
-                  <div className="hidden lg:block">
+                  <div className="hidden lg:block text-left">
                     <div className="text-sm font-medium text-gray-900">
-                      {profile?.full_name || user?.user_metadata?.full_name || 'User'}
+                      {getDisplayName({
+                        firstName: profile?.firstName || profile?.first_name,
+                        lastName: profile?.lastName || profile?.last_name,
+                        fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name,
+                        email: user?.email,
+                        defaultName: 'User'
+                      })}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {profile?.role?.replace('_', ' ') || 'Member'}
+                    <div className="text-xs text-gray-500 flex items-center">
+                      {subscription?.tier ? `${subscription.tier} Plan` : 'Member'}
+                      {subscription?.status === 'active' && (
+                        <span className="ml-1 inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+                      )}
                     </div>
                   </div>
-                </div>
-                <button
-                  onClick={signOut}
-                  className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-                  title="Sign out"
+                  <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+                </Menu.Button>
+
+                <Transition
+                  as={Fragment}
+                  enter="transition ease-out duration-200"
+                  enterFrom="transform opacity-0 scale-95"
+                  enterTo="transform opacity-100 scale-100"
+                  leave="transition ease-in duration-75"
+                  leaveFrom="transform opacity-100 scale-100"
+                  leaveTo="transform opacity-0 scale-95"
                 >
-                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                </button>
-              </div>
+                  <Menu.Items className="absolute right-0 z-10 mt-2 w-80 origin-top-right divide-y divide-gray-100 rounded-lg bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    {/* User Info Section */}
+                    <div className="px-4 py-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-full flex items-center justify-center">
+                          <span className="text-lg font-semibold text-white">
+                            {getInitials({
+                              firstName: profile?.firstName || profile?.first_name,
+                              lastName: profile?.lastName || profile?.last_name,
+                              fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name
+                            })}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {getDisplayName({
+                              firstName: profile?.firstName || profile?.first_name,
+                              lastName: profile?.lastName || profile?.last_name,
+                              fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name,
+                              email: user?.email,
+                              defaultName: 'User'
+                            })}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Subscription Section */}
+                    {!subscriptionLoading && subscription && (
+                      <div className="px-4 py-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {subscription.tier ? `${subscription.tier} Plan` : 'Free Plan'}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {subscription.status === 'active' && subscription.daysRemaining 
+                                ? `${subscription.daysRemaining} days remaining`
+                                : subscription.status || 'Inactive'
+                              }
+                            </p>
+                          </div>
+                          <div className="flex items-center">
+                            {subscription.status === 'active' ? (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {subscription.status || 'Inactive'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={openBillingPortal}
+                              className={`${
+                                active ? 'bg-olive-50 text-olive-700' : 'text-gray-700'
+                              } group flex w-full items-center rounded-md px-2 py-2 text-sm transition-colors`}
+                            >
+                              <CreditCardIcon className="mr-2 h-4 w-4" />
+                              Manage Subscription
+                            </button>
+                          )}
+                        </Menu.Item>
+                      </div>
+                    )}
+
+                    {/* Quick Actions */}
+                    <div className="py-1">
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            href="/profile"
+                            className={`${
+                              active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'
+                            } group flex items-center px-4 py-2 text-sm transition-colors`}
+                          >
+                            <UserCircleIcon className="mr-3 h-4 w-4" />
+                            Profile Settings
+                          </Link>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <Link
+                            href="/dashboard/billing"
+                            className={`${
+                              active ? 'bg-gray-50 text-gray-900' : 'text-gray-700'
+                            } group flex items-center px-4 py-2 text-sm transition-colors`}
+                          >
+                            <CreditCardIcon className="mr-3 h-4 w-4" />
+                            Billing & Usage
+                          </Link>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={signOut}
+                            className={`${
+                              active ? 'bg-red-50 text-red-700' : 'text-gray-700'
+                            } group flex w-full items-center px-4 py-2 text-sm transition-colors`}
+                          >
+                            <ArrowRightOnRectangleIcon className="mr-3 h-4 w-4" />
+                            Sign Out
+                          </button>
+                        )}
+                      </Menu.Item>
+                    </div>
+                  </Menu.Items>
+                </Transition>
+              </Menu>
             )}
 
             {/* Mobile menu button */}
@@ -232,12 +370,22 @@ export default function GlobalNavigation() {
               <div className="flex items-center px-3">
                 <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-full flex items-center justify-center">
                   <span className="text-lg font-semibold text-white">
-                    {(profile?.full_name || user?.user_metadata?.full_name || 'U')[0].toUpperCase()}
+                    {getInitials({
+                      firstName: profile?.firstName || profile?.first_name,
+                      lastName: profile?.lastName || profile?.last_name,
+                      fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name
+                    })}
                   </span>
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800">
-                    {profile?.full_name || user?.user_metadata?.full_name || 'User'}
+                    {getDisplayName({
+                      firstName: profile?.firstName || profile?.first_name,
+                      lastName: profile?.lastName || profile?.last_name,
+                      fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name,
+                      email: user?.email,
+                      defaultName: 'User'
+                    })}
                   </div>
                   <div className="text-sm text-gray-500">
                     {profile?.role?.replace('_', ' ') || 'Member'}

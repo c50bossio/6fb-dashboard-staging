@@ -23,14 +23,14 @@ import dynamic from 'next/dynamic'
 import QRCode from 'qrcode'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
-import CalendarViewSelector from '../../../../components/calendar/CalendarViewSelector'
 import CalendarFilters from '../../../../components/calendar/CalendarFilters'
+import CalendarViewSelector from '../../../../components/calendar/CalendarViewSelector'
 import EmptyBarberState from '../../../../components/calendar/EmptyBarberState'
 import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import { useGlobalDashboard } from '../../../../contexts/GlobalDashboardContext'
 import { useToast } from '../../../../components/ToastContainer'
+import { useGlobalDashboard } from '../../../../contexts/GlobalDashboardContext'
 import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
 import { 
   DEFAULT_RESOURCES, 
@@ -42,8 +42,8 @@ import {
   formatAppointment,
   exportToCSV 
 } from '../../../../lib/calendar-data'
-import { getOrAssignShopId } from '../../../../lib/ensure-user-shop'
 import { FULLCALENDAR_VIEW_MAP } from '../../../../lib/calendar-permissions'
+import { getOrAssignShopId } from '../../../../lib/ensure-user-shop'
 
 const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views

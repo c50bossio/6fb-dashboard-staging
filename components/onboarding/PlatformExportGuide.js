@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   ChevronDownIcon,
   ChevronUpIcon,
@@ -9,6 +8,7 @@ import {
   ExclamationCircleIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function PlatformExportGuide({ platform, config, isOpen, onToggle }) {
   const [currentStep, setCurrentStep] = useState(0)

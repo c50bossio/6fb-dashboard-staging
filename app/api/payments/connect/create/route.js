@@ -12,7 +12,7 @@ export async function POST(request) {
   };
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Handle authentication with fallback for SSR cookie issues
     // Try standard auth first, then use fallback methods if needed
@@ -198,7 +198,7 @@ export async function GET(request) {
   };
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get current user
     let currentUser = null

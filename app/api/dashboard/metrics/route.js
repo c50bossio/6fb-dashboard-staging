@@ -12,7 +12,7 @@ export async function GET(request) {
     const detailed = searchParams.get('detailed') === 'true'
     const type = searchParams.get('type') // trending_services, metrics, etc.
     
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const now = new Date()
     const ranges = {
@@ -109,7 +109,7 @@ async function getSystemHealthMetrics() {
 
 async function getAIActivityMetrics(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: chatHistory, error } = await supabase
       .from('chat_history')
@@ -154,7 +154,7 @@ async function getAIActivityMetrics(startDate, endDate) {
 
 async function getBusinessInsightsMetrics(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: customers } = await supabase
       .from('customers')
@@ -205,7 +205,7 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
 
 async function getUserEngagementMetrics(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: customers } = await supabase
       .from('customers')
@@ -255,7 +255,7 @@ async function getUserEngagementMetrics(startDate, endDate) {
 async function getPerformanceMetrics() {
   try {
     const startTime = Date.now()
-    const supabase = createClient()
+    const supabase = await createClient()
     
     await supabase.from('profiles').select('count').limit(1)
     const responseTime = Date.now() - startTime
@@ -283,7 +283,7 @@ async function getPerformanceMetrics() {
 
 async function checkDatabaseHealth() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const startTime = Date.now()
     
     const { data, error } = await supabase
@@ -310,7 +310,7 @@ async function checkDatabaseHealth() {
 
 async function getDailyStatsBreakdown(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const days = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000))
     const dailyStats = []
     
@@ -347,7 +347,7 @@ async function getDailyStatsBreakdown(startDate, endDate) {
 
 async function getAIProviderUsageStats(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: chatHistory } = await supabase
       .from('chat_history')
@@ -392,7 +392,7 @@ async function getAIProviderUsageStats(startDate, endDate) {
 
 async function getUserSessionStats(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: sessions } = await supabase
       .from('user_sessions')

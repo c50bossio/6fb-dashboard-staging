@@ -1,11 +1,11 @@
 'use client'
 
-import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { createBrowserClient } from '@supabase/ssr'
-import { useAuth } from '../SupabaseAuthProvider'
+import { Fragment, useState, useEffect } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
+import { useAuth } from '../SupabaseAuthProvider'
 
 export default function DeleteLocationModal({ isOpen, onClose, onComplete, location }) {
   const { user } = useAuth()
@@ -102,7 +102,7 @@ export default function DeleteLocationModal({ isOpen, onClose, onComplete, locat
     
     try {
       // Try soft delete first (if is_active column exists)
-      let updateData = { updated_at: new Date().toISOString() }
+      const updateData = { updated_at: new Date().toISOString() }
       
       // Check if we can use is_active column
       const { data: testData, error: testError } = await supabase

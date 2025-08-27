@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '../ui/card'
-import { Button } from '../ui/Button'
-import { Badge } from '../ui/badge'
 import { getBadgeRarityStyle, getBadgeNotificationMessage } from '../../utils/badgeSystem'
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/Button'
+import { Card, CardContent } from '../ui/card'
 
 export default function BadgeUnlockAnimation({ 
   badges = [], 

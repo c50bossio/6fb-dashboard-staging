@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
 import { 
   Star, 
   Plus, 
@@ -10,6 +9,7 @@ import {
   Sparkles,
   Zap
 } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
 
 /**
  * AnimatedPointsEffect Component

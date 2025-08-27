@@ -1,0 +1,128 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: 6fb-ai-agent-system-development
+
+# Reference to base configuration
+resources:
+- ../../base
+- dev-config.yaml
+- resource-limits.yaml
+- ingress-dev.yaml
+
+# Development-specific namespace
+namespace: agent-system-dev
+
+# Development-specific labels
+commonLabels:
+  environment: development
+  deployment-type: dev
+
+# Development-specific annotations
+commonAnnotations:
+  deployment.environment: "development"
+  deployment.date: "2025-08-25"
+
+# Development image tags
+images:
+- name: 6fb-ai-agent-system/frontend
+  newTag: dev-latest
+- name: 6fb-ai-agent-system/backend
+  newTag: dev-latest
+
+# Replica overrides for development
+replicas:
+- name: frontend
+  count: 1
+- name: backend
+  count: 1
+- name: redis
+  count: 1
+
+# ConfigMap generator for development-specific config
+configMapGenerator:
+- name: dev-config
+  literals:
+  - NODE_ENV=development
+  - LOG_LEVEL=debug
+  - ENABLE_DEBUG=true
+  - RELOAD=true
+  - CORS_ORIGINS=http://localhost:3000,http://localhost:9999,http://127.0.0.1:9999
+
+# Patch to modify resources for development
+patches:
+- target:
+    kind: Deployment
+    name: frontend
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/env
+      value:
+      - name: NODE_ENV
+        value: development
+      - name: NEXT_PUBLIC_API_URL
+        value: http://backend:8000
+      - name: FASTAPI_BASE_URL
+        value: http://backend:8000
+      - name: NEXT_PUBLIC_ENABLE_MOCK_FALLBACK
+        value: "true"
+      - name: NEXT_PUBLIC_SUPABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: supabase-url
+      - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: supabase-anon-key
+      - name: NEXT_PUBLIC_ENABLE_RAG
+        value: "true"
+
+- target:
+    kind: Deployment
+    name: backend
+  patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: RELOAD
+        value: "true"
+    - op: replace
+      path: /spec/template/spec/containers/0/env/1/value
+      value: debug
+
+# Expose services via NodePort in development
+- target:
+    kind: Service
+    name: frontend
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: NodePort
+    - op: add
+      path: /spec/ports/0/nodePort
+      value: 30999
+
+- target:
+    kind: Service
+    name: backend
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: NodePort
+    - op: add
+      path: /spec/ports/0/nodePort
+      value: 30800
+
+- target:
+    kind: Service
+    name: redis
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: NodePort
+    - op: add
+      path: /spec/ports/0/nodePort
+      value: 30379

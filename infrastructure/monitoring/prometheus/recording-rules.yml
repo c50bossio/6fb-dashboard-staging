@@ -1,0 +1,427 @@
+# Recording Rules for 6FB AI Agent System
+# Pre-calculated metrics for dashboards and complex business logic
+# Version: 2.0 - Consolidated Rules
+
+groups:
+  # =============================================================================
+  # SLI (Service Level Indicator) RECORDING RULES
+  # =============================================================================
+  
+  - name: sli_rules
+    interval: 30s
+    rules:
+      # Availability SLI - percentage of successful requests
+      - record: sixfb:sli_availability_ratio
+        expr: |
+          sum(rate(http_requests_total{job="fastapi-backend",status!~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="fastapi-backend"}[5m]))
+          
+      # Latency SLI - 95th percentile response time
+      - record: sixfb:sli_latency_95th_percentile
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket{job="fastapi-backend"}[5m])) by (le)
+          )
+          
+      # Error rate SLI - percentage of 5xx errors
+      - record: sixfb:sli_error_rate
+        expr: |
+          sum(rate(http_requests_total{job="fastapi-backend",status=~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="fastapi-backend"}[5m]))
+          
+      # Throughput SLI - requests per second
+      - record: sixfb:sli_throughput_rps
+        expr: |
+          sum(rate(http_requests_total{job="fastapi-backend"}[5m]))
+
+  # =============================================================================
+  # SYSTEM PERFORMANCE AGGREGATIONS
+  # =============================================================================
+  
+  - name: system_performance
+    interval: 30s
+    rules:
+      # Average CPU usage across all instances
+      - record: sixfb:system_cpu_usage_percent
+        expr: |
+          100 - (avg(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+          
+      # Average memory usage across all instances
+      - record: sixfb:system_memory_usage_percent
+        expr: |
+          (
+            (avg(node_memory_MemTotal_bytes) - avg(node_memory_MemAvailable_bytes)) /
+            avg(node_memory_MemTotal_bytes)
+          ) * 100
+          
+      # Total disk usage percentage
+      - record: sixfb:system_disk_usage_percent
+        expr: |
+          (
+            sum(node_filesystem_size_bytes{fstype!="tmpfs"}) - 
+            sum(node_filesystem_avail_bytes{fstype!="tmpfs"})
+          ) /
+          sum(node_filesystem_size_bytes{fstype!="tmpfs"}) * 100
+          
+      # Network I/O rate
+      - record: sixfb:system_network_io_bytes_per_second
+        expr: |
+          sum(rate(node_network_receive_bytes_total[5m])) + 
+          sum(rate(node_network_transmit_bytes_total[5m]))
+
+  # =============================================================================
+  # APPLICATION PERFORMANCE METRICS
+  # =============================================================================
+  
+  - name: application_performance
+    interval: 15s
+    rules:
+      # Request rate per endpoint
+      - record: sixfb:http_requests_per_second
+        labels:
+          service: backend
+        expr: |
+          sum(rate(http_requests_total{job="fastapi-backend"}[5m])) by (method, endpoint)
+          
+      # Error rate per endpoint
+      - record: sixfb:http_error_rate_percent
+        labels:
+          service: backend
+        expr: |
+          (
+            sum(rate(http_requests_total{job="fastapi-backend",status=~"5.."}[5m])) by (method, endpoint) /
+            sum(rate(http_requests_total{job="fastapi-backend"}[5m])) by (method, endpoint)
+          ) * 100
+          
+      # Response time percentiles
+      - record: sixfb:http_response_time_50th_percentile
+        labels:
+          service: backend
+        expr: |
+          histogram_quantile(0.50, 
+            sum(rate(http_request_duration_seconds_bucket{job="fastapi-backend"}[5m])) by (le, method, endpoint)
+          )
+          
+      - record: sixfb:http_response_time_90th_percentile
+        labels:
+          service: backend
+        expr: |
+          histogram_quantile(0.90, 
+            sum(rate(http_request_duration_seconds_bucket{job="fastapi-backend"}[5m])) by (le, method, endpoint)
+          )
+          
+      - record: sixfb:http_response_time_99th_percentile
+        labels:
+          service: backend
+        expr: |
+          histogram_quantile(0.99, 
+            sum(rate(http_request_duration_seconds_bucket{job="fastapi-backend"}[5m])) by (le, method, endpoint)
+          )
+
+  # =============================================================================
+  # DATABASE PERFORMANCE METRICS
+  # =============================================================================
+  
+  - name: database_performance
+    interval: 30s
+    rules:
+      # Database connection utilization
+      - record: sixfb:database_connection_utilization_percent
+        expr: |
+          (pg_stat_database_numbackends / pg_settings_max_connections) * 100
+          
+      # Database query rate
+      - record: sixfb:database_queries_per_second
+        expr: |
+          rate(pg_stat_database_xact_commit[5m]) + rate(pg_stat_database_xact_rollback[5m])
+          
+      # Database cache hit ratio
+      - record: sixfb:database_cache_hit_ratio_percent
+        expr: |
+          (
+            sum(pg_stat_database_blks_hit) /
+            (sum(pg_stat_database_blks_hit) + sum(pg_stat_database_blks_read))
+          ) * 100
+          
+      # Database deadlocks rate
+      - record: sixfb:database_deadlocks_per_second
+        expr: |
+          rate(pg_stat_database_deadlocks[5m])
+          
+      # Redis cache performance
+      - record: sixfb:redis_cache_hit_ratio_percent
+        expr: |
+          (
+            rate(redis_keyspace_hits_total[5m]) /
+            (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))
+          ) * 100
+          
+      - record: sixfb:redis_memory_utilization_percent
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes) * 100
+
+  # =============================================================================
+  # BUSINESS METRICS AGGREGATIONS
+  # =============================================================================
+  
+  - name: business_metrics
+    interval: 60s
+    rules:
+      # Booking creation rate (per hour)
+      - record: sixfb:bookings_per_hour
+        expr: |
+          rate(sixfb_bookings_created_total[1h]) * 3600
+          
+      # Commission processing rate
+      - record: sixfb:commissions_processed_per_hour
+        expr: |
+          rate(sixfb_commissions_processed_total[1h]) * 3600
+          
+      # Revenue per hour (aggregated)
+      - record: sixfb:revenue_per_hour_dollars
+        expr: |
+          rate(sixfb_revenue_generated_total[1h]) * 3600
+          
+      # User registration rate
+      - record: sixfb:user_registrations_per_hour
+        expr: |
+          rate(sixfb_user_registrations_total[1h]) * 3600
+          
+      # Active barber count
+      - record: sixfb:active_barbers_total
+        expr: |
+          count(sixfb_barber_last_activity_seconds < (time() - 300))
+          
+      # Average booking value
+      - record: sixfb:average_booking_value_dollars
+        expr: |
+          rate(sixfb_booking_total_value_dollars[1h]) / rate(sixfb_bookings_created_total[1h])
+          
+      # Customer retention rate (weekly)
+      - record: sixfb:customer_retention_rate_percent_weekly
+        expr: |
+          (
+            count(increase(sixfb_customer_bookings_total[7d]) > 1) /
+            count(increase(sixfb_customer_bookings_total[7d]) > 0)
+          ) * 100
+
+  # =============================================================================
+  # AI SYSTEM PERFORMANCE METRICS
+  # =============================================================================
+  
+  - name: ai_system_metrics
+    interval: 60s
+    rules:
+      # AI request rate
+      - record: sixfb:ai_requests_per_minute
+        expr: |
+          rate(sixfb_ai_requests_total[5m]) * 60
+          
+      # AI token consumption rate
+      - record: sixfb:ai_tokens_per_minute
+        expr: |
+          rate(sixfb_ai_tokens_consumed_total[5m]) * 60
+          
+      # AI response time percentiles
+      - record: sixfb:ai_response_time_50th_percentile
+        expr: |
+          histogram_quantile(0.50, 
+            sum(rate(sixfb_ai_request_duration_seconds_bucket[5m])) by (le, model, service)
+          )
+          
+      - record: sixfb:ai_response_time_90th_percentile
+        expr: |
+          histogram_quantile(0.90, 
+            sum(rate(sixfb_ai_request_duration_seconds_bucket[5m])) by (le, model, service)
+          )
+          
+      # AI error rate
+      - record: sixfb:ai_error_rate_percent
+        expr: |
+          (
+            sum(rate(sixfb_ai_requests_total{status="error"}[5m])) /
+            sum(rate(sixfb_ai_requests_total[5m]))
+          ) * 100
+          
+      # AI cost per hour (estimated)
+      - record: sixfb:ai_cost_per_hour_dollars
+        expr: |
+          (
+            rate(sixfb_ai_tokens_consumed_total[1h]) * 3600 *
+            on() group_left() sixfb_ai_cost_per_token_dollars
+          )
+
+  # =============================================================================
+  # SECURITY METRICS AGGREGATIONS
+  # =============================================================================
+  
+  - name: security_metrics
+    interval: 15s
+    rules:
+      # Failed authentication rate
+      - record: sixfb:auth_failure_rate_per_minute
+        expr: |
+          rate(sixfb_auth_failures_total[5m]) * 60
+          
+      # Security blocks rate
+      - record: sixfb:security_blocks_per_minute
+        expr: |
+          rate(sixfb_security_blocks_total[5m]) * 60
+          
+      # Suspicious activity rate
+      - record: sixfb:suspicious_activity_rate_per_minute
+        expr: |
+          (
+            rate(sixfb_security_sql_injection_attempts_total[5m]) +
+            rate(sixfb_security_suspicious_user_agents_total[5m]) +
+            rate(sixfb_security_blocked_requests_total[5m])
+          ) * 60
+          
+      # Geographic distribution of requests
+      - record: sixfb:requests_by_country_per_minute
+        expr: |
+          sum(rate(http_requests_total{job="fastapi-backend"}[5m])) by (country_code) * 60
+
+  # =============================================================================
+  # INFRASTRUCTURE COST METRICS
+  # =============================================================================
+  
+  - name: infrastructure_costs
+    interval: 300s  # 5 minute intervals for cost tracking
+    rules:
+      # CPU cost estimation (based on usage)
+      - record: sixfb:cpu_cost_per_hour_dollars
+        expr: |
+          (
+            sixfb:system_cpu_usage_percent / 100 *
+            on() group_left() sixfb_infrastructure_cpu_hourly_rate_dollars
+          )
+          
+      # Memory cost estimation
+      - record: sixfb:memory_cost_per_hour_dollars
+        expr: |
+          (
+            sixfb:system_memory_usage_percent / 100 *
+            on() group_left() sixfb_infrastructure_memory_hourly_rate_dollars
+          )
+          
+      # Storage cost estimation
+      - record: sixfb:storage_cost_per_hour_dollars
+        expr: |
+          (
+            sum(node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_avail_bytes{fstype!="tmpfs"}) / 1024 / 1024 / 1024 *
+            on() group_left() sixfb_infrastructure_storage_hourly_rate_per_gb_dollars
+          )
+          
+      # Total infrastructure cost per hour
+      - record: sixfb:infrastructure_total_cost_per_hour_dollars
+        expr: |
+          (
+            sixfb:cpu_cost_per_hour_dollars +
+            sixfb:memory_cost_per_hour_dollars +
+            sixfb:storage_cost_per_hour_dollars +
+            sixfb:ai_cost_per_hour_dollars
+          )
+
+  # =============================================================================
+  # CUSTOMER EXPERIENCE METRICS
+  # =============================================================================
+  
+  - name: customer_experience
+    interval: 120s
+    rules:
+      # Page load time aggregations
+      - record: sixfb:page_load_time_50th_percentile
+        expr: |
+          histogram_quantile(0.50, 
+            sum(rate(sixfb_page_load_duration_seconds_bucket[5m])) by (le, page)
+          )
+          
+      - record: sixfb:page_load_time_90th_percentile
+        expr: |
+          histogram_quantile(0.90, 
+            sum(rate(sixfb_page_load_duration_seconds_bucket[5m])) by (le, page)
+          )
+          
+      # Conversion rates
+      - record: sixfb:booking_conversion_rate_percent
+        expr: |
+          (
+            rate(sixfb_bookings_completed_total[1h]) /
+            rate(sixfb_booking_attempts_total[1h])
+          ) * 100
+          
+      - record: sixfb:registration_conversion_rate_percent
+        expr: |
+          (
+            rate(sixfb_user_registrations_completed_total[1h]) /
+            rate(sixfb_user_registration_attempts_total[1h])
+          ) * 100
+          
+      # Customer satisfaction score (if available)
+      - record: sixfb:average_customer_rating
+        expr: |
+          sum(sixfb_customer_ratings_sum) / sum(sixfb_customer_ratings_count)
+
+  # =============================================================================
+  # DAILY/WEEKLY AGGREGATIONS (for reporting)
+  # =============================================================================
+  
+  - name: daily_aggregations
+    interval: 3600s  # Run every hour
+    rules:
+      # Daily booking count
+      - record: sixfb:daily_bookings_total
+        expr: |
+          increase(sixfb_bookings_created_total[24h])
+          
+      # Daily revenue
+      - record: sixfb:daily_revenue_dollars
+        expr: |
+          increase(sixfb_revenue_generated_total[24h])
+          
+      # Daily new users
+      - record: sixfb:daily_new_users_total
+        expr: |
+          increase(sixfb_user_registrations_total[24h])
+          
+      # Daily AI token usage
+      - record: sixfb:daily_ai_tokens_consumed
+        expr: |
+          increase(sixfb_ai_tokens_consumed_total[24h])
+          
+      # Daily infrastructure cost
+      - record: sixfb:daily_infrastructure_cost_dollars
+        expr: |
+          avg_over_time(sixfb:infrastructure_total_cost_per_hour_dollars[24h]) * 24
+
+  # =============================================================================
+  # PREDICTIVE ANALYTICS (trend analysis)
+  # =============================================================================
+  
+  - name: predictive_metrics
+    interval: 3600s  # Run every hour
+    rules:
+      # 7-day booking trend
+      - record: sixfb:booking_trend_7d
+        expr: |
+          (
+            avg_over_time(sixfb:bookings_per_hour[24h]) - 
+            avg_over_time(sixfb:bookings_per_hour[24h] offset 7d)
+          ) / avg_over_time(sixfb:bookings_per_hour[24h] offset 7d) * 100
+          
+      # Revenue growth rate (week over week)
+      - record: sixfb:revenue_growth_rate_wow_percent
+        expr: |
+          (
+            avg_over_time(sixfb:revenue_per_hour_dollars[24h]) - 
+            avg_over_time(sixfb:revenue_per_hour_dollars[24h] offset 7d)
+          ) / avg_over_time(sixfb:revenue_per_hour_dollars[24h] offset 7d) * 100
+          
+      # User growth trend
+      - record: sixfb:user_growth_rate_daily_percent
+        expr: |
+          (
+            sixfb:daily_new_users_total - 
+            sixfb:daily_new_users_total offset 1d
+          ) / sixfb:daily_new_users_total offset 1d * 100

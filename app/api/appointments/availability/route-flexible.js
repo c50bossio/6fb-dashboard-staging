@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getConfig, isDevelopment } from '@/lib/config/environment'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const config = getConfig()
 

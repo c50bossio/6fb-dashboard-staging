@@ -1,0 +1,333 @@
+# PostgreSQL Exporter Queries for 6FB AI Agent System
+# Custom queries for business-specific metrics
+
+# Database connection metrics
+pg_database_connections:
+  query: "SELECT datname, numbackends as connections FROM pg_stat_database WHERE datname NOT IN ('template0', 'template1', 'postgres')"
+  master: true
+  metrics:
+    - datname:
+        usage: "LABEL"
+        description: "Database name"
+    - connections:
+        usage: "GAUGE"
+        description: "Number of active connections to database"
+
+# Table sizes for storage monitoring
+pg_table_sizes:
+  query: |
+    SELECT 
+      schemaname,
+      tablename,
+      pg_total_relation_size(schemaname||'.'||tablename) as size_bytes,
+      pg_relation_size(schemaname||'.'||tablename) as table_size_bytes,
+      (pg_total_relation_size(schemaname||'.'||tablename) - pg_relation_size(schemaname||'.'||tablename)) as index_size_bytes
+    FROM pg_tables 
+    WHERE schemaname NOT IN ('information_schema', 'pg_catalog')
+  master: true
+  metrics:
+    - schemaname:
+        usage: "LABEL"
+        description: "Schema name"
+    - tablename:
+        usage: "LABEL"  
+        description: "Table name"
+    - size_bytes:
+        usage: "GAUGE"
+        description: "Total table size including indexes"
+    - table_size_bytes:
+        usage: "GAUGE"
+        description: "Table size excluding indexes"
+    - index_size_bytes:
+        usage: "GAUGE"
+        description: "Total index size for table"
+
+# Slow queries monitoring
+pg_slow_queries:
+  query: |
+    SELECT 
+      query_hash,
+      calls,
+      total_time,
+      mean_time,
+      max_time,
+      stddev_time,
+      rows,
+      shared_blks_hit + shared_blks_read as shared_blocks_accessed
+    FROM pg_stat_statements 
+    WHERE mean_time > 100
+    ORDER BY mean_time DESC 
+    LIMIT 20
+  master: true
+  metrics:
+    - query_hash:
+        usage: "LABEL"
+        description: "Query hash identifier"
+    - calls:
+        usage: "COUNTER"
+        description: "Number of times executed"
+    - total_time:
+        usage: "COUNTER"
+        description: "Total time spent in milliseconds"
+    - mean_time:
+        usage: "GAUGE"
+        description: "Mean execution time in milliseconds"
+    - max_time:
+        usage: "GAUGE"
+        description: "Maximum execution time in milliseconds"
+    - stddev_time:
+        usage: "GAUGE"
+        description: "Standard deviation of execution time"
+    - rows:
+        usage: "COUNTER"
+        description: "Total number of rows retrieved or affected"
+    - shared_blocks_accessed:
+        usage: "COUNTER"
+        description: "Total shared blocks accessed"
+
+# Index usage monitoring
+pg_index_usage:
+  query: |
+    SELECT
+      schemaname,
+      tablename,
+      indexname,
+      idx_tup_read,
+      idx_tup_fetch,
+      idx_scan
+    FROM pg_stat_user_indexes
+  master: true
+  metrics:
+    - schemaname:
+        usage: "LABEL"
+        description: "Schema name"
+    - tablename:
+        usage: "LABEL"
+        description: "Table name"
+    - indexname:
+        usage: "LABEL"
+        description: "Index name"
+    - idx_tup_read:
+        usage: "COUNTER"
+        description: "Number of index entries returned by scans"
+    - idx_tup_fetch:
+        usage: "COUNTER"
+        description: "Number of live table rows fetched by index scans"
+    - idx_scan:
+        usage: "COUNTER"
+        description: "Number of index scans initiated"
+
+# 6FB-specific business metrics
+pg_6fb_bookings_metrics:
+  query: |
+    SELECT 
+      'bookings' as table_type,
+      COUNT(*) as total_records,
+      COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as records_last_24h,
+      COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as records_last_7d,
+      COUNT(*) FILTER (WHERE status = 'completed') as completed_records,
+      COUNT(*) FILTER (WHERE status = 'cancelled') as cancelled_records,
+      COUNT(*) FILTER (WHERE status = 'pending') as pending_records
+    FROM appointments
+    UNION ALL
+    SELECT 
+      'users' as table_type,
+      COUNT(*) as total_records,
+      COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as records_last_24h,
+      COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days') as records_last_7d,
+      COUNT(*) FILTER (WHERE role = 'barber') as completed_records,
+      COUNT(*) FILTER (WHERE role = 'customer') as cancelled_records,
+      COUNT(*) FILTER (WHERE is_active = true) as pending_records
+    FROM users
+  master: true
+  metrics:
+    - table_type:
+        usage: "LABEL"
+        description: "Type of business entity"
+    - total_records:
+        usage: "GAUGE"
+        description: "Total number of records"
+    - records_last_24h:
+        usage: "GAUGE"
+        description: "Records created in last 24 hours"
+    - records_last_7d:
+        usage: "GAUGE"
+        description: "Records created in last 7 days"
+    - completed_records:
+        usage: "GAUGE"
+        description: "Completed/active records"
+    - cancelled_records:
+        usage: "GAUGE"
+        description: "Cancelled/inactive records"
+    - pending_records:
+        usage: "GAUGE"
+        description: "Pending/active records"
+
+# Revenue and commission metrics
+pg_6fb_revenue_metrics:
+  query: |
+    SELECT
+      'revenue' as metric_type,
+      SUM(COALESCE(total_amount, 0)) as total_value,
+      AVG(COALESCE(total_amount, 0)) as average_value,
+      COUNT(*) as transaction_count,
+      SUM(COALESCE(total_amount, 0)) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as value_last_24h,
+      COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as count_last_24h
+    FROM payments 
+    WHERE status = 'completed'
+    UNION ALL
+    SELECT
+      'commissions' as metric_type,
+      SUM(COALESCE(commission_amount, 0)) as total_value,
+      AVG(COALESCE(commission_amount, 0)) as average_value,
+      COUNT(*) as transaction_count,
+      SUM(COALESCE(commission_amount, 0)) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as value_last_24h,
+      COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') as count_last_24h
+    FROM commissions
+    WHERE status = 'paid'
+  master: true
+  metrics:
+    - metric_type:
+        usage: "LABEL"
+        description: "Type of financial metric"
+    - total_value:
+        usage: "GAUGE"
+        description: "Total monetary value"
+    - average_value:
+        usage: "GAUGE"
+        description: "Average monetary value"
+    - transaction_count:
+        usage: "GAUGE"
+        description: "Total number of transactions"
+    - value_last_24h:
+        usage: "GAUGE"
+        description: "Value in last 24 hours"
+    - count_last_24h:
+        usage: "GAUGE"
+        description: "Count in last 24 hours"
+
+# Cache hit ratio for query performance
+pg_cache_hit_ratio:
+  query: |
+    SELECT 
+      'buffer_cache' as cache_type,
+      (sum(heap_blks_hit) * 100 / NULLIF(sum(heap_blks_hit) + sum(heap_blks_read), 0)) as hit_ratio
+    FROM pg_statio_user_tables
+    UNION ALL
+    SELECT
+      'index_cache' as cache_type,
+      (sum(idx_blks_hit) * 100 / NULLIF(sum(idx_blks_hit) + sum(idx_blks_read), 0)) as hit_ratio
+    FROM pg_statio_user_indexes
+  master: true
+  metrics:
+    - cache_type:
+        usage: "LABEL"
+        description: "Type of cache"
+    - hit_ratio:
+        usage: "GAUGE"
+        description: "Cache hit ratio percentage"
+
+# Locks monitoring
+pg_locks_monitoring:
+  query: |
+    SELECT 
+      mode,
+      locktype,
+      granted,
+      COUNT(*) as lock_count
+    FROM pg_locks 
+    GROUP BY mode, locktype, granted
+  master: true
+  metrics:
+    - mode:
+        usage: "LABEL"
+        description: "Lock mode"
+    - locktype:
+        usage: "LABEL"
+        description: "Lock type"
+    - granted:
+        usage: "LABEL"
+        description: "Whether lock is granted"
+    - lock_count:
+        usage: "GAUGE"
+        description: "Number of locks"
+
+# Replication lag (for read replicas)
+pg_replication_lag:
+  query: |
+    SELECT 
+      client_addr,
+      client_hostname,
+      state,
+      sent_lsn,
+      write_lsn,
+      flush_lsn,
+      replay_lsn,
+      EXTRACT(EPOCH FROM (now() - pg_stat_get_wal_senders_pid(pid)))::int as lag_seconds,
+      CASE 
+        WHEN pg_is_in_recovery() THEN 
+          EXTRACT(EPOCH FROM (now() - pg_last_xact_replay_timestamp()))::int
+        ELSE 0 
+      END as recovery_lag_seconds
+    FROM pg_stat_replication
+  master: true
+  metrics:
+    - client_addr:
+        usage: "LABEL"
+        description: "Replica client address"
+    - client_hostname:
+        usage: "LABEL"
+        description: "Replica client hostname"  
+    - state:
+        usage: "LABEL"
+        description: "Replication state"
+    - lag_seconds:
+        usage: "GAUGE"
+        description: "Replication lag in seconds"
+    - recovery_lag_seconds:
+        usage: "GAUGE"
+        description: "Recovery lag in seconds"
+
+# Connection pool monitoring (if using pgbouncer)
+pg_connection_pool:
+  query: |
+    SELECT 
+      database,
+      user_name,
+      cl_active as active_connections,
+      cl_waiting as waiting_connections,
+      sv_active as server_active,
+      sv_idle as server_idle,
+      sv_used as server_used,
+      maxwait,
+      pool_mode
+    FROM pgbouncer.pools
+  master: false  # This would run on pgbouncer stats database
+  metrics:
+    - database:
+        usage: "LABEL"
+        description: "Database name"
+    - user_name:
+        usage: "LABEL"
+        description: "User name"
+    - pool_mode:
+        usage: "LABEL"
+        description: "Pool mode"
+    - active_connections:
+        usage: "GAUGE"
+        description: "Active client connections"
+    - waiting_connections:
+        usage: "GAUGE"
+        description: "Waiting client connections"
+    - server_active:
+        usage: "GAUGE"
+        description: "Active server connections"
+    - server_idle:
+        usage: "GAUGE"
+        description: "Idle server connections"
+    - server_used:
+        usage: "GAUGE"
+        description: "Used server connections"
+    - maxwait:
+        usage: "GAUGE"
+        description: "Maximum wait time in microseconds"

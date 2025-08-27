@@ -6,7 +6,7 @@ export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     const isDevelopment = process.env.NODE_ENV === 'development'
@@ -83,7 +83,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     const isDevelopment = process.env.NODE_ENV === 'development'

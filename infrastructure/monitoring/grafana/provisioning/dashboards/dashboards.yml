@@ -1,0 +1,53 @@
+# Grafana Dashboard Provisioning Configuration
+# Automatic loading of dashboards from filesystem
+
+apiVersion: 1
+
+providers:
+  # Main dashboards directory
+  - name: '6fb-ai-system-dashboards'
+    orgId: 1
+    folder: '6FB AI System'
+    folderUid: sixfb-folder
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      
+  # Infrastructure dashboards
+  - name: 'infrastructure-dashboards'
+    orgId: 1
+    folder: 'Infrastructure'
+    folderUid: infrastructure-folder
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/infrastructure
+      
+  # Business metrics dashboards
+  - name: 'business-dashboards'
+    orgId: 1
+    folder: 'Business Metrics'
+    folderUid: business-folder
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/business
+      
+  # Security dashboards
+  - name: 'security-dashboards'
+    orgId: 1
+    folder: 'Security'
+    folderUid: security-folder
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/security

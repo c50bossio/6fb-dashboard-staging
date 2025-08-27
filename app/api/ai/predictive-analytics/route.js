@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 /**
  * Advanced Predictive Analytics Engine
@@ -575,7 +575,7 @@ async function getHistoricalRevenue(barbershop_id) {
     const metrics = await getBusinessMetrics(barbershop_id, '90d')
     
     const { createClient } = await import('../../../../lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
     const { data: bookings } = await supabase

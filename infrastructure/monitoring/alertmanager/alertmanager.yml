@@ -1,0 +1,469 @@
+# AlertManager Configuration for 6FB AI Agent System
+# Comprehensive alert routing and notification management with SRE best practices
+# Version: 2.0 - Consolidated Configuration
+
+global:
+  # SMTP configuration for email alerts
+  smtp_smarthost: '${SMTP_SMARTHOST:-localhost:587}'
+  smtp_from: '${SMTP_FROM:-alerts@6fb.ai}'
+  smtp_auth_username: '${SMTP_USERNAME:-}'
+  smtp_auth_password: '${SMTP_PASSWORD:-}'
+  smtp_require_tls: true
+  smtp_hello: '6fb.ai'
+  
+  # HTTP configuration  
+  http_config:
+    tls_config:
+      insecure_skip_verify: false
+  
+  # Global template
+  templates:
+    - '/etc/alertmanager/templates/*.tmpl'
+  
+  # Resolve timeout - how long to wait before sending resolved notification
+  resolve_timeout: 5m
+
+# Template files for custom alert formatting
+templates:
+  - '/etc/alertmanager/templates/6fb-alerts.tmpl'
+  - '/etc/alertmanager/templates/business-alerts.tmpl'
+
+# Inhibit rules - prevent duplicate/redundant alerts
+inhibit_rules:
+  # Don't send warning alerts if critical alerts are firing for the same service
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: ['alertname', 'instance', 'service']
+    
+  # Don't send infrastructure alerts if service is down
+  - source_matchers:
+      - alertname="ServiceDown"
+    target_matchers:
+      - category="infrastructure"
+    equal: ['instance']
+    
+  # Don't send performance alerts if service is down
+  - source_matchers:
+      - alertname="ServiceDown"
+    target_matchers:
+      - category="performance"
+    equal: ['instance', 'service']
+
+# Main routing configuration
+route:
+  # Default grouping
+  group_by: ['alertname', 'cluster', 'service']
+  
+  # How long to wait before sending initial notification
+  group_wait: 30s
+  
+  # How long to wait before sending additional notifications for the same group
+  group_interval: 5m
+  
+  # How long to wait before re-sending notifications
+  repeat_interval: 4h
+  
+  # Default receiver
+  receiver: 'default-notifications'
+  
+  # Child routes for specific alert types
+  routes:
+    # ==========================================================================
+    # CRITICAL ALERTS - IMMEDIATE RESPONSE REQUIRED
+    # ==========================================================================
+    - matchers:
+        - severity="critical"
+      receiver: 'critical-pager-alerts'
+      group_wait: 10s
+      repeat_interval: 15m
+      continue: true  # Also send to other matching routes
+      
+    # Service down alerts - immediate escalation
+    - matchers:
+        - alertname="ServiceDown"
+      receiver: 'service-down-escalation'
+      group_wait: 5s
+      repeat_interval: 10m
+      
+    # SLO breach alerts - business critical
+    - matchers:
+        - category="slo"
+      receiver: 'slo-breach-alerts'
+      group_wait: 15s
+      repeat_interval: 30m
+      
+    # ==========================================================================  
+    # SECURITY ALERTS - IMMEDIATE SECURITY TEAM NOTIFICATION
+    # ==========================================================================
+    - matchers:
+        - category="security"
+      receiver: 'security-incident-team'
+      group_wait: 10s
+      repeat_interval: 30m
+      routes:
+        # High severity security incidents
+        - matchers:
+            - severity="critical"
+          receiver: 'security-critical-escalation'
+          group_wait: 5s
+          repeat_interval: 15m
+          
+    # ==========================================================================
+    # BUSINESS ALERTS - BUSINESS STAKEHOLDER NOTIFICATIONS  
+    # ==========================================================================
+    - matchers:
+        - category="business"
+      receiver: 'business-stakeholder-alerts'
+      group_interval: 30m
+      repeat_interval: 4h
+      routes:
+        # Revenue/commission critical issues
+        - matchers:
+            - component=~"commissions|payments|revenue"
+            - severity="critical"
+          receiver: 'business-critical-alerts'
+          group_wait: 30s
+          repeat_interval: 2h
+          
+    # AI system alerts - specialized routing
+    - matchers:
+        - component="ai"
+      receiver: 'ai-system-alerts'
+      group_interval: 10m
+      repeat_interval: 2h
+      routes:
+        # High AI costs
+        - matchers:
+            - category="cost"
+          receiver: 'cost-management-alerts'
+          group_wait: 60s
+          repeat_interval: 6h
+          
+    # ==========================================================================
+    # PERFORMANCE ALERTS - OPERATIONS TEAM
+    # ==========================================================================  
+    - matchers:
+        - category="performance"
+      receiver: 'performance-ops-team'
+      group_interval: 10m
+      repeat_interval: 2h
+      routes:
+        # Database performance issues
+        - matchers:
+            - category="database"
+          receiver: 'database-ops-team'
+          group_interval: 15m
+          repeat_interval: 4h
+          
+    # ==========================================================================
+    # INFRASTRUCTURE ALERTS - INFRASTRUCTURE TEAM
+    # ==========================================================================
+    - matchers:
+        - category="infrastructure"
+      receiver: 'infrastructure-ops-team'
+      group_interval: 15m
+      repeat_interval: 4h
+      routes:
+        # Container/Kubernetes issues
+        - matchers:
+            - alertname=~"Container.*|Pod.*|Kubernetes.*"
+          receiver: 'container-ops-team'
+          
+    # ==========================================================================
+    # COMPLIANCE ALERTS - COMPLIANCE TEAM
+    # ==========================================================================
+    - matchers:
+        - category="compliance"
+      receiver: 'compliance-team-alerts'
+      group_interval: 30m
+      repeat_interval: 24h  # Daily digest for compliance issues
+      
+    # ==========================================================================
+    # MONITORING SYSTEM ALERTS - MONITORING TEAM  
+    # ==========================================================================
+    - matchers:
+        - category="monitoring"
+      receiver: 'monitoring-team-alerts'
+      group_interval: 5m
+      repeat_interval: 1h
+      
+    # ==========================================================================
+    # TIME-BASED ROUTING (Business hours vs After hours)
+    # ==========================================================================
+    - matchers:
+        - severity=~"warning|info"
+      receiver: 'business-hours-alerts'
+      active_time_intervals: 
+        - 'business-hours'
+      group_interval: 30m
+      repeat_interval: 8h
+      
+    - matchers:
+        - severity=~"warning|info"  
+      receiver: 'after-hours-alerts'
+      active_time_intervals:
+        - 'after-hours'
+      group_interval: 60m
+      repeat_interval: 12h
+
+# =============================================================================
+# RECEIVER CONFIGURATIONS
+# =============================================================================
+
+receivers:
+  # ---------------------------------------------------------------------------
+  # DEFAULT RECEIVER
+  # ---------------------------------------------------------------------------
+  - name: 'default-notifications'
+    email_configs:
+      - to: '${DEFAULT_EMAIL:-admin@6fb.ai}'
+        subject: '[6FB Alert] {{ .GroupLabels.alertname }} - {{ .Status | title }}'
+        html: '{{ template "6fb.default" . }}'
+        headers:
+          X-Priority: '3'
+          
+  # ---------------------------------------------------------------------------
+  # CRITICAL ALERTS - PAGER/ONCALL INTEGRATION
+  # ---------------------------------------------------------------------------
+  - name: 'critical-pager-alerts'
+    email_configs:
+      - to: '${ONCALL_EMAIL:-oncall@6fb.ai}'
+        subject: '🚨 [CRITICAL] 6FB System Alert - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.critical" . }}'
+        headers:
+          X-Priority: '1'
+          X-6FB-Alert-Type: 'critical'
+    # PagerDuty integration (when configured)
+    # pagerduty_configs:
+    #   - service_key: '${PAGERDUTY_SERVICE_KEY}'
+    #     description: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+    #     severity: 'critical'
+    #     client: '6FB AI Agent System'
+    #     client_url: 'https://grafana.6fb.ai/dashboards'
+    
+    # Slack critical channel integration (when configured)
+    # slack_configs:
+    #   - api_url: '${SLACK_CRITICAL_WEBHOOK_URL}'
+    #     channel: '#critical-alerts'
+    #     title: '🚨 Critical System Alert'
+    #     text: '{{ template "slack.critical" . }}'
+    #     color: 'danger'
+    #     actions:
+    #       - type: 'button'
+    #         text: 'View Dashboard'
+    #         url: 'https://grafana.6fb.ai/d/sixfb-app-overview'
+    #       - type: 'button'
+    #         text: 'Runbook'
+    #         url: 'https://runbooks.6fb.ai/{{ .GroupLabels.alertname }}'
+        
+  # ---------------------------------------------------------------------------
+  # SERVICE DOWN ESCALATION
+  # ---------------------------------------------------------------------------  
+  - name: 'service-down-escalation'
+    email_configs:
+      - to: '${ONCALL_EMAIL:-oncall@6fb.ai}, ${LEAD_EMAIL:-tech-lead@6fb.ai}'
+        subject: '🔥 [SERVICE DOWN] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.service_down" . }}'
+        headers:
+          X-Priority: '1'
+          X-6FB-Alert-Type: 'service-down'
+    # Additional escalation methods would go here (SMS, phone calls, etc.)
+    
+  # ---------------------------------------------------------------------------
+  # SLO BREACH ALERTS
+  # ---------------------------------------------------------------------------
+  - name: 'slo-breach-alerts'
+    email_configs:
+      - to: '${SRE_EMAIL:-sre@6fb.ai}, ${PRODUCT_EMAIL:-product@6fb.ai}'
+        subject: '📊 [SLO BREACH] 6FB System - {{ .GroupLabels.slo_type }}'
+        html: '{{ template "6fb.slo_breach" . }}'
+        headers:
+          X-6FB-Alert-Type: 'slo-breach'
+          
+  # ---------------------------------------------------------------------------
+  # SECURITY INCIDENT TEAM
+  # ---------------------------------------------------------------------------
+  - name: 'security-incident-team'
+    email_configs:
+      - to: '${SECURITY_EMAIL:-security@6fb.ai}'
+        subject: '🔒 [SECURITY] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.security" . }}'
+        headers:
+          X-6FB-Alert-Type: 'security'
+    # Integration with security tools (SIEM, etc.)
+          
+  - name: 'security-critical-escalation'
+    email_configs:
+      - to: '${SECURITY_EMAIL:-security@6fb.ai}, ${CISO_EMAIL:-ciso@6fb.ai}'
+        subject: '🚨 [SECURITY CRITICAL] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.security_critical" . }}'
+        headers:
+          X-Priority: '1'
+          X-6FB-Alert-Type: 'security-critical'
+    
+  # ---------------------------------------------------------------------------
+  # BUSINESS STAKEHOLDER ALERTS
+  # ---------------------------------------------------------------------------
+  - name: 'business-stakeholder-alerts'
+    email_configs:
+      - to: '${BUSINESS_EMAIL:-business@6fb.ai}'
+        subject: '📈 [BUSINESS] 6FB Metrics Alert - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.business" . }}'
+        headers:
+          X-6FB-Alert-Type: 'business'
+          
+  - name: 'business-critical-alerts'
+    email_configs:
+      - to: '${BUSINESS_EMAIL:-business@6fb.ai}, ${CEO_EMAIL:-ceo@6fb.ai}'
+        subject: '💰 [BUSINESS CRITICAL] 6FB Revenue Alert - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.business_critical" . }}'
+        headers:
+          X-Priority: '2'
+          X-6FB-Alert-Type: 'business-critical'
+          
+  # ---------------------------------------------------------------------------
+  # AI SYSTEM ALERTS
+  # ---------------------------------------------------------------------------
+  - name: 'ai-system-alerts'
+    email_configs:
+      - to: '${AI_TEAM_EMAIL:-ai-team@6fb.ai}'
+        subject: '🤖 [AI SYSTEM] 6FB Alert - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.ai_system" . }}'
+        headers:
+          X-6FB-Alert-Type: 'ai-system'
+          
+  - name: 'cost-management-alerts'
+    email_configs:
+      - to: '${FINANCE_EMAIL:-finance@6fb.ai}, ${CTO_EMAIL:-cto@6fb.ai}'
+        subject: '💸 [COST ALERT] 6FB AI Costs - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.cost_management" . }}'
+        headers:
+          X-6FB-Alert-Type: 'cost-management'
+          
+  # ---------------------------------------------------------------------------
+  # OPERATIONS TEAMS
+  # ---------------------------------------------------------------------------
+  - name: 'performance-ops-team'
+    email_configs:
+      - to: '${OPS_EMAIL:-ops@6fb.ai}'
+        subject: '⚡ [PERFORMANCE] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.performance" . }}'
+        headers:
+          X-6FB-Alert-Type: 'performance'
+          
+  - name: 'database-ops-team'
+    email_configs:
+      - to: '${DBA_EMAIL:-dba@6fb.ai}'
+        subject: '🗄️ [DATABASE] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.database" . }}'
+        headers:
+          X-6FB-Alert-Type: 'database'
+          
+  - name: 'infrastructure-ops-team'
+    email_configs:
+      - to: '${INFRA_EMAIL:-infrastructure@6fb.ai}'
+        subject: '🏗️ [INFRASTRUCTURE] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.infrastructure" . }}'
+        headers:
+          X-6FB-Alert-Type: 'infrastructure'
+          
+  - name: 'container-ops-team'
+    email_configs:
+      - to: '${K8S_EMAIL:-k8s-ops@6fb.ai}'
+        subject: '🐳 [CONTAINERS] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.containers" . }}'
+        headers:
+          X-6FB-Alert-Type: 'containers'
+          
+  # ---------------------------------------------------------------------------
+  # COMPLIANCE TEAM
+  # ---------------------------------------------------------------------------
+  - name: 'compliance-team-alerts'
+    email_configs:
+      - to: '${COMPLIANCE_EMAIL:-compliance@6fb.ai}'
+        subject: '⚖️ [COMPLIANCE] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.compliance" . }}'
+        headers:
+          X-6FB-Alert-Type: 'compliance'
+          
+  # ---------------------------------------------------------------------------
+  # MONITORING TEAM
+  # ---------------------------------------------------------------------------
+  - name: 'monitoring-team-alerts'
+    email_configs:
+      - to: '${MONITORING_EMAIL:-monitoring@6fb.ai}'
+        subject: '📊 [MONITORING] 6FB System - {{ .GroupLabels.alertname }}'
+        html: '{{ template "6fb.monitoring" . }}'
+        headers:
+          X-6FB-Alert-Type: 'monitoring'
+          
+  # ---------------------------------------------------------------------------
+  # TIME-BASED RECEIVERS
+  # ---------------------------------------------------------------------------
+  - name: 'business-hours-alerts'
+    email_configs:
+      - to: '${BUSINESS_HOURS_EMAIL:-team@6fb.ai}'
+        subject: '[6FB] {{ .GroupLabels.alertname }} - Business Hours'
+        html: '{{ template "6fb.business_hours" . }}'
+        headers:
+          X-6FB-Alert-Type: 'business-hours'
+          
+  - name: 'after-hours-alerts'
+    email_configs:
+      - to: '${AFTER_HOURS_EMAIL:-oncall@6fb.ai}'
+        subject: '[6FB] {{ .GroupLabels.alertname }} - After Hours'
+        html: '{{ template "6fb.after_hours" . }}'
+        headers:
+          X-6FB-Alert-Type: 'after-hours'
+
+# =============================================================================
+# TIME INTERVALS (Business Hours Configuration)
+# =============================================================================
+
+time_intervals:
+  # Business hours: 9 AM - 6 PM EST, Monday-Friday
+  - name: 'business-hours'
+    time_intervals:
+      - times:
+          - start_time: '09:00'
+            end_time: '18:00'
+        weekdays: ['monday:friday']
+        location: 'America/New_York'
+        
+  # After hours: All other times
+  - name: 'after-hours'  
+    time_intervals:
+      # Weekday evenings
+      - times:
+          - start_time: '18:00'
+            end_time: '09:00'
+        weekdays: ['monday:friday'] 
+        location: 'America/New_York'
+      # Weekends (all day)
+      - weekdays: ['saturday', 'sunday']
+        location: 'America/New_York'
+        
+  # Maintenance windows (optional)
+  - name: 'maintenance-window'
+    time_intervals:
+      - times:
+          - start_time: '02:00'
+            end_time: '04:00'
+        weekdays: ['sunday']
+        location: 'America/New_York'
+
+# =============================================================================
+# MUTE TIME INTERVALS (Silence Configuration)
+# =============================================================================
+
+# Optional: Automatic silencing during maintenance
+# mute_time_intervals:
+#   - name: 'maintenance-mute'
+#     time_intervals:
+#       - times:
+#           - start_time: '02:00'  
+#             end_time: '04:00'
+#         weekdays: ['sunday']
+#         location: 'America/New_York'

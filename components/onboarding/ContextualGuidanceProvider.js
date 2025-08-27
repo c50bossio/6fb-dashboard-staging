@@ -1,6 +1,5 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { 
   CheckCircleIcon, 
   ExclamationTriangleIcon, 
@@ -10,6 +9,7 @@ import {
   LightBulbIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import smartSuggestions from '../../services/SmartSuggestionsAPI'
 
 const ContextualGuidanceContext = createContext({})

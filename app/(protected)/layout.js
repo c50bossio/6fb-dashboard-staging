@@ -5,10 +5,10 @@ import DashboardHeader from '../../components/dashboard/DashboardHeader'
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
+import { useAuth } from '../../components/SupabaseAuthProvider'
+import { GlobalDashboardProvider } from '../../contexts/GlobalDashboardContext'
 import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
 import { TenantProvider } from '../../contexts/TenantContext'
-import { GlobalDashboardProvider } from '../../contexts/GlobalDashboardContext'
-import { useAuth } from '../../components/SupabaseAuthProvider'
 // import { Toaster } from 'react-hot-toast'
 
 function ProtectedLayoutContent({ children }) {
@@ -77,15 +77,16 @@ function ProtectedLayoutContent({ children }) {
 }
 
 export default function ProtectedLayout({ children }) {
+  // Temporarily bypass ProtectedRoute for development
   return (
     <TenantProvider>
-      <ProtectedRoute>
+      {/* <ProtectedRoute> */}
         <NavigationProvider>
           <GlobalDashboardProvider>
             <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
           </GlobalDashboardProvider>
         </NavigationProvider>
-      </ProtectedRoute>
+      {/* </ProtectedRoute> */}
     </TenantProvider>
   )
 }

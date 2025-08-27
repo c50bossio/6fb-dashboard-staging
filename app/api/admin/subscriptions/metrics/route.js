@@ -1,4 +1,4 @@
-import { createClient } from '../../../../../lib/supabase'
+import { createClient } from '../../../../../lib/supabase/server'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
@@ -13,7 +13,7 @@ async function getMetrics(request) {
   const period = searchParams.get('period') || '30d' // 7d, 30d, 90d, 1y
   
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const now = new Date()
     const startDate = new Date()

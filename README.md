@@ -1,33 +1,28 @@
 # BookedBarber Platform - AI Agent System v2.0
 
-Enterprise barbershop platform: Next.js 14 (port 9999) + FastAPI (port 8001) + Supabase PostgreSQL.
+**The complete enterprise barbershop management solution** - empowering barbershops with AI-driven customer insights, automated bookings, intelligent staff management, and seamless payment processing.
 
-\![Next.js](https://img.shields.io/badge/Next.js-14.0-black)
-\![Supabase](https://img.shields.io/badge/Supabase-Database-green)
-\![Stripe](https://img.shields.io/badge/Stripe-Payments-blue)
-\![AI Powered](https://img.shields.io/badge/AI-OpenAI%20%26%20Claude-purple)
-\![Voice Enabled](https://img.shields.io/badge/Voice-Enabled-orange)
-\![Predictive](https://img.shields.io/badge/Predictive-Analytics-red)
+**Production**: [bookedbarber.com](https://bookedbarber.com) | **Development**: localhost:9999
 
-## 🚀 Features
+## 🚀 Key Features
 
-### 🆕 AI Enhancements (v2.0)
-Advanced AI system with voice assistant, proactive monitoring, and multi-agent collaboration. See [AI_ENHANCEMENT_SUMMARY.md](./AI_ENHANCEMENT_SUMMARY.md) for complete technical documentation.
+### AI-Powered Operations
+- **Multi-Model AI**: OpenAI, Anthropic, Google AI with automatic failover
+- **Smart Scheduling**: Drag-and-drop calendar with intelligent suggestions
+- **Customer Insights**: AI-driven analytics and behavior predictions
+- **Voice Assistant**: Natural language booking and management
 
-### Core Functionality
-- **AI-Powered Chat**: Multi-model support with memory and learning
-- **Smart Scheduling**: Advanced calendar with drag-and-drop interface
-- **Payment Processing**: Complete Stripe integration with subscriptions
+### Business Management
+- **Staff Management**: Complete hiring, payroll, and performance tracking
+- **Payment Processing**: Stripe Connect integration with automatic splits
+- **Inventory Integration**: CIN7 sync for product management
 - **Real-time Updates**: Live dashboards with WebSocket connections
-- **Unified Notifications**: Multi-channel notifications (email, SMS, push)
 
-### Enterprise Features
-- **Authentication**: Secure auth with Supabase (supports OAuth providers)
-- **Error Tracking**: Comprehensive error monitoring with Sentry
-- **Analytics**: Product analytics with session recording via PostHog
-- **Feature Flags**: Instant feature toggling with Vercel Edge Config
-- **Database**: PostgreSQL with real-time subscriptions
-- **File Storage**: Integrated file management with Supabase Storage
+### Enterprise Scale
+- **Multi-Location**: Organization management for chains and franchises
+- **Role-Based Access**: CLIENT → BARBER → SHOP_OWNER → ENTERPRISE_OWNER
+- **Financial Management**: Commission tracking, booth rent, hybrid arrangements
+- **Unified Communications**: Email, SMS, push notifications
 
 ## 🛠️ Tech Stack
 
@@ -55,99 +50,37 @@ Advanced AI system with voice assistant, proactive monitoring, and multi-agent c
 - **Analytics**: PostHog
 - **Feature Flags**: Vercel Edge Config
 
-## 🚦 Getting Started
-
-### Prerequisites
-- Node.js 18.19+
-- npm or yarn
-- Docker (optional)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd "6FB AI Agent System"
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   cp .env.local.example .env.local
-   # Edit .env.local with your API keys
-   ```
-
-4. **Start development server**
-   ```bash
-   npm run dev
-   # or with Docker
-   ./docker-dev-start.sh
-   ```
-
-5. **Access the application**
-   - Frontend: http://localhost:9999
-   - API: http://localhost:8001
-   - Health Check: http://localhost:9999/api/health
-
-## 📝 Environment Setup
-
-### Required API Keys
-
-Add your API keys to `.env.local`:
+## ⚡ Quick Start
 
 ```bash
-# Database (Required)
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+# 1. Install dependencies
+npm install
 
-# AI (Required)
-OPENAI_API_KEY=your_openai_key
+# 2. Configure environment (see SETUP.md for details)
+cp .env.example .env.local
+# Edit .env.local with your API keys
 
-# Payments (Required for production)
-STRIPE_SECRET_KEY=your_stripe_secret
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_public
+# 3. Start development
+./docker-dev-start.sh          # All services (recommended)
+# OR manually:
+npm run dev                     # Frontend (port 9999)
+python simple_backend.py       # Backend (port 8001)
 
-# Optional but recommended
-NEXT_PUBLIC_PUSHER_KEY=your_pusher_key
-PUSHER_APP_ID=your_pusher_app_id
-PUSHER_SECRET=your_pusher_secret
-PUSHER_CLUSTER=us2
+# 4. Verify setup
+npm run claude:health           # Check all services
+npm run lint && npm run build  # Verify code quality
 ```
 
-### Quick Links to Get API Keys:
-- [Supabase](https://supabase.com) - Database & Auth
-- [OpenAI](https://platform.openai.com) - GPT Models
-- [Anthropic](https://console.anthropic.com) - Claude Models
-- [Stripe](https://dashboard.stripe.com) - Payments
-- [Sentry](https://sentry.io) - Error Tracking
-- [Novu](https://web.novu.co) - Notifications
-- [Pusher](https://dashboard.pusher.com) - Real-time
-- [PostHog](https://app.posthog.com) - Analytics
+**📋 For complete setup instructions including database configuration, Stripe integration, and deployment options, see [SETUP.md](./SETUP.md)**
 
-### Database Setup
+## 📊 System Architecture
 
-The system needs these Supabase tables:
-- `profiles` - User accounts
-- `barbershops` - Shop information  
-- `barbershop_staff` - Staff relationships
-- `customers` - Customer data
-- `services` - Service offerings
-- `appointments` - Booking data
-- `transactions` - Payment records
-
-**Auto-Setup:**
-```bash
-# Test database connection
-node test-supabase-access.js
-
-# Create missing tables (if needed)
-npm run db:setup
-```
+- **Frontend**: Next.js 14 (App Router) on port 9999
+- **Backend**: FastAPI on port 8001
+- **Database**: Supabase PostgreSQL with real-time subscriptions
+- **AI**: Multi-provider (OpenAI, Anthropic, Google) with Redis caching
+- **Payments**: Stripe Connect for marketplace functionality
+- **Real-time**: Pusher WebSocket integration
 
 ## 🏗️ Project Structure
 
@@ -167,49 +100,17 @@ npm run db:setup
 └── docker/                # Docker configurations
 ```
 
-## 🧪 Testing
+## 🧪 Testing & Deployment
 
-### AI Feature Testing
-Comprehensive testing dashboard: `http://localhost:9999/ai-testing-dashboard`
-
-### Automated Testing
 ```bash
 # Run all tests
 npm run test:all
 
-# AI integration tests
-node scripts/test-ai-integration.js
-
-# Unit tests
-npm run test
-
-# E2E tests
-npm run test:e2e
-
-# Test coverage
-npm run test:coverage
-```
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-```bash
-npm i -g vercel
+# Production deployment (Vercel recommended)
 vercel --prod
 ```
 
-### Docker Production
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Railway
-```bash
-railway login
-railway up
-```
-
-See [PRODUCTION_CHECKLIST.md](./PRODUCTION_CHECKLIST.md) for deployment best practices.
+**📋 For complete testing procedures, deployment options, and production checklists, see [SETUP.md](./SETUP.md)**
 
 ## 📊 Monitoring
 
@@ -224,61 +125,27 @@ Response times, error rates, user engagement, and revenue metrics.
 
 ## 🔧 Troubleshooting
 
-### Common Issues
-
-**Port conflicts:**
+**Quick Fixes:**
 ```bash
-# Kill processes on ports
+# Port conflicts
 sudo lsof -ti:9999 | xargs kill -9
-sudo lsof -ti:8001 | xargs kill -9
-```
 
-**Docker issues:**
-```bash
-docker compose down
-docker compose up --build
-```
-
-**Frontend build errors:**
-```bash
-rm -rf .next/ node_modules/
-npm install
-npm run dev
-```
-
-**Database connection issues:**
-```bash
-node test-supabase-access.js
-```
-
-### Debug Commands
-```bash
-# View logs
-docker compose logs -f frontend
-docker compose logs -f backend
-
-# Restart specific service
-docker compose restart frontend
+# Reset environment
+rm -rf .next/ node_modules/ && npm install
 
 # Check system status
 npm run health
 ```
 
+**📋 For complete troubleshooting guide and debug commands, see [SETUP.md](./SETUP.md)**
+
 ## 🔐 Security
 
 - Row Level Security (RLS) enabled on all database tables
-- API rate limiting implemented
-- Input validation and sanitization
-- Secure session management
-- Regular dependency updates
+- API rate limiting and input validation implemented
+- Secure session management via Supabase Auth
 
-### Security Checklist
-- [ ] Environment variables set correctly
-- [ ] Supabase RLS policies enabled
-- [ ] API rate limiting configured
-- [ ] HTTPS enabled in production
-- [ ] Error tracking setup (Sentry)
-- [ ] Backup strategy implemented
+**📋 For complete security configuration and checklist, see [SETUP.md](./SETUP.md)**
 
 ## 🤝 Contributing
 

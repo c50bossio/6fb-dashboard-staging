@@ -16,7 +16,7 @@ const DOMAIN_PROVIDERS = {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -175,7 +175,7 @@ async function createDomainCheckout({ userId, domain, pricing, registrationYears
 }
 
 export async function handleDomainPurchaseSuccess(sessionId) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data: purchase } = await supabase
     .from('domain_purchases')

@@ -62,7 +62,7 @@ export async function GET(request) {
 
       if (barbershops && barbershops.length > 0) {
         // Calculate real metrics
-        let totalRevenue = 0
+        const totalRevenue = 0
         let totalBookings = 0
         
         const locationData = await Promise.all(barbershops.map(async (shop) => {

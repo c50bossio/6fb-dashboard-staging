@@ -13,7 +13,7 @@ export async function GET(request) {
       )
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Get shop owner to find their payment method settings
     const { data: shop, error: shopError } = await supabase

@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
 import {
   BuildingStorefrontIcon,
   ClockIcon,
@@ -15,7 +13,6 @@ import {
   BanknotesIcon,
   ChartBarIcon,
   UserGroupIcon,
-  UsersIcon,
   BellIcon,
   ChartPieIcon,
   EnvelopeIcon,
@@ -28,6 +25,9 @@ import {
   Bars3Icon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../SupabaseAuthProvider'
 
 const settingsGroups = [
   {
@@ -66,8 +66,7 @@ const settingsGroups = [
     name: 'Team Management',
     icon: UserGroupIcon,
     sections: [
-      { id: 'staff', name: 'Staff & Permissions', icon: UserGroupIcon, path: '/shop/settings/staff' },
-      { id: 'barbers', name: 'Barber Management', icon: UsersIcon, path: '/shop/barbers' }
+      { id: 'staff', name: 'Staff & Permissions', icon: UserGroupIcon, path: '/shop/settings/staff' }
     ]
   },
   {
@@ -106,6 +105,11 @@ export default function SettingsSidebar({ onSectionChange }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
+  const { profile } = useAuth()
+
+  // Role-based access control
+  const authorizedRoles = ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN']
+  const hasBookingRulesAccess = profile?.role && authorizedRoles.includes(profile.role)
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -128,12 +132,20 @@ export default function SettingsSidebar({ onSectionChange }) {
     setIsMobileMenuOpen(false)
   }
 
-  // Filter sections based on search query
+  // Filter sections based on search query and role-based access control
   const filteredGroups = settingsGroups.map(group => ({
     ...group,
-    sections: group.sections.filter(section =>
-      section.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    sections: group.sections.filter(section => {
+      // Filter by search query
+      const matchesSearch = section.name.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      // Apply role-based filtering for booking rules
+      if (section.id === 'booking' && !hasBookingRulesAccess) {
+        return false
+      }
+      
+      return matchesSearch
+    })
   })).filter(group => group.sections.length > 0)
 
   const isActiveSection = (path) => {

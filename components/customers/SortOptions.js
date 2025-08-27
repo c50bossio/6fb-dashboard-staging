@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
 import { 
   ChevronDownIcon,
   ChevronUpIcon,
@@ -14,6 +13,7 @@ import {
   ClockIcon,
   AdjustmentsVerticalIcon
 } from '@heroicons/react/24/outline'
+import React, { useState, useRef, useEffect } from 'react'
 import { Button } from '../ui'
 
 /**

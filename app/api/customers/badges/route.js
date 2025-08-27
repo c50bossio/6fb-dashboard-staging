@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { calculateBadgeProgress, groupBadgesByCategory } from '../../../../utils/badgeSystem'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -97,7 +97,7 @@ export async function GET(request) {
       ...badge.badge_definitions
     }))
 
-    let response = {
+    const response = {
       success: true,
       customer_id: customerId,
       earned_badges: formattedEarnedBadges,

@@ -25,15 +25,15 @@ import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import ActionCenter from './ActionCenter'
 import AICoachPanel from './AICoachPanel'
 import AnalyticsPanel from './AnalyticsPanel'
+import CampaignCreditWidget from './CampaignCreditWidget'
 import ExecutiveLoadingState from './ExecutiveLoadingState'
+import OnboardingProgress from './OnboardingProgress'
 import PredictiveAnalyticsPanel from './PredictiveAnalyticsPanel'
+import QuickActionsCard from './QuickActionsCard'
+import ShareableBookingLink from './ShareableBookingLink'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
-import ShareableBookingLink from './ShareableBookingLink'
 // DataImportWidget removed - replaced with QuickActionsCard for better UX
-import QuickActionsCard from './QuickActionsCard'
-import CampaignCreditWidget from './CampaignCreditWidget'
-import OnboardingProgress from './OnboardingProgress'
 
 
 const DASHBOARD_MODES = {

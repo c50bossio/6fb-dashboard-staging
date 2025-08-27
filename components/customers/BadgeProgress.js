@@ -1,14 +1,14 @@
 'use client'
 
+import { Trophy, Star, Award, Gift, Calendar } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
-import { Button } from '../ui/Button'
 import { 
   getBadgeRarityStyle, 
   getBadgeCategoryInfo, 
   BADGE_CATEGORIES,
   formatProgressText 
 } from '../../utils/badgeSystem'
-import { Trophy, Star, Award, Gift, Calendar } from 'lucide-react'
+import { Button } from '../ui/Button'
 
 const categoryIcons = {
   loyalty: Trophy,

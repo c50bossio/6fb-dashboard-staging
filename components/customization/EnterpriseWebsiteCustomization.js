@@ -1,12 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
-import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
-import AddLocationModal from '@/components/modals/AddLocationModal'
-import EditLocationModal from '@/components/modals/EditLocationModal'
-import ViewLocationModal from '@/components/modals/ViewLocationModal'
 import { 
   GlobeAltIcon,
   BuildingOfficeIcon,
@@ -19,6 +12,13 @@ import {
   EyeIcon,
   LinkIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import AddLocationModal from '@/components/modals/AddLocationModal'
+import EditLocationModal from '@/components/modals/EditLocationModal'
+import ViewLocationModal from '@/components/modals/ViewLocationModal'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+import { createClient } from '@/lib/supabase/client'
 
 export default function EnterpriseWebsiteCustomization() {
   const { user } = useAuth()

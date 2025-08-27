@@ -3,16 +3,16 @@
  * Parses uploaded file and returns preview with field mapping suggestions
  */
 
-import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { readFile } from 'fs/promises'
-import { CSVProcessor } from '@/lib/integrations/csv-processor'
-import { DataTransformer } from '@/lib/integrations/data-transformer'
-import { SquareAdapter } from '@/lib/integrations/adapters/square-adapter'
-import { TrafftAdapter } from '@/lib/integrations/adapters/trafft-adapter'
+import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
+import { AcuityAdapter } from '@/lib/integrations/adapters/acuity-adapter'
 import { BooksyAdapter } from '@/lib/integrations/adapters/booksy-adapter'
 import { SchedulicityAdapter } from '@/lib/integrations/adapters/schedulicity-adapter'
-import { AcuityAdapter } from '@/lib/integrations/adapters/acuity-adapter'
+import { SquareAdapter } from '@/lib/integrations/adapters/square-adapter'
+import { TrafftAdapter } from '@/lib/integrations/adapters/trafft-adapter'
+import { CSVProcessor } from '@/lib/integrations/csv-processor'
+import { DataTransformer } from '@/lib/integrations/data-transformer'
 
 // Initialize Supabase
 const supabase = createClient(

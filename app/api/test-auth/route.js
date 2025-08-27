@@ -14,7 +14,7 @@ export async function GET() {
       c.name.includes('auth') || c.name.includes('session') || c.name.includes('supabase')
     )
     
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     

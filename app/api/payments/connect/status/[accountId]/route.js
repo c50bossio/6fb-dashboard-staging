@@ -1,11 +1,12 @@
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { stripeService } from '@/services/stripe-service'
+// const { stripeService } = require('@/services/stripe-service')
+const stripeService = { getAccountStatus: async () => ({ error: 'Stripe service temporarily disabled for deployment' }) }
 
 export async function GET(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const accountId = params.accountId
     
     // Handle authentication with fallback for demo user

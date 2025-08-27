@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import { createContext, useContext, useEffect, useState } from 'react'
+import { validateAndFixAuthProfile, getTierForRole } from '../lib/profile-sync-service'
+import { hasAccessToTier, normalizeTierName } from '../lib/subscription-tiers'
 import { createClient } from '../lib/supabase/browser-client'
-import { hasAccessToTier } from '../lib/subscription-tiers'
 
 const AuthContext = createContext({})
 
@@ -31,7 +32,7 @@ function SupabaseAuthProvider({ children }) {
       email: 'dev@localhost.com',
       full_name: 'Dev User',
       role: 'SHOP_OWNER',
-      subscription_tier: 'shop_owner',
+      subscription_tier: 'PROFESSIONAL', // Use standardized tier format
       subscription_status: 'active',
       shop_id: 'tomb45-channelside',
       onboarding_completed: true
@@ -49,7 +50,7 @@ function SupabaseAuthProvider({ children }) {
       signOut: () => Promise.resolve(),
       updateProfile: () => Promise.resolve(mockProfile),
       refreshProfile: () => Promise.resolve(true),
-      subscriptionTier: 'shop_owner',
+      subscriptionTier: 'PROFESSIONAL',
       userRole: 'SHOP_OWNER',
       isIndividualBarber: false,
       isShopOwner: true,
@@ -86,32 +87,41 @@ function SupabaseAuthProvider({ children }) {
       }
 
       if (profileData) {
-        // Set reasonable defaults
+        // Use role-based tier defaults instead of hardcoded 'individual'
+        const defaultTier = getTierForRole(profileData.role || 'CLIENT')
+        
         const profileWithDefaults = {
           ...profileData,
-          subscription_tier: profileData.subscription_tier || 'individual',
+          subscription_tier: profileData.subscription_tier || defaultTier,
           subscription_status: profileData.subscription_status || 'active',
           role: profileData.role || 'CLIENT',
           onboarding_completed: profileData.onboarding_completed
         }
         
-        setProfile(profileWithDefaults)
-        return profileWithDefaults
+        // Validate and auto-fix profile inconsistencies
+        const validatedProfile = await validateAndFixAuthProfile(profileWithDefaults)
+        
+        setProfile(validatedProfile)
+        return validatedProfile
       }
 
       // Create profile if it doesn't exist
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) return null
 
+      // Use consistent role-tier mapping for new profiles
+      const newRole = 'CLIENT'
+      const newTier = getTierForRole(newRole)
+      
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .upsert({
           id: userId,
           email: authUser.email,
           full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || '',
-          subscription_tier: 'individual',
+          subscription_tier: newTier,
           subscription_status: 'active',
-          role: 'CLIENT'
+          role: newRole
         }, {
           onConflict: 'id',
           ignoreDuplicates: false

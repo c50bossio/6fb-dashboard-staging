@@ -8,7 +8,6 @@
  * certain values appear or can't be changed.
  */
 
-import React, { useState, useEffect } from 'react'
 import { 
   InformationCircleIcon,
   ChevronDownIcon,
@@ -17,6 +16,7 @@ import {
   BuildingStorefrontIcon,
   UserCircleIcon
 } from '@heroicons/react/24/outline'
+import React, { useState, useEffect } from 'react'
 
 export default function InheritanceIndicator({ category, level, organizationId }) {
   const [isExpanded, setIsExpanded] = useState(false)

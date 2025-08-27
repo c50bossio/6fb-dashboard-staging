@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
 import { 
   CloudArrowUpIcon,
   DocumentTextIcon,
@@ -11,10 +10,11 @@ import {
   ChevronRightIcon,
   DocumentDuplicateIcon
 } from '@heroicons/react/24/outline'
-import { platformImportConfigs } from '@/lib/platform-import-configs'
-import PlatformExportGuide from './PlatformExportGuide'
-import MultiFileUploader from './MultiFileUploader'
+import { useState, useCallback, useRef } from 'react'
 import { parseCSV, analyzeCSV } from '@/lib/csv-auto-detector'
+import { platformImportConfigs } from '@/lib/platform-import-configs'
+import MultiFileUploader from './MultiFileUploader'
+import PlatformExportGuide from './PlatformExportGuide'
 
 export default function PlatformTailoredImport({ onComplete, initialData = {}, profile }) {
   const [selectedPlatform, setSelectedPlatform] = useState(initialData.platform || null)

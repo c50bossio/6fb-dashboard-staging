@@ -87,7 +87,7 @@ async function checkDatabaseHealth() {
   const startTime = Date.now()
   
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data, error } = await supabase
       .from('profiles')

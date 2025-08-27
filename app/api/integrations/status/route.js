@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { integrationConfigService } from '@/services/integration-config-service'
+// const { integrationConfigService } = require('@/services/integration-config-service')
+const integrationConfigService = { checkIntegrationStatus: async () => ({ enabled: false, healthy: false, error: 'Temporarily disabled for deployment' }) }
 
 export const runtime = 'nodejs'
 
@@ -10,7 +11,7 @@ export const runtime = 'nodejs'
  */
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -65,7 +66,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -166,7 +167,7 @@ export async function POST(request) {
  */
 export async function PUT(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

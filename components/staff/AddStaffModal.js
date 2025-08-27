@@ -1,11 +1,23 @@
 'use client'
 
-import { useState, useEffect, useCallback, memo } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Modal } from '@/components/ui/Modal'
-import Button from '@/components/ui/Button'
 import { XMarkIcon, ChevronDownIcon, ChevronRightIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { toast } from 'react-hot-toast'
+import Button from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
+import {
+  formatCommissionDisplay,
+  formatCommissionInput,
+  parseCommissionInput,
+  formatBoothRent,
+  parseBoothRentInput,
+  formatFinancialModel,
+  formatRentFrequency,
+  getRentFrequencyOptions,
+  validateFinancialArrangement,
+  standardizeFinancialFields
+} from '@/lib/financial-display-utils'
+import { createClient } from '@/lib/supabase/client'
 
 // Extract FormSection component outside of render to prevent recreation
 const FormSection = memo(({ id, title, isOpen, onToggle, children }) => (
@@ -77,10 +89,14 @@ export default function AddStaffModal({ onClose, onSuccess }) {
     break_duration: 30, // minutes
     
     // Financial Setup (7 fields)
-    financial_model: 'commission',
-    commission_rate: 0.50,
+    arrangement_type: 'commission',
+    commission_rate: 0.60,
     hourly_rate: 0,
     booth_rent_amount: 0,
+    rent_frequency: 'monthly',
+    hybrid_base_rent: 0,
+    hybrid_revenue_threshold: 3000,
+    hybrid_commission_rate: 0.2,
     payment_method: 'direct_deposit',
     bank_account_last4: '',
     routing_number_last4: '',
@@ -169,6 +185,14 @@ export default function AddStaffModal({ onClose, onSuccess }) {
     e.preventDefault()
     
     if (!validateForm()) return
+
+    // Validate financial arrangement
+    const financialValidation = validateFinancialArrangement(formData)
+    if (!financialValidation.isValid) {
+      toast.error(`Please fix the following: ${financialValidation.errors.join(', ')}`)
+      setLoading(false)
+      return
+    }
     
     setLoading(true)
     setErrors({})
@@ -185,13 +209,15 @@ export default function AddStaffModal({ onClose, onSuccess }) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Authentication required. Please log in and try again.')
       
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('shop_id, barbershop_id')
-        .eq('id', user.id)
+      // Get barbershop ID from barbershop_staff table (users table doesn't have shop_id/barbershop_id)
+      const { data: staffRecord } = await supabase
+        .from('barbershop_staff')
+        .select('barbershop_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
         .single()
       
-      const barbershopId = profile?.shop_id || profile?.barbershop_id
+      const barbershopId = staffRecord?.barbershop_id
       if (!barbershopId) throw new Error('No barbershop found. Please contact support if this continues.')
       
       // Call the invitation API with timeout
@@ -214,10 +240,14 @@ export default function AddStaffModal({ onClose, onSuccess }) {
             license_number: formData.license_number,
             license_expiry: formData.license_expiry,
             years_experience: parseInt(formData.years_experience) || 0,
-            financial_model: formData.financial_model,
+            arrangement_type: formData.arrangement_type,
             commission_rate: parseFloat(formData.commission_rate),
             hourly_rate: parseFloat(formData.hourly_rate) || null,
             booth_rent_amount: parseFloat(formData.booth_rent_amount) || null,
+            rent_frequency: formData.rent_frequency,
+            hybrid_base_rent: parseFloat(formData.hybrid_base_rent) || null,
+            hybrid_revenue_threshold: parseFloat(formData.hybrid_revenue_threshold) || null,
+            hybrid_commission_rate: parseFloat(formData.hybrid_commission_rate) || null,
             payment_method: formData.payment_method,
             bank_account_last4: formData.bank_account_last4,
             routing_number_last4: formData.routing_number_last4,
@@ -376,10 +406,14 @@ export default function AddStaffModal({ onClose, onSuccess }) {
       break_duration: 30, // minutes
       
       // Financial Setup (7 fields)
-      financial_model: 'commission',
-      commission_rate: 0.50,
+      arrangement_type: 'commission',
+      commission_rate: 0.60,
       hourly_rate: 0,
       booth_rent_amount: 0,
+      rent_frequency: 'monthly',
+      hybrid_base_rent: 0,
+      hybrid_revenue_threshold: 3000,
+      hybrid_commission_rate: 0.2,
       payment_method: 'direct_deposit',
       bank_account_last4: '',
       routing_number_last4: '',
@@ -527,6 +561,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
                   required
                 >
                   <option value="barber">Barber</option>
+                  <option value="barber & manager">Barber & Manager</option>
                   <option value="senior_barber">Senior Barber</option>
                   <option value="stylist">Hair Stylist</option>
                   <option value="manager">Manager</option>
@@ -815,8 +850,8 @@ export default function AddStaffModal({ onClose, onSuccess }) {
                     Financial Model *
                   </label>
                   <select
-                    value={formData.financial_model}
-                    onChange={(e) => handleInputChange('financial_model', e.target.value)}
+                    value={formData.arrangement_type}
+                    onChange={(e) => handleInputChange('arrangement_type', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                     required
                   >
@@ -827,45 +862,75 @@ export default function AddStaffModal({ onClose, onSuccess }) {
                   </select>
                 </div>
                 
-                {formData.financial_model === 'commission' && (
+                {formData.arrangement_type === 'commission' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Commission Rate (%)
                     </label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={formData.commission_rate * 100}
-                      onChange={(e) => handleInputChange('commission_rate', e.target.value / 100)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        step="5"
+                        value={formatCommissionInput(formData.commission_rate)}
+                        onChange={(e) => handleInputChange('commission_rate', parseCommissionInput(e.target.value || 0))}
+                        className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                        placeholder="60"
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">%</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Enter as percentage (e.g., 60 for 60%)</p>
+                    <p className="text-xs text-gray-400 mt-1">Barber receives this percentage, shop gets the remainder</p>
                     {formData.enable_stripe_connect && (
                       <p className="mt-1 text-xs text-gray-500">
-                        Barber will receive {formData.commission_rate * 100}% of each payment automatically
+                        Barber will receive {formatCommissionDisplay(formData.commission_rate)} of each payment automatically
                       </p>
                     )}
                   </div>
                 )}
               
-              {formData.financial_model === 'booth_rent' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Weekly Booth Rent ($)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="25"
-                    value={formData.booth_rent_amount}
-                    onChange={(e) => handleInputChange('booth_rent_amount', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                  />
+              {formData.arrangement_type === 'booth_rent' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Booth Rent Amount
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="50"
+                        value={formData.booth_rent_amount || ''}
+                        onChange={(e) => handleInputChange('booth_rent_amount', parseBoothRentInput(e.target.value))}
+                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                        placeholder="1500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Payment Frequency
+                    </label>
+                    <select
+                      value={formData.rent_frequency}
+                      onChange={(e) => handleInputChange('rent_frequency', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                    >
+                      {getRentFrequencyOptions().map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label} - {option.description}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">Barber pays this amount to the shop</p>
+                  </div>
                 </div>
               )}
               
-              {formData.financial_model === 'hourly' && (
+              {formData.arrangement_type === 'hourly' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Hourly Rate ($)
@@ -878,6 +943,67 @@ export default function AddStaffModal({ onClose, onSuccess }) {
                     onChange={(e) => handleInputChange('hourly_rate', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                   />
+                </div>
+              )}
+
+              {formData.arrangement_type === 'hybrid' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Base Monthly Rent
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="50"
+                        value={formData.hybrid_base_rent || ''}
+                        onChange={(e) => handleInputChange('hybrid_base_rent', parseBoothRentInput(e.target.value))}
+                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                        placeholder="800"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Revenue Threshold
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="500"
+                        value={formData.hybrid_revenue_threshold || ''}
+                        onChange={(e) => handleInputChange('hybrid_revenue_threshold', parseBoothRentInput(e.target.value))}
+                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                        placeholder="3000"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Commission applies only to revenue above this amount</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Commission Rate (Above Threshold)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        step="5"
+                        value={formatCommissionInput(formData.hybrid_commission_rate || formData.commission_rate)}
+                        onChange={(e) => handleInputChange('hybrid_commission_rate', parseCommissionInput(e.target.value || 0))}
+                        className="w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                        placeholder="20"
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">%</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Commission rate on revenue above threshold</p>
+                  </div>
                 </div>
               )}
               </div>

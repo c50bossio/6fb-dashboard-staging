@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET(request, { params }) {
   try {
     const { slug } = params
-    const supabase = createClient()
+    const supabase = await createClient()
 
     if (!slug) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })

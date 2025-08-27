@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   PlusIcon, 
   CheckIcon, 
@@ -9,8 +8,9 @@ import {
   SparklesIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
-import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'
 import { toast } from 'react-hot-toast'
+import { Badge } from '@/components/ui/badge'
 
 const templates = {
   popular: [

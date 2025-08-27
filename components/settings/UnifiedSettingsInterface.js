@@ -1,14 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
-import { Card } from '../ui/card'
-import InheritanceIndicator from './InheritanceIndicator'
-import SettingsSection from './SettingsSection'
-import PaymentProcessingSettings from './PaymentProcessingSettings'
-import CompensationConfiguration from './CompensationConfiguration'
-import TipSettings from './TipSettings'
 import {
   BuildingStorefrontIcon,
   EnvelopeIcon,
@@ -21,6 +12,15 @@ import {
   UserGroupIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
+import { Card } from '../ui/card'
+import CompensationConfiguration from './CompensationConfiguration'
+import InheritanceIndicator from './InheritanceIndicator'
+import PaymentProcessingSettings from './PaymentProcessingSettings'
+import SettingsSection from './SettingsSection'
+import TipSettings from './TipSettings'
 
 export default function UnifiedSettingsInterface() {
   const { user, profile } = useAuth()

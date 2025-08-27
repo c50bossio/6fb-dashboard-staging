@@ -1,9 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
 import { 
   BuildingStorefrontIcon,
   PaintBrushIcon,
@@ -15,16 +11,34 @@ import {
   CalendarDaysIcon,
   ClockIcon,
   ArrowTopRightOnSquareIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  DevicePhoneMobileIcon,
+  ComputerDesktopIcon,
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  StarIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import ConfirmationDialog, { SaveChangesDialog, DiscardChangesDialog } from '@/components/ui/ConfirmationDialog'
+import ImageUpload, { uploadImageToService } from '@/components/ui/ImageUpload'
+import { createClient } from '@/lib/supabase/client'
 
-export default function BarbershopWebsiteCustomization() {
+export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
   const { user } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('general')
   const [saving, setSaving] = useState(false)
+  const [autoSaving, setAutoSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [previewMode, setPreviewMode] = useState('desktop')
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false)
+  const [originalSettings, setOriginalSettings] = useState({})
   
   const [settings, setSettings] = useState({
     name: '',
@@ -39,11 +53,15 @@ export default function BarbershopWebsiteCustomization() {
     website_url: '',
     instagram_url: '',
     facebook_url: '',
+    tiktok_url: '',
     
     // Branding
     logo_url: '',
+    hero_image_url: '',
+    gallery_images: [],
     brand_color: '#4F46E5',
     secondary_color: '#10B981',
+    accent_color: '#F59E0B',
     font_family: 'Inter',
     
     // Hours
@@ -62,35 +80,88 @@ export default function BarbershopWebsiteCustomization() {
     show_prices: true,
     require_phone: true,
     allow_walk_ins: true,
+    show_reviews: true,
+    auto_confirm_bookings: false,
+    booking_lead_time: 60, // minutes
+    max_advance_booking: 30, // days
     
-    // SEO
+    // SEO & Marketing
     meta_description: '',
-    keywords: []
+    keywords: [],
+    google_analytics_id: '',
+    facebook_pixel_id: '',
+    custom_css: '',
+    
+    // Features
+    services_offered: [],
+    team_members: [],
+    testimonials: [],
+    special_offers: []
   })
+
+  // Detect unsaved changes
+  useEffect(() => {
+    const hasChanges = JSON.stringify(settings) !== JSON.stringify(originalSettings)
+    setHasUnsavedChanges(hasChanges)
+    if (onUnsavedChanges) {
+      onUnsavedChanges(hasChanges)
+    }
+  }, [settings, originalSettings]) // Remove onUnsavedChanges to prevent infinite loop
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (!hasUnsavedChanges || !user) return
+
+    const autoSaveTimer = setTimeout(() => {
+      handleAutoSave()
+    }, 5000) // Auto-save after 5 seconds of inactivity
+
+    return () => clearTimeout(autoSaveTimer)
+  }, [hasUnsavedChanges, user, handleAutoSave]) // Removed settings to prevent infinite loop
+
+  const handleAutoSave = useCallback(async () => {
+    if (!hasUnsavedChanges) return
+    
+    try {
+      setAutoSaving(true)
+      await saveToDatabase()
+      setMessage({ type: 'info', text: 'Changes auto-saved' })
+      setTimeout(() => setMessage({ type: '', text: '' }), 2000)
+    } catch (error) {
+      console.error('Auto-save failed:', error)
+    } finally {
+      setAutoSaving(false)
+    }
+  }, [hasUnsavedChanges, saveToDatabase, setMessage, setAutoSaving])
 
   const supabase = createClient()
 
   const tabs = [
-    { id: 'general', name: 'General Info', icon: BuildingStorefrontIcon },
-    { id: 'branding', name: 'Branding', icon: PaintBrushIcon },
-    { id: 'hours', name: 'Hours & Booking', icon: CalendarDaysIcon },
-    { id: 'seo', name: 'SEO & Marketing', icon: GlobeAltIcon }
+    { id: 'general', name: 'General Info', icon: BuildingStorefrontIcon, description: 'Basic business details' },
+    { id: 'branding', name: 'Branding', icon: PaintBrushIcon, description: 'Logo, colors & style' },
+    { id: 'gallery', name: 'Photos', icon: PhotoIcon, description: 'Hero & gallery images' },
+    { id: 'hours', name: 'Hours & Booking', icon: CalendarDaysIcon, description: 'Schedule & settings' },
+    { id: 'seo', name: 'SEO & Marketing', icon: GlobeAltIcon, description: 'Online visibility' }
   ]
 
   const colorOptions = [
-    { name: 'Blue', value: '#4F46E5' },
-    { name: 'Green', value: '#10B981' },
-    { name: 'Purple', value: '#8B5CF6' },
-    { name: 'Red', value: '#EF4444' },
-    { name: 'Orange', value: '#F97316' },
-    { name: 'Teal', value: '#14B8A6' }
+    { name: 'Professional Blue', value: '#4F46E5', secondary: '#1E40AF' },
+    { name: 'Success Green', value: '#10B981', secondary: '#047857' },
+    { name: 'Royal Purple', value: '#8B5CF6', secondary: '#7C3AED' },
+    { name: 'Classic Black', value: '#1F2937', secondary: '#374151' },
+    { name: 'Warm Orange', value: '#F97316', secondary: '#EA580C' },
+    { name: 'Modern Teal', value: '#14B8A6', secondary: '#0D9488' }
   ]
 
-  useEffect(() => {
-    loadBarbershopSettings()
-  }, [user])
+  const fontOptions = [
+    { name: 'Inter (Modern)', value: 'Inter' },
+    { name: 'Roboto (Clean)', value: 'Roboto' },
+    { name: 'Open Sans (Friendly)', value: 'Open Sans' },
+    { name: 'Montserrat (Bold)', value: 'Montserrat' },
+    { name: 'Playfair (Elegant)', value: 'Playfair Display' }
+  ]
 
-  const loadBarbershopSettings = async () => {
+  const loadBarbershopSettings = useCallback(async () => {
     if (!user) return
 
     try {
@@ -112,8 +183,8 @@ export default function BarbershopWebsiteCustomization() {
         .single()
 
       if (barbershop) {
-        setSettings(prev => ({
-          ...prev,
+        const loadedSettings = {
+          ...settings,
           name: barbershop.name || '',
           tagline: barbershop.tagline || '',
           description: barbershop.description || '',
@@ -124,16 +195,99 @@ export default function BarbershopWebsiteCustomization() {
           state: barbershop.state || '',
           zip_code: barbershop.zip_code || '',
           website_url: barbershop.website_url || '',
+          instagram_url: barbershop.instagram_url || '',
+          facebook_url: barbershop.facebook_url || '',
+          tiktok_url: barbershop.tiktok_url || '',
           logo_url: barbershop.logo_url || '',
+          hero_image_url: barbershop.hero_image_url || '',
+          gallery_images: barbershop.gallery_images || [],
           brand_color: barbershop.brand_color || '#4F46E5',
-          business_hours: barbershop.business_hours || prev.business_hours,
+          secondary_color: barbershop.secondary_color || '#10B981',
+          accent_color: barbershop.accent_color || '#F59E0B',
+          font_family: barbershop.font_family || 'Inter',
+          business_hours: barbershop.business_hours || settings.business_hours,
           online_booking_enabled: barbershop.online_booking_enabled !== false,
-          show_prices: barbershop.show_prices !== false
-        }))
+          show_prices: barbershop.show_prices !== false,
+          show_reviews: barbershop.show_reviews !== false,
+          auto_confirm_bookings: barbershop.auto_confirm_bookings === true,
+          booking_lead_time: barbershop.booking_lead_time || 60,
+          max_advance_booking: barbershop.max_advance_booking || 30,
+          meta_description: barbershop.meta_description || '',
+          keywords: barbershop.keywords || [],
+          services_offered: barbershop.services_offered || [],
+          team_members: barbershop.team_members || []
+        }
+        setSettings(loadedSettings)
+        setOriginalSettings(JSON.parse(JSON.stringify(loadedSettings)))
       }
     } catch (error) {
       console.error('Error loading barbershop settings:', error)
     }
+  }, [user])
+
+  useEffect(() => {
+    loadBarbershopSettings()
+  }, [user, loadBarbershopSettings])
+
+  const saveToDatabase = async () => {
+    if (!user) return
+
+    // Get shop ID
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('shop_id, barbershop_id')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.shop_id && !profile?.barbershop_id) {
+      throw new Error('No barbershop associated with your account')
+    }
+
+    const shopId = profile.shop_id || profile.barbershop_id
+
+    // Update barbershop
+    const { error } = await supabase
+      .from('barbershops')
+      .update({
+        name: settings.name,
+        tagline: settings.tagline,
+        description: settings.description,
+        phone: settings.phone,
+        email: settings.email,
+        address: settings.address,
+        city: settings.city,
+        state: settings.state,
+        zip_code: settings.zip_code,
+        website_url: settings.website_url,
+        instagram_url: settings.instagram_url,
+        facebook_url: settings.facebook_url,
+        tiktok_url: settings.tiktok_url,
+        logo_url: settings.logo_url,
+        hero_image_url: settings.hero_image_url,
+        gallery_images: settings.gallery_images,
+        brand_color: settings.brand_color,
+        secondary_color: settings.secondary_color,
+        accent_color: settings.accent_color,
+        font_family: settings.font_family,
+        business_hours: settings.business_hours,
+        online_booking_enabled: settings.online_booking_enabled,
+        show_prices: settings.show_prices,
+        show_reviews: settings.show_reviews,
+        auto_confirm_bookings: settings.auto_confirm_bookings,
+        booking_lead_time: settings.booking_lead_time,
+        max_advance_booking: settings.max_advance_booking,
+        meta_description: settings.meta_description,
+        keywords: settings.keywords,
+        services_offered: settings.services_offered,
+        team_members: settings.team_members,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', shopId)
+
+    if (error) throw error
+    
+    // Update original settings to reflect saved state
+    setOriginalSettings(JSON.parse(JSON.stringify(settings)))
   }
 
   const handleSave = async () => {
@@ -142,44 +296,8 @@ export default function BarbershopWebsiteCustomization() {
     try {
       setSaving(true)
       setMessage({ type: '', text: '' })
-
-      // Get shop ID
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('shop_id, barbershop_id')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.shop_id && !profile?.barbershop_id) {
-        throw new Error('No barbershop associated with your account')
-      }
-
-      const shopId = profile.shop_id || profile.barbershop_id
-
-      // Update barbershop
-      const { error } = await supabase
-        .from('barbershops')
-        .update({
-          name: settings.name,
-          tagline: settings.tagline,
-          description: settings.description,
-          phone: settings.phone,
-          email: settings.email,
-          address: settings.address,
-          city: settings.city,
-          state: settings.state,
-          zip_code: settings.zip_code,
-          website_url: settings.website_url,
-          logo_url: settings.logo_url,
-          brand_color: settings.brand_color,
-          business_hours: settings.business_hours,
-          online_booking_enabled: settings.online_booking_enabled,
-          show_prices: settings.show_prices,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', shopId)
-
-      if (error) throw error
+      
+      await saveToDatabase()
 
       setMessage({ 
         type: 'success', 
@@ -197,6 +315,54 @@ export default function BarbershopWebsiteCustomization() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleImageUpload = async (file) => {
+    try {
+      // In a real implementation, you would upload to your storage service
+      const mockUrl = URL.createObjectURL(file)
+      return mockUrl
+    } catch (error) {
+      throw new Error('Failed to upload image')
+    }
+  }
+
+  const handleLogoUpload = async (file) => {
+    try {
+      const url = await handleImageUpload(file)
+      updateSetting('logo_url', url)
+      return url
+    } catch (error) {
+      throw new Error('Failed to upload logo')
+    }
+  }
+
+  const handleHeroUpload = async (file) => {
+    try {
+      const url = await handleImageUpload(file)
+      updateSetting('hero_image_url', url)
+      return url
+    } catch (error) {
+      throw new Error('Failed to upload hero image')
+    }
+  }
+
+  const handleGalleryUpload = async (file) => {
+    try {
+      const url = await handleImageUpload(file)
+      const newImages = [...settings.gallery_images, url]
+      updateSetting('gallery_images', newImages)
+      return url
+    } catch (error) {
+      throw new Error('Failed to upload gallery image')
+    }
+  }
+
+  const handleDiscard = () => {
+    setSettings(JSON.parse(JSON.stringify(originalSettings)))
+    setShowDiscardDialog(false)
+    setMessage({ type: 'info', text: 'Changes discarded' })
+    setTimeout(() => setMessage({ type: '', text: '' }), 2000)
   }
 
   const updateSetting = (key, value) => {

@@ -1,7 +1,7 @@
 'use client'
 
-import SettingsSidebar from '@/components/shop/SettingsSidebar'
 import SettingsBreadcrumb from '@/components/shop/SettingsBreadcrumb'
+import SettingsSidebar from '@/components/shop/SettingsSidebar'
 
 export default function SettingsLayout({ children }) {
   return (

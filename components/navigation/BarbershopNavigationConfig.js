@@ -190,7 +190,7 @@ export const BARBERSHOP_NAVIGATION = [
     children: [
       {
         name: 'Staff Schedule',
-        href: '/dashboard/staff',
+        href: '/shop/settings/staff',
         icon: UserGroupIcon
       },
       {

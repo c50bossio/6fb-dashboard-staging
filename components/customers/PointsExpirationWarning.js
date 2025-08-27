@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
 import { 
   AlertTriangle, 
   Clock, 
@@ -11,6 +10,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
 import { Badge } from '../ui/badge'
 
 /**

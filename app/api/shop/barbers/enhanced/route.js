@@ -1,8 +1,9 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { getDisplayName, splitFullName, combineNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // GET - Fetch all barbers with complete data
 export async function GET(request) {
@@ -39,6 +40,8 @@ export async function GET(request) {
           id,
           email,
           full_name,
+          first_name,
+          last_name,
           avatar_url,
           phone,
           created_at
@@ -192,7 +195,7 @@ export async function POST(request) {
       password: tempPassword,
       options: {
         data: {
-          full_name: data.fullName,
+          ...createNameUpdateObject({ fullName: data.fullName }),
           role: 'BARBER',
           phone: data.phone
         }
@@ -272,11 +275,12 @@ export async function POST(request) {
         user_id: barberId,
         barbershop_id: shop.id,
         display_name: data.fullName,
+        ...normalizeNameData({ fullName: data.fullName }),
         bio: data.bio,
         years_experience: data.yearsExperience,
         specialties: data.specialties ? data.specialties.split(',').map(s => s.trim()) : [],
         profile_image_url: data.profilePhotoUrl,
-        custom_url: data.customPageSlug || data.fullName.toLowerCase().replace(/\s+/g, '-'),
+        custom_url: data.customPageSlug || (data.fullName || 'barber').toLowerCase().replace(/\s+/g, '-'),
         contact_phone: data.phone,
         contact_email: data.email,
         booking_enabled: true,
@@ -355,7 +359,7 @@ export async function POST(request) {
     return NextResponse.json({ 
       success: true,
       barberId,
-      message: `Barber ${data.fullName} added successfully!`,
+      message: `Barber ${data.fullName || 'barber'} added successfully!`,
       onboardingUrl: `/shop/barbers/${barberId}/onboarding`
     })
     

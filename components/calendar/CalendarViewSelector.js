@@ -1,6 +1,5 @@
 'use client'
 
-import { Fragment, useState, useEffect } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -14,8 +13,9 @@ import {
   StarIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../SupabaseAuthProvider'
+import { Fragment, useState, useEffect } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
+import { useAuth } from '../SupabaseAuthProvider'
 
 export default function CalendarViewSelector({
   onViewChange,

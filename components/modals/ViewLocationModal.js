@@ -1,6 +1,5 @@
 'use client'
 
-import { Fragment, useState, useEffect } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { 
   XMarkIcon, 
@@ -14,6 +13,7 @@ import {
   StarIcon
 } from '@heroicons/react/24/outline'
 import { createBrowserClient } from '@supabase/ssr'
+import { Fragment, useState, useEffect } from 'react'
 import EditLocationModal from './EditLocationModal'
 
 export default function ViewLocationModal({ isOpen, onClose, location }) {

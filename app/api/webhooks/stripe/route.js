@@ -1,9 +1,9 @@
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import webhookSecurity from '@/lib/webhook-security'
-import webhookRetryManager from '@/lib/webhook-retry-manager'
 import { handleProductSalePayment } from '@/lib/product-commission-webhook-handler'
+import webhookRetryManager from '@/lib/webhook-retry-manager'
+import webhookSecurity from '@/lib/webhook-security'
 
 export const runtime = 'nodejs'
 

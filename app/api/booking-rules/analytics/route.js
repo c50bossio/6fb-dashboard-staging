@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server-client'
-import { RuleAuditor } from '@/lib/booking-rules-engine/RuleAuditor'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { RuleAuditor } from '@/lib/booking-rules-engine/RuleAuditor'
+import { createClient } from '@/lib/supabase/server-client'
 
 export async function GET(request) {
   try {

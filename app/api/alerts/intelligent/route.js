@@ -6,7 +6,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { cacheQuery } from '../../../../lib/analytics-cache.js';
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // Initialize Supabase client inside functions to avoid build-time errors
 function getSupabaseClient() {

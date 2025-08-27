@@ -1,4 +1,4 @@
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 /**
  * Edge Runtime AI Service - Ultra-lightweight AI proxy

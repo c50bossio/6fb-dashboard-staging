@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
 import Button from '@/components/ui/Button'
+import { createClient } from '@/lib/supabase/client'
 
 function OnboardingContent() {
   const searchParams = useSearchParams()

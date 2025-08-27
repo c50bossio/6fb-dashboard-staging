@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { useState, useEffect } from 'react'
 
 // Test page to verify customer data without authentication
 export default function TestCustomersPage() {

@@ -1,0 +1,102 @@
+# Grafana Datasource Configuration for 6FB AI Agent System
+# Automatic provisioning of Prometheus datasource
+
+apiVersion: 1
+
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+
+datasources:
+  # Primary Prometheus instance
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    uid: prometheus-uid
+    url: http://prometheus:9090
+    isDefault: true
+    version: 1
+    editable: false
+    basicAuth: false
+    withCredentials: false
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 2.45.0
+      cacheLevel: 'High'
+      disableRecordingRules: false
+      incrementalQueryOverlapWindow: '10s'
+      queryTimeout: '300s'
+      timeInterval: '15s'
+      # Enable exemplars for tracing
+      exemplarTraceIdDestinations:
+        - name: TraceID
+          datasourceUid: jaeger-uid
+          url: 'http://jaeger:16686/trace/$${__value.raw}'
+    secureJsonFields: {}
+    
+  # Optional: Long-term storage Prometheus (if using remote storage)
+  # - name: Prometheus-LTS
+  #   type: prometheus  
+  #   access: proxy
+  #   orgId: 1
+  #   uid: prometheus-lts-uid
+  #   url: http://prometheus-lts:9090
+  #   isDefault: false
+  #   version: 1
+  #   editable: false
+  #   basicAuth: false
+  #   jsonData:
+  #     httpMethod: POST
+  #     queryTimeout: '600s'
+  #     timeInterval: '60s'
+  #     manageAlerts: false
+  #     prometheusType: Prometheus
+  
+  # Optional: Jaeger for distributed tracing
+  # - name: Jaeger
+  #   type: jaeger
+  #   access: proxy
+  #   orgId: 1
+  #   uid: jaeger-uid
+  #   url: http://jaeger:16686
+  #   isDefault: false
+  #   version: 1
+  #   editable: false
+  #   basicAuth: false
+  #   jsonData:
+  #     tracesToLogs:
+  #       datasourceUid: 'loki-uid'
+  #       tags: ['job', 'instance', 'pod', 'namespace']
+  #       mappedTags: [
+  #         {
+  #           key: 'service.name',
+  #           value: 'service'
+  #         }
+  #       ]
+  #       mapTagNamesEnabled: false
+  #       spanStartTimeShift: '1h'
+  #       spanEndTimeShift: '1h'
+  #       filterByTraceID: false
+  #       filterBySpanID: false
+  
+  # Optional: Loki for log aggregation
+  # - name: Loki
+  #   type: loki
+  #   access: proxy
+  #   orgId: 1
+  #   uid: loki-uid
+  #   url: http://loki:3100
+  #   isDefault: false
+  #   version: 1
+  #   editable: false
+  #   basicAuth: false
+  #   jsonData:
+  #     maxLines: 1000
+  #     derivedFields:
+  #       - datasourceUid: jaeger-uid
+  #         matcherRegex: "traceID=(\\w+)"
+  #         name: TraceID
+  #         url: 'http://jaeger:16686/trace/$${__value.raw}'

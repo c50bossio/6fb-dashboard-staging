@@ -1,13 +1,13 @@
 'use client'
 
+import { Trophy, Star, Award, Gift, Calendar, Share2, Filter, Grid, List } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
+import { getBadgeRarityStyle, getBadgeCategoryInfo, sortBadgesByImportance, groupBadgesByCategory } from '../../utils/badgeSystem'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select.jsx'
-import { getBadgeRarityStyle, getBadgeCategoryInfo, sortBadgesByImportance, groupBadgesByCategory } from '../../utils/badgeSystem'
-import { Trophy, Star, Award, Gift, Calendar, Share2, Filter, Grid, List } from 'lucide-react'
 // Using simple alert instead of toast for now
 
 const categoryIcons = {

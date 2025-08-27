@@ -44,8 +44,8 @@ const REQUIRED_VARS = [
   'NEXT_PUBLIC_SUPABASE_ANON_KEY'
 ]
 
-// Validate on module load
-if (!isTest) {
+// Validate on module load - only on server side
+if (!isTest && typeof window === 'undefined') {
   validateEnvVars(REQUIRED_VARS)
 }
 

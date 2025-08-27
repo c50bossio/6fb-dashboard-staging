@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { shopId } = params
 
     if (!shopId) {
@@ -106,7 +106,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { shopId } = params
     const updates = await request.json()
 
@@ -243,7 +243,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { shopId } = params
 
     if (!shopId) {

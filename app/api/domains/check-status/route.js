@@ -26,7 +26,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     const { data: pendingDomains } = await supabase
       .from('barbershops')
@@ -134,7 +134,7 @@ async function checkDomainStatus(domain) {
 }
 
 async function sendDomainActiveEmail(userId, domain) {
-  const supabase = createClient()
+  const supabase = await createClient()
   
   const { data: profile } = await supabase
     .from('profiles')

@@ -22,7 +22,7 @@ export async function GET() {
     );
 
     // Check database connectivity
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: tables, error } = await supabase
       .from('stripe_connected_accounts')
       .select('id')

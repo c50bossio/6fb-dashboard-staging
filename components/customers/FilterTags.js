@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { 
   XMarkIcon,
   MagnifyingGlassIcon,
@@ -13,6 +12,7 @@ import {
   TagIcon,
   AdjustmentsHorizontalIcon
 } from '@heroicons/react/24/outline'
+import React from 'react'
 
 /**
  * FilterTags Component

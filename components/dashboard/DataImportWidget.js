@@ -7,9 +7,9 @@ import {
   CheckCircleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import { createClient } from '@supabase/supabase-js'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
-import { createClient } from '@supabase/supabase-js'
 
 /**
  * Post-Onboarding Data Import Widget

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   UserGroupIcon,
   CogIcon,
@@ -16,6 +15,7 @@ import {
   ShieldCheckIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function CustomerPortalSettings({ barbershopId, subscriptionTier = 'basic' }) {

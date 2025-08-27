@@ -1,6 +1,5 @@
 'use client'
 
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { 
   MagnifyingGlassIcon, 
   FunnelIcon,
@@ -17,6 +16,7 @@ import {
   TagIcon,
   SparklesIcon
 } from '@heroicons/react/24/outline'
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { Button, Input } from '../ui'
 import SearchHighlight from './SearchHighlight'
 
@@ -38,7 +38,7 @@ const fuzzyMatch = (text, pattern) => {
   
   // Fuzzy matching with typo tolerance
   let score = 0
-  let matches = []
+  const matches = []
   let patternIndex = 0
   let textIndex = 0
   
@@ -215,7 +215,7 @@ export default function AdvancedSearchFilter({
     return customers
       .map(customer => {
         let bestScore = 0
-        let searchMatches = {}
+        const searchMatches = {}
         
         fields.forEach(field => {
           const fieldValue = customer[field]

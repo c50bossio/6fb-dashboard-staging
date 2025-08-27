@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { XMarkIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { useEffect, useState } from 'react'
 
 /**
  * StripeModeBanner - Displays a warning banner when Stripe is in test mode

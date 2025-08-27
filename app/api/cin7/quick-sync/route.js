@@ -11,7 +11,7 @@ export async function POST(request) {
   const startTime = Date.now()
   
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()

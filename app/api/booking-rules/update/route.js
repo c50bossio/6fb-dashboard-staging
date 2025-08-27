@@ -1,9 +1,9 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server-client'
-import { RuleValidator } from '@/lib/booking-rules-engine/RuleValidator'
 import { RuleAuditor } from '@/lib/booking-rules-engine/RuleAuditor'
 import { cacheManager } from '@/lib/booking-rules-engine/RuleCache'
-import { cookies } from 'next/headers'
+import { RuleValidator } from '@/lib/booking-rules-engine/RuleValidator'
+import { createClient } from '@/lib/supabase/server-client'
 
 export async function POST(request) {
   try {
@@ -243,7 +243,7 @@ export async function PUT(request) {
     }
     
     // Update the specific field
-    let updatedRules = currentRules?.rules || {}
+    const updatedRules = currentRules?.rules || {}
     
     // Handle nested fields (e.g., "scheduling.advance_booking_days")
     const fieldParts = field.split('.')

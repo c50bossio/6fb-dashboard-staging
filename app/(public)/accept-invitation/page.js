@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/Button'
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { Button } from '@/components/ui/Button'
+import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
+import { createClient } from '@/lib/supabase/client'
 
 function AcceptInvitationContent() {
   const router = useRouter()
@@ -21,7 +22,8 @@ function AcceptInvitationContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -58,7 +60,12 @@ function AcceptInvitationContent() {
       } else {
         setInvitation(data.invitation)
         setEmail(data.invitation.invited_email || '')
-        setFullName(data.invitation.invited_name || '')
+        // Split the invited name if provided
+        if (data.invitation.invited_name) {
+          const nameData = splitFullName(data.invitation.invited_name)
+          setFirstName(nameData.firstName)
+          setLastName(nameData.lastName)
+        }
       }
     } catch (err) {
       setError('Failed to verify invitation')
@@ -87,13 +94,21 @@ function AcceptInvitationContent() {
     try {
       const supabase = createClient()
       
+      // Prepare name data using utility functions
+      const nameData = normalizeNameData({
+        firstName: firstName.trim(),
+        lastName: lastName.trim()
+      })
+      
       // Create new account
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: fullName,
+            first_name: nameData.first_name,
+            last_name: nameData.last_name,
+            full_name: nameData.full_name,
             invitation_token: token
           }
         }
@@ -261,19 +276,35 @@ function AcceptInvitationContent() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="John Doe"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Doe"
+                  />
+                </div>
               </div>
 
               <div>

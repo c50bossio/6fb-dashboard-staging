@@ -126,7 +126,7 @@ async function recordSaleInCin7(saleData, credentials) {
  */
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get request data
     const { action, ...data } = await request.json()

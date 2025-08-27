@@ -1,12 +1,21 @@
 'use client'
 
+import { format, subDays } from 'date-fns'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  AlertTriangle, 
+  CheckCircle, 
+  Users, 
+  UserCheck, 
+  UserX,
+  Star,
+  AlertCircle,
+  Brain,
+  Target,
+  RefreshCw
+} from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
 import { 
   BarChart, 
   Bar, 
@@ -22,21 +31,12 @@ import {
   Legend, 
   ResponsiveContainer
 } from 'recharts'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  CheckCircle, 
-  Users, 
-  UserCheck, 
-  UserX,
-  Star,
-  AlertCircle,
-  Brain,
-  Target,
-  RefreshCw
-} from 'lucide-react'
-import { format, subDays } from 'date-fns'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const TIER_COLORS = {
   green: '#10B981',   // Emerald-500

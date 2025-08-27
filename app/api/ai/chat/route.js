@@ -1,7 +1,9 @@
-import { streamText } from 'ai'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { trackAIUsage } from '@/lib/usage-middleware'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 /**
  * Streaming Chat API endpoint for real-time AI conversations
@@ -9,6 +11,24 @@ export const runtime = 'edge'
  */
 export async function POST(request) {
   try {
+    // Get user authentication for usage tracking
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          get(name) {
+            const cookie = cookieStore.get(name)
+            return cookie?.value
+          },
+        },
+      }
+    )
+
+    const { data: { session } } = await supabase.auth.getSession()
+    const userId = session?.user?.id
+
     const { messages, agentId } = await request.json()
     
     if (!messages || !Array.isArray(messages)) {
@@ -45,6 +65,28 @@ export async function POST(request) {
 
     const aiData = await aiResponse.json()
     
+    // Track AI usage if user is authenticated
+    if (userId) {
+      try {
+        const response = aiData.message || aiData.response || "I'm here to help with your barbershop business!"
+        // Estimate tokens (rough calculation: ~4 characters per token)
+        const inputTokens = Math.ceil(lastMessage.length / 4)
+        const outputTokens = Math.ceil(response.length / 4)
+        const totalTokens = inputTokens + outputTokens
+        
+        await trackAIUsage(userId, 'ai_chat', totalTokens, {
+          agentId: agentId || 'chat',
+          inputTokens,
+          outputTokens,
+          endpoint: 'chat',
+          model: 'estimated'
+        })
+      } catch (trackingError) {
+        console.warn('Failed to track AI usage:', trackingError)
+        // Continue with response even if tracking fails
+      }
+    }
+    
     const stream = new ReadableStream({
       start(controller) {
         const response = aiData.message || aiData.response || "I'm here to help with your barbershop business!"
@@ -66,7 +108,13 @@ export async function POST(request) {
       }
     })
 
-    return new StreamingTextResponse(stream)
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    })
 
   } catch (error) {
     console.error('Streaming chat error:', error)
@@ -80,7 +128,13 @@ export async function POST(request) {
       }
     })
 
-    return new StreamingTextResponse(fallbackStream)
+    return new Response(fallbackStream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    })
   }
 }
 
