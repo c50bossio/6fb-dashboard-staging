@@ -16,8 +16,9 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
-import ProfileUpdateTest from '@/components/debug/ProfileUpdateTest'
-import StaffSaveDebugger from '@/components/debug/StaffSaveDebugger'
+// Debug components removed for production
+// import ProfileUpdateTest from '@/components/debug/ProfileUpdateTest'
+// import StaffSaveDebugger from '@/components/debug/StaffSaveDebugger'
 import Button from '@/components/ui/Button'
 import { Card } from "@/components/ui/card.jsx"
 import { Modal } from '@/components/ui/Modal'
@@ -361,6 +362,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
         {/* Debug Panel (Development Only) */}
         {process.env.NODE_ENV === 'development' && isEditing && (
+          {/* Debug components removed for production
           <div className="space-y-4">
             <StaffSaveDebugger 
               staff={staff}
@@ -375,6 +377,8 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
             />
             <ProfileUpdateTest userId={staff?.user_id} />
           </div>
+          */}
+          <div></div>
         )}
 
         {/* Content Grid */}
